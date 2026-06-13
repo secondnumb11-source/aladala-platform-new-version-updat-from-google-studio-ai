@@ -1782,6 +1782,7 @@ function AppContent() {
             clients={clients}
             tasks={tasks}
             currentUser={currentUser}
+            selectedRole={selectedRole}
             onUpdateState={handleUpdateGlobalState}
           />
         )}

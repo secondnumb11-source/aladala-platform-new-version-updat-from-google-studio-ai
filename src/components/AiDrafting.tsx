@@ -381,7 +381,7 @@ export default function AiDrafting() {
                       readingFontSize === "md" ? "text-sm" :
                       readingFontSize === "lg" ? "text-base md:text-lg" : "text-lg md:text-2xl"
                     }`
-                  : "bg-sky-50 border-slate-800 text-xs text-slate-200 font-sans"
+                  : "bg-slate-950/40 border-[#c5a880]/20 text-xs text-slate-100 font-sans"
               }`}>
                 {output}
               </div>

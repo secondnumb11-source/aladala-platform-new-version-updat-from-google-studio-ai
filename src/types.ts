@@ -143,6 +143,7 @@ export interface Employee {
   name: string;
   nationality: string;
   nationalId: string;
+  nationalIdExpiry?: string;
   phone: string;
   jobTitle: string;
   manager: string;

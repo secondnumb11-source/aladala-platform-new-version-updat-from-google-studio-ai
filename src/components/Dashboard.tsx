@@ -5,7 +5,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { db, auth } from '@/lib/firebase';
-import { doc, setDoc, getDoc } from 'firebase/firestore';
+import { doc, setDoc, getDoc, collection, query, onSnapshot, orderBy } from 'firebase/firestore';
 import { SortableWidgetWrapper } from './SortableWidgetWrapper';
 import { 
   DndContext, 
@@ -198,6 +198,49 @@ const Dashboard = function Dashboard({
   const [performanceTab, setPerformanceTab] = useState<'overview' | 'trends' | 'comparison'>('overview');
   const [isHighContrast, setIsHighContrast] = useState(() => document.body.classList.contains('high-contrast-mode'));
   const [isCustomizing, setIsCustomizing] = useState(false);
+
+  const [employees, setEmployees] = useState<any[]>([]);
+
+  useEffect(() => {
+    const backup = localStorage.getItem('employees_backup');
+    if (backup) {
+      try {
+        setEmployees(JSON.parse(backup));
+      } catch (e) {}
+    }
+    const q = query(collection(db, 'employees'));
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const emps = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      emps.sort((a: any, b: any) => (a.name || '').localeCompare(b.name || ''));
+      setEmployees(emps);
+      localStorage.setItem('employees_backup', JSON.stringify(emps));
+    }, (error) => {
+      console.warn("Error subscribing to employees in Dashboard:", error);
+    });
+    return () => unsubscribe();
+  }, []);
+
+  const expiringEmployees = React.useMemo(() => {
+    return employees.filter(emp => {
+      if (!emp.nationalIdExpiry) return false;
+      const expiryDate = new Date(emp.nationalIdExpiry);
+      const today = new Date();
+      const timeDiff = expiryDate.getTime() - today.getTime();
+      const daysDiff = Math.ceil(timeDiff / (1000 * 3600 * 24));
+      return daysDiff >= 0 && daysDiff <= 30;
+    }).map(emp => {
+      const expiryDate = new Date(emp.nationalIdExpiry!);
+      const today = new Date();
+      const timeDiff = expiryDate.getTime() - today.getTime();
+      const daysDiff = Math.ceil(timeDiff / (1000 * 3600 * 24));
+      const docType = emp.nationality === 'سعودي' ? 'الهوية الوطنية' : 'الإقامة';
+      return {
+        ...emp,
+        docType,
+        daysLeft: daysDiff
+      };
+    });
+  }, [employees]);
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged(async (user) => {
@@ -661,6 +704,43 @@ const Dashboard = function Dashboard({
           </button>
         </div>
       </div>
+
+      {/* Expiry alerts for Document/Iqama */}
+      {expiringEmployees.length > 0 && (
+        <motion.div 
+          initial={{ opacity: 0, y: -10 }} 
+          animate={{ opacity: 1, y: 0 }} 
+          className="bg-amber-50 border border-amber-200 rounded-[2rem] p-6 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-6 relative overflow-hidden"
+        >
+          <div className="absolute top-0 left-0 w-32 h-32 bg-amber-500/5 rounded-full blur-2xl" />
+          <div className="flex items-start gap-4">
+            <div className="w-12 h-12 bg-amber-500 text-slate-900 rounded-2xl flex items-center justify-center shrink-0 shadow-md">
+              <AlertTriangle className="w-6 h-6 animate-pulse" />
+            </div>
+            <div className="space-y-1">
+              <h3 className="text-base font-black text-slate-900">🔔 تنبيه إداري ذكي: وثائق الكادر الوظيفي توشك على الانتهاء!</h3>
+              <p className="text-xs text-slate-600 font-bold">يرجى من الإدارة أو الشريك القيادي مخاطبة الموظفين المعنيين ببدء إجراءات التجديد فوراً لتجنب غرامات النظام عِبر بوابة قوى ومقيم.</p>
+              
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2 mt-4 pt-4 border-t border-slate-200">
+                {expiringEmployees.map((emp: any) => (
+                  <div key={emp.id} className="flex items-center gap-2 text-xs">
+                    <span className="w-2 h-2 rounded-full bg-rose-500 shrink-0" />
+                    <span className="font-extrabold text-slate-800">{emp.name}</span>
+                    <span className="text-slate-500 font-bold">({emp.docType})</span>
+                    <span className="text-rose-600 font-extrabold">ينتهي خلال {emp.daysLeft} يوماً</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+          <button 
+            onClick={() => onNavigate('employees-data')}
+            className="px-6 py-3 bg-[#0f172a] hover:bg-slate-800 text-white font-black text-xs rounded-xl transition-all shadow-md shrink-0 self-end md:self-center"
+          >
+            إدارة بيانات الموظفين
+          </button>
+        </motion.div>
+      )}
 
       {/* Widgets Content */}
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>

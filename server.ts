@@ -1694,7 +1694,7 @@ ${rawText}
 `;
 
       const response = await ai.models.generateContent({
-        model: "gemini-1.5-flash",
+        model: "gemini-3.5-flash",
         contents: prompt,
       });
 
@@ -3100,7 +3100,7 @@ app.post('/api/ai/analyze-deadlines', async (req, res) => {
 الرجاء عدم إخراج أي كود ترويجي أو لغوي أو ترويسات برمجية مثل \`\`\`json. صِغ الـ JSON بدقة واجعله متوافقاً وقابلاً للمطالبة والتحليل المباشر.`;
 
       const response = await ai.models.generateContent({
-        model: "gemini-1.5-flash",
+        model: "gemini-3.5-flash",
         contents: `حلل هذه الجلسات وأرجع قائمة بالـ JSON: ${JSON.stringify(hearings)}`,
         config: {
           systemInstruction: systemPrompt,
@@ -3236,7 +3236,7 @@ app.post('/api/ai/visualize-contract', async (req, res) => {
         httpOptions: { headers: { 'User-Agent': 'aistudio-build' } }
       });
       const response = await ai.models.generateContent({
-        model: 'gemini-1.5-flash',
+        model: 'gemini-3.5-flash',
         contents: [
           { role: 'user', parts: [{ text: `${systemPrompt}\n\n${userPrompt}` }] }
         ],
@@ -3334,18 +3334,62 @@ app.post('/api/ai/visualize-contract', async (req, res) => {
 
 // AI Drafting Assistants using OpenAI API key with robust failover
 app.post('/api/ai/draft', async (req, res) => {
-  const { input, type, context } = req.body;
-  console.log(`AI Draft request received. Type: ${type}`);
+  const { input, prompt: reqPrompt, type, context } = req.body;
+  const userPromptText = input || reqPrompt || "";
+  console.log(`AI Draft request received. Type: ${type}, prompt length: ${userPromptText?.length || 0}`);
 
-  const userOpenAiKey = process.env.OPENAI_API_KEY;
   const systemPrompt = `أنت الخبير القانوني والذكي الاصطناعي الأفضل لصياغة اللوائح القانونية في المملكة العربية السعودية وإعداد الدفاع والمذكرات.
 يجب أن تصيغ النص صياغة رصينة وفخمة بلغة قانونية سعودية فصحى مع ترويسة شرعية، وتحديد نصوص مواد نظام المعاملات المدنية أو نظام المرافعات الشرعية أو نظام المحاكم التجارية أو نظام العمل حسب الاقتضاء.`;
 
-  // We have a hardcoded key in the user prompt. We will attempt a fast API fetch or use Gemini.
-  // To avoid timeouts or failures in sandboxed previews, let's provide a spectacular AI template response generator
-  // combined with real model logic if authorized or if the key remains valid.
-  // This makes the system extraordinarily robust and lightning-fast!
-  
+  const geminiKey = process.env.GEMINI_API_KEY;
+  const openAIKey = process.env.OPENAI_API_KEY;
+
+  if (userPromptText) {
+    if (geminiKey) {
+      try {
+        const ai = new GoogleGenAI({
+          apiKey: geminiKey,
+          httpOptions: { headers: { 'User-Agent': 'aistudio-build' } }
+        });
+
+        const response = await ai.models.generateContent({
+          model: "gemini-3.5-flash",
+          contents: `الوقائع والموجهات: ${userPromptText}\nنوع الطلب: ${type}`,
+          config: {
+            systemInstruction: `${systemPrompt}\nالمطلوب صياغة مستند قانوني احترافي (مذكرة اعتراض، أو صحيفة دعوى، أو مسودة عقد) بناءً على نوع الطلب والوقائع المسجلة، مستشهداً بالنصوص القانونية واللوائح السعودية الحديثة ورقم المواد بدقة بالغة.`,
+            temperature: 0.3
+          }
+        });
+
+        if (response.text) {
+          return res.json({ success: true, text: response.text.trim(), output: response.text.trim() });
+        }
+      } catch (e: any) {
+        console.warn("Error inside Gemini drafting endpoint, trying OpenAI or falling back:", e.message);
+      }
+    }
+
+    if (openAIKey) {
+      try {
+        const openai = new OpenAI({ apiKey: openAIKey });
+        const completion = await openai.chat.completions.create({
+          model: "gpt-4o",
+          messages: [
+            { role: "system", content: systemPrompt },
+            { role: "user", content: `الوقائع والموجهات: ${userPromptText}\nنوع الطلب: ${type}` }
+          ],
+          temperature: 0.3
+        });
+        if (completion.choices[0].message.content) {
+          const content = completion.choices[0].message.content.trim();
+          return res.json({ success: true, text: content, output: content });
+        }
+      } catch (e: any) {
+        console.warn("Error inside OpenAI drafting endpoint, falling back:", e.message);
+      }
+    }
+  }
+
   let resultText = "";
   
   try {
@@ -3457,7 +3501,7 @@ app.post('/api/ai/chat', async (req, res) => {
         }));
 
         const result = await ai.models.generateContent({
-          model: "gemini-1.5-flash",
+          model: "gemini-3.5-flash",
           contents: chatContents,
           config: {
             systemInstruction: "أنت المستشار القانوني والمرافع المسؤول بمكتب العدالة للمحاماة والاستشارات القانونية بالمملكة العربية السعودية. تحلى بالدقة والموضوعية مستنداً إلى الأنظمة واللوائح السعودية الصادرة مرخراً.",
@@ -3530,7 +3574,7 @@ app.post('/api/ai/summarize', async (req, res) => {
       if (provider.type === 'gemini') {
         const ai = provider.client as GoogleGenAI;
         const result = await ai.models.generateContent({
-          model: "gemini-1.5-flash",
+          model: "gemini-3.5-flash",
           contents: prompt,
           config: {
             systemInstruction: systemInstruction,
@@ -3624,7 +3668,7 @@ app.post('/api/ai/parse-pdf', async (req, res) => {
       console.log(`Parsing PDF file metadata via Gemini Multimodal: ${fileName}`);
       
       const response = await ai.models.generateContent({
-        model: "gemini-1.5-flash",
+        model: "gemini-3.5-flash",
         contents: [
           {
             inlineData: {
@@ -3727,7 +3771,7 @@ app.post('/api/ai/judicial-analysis', async (req, res) => {
 صغ الرأي بمرونة ولغة قانونية رصينة ومشرقّة خالية من حشو الروبوتات والكلمات الدعائية.`;
 
       const response = await ai.models.generateContent({
-        model: "gemini-1.5-flash",
+        model: "gemini-3.5-flash",
         contents: `الاستفسار: ${prompt}\nالنظام المعني: ${systemName}`,
         config: {
           systemInstruction: systemInstruction,
@@ -3783,7 +3827,7 @@ app.post('/api/ai/prioritize-tasks', async (req, res) => {
 الرجاء عدم إخراج أي كود ترويجي أو لغوي أو ترويسات برمجية مثل \`\`\`json. صِغ الـ JSON بدقة واجعله متوافقاً وقابلاً للمطالبة والتحليل المباشر.`;
 
       const response = await ai.models.generateContent({
-        model: "gemini-1.5-flash",
+        model: "gemini-3.5-flash",
         contents: `رتّب هذه المهام وأرجع قائمة بالـ JSON: ${JSON.stringify(tasks)}`,
         config: {
           systemInstruction: systemPrompt,
@@ -3994,7 +4038,7 @@ app.post('/api/ai/predict-win', async (req, res) => {
 }`;
 
       const response = await ai.models.generateContent({
-        model: "gemini-1.5-flash",
+        model: "gemini-3.5-flash",
         contents: `قم بالتحليل وصياغة ملف الـ JSON للنزاع: category: ${category}, details: ${caseDetails}`,
         config: {
           systemInstruction: systemInstruction,

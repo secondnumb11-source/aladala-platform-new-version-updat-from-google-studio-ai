@@ -5,7 +5,7 @@ import {
   FileText, Save, Settings as SettingsIcon, 
   ChevronRight, Trash2, GraduationCap, 
   CalendarDays, AtSign, Sparkles, Building2,
-  CheckCircle2
+  CheckCircle2, X, Download, SlidersHorizontal, AlertTriangle
 } from 'lucide-react';
 import { motion } from 'motion/react';
 import { 
@@ -31,6 +31,216 @@ export default function EmployeesData({ tasks }: { cases: Case[], tasks: Task[],
   const [searchQuery, setSearchQuery] = useState('');
   const [formData, setFormData] = useState<Partial<Employee>>({});
 
+  // ---------------- NEW REMINDERS, FILTERS, SIZES, AND REPORTING STATES ----------------
+  const [selectedBranchFilter, setSelectedBranchFilter] = useState('الكل');
+  const [selectedJobTitleFilter, setSelectedJobTitleFilter] = useState('الكل');
+  
+  const [isArranging, setIsArranging] = useState(false);
+  const [cardSizes, setCardSizes] = useState<Record<string, 'small' | 'medium' | 'large'>>(() => {
+    try {
+      const saved = localStorage.getItem('employees_card_sizes_v1');
+      return saved ? JSON.parse(saved) : {};
+    } catch(e) { return {}; }
+  });
+
+  const [employeeCustomOrder, setEmployeeCustomOrder] = useState<string[]>(() => {
+    try {
+      const saved = localStorage.getItem('employees_card_order_v1');
+      return saved ? JSON.parse(saved) : [];
+    } catch(e) { return []; }
+  });
+
+  const [showReportWizard, setShowReportWizard] = useState(false);
+  const [reportMonth, setReportMonth] = useState(() => {
+    const today = new Date();
+    return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`;
+  });
+  const [reportHours, setReportHours] = useState<Record<string, number>>({});
+
+  const getExpiryStatus = (expiryDateStr?: string) => {
+    if (!expiryDateStr) return null;
+    const expiryDate = new Date(expiryDateStr);
+    const today = new Date();
+    const timeDiff = expiryDate.getTime() - today.getTime();
+    const daysDiff = Math.ceil(timeDiff / (1000 * 3600 * 24));
+    return {
+      daysLeft: daysDiff,
+      isExpiringSoon: daysDiff >= 0 && daysDiff <= 30,
+      isExpired: daysDiff < 0
+    };
+  };
+
+  const expiringEmployeesList = React.useMemo(() => {
+    return employees.filter(emp => {
+      const status = getExpiryStatus(emp.nationalIdExpiry);
+      return status?.isExpiringSoon === true;
+    }).map(emp => {
+      const status = getExpiryStatus(emp.nationalIdExpiry);
+      const docType = emp.nationality === 'سعودي' ? 'الهوية الوطنية' : 'الإقامة';
+      return {
+        ...emp,
+        docType,
+        daysLeft: status?.daysLeft || 0
+      };
+    });
+  }, [employees]);
+
+  const uniqueJobTitles = React.useMemo(() => {
+    const titles = employees.map(e => e.jobTitle).filter(Boolean);
+    return ['الكل', ...Array.from(new Set(titles))];
+  }, [employees]);
+
+  const uniqueBranches = React.useMemo(() => {
+    const branches = employees.map(e => e.branch).filter(Boolean);
+    return ['الكل', ...Array.from(new Set(branches))];
+  }, [employees]);
+
+  const filteredAndSortedList = React.useMemo(() => {
+    let result = [...employees];
+    const q = searchQuery.toLowerCase().trim();
+    if (q) {
+      result = result.filter(emp => 
+        (emp.name || '').toLowerCase().includes(q) || 
+        (emp.jobTitle || '').toLowerCase().includes(q) || 
+        (emp.nationalId || '').toLowerCase().includes(q) || 
+        (emp.branch || '').toLowerCase().includes(q)
+      );
+    }
+    if (selectedJobTitleFilter !== 'الكل') {
+      result = result.filter(emp => emp.jobTitle === selectedJobTitleFilter);
+    }
+    if (selectedBranchFilter !== 'الكل') {
+      result = result.filter(emp => emp.branch === selectedBranchFilter);
+    }
+    if (!q && selectedJobTitleFilter === 'الكل' && selectedBranchFilter === 'الكل' && employeeCustomOrder.length > 0) {
+      const orderMap = new Map(employeeCustomOrder.map((id, index) => [id, index]));
+      result.sort((a, b) => {
+        const indexA = orderMap.has(a.id) ? orderMap.get(a.id)! : 999;
+        const indexB = orderMap.has(b.id) ? orderMap.get(b.id)! : 999;
+        return indexA - indexB;
+      });
+    }
+    return result;
+  }, [employees, searchQuery, selectedJobTitleFilter, selectedBranchFilter, employeeCustomOrder]);
+
+  const reportData = React.useMemo(() => {
+    return employees.map(emp => {
+      const completedTasksCount = (tasks || []).filter((t: any) => {
+        const assignedName = (t.assignedTo || '').toLowerCase().trim();
+        const empName = (emp.name || '').toLowerCase().trim();
+        const empUser = (emp.username || '').toLowerCase().trim();
+        return (assignedName === empName || assignedName === empUser) && 
+               (t.status === 'completed' || t.status === 'done');
+      }).length;
+      return {
+        id: emp.id,
+        name: emp.name,
+        jobTitle: emp.jobTitle,
+        nationalId: emp.nationalId,
+        email: emp.email || '',
+        phone: emp.phone || '',
+        hours: reportHours[emp.id] !== undefined ? reportHours[emp.id] : 160,
+        completedTasks: completedTasksCount
+      };
+    });
+  }, [employees, tasks, reportHours]);
+
+  const handleExportCSV = () => {
+    let csvContent = "\uFEFF";
+    csvContent += "اسم الموظف,المسمى الوظيفي,رقم الهوية,ساعات العمل,المهام المنجزة,البريد الالكتروني\n";
+    reportData.forEach(row => {
+      csvContent += `"${row.name}","${row.jobTitle}","${row.nationalId}",${row.hours},${row.completedTasks},"${row.email}"\n`;
+    });
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", `تقرير_الكادر_الشهري_${reportMonth}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const handleExportPDF = () => {
+    const win = window.open('', '_blank');
+    if (!win) return;
+    const rowsHtml = reportData.map((row, idx) => `
+      <tr>
+        <td style="padding:12px; border-bottom:1px solid #e2e8f0; font-family:monospace;">${idx + 1}</td>
+        <td style="padding:12px; border-bottom:1px solid #e2e8f0; font-weight:900; color:#0f172a;">${row.name}</td>
+        <td style="padding:12px; border-bottom:1px solid #e2e8f0; font-weight:bold; color:#475569;">${row.jobTitle}</td>
+        <td style="padding:12px; border-bottom:1px solid #e2e8f0; font-family:monospace;">${row.nationalId}</td>
+        <td style="padding:12px; border-bottom:1px solid #e2e8f0; font-weight:black; color:#0f172a; font-family:monospace;">${row.hours} ساعة</td>
+        <td style="padding:12px; border-bottom:1px solid #e2e8f0; font-weight:black; color:#db2777; font-family:monospace;">${row.completedTasks} مهمة منجزة</td>
+      </tr>
+    `).join('');
+    win.document.write(`
+      <html dir="rtl" lang="ar">
+        <head>
+          <title>تقرير أداء الكادر القضائي - ${reportMonth}</title>
+          <style>
+            body { font-family: system-ui, -apple-system, sans-serif; padding: 40px; background: #fff; color: #0f172a; }
+            .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #0f172a; padding-bottom: 15px; margin-bottom: 30px; }
+            h1 { font-size: 22px; font-weight: 900; margin: 0; color: #0f172a; }
+            .subtitle { font-size: 13px; font-weight: bold; color: #64748b; margin-top: 5px; }
+            table { width: 100%; border-collapse: collapse; text-align: right; margin-top: 20px; }
+            th { background-color: #f8fafc; color: #475569; font-size: 11px; font-weight: 900; padding: 12px; border-bottom: 2px solid #e2e8f0; }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <div>
+              <h1>العدالة الذكية للهواية القضائية واحتساب الأجور</h1>
+              <p class="subtitle">تقرير مؤشرات الكفاءة وساعات العمل لشهر: ${reportMonth}</p>
+            </div>
+            <div style="text-align: left; font-size: 12px; font-weight: bold; color: #94a3b8;">
+              رمز التقرير: REPORT-${reportMonth}
+            </div>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th style="width:40px;">#</th>
+                <th>اسم الموظف كلياً</th>
+                <th>المسمى الوظيفي</th>
+                <th>رقم الهوية الوطنية/الإقامة</th>
+                <th>إجمالي ساعات العمل</th>
+                <th>المهام المكتملة</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${rowsHtml}
+            </tbody>
+          </table>
+          <script>window.print();</script>
+        </body>
+      </html>
+    `);
+    win.document.close();
+  };
+
+  const moveEmployeeCard = (index: number, direction: 'prev' | 'next') => {
+    const list = [...filteredAndSortedList];
+    if (direction === 'prev' && index > 0) {
+      const temp = list[index];
+      list[index] = list[index - 1];
+      list[index - 1] = temp;
+    } else if (direction === 'next' && index < list.length - 1) {
+      const temp = list[index];
+      list[index] = list[index + 1];
+      list[index + 1] = temp;
+    }
+    const orderIds = list.map(e => e.id);
+    setEmployeeCustomOrder(orderIds);
+    localStorage.setItem('employees_card_order_v1', JSON.stringify(orderIds));
+  };
+
+  const handleResizeCard = (id: string, size: 'small' | 'medium' | 'large') => {
+    const updated = { ...cardSizes, [id]: size };
+    setCardSizes(updated);
+    localStorage.setItem('employees_card_sizes_v1', JSON.stringify(updated));
+  };
+
   // Sync with Firestore Employees Collection
   useEffect(() => {
     // 1. Initial immediate load from local backup
@@ -43,9 +253,10 @@ export default function EmployeesData({ tasks }: { cases: Case[], tasks: Task[],
       }
     }
 
-    const q = query(collection(db, 'employees'), orderBy('name'));
+    const q = query(collection(db, 'employees'));
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const emps: Employee[] = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Employee));
+      emps.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
       if (emps.length > 0) {
         setEmployees(emps);
         localStorage.setItem('employees_backup', JSON.stringify(emps));
@@ -68,6 +279,7 @@ export default function EmployeesData({ tasks }: { cases: Case[], tasks: Task[],
         name: '',
         nationality: 'سعودي',
         nationalId: '',
+        nationalIdExpiry: '',
         phone: '',
         jobTitle: '',
         birthDate: '',
@@ -269,6 +481,16 @@ export default function EmployeesData({ tasks }: { cases: Case[], tasks: Task[],
                   />
                 </div>
                 <div className="space-y-2">
+                  <label className="text-xs font-black text-slate-700 pr-1 block">تاريخ انتهاء الهوية / الإقامة</label>
+                  <input 
+                    type="date"
+                    name="nationalIdExpiry" 
+                    value={formData.nationalIdExpiry || ''} 
+                    onChange={handleInputChange}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-4 text-sm font-bold focus:bg-white focus:border-blue-500 transition-all outline-none text-right text-slate-900"
+                  />
+                </div>
+                <div className="space-y-2">
                   <label className="text-xs font-black text-slate-700 pr-1 block">الجنسية</label>
                   <input 
                     name="nationality" 
@@ -434,10 +656,10 @@ export default function EmployeesData({ tasks }: { cases: Case[], tasks: Task[],
     <div className="flex-1 p-8 md:p-12 bg-[#F8FAFC] min-h-screen text-right font-sans" dir="rtl">
       
       {/* Top Professional Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-8 pb-10 border-b border-slate-200">
+      <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-8 pb-10 border-b border-slate-200">
         <div className="space-y-2">
           <div className="flex items-center gap-4">
-             <div className="w-16 h-16 bg-[#0f172a] text-white rounded-[1.5rem] flex items-center justify-center shadow-xl">
+             <div className="w-16 h-16 bg-[#0f172a] text-white rounded-[1.5rem] flex items-center justify-center shadow-xl shrink-0">
                <Users className="w-8 h-8" />
              </div>
              <div>
@@ -446,25 +668,99 @@ export default function EmployeesData({ tasks }: { cases: Case[], tasks: Task[],
              </div>
           </div>
         </div>
-        <button 
-          onClick={() => { setView('form'); setSelectedConfigEmployee(null); }}
-          className="bg-[#0f172a] hover:bg-slate-800 text-white font-black px-8 py-4 rounded-2xl flex items-center justify-center gap-3 transition-all shadow-md active:scale-95 group"
-        >
-          <Plus className="w-5 h-5 group-hover:rotate-90 transition-transform duration-300" />
-          <span className="text-sm">اضافة بيانات موظف</span>
-        </button>
+        <div className="flex flex-wrap gap-3">
+          <button 
+            onClick={() => setShowReportWizard(true)}
+            className="bg-emerald-600 hover:bg-emerald-700 text-white font-black px-6 py-4 rounded-2xl flex items-center justify-center gap-2.5 transition-all shadow-md active:scale-95 text-sm"
+          >
+            <FileText className="w-5 h-5" />
+            <span>تقارير الأداء والرواتب</span>
+          </button>
+          <button 
+            onClick={() => setIsArranging(!isArranging)}
+            className={`font-black px-6 py-4 rounded-2xl flex items-center justify-center gap-2.5 transition-all shadow-md active:scale-95 text-sm ${
+              isArranging ? 'bg-amber-505 bg-amber-500 text-white border-transparent' : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-50'
+            }`}
+          >
+            <SlidersHorizontal className="w-5 h-5 text-amber-500" />
+            <span>{isArranging ? 'حفظ ترتيب الهيكلة' : 'تخصيص الواجهة والترتيب'}</span>
+          </button>
+          <button 
+            onClick={() => { setView('form'); setSelectedConfigEmployee(null); }}
+            className="bg-[#0f172a] hover:bg-slate-800 text-white font-black px-6 py-4 rounded-2xl flex items-center justify-center gap-2.5 transition-all shadow-md active:scale-95 text-sm group"
+          >
+            <Plus className="w-5 h-5 group-hover:rotate-90 transition-transform duration-300" />
+            <span>اضافة بيانات موظف</span>
+          </button>
+        </div>
       </div>
 
+      {/* Proactive Iqama/ID expiry warnings list */}
+      {expiringEmployeesList.length > 0 && (
+        <motion.div 
+          initial={{ opacity: 0, y: -10 }} 
+          animate={{ opacity: 1, y: 0 }} 
+          className="mt-8 bg-amber-50 border border-amber-200 rounded-[2rem] p-6 shadow-sm flex items-start gap-4 relative overflow-hidden"
+        >
+          <div className="absolute top-0 left-0 w-32 h-32 bg-amber-500/5 rounded-full blur-2xl" />
+          <div className="w-12 h-12 bg-amber-500 text-slate-900 rounded-2xl flex items-center justify-center shrink-0 shadow-md">
+            <AlertTriangle className="w-6 h-6 animate-pulse" />
+          </div>
+          <div className="space-y-1">
+            <h3 className="text-base font-black text-slate-900">⚠️ تنبيه إداري نشط: وثائق رسمية تقترب من الانتهاء خلال 30 يوماً!</h3>
+            <p className="text-xs text-slate-600 font-bold">يقوم النظام تلقائياً بتذكير المدير والإدارة القانونية بالمكتب قبل 30 يوماً لبدء إجراءات تجديد هويات الموظفين المذكورين أدناه لتلافي غرامات النظام ودعم الاستقرار الوظيفي:</p>
+            
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mt-4 pt-4 border-t border-slate-200">
+              {expiringEmployeesList.map((emp: any) => (
+                <div key={emp.id} className="bg-white/80 border border-slate-100 p-3 rounded-xl flex items-center justify-between text-xs shadow-sm">
+                  <div className="flex items-center gap-2">
+                    <span className="w-2.5 h-2.5 rounded-full bg-rose-500 shrink-0" />
+                    <span className="font-extrabold text-slate-800 truncate max-w-[120px]">{emp.name}</span>
+                  </div>
+                  <span className="text-rose-600 font-extrabold shrink-0">متبقي {emp.daysLeft} يوماً ({emp.docType})</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </motion.div>
+      )}
+
       {/* Control Utility Toolbar */}
-      <div className="mt-8">
-        <div className="relative w-full max-w-2xl group">
+      <div className="mt-8 bg-white border border-slate-200 p-6 rounded-[2rem] shadow-sm flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4">
+        <div className="relative flex-1 group">
           <Search className="absolute right-5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within:text-blue-600 transition-colors" />
           <input 
             placeholder="البحث عن موظف (بالاسم، المسمى الوظيفي، رقم الهوية)..."
-            className="w-full bg-white border border-slate-200 rounded-2xl pr-12 pl-6 py-4 text-sm font-bold outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all shadow-sm"
+            className="w-full bg-slate-50 border border-slate-200 rounded-2xl pr-12 pl-6 py-4 text-sm font-bold outline-none focus:bg-white focus:border-blue-500 transition-all text-slate-900 placeholder:text-slate-400"
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
           />
+        </div>
+        <div className="flex flex-col sm:flex-row gap-3">
+          <div className="space-y-1.5 min-w-[200px]">
+            <select
+              value={selectedBranchFilter}
+              onChange={e => setSelectedBranchFilter(e.target.value)}
+              className="w-full bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-2xl px-4 py-4 text-xs font-black text-slate-700 transition-all outline-none"
+            >
+              <option value="الكل">بطبيعة الفرع: الكل</option>
+              {uniqueBranches.filter(b => b !== 'الكل').map(b => (
+                <option key={b} value={b}>{b}</option>
+              ))}
+            </select>
+          </div>
+          <div className="space-y-1.5 min-w-[200px]">
+            <select
+              value={selectedJobTitleFilter}
+              onChange={e => setSelectedJobTitleFilter(e.target.value)}
+              className="w-full bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-2xl px-4 py-4 text-xs font-black text-slate-700 transition-all outline-none"
+            >
+              <option value="الكل">بالمسمى الوظيفي: الكل</option>
+              {uniqueJobTitles.filter(j => j !== 'الكل').map(jt => (
+                <option key={jt} value={jt}>{jt}</option>
+              ))}
+            </select>
+          </div>
         </div>
       </div>
 
@@ -476,7 +772,7 @@ export default function EmployeesData({ tasks }: { cases: Case[], tasks: Task[],
              <h2 className="text-xl font-black text-slate-900">جاري تحميل سجلات الموظفين</h2>
           </div>
         </div>
-      ) : filtered.length === 0 ? (
+      ) : filteredAndSortedList.length === 0 ? (
         <motion.div 
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -496,147 +792,301 @@ export default function EmployeesData({ tasks }: { cases: Case[], tasks: Task[],
         </motion.div>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8 mt-10">
-          {filtered.map(emp => (
-            <motion.div 
-              key={emp.id}
-              layout
-              initial={{ opacity: 0, y: 15 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3 }}
-              className="bg-white border border-slate-200 rounded-[2.5rem] p-8 shadow-sm flex flex-col relative group hover:border-[#0f172a]/20 transition-all"
-            >
-              <div className="flex items-start justify-between mb-8">
-                <div className="flex items-center gap-4">
-                  <div className="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center text-[#0f172a] font-black text-xl border border-slate-100 shadow-sm overflow-hidden">
-                    {emp.avatarUrl ? (
-                      <img src={emp.avatarUrl} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
-                    ) : (
-                      <span>{emp.name?.charAt(0)}</span>
-                    )}
+          {filteredAndSortedList.map((emp, idx) => {
+            const cardWidthClass = cardSizes[emp.id] === 'large' ? 'col-span-1 lg:col-span-3' : cardSizes[emp.id] === 'medium' ? 'col-span-1 lg:col-span-2' : 'col-span-1';
+            return (
+              <motion.div 
+                key={emp.id}
+                layout
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3 }}
+                className={`bg-white border border-slate-200 rounded-[2.5rem] p-8 shadow-sm flex flex-col relative group hover:border-[#0f172a]/20 transition-all ${cardWidthClass}`}
+              >
+                
+                {/* Arrangement Toolbar element when customization is active */}
+                {isArranging && (
+                  <div className="absolute top-4 left-4 z-40 flex items-center gap-1.5 bg-slate-900 text-white border border-slate-800 p-2 rounded-2xl shadow-xl" onClick={e => e.stopPropagation()}>
+                    <button 
+                      onClick={() => moveEmployeeCard(idx, 'prev')} 
+                      disabled={idx === 0}
+                      className="p-1.5 bg-slate-800 hover:bg-slate-700 text-[10px] font-black rounded-lg disabled:opacity-30 active:scale-90"
+                      title="تحريك للخلف"
+                    >
+                      ⬅️
+                    </button>
+                    <button 
+                      onClick={() => moveEmployeeCard(idx, 'next')} 
+                      disabled={idx === filteredAndSortedList.length - 1}
+                      className="p-1.5 bg-slate-800 hover:bg-slate-700 text-[10px] font-black rounded-lg disabled:opacity-30 active:scale-90"
+                      title="تحريك للأمام"
+                    >
+                      ➡️
+                    </button>
+                    <div className="h-4 w-[1px] bg-slate-700 mx-1" />
+                    <button 
+                      onClick={() => handleResizeCard(emp.id, 'small')} 
+                      className={`px-2.5 py-1 text-[10px] font-black rounded-lg transition-colors ${(!cardSizes[emp.id] || cardSizes[emp.id] === 'small') ? 'bg-amber-500 text-slate-900' : 'bg-slate-800 text-slate-300'}`}
+                    >
+                      صغير
+                    </button>
+                    <button 
+                      onClick={() => handleResizeCard(emp.id, 'medium')} 
+                      className={`px-2.5 py-1 text-[10px] font-black rounded-lg transition-colors ${(cardSizes[emp.id] === 'medium') ? 'bg-amber-500 text-slate-900' : 'bg-slate-800 text-slate-300'}`}
+                    >
+                      متوسط
+                    </button>
+                    <button 
+                      onClick={() => handleResizeCard(emp.id, 'large')} 
+                      className={`px-2.5 py-1 text-[10px] font-black rounded-lg transition-colors ${(cardSizes[emp.id] === 'large') ? 'bg-amber-500 text-slate-900' : 'bg-slate-800 text-slate-300'}`}
+                    >
+                      عريض
+                    </button>
                   </div>
-                  <div>
-                    <h3 className="font-black text-lg text-slate-900 tracking-tight">{emp.name}</h3>
-                    <div className="flex items-center gap-2 mt-1">
-                      <Briefcase className="w-3.5 h-3.5 text-slate-500" />
-                      <p className="text-slate-500 font-bold text-[11px] uppercase">{emp.jobTitle}</p>
+                )}
+
+                <div className="flex items-start justify-between mb-8">
+                  <div className="flex items-center gap-4">
+                    <div className="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center text-[#0f172a] font-black text-xl border border-slate-100 shadow-sm overflow-hidden">
+                      {emp.avatarUrl ? (
+                        <img src={emp.avatarUrl} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                      ) : (
+                        <span>{emp.name?.charAt(0)}</span>
+                      )}
+                    </div>
+                    <div>
+                      <h3 className="font-black text-lg text-slate-900 tracking-tight">{emp.name}</h3>
+                      <div className="flex items-center gap-2 mt-1">
+                        <Briefcase className="w-3.5 h-3.5 text-slate-500" />
+                        <p className="text-slate-500 font-bold text-[11px] uppercase">{emp.jobTitle}</p>
+                      </div>
                     </div>
                   </div>
+                  <div className={`px-4 py-2 rounded-xl text-[10px] font-black tracking-wide shadow-sm flex items-center justify-center shrink-0 ${
+                    emp.status === 'نشط' ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'
+                  }`}>
+                    {emp.status}
+                  </div>
                 </div>
-                <div className={`px-4 py-2 rounded-xl text-[10px] font-black tracking-wide shadow-sm flex items-center justify-center ${
-                  emp.status === 'نشط' ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'
-                }`}>
-                  {emp.status}
-                </div>
-              </div>
 
-              <div className="grid grid-cols-2 gap-y-6 gap-x-4 border-t border-slate-100 pt-6">
-                <div className="space-y-1.5 flex flex-col">
-                  <div className="flex items-center gap-1.5 text-[10px] font-black text-slate-400">
-                    <CheckCircle2 className="w-3.5 h-3.5" />
-                    رقم الهوية
+                <div className="grid grid-cols-2 gap-y-6 gap-x-4 border-t border-slate-100 pt-6">
+                  <div className="space-y-1.5 flex flex-col">
+                    <div className="flex items-center gap-1.5 text-[10px] font-black text-slate-400">
+                      <CheckCircle2 className="w-3.5 h-3.5" />
+                      رقم الهوية
+                    </div>
+                    <p className="text-slate-900 font-mono font-black text-sm">{emp.nationalId || '---'}</p>
                   </div>
-                  <p className="text-slate-900 font-mono font-black text-sm">{emp.nationalId || '---'}</p>
-                </div>
-                <div className="space-y-1.5 flex flex-col">
-                  <div className="flex items-center gap-1.5 text-[10px] font-black text-slate-400">
-                    <Building2 className="w-3.5 h-3.5" />
-                    الجنسية
+                  <div className="space-y-1.5 flex flex-col">
+                    <div className="flex items-center gap-1.5 text-[10px] font-black text-slate-400">
+                      <CalendarDays className="w-3.5 h-3.5" />
+                      انتهاء الوثيقة
+                    </div>
+                    {emp.nationalIdExpiry ? (
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-slate-900 font-mono font-black text-sm">{emp.nationalIdExpiry}</span>
+                        {(() => {
+                          const status = getExpiryStatus(emp.nationalIdExpiry);
+                          if (status?.isExpiringSoon) {
+                            return <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" title={`ينتهي خلال ${status.daysLeft} يوماً!`} />;
+                          } else if (status?.isExpired) {
+                            return <span className="w-2 h-2 rounded-full bg-rose-600 animate-pulse" title="منتهية!" />;
+                          }
+                          return <span className="w-2 h-2 rounded-full bg-emerald-500" title="صالحة وفعالة" />;
+                        })()}
+                      </div>
+                    ) : (
+                      <p className="text-slate-400 font-bold text-sm">غير محدد</p>
+                    )}
                   </div>
-                  <p className="text-slate-900 font-black text-sm">{emp.nationality || '---'}</p>
-                </div>
-                <div className="space-y-1.5 flex flex-col">
-                  <div className="flex items-center gap-1.5 text-[10px] font-black text-slate-400">
-                    <Calendar className="w-3.5 h-3.5" />
-                    بدء العمل
+                  <div className="space-y-1.5 flex flex-col">
+                    <div className="flex items-center gap-1.5 text-[10px] font-black text-slate-400">
+                      <Building2 className="w-3.5 h-3.5" />
+                      الجنسية
+                    </div>
+                    <p className="text-slate-900 font-black text-sm">{emp.nationality || '---'}</p>
                   </div>
-                  <p className="text-slate-900 font-mono font-black text-sm">{emp.startDate || '---'}</p>
-                </div>
-                <div className="space-y-1.5 flex flex-col overflow-hidden">
-                  <div className="flex items-center gap-1.5 text-[10px] font-black text-slate-400">
-                    <GraduationCap className="w-3.5 h-3.5" />
-                    المؤهل
+                  <div className="space-y-1.5 flex flex-col">
+                    <div className="flex items-center gap-1.5 text-[10px] font-black text-slate-400">
+                      <Calendar className="w-3.5 h-3.5" />
+                      بدء العمل
+                    </div>
+                    <p className="text-slate-900 font-mono font-black text-sm">{emp.startDate || '---'}</p>
                   </div>
-                  <p className="text-slate-900 font-black text-sm truncate">{emp.qualification || '---'}</p>
-                </div>
-                <div className="space-y-1.5 flex flex-col">
-                  <div className="flex items-center gap-1.5 text-[10px] font-black text-slate-400">
-                    <AtSign className="w-3.5 h-3.5" />
-                    تواصل
+                  <div className="space-y-1.5 flex flex-col overflow-hidden">
+                    <div className="flex items-center gap-1.5 text-[10px] font-black text-slate-400">
+                      <GraduationCap className="w-3.5 h-3.5" />
+                      المؤهل
+                    </div>
+                    <p className="text-slate-900 font-black text-sm truncate">{emp.qualification || '---'}</p>
                   </div>
-                  <p className="text-slate-900 font-mono font-black text-[13px] truncate">{emp.phone || emp.email || '---'}</p>
-                </div>
-                <div className="space-y-1.5 flex flex-col">
-                  <div className="flex items-center gap-1.5 text-[10px] font-black text-slate-400">
-                    <Users className="w-3.5 h-3.5" />
-                    المدير المباشر
+                  <div className="space-y-1.5 flex flex-col">
+                    <div className="flex items-center gap-1.5 text-[10px] font-black text-slate-400">
+                      <AtSign className="w-3.5 h-3.5" />
+                      تواصل
+                    </div>
+                    <p className="text-slate-900 font-mono font-black text-[13px] truncate">{emp.phone || emp.email || '---'}</p>
                   </div>
-                  <p className="text-slate-900 font-black text-sm truncate">{emp.manager || '---'}</p>
+                  <div className="space-y-1.5 flex flex-col">
+                    <div className="flex items-center gap-1.5 text-[10px] font-black text-slate-400">
+                      <Users className="w-3.5 h-3.5" />
+                      المدير المباشر
+                    </div>
+                    <p className="text-slate-900 font-black text-sm truncate">{emp.manager || '---'}</p>
+                  </div>
                 </div>
-              </div>
 
-              <div className="mt-8 pt-6 border-t border-slate-100 flex items-center justify-between">
-                <div className="flex gap-2.5">
-                   <button 
-                     onClick={() => { setSelectedConfigEmployee(emp); setView('form'); }}
-                     className="px-6 py-3 bg-[#0f172a] text-white rounded-xl font-black text-xs hover:bg-slate-800 transition-all shadow-md"
-                   >
-                     تحرير بيانات الموظف
-                   </button>
-                   <button 
-                     onClick={() => handleDeleteEmployee(emp.id)}
-                     className="w-10 h-10 bg-white text-rose-500 border border-slate-200 rounded-xl flex items-center justify-center hover:bg-rose-50 hover:border-rose-200 transition-colors shadow-sm"
-                   >
-                     <Trash2 className="w-4 h-4" />
-                   </button>
+                <div className="mt-8 pt-6 border-t border-slate-100 flex items-center justify-between">
+                  <div className="flex gap-2.5">
+                     <button 
+                       onClick={() => { setSelectedConfigEmployee(emp); setView('form'); }}
+                       className="px-6 py-3 bg-[#0f172a] text-white rounded-xl font-black text-xs hover:bg-slate-800 transition-all shadow-md"
+                     >
+                       تحرير بيانات الموظف
+                     </button>
+                     <button 
+                       onClick={() => handleDeleteEmployee(emp.id)}
+                       className="w-10 h-10 bg-white text-rose-500 border border-slate-200 rounded-xl flex items-center justify-center hover:bg-rose-50 hover:border-rose-200 transition-colors shadow-sm"
+                     >
+                       <Trash2 className="w-4 h-4" />
+                     </button>
+                  </div>
+                  <button 
+                    onClick={() => {
+                       const win = window.open('', '_blank');
+                       if (!win) return;
+                       const netPay = (emp.baseSalary || 0) + (emp.allowances || 0) - (emp.deductions || 0);
+                       win.document.write(`
+                          <html dir="rtl" lang="ar">
+                            <head>
+                               <title>مسير الرواتب - ${emp.name}</title>
+                               <style>
+                                 body { font-family: system-ui, -apple-system, sans-serif; padding: 40px; background: #fff; color: #020617; }
+                                 h1 { font-size: 24px; font-weight: 900; margin-bottom: 5px; color: #0f172a; }
+                                 h2 { font-size: 14px; font-weight: 600; color: #64748b; margin-bottom: 40px; }
+                                 .row { display: flex; justify-content: space-between; border-bottom: 1px solid #f1f5f9; padding: 16px 0; }
+                                 .label { font-size: 14px; font-weight: 800; color: #475569; }
+                                 .val { font-size: 16px; font-weight: 900; font-family: monospace; }
+                                 .total { background: #f8fafc; padding: 20px; border-radius: 16px; font-size: 20px; font-weight: 900; color: #10b981; margin-top: 30px; display: flex; justify-content: space-between;}
+                                 @media print { body { padding: 0; } }
+                               </style>
+                            </head>
+                            <body>
+                               <h1>العدالة القضائية - مسير الرواتب الرسمي</h1>
+                               <h2>كشف الراتب الشهري للموظف: ${emp.name}</h2>
+                               <div class="row"><span class="label">تاريخ المباشرة</span><span class="val">${emp.startDate || '---'}</span></div>
+                               <div class="row"><span class="label">المسمى الوظيفي</span><span class="val">${emp.jobTitle}</span></div>
+                               <div style="margin-top:40px;">
+                                  <div class="row"><span class="label">الراتب الأساسي</span><span class="val">${emp.baseSalary || 0} ر.س</span></div>
+                                  <div class="row"><span class="label">البدلات (سكن، نقل، أخرى)</span><span class="val">+${emp.allowances || 0} ر.س</span></div>
+                                  <div class="row"><span class="label">الخصومات / التأمينات الاجتماعية</span><span style="color:#e11d48;" class="val">-${emp.deductions || 0} ر.س</span></div>
+                               </div>
+                               <div class="total">
+                                  <span>صافي الراتب المستحق</span>
+                                  <span>${netPay} ر.س</span>
+                               </div>
+                               <script>window.print();</script>
+                            </body>
+                          </html>
+                       `);
+                       win.document.close();
+                    }}
+                    className="w-10 h-10 bg-white border border-slate-200 text-slate-600 rounded-xl flex items-center justify-center hover:bg-slate-50 transition-all shadow-sm"
+                    title="مسير الراتب"
+                  >
+                    <FileText className="w-4 h-4" />
+                  </button>
                 </div>
+              </motion.div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Monthly Report Wizard Dialog overlay/modal */}
+      {showReportWizard && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-white rounded-[2.5rem] border border-slate-200 shadow-2xl w-full max-w-4xl p-8 max-h-[90vh] overflow-y-auto"
+          >
+            <div className="flex items-start justify-between pb-6 border-b border-slate-100">
+              <div className="space-y-1 text-right">
+                <h3 className="text-xl font-black text-slate-900">📊 منشئ تقارير الأداء والأجور الشهري</h3>
+                <p className="text-xs text-slate-400 font-bold">تصدير الفواتير ومستندات الأداء لأعضاء المكتب والمحامين بصيغ ورقية أو رقمية</p>
+              </div>
+              <button 
+                onClick={() => setShowReportWizard(false)} 
+                className="p-3 bg-slate-50 hover:bg-slate-100 rounded-xl text-slate-400 hover:text-slate-800 transition-colors cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="my-6 grid grid-cols-1 md:grid-cols-2 gap-6 bg-slate-50 p-6 rounded-2xl border border-slate-100">
+              <div className="space-y-1.5 text-right">
+                <label className="text-xs font-black text-slate-600 block">حدد شهر التصدير</label>
+                <input 
+                  type="month"
+                  value={reportMonth}
+                  onChange={e => setReportMonth(e.target.value)}
+                  className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold focus:border-emerald-500 transition-all text-slate-800 outline-none"
+                />
+              </div>
+              <div className="flex items-end justify-end gap-3 pt-6 sm:pt-0">
                 <button 
-                  onClick={() => {
-                     const win = window.open('', '_blank');
-                     if (!win) return;
-                     const netPay = (emp.baseSalary || 0) + (emp.allowances || 0) - (emp.deductions || 0);
-                     win.document.write(`
-                        <html dir="rtl" lang="ar">
-                          <head>
-                             <title>مسير الرواتب - ${emp.name}</title>
-                             <style>
-                               body { font-family: system-ui, -apple-system, sans-serif; padding: 40px; background: #fff; color: #020617; }
-                               h1 { font-size: 24px; font-weight: 900; margin-bottom: 5px; color: #0f172a; }
-                               h2 { font-size: 14px; font-weight: 600; color: #64748b; margin-bottom: 40px; }
-                               .row { display: flex; justify-content: space-between; border-bottom: 1px solid #f1f5f9; padding: 16px 0; }
-                               .label { font-size: 14px; font-weight: 800; color: #475569; }
-                               .val { font-size: 16px; font-weight: 900; font-family: monospace; }
-                               .total { background: #f8fafc; padding: 20px; border-radius: 16px; font-size: 20px; font-weight: 900; color: #10b981; margin-top: 30px; display: flex; justify-content: space-between;}
-                               @media print { body { padding: 0; } }
-                             </style>
-                          </head>
-                          <body>
-                             <h1>العدالة القضائية - مسير الرواتب الرسمي</h1>
-                             <h2>كشف الراتب الشهري للموظف: ${emp.name}</h2>
-                             <div class="row"><span class="label">تاريخ المباشرة</span><span class="val">${emp.startDate || '---'}</span></div>
-                             <div class="row"><span class="label">المسمى الوظيفي</span><span class="val">${emp.jobTitle}</span></div>
-                             <div style="margin-top:40px;">
-                                <div class="row"><span class="label">الراتب الأساسي</span><span class="val">${emp.baseSalary || 0} ر.س</span></div>
-                                <div class="row"><span class="label">البدلات (سكن، نقل، أخرى)</span><span class="val">+${emp.allowances || 0} ر.س</span></div>
-                                <div class="row"><span class="label">الخصومات / التأمينات الاجتماعية</span><span style="color:#e11d48;" class="val">-${emp.deductions || 0} ر.س</span></div>
-                             </div>
-                             <div class="total">
-                                <span>صافي الراتب المستحق</span>
-                                <span>${netPay} ر.س</span>
-                             </div>
-                             <script>window.print();</script>
-                          </body>
-                        </html>
-                     `);
-                     win.document.close();
-                  }}
-                  className="w-10 h-10 bg-white border border-slate-200 text-slate-600 rounded-xl flex items-center justify-center hover:bg-slate-50 transition-all shadow-sm"
-                  title="مسير الراتب"
+                  onClick={handleExportCSV}
+                  className="px-6 py-3 bg-white text-slate-700 hover:bg-slate-50 border border-slate-200 rounded-xl text-xs font-black transition-all flex items-center gap-2 cursor-pointer"
+                >
+                  <Download className="w-4 h-4 text-[#0f172a]" />
+                  تصدير كملف Excel (CSV)
+                </button>
+                <button 
+                  onClick={handleExportPDF}
+                  className="px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-black transition-all flex items-center gap-2 shadow-md shadow-emerald-100 cursor-pointer"
                 >
                   <FileText className="w-4 h-4" />
+                  طباعة وتصدير PDF الملون
                 </button>
               </div>
-            </motion.div>
-          ))}
+            </div>
+
+            {/* Editable performance hour list */}
+            <div className="space-y-4">
+              <h4 className="text-xs font-black text-slate-900 text-right">مراجعة وتعديل ساعات عمل الموظفين لشهر ({reportMonth}):</h4>
+              <div className="border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
+                <table className="w-full text-right text-xs">
+                  <thead className="bg-[#f8fafc] text-[#475569] border-b border-slate-100">
+                    <tr>
+                      <th className="p-4 font-black text-right">اسم الموظف كلياً</th>
+                      <th className="p-4 font-black text-right">المسمى الوظيفي</th>
+                      <th className="p-4 font-black text-center">المهام القضائية المكتملة</th>
+                      <th className="p-4 font-black text-right">خصّص ساعات العمل الكلية</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {reportData.map(row => (
+                      <tr key={row.id} className="hover:bg-slate-50/50">
+                        <td className="p-4 font-extrabold text-[#0f172a]">{row.name}</td>
+                        <td className="p-4 font-bold text-slate-500">{row.jobTitle}</td>
+                        <td className="p-4 text-center font-black text-emerald-600 font-mono">{row.completedTasks} مهمة مكتملة</td>
+                        <td className="p-4">
+                          <input 
+                            type="number"
+                            min={0}
+                            value={row.hours}
+                            onChange={e => setReportHours({ ...reportHours, [row.id]: Number(e.target.value) || 0 })}
+                            className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-black font-mono w-24 text-center outline-none focus:bg-white focus:border-emerald-600"
+                          />
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </motion.div>
         </div>
       )}
     </div>

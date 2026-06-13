@@ -179,6 +179,7 @@ interface EmployeePortalProps {
   tasks: Task[];
   hearings?: any[];
   currentUser?: any;
+  selectedRole?: string;
   onUpdateState: (type: string, data: any) => void;
 }
 
@@ -188,10 +189,11 @@ export default function EmployeePortal({
   tasks = [],
   hearings = [], 
   currentUser,
+  selectedRole,
   onUpdateState 
 }: EmployeePortalProps) {
   
-  const isAdmin = currentUser?.role === 'admin' || currentUser?.role === 'lawyer';
+  const isAdmin = selectedRole === 'admin' || selectedRole === 'lawyer' || currentUser?.role === 'admin' || currentUser?.role === 'lawyer';
   
   // Admin Config Panel States
   const [employees, setEmployees] = useState<Employee[]>([]);
@@ -211,10 +213,33 @@ export default function EmployeePortal({
   // Fetch employees list for admin
   useEffect(() => {
     if (!isAdmin) return;
-    const q = query(collection(db, 'employees'), orderBy('name', 'asc'));
+    
+    // 1. Immediately load from shared local backup to stay fully synchronized across tabs
+    const backup = localStorage.getItem('employees_backup');
+    if (backup) {
+      try {
+        const parsed = JSON.parse(backup);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setEmployees(parsed);
+        }
+      } catch (e) {
+        console.error("Error reading shared backup:", e);
+      }
+    }
+
+    // 2. Continuous real-time stream from Firestore database (Query without orderBy to avoid index failures, sort in-memory)
+    const q = query(collection(db, 'employees'));
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const emps = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Employee));
-      setEmployees(emps);
+      emps.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+      if (emps.length > 0) {
+        setEmployees(emps);
+        localStorage.setItem('employees_backup', JSON.stringify(emps));
+      } else if (!backup) {
+        setEmployees([]);
+      }
+    }, (error) => {
+      console.error("Error loading live portal employees stream:", error);
     });
     return () => unsubscribe();
   }, [isAdmin]);
@@ -321,6 +346,11 @@ export default function EmployeePortal({
   const [loginError, setLoginError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [activePortalTab, setActivePortalTab] = useState('dashboard');
+  
+  // ---------------- NEW INTERACTIVE CALENDAR STATES ----------------
+  const [calendarYear, setCalendarYear] = useState(() => new Date().getFullYear());
+  const [calendarMonth, setCalendarMonth] = useState(() => new Date().getMonth());
+  const [selectedCalendarDate, setSelectedCalendarDate] = useState<string | null>(null);
   
   // Scraper Simulation states
   const [isNajizSyncing, setIsNajizSyncing] = useState(false);
@@ -757,38 +787,62 @@ export default function EmployeePortal({
                 animate={{ opacity: 1, y: 0 }}
                 className="space-y-6"
               >
-                {employees.filter(e => e.username).length > 0 ? (
+                {employees.length > 0 ? (
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {employees.filter(e => e.username).map(e => (
-                      <div key={e.id} className="bg-white border border-slate-200 p-6 rounded-[2.5rem] shadow-sm flex flex-col gap-4 relative overflow-hidden group hover:border-blue-300 transition-all">
-                        <div className="absolute top-0 right-0 w-1.5 h-full bg-blue-600/10" />
-                        <div className="flex justify-between items-start">
-                           <div>
-                             <h4 className="font-black text-slate-900 text-lg mb-1">{e.name}</h4>
-                             <p className="text-[10px] text-slate-400 font-bold">{e.jobTitle}</p>
-                           </div>
-                           <div className="w-10 h-10 bg-slate-50 border border-slate-100 rounded-full flex items-center justify-center text-slate-400">
-                             <Users className="w-4 h-4" />
-                           </div>
+                    {employees.map(e => {
+                      const hasAccount = !!e.username;
+                      return (
+                        <div key={e.id} className="bg-white border border-slate-200 p-6 rounded-[2.5rem] shadow-sm flex flex-col gap-4 relative overflow-hidden group hover:border-blue-300 hover:shadow-md transition-all duration-300">
+                          <div className={`absolute top-0 right-0 w-1.5 h-full ${hasAccount ? 'bg-emerald-500' : 'bg-amber-400'}`} />
+                          <div className="flex justify-between items-start">
+                             <div>
+                               <h4 className="font-black text-slate-900 text-lg mb-1 flex items-center flex-wrap gap-2">
+                                 {e.name}
+                                 {hasAccount ? (
+                                   <span className="text-[9px] font-black bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-full border border-emerald-200">الدخول مفعّل ✅</span>
+                                 ) : (
+                                   <span className="text-[9px] font-black bg-amber-50 text-amber-700 px-2 py-0.5 rounded-full border border-amber-200">بانتظار التهيئة ⚠️</span>
+                                 )}
+                               </h4>
+                               <p className="text-[10px] text-slate-400 font-bold">{e.jobTitle || 'محامي / مستشار بالتمرين'}</p>
+                             </div>
+                             <div className={`w-10 h-10 rounded-full flex items-center justify-center border ${hasAccount ? 'bg-emerald-50 border-emerald-100 text-emerald-600' : 'bg-amber-50 border-amber-100 text-amber-600'}`}>
+                               <Users className="w-4 h-4" />
+                             </div>
+                          </div>
+                          
+                          <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100 space-y-2 mt-auto">
+                            <div className="flex justify-between text-[10px] font-bold">
+                              <span className="text-slate-400">اسم المستخدم:</span>
+                              {hasAccount ? (
+                                <span className="text-blue-600 font-mono text-left" dir="ltr">{e.username}</span>
+                              ) : (
+                                <span className="text-amber-600 italic">مؤقت: emp_{e.id.toLowerCase()}</span>
+                              )}
+                            </div>
+                            <div className="flex justify-between text-[10px] font-bold">
+                              <span className="text-slate-400">أقسام البوابة الفعّالة:</span>
+                              <span className="text-emerald-600">{(e.sidebarConfig && e.sidebarConfig.length) || 0} أقسام مفوضة</span>
+                            </div>
+                            <div className="flex justify-between text-[10px] font-bold">
+                              <span className="text-slate-400">رقم الهاتف الجوال:</span>
+                              <span className="text-slate-700 font-mono">{e.phone || '---'}</span>
+                            </div>
+                          </div>
+
+                          <button 
+                            onClick={() => setSelectedConfigEmployee(e)}
+                            className={`w-full py-3.5 rounded-xl font-black text-xs transition-all cursor-pointer shadow-sm active:scale-[0.99] ${
+                              hasAccount 
+                                ? 'bg-slate-100 hover:bg-blue-600 hover:text-white text-slate-700' 
+                                : 'bg-blue-50 hover:bg-blue-600 hover:text-white text-blue-700 border border-blue-100'
+                            }`}
+                          >
+                            {hasAccount ? 'تعديل الصلاحيات والمزايا ⚖️' : 'تهيئة البوابة وإصدار الصلاحيات 🔑'}
+                          </button>
                         </div>
-                        <div className="bg-slate-50 rounded-xl p-3 border border-slate-100 space-y-2 mt-auto">
-                           <div className="flex justify-between text-[10px] font-bold">
-                             <span className="text-slate-400">اسم المستخدم:</span>
-                             <span className="text-blue-600 font-mono text-left" dir="ltr">{e.username}</span>
-                           </div>
-                           <div className="flex justify-between text-[10px] font-bold">
-                             <span className="text-slate-400">عدد الأقسام المسموحة:</span>
-                             <span className="text-emerald-600">{e.sidebarConfig?.length || 0} أقسام</span>
-                           </div>
-                        </div>
-                        <button 
-                          onClick={() => setSelectedConfigEmployee(e)}
-                          className="w-full bg-slate-100 hover:bg-blue-600 hover:text-white text-slate-700 py-3 rounded-xl font-black text-xs transition-all"
-                        >
-                          تعديل الصلاحيات والبوابة
-                        </button>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 ) : (
                   <div className="py-32 bg-white border-2 border-dashed border-slate-200 rounded-[3rem] flex flex-col items-center justify-center text-center gap-8 shadow-sm">
@@ -796,8 +850,8 @@ export default function EmployeePortal({
                       <Users className="w-14 h-14" />
                     </div>
                     <div>
-                      <h3 className="text-2xl font-black text-slate-900">جاهز للبدء في التهيئة</h3>
-                      <p className="text-slate-500 font-bold max-w-md mt-2">حدد موظفاً من القائمة أعلاه للوصول إلى لوحة التحكم الفردية، ضبط الصلاحيات، وإصدار مفاتيح الدخول الأمنة.</p>
+                      <h3 className="text-2xl font-black text-slate-900">لا يوجد موظفين مسجلين في النظام</h3>
+                      <p className="text-slate-500 font-bold max-w-sm mt-2 mx-auto">عند إضافة كادر وظيفي جديد من شاشة "شؤون الموظفين"، سيتم عرضهم هنا تلقائياً لتهيئتهم وضبط بواباتهم الخاصة.</p>
                     </div>
                   </div>
                 )}
@@ -1624,53 +1678,200 @@ export default function EmployeePortal({
                   </div>
 
 
-            {/* Interactive Mini Calendar for Assigned Hearings */}
+            {/* Interactive Professional Monthly Calendar Integration Widget */}
             <div className="bg-white border border-slate-200 rounded-[2.5rem] p-8 shadow-sm">
-               <h3 className="font-black text-slate-900 text-lg flex items-center gap-2 mb-6">
-                 <Calendar className="w-5 h-5 text-indigo-500" />
-                 تقويم الجلسات القضائية الخاصة بي (مزامنة ناجز)
-               </h3>
-               {(!loggedInEmployee?.assignedCases || loggedInEmployee.assignedCases.length === 0) ? (
-                 <div className="text-center text-slate-400 font-bold text-sm py-8 bg-slate-50 border border-slate-100 border-dashed rounded-2xl">
-                    لا توجد قضايا مسندة لك حتى الآن.
-                 </div>
-               ) : (
-                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                   {hearings?.filter(h => loggedInEmployee.assignedCases?.includes(h.caseId || h.caseNumber)).length === 0 ? (
-                      <div className="col-span-full text-center text-slate-400 font-bold text-sm py-8 bg-slate-50 border border-slate-100 border-dashed rounded-2xl">
-                        ليس لديك أي جلسات قادمة مسجلة في القضايا المسندة إليك.
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8 pb-6 border-b border-slate-100">
+                <div className="space-y-1 text-right">
+                  <h3 className="font-black text-slate-900 text-lg flex items-center gap-2">
+                    <Calendar className="w-5 h-5 text-indigo-600" />
+                    التقويم القضائي الذكي والجدولة المدمجة
+                  </h3>
+                  <p className="text-xs text-slate-400 font-bold">باقة ذكية تدمج جلسات المحاكم المسندة إليك مع الإجازات (المعتمدة والمعلقة) والمهام</p>
+                </div>
+                
+                {/* Year/Month switcher */}
+                <div className="flex items-center gap-2" dir="ltr">
+                  <button 
+                    onClick={() => {
+                      if (calendarMonth === 0) {
+                        setCalendarMonth(11);
+                        setCalendarYear(calendarYear - 1);
+                      } else {
+                        setCalendarMonth(calendarMonth - 1);
+                      }
+                    }}
+                    className="p-2.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 rounded-xl transition-all font-black text-xs cursor-pointer"
+                  >
+                    السابق ◀
+                  </button>
+                  <span className="font-black text-sm text-slate-800 px-4 min-w-[140px] text-center">
+                    {new Date(calendarYear, calendarMonth).toLocaleDateString('ar-SA', { month: 'long', year: 'numeric' })}
+                  </span>
+                  <button 
+                    onClick={() => {
+                      if (calendarMonth === 11) {
+                        setCalendarMonth(0);
+                        setCalendarYear(calendarYear + 1);
+                      } else {
+                        setCalendarMonth(calendarMonth + 1);
+                      }
+                    }}
+                    className="p-2.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 rounded-xl transition-all font-black text-xs cursor-pointer"
+                  >
+                    ▶ التالي
+                  </button>
+                </div>
+              </div>
+
+              {/* Grid Header Month Structure */}
+              {(() => {
+                const daysInMonth = new Date(calendarYear, calendarMonth + 1, 0).getDate();
+                const firstDayIndex = new Date(calendarYear, calendarMonth, 1).getDay(); // Sunday=0, Monday=1, ...
+                
+                const weekdayNames = ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
+                const cells = [];
+                
+                // Empty padding cells for start of month
+                for (let i = 0; i < firstDayIndex; i++) {
+                  cells.push(<div key={`empty-${i}`} className="min-h-[110px] bg-slate-50/20 border border-slate-100 rounded-2xl" />);
+                }
+                
+                // Days list
+                for (let day = 1; day <= daysInMonth; day++) {
+                  const dateStr = `${calendarYear}-${String(calendarMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                  
+                  // 1. Filtrate hearings for logged-in employee matching this date query
+                  const dayHearings = (hearings || []).filter(h => {
+                    const isCaseAssigned = loggedInEmployee?.assignedCases?.includes(h.caseId || h.caseNumber);
+                    return isCaseAssigned && h.date === dateStr;
+                  });
+                  
+                  // 2. Filtrate approved/pending leaves matching this date query
+                  const dayLeaves = (leaveRequests || []).filter(r => {
+                    return r.employeeId === loggedInEmployee?.id && dateStr >= r.startDate && dateStr <= r.endDate;
+                  });
+                  
+                  // 3. Filtrate tasks due on this date query
+                  const dayTasks = (myTasks || []).filter(t => t.dueDate === dateStr);
+                  
+                  const hasActivity = dayHearings.length > 0 || dayLeaves.length > 0 || dayTasks.length > 0;
+                  const isTodayStr = new Date().toISOString().split('T')[0] === dateStr;
+                  
+                  cells.push(
+                    <div 
+                      key={`day-${day}`} 
+                      onClick={() => {
+                        if (hasActivity) setSelectedCalendarDate(selectedCalendarDate === dateStr ? null : dateStr);
+                      }}
+                      className={`min-h-[115px] p-2.5 border rounded-[1.5rem] flex flex-col justify-between transition-all relative group cursor-pointer ${
+                        isTodayStr 
+                          ? 'bg-indigo-50/40 border-indigo-300 ring-2 ring-indigo-500/20 shadow-md shadow-indigo-55' 
+                          : hasActivity 
+                            ? 'bg-white border-slate-200 hover:border-indigo-400 hover:shadow-md' 
+                            : 'bg-white border-slate-100 hover:bg-slate-50/50'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className={`text-[11px] font-black w-6 h-6 rounded-full flex items-center justify-center ${isTodayStr ? 'bg-indigo-600 text-white font-black' : 'text-slate-500'}`}>
+                          {day}
+                        </span>
+                        
+                        {/* Summary Badges counting activities */}
+                        <div className="flex items-center gap-1">
+                          {dayHearings.length > 0 && <span className="w-1.5 h-1.5 bg-rose-500 rounded-full animate-pulse" title="جلسات قضائية" />}
+                          {dayLeaves.some(l => l.status === 'approved') && <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full" title="إجازة معتمدة" />}
+                          {dayLeaves.some(l => l.status === 'pending') && <span className="w-1.5 h-1.5 bg-amber-500 rounded-full" title="طلب إجازة معلق" />}
+                          {dayTasks.length > 0 && <span className="w-1.5 h-1.5 bg-sky-500 rounded-full" title="تسليم مهام" />}
+                        </div>
                       </div>
-                   ) : (
-                     hearings?.filter(h => loggedInEmployee.assignedCases?.includes(h.caseId || h.caseNumber))
-                     .sort((a,b) => new Date(a.date).getTime() - new Date(b.date).getTime())
-                     .map((h, i) => {
-                       const isNear = new Date(h.date).getTime() - new Date().getTime() < 3 * 24 * 60 * 60 * 1000;
-                       return (
-                         <div key={i} className={`p-5 rounded-2xl flex flex-col gap-3 border transition-all ${isNear ? 'bg-rose-50 border-rose-200' : 'bg-slate-50 border-slate-200'}`}>
-                           <div className="flex items-center justify-between">
-                              <span className="text-[10px] font-black text-slate-500 bg-white px-2 py-1 rounded-lg border border-slate-200 shadow-sm">
-                                {new Date(h.date).toLocaleDateString('ar-SA')}
-                              </span>
-                              {isNear && (
-                                <span className="text-[8px] font-black bg-rose-600 text-white px-2 py-1 rounded-full animate-pulse shadow-sm shadow-rose-200">
-                                  قريبة جداً
-                                </span>
-                              )}
-                           </div>
-                           <div>
-                              <h4 className="font-black text-slate-900 text-sm">{h.caseName}</h4>
-                              <p className="text-[10px] font-bold text-slate-500 mt-1">الدائرة: {h.court || 'غير محدد'}</p>
-                           </div>
-                           <div className="mt-auto pt-3 border-t border-slate-200/60 flex justify-between items-center text-xs">
-                              <span className="font-bold text-indigo-600 bg-indigo-50 px-2 py-1 rounded-lg">{h.time}</span>
-                              <span className="font-bold text-slate-400">رقم: {h.caseNumber}</span>
-                           </div>
-                         </div>
-                       )
-                     })
-                   )}
-                 </div>
-               )}
+
+                      {/* Display text in cell if space permits */}
+                      <div className="mt-2 space-y-1 overflow-hidden">
+                        {dayHearings.map((h, hIdx) => (
+                          <div key={hIdx} className="bg-rose-50 border border-rose-100 text-rose-700 p-1 rounded-lg text-[9px] font-extrabold truncate" title={h.caseName}>
+                             ⚖️ {h.time} {h.caseName}
+                          </div>
+                        ))}
+                        {dayLeaves.map((l, lIdx) => (
+                          <div key={lIdx} className={`p-1 rounded-lg text-[9px] font-extrabold truncate ${l.status === 'approved' ? 'bg-emerald-50 border border-emerald-100 text-emerald-700' : 'bg-amber-50 border border-amber-100 text-amber-700'}`}>
+                            🌴 {l.status === 'approved' ? 'إجازة معتمدة' : 'إجازة معلقة'}
+                          </div>
+                        ))}
+                        {dayTasks.map((t, tIdx) => (
+                          <div key={tIdx} className="bg-sky-50 border border-sky-100 text-sky-700 p-1 rounded-lg text-[9px] font-extrabold truncate" title={t.title}>
+                            📋 {t.title}
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Expanded detailed popover on click */}
+                      {selectedCalendarDate === dateStr && (
+                        <div className="absolute top-[105%] right-0 left-0 bg-slate-900 text-white border border-slate-800 p-4 rounded-2xl shadow-2xl z-40 space-y-3 cursor-default" onClick={e => e.stopPropagation()}>
+                          <div className="flex items-center justify-between border-b border-white/10 pb-2">
+                            <span className="text-xs font-black text-slate-300">أجندة يوم {day} ({dateStr})</span>
+                            <button onClick={() => setSelectedCalendarDate(null)} className="text-[9px] font-bold text-rose-400 hover:text-rose-300 cursor-pointer">إغلاق</button>
+                          </div>
+                          
+                          {dayHearings.length > 0 && (
+                            <div className="space-y-1.5">
+                              <p className="text-[10px] font-black text-rose-400 flex items-center gap-1">⚖️ جلسات المرافعة ومواعيد الدوائر:</p>
+                              {dayHearings.map((h, hIdx) => (
+                                <div key={hIdx} className="bg-white/5 border border-white/5 p-2 rounded-xl text-[10px]">
+                                  <div className="font-extrabold text-white">{h.caseName}</div>
+                                  <div className="text-slate-400 text-[9px] mt-1 text-right">الساعة {h.time} | الدائرة {h.court || 'غير محدد'} | قضية رقم: {h.caseNumber}</div>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+
+                          {dayLeaves.length > 0 && (
+                            <div className="space-y-1.5 border-t border-white/5 pt-2">
+                              <p className="text-[10px] font-black text-emerald-400 flex items-center gap-1">🌴 الإجازات والغياب الإداري:</p>
+                              {dayLeaves.map((l, lIdx) => (
+                                <div key={lIdx} className="bg-white/5 border border-white/5 p-2 rounded-xl text-[10px] flex justify-between items-center bg-slate-800/20">
+                                  <span className="text-slate-300">
+                                    {l.type === 'vacation' ? 'إجازة اعتيادية' : l.type === 'sick' ? 'إجازة مرضية' : l.type === 'emergency' ? 'إجازة اضطرارية' : 'إجازة بدون راتب'} (من {l.startDate} إلى {l.endDate})
+                                  </span>
+                                  <span className={`px-2 py-0.5 rounded text-[8px] font-black ${l.status === 'approved' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-amber-500/20 text-amber-300'}`}>
+                                    {l.status === 'approved' ? 'مقبولة ومعتمدة' : 'طلب معلق'}
+                                  </span>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+
+                          {dayTasks.length > 0 && (
+                            <div className="space-y-1.5 border-t border-white/5 pt-2">
+                              <p className="text-[10px] font-black text-sky-400 flex items-center gap-1">📋 تسليمات المهام اليومية:</p>
+                              {dayTasks.map((t, tIdx) => (
+                                <div key={tIdx} className="bg-white/5 border border-white/5 p-2 rounded-xl text-[10px]">
+                                  <div className="font-extrabold text-slate-200">{t.title}</div>
+                                  <div className="text-slate-400 text-[9px] mt-0.5">الحالة: {t.status === 'completed' ? 'مكتملة ✅' : 'قيد المتابعة ⏳'}</div>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  );
+                }
+                
+                return (
+                  <div>
+                    <div className="grid grid-cols-7 gap-3 mb-3 text-center">
+                      {weekdayNames.map(name => (
+                        <div key={name} className="text-[10px] font-black text-slate-400 bg-slate-50 py-2.5 rounded-xl border border-slate-100">
+                          {name}
+                        </div>
+                      ))}
+                    </div>
+                    <div className="grid grid-cols-7 gap-3">
+                      {cells}
+                    </div>
+                  </div>
+                );
+              })()}
             </div>
 
                </div>
