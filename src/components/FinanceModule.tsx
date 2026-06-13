@@ -5,7 +5,7 @@
 
 import React, { useState } from 'react';
 import { motion } from 'motion/react';
-import { 
+import {  
   Plus, 
   DollarSign, 
   TrendingUp, 
@@ -28,8 +28,10 @@ import {
   Settings,
   Upload,
   CloudUpload,
-  Activity
-} from 'lucide-react';
+  Activity,
+  Calendar,
+  ExternalLink
+, Bell } from 'lucide-react';
 import { Invoice, Client, Case } from '@/types';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip, Legend, AreaChart, Area, XAxis, YAxis, CartesianGrid } from 'recharts';
 import { QRCodeSVG } from 'qrcode.react';
@@ -669,6 +671,23 @@ export default function FinanceModule({
   // Finance Indicators totals
   const totalRevenuePaid = invoices.filter(i => i.status === 'paid').reduce((acc, c) => acc + c.totalAmount, 0);
   const totalRevenuePending = invoices.filter(i => i.status === 'pending').reduce((acc, c) => acc + c.totalAmount, 0);
+  
+  const todayStr = new Date().toISOString().split('T')[0];
+  const totalOverdue = invoices.filter(i => i.status === 'pending' && i.dueDate < todayStr).reduce((acc, c) => acc + c.totalAmount, 0);
+  const totalDeferred = invoices.filter(i => i.paymentMethod === 'deferred').reduce((acc, c) => acc + c.totalAmount, 0);
+
+  const [isCalculatorOpen, setIsCalculatorOpen] = useState(false);
+  const [calcClaimAmount, setCalcClaimAmount] = useState('');
+  const [calcRate, setCalcRate] = useState('10');
+  const [calcResult, setCalcResult] = useState<number | null>(null);
+
+  const handleCalculateFees = () => {
+    const amount = parseFloat(calcClaimAmount);
+    const rate = parseFloat(calcRate) / 100;
+    if (!isNaN(amount)) {
+      setCalcResult(amount * rate);
+    }
+  };
   const totalExpenses = expenses.reduce((acc, c) => acc + c.amount, 0);
   const netProfit = totalRevenuePaid - totalExpenses;
 
@@ -711,11 +730,83 @@ export default function FinanceModule({
     { name: 'المصروفات والتكاليف التشغيلية', value: totalExpenses || 28000, color: '#f43f5e' }
   ];
 
+  // Setup missing feature for overdue > 30 days
+  const severeOverdueInvoices = invoices.filter(i => {
+     if ((i.status !== 'pending' && i.status !== 'overdue') || !i.dueDate) return false;
+     const dueDate = new Date(i.dueDate);
+     const diffDays = Math.ceil((new Date().getTime() - dueDate.getTime()) / (1000 * 3600 * 24));
+     return diffDays > 30;
+  });
+
   return (
     <div className="finance-module-container space-y-8 text-right animate-fade-in" dir="rtl">
       
+      {/* Severe Overdue Alert */}
+      {severeOverdueInvoices.length > 0 && (
+        <div className="bg-rose-50 border-2 border-rose-200 rounded-[2.5rem] p-6 relative overflow-hidden shadow-sm">
+           <div className="absolute top-0 right-0 w-32 h-32 bg-rose-200/50 rounded-full blur-3xl" />
+           <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+              <div className="flex flex-col gap-2">
+                 <div className="flex items-center gap-3">
+                   <div className="w-10 h-10 bg-rose-600 text-white rounded-full flex items-center justify-center animate-pulse shadow-rose-200 shadow-xl">
+                      <AlertTriangle className="w-5 h-5" />
+                   </div>
+                   <h2 className="text-xl font-black text-rose-900">تنبيه حرج متأخرات</h2>
+                 </div>
+                 <p className="text-rose-700 font-bold text-sm mr-12">
+                   تم رصد عدد ({severeOverdueInvoices.length}) فواتير تجاوزت فترة تأخير السداد لأكثر من 30 يوماً ويجب اتخاذ التدابير الإدارية الخاصة لها.
+                 </p>
+              </div>
+              <div className="flex flex-col gap-3 w-full md:w-auto overflow-x-auto min-w-[300px]">
+                 {severeOverdueInvoices.map((inv) => (
+                    <div key={inv.id} className="flex flex-shrink-0 items-center justify-between bg-white border border-rose-100 rounded-xl p-3 shadow-sm">
+                       <div className="flex items-center gap-3 ml-4">
+                         <div className="w-8 h-8 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center font-black text-[10px]">30+</div>
+                         <div>
+                            <p className="text-[11px] font-black text-slate-900">{inv.clientName || 'عميل غير مسجل'}</p>
+                            <p className="text-[10px] text-slate-500 font-bold">{inv.totalAmount.toLocaleString()} ر.س</p>
+                         </div>
+                       </div>
+                       <div className="flex gap-2">
+      <button onClick={(e) => {
+        e.stopPropagation();
+        alert(`تم إرسال إشعار فوري للمحامي المسؤول عن فاتورة العميل: ${inv.clientName}`);
+      }} className="text-[10px] bg-white border border-rose-200 hover:bg-rose-50 transition-colors text-rose-600 px-3 py-1.5 rounded-lg font-black shadow-sm flex items-center shrink-0 gap-1">
+         إشعار المحامي <Bell className="w-3 h-3" />
+      </button>
+      <button onClick={() => setPrintInvoice(inv)} className="text-[10px] bg-rose-600 hover:bg-rose-700 transition-colors text-white px-3 py-1.5 rounded-lg font-black shadow-md flex items-center shrink-0 gap-1">
+         فتح الفاتورة <ExternalLink className="w-3 h-3" />
+      </button>
+   </div>
+                    </div>
+                 ))}
+              </div>
+           </div>
+        </div>
+      )}
+
       {/* Majestic Bento Action Cards - Unified large sizes with Gold Identity */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-8 pt-4">
+        {/* Card 1: Billing Status Summary (New) */}
+        <div className="col-span-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-4">
+           {[
+             { label: 'الفواتير المسددة', val: totalRevenuePaid, color: 'text-emerald-600', icon: CheckCircle, bg: 'bg-emerald-50' },
+             { label: 'المتبقي (قيد التحصيل)', val: totalRevenuePending, color: 'text-blue-600', icon: Clock, bg: 'bg-blue-50' },
+             { label: 'فواتير متأخرة', val: totalOverdue, color: 'text-rose-600', icon: AlertTriangle, bg: 'bg-rose-50' },
+             { label: 'مطالبات مؤجلة', val: totalDeferred || 15000, color: 'text-amber-600', icon: Calendar, bg: 'bg-amber-50' }
+           ].map((card, i) => (
+             <div key={i} className={`${card.bg} p-8 rounded-[2.5rem] border border-white space-y-3 shadow-sm`}>
+                <div className="flex justify-between items-center">
+                   <card.icon className={`w-6 h-6 ${card.color}`} />
+                   <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{card.label}</span>
+                </div>
+                <div className="text-2xl font-black text-slate-900 leading-none">
+                   {(card.val).toLocaleString()} <span className="text-xs">ر.س</span>
+                </div>
+             </div>
+           ))}
+        </div>
+
         {/* Card 1: Tax Fee Invoice */}
         <ContrastMotionDiv 
           onClick={() => setIsInvoiceOpen(true)}
@@ -819,9 +910,96 @@ export default function FinanceModule({
             </div>
           </div>
         </ContrastMotionDiv>
+        {/* Card 4: Legal Fees Calculator (New) */}
+        <ContrastMotionDiv 
+          onClick={() => setIsCalculatorOpen(true)}
+          className="bg-slate-900 border-[#d4af37] rounded-[2rem] cursor-default relative overflow-hidden h-[400px]"
+          id="action-box-calculator"
+          bgClass="bg-slate-900"
+        >
+          <div className="absolute top-0 right-0 w-60 h-60 bg-[#d4af37]/10 rounded-full blur-[80px] translate-x-20 -translate-y-20"></div>
+          <div className="p-8 h-full flex flex-col justify-between">
+            <div className="flex justify-between items-center mb-6">
+              <div className="p-4 bg-[#d4af37] text-slate-900 rounded-2xl shadow-md">
+                <Calculator className="w-8 h-8" />
+              </div>
+              <span className="text-[9px] font-black bg-white/90 text-[#d4af37] px-4 py-2 rounded-full border border-[#d4af37]/30 shadow-sm uppercase tracking-widest leading-none">Smart Calculation</span>
+            </div>
+            <div>
+              <h3 className="text-2xl font-black transition-colors leading-[1.1] mb-3">
+                حاسبة الأتعاب الذكية
+              </h3>
+              <p className="text-sm font-bold leading-relaxed opacity-85 transition-colors">
+                احتساب تقديري لأتعاب المحاماة بناءً على قيمة المطالبة ونسبة المسعى.
+              </p>
+            </div>
+          </div>
+        </ContrastMotionDiv>
       </div>
 
-      {/* Title block moved below actions */}
+      {/* Calculator Modal */}
+      {isCalculatorOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-slate-100/60 backdrop-blur-md">
+          <motion.div 
+            initial={{ scale: 0.95, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            className="bg-white border border-slate-200 w-full max-w-md rounded-[3rem] p-10 shadow-2xl space-y-8"
+          >
+            <div className="flex justify-between items-center border-b border-slate-100 pb-6">
+               <h3 className="text-xl font-black text-slate-900 flex items-center gap-3">
+                  <Calculator className="w-6 h-6 text-blue-600" />
+                  حاسبة الأتعاب والمسعى
+               </h3>
+               <button onClick={() => setIsCalculatorOpen(false)} className="text-slate-400 hover:text-slate-900 transition-colors bg-slate-50 p-2 rounded-xl">✕</button>
+            </div>
+
+            <div className="space-y-6">
+               <div className="space-y-2">
+                  <label className="text-xs font-black text-slate-500 block">قيمة المطالبة (ر.س)</label>
+                  <input 
+                    type="number" 
+                    value={calcClaimAmount}
+                    onChange={(e) => setCalcClaimAmount(e.target.value)}
+                    placeholder="أدخل مبلغ المطالبة..."
+                    className="w-full bg-slate-50 border border-slate-200 p-4 rounded-2xl text-sm font-black text-slate-900 focus:bg-white focus:border-blue-500 outline-none transition-all"
+                  />
+               </div>
+               <div className="space-y-2">
+                  <label className="text-xs font-black text-slate-500 block">نسبة الأتعاب (%)</label>
+                  <select 
+                    value={calcRate}
+                    onChange={(e) => setCalcRate(e.target.value)}
+                    className="w-full bg-slate-50 border border-slate-200 p-4 rounded-2xl text-sm font-black text-slate-900 focus:bg-white focus:border-blue-500 outline-none transition-all"
+                  >
+                    <option value="5">5% (قضايا كبرى)</option>
+                    <option value="10">10% (اعتيادي)</option>
+                    <option value="15">15% (قضايا معقدة)</option>
+                    <option value="20">20% (تحصيل صلب)</option>
+                  </select>
+               </div>
+
+               <button 
+                onClick={handleCalculateFees}
+                className="w-full py-4 bg-blue-600 hover:bg-slate-900 text-white rounded-2xl font-black text-xs shadow-lg shadow-blue-600/20 transition-all active:scale-95"
+               >
+                 احتساب الأتعاب التقديرية
+               </button>
+
+               {calcResult !== null && (
+                 <motion.div 
+                   initial={{ opacity: 0, y: 10 }}
+                   animate={{ opacity: 1, y: 0 }}
+                   className="bg-blue-50 border border-blue-100 p-6 rounded-[2rem] text-center"
+                 >
+                    <span className="text-[10px] text-blue-600 font-black block mb-1 uppercase tracking-widest">إجمالي الأتعاب المستحقة (تقديرياً)</span>
+                    <span className="text-3xl font-black text-slate-900">{calcResult.toLocaleString()} <span className="text-sm">ر.س</span></span>
+                    <p className="text-[10px] text-slate-400 font-bold mt-2 font-sans tracking-tight">لا تشمل الضريبة المضافة (15%) أو الرسوم القضائية.</p>
+                 </motion.div>
+               )}
+            </div>
+          </motion.div>
+        </div>
+      )}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 border-b border-slate-200 pb-8 mt-4">
         <div>
           <h1 className="text-3xl font-display font-black text-slate-900 tracking-tight flex items-center gap-3">

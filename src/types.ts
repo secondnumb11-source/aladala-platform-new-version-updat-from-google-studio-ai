@@ -155,16 +155,20 @@ export interface Employee {
   birthDate?: string;
   username?: string;
   password?: string;
+  najizApiKey?: string;
+  baseSalary?: number;
+  allowances?: number;
+  deductions?: number;
   assignedCases?: string[];
   assignedClients?: string[];
   permissions?: string[];
   featureAccess?: string[];
   sidebarConfig?: string[];
-  najizApiKey?: string;
   portalLink?: string;
   customLoginToken?: string;
   status?: string;
   avatarUrl?: string;
+  employeeCode?: string;
 }
 
 export interface DocumentVersion {
@@ -430,4 +434,43 @@ export interface RelatedParty {
   name: string;
   relationType: "Plaintiff" | "Defendant" | "Witness" | "Expert"; 
   nationalId?: string;
+}
+
+export interface LeaveRequest {
+  id: string;
+  employeeId: string;
+  employeeName: string;
+  type: 'vacation' | 'sick' | 'emergency' | 'unpaid';
+  startDate: string;
+  endDate: string;
+  reason: string;
+  status: 'pending' | 'approved' | 'rejected';
+  requestedAt: string;
+  reviewedBy?: string;
+  reviewedAt?: string;
+  comment?: string;
+}
+
+export interface AttendanceRecord {
+  id: string;
+  employeeId: string;
+  date: string;
+  checkIn: string;
+  checkOut?: string;
+  location?: { lat: number; lng: number; address?: string };
+  method: 'qr' | 'location' | 'manual';
+  status: 'present' | 'late' | 'absent';
+}
+
+export interface Payroll {
+  id: string;
+  employeeId: string;
+  month: number;
+  year: number;
+  baseSalary: number;
+  allowances: { name: string; amount: number }[];
+  deductions: { name: string; amount: number }[];
+  netSalary: number;
+  status: 'pending' | 'paid';
+  createdAt: string;
 }

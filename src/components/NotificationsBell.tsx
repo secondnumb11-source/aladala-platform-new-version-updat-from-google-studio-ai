@@ -11,6 +11,7 @@ interface Notification {
   time: string;
   read: boolean;
   type: 'info' | 'warning' | 'success' | 'urgent';
+  action?: string;
 }
 
 const mockNotifications: Notification[] = [
@@ -132,9 +133,33 @@ export default function NotificationsBell() {
           }
         });
 
+        const invoicesSnap = await getDocs(collection(db, 'invoices'));
+        const invoicesAlerts: Notification[] = [];
+        invoicesSnap.forEach(iSnap => {
+          const inv = iSnap.data();
+          if (inv.status === 'pending' && inv.dueDate) {
+            let dDate = new Date();
+            try { dDate = new Date(inv.dueDate); } catch(e){}
+            const diffTime = (new Date()).getTime() - dDate.getTime();
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            if (diffDays > 30) {
+              invoicesAlerts.push({
+                id: `real-invoice-alert-${iSnap.id}`,
+                title: `فاتورة متأخرة لأكثر من ٣٠ يوماً`,
+                message: `تنبيه مالي: توجد فاتورة متأخرة للعميل [${inv.clientName || 'غير معروف'}] بقيمة ${inv.totalAmount} ر.س.`,
+                time: 'تنبيه ذكي 💰',
+                read: false,
+                type: 'urgent',
+                action: 'finance'
+              });
+            }
+          }
+        });
+
+        // Add to Notifications
         setNotifications(prev => {
           const filteredPrev = prev.filter(p => !p.id.startsWith('real-'));
-          return [...activeCasesAlerts, ...tasksAlerts, ...filteredPrev];
+          return [...invoicesAlerts, ...activeCasesAlerts, ...tasksAlerts, ...filteredPrev];
         });
 
       } catch(e) {
@@ -230,7 +255,14 @@ export default function NotificationsBell() {
                   {notifications.map((notif) => (
                     <div 
                       key={notif.id}
-                      onClick={() => handleMarkAsRead(notif.id)}
+                      onClick={() => {
+                        handleMarkAsRead(notif.id);
+                        if (notif.action) {
+                           const event = new CustomEvent('global-navigate', { detail: notif.action });
+                           window.dispatchEvent(event);
+                           setIsOpen(false);
+                        }
+                      }}
                       className={`p-4 border-b border-slate-800 cursor-pointer transition-all relative group ${!notif.read ? 'bg-amber-500/5' : 'bg-slate-900'}`}
                     >
                       {!notif.read && (

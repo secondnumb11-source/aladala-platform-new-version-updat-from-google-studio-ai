@@ -216,6 +216,19 @@ function AppContent() {
   const [selectedCase, setSelectedCase] = useState<Case | null>(null);
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
 
+  // Global Navigation Listener
+  useEffect(() => {
+    const handleGlobalNav = (e: Event) => {
+      const customDetail = (e as CustomEvent).detail;
+      if (customDetail) {
+        setCurrentTab(customDetail);
+        setSelectedCase(null);
+      }
+    };
+    window.addEventListener('global-navigate', handleGlobalNav);
+    return () => window.removeEventListener('global-navigate', handleGlobalNav);
+  }, []);
+
   // Command Palette Select Case event listener
   useEffect(() => {
     const handleSelectCaseEvent = (e: any) => {
@@ -1754,20 +1767,6 @@ function AppContent() {
             tasks={tasks}
             currentUser={currentUser}
             onUpdateState={handleUpdateGlobalState}
-          />
-        )}
-
-        {currentTab === 'client-portal' && (
-          <ClientPortal 
-            clients={clients}
-            cases={employeeFilteredCases}
-            invoices={invoices}
-            messages={[]}
-            hearings={[]}
-            contracts={[]}
-            documents={[]}
-            onUpdateState={handleUpdateGlobalState}
-            currentUser={currentUser}
           />
         )}
         

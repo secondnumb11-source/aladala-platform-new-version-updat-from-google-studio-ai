@@ -7,6 +7,11 @@ import {
   Tooltip, 
   Legend, 
   ResponsiveContainer, 
+  RadarChart, 
+  Radar, 
+  PolarGrid, 
+  PolarAngleAxis, 
+  PolarRadiusAxis,
   PieChart, 
   Pie, 
   Cell,
@@ -197,6 +202,15 @@ export default function LawyerPerformance({ cases }: LawyerPerformanceProps) {
     { month: 'أبريل', tasks: 65, avgTime: 8, successRate: 95, hoursSpent: 210, completionRate: 91, closedCases: 15, closureSpeedDays: 38 },
     { month: 'مايو', tasks: 48, avgTime: 11, successRate: 90, hoursSpent: 175, completionRate: 85, closedCases: 10, closureSpeedDays: 40 },
     { month: 'يونيو', tasks: 58, avgTime: 9, successRate: 93, hoursSpent: 195, completionRate: 88, closedCases: 13, closureSpeedDays: 35 },
+  ];
+
+  const appraisalData = [
+    { subject: 'إنجاز المهام', A: 85, fullMark: 100 },
+    { subject: 'الالتزام بالمواعيد', A: 92, fullMark: 100 },
+    { subject: 'الحضور والانضباط', A: 98, fullMark: 100 },
+    { subject: 'رضا الموكلين', A: 90, fullMark: 100 },
+    { subject: 'ساعات الفوترة', A: 75, fullMark: 100 },
+    { subject: 'دقة المذكرات', A: 88, fullMark: 100 },
   ];
 
   return (
@@ -446,7 +460,7 @@ export default function LawyerPerformance({ cases }: LawyerPerformanceProps) {
           
           <div className="w-full space-y-3 mt-4">
             {categoriesMap.map((cat, idx) => (
-              <div key={idx} className="flex items-center justify-between bg-slate-50 p-3 rounded-2xl border border-slate-100 transition-all[1.02] cursor-pointer">
+              <div key={idx} className="flex items-center justify-between bg-slate-50 p-3 rounded-2xl border border-slate-100 transition-all hover:scale-[1.02] cursor-pointer">
                 <div className="flex items-center gap-3">
                   <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: COLORS[idx % COLORS.length] }}></span>
                   <span className="text-[11px] text-slate-700 font-black">{cat.name}</span>
@@ -454,6 +468,55 @@ export default function LawyerPerformance({ cases }: LawyerPerformanceProps) {
                 <strong className="text-xs text-slate-900 font-mono">{cat.value}</strong>
               </div>
             ))}
+          </div>
+        </div>
+
+        {/* Appraisal Radar Section */}
+        <div className="lg:col-span-12 bg-white border border-blue-100 p-10 rounded-[3rem] shadow-xl shadow-blue-900/5 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center mt-8">
+          <div className="space-y-6">
+            <div className="inline-flex items-center gap-2 bg-blue-50 px-4 py-2 rounded-2xl border border-blue-100">
+               <Award className="w-5 h-5 text-blue-600" />
+               <span className="text-xs text-blue-900 font-black uppercase tracking-wider">خوارزمية التقييم الشهري المتقدمة (AI Performance Appraisal)</span>
+            </div>
+            <h2 className="text-3xl font-black text-slate-900 leading-tight">تحليل الكفاءة المهنية متعدد الأبعاد (Radar Insight)</h2>
+            <p className="text-sm text-slate-500 font-bold leading-relaxed">
+              يقوم النظام بتحليل تلقائي لأداء كل مستشار قانوني بناءً على 6 معايير جوهرية تشمل سرعة التنفيذ، جودة الصياغة، الانضباط في الحضور، والالتزام بالمواعيد النهائية للجلسات بنظام النقاط التراكمي.
+            </p>
+            
+            <div className="grid grid-cols-2 gap-4">
+               {[
+                 { label: 'متوسط أداء الفريق', val: '91.4%' },
+                 { label: 'أفضل معيار هذا الشهر', val: 'الانضباط' },
+                 { label: 'المرشح لجائزة التميز', val: 'أ. سليمان' },
+                 { label: 'تحسن الأداء الكلي', val: '+12.5%' }
+               ].map((item, i) => (
+                 <div key={i} className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                    <span className="text-[10px] text-slate-400 font-black block mb-1 uppercase tracking-wider">{item.label}</span>
+                    <span className="text-lg font-black text-slate-900">{item.val}</span>
+                 </div>
+               ))}
+            </div>
+          </div>
+
+          <div className="h-[450px] w-full flex items-center justify-center bg-slate-50/50 rounded-[2.5rem] border border-slate-100 relative group">
+             <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-blue-100/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+             <ResponsiveContainer width="100%" height="100%">
+                <RadarChart cx="50%" cy="50%" outerRadius="75%" data={appraisalData}>
+                  <PolarGrid stroke="#e2e8f0" />
+                  <PolarAngleAxis dataKey="subject" tick={{ fill: '#475569', fontSize: 10, fontWeight: '900' }} />
+                  <PolarRadiusAxis angle={30} domain={[0, 100]} tick={false} axisLine={false} />
+                  <Radar
+                    name="أداء المستشار"
+                    dataKey="A"
+                    stroke="#2563eb"
+                    fill="#3b82f6"
+                    fillOpacity={0.4}
+                  />
+                  <Tooltip 
+                    contentStyle={{ borderRadius: '1rem', border: 'none', boxShadow: '0 20px 40px rgba(0,0,0,0.1)', textAlign: 'right' }}
+                  />
+                </RadarChart>
+             </ResponsiveContainer>
           </div>
         </div>
 

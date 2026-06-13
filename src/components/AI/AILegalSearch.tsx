@@ -261,7 +261,7 @@ const DEFAULT_MEMO_TEMPLATES: MemoTemplate[] = [
 ];
 
 export default function AILegalSearch() {
-  const [activeView, setActiveView] = useState<'search' | 'library' | 'memos'>('search');
+  const [activeView, setActiveView] = useState<'search' | 'library' | 'memos'>('library');
   
   // Tab 1: Interactive Chat
   const [query, setQuery] = useState('');
@@ -705,24 +705,45 @@ export default function AILegalSearch() {
       {activeView === 'library' && (
         <div className="space-y-8 animate-fade-in text-right">
           
-          {/* Quick Notice Banner */}
-          <div className="bg-gradient-to-r from-emerald-900 to-teal-900 text-white p-8 rounded-3xl shadow-xl flex flex-col md:flex-row items-center justify-between gap-6 border border-emerald-700 relative overflow-hidden">
-            <div className="absolute top-0 left-0 w-64 h-64 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
-            <div className="space-y-2.5 z-10 max-w-2xl text-right">
-              <div className="inline-flex items-center gap-2 bg-emerald-500/20 text-emerald-300 px-4 py-1.5 rounded-full text-xs font-black border border-emerald-500/30">
-                <BookOpen className="w-4 h-4 text-amber-400" />
-                مرصد ومستودع اللوائح والأنظمة الملكية ⚖️
+          {/* Quick Notice Banner - Updated for High Visibility */}
+          <div className="bg-gradient-to-r from-slate-900 via-indigo-900 to-slate-900 p-10 rounded-[3rem] shadow-2xl flex flex-col md:flex-row items-center justify-between gap-8 border-2 border-amber-400/30 relative overflow-hidden">
+            <div className="absolute top-0 left-0 w-full h-full bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-5 pointer-events-none"></div>
+            <div className="absolute -top-24 -right-24 w-64 h-64 bg-amber-400/10 rounded-full blur-3xl"></div>
+            
+            <div className="space-y-4 z-10 max-w-3xl text-right">
+              <div className="inline-flex items-center gap-3 bg-slate-900/40 px-5 py-2 rounded-full text-xs font-black border-2 border-amber-400 shadow-[0_0_20px_rgba(251,191,36,0.4)]">
+                <BookOpen className="w-5 h-5 text-amber-400 animate-pulse" />
+                <span className="text-amber-400">مرصد ومستودع اللوائح والأنظمة الملكية ⚖️</span>
               </div>
-              <h3 className="text-xl md:text-2xl font-black text-white font-display leading-tight">
+              <h3 className="text-3xl md:text-4xl font-black text-white font-display leading-tight drop-shadow-lg">
                 فهرس الأنظمة والتعويضات السعودي
               </h3>
-              <p className="text-slate-100 text-xs md:text-sm font-bold leading-relaxed opacity-95">
+              <p className="text-slate-100 text-sm md:text-base font-bold leading-relaxed drop-shadow-md">
                 تصفح نصوص نظام المعاملات المدنية، نظام الشركات الجديد، نظام العمل، مع إمكانية توجيه تساؤلات مخصصة داخل فقه المادة القانونية المحددة.
               </p>
+              
+              <div className="flex flex-wrap gap-4 pt-2">
+                <button 
+                  onClick={() => window.open('https://laws.boe.gov.sa', '_blank')}
+                  className="flex items-center gap-2 bg-amber-400 text-slate-950 px-6 py-3 rounded-2xl text-xs font-black hover:bg-white transition-all shadow-xl active:scale-95"
+                >
+                  <ExternalLink className="w-4 h-4" />
+                  الاطلاع على كافة مواد الأنظمة المسجلة 🔗
+                </button>
+                <button 
+                  onClick={() => setActiveView('search')}
+                  className="flex items-center gap-2 bg-white text-slate-900 px-6 py-3 rounded-2xl text-xs font-black hover:bg-amber-400 transition-all shadow-xl active:scale-95 border-2 border-amber-400/50"
+                >
+                  <Sparkles className="w-4 h-4 text-amber-600" />
+                  أداة تحليل البحث في القضايا والمواقف القانونية ⚖️
+                </button>
+              </div>
             </div>
-            <div className="z-10 bg-slate-900/40 p-5 rounded-2xl border border-white/10 text-center shrink-0 min-w-[190px]">
-              <div className="text-2xl font-black text-amber-400 font-mono">15,000+</div>
-              <div className="text-[10px] text-slate-200 mt-1 font-bold">بند ومبدأ قضائي مرصود وموثوق</div>
+
+            <div className="z-10 bg-white/10 backdrop-blur-xl p-8 rounded-[2.5rem] border-2 border-amber-400/40 text-center shrink-0 min-w-[220px] shadow-2xl relative group hover:scale-105 transition-transform duration-500">
+              <div className="absolute inset-0 bg-amber-400/5 animate-pulse rounded-[2.5rem]"></div>
+              <div className="text-4xl font-black text-amber-400 font-mono drop-shadow-[0_0_10px_rgba(251,191,36,0.5)]">15,000+</div>
+              <div className="text-xs text-white mt-2 font-black tracking-widest">بند ومبدأ قضائي مرصود وموثوق</div>
             </div>
           </div>
 

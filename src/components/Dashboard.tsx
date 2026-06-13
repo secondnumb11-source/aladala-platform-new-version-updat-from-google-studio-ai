@@ -83,7 +83,7 @@ import TimelineView from './TimelineView';
 import TimelineD3 from './TimelineD3';
 import LegalRiskMatrix from './legal/LegalRiskMatrix';
 import MiniChart from './charts/MiniChart';
-import { PieChart, Pie, Cell, Tooltip as RechartsTooltip, ResponsiveContainer, Legend, BarChart, Bar, XAxis, YAxis, CartesianGrid, AreaChart, Area, LineChart, Line } from 'recharts';
+import { RadialBarChart, RadialBar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, PieChart, Pie, Cell, Tooltip as RechartsTooltip, ResponsiveContainer, Legend, BarChart, Bar, XAxis, YAxis, CartesianGrid, AreaChart, Area, LineChart, Line } from 'recharts';
 import { Upload, Download, Eye, EyeOff } from 'lucide-react';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
@@ -469,6 +469,28 @@ const Dashboard = function Dashboard({
     };
   }, [cases]);
 
+  const handleUpdateWidgetSize = (id: string, newSize: string) => {
+    const updated = widgets.map((w: any) => w.id === id ? { ...w, size: newSize } : w);
+    setWidgets(updated);
+    localStorage.setItem(`dashboard_widgets_config_${selectedRole}_v2`, JSON.stringify(updated));
+    const uid = auth.currentUser?.uid;
+    if (uid) {
+      setDoc(doc(db, 'users', uid, 'preferences', 'dashboardLayout'), { 
+        widgets: updated,
+        lastUpdated: new Date().toISOString()
+      }, { merge: true }).catch(e => console.error(e));
+    }
+  };
+
+  const getWidgetClassName = (size: string) => {
+    switch (size) {
+      case 'qr': return 'col-span-1 lg:col-span-1';
+      case 'half': return 'col-span-1 lg:col-span-2';
+      case 'full': return 'col-span-1 lg:col-span-4';
+      default: return 'col-span-1 lg:col-span-2';
+    }
+  };
+
   const [widgets, setWidgets] = useState(() => {
     const saved = localStorage.getItem(`dashboard_widgets_config_${selectedRole}_v2`);
     let initialList = [
@@ -478,20 +500,23 @@ const Dashboard = function Dashboard({
       { id: 'kpiTasks', visible: true, order: 3, size: 'qr' },
       { id: 'najizPerformance', visible: true, order: 4, size: 'half' },
       { id: 'employeePerformanceKPI', visible: true, order: 5, size: 'half' },
-      { id: 'summaryAI', visible: true, order: 6, size: 'full' },
-      { id: 'taskSuggestions', visible: true, order: 7, size: 'full' },
-      { id: 'legalPerformanceMetrics', visible: true, order: 8, size: 'half' },
-      { id: 'upcomingHearingsCard', visible: true, order: 8, size: 'half' },
-      { id: 'summaryInvoicesAI', visible: true, order: 9, size: 'half' },
-      { id: 'deadlinesWidget', visible: true, order: 10, size: 'half' },
-      { id: 'summaryPlatform', visible: true, order: 11, size: 'half' },
-      { id: 'summaryCases', visible: true, order: 12, size: 'half' },
-      { id: 'summaryKPI', visible: true, order: 13, size: 'half' },
-      { id: 'legalRiskMatrix', visible: true, order: 14, size: 'half' },
-      { id: 'summaryCalendar', visible: true, order: 15, size: 'half' },
-      { id: 'partnerAnalytics', visible: true, order: 16, size: 'half' },
-      { id: 'efficiency', visible: true, order: 17, size: 'half' },
-      { id: 'agenda', visible: true, order: 18, size: 'large' },
+      { id: 'upcomingHearingsCard', visible: true, order: 6, size: 'half' },
+      { id: 'appealsReminder', visible: true, order: 7, size: 'half' },
+      { id: 'overdueTasks', visible: true, order: 8, size: 'half' },
+      { id: 'timelineCard', visible: true, order: 9, size: 'half' },
+      { id: 'summaryAI', visible: true, order: 10, size: 'full' },
+      { id: 'taskSuggestions', visible: true, order: 11, size: 'full' },
+      { id: 'legalPerformanceMetrics', visible: true, order: 12, size: 'half' },
+      { id: 'summaryInvoicesAI', visible: true, order: 13, size: 'half' },
+      { id: 'deadlinesWidget', visible: true, order: 14, size: 'half' },
+      { id: 'summaryPlatform', visible: true, order: 15, size: 'half' },
+      { id: 'summaryCases', visible: true, order: 16, size: 'half' },
+      { id: 'summaryKPI', visible: true, order: 17, size: 'half' },
+      { id: 'legalRiskMatrix', visible: true, order: 18, size: 'half' },
+      { id: 'summaryCalendar', visible: true, order: 19, size: 'half' },
+      { id: 'partnerAnalytics', visible: true, order: 20, size: 'half' },
+      { id: 'efficiency', visible: true, order: 21, size: 'half' },
+      { id: 'agenda', visible: true, order: 22, size: 'full' },
     ];
     if (saved) {
       try {
@@ -539,21 +564,25 @@ const Dashboard = function Dashboard({
       { id: 'kpiClients', visible: true, order: 1, size: 'qr' },
       { id: 'kpiInvoices', visible: true, order: 2, size: 'qr' },
       { id: 'kpiTasks', visible: true, order: 3, size: 'qr' },
-      { id: 'employeePerformanceKPI', visible: true, order: 4, size: 'half' },
-      { id: 'summaryAI', visible: true, order: 5, size: 'full' },
-      { id: 'taskSuggestions', visible: true, order: 6, size: 'full' },
-      { id: 'legalPerformanceMetrics', visible: true, order: 7, size: 'half' },
-      { id: 'upcomingHearingsCard', visible: true, order: 8, size: 'half' },
-      { id: 'summaryInvoicesAI', visible: true, order: 9, size: 'half' },
-      { id: 'deadlinesWidget', visible: true, order: 10, size: 'half' },
-      { id: 'summaryPlatform', visible: true, order: 11, size: 'half' },
-      { id: 'summaryCases', visible: true, order: 12, size: 'half' },
-      { id: 'summaryKPI', visible: true, order: 13, size: 'half' },
-      { id: 'legalRiskMatrix', visible: true, order: 14, size: 'half' },
-      { id: 'summaryCalendar', visible: true, order: 15, size: 'half' },
-      { id: 'partnerAnalytics', visible: true, order: 16, size: 'half' },
-      { id: 'efficiency', visible: true, order: 17, size: 'half' },
-      { id: 'agenda', visible: true, order: 18, size: 'large' },
+      { id: 'najizPerformance', visible: true, order: 4, size: 'half' },
+      { id: 'employeePerformanceKPI', visible: true, order: 5, size: 'half' },
+      { id: 'upcomingHearingsCard', visible: true, order: 6, size: 'half' },
+      { id: 'appealsReminder', visible: true, order: 7, size: 'half' },
+      { id: 'overdueTasks', visible: true, order: 8, size: 'half' },
+      { id: 'timelineCard', visible: true, order: 9, size: 'half' },
+      { id: 'summaryAI', visible: true, order: 10, size: 'full' },
+      { id: 'taskSuggestions', visible: true, order: 11, size: 'full' },
+      { id: 'legalPerformanceMetrics', visible: true, order: 12, size: 'half' },
+      { id: 'summaryInvoicesAI', visible: true, order: 13, size: 'half' },
+      { id: 'deadlinesWidget', visible: true, order: 14, size: 'half' },
+      { id: 'summaryPlatform', visible: true, order: 15, size: 'half' },
+      { id: 'summaryCases', visible: true, order: 16, size: 'half' },
+      { id: 'summaryKPI', visible: true, order: 17, size: 'half' },
+      { id: 'legalRiskMatrix', visible: true, order: 18, size: 'half' },
+      { id: 'summaryCalendar', visible: true, order: 19, size: 'half' },
+      { id: 'partnerAnalytics', visible: true, order: 20, size: 'half' },
+      { id: 'efficiency', visible: true, order: 21, size: 'half' },
+      { id: 'agenda', visible: true, order: 22, size: 'full' },
     ];
     setWidgets(defaultWidgets);
     localStorage.removeItem(`dashboard_widgets_config_${selectedRole}_v2`);
@@ -642,7 +671,7 @@ const Dashboard = function Dashboard({
               if (widget.id === 'kpiCases') {
                 const card = { label: 'القضايا النشطة', value: cases.length, max: 100, icon: <Briefcase />, color: 'bg-blue-500', sparklineData: [{x: 'W1', y: 4}, {x: 'W2', y: 7}, {x: 'W3', y: 5}, {x: 'W4', y: cases.length}] };
                 return (
-                  <SortableWidgetWrapper className="col-span-1" key="kpiCases" id="kpiCases" isCustomizing={isCustomizing}>
+                  <SortableWidgetWrapper className={getWidgetClassName(widget.size)} key="kpiCases" id="kpiCases" isCustomizing={isCustomizing} widgetSize={widget.size} onResize={handleUpdateWidgetSize}>
                     <div className={`bg-white border border-slate-200 p-6 rounded-3xl shadow-sm transition-all duration-300 relative overflow-hidden cursor-pointer h-full ${isCustomizing ? 'opacity-80 ring-2 ring-dashed ring-amber-400' : ''}`}>
                       {isCustomizing && (
                         <div className="absolute inset-0 bg-amber-500/5 z-50 flex items-center justify-center">
@@ -684,7 +713,7 @@ const Dashboard = function Dashboard({
               if (widget.id === 'kpiClients') {
                 const card = { label: 'العملاء', value: clients.length, max: 200, icon: <Users />, color: 'bg-indigo-500', sparklineData: [{x: 'W1', y: 10}, {x: 'W2', y: 15}, {x: 'W3', y: 12}, {x: 'W4', y: clients.length}] };
                 return (
-                  <SortableWidgetWrapper className="col-span-1" key="kpiClients" id="kpiClients" isCustomizing={isCustomizing}>
+                  <SortableWidgetWrapper className={getWidgetClassName(widget.size)} key="kpiClients" id="kpiClients" isCustomizing={isCustomizing} widgetSize={widget.size} onResize={handleUpdateWidgetSize}>
                     <div className={`bg-white border border-slate-200 p-6 rounded-3xl shadow-sm transition-all duration-300 relative overflow-hidden cursor-pointer h-full ${isCustomizing ? 'opacity-80 ring-2 ring-dashed ring-amber-400' : ''}`}>
                       {isCustomizing && (
                         <div className="absolute inset-0 bg-amber-500/5 z-50 flex items-center justify-center">
@@ -726,7 +755,7 @@ const Dashboard = function Dashboard({
               if (widget.id === 'kpiInvoices') {
                 const card = { label: 'الفواتير المعلقة', value: invoices.filter(i => i.status === 'pending').length, max: 50, icon: <DollarSign />, color: 'bg-amber-500', sparklineData: [{x: 'W1', y: 5}, {x: 'W2', y: 8}, {x: 'W3', y: 12}, {x: 'W4', y: invoices.filter(i => i.status === 'pending').length}] };
                 return (
-                  <SortableWidgetWrapper className="col-span-1" key="kpiInvoices" id="kpiInvoices" isCustomizing={isCustomizing}>
+                  <SortableWidgetWrapper className={getWidgetClassName(widget.size)} key="kpiInvoices" id="kpiInvoices" isCustomizing={isCustomizing} widgetSize={widget.size} onResize={handleUpdateWidgetSize}>
                     <div className={`bg-white border border-slate-200 p-6 rounded-3xl shadow-sm transition-all duration-300 relative overflow-hidden cursor-pointer h-full ${isCustomizing ? 'opacity-80 ring-2 ring-dashed ring-amber-400' : ''}`}>
                       {isCustomizing && (
                         <div className="absolute inset-0 bg-amber-500/5 z-50 flex items-center justify-center">
@@ -767,7 +796,7 @@ const Dashboard = function Dashboard({
               }
               if (widget.id === 'najizPerformance') {
                 return (
-                  <SortableWidgetWrapper className="col-span-1 lg:col-span-2" key="najizPerformance" id="najizPerformance" isCustomizing={isCustomizing}>
+                  <SortableWidgetWrapper className={getWidgetClassName(widget.size)} key="najizPerformance" id="najizPerformance" isCustomizing={isCustomizing} widgetSize={widget.size} onResize={handleUpdateWidgetSize}>
                     <div className="h-full">
                       {isCustomizing && (
                         <div className="absolute inset-0 bg-amber-500/5 z-50 flex items-center justify-center pointer-events-none">
@@ -782,7 +811,7 @@ const Dashboard = function Dashboard({
               if (widget.id === 'kpiTasks') {
                 const card = { label: 'المهام المنجزة', value: tasks.filter(t => t.status === 'done').length, max: 300, icon: <CheckSquare />, color: 'bg-emerald-500', sparklineData: [{x: 'W1', y: 40}, {x: 'W2', y: 65}, {x: 'W3', y: 80}, {x: 'W4', y: tasks.filter(t => t.status === 'done').length}] };
                 return (
-                  <SortableWidgetWrapper className="col-span-1" key="kpiTasks" id="kpiTasks" isCustomizing={isCustomizing}>
+                  <SortableWidgetWrapper className={getWidgetClassName(widget.size)} key="kpiTasks" id="kpiTasks" isCustomizing={isCustomizing} widgetSize={widget.size} onResize={handleUpdateWidgetSize}>
                     <div className={`bg-white border border-slate-200 p-6 rounded-3xl shadow-sm transition-all duration-300 relative overflow-hidden cursor-pointer h-full ${isCustomizing ? 'opacity-80 ring-2 ring-dashed ring-amber-400' : ''}`}>
                       {isCustomizing && (
                         <div className="absolute inset-0 bg-amber-500/5 z-50 flex items-center justify-center">
@@ -823,7 +852,7 @@ const Dashboard = function Dashboard({
               }
 
               if (widget.id === 'summaryPlatform') return (
-                <SortableWidgetWrapper className="col-span-1 lg:col-span-2" key="summaryPlatform" id="summaryPlatform" isCustomizing={isCustomizing}>
+                <SortableWidgetWrapper className={getWidgetClassName(widget.size)} key="summaryPlatform" id="summaryPlatform" isCustomizing={isCustomizing} widgetSize={widget.size} onResize={handleUpdateWidgetSize}>
                   <div className={`h-full relative ${isCustomizing ? 'opacity-80 ring-2 ring-dashed ring-amber-400 rounded-3xl' : ''}`}>
                     {isCustomizing && (
                       <div className="absolute inset-0 bg-amber-500/5 z-50 flex items-center justify-center rounded-3xl">
@@ -874,7 +903,7 @@ const Dashboard = function Dashboard({
                 ].filter(d => d.value > 0);
 
                 return (
-                  <SortableWidgetWrapper className="col-span-1 lg:col-span-1 font-sans animate-fade-in" key="summaryCases" id="summaryCases" isCustomizing={isCustomizing}>
+                  <SortableWidgetWrapper className={getWidgetClassName(widget.size)} key="summaryCases" id="summaryCases" isCustomizing={isCustomizing} widgetSize={widget.size} onResize={handleUpdateWidgetSize}>
                     <div className={`h-full relative ${isCustomizing ? 'opacity-80 ring-2 ring-dashed ring-amber-400 rounded-3xl' : ''}`}>
                       {isCustomizing && (
                         <div className="absolute inset-0 bg-amber-500/5 z-50 flex items-center justify-center rounded-3xl">
@@ -962,7 +991,7 @@ const Dashboard = function Dashboard({
                 );
               }
               if (widget.id === 'najizPerformance') return (
-                <SortableWidgetWrapper className="col-span-1 lg:col-span-1" key="najizPerformance" id="najizPerformance" isCustomizing={isCustomizing}>
+                <SortableWidgetWrapper className={getWidgetClassName(widget.size)} key="najizPerformance" id="najizPerformance" isCustomizing={isCustomizing} widgetSize={widget.size} onResize={handleUpdateWidgetSize}>
                   <div className={`h-full relative ${isCustomizing ? 'opacity-80 ring-2 ring-dashed ring-amber-400 rounded-3xl' : ''}`}>
                     {isCustomizing && (
                       <div className="absolute inset-0 bg-amber-500/5 z-50 flex items-center justify-center rounded-3xl">
@@ -974,7 +1003,7 @@ const Dashboard = function Dashboard({
                 </SortableWidgetWrapper>
               );
               if (widget.id === 'summaryKPI') return (
-                <SortableWidgetWrapper className="col-span-1 lg:col-span-1" key="summaryKPI" id="summaryKPI" isCustomizing={isCustomizing}>
+                <SortableWidgetWrapper className={getWidgetClassName(widget.size)} key="summaryKPI" id="summaryKPI" isCustomizing={isCustomizing} widgetSize={widget.size} onResize={handleUpdateWidgetSize}>
                   <div className={`h-full relative ${isCustomizing ? 'opacity-80 ring-2 ring-dashed ring-amber-400 rounded-3xl' : ''}`}>
                     {isCustomizing && (
                       <div className="absolute inset-0 bg-amber-500/5 z-50 flex items-center justify-center rounded-3xl">
@@ -1028,7 +1057,7 @@ const Dashboard = function Dashboard({
                 </SortableWidgetWrapper>
               );
               if (widget.id === 'legalRiskMatrix') return (
-                <SortableWidgetWrapper className="col-span-1 lg:col-span-1" key="legalRiskMatrix" id="legalRiskMatrix" isCustomizing={isCustomizing}>
+                <SortableWidgetWrapper className={getWidgetClassName(widget.size)} key="legalRiskMatrix" id="legalRiskMatrix" isCustomizing={isCustomizing} widgetSize={widget.size} onResize={handleUpdateWidgetSize}>
                   <div className={`h-full relative ${isCustomizing ? 'opacity-80 ring-2 ring-dashed ring-amber-400 rounded-[2.5rem]' : ''}`}>
                     {isCustomizing && (
                       <div className="absolute inset-0 bg-amber-500/10 z-50 flex items-center justify-center rounded-[2.5rem]">
@@ -1040,7 +1069,7 @@ const Dashboard = function Dashboard({
                 </SortableWidgetWrapper>
               );
               if (widget.id === 'summaryAI') return (
-                <SortableWidgetWrapper className="col-span-1 lg:col-span-1" key="summaryAI" id="summaryAI" isCustomizing={isCustomizing}>
+                <SortableWidgetWrapper className={getWidgetClassName(widget.size)} key="summaryAI" id="summaryAI" isCustomizing={isCustomizing} widgetSize={widget.size} onResize={handleUpdateWidgetSize}>
                   <div className={`h-full relative ${isCustomizing ? 'opacity-80 ring-2 ring-dashed ring-amber-400 rounded-3xl' : ''}`}>
                     {isCustomizing && (
                       <div className="absolute inset-0 bg-amber-500/5 z-50 flex items-center justify-center rounded-3xl">
@@ -1071,7 +1100,7 @@ const Dashboard = function Dashboard({
                 </SortableWidgetWrapper>
               );
               if (widget.id === 'summaryCalendar') return (
-                <SortableWidgetWrapper className="col-span-1 lg:col-span-1" key="summaryCalendar" id="summaryCalendar" isCustomizing={isCustomizing}>
+                <SortableWidgetWrapper className={getWidgetClassName(widget.size)} key="summaryCalendar" id="summaryCalendar" isCustomizing={isCustomizing} widgetSize={widget.size} onResize={handleUpdateWidgetSize}>
                   <div className={`h-full relative ${isCustomizing ? 'opacity-80 ring-2 ring-dashed ring-amber-400 rounded-3xl' : ''}`}>
                     {isCustomizing && (
                       <div className="absolute inset-0 bg-amber-500/5 z-50 flex items-center justify-center rounded-3xl">
@@ -1100,7 +1129,7 @@ const Dashboard = function Dashboard({
                 </SortableWidgetWrapper>
               );
               if (widget.id === 'deadlinesWidget') return (
-                <SortableWidgetWrapper className="col-span-1 lg:col-span-1" key="deadlinesWidget" id="deadlinesWidget" isCustomizing={isCustomizing}>
+                <SortableWidgetWrapper className={getWidgetClassName(widget.size)} key="deadlinesWidget" id="deadlinesWidget" isCustomizing={isCustomizing} widgetSize={widget.size} onResize={handleUpdateWidgetSize}>
                   <div className={`h-full relative ${isCustomizing ? 'opacity-80 ring-2 ring-dashed ring-amber-400 rounded-3xl' : ''}`}>
                     {isCustomizing && (
                       <div className="absolute inset-0 bg-amber-500/5 z-50 flex items-center justify-center rounded-3xl">
@@ -1184,7 +1213,7 @@ const Dashboard = function Dashboard({
                 </SortableWidgetWrapper>
               );
               if (widget.id === 'summaryInvoicesAI') return (
-                <SortableWidgetWrapper className="col-span-1 lg:col-span-1" key="summaryInvoicesAI" id="summaryInvoicesAI" isCustomizing={isCustomizing}>
+                <SortableWidgetWrapper className={getWidgetClassName(widget.size)} key="summaryInvoicesAI" id="summaryInvoicesAI" isCustomizing={isCustomizing} widgetSize={widget.size} onResize={handleUpdateWidgetSize}>
                   <div className={`h-full relative ${isCustomizing ? 'opacity-80 ring-2 ring-dashed ring-amber-400 rounded-3xl' : ''}`}>
                     {isCustomizing && (
                       <div className="absolute inset-0 bg-amber-500/5 z-50 flex items-center justify-center rounded-3xl">
@@ -1208,7 +1237,7 @@ const Dashboard = function Dashboard({
               );
 
               if (widget.id === 'taskSuggestions') return (
-                <SortableWidgetWrapper className="col-span-1 lg:col-span-4" key="taskSuggestions" id="taskSuggestions" isCustomizing={isCustomizing}>
+                <SortableWidgetWrapper className={getWidgetClassName(widget.size)} key="taskSuggestions" id="taskSuggestions" isCustomizing={isCustomizing} widgetSize={widget.size} onResize={handleUpdateWidgetSize}>
                   <div className={`h-full relative ${isCustomizing ? 'opacity-80 ring-2 ring-dashed ring-amber-400 rounded-[2.5rem]' : ''}`}>
                     {isCustomizing && (
                       <div className="absolute inset-0 bg-amber-500/10 z-50 flex items-center justify-center rounded-[2.5rem]">
@@ -1239,7 +1268,7 @@ const Dashboard = function Dashboard({
                 </SortableWidgetWrapper>
               );
               if (widget.id === 'upcomingHearingsCard') return (
-                <SortableWidgetWrapper className="col-span-1 lg:col-span-2" key="upcomingHearingsCard" id="upcomingHearingsCard" isCustomizing={isCustomizing}>
+                <SortableWidgetWrapper className={getWidgetClassName(widget.size)} key="upcomingHearingsCard" id="upcomingHearingsCard" isCustomizing={isCustomizing} widgetSize={widget.size} onResize={handleUpdateWidgetSize}>
                   <div className={`group bg-white border border-slate-200 rounded-[2.5rem] p-8 shadow-sm space-y-6 relative h-full ${isCustomizing ? 'opacity-80 ring-2 ring-dashed ring-amber-400' : ''}`}>
                     {isCustomizing && (
                       <div className="absolute inset-0 bg-amber-500/5 z-50 flex items-center justify-center rounded-[2.5rem]">
@@ -1292,7 +1321,7 @@ const Dashboard = function Dashboard({
               );
 
               if (widget.id === 'legalPerformanceMetrics') return (
-                <SortableWidgetWrapper className="col-span-1 lg:col-span-2" key="legalPerformanceMetrics" id="legalPerformanceMetrics" isCustomizing={isCustomizing}>
+                <SortableWidgetWrapper className={getWidgetClassName(widget.size)} key="legalPerformanceMetrics" id="legalPerformanceMetrics" isCustomizing={isCustomizing} widgetSize={widget.size} onResize={handleUpdateWidgetSize}>
                   <div id="legal-performance-report-container" className={`bg-white border border-slate-200 rounded-[2.5rem] p-8 shadow-xl space-y-6 relative overflow-hidden h-full ${isCustomizing ? 'opacity-80 ring-2 ring-dashed ring-amber-400' : ''}`}>
                     {isCustomizing && (
                       <div className="absolute inset-0 bg-amber-500/5 z-50 flex items-center justify-center rounded-[2.5rem]">
@@ -1542,74 +1571,107 @@ const Dashboard = function Dashboard({
                 </SortableWidgetWrapper>
               );
 
-              if (widget.id === 'employeePerformanceKPI') return (
-                 <SortableWidgetWrapper className="col-span-1 lg:col-span-2" key="employeePerformanceKPI" id="employeePerformanceKPI">
+              
+              if (widget.id === 'employeePerformanceKPI') {
+                 // Dynamic calculation logic
+                 const empStats = new Map();
+                 tasks.forEach(t => {
+                   if (!t.assignedTo) return;
+                   if (!empStats.has(t.assignedTo)) {
+                     empStats.set(t.assignedTo, { name: t.assignedTo, tasksComplete: 0, totalTasks: 0, onTime: 0, delayed: 0, activeCases: 0 });
+                   }
+                   const s = empStats.get(t.assignedTo);
+                   s.totalTasks++;
+                   if (t.status === 'completed' || t.status === 'done') {
+                     s.tasksComplete++;
+                     if (t.targetCompletionTime && new Date(t.targetCompletionTime) < new Date()) {
+                       s.delayed++;
+                     } else {
+                       s.onTime++;
+                     }
+                   } else if (t.dueDate && new Date(t.dueDate) < new Date()) {
+                     s.delayed++;
+                   }
+                 });
+                 
+                 const calculatedEmps = Array.from(empStats.values()).map(s => {
+                   let kpi = 100;
+                   if (s.totalTasks > 0) {
+                     const completionRate = s.tasksComplete / s.totalTasks;
+                     const delayRate = s.delayed / s.totalTasks;
+                     kpi = Math.max(0, Math.round((completionRate * 100) - (delayRate * 50)));
+                   }
+                   return {
+                     ...s,
+                     kpi,
+                     color: kpi >= 90 ? 'bg-emerald-500' : kpi >= 70 ? 'bg-blue-500' : 'bg-amber-500',
+                     stroke: kpi >= 90 ? '#10b981' : kpi >= 70 ? '#3b82f6' : '#f59e0b',
+                     sparkline: [Math.max(0, kpi-10), Math.max(0, kpi-5), kpi, kpi] // Simple dummy sparkline since we lack historical data
+                   };
+                 }).sort((a,b) => b.kpi - a.kpi).slice(0, 4);
+
+                 // Fake data object for Radar Chart if real isn't rich enough
+                 const radarData = calculatedEmps.map(emp => ({
+                   subject: emp.name.split(' ')[0],
+                   A: emp.kpi,
+                   B: 100,
+                   fullMark: 100
+                 }));
+
+                 return (
+                 <SortableWidgetWrapper className={getWidgetClassName(widget.size)} key="employeePerformanceKPI" id="employeePerformanceKPI" isCustomizing={isCustomizing} widgetSize={widget.size} onResize={handleUpdateWidgetSize}>
                     <div className="bg-white border border-slate-200 rounded-[2.5rem] p-8 shadow-sm space-y-6 text-right" dir="rtl">
                       <h3 className="font-black text-slate-900 text-lg flex items-center gap-2">
                         <Activity className="w-5 h-5 text-purple-500" />
-                        <span>مؤشر أداء الموظفين التفصيلي</span>
+                        <span>مؤشر أداء الموظفين التفصيلي (ديناميكي)</span>
                       </h3>
+                      {calculatedEmps.length === 0 ? (
+                        <div className="text-center p-8 text-slate-500 text-sm font-bold bg-slate-50 rounded-xl">لا تتوفر مهام مسندة لحساب الأداء</div>
+                      ) : (
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                         {/* Employees List */}
                         <div className="space-y-4">
-                          {[
-                            { name: 'أحمد المحامي (مدير فريق)', kpi: 96, tasksComplete: 24, activeCases: 5, color: 'bg-emerald-500', sparkline: [4, 6, 8, 5, 9, 10, 7] },
-                            { name: 'سارة خالد (مستشار قانوني)', kpi: 88, tasksComplete: 18, activeCases: 4, color: 'bg-indigo-500', sparkline: [3, 5, 4, 6, 8, 7, 5] },
-                            { name: 'فهد عبدالله (أخصائي قضايا)', kpi: 91, tasksComplete: 30, activeCases: 8, color: 'bg-blue-500', sparkline: [2, 8, 7, 9, 10, 8, 9] },
-                            { name: 'نورة السعد (إدارية متدربة)', kpi: 74, tasksComplete: 12, activeCases: 1, color: 'bg-amber-500', sparkline: [1, 2, 1, 3, 4, 3, 2] }
-                          ].map((emp, i) => (
+                          {calculatedEmps.map((emp, i) => (
                              <div key={i} className="flex flex-col gap-1.5 p-3 transition-colors rounded-2xl border border-transparent">
                                 <div className="flex justify-between items-center text-xs">
                                   <span className="font-black text-slate-700">{emp.name}</span>
                                   <div className="flex items-center gap-2">
-                                    <div className="h-6 w-16">
-                                      <ResponsiveContainer width="100%" height="100%" key={themeTick}>
-                                        <AreaChart data={emp.sparkline.map((v, i) => ({ v, i }))}>
-                                          <Area type="monotone" dataKey="v" stroke={emp.kpi >= 90 ? '#10b981' : '#f59e0b'} fill={emp.kpi >= 90 ? '#10b981' : '#f59e0b'} fillOpacity={0.1} strokeWidth={1.5} />
-                                        </AreaChart>
-                                      </ResponsiveContainer>
-                                    </div>
                                     <span className={emp.kpi >= 90 ? "font-black text-emerald-500" : "font-black text-amber-500"}>{emp.kpi}%</span>
                                   </div>
                                 </div>
                                 <div className="w-full bg-slate-100 rounded-full h-1.5">
-                                  <div className={emp.color + " h-1.5 rounded-full"} style={{ width: emp.kpi + "%" }}></div>
+                                  <div className={emp.color + " h-1.5 rounded-full transition-all duration-1000"} style={{ width: emp.kpi + "%" }}></div>
                                 </div>
-                                <div className="flex justify-between items-center text-[9px] text-slate-400 font-bold">
-                                  <span className="flex items-center gap-1">متوسط إنجاز 7 أيام</span>
-                                  <span className="flex items-center gap-1">{emp.tasksComplete} مهام | {emp.activeCases} قضايا</span>
+                                <div className="flex justify-between items-center text-[9px] text-slate-400 font-bold mt-1">
+                                  <span className="flex items-center gap-1">تم الإنجاز: {emp.tasksComplete} / {emp.totalTasks}</span>
+                                  <span className="flex items-center gap-1 text-rose-500">متأخرة: {emp.delayed}</span>
                                 </div>
                              </div>
                           ))}
                         </div>
-
-                        {/* Over-time Mini Chart */}
-                        <div className="bg-slate-50/60 p-5 rounded-[1.5rem] border border-slate-100 flex flex-col justify-between">
-                          <div>
-                            <h4 className="text-xs font-black text-slate-800 mb-1">اتجاه إنجاز المهام القانونية (7 أيام)</h4>
-                            <p className="text-[10px] text-slate-500 font-bold mb-4">نشاط الموظفين التراكمي وتحديثات ناجز.</p>
-                          </div>
-                          
-                          <div className="h-[120px] w-full">
-                            <MiniChart color="#8b5cf6" />
-                          </div>
-                          
-                          <div className="flex justify-between items-center mt-4">
-                            <div className="flex items-center gap-1.5">
-                              <div className="w-2 h-2 rounded-full bg-emerald-500"></div>
-                              <span className="text-[9px] font-black text-slate-500 italic">معدل تحسن +12% عن الأسبوع السابق</span>
-                            </div>
-                          </div>
-                        </div>
+                        {/* Radar Chart */}
+                        <div className="h-48 w-full">
+                          <ResponsiveContainer width="100%" height="100%">
+                            <RadarChart cx="50%" cy="50%" outerRadius="80%" data={radarData}>
+                              <PolarGrid stroke="#e2e8f0" />
+                              <PolarAngleAxis dataKey="subject" tick={{ fill: '#64748b', fontSize: 10, fontWeight: 'bold' }} />
+                              <PolarRadiusAxis angle={30} domain={[0, 100]} tick={false} axisLine={false} />
+                              <Radar name="الأداء" dataKey="A" stroke="#8b5cf6" fill="#8b5cf6" fillOpacity={0.4} />
+                            </RadarChart>
+                          </ResponsiveContainer>
                         </div>
                       </div>
-                  </SortableWidgetWrapper>
-               );
+                      )}
+                    </div>
+                 </SortableWidgetWrapper>
+                 );
+              }
+
 
               if (widget.id === 'stats') return null;
               if (widget.id === 'timelineD3') return null;
               if (widget.id === 'partnerAnalytics') return (
-                <SortableWidgetWrapper className="col-span-1 lg:col-span-2" key="partnerAnalytics" id="partnerAnalytics" isCustomizing={isCustomizing}>
+                <SortableWidgetWrapper className={getWidgetClassName(widget.size)} key="partnerAnalytics" id="partnerAnalytics" isCustomizing={isCustomizing} widgetSize={widget.size} onResize={handleUpdateWidgetSize}>
                   <div className={`h-full relative ${isCustomizing ? 'opacity-80 ring-2 ring-dashed ring-amber-400 rounded-[2.5rem]' : ''}`}>
                     {isCustomizing && (
                       <div className="absolute inset-0 bg-amber-500/10 z-50 flex items-center justify-center rounded-[2.5rem]">
@@ -1621,7 +1683,7 @@ const Dashboard = function Dashboard({
                 </SortableWidgetWrapper>
               );
               if (widget.id === 'efficiency') return (
-                <SortableWidgetWrapper className="col-span-1 lg:col-span-2" key="efficiency" id="efficiency" isCustomizing={isCustomizing}>
+                <SortableWidgetWrapper className={getWidgetClassName(widget.size)} key="efficiency" id="efficiency" isCustomizing={isCustomizing} widgetSize={widget.size} onResize={handleUpdateWidgetSize}>
                   <div className={`h-full relative ${isCustomizing ? 'opacity-80 ring-2 ring-dashed ring-amber-400 rounded-[1.5rem]' : ''}`}>
                     {isCustomizing && (
                       <div className="absolute inset-0 bg-amber-500/10 z-50 flex items-center justify-center rounded-[1.5rem]">
@@ -1680,6 +1742,113 @@ const Dashboard = function Dashboard({
                 </div>
                 </SortableWidgetWrapper>
               );
+              if (widget.id === 'timelineCard') return (
+                <SortableWidgetWrapper className={getWidgetClassName(widget.size)} key="timelineCard" id="timelineCard" isCustomizing={isCustomizing} widgetSize={widget.size} onResize={handleUpdateWidgetSize}>
+                  <div className={`h-full relative ${isCustomizing ? 'opacity-80 ring-2 ring-dashed ring-amber-400 rounded-[2.5rem]' : ''}`}>
+                    {isCustomizing && (
+                      <div className="absolute inset-0 bg-amber-500/5 z-50 flex items-center justify-center rounded-[2.5rem]">
+                        <GripVertical className="w-8 h-8 text-amber-500 animate-pulse" />
+                      </div>
+                    )}
+                    <div className="bg-[#0f172a] border border-slate-800 rounded-[2.5rem] p-6 shadow-2xl space-y-4 h-full flex flex-col">
+                      <div className="flex items-center justify-between">
+                         <h3 className="font-black text-slate-100 text-sm flex items-center gap-2">
+                           <Activity className="w-4 h-4 text-emerald-400" />
+                           التسلسل الزمني للقضايا
+                         </h3>
+                      </div>
+                      <div className="flex-1 rounded-2xl overflow-hidden bg-slate-900 border border-slate-800 relative min-h-[300px]">
+                        <TimelineD3 hearings={hearings} tasks={tasks} />
+                      </div>
+                    </div>
+                  </div>
+                </SortableWidgetWrapper>
+              );
+
+              if (widget.id === 'appealsReminder') return (
+                <SortableWidgetWrapper className={getWidgetClassName(widget.size)} key="appealsReminder" id="appealsReminder" isCustomizing={isCustomizing} widgetSize={widget.size} onResize={handleUpdateWidgetSize}>
+                  <div className={`h-full relative ${isCustomizing ? 'opacity-80 ring-2 ring-dashed ring-amber-400 rounded-[2.5rem]' : ''}`}>
+                    {isCustomizing && (
+                      <div className="absolute inset-0 bg-amber-500/5 z-50 flex items-center justify-center rounded-[2.5rem]">
+                        <GripVertical className="w-8 h-8 text-amber-500 animate-pulse" />
+                      </div>
+                    )}
+                    <div className="bg-gradient-to-br from-rose-500 to-rose-700 border-none rounded-[2.5rem] p-8 shadow-xl space-y-6 text-white h-full relative overflow-hidden">
+                       <div className="flex justify-between items-center relative z-10">
+                          <h3 className="font-black text-xl flex items-center gap-2">
+                             <AlertTriangle className="w-6 h-6 text-rose-200" />
+                             مهل الاستئناف الحرجة
+                          </h3>
+                          <div className="bg-white/20 backdrop-blur-md px-3 py-1 rounded-xl text-xs font-black">
+                            {cases.filter(c => c.appeal_deadline).length} مهل
+                          </div>
+                       </div>
+                       <div className="space-y-3 relative z-10">
+                         {cases.filter(c => c.appeal_deadline).sort((a,b) => new Date(a.appeal_deadline!).getTime() - new Date(b.appeal_deadline!).getTime()).slice(0, 3).map((c, i) => {
+                           const isUrgent = new Date(c.appeal_deadline!).getTime() - new Date().getTime() < 3 * 24 * 60 * 60 * 1000;
+                           return (
+                             <div key={i} className="bg-white/10 backdrop-blur border border-white/20 p-4 rounded-2xl flex items-center justify-between">
+                               <div>
+                                 <h4 className="font-bold text-sm truncate max-w-[150px]">{c.caseName}</h4>
+                                 <p className="text-xs text-rose-100 mt-1 opacity-90 truncate max-w-[150px]">{c.caseNumber}</p>
+                               </div>
+                               <div className="text-left shrink-0">
+                                 <span className={`text-[10px] font-black px-2 py-1 rounded-lg inline-block ${isUrgent ? 'bg-white text-rose-600 animate-pulse' : 'bg-white/20 text-white'}`}>
+                                    {isUrgent ? 'اقترب الانتهاء!' : 'متبقي وقت'}
+                                 </span>
+                                 <p className="text-xs font-bold mt-1.5">{new Date(c.appeal_deadline!).toLocaleDateString('ar-SA')}</p>
+                               </div>
+                             </div>
+                           )
+                         })}
+                         {cases.filter(c => c.appeal_deadline).length === 0 && (
+                           <div className="text-center p-8 text-rose-100 font-bold bg-white/5 rounded-2xl border border-white/10">
+                             لا يوجد مواعيد استئناف قادمة
+                           </div>
+                         )}
+                       </div>
+                    </div>
+                  </div>
+                </SortableWidgetWrapper>
+              );
+
+              if (widget.id === 'overdueTasks') return (
+                <SortableWidgetWrapper className={getWidgetClassName(widget.size)} key="overdueTasks" id="overdueTasks" isCustomizing={isCustomizing} widgetSize={widget.size} onResize={handleUpdateWidgetSize}>
+                  <div className={`h-full relative ${isCustomizing ? 'opacity-80 ring-2 ring-dashed ring-amber-400 rounded-[2.5rem]' : ''}`}>
+                    {isCustomizing && (
+                      <div className="absolute inset-0 bg-amber-500/5 z-50 flex items-center justify-center rounded-[2.5rem]">
+                        <GripVertical className="w-8 h-8 text-amber-500 animate-pulse" />
+                      </div>
+                    )}
+                    <div className="bg-white border border-rose-200 rounded-[2.5rem] p-8 shadow-sm space-y-6 h-full border-b-4 border-b-rose-500 flex flex-col">
+                      <div className="flex items-center justify-between">
+                         <h3 className="font-black text-rose-600 text-lg flex items-center gap-2">
+                           <AlertCircle className="w-5 h-5" />
+                           المهام المتأخرة
+                         </h3>
+                         <span className="text-xs font-black bg-rose-50 text-rose-600 px-3 py-1 rounded-full">يتطلب تدخلاً فورياً</span>
+                      </div>
+                      <div className="space-y-4 flex-1">
+                        {tasks.filter(t => t.dueDate && new Date(t.dueDate) < new Date() && t.status !== 'done').slice(0, 4).map((t, i) => (
+                           <div key={i} className="flex gap-3 items-center group cursor-pointer transition-all hover:bg-slate-50 p-2 rounded-xl border border-transparent hover:border-slate-100">
+                              <div className="w-2 h-2 rounded-full bg-rose-500 shrink-0" />
+                              <div className="flex-1 min-w-0">
+                                <h4 className="text-xs font-black text-slate-800 line-clamp-1 truncate">{t.title}</h4>
+                                <p className="text-[10px] text-slate-500 font-bold truncate">{new Date(t.dueDate!).toLocaleDateString('ar-SA')} - {t.assignedTo}</p>
+                              </div>
+                           </div>
+                        ))}
+                        {tasks.filter(t => t.dueDate && new Date(t.dueDate) < new Date() && t.status !== 'done').length === 0 && (
+                          <div className="h-full flex items-center justify-center">
+                            <p className="text-center text-xs font-bold text-slate-400 py-8 bg-slate-50 rounded-2xl border border-slate-100 border-dashed w-full">المهام مكتملة، عمل ممتاز ✅</p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </SortableWidgetWrapper>
+              );
+
               if (widget.id === 'activeCaseTracking') return null;
               return null;
             })}
