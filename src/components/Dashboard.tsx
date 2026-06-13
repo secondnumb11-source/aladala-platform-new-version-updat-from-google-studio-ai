@@ -599,8 +599,7 @@ const Dashboard = function Dashboard({
     >
       <div className="space-y-10 animate-fade-in" dir="rtl">
       
-      {/* InteractionGuideComponent for New Users (Task 9) */}
-      <InteractionGuideComponent onResetLayout={handleResetLayout} />
+      {/* InteractionGuideComponent disabled as requested */}
       {/* Header */}
       <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
         <div>

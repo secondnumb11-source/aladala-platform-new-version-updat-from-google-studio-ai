@@ -1,9 +1,10 @@
 {
-  "projectId": "flutter-ai-playground-4d6ca",
-  "appId": "1:1054309195013:web:ef500fa945d52741f12b6c",
-  "apiKey": "AIzaSyBVNWtsvSKPjL1Kx1_nUIrPUuZTznSruBk",
-  "authDomain": "flutter-ai-playground-4d6ca.firebaseapp.com",
-  "firestoreDatabaseId": "ai-studio-f64c5801-7b7c-42fe-881a-836e89b17f37",
-  "storageBucket": "flutter-ai-playground-4d6ca.firebasestorage.app",
-  "messagingSenderId": "1054309195013"
+  "projectId": "platform-ai-studio-fileeeee",
+  "appId": "1:699587980568:web:9e93151c0c3ebfb5a4826d",
+  "apiKey": "AIzaSyCIgVDe5mfNZK7oE9XwxhdLTH8MBC36o0o",
+  "authDomain": "platform-ai-studio-fileeeee.firebaseapp.com",
+  "firestoreDatabaseId": "(default)",
+  "storageBucket": "platform-ai-studio-fileeeee.firebasestorage.app",
+  "messagingSenderId": "699587980568",
+  "measurementId": "G-PZYWD5NXFG"
 }

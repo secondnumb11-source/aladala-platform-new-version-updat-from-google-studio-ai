@@ -526,6 +526,28 @@ export default function ClientsModule({
         </div>
       </div>
 
+      {/* Search and Action Bar */}
+      <div className="bg-[#050e21] p-5 rounded-2xl border border-slate-800 flex flex-col md:flex-row justify-between items-center gap-4 shadow-xl">
+        <div className="relative w-full md:w-96">
+          <Search className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-amber-500" />
+          <input 
+            type="text" 
+            placeholder="البحث بالاسم، الهوية، أو رقم الجوال..." 
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full bg-[#0c1a35] border border-slate-700/80 rounded-xl py-3 pr-11 pl-4 text-xs font-bold text-white placeholder-slate-400 focus:outline-none focus:border-amber-500"
+          />
+        </div>
+        <button
+          type="button"
+          onClick={() => setIsAdding(true)}
+          className="w-full md:w-auto bg-amber-500 text-slate-950 font-black text-xs py-3 px-6 rounded-xl flex items-center justify-center gap-2 transition-all hover:bg-amber-400 active:scale-95 shadow-md shadow-amber-500/10 cursor-pointer"
+        >
+          <Plus className="w-4 h-4 text-slate-950 font-black" />
+          <span>إضافة عميل / موكل جديد +</span>
+        </button>
+      </div>
+
       {/* Main Grid */}
       <div className="grid grid-cols-1 xl:grid-cols-12 gap-8">
         
@@ -771,23 +793,23 @@ export default function ClientsModule({
                             if (found) setCustomMsg(formatTemplate(found.content, selectedClientForWa));
                           }
                         }}
-                        className="w-full bg-slate-900 border border-yellow-400/20 text-yellow-300 rounded-2xl py-4 px-5 text-xs font-black focus:outline-none focus:border-yellow-500 transition-all cursor-pointer font-sans shadow-inner"
-                      >
-                        {templates
-                          .filter(t => sendFilterCategory === 'all' || t.category === sendFilterCategory)
-                          .map(t => (
-                            <option key={t.id} value={t.id}>{t.name}</option>
-                          ))}
-                        <option value="custom">تحرير رسالة حرة ✍️</option>
-                      </select>
-                    </div>
+                        className="w-full bg-slate-900 border border-slate-700 text-white rounded-2xl py-4 px-5 text-xs font-black focus:outline-none focus:border-amber-500 transition-all cursor-pointer font-sans shadow-inner"
+                       >
+                         {templates
+                           .filter(t => sendFilterCategory === 'all' || t.category === sendFilterCategory)
+                           .map(t => (
+                             <option key={t.id} value={t.id}>{t.name}</option>
+                           ))}
+                         <option value="custom">تحرير رسالة حرة ✍️</option>
+                        </select>
+                      </div>
 
-                    <div className="space-y-3">
+                      <div className="space-y-3">
                         <div className="flex items-center justify-between">
-                          <label className="text-xs font-black text-slate-900  uppercase tracking-widest">معاينة نص الإرسال</label>
-                          <span className="text-xs font-black text-emerald-500 uppercase tracking-[0.2em] flex items-center gap-1.5 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
+                          <label className="text-xs font-black text-slate-300">معاينة نص الإرسال</label>
+                          <span className="text-xs font-black text-emerald-500 uppercase tracking-widest flex items-center gap-1.5 bg-emerald-500/10 px-2.5 py-1 rounded-full border border-emerald-500/20">
                              <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full"></div>
-                             Ready for push
+                             جاهز للإرسال
                           </span>
                         </div>
                         <textarea
@@ -795,99 +817,87 @@ export default function ClientsModule({
                           value={customMsg}
                           onChange={(e) => setCustomMsg(e.target.value)}
                           placeholder="محتوى الإشعار القانوني الاحترافي..."
-                          className="w-full bg-slate-950 text-white border border-amber-500 rounded-3xl py-5 px-6 text-xl font-black leading-relaxed focus:outline-none focus:border-amber-400 transition-all font-sans shadow-inner scrollbar-hide placeholder-slate-500"
+                          className="w-full bg-[#0c1a35] text-white border border-slate-700 rounded-2xl py-4 px-5 text-sm font-medium leading-relaxed focus:outline-none focus:border-amber-500 transition-all font-sans"
                         />
-                    </div>
+                      </div>
 
-                    <button 
-                      onClick={handleTriggerWhatsApp}
-                      className="w-full bg-emerald-600 text-white font-black py-5 rounded-[1.5rem] text-xs flex items-center justify-center gap-3 shadow-xl shadow-emerald-500/20 active:scale-95 transition-all border border-emerald-500"
-                    >
-                      <Send className="w-5 h-5" />
-                      <span>بث الإشعار الفوري WhatsApp 🚀</span>
-                    </button>
-                  </div>
-                </div>
-              ) : (
-                <div className="card-professional p-12 text-center space-y-8 bg-white  border-slate-800  shadow-2xl relative overflow-hidden group">
-                  <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 blur-3xl rounded-full"></div>
-                  <div className="w-24 h-24 bg-primary/10 text-primary rounded-[2rem] flex items-center justify-center mx-auto border border-primary/20 shadow-inner">
-                    <MessageSquare className="w-10 h-10" />
-                  </div>
-                  <div className="space-y-4">
-                    <h3 className="font-display font-black text-slate-900  text-2xl tracking-tighter uppercase">بوابة البث الإلكتروني</h3>
-                    <p className="text-xs md:text-sm text-slate-900  font-bold leading-[1.8] px-6">
-                      يرجى تحديد موكل من قاعدة البيانات لبدء توجيه الإشعارات القضائية المؤتمتة أو فواتير التحصيل عبر قنوات الربط المباشر WhatsApp Direct API.
-                    </p>
-                  </div>
-                  
-                  <div className="pt-8 border-t border-slate-50  grid grid-cols-2 gap-8">
-                    <div className="text-center">
-                       <div className="text-2xl font-display font-black text-slate-900  tracking-tighter">{templates.length}</div>
-                       <div className="text-xs font-black text-slate-900  uppercase tracking-widest mt-1">قالب نظامي</div>
-                    </div>
-                    <div className="text-center border-r border-slate-50 ">
-                       <div className="text-2xl font-display font-black text-slate-900  tracking-tighter">{waLogs.length}</div>
-                       <div className="text-xs font-black text-slate-900  uppercase tracking-widest mt-1">تنبيه مرسل</div>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
+                      <button 
+                        onClick={handleTriggerWhatsApp}
+                        className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-black py-4 rounded-xl text-xs flex items-center justify-center gap-3 shadow-xl cursor-pointer border-0"
+                      >
+                        <Send className="w-4 h-4 text-white" />
+                        <span>بث الإشعار الفوري WhatsApp 🚀</span>
+                      </button>
 
-          {sidebarTab === 'templates' && (
-            <div className="card-professional bg-gradient-to-br from-[#050e21] to-[#0c1a35] border-yellow-400 border-2 p-8 space-y-8 animate-fade-in relative overflow-hidden group rounded-[28px]">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-yellow-400/5 blur-3xl rounded-full"></div>
-              
-              <div className="flex items-center justify-between border-b border-yellow-500/20 pb-6">
-                <div className="flex items-center gap-4">
-                  <div className="p-3 bg-yellow-400/10 text-yellow-300 rounded-2xl border border-yellow-500/30">
-                    <Edit2 className="w-6 h-6 text-yellow-300" />
-                  </div>
-                  <div>
-                    <h3 className="font-display font-black text-white text-xl tracking-tight uppercase drop-shadow-[0_0_12px_rgba(255,255,255,0.7)]">المعدل الاحترافي للنماذج</h3>
-                    <p className="text-xs text-yellow-300 font-extrabold uppercase tracking-widest mt-1 drop-shadow-[0_0_8px_rgba(250,204,21,0.5)]">Smart Variable Logic Editor</p>
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setShowAddTemplate(!showAddTemplate)}
-                  className="p-3 bg-yellow-400 text-slate-950 font-black rounded-xl transition-none cursor-pointer border border-transparent shadow shadow-yellow-400/20"
-                >
-                  <PlusCircle className="w-5 h-5 text-slate-950 font-black" />
-                </button>
-              </div>
+                      <div className="space-y-6 hidden">
+                       </select>
+                     </div>
 
-              {/* Add template inline input */}
-              {showAddTemplate && (
-                <div className="bg-gradient-to-r from-[#0C121E] via-[#0D1F43] to-[#9A7D2C]/40 rounded-[2.5rem] border border-yellow-400/50 p-6 space-y-5 animate-in slide-in-from-top duration-500 shadow-2xl backdrop-blur-xl">
+                     <div className="space-y-6">
+                <div className="space-y-3">
+                    <label className="text-xs font-black text-slate-300 uppercase tracking-widest block font-extrabold text-sm">النموذج النشط للتحصيل والتنبيه</label>
+                    <div className="flex gap-3">
+                      <select
+                         value={selectedTemplateForEdit}
+                         onChange={(e) => handleSelectTemplateForEdit(e.target.value)}
+                         className="flex-1 bg-slate-950 border border-slate-800 rounded-2xl py-4 px-5 text-xs font-black text-white outline-none focus:border-amber-500 transition-all font-sans cursor-pointer shadow-inner pr-10"
+                       >
+                         {templates.map(t => (
+                           <option key={t.id} value={t.id} className="bg-slate-950 text-white">{t.name}</option>
+                         ))}
+                       </select>
+                       <button
+                         onClick={() => handleDeleteTemplate(selectedTemplateForEdit)}
+                         className="p-4 bg-rose-600 hover:bg-rose-500 text-white rounded-2xl transition-all border-0 cursor-pointer shadow-lg"
+                         title="حذف النموذج الحالي"
+                       >
+                         <Trash2 className="w-5 h-5 text-white" />
+                       </button>
+                    </div>
+                </div>
+
+                <div className="space-y-4">
                   <div className="space-y-3">
-                    <label className="text-sm font-black text-yellow-300 uppercase tracking-widest block font-extrabold drop-shadow-[0_0_10px_rgba(250,204,21,0.6)]">عنوان النموذج الجديد</label>
-                    <input
-                      type="text"
-                      placeholder="مثال: إشعار استلام ملف"
-                      value={newTemplateName}
-                      onChange={(e) => setNewTemplateName(e.target.value)}
-                      className="w-full bg-slate-950 border-2 border-yellow-400/50 rounded-xl text-sm font-black text-white px-5 py-4 focus:outline-none focus:border-yellow-300 transition-none shadow-inner"
-                    />
+                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                        <label className="text-xs font-black text-slate-300 uppercase tracking-widest block font-extrabold text-sm">المحرر اللغوي للرسالة</label>
+                        <div className="flex gap-2 flex-wrap">
+                           {[
+                             { tag: '{clientName}', label: 'الاسم' },
+                             { tag: '{caseNumber}', label: 'الدعوى' },
+                             { tag: '{portalLink}', label: 'الرابط' }
+                           ].map(item => (
+                             <button
+                                key={item.tag}
+                                type="button"
+                                onClick={() => insertPlaceholder(item.tag)}
+                                className="px-3 py-1.5 bg-[#131e35] hover:bg-[#1a294a] text-xs font-black text-white rounded-lg transition-all cursor-pointer border border-[#2d3a54]"
+                             >
+                               + {item.label}
+                             </button>
+                           ))}
+                        </div>
+                     </div>
+                     <textarea
+                        id="template-textarea"
+                        rows={8}
+                        value={editedTemplateContent}
+                        onChange={(e) => setEditedTemplateContent(e.target.value)}
+                        className="w-full bg-slate-950 border border-slate-800 rounded-2xl py-6 px-6 text-sm font-bold text-white leading-relaxed outline-none focus:border-amber-500 transition-all font-sans shadow-inner scrollbar-hide"
+                        placeholder="اكتب هنا محتوى الرسالة الشرعية الموحدة..."
+                      />
                   </div>
-                  <div className="flex justify-end gap-3 pt-2">
-                    <button
-                      type="button"
-                      onClick={() => setShowAddTemplate(false)}
-                      className="text-xs font-black text-white px-4 uppercase tracking-widest animate-pulse"
-                    >
-                      إلغاء التراجع
-                    </button>
-                    <button
-                      type="button"
-                      onClick={handleAddTemplate}
-                      className="bg-yellow-300 text-slate-950 text-xs font-black px-8 py-3 rounded-xl transition-none shadow-xl cursor-pointer border border-transparent font-extrabold"
-                    >
-                      تثبيت النموذج +
-                    </button>
-                  </div>
+
+                  <button 
+                    onClick={handleSaveTemplate}
+                    className="w-full bg-amber-500 text-slate-950 hover:bg-amber-400 font-extrabold py-4 rounded-2xl text-xs flex items-center justify-center gap-3 shadow-2xl transition-all cursor-pointer border-0"
+                  >
+                    <Save className="w-4 h-4 text-slate-950" />
+                    <span>حفظ وتوثيق النموذج القضائي المحدث</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}v>
                 </div>
               )}
 

@@ -152,6 +152,7 @@ export interface Employee {
   email: string;
   branch: string;
   notes: string;
+  birthDate?: string;
   username?: string;
   password?: string;
   assignedCases?: string[];
@@ -162,6 +163,8 @@ export interface Employee {
   najizApiKey?: string;
   portalLink?: string;
   customLoginToken?: string;
+  status?: string;
+  avatarUrl?: string;
 }
 
 export interface DocumentVersion {

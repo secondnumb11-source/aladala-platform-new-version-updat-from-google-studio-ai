@@ -2795,36 +2795,6 @@ export default React.memo(function CasesModule({
              </motion.div>
           </div>
 
-          {/* Statistical Counters shelf for classifications */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 mb-6 w-full text-right animate-in fade-in slide-in-from-top-4 duration-500" dir="rtl">
-            {[
-              { key: 'commercial', label: 'تجارية ومصرفية', count: countByCategory('commercial'), color: 'from-amber-500/15 to-amber-600/5', border: 'border-amber-500/30 text-amber-300' },
-              { key: 'labor', label: 'شؤون عمالية', count: countByCategory('labor'), color: 'from-teal-500/15 to-teal-600/5', border: 'border-teal-500/30 text-teal-300' },
-              { key: 'criminal', label: 'جزائية جنائية', count: countByCategory('criminal'), color: 'from-rose-500/15 to-rose-600/5', border: 'border-rose-500/30 text-rose-300' },
-              { key: 'personal_status', label: 'أحوال شخصية وإرث', count: countByCategory('personal_status'), color: 'from-purple-500/15 to-purple-600/5', border: 'border-purple-500/30 text-purple-300' },
-              { key: 'administrative', label: 'إدارية ومظالم', count: countByCategory('administrative'), color: 'from-sky-500/15 to-sky-600/5', border: 'border-sky-500/30 text-sky-300' },
-              { key: 'financial', label: 'مالية وضريبية', count: countByCategory('financial'), color: 'from-yellow-400/15 to-yellow-500/5', border: 'border-yellow-400/30 text-yellow-300' }
-            ].map((item) => {
-              const isActive = categoryFilter === item.key;
-              return (
-                <button
-                  type="button"
-                  key={item.key}
-                  onClick={() => setCategoryFilter(isActive ? 'all' : item.key)}
-                  className={`p-4 rounded-2xl bg-[#0c1a35]/90 border ${item.border} flex flex-col justify-between items-start gap-2[1.03] active:scale-95 transition-all cursor-pointer relative overflow-hidden group/stat shadow-md ${isActive ? 'ring-2 ring-amber-500 border-amber-500 shadow-amber-500/10' : ''}`}
-                >
-                  <span className="text-[10px] font-black opacity-85 uppercase tracking-wide">{item.label}</span>
-                  <div className="flex items-center justify-between w-full mt-1">
-                     <span className="text-xl font-display font-black tracking-tight tabular-nums">{item.count}</span>
-                     <span className="text-[9px] bg-white/10 px-2 py-0.5 rounded-full font-black opacity-65 group-hover/stat:opacity-100 transition-opacity">
-                       {isActive ? 'نشط' : 'تصفية'}
-                     </span>
-                  </div>
-                </button>
-              );
-            })}
-          </div>
-
           <div className="flex flex-col lg:flex-row items-center justify-between gap-6 bg-[#050e21] p-8 rounded-[2.5rem] border border-slate-800 shadow-2xl mb-10 relative z-20">
             <div className="flex flex-wrap items-center gap-6">
               <div className="flex flex-col space-y-3">
