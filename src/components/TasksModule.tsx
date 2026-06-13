@@ -840,16 +840,16 @@ export default function TasksModule({
       </div>
 
       {/* Embedded WhatsApp/Email Automation Panel */}
-      <div className="bg-[#020D1F]/90 border border-slate-700/80 rounded-[2rem] p-6 shadow-xl high-contrast-dark-card flex flex-col md:flex-row items-center justify-between gap-6 relative overflow-hidden text-right">
-        <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/10 blur-[80px] rounded-full pointer-events-none"></div>
+      <div className="bg-slate-50 border border-slate-200 rounded-[2.5rem] p-8 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] flex flex-col md:flex-row items-center justify-between gap-6 relative text-right transition-all hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.1)]">
+        <div className="absolute top-0 right-0 w-64 h-64 bg-slate-200/50 blur-[80px] rounded-full pointer-events-none"></div>
         <div className="relative z-10 space-y-3">
           <div className="flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
-            <h3 className="font-black text-white text-lg tracking-tight">نظام الأتمتة: رسائل تذكير العملاء (WhatsApp & Email)</h3>
+            <span className="w-2.5 h-2.5 rounded-full bg-slate-800 animate-pulse"></span>
+            <h3 className="font-black text-slate-900 text-lg tracking-tight">نظام الأتمتة: رسائل تذكير العملاء (WhatsApp & Email)</h3>
           </div>
-          <p className="text-xs font-bold leading-loose text-slate-300 max-w-2xl">
+          <p className="text-xs font-bold leading-loose text-slate-600 max-w-2xl">
             يقوم النظام التلقائي برصد الجلسات القانونية التي يتبقى على موعد انعقادها أقل من 24 ساعة، ويبدأ ببث رسائل تذكير للعميل المعني. 
-            <span className="block mt-1 text-emerald-400">يمكنك تعديل وصياغة قالب الرسالة وتفاصيل الإرسال من خلال قسم (إشعارات العملاء-واتساب).</span>
+            <span className="block mt-1 text-slate-500 font-extrabold">يمكنك تعديل وصياغة قالب الرسالة وتفاصيل الإرسال من خلال قسم (إشعارات العملاء-واتساب).</span>
           </p>
         </div>
         <button 
@@ -861,9 +861,9 @@ export default function TasksModule({
               triggerToast('تم البث التلقائي بنجاح', 'تم استهداف 3 عملاء لديهم جلسات قضائية خلال 24 ساعة عبر المنصة', 'critical');
             }, 3000);
           }}
-          className="relative z-10 shrink-0 bg-emerald-500 text-emerald-950 font-black px-6 py-4 rounded-xl flex items-center gap-3 transition-colors shadow-lg cursor-pointer"
+          className="relative z-10 shrink-0 bg-slate-900 text-white hover:bg-slate-800 font-black px-6 py-4 rounded-xl flex items-center gap-3 transition-colors shadow-md cursor-pointer"
         >
-          <div className="w-2h-2 bg-white rounded-full animate-ping"></div>
+          <div className="w-2 h-2 bg-slate-300 rounded-full animate-ping"></div>
           <span>تشغيل بث الإشعارات الآن</span>
         </button>
       </div>
@@ -1215,22 +1215,22 @@ export default function TasksModule({
                 onDragLeave={() => {
                   if (hoveredColumnId === col.id) setHoveredColumnId(null);
                 }}
-                className={`border rounded-3xl p-4 flex flex-col space-y-4 min-h-[500px] shadow-sm transition-all duration-300 ease-out bg-slate-50/10 backdrop-blur-sm ${
+                className={`border rounded-3xl p-4 flex flex-col space-y-4 min-h-[500px] shadow-sm transition-all duration-300 ease-out bg-slate-50 relative ${
                   isColumnHovered 
-                    ? 'bg-amber-950/20 border-primary ring-4 ring-primary/10 scale-[1.02] shadow-xl' 
+                    ? 'border-slate-400 ring-4 ring-slate-100 scale-[1.02] shadow-xl' 
                     : isAnyTaskDragging 
-                      ? 'border-primary/20 bg-slate-900/40' 
-                      : 'border-slate-800'
+                      ? 'border-slate-300 bg-slate-100/50' 
+                      : 'border-slate-200'
                 }`}
               >
                 
                 {/* Column Header */}
-                <div className="flex items-center justify-between border-b border-border pb-2">
+                <div className="flex items-center justify-between border-b border-slate-200 pb-2">
                   <div className="flex items-center gap-2">
                     <span className={`w-2.5 h-2.5 rounded-full ${col.color}`}></span>
-                    <h3 className="font-black text-xs text-white pb-0.5">{col.name}</h3>
+                    <h3 className="font-black text-xs text-slate-900 pb-0.5">{col.name}</h3>
                   </div>
-                  <span className="text-[10px] bg-primary/10 text-primary px-2.5 min-w-5 h-5 flex items-center justify-center rounded-full font-black border border-primary/20">
+                  <span className="text-[10px] bg-slate-200 text-slate-600 px-2.5 min-w-5 h-5 flex items-center justify-center rounded-full font-black">
                     {colTasks.length}
                   </span>
                 </div>
@@ -1264,90 +1264,33 @@ export default function TasksModule({
                             className="w-full"
                           >
                             {(() => {
-                              // Get active bg for this task
-                              const bgHex = taskBgColors[t.id] || (
-                                t.priority === 'high' ? '#0f172a' : // Deep dark
-                                t.priority === 'medium' ? '#f8fafc' : // Bright Slate-50 for high contrast dark blue test
-                                '#064e3b' // Deep dark emerald green
-                              );
-                              
-                              const hex = bgHex.replace('#', '');
-                              const r = parseInt(hex.substring(0, 2), 16) || 0;
-                              const g = parseInt(hex.substring(2, 4), 16) || 0;
-                              const b = parseInt(hex.substring(4, 6), 16) || 0;
-                              const luminance = (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255;
-                              const isBright = luminance > 0.5;
-                              
-                              // CSS Style classes according to calculated luminance
-                              const cardTitleColor = isBright 
-                                ? 'text-blue-950 font-black text-sm leading-relaxed line-clamp-2' 
-                                : 'text-[#fbbf24] font-black text-sm drop-shadow-[0_0_10px_rgba(251,191,36,0.7)] leading-relaxed line-clamp-2';
-                                
-                              const cardDescColor = isBright 
-                                ? 'text-blue-900 font-sans font-bold text-xs leading-normal line-clamp-3' 
-                                : 'text-white font-sans font-bold text-xs leading-normal line-clamp-3';
-                                
-                              const cardMetaColor = isBright 
-                                ? 'text-blue-950 font-bold text-[11px]' 
-                                : 'text-[#fbbf24] font-bold text-[11px]';
-                                
-                              const cardBorderClass = isBright
-                                ? 'border-blue-400 border-2'
-                                : 'border-[#dfb76c]/30 border-2';
-
                               return (
                                 <motion.div
                                   layout
-                                  animate={{ backgroundColor: bgHex }}
-                                  className={`w-full p-4 rounded-xl flex flex-col justify-between shadow-lg relative min-h-[220px] transition-all no-hover-parallax ${cardBorderClass}`}
+                                  className={`w-full p-5 rounded-2xl flex flex-col justify-between shadow-sm relative min-h-[200px] transition-all bg-white border border-slate-200 hover:shadow-md hover:border-slate-300`}
                                 >
-                                  {/* Color Cycler Controls for Demoing Readability Analysis */}
-                                  <div className="absolute top-2 left-2 flex items-center gap-1.5 bg-slate-950/40 px-2 py-1 rounded-full border border-white/10 opacity-40 transition-opacity z-10">
-                                    {[
-                                      { hex: '#f8fafc', label: 'فاتح' },
-                                      { hex: '#eff6ff', label: 'سماوي' },
-                                      { hex: '#0e1726', label: 'داكن كلاسيك' },
-                                      { hex: '#0f172a', label: 'ليل داكن' }
-                                    ].map(color => (
-                                      <button
-                                        key={color.hex}
-                                        type="button"
-                                        onClick={(e) => {
-                                          e.preventDefault();
-                                          e.stopPropagation();
-                                          setTaskBgColors(prev => ({ ...prev, [t.id]: color.hex }));
-                                        }}
-                                        style={{ backgroundColor: color.hex }}
-                                        title={`تنقل تباين القراءة: ${color.label}`}
-                                        className={`w-3.5 h-3.5 rounded-full border border-slate-400 cursor-pointer ${bgHex === color.hex ? 'ring-2 ring-amber-400 scale-110' : ''}`}
-                                      />
-                                    ))}
-                                  </div>
 
-                                  <div className="space-y-3 pt-4">
+                                  <div className="space-y-3">
                                     <div className="flex justify-between items-center">
-                                      <div className="flex items-center gap-1.5 mr-auto">
-                                        <span className={`text-[10px] font-black px-2 py-0.5 rounded-md border ${
-                                          t.priority === 'high' ? 'bg-rose-500/15 text-rose-500 border-rose-500/30 font-black' :
-                                          t.priority === 'medium' ? 'bg-amber-500/15 text-amber-500 border-amber-500/30 font-black' : 
-                                          'bg-emerald-500/15 text-emerald-500 border-emerald-500/30 font-black'
+                                      <div className="flex items-center gap-2 mr-auto">
+                                        <span className={`text-[10px] uppercase font-black px-2.5 py-1 rounded-full border ${
+                                          t.priority === 'high' ? 'bg-rose-50 text-rose-600 border-rose-200' :
+                                          t.priority === 'medium' ? 'bg-amber-50 text-amber-600 border-amber-200' : 
+                                          'bg-slate-100 text-slate-600 border-slate-200'
                                         }`}>
                                           {t.priority === 'high' ? 'عالية الأهمية' : t.priority === 'medium' ? 'متوسطة' : 'عادية'}
                                         </span>
                                         
                                         {/* Countdown Timer Badge */}
                                         {t.status !== 'done' && (
-                                          <div className={`p-1 flex flex-col items-center justify-center gap-0.5 rounded-lg border ${
+                                          <div className={`px-2 py-1 flex items-center gap-1.5 rounded-full border ${
                                             getDaysLeft(t.dueDate) < 0 
-                                              ? 'bg-rose-950 border-rose-500 text-rose-50 shadow-rose-950/40' 
+                                              ? 'bg-rose-100 border-rose-300 text-rose-700' 
                                               : getDaysLeft(t.dueDate) <= 2 
-                                                ? 'bg-amber-400 border-amber-300 text-slate-950 shadow-amber-600/30' 
-                                                : isBright ? 'bg-blue-100/50 border-blue-200 text-blue-950' : 'bg-slate-900 border-slate-700 text-slate-50'
+                                                ? 'bg-amber-100 border-amber-300 text-amber-800' 
+                                                : 'bg-slate-50 border-slate-200 text-slate-600'
                                           }`}>
-                                            <div className="flex items-center gap-1">
-                                              <Clock className="w-2.5 h-2.5 text-red-500" />
-                                              <span className="text-[8px] font-black uppercase tracking-tight">الأجل</span>
-                                            </div>
+                                            <Clock className="w-3 h-3" />
                                             <span className="text-[10px] font-black leading-none font-mono">
                                               {getDaysLeft(t.dueDate) < 0 
                                                 ? 'منتهي ⚠️' 
@@ -1359,7 +1302,7 @@ export default function TasksModule({
                                         )}
                                       </div>
 
-                                      <div className="flex items-center gap-1.5 order-first">
+                                      <div className="flex items-center gap-1 order-first">
                                         <button
                                           type="button"
                                           onClick={(e) => {
@@ -1368,7 +1311,7 @@ export default function TasksModule({
                                             notifySimulate(t);
                                           }}
                                           title="إرسال تنبيه فوري"
-                                          className={`p-1.5 rounded-md transition-all relative ${simulatedAlertActive === t.id ? 'bg-primary text-white' : isBright ? 'bg-blue-100 text-blue-900' : 'bg-slate-900 border border-slate-700 text-slate-400 animate-pulse'}`}
+                                          className={`p-1.5 rounded-lg transition-colors cursor-pointer ${simulatedAlertActive === t.id ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20' : 'bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-500'}`}
                                         >
                                           {simulatedAlertActive === t.id ? <BellRing className="w-3.5 h-3.5" /> : <Bell className="w-3.5 h-3.5" />}
                                         </button>
@@ -1380,67 +1323,67 @@ export default function TasksModule({
                                             toggleTaskSize(t.id);
                                           }}
                                           title="تعديل حجم عرض البطاقة"
-                                          className={`p-1 px-1.5 rounded-md transition-colors cursor-pointer border border-transparent ${isBright ? 'bg-blue-100 text-blue-900' : 'hover:bg-slate-800 text-slate-400'}`}
+                                          className="p-1 px-1.5 rounded-lg transition-colors cursor-pointer bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-500"
                                         >
                                           <Maximize2 className="w-3.5 h-3.5" />
                                         </button>
+                                        <span className="p-1 cursor-grab text-slate-400 hover:text-slate-600 transition-colors ml-1">
+                                          <GripVertical className="w-4 h-4 text-slate-300" />
+                                        </span>
                                       </div>
-                                      <span className={`p-1 cursor-grab ${isBright ? 'text-blue-900' : 'text-slate-400'}`}>
-                                        <GripVertical className="w-3.5 h-3.5" />
-                                      </span>
                                     </div>
 
-                                    <div className="flex items-center gap-2 mt-2">
+                                    <div className="flex items-start gap-3 mt-4">
                                       {(() => {
-                                        const typeIcon = t.title.includes('جلسة') ? <Gavel className="w-4 h-4 text-rose-500" /> :
-                                                       t.title.includes('تدقيق') ? <FileCheck className="w-4 h-4 text-emerald-500" /> :
-                                                       t.title.includes('مستند') || t.title.includes('لائحة') ? <FileText className="w-4 h-4 text-amber-500" /> :
-                                                       t.title.includes('استشارة') ? <MessageSquare className="w-4 h-4 text-sky-400" /> :
+                                        const typeIcon = t.title.includes('جلسة') ? <Gavel className="w-4 h-4 text-slate-600" /> :
+                                                       t.title.includes('تدقيق') ? <FileCheck className="w-4 h-4 text-slate-600" /> :
+                                                       t.title.includes('مستند') || t.title.includes('لائحة') ? <FileText className="w-4 h-4 text-slate-600" /> :
+                                                       t.title.includes('استشارة') ? <MessageSquare className="w-4 h-4 text-slate-600" /> :
                                                        <CheckSquare className="w-4 h-4 text-slate-500" />;
                                         
                                         const daysLeft = getDaysLeft(t.dueDate);
                                         const isGlowing = t.status !== 'done' && daysLeft <= 2;
                                         
                                         return (
-                                          <div className={`p-1.5 rounded-lg border ${isBright ? 'bg-blue-100/90 border-blue-200' : 'bg-slate-900 border-slate-700/50'} ${isGlowing ? 'shadow-[0_0_10px_rgba(251,191,36,0.5)] animate-pulse' : ''}`}>
+                                          <div className={`p-2 rounded-xl shrink-0 mt-0.5 border ${isGlowing ? 'bg-amber-50 border-amber-200 text-amber-600 shadow-sm' : 'bg-slate-50 border-slate-200 text-slate-500'}`}>
                                             {typeIcon}
                                           </div>
                                         );
                                       })()}
-                                      <h4 className={cardTitleColor}>{t.title}</h4>
+                                      <h4 className="text-slate-900 font-bold text-[13px] leading-relaxed line-clamp-2">{t.title}</h4>
                                     </div>
                                     
                                     {size !== 'small' && (
-                                      <p className={cardDescColor}>
+                                      <p className="text-slate-500 font-medium text-xs leading-relaxed line-clamp-3 pl-11">
                                         {t.description}
                                       </p>
                                     )}
 
                                     {size === 'full' && t.caseNumber && (
-                                      <div className={`mt-2.5 text-[10px] border px-2 py-1.5 rounded-md font-mono flex items-center justify-between ${isBright ? 'bg-blue-100 border-blue-200 text-blue-950' : 'bg-slate-900 border-slate-800 text-yellow-300'}`}>
-                                        <span>قضية قضائية موثقة</span>
-                                        <span>#{t.caseNumber}</span>
+                                      <div className="mt-3 text-[10px] bg-slate-50 border border-slate-200 text-slate-600 px-3 py-2 rounded-xl font-mono flex items-center justify-between shadow-sm pl-11">
+                                        <span className="font-bold">قضية قضائية موثقة</span>
+                                        <span className="bg-white px-2 py-0.5 rounded border border-slate-200 text-slate-700">#{t.caseNumber}</span>
                                       </div>
                                     )}
                                   </div>
 
-                                  <div className={`border-t mt-3 pt-2.5 flex items-center justify-between ${isBright ? 'border-blue-200/50 text-blue-950/80' : 'border-slate-800/80 text-slate-400'} font-bold`}>
-                                    <span className="flex items-center gap-1">
-                                      <User className="w-3.5 h-3.5 text-primary animate-pulse" />
+                                  <div className="border-t border-slate-100 mt-4 pt-3 flex items-center justify-between text-xs font-bold text-slate-500">
+                                    <span className="flex items-center gap-1.5 bg-slate-50 px-2.5 py-1 rounded-lg border border-slate-200">
+                                      <User className="w-3.5 h-3.5 text-slate-400" />
                                       <span className="truncate max-w-[90px]">{t.assignedTo}</span>
                                     </span>
 
-                                    <span className="flex items-center gap-1 font-sans">
-                                      <Clock className="w-3.5 h-3.5 text-primary animate-bounce" />
+                                    <span className="flex items-center gap-1.5 bg-slate-50 px-2.5 py-1 rounded-lg border border-slate-200 font-mono">
+                                      <Clock className="w-3.5 h-3.5 text-slate-400" />
                                       <span>{t.dueDate}</span>
                                     </span>
                                   </div>
 
-                                  <div className="mt-3 pt-2.5 border-t border-dashed border-slate-800/85">
+                                  <div className="mt-4 pt-3 border-t border-dashed border-slate-200">
                                     <select
                                       value={t.status}
                                       onChange={(e) => handleUpdateStatus(t, e.target.value as any)}
-                                      className={`w-full border text-xs font-black py-1.5 px-2 rounded-lg outline-none cursor-pointer transition-all ${isBright ? 'bg-white border-blue-300 text-blue-950' : 'bg-slate-900 border-slate-800 text-slate-300[#dfc382]'}`}
+                                      className="w-full bg-slate-50/80 border border-slate-200 text-slate-700 text-[11px] font-black py-2.5 px-3 rounded-xl outline-none cursor-pointer focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all shadow-sm appearance-none"
                                     >
                                       <option value="todo">تعليق</option>
                                       <option value="in_progress">قيد العمل</option>

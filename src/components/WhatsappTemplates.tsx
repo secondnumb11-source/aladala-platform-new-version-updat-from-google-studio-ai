@@ -168,6 +168,33 @@ export default function WhatsappTemplates() {
   const [newTriggerEvent, setNewTriggerEvent] = useState('حالة مخصصة');
   const [newTemplateText, setNewTemplateText] = useState('السلام عليكم {اسم_الالعدالة}...');
 
+  const [inboxMessages] = useState([
+    {
+      id: 'msg-1',
+      sender: 'شركة المراعي',
+      subject: 'استفسار بخصوص موعد جلسة الاستئناف',
+      message: 'نأمل منكم إفادتنا بخصوص الموعد الجديد لجلسة الاستئناف، حيث لم يصلنا تبليغ ناجز حتى الآن. يرجى المتابعة العاجلة.',
+      status: 'عاجل',
+      date: 'منذ ١٠ دقائق'
+    },
+    {
+      id: 'msg-2',
+      sender: 'إسماعيل بن فيصل الحربي',
+      subject: 'إرسال مستندات إضافية - قضية مقاولات',
+      message: 'مرفق لكم الملاحق والفواتير الخاصة بعقد المقاولة كما طلبتم. بانتظار تأكيد استلامكم والمضي قدماً.',
+      status: 'بانتظار الرد',
+      date: 'منذ ساعتين'
+    },
+    {
+      id: 'msg-3',
+      sender: 'عاصم بن طلال العقاد',
+      subject: 'طلب استشارة هاتفية',
+      message: 'أحتاج لترتيب مكالمة قصيرة مع المستشار غداً لمراجعة بعض البنود قبل توقيع المخالصة النهائية.',
+      status: 'تم القراءة',
+      date: 'امس'
+    }
+  ]);
+
   // --- AUTOMATED 24-HOUR REMINDERS DASHBOARD STATE & ACTIONS ---
   const [automatedRemindersActive, setAutomatedRemindersActive] = useState(true);
   const [cronCountdown, setCronCountdown] = useState(30);
@@ -452,7 +479,7 @@ export default function WhatsappTemplates() {
           color: var(--card-text) !important;
         }
         .luminance-card-active .text-yellow-300,
-        .luminance-card-active .text-yellow-350,
+        .luminance-card-active .text-yellow-300,
         .luminance-card-active .text-amber-400 {
           color: var(--card-accent) !important;
         }
@@ -512,14 +539,14 @@ export default function WhatsappTemplates() {
           </MotionLuminanceCard>
 
           {/* Template text raw editor */}
-          <MotionLuminanceCard className="bg-gradient-to-br from-[#9A7D2C]/90 via-[#0F172A] to-[#0284C7]/85 border-2 border-[#9A7D2C] rounded-2xl p-5 space-y-4 text-white shadow-xl">
+          <MotionLuminanceCard className="bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-4 text-white shadow-xl">
             <div className="flex justify-between items-center border-b border-white/20 pb-3">
               <div className="flex items-center gap-2">
                 <Sparkles className="w-4 h-4 text-yellow-300 animate-pulse" />
                 <h3 className="text-xs font-black text-white text-right">تحرير محتويات القالب النصي والتكامل البرمجي</h3>
               </div>
               
-              <span className="text-xs bg-yellow-500/15 text-yellow-350 border border-yellow-500/35 px-2 py-0.5 rounded font-bold font-mono">
+              <span className="text-xs bg-yellow-500/15 text-yellow-300 border border-yellow-500/35 px-2 py-0.5 rounded font-bold font-mono">
                 يدعم الإدراج الذكي للرموز
               </span>
             </div>
@@ -561,7 +588,7 @@ export default function WhatsappTemplates() {
                   rows={6}
                   value={editorText}
                   onChange={(e) => setEditorText(e.target.value)}
-                  className="w-full bg-slate-955 border border-slate-800 rounded-xl p-3.5 text-xs text-white leading-relaxed text-right font-sans focus:outline-none focus:border-emerald-500"
+                  className="w-full bg-slate-900 border border-slate-800 rounded-xl p-3.5 text-xs text-white leading-relaxed text-right font-sans focus:outline-none focus:border-emerald-500"
                   placeholder="اكتب رسالتك وتضمين علامات المتغيرات..."
                 />
               </div>
@@ -582,7 +609,7 @@ export default function WhatsappTemplates() {
           </MotionLuminanceCard>
 
           {/* Test Dispatch Panel */}
-          <MotionLuminanceCard className="bg-gradient-to-br from-[#1E3A8A]/90 via-[#0F172A] to-[#9A7D2C]/85 border-2 border-[#9A7D2C] rounded-3xl p-5 space-y-4 shadow-2xl text-white">
+          <MotionLuminanceCard className="bg-slate-900 border border-slate-800 rounded-3xl p-5 space-y-4 shadow-2xl text-white">
             <div className="flex items-center gap-2 border-b border-white/20 pb-3">
               <Send className="w-5 h-5 text-yellow-300" />
               <div className="text-right">
@@ -600,7 +627,7 @@ export default function WhatsappTemplates() {
                     value={testPhoneNumber}
                     onChange={(e) => setTestPhoneNumber(e.target.value)}
                     placeholder="مثال: +966501234567"
-                    className="w-full bg-slate-955 border border-slate-800 text-slate-100 font-mono text-xs rounded-xl py-2.5 px-3 focus:outline-none focus:border-primary text-left"
+                    className="w-full bg-slate-900 border border-slate-800 text-slate-100 font-mono text-xs rounded-xl py-2.5 px-3 focus:outline-none focus:border-primary text-left"
                   />
                   <span className="absolute right-3 top-2.5 text-xs">📱</span>
                 </div>
@@ -611,7 +638,7 @@ export default function WhatsappTemplates() {
                   type="button"
                   onClick={handleSendTestMessage}
                   disabled={isSendingTest}
-                  className="bg-slate-950 border border-slate-800 text-emerald-400 font-black text-xs py-2.5 px-4 rounded-xl flex-1 flex items-center justify-center gap-2 transition-all cursor-pointer"
+                  className="bg-slate-950 border border-slate-800 text-[#53bdeb] font-black text-xs py-2.5 px-4 rounded-xl flex-1 flex items-center justify-center gap-2 transition-all cursor-pointer"
                 >
                   <Play className="w-3.5 h-3.5" />
                   <span>بدء الإرسال التجريبي المعياري 🚀</span>
@@ -633,7 +660,7 @@ export default function WhatsappTemplates() {
             )}
 
             {testSendResult === 'success' && (
-              <div className="bg-emerald-950/40 border border-emerald-800 p-3.5 rounded-xl text-xs text-emerald-400 font-bold flex items-center gap-2 animate-pulse font-sans">
+              <div className="bg-emerald-950/40 border border-emerald-800 p-3.5 rounded-xl text-xs text-[#53bdeb] font-bold flex items-center gap-2 animate-pulse font-sans">
                 <CheckCircle className="w-4.5 h-4.5 text-emerald-300 shrink-0" />
                 <div className="text-right">
                   <p className="font-extrabold text-sm text-emerald-300">تم تسليم الإرسال التجريبي الفوري بنجاح! (Message ID: wh-91724)</p>
@@ -650,15 +677,15 @@ export default function WhatsappTemplates() {
         <div className="lg:col-span-4 space-y-6">
           
           {/* Smart Phone Layout frame */}
-          <div className="bg-slate-950 border-4 border-slate-900 rounded-[35px] p-4 shadow-2xl relative h-[560px] flex flex-col justify-between overflow-hidden">
+          <div className="bg-[#0b141a] border-[6px] border-slate-800 rounded-[2.5rem] shadow-[0_20px_50px_-20px_rgba(0,0,0,0.5)] relative h-[560px] flex flex-col justify-between overflow-hidden">
             
             {/* Phone speaker & camera notches */}
-            <div className="absolute top-2 left-1/2 transform -translate-x-1/2 h-4 w-28 bg-[#151d30] rounded-full z-25 flex items-center justify-center">
+            <div className="absolute top-0 left-1/2 transform -translate-x-1/2 h-5 w-32 bg-slate-800 rounded-b-2xl z-25 flex items-center justify-center">
               <span className="h-1.5 w-1.5 rounded-full bg-black"></span>
             </div>
 
             {/* Phone header screen */}
-            <div className="bg-[#0b141a]/95 border-b border-[#12222d] pt-3 pb-2.5 px-3 flex items-center justify-between text-right z-10 font-sans">
+            <div className="bg-[#202c33] pt-5 pb-3 px-4 shadow-sm flex items-center justify-between text-right z-10 font-sans">
               <div className="flex items-center gap-2">
                 <span className="text-3xl filter saturate-75">🟢</span>
                 <div className="text-right">
@@ -666,7 +693,7 @@ export default function WhatsappTemplates() {
                     <span>مكتب العدالة للمحاماة</span>
                     <span className="text-xs bg-emerald-500 text-black px-1 rounded-full font-black scale-90">موثق</span>
                   </h4>
-                  <span className="text-xs text-emerald-400 block leading-none">متاح ونشط الآن</span>
+                  <span className="text-xs text-[#53bdeb] block leading-none">متاح ونشط الآن</span>
                 </div>
               </div>
 
@@ -682,23 +709,23 @@ export default function WhatsappTemplates() {
               </div>
 
               {/* Chat Message Bubble in WhatsApp Green */}
-              <div className="max-w-[85%] self-start bg-[#054735] text-white border border-[#0d5945] p-3 rounded-2xl rounded-tr-none text-right shadow relative space-y-2 select-text">
+              <div className="max-w-[85%] self-start bg-[#005c4b] text-[#e9edef] p-3 rounded-2xl rounded-tr-none text-right shadow-sm relative space-y-2 select-text">
                 
                 {/* Visual marker triangle */}
-                <div className="absolute top-0 -left-1.5 w-0 h-0 border-t-[8px] border-t-[#054735] border-l-[8px] border-l-transparent"></div>
+                <div className="absolute top-0 -left-1.5 w-0 h-0 border-t-[8px] border-t-[#005c4b] border-l-[8px] border-l-transparent"></div>
 
-                <div className="text-[10.5px] leading-relaxed whitespace-pre-line text-slate-100 font-sans">
+                <div className="text-[12px] leading-relaxed whitespace-pre-line text-[#e9edef] font-sans">
                   {getRenderedPreview(editorText)}
                 </div>
 
-                <div className="flex justify-between items-center pt-0.5 text-xs text-[#869650] font-sans">
+                <div className="flex justify-between items-center pt-0.5 text-xs text-[#8696a0] font-sans">
                   <span>تم التسليم</span>
-                  <span className="text-emerald-400">✓✓</span>
+                  <span className="text-[#53bdeb]">✓✓</span>
                 </div>
               </div>
 
               {/* Security info disclaimer bubble */}
-              <p className="text-[7.5px] text-[#8696a0] text-center max-w-[90%] mx-auto font-sans leading-tight bg-[#152026]/40 p-2 rounded-xl">
+              <p className="text-[7.5px] text-[#8696a0] text-center max-w-[90%] mx-auto font-sans leading-tight bg-[#182229] p-2 shadow-sm border border-[#2a3942]/50 rounded-xl">
                 🔒 الرسائل والمكالمات مشفرة تماماً بين الطرفين. لا أحد خارج هذه الدردشة، ولا حتى واتساب، يمكنه قراءتها أو الاستماع إليها.
               </p>
 
@@ -716,7 +743,7 @@ export default function WhatsappTemplates() {
           </div>
 
           {/* Compliance Card */}
-          <div className="bg-[#0b1b36] border border-slate-800 p-4 rounded-2xl space-y-2">
+          <div className="bg-blue-950/30 border border-blue-900/50 p-4 rounded-2xl space-y-2">
             <h4 className="text-xs text-slate-200 font-bold block ml-auto">🛡️ شهادة الامتثال وموثوقية الهوية (Meta API Certified)</h4>
             <p className="text-[9.5px] text-slate-300 leading-relaxed font-sans text-right">
               هذه اللوحة مرتبطة بشكل مشفر بالرقم الرسمي المسجل والمصدّق لمكتب المحاماة لدى شركة Meta. جميع القوالب تخضع لمعالجة مسبقة ذكية لتجنب إرسال أي رسائل غير مطابقة لقوانين حماية خصوصية العملاء المعمول بها قانوناً بالمملكة.
@@ -728,22 +755,22 @@ export default function WhatsappTemplates() {
       </div>
 
       {/* Dynamic 24-Hour Automated reminders console table */}
-      <MotionLuminanceCard className="bg-gradient-to-br from-[#9A7D2C]/90 via-[#0c1424] to-[#0284C7]/85 border-2 border-[#9A7D2C] rounded-3xl p-6 shadow-2xl space-y-6 text-white text-right">
+      <MotionLuminanceCard className="bg-slate-900 border border-slate-800 rounded-[2.5rem] p-8 shadow-2xl space-y-6 text-white text-right relative overflow-hidden">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-white/20 pb-4">
           <div className="space-y-1">
-            <span className="text-xs bg-yellow-500/20 text-yellow-300 px-2.5 py-1 rounded-full border border-yellow-400 font-extrabold">⏰ محرك الجدولة العدلية التلقائي للـ 24 ساعة (Twilio Engine)</span>
-            <h2 className="text-base font-black text-white flex items-center gap-2 mt-1">
+            <span className="text-xs bg-indigo-500/10 text-indigo-400 px-3 py-1 rounded-full border border-indigo-500/30 font-bold uppercase tracking-wide">⏰ محرك الجدولة العدلية التلقائي للـ 24 ساعة (Twilio Engine)</span>
+            <h2 className="text-lg font-black text-white flex items-center gap-2 mt-2">
               <span>تذكيرات جلسات المحاكم المرتبطة (بانتظار الإرسال والمطابقة قبل الموعد بـ 24 ساعة)</span>
             </h2>
-            <p className="text-xs text-yellow-300 font-bold">يقوم المحرك الفني للربط الرقمي بمسح الجلسات القضائية القادمة وتنبيه الالعدالةين عبر الواتساب تلقائياً.</p>
+            <p className="text-xs text-slate-400 font-bold mt-2">يقوم المحرك الفني للربط الرقمي بمسح الجلسات القضائية القادمة وتنبيه الالعدالةين عبر الواتساب تلقائياً.</p>
           </div>
 
-          <div className="flex items-center gap-3 bg-slate-950/60 p-2.5 rounded-2xl border border-white/10">
+          <div className="flex items-center gap-3 bg-slate-950 p-4 rounded-2xl border border-slate-800">
             <div className="text-right">
-              <span className="text-xs text-yellow-200 block font-black">حالة الكرون الديمون (Scheduler Daemon):</span>
+              <span className="text-[10px] text-slate-500 block font-bold uppercase tracking-widest">حالة الكرون الديمون (Scheduler Daemon):</span>
               <div className="flex items-center gap-1.5 mt-0.5 font-bold">
                 <span className={`h-2 w-2 rounded-full ${automatedRemindersActive ? 'bg-emerald-400 animate-pulse' : 'bg-rose-500'}`} />
-                <span className="text-xs text-yellow-350 font-bold">
+                <span className="text-xs text-slate-300 font-bold">
                   {automatedRemindersActive ? `نشط (الفحص القادم بعد ${cronCountdown} ثانية)` : 'متوقف ومقيد'}
                 </span>
               </div>
@@ -763,10 +790,10 @@ export default function WhatsappTemplates() {
         </div>
 
         {/* Reminders Table */}
-        <div className="overflow-x-auto rounded-2xl border border-slate-800 bg-[#040d1f]">
+        <div className="overflow-x-auto rounded-2xl border border-slate-800 bg-slate-900/50 block">
           <table className="w-full text-right text-xs">
             <thead>
-              <tr className="bg-[#0c1830] border-b border-slate-800 text-slate-200 font-bold">
+              <tr className="bg-slate-950/80 border-b border-slate-800 text-slate-300 font-bold">
                 <th className="p-3 text-[10.5px]">اسم العميل والقضية</th>
                 <th className="p-3 text-[10.5px]">المحكمة وموعد الجلسة المجدول</th>
                 <th className="p-3 text-[10.5px]">التوقيت المتبقي التقريبي</th>
@@ -776,7 +803,7 @@ export default function WhatsappTemplates() {
             </thead>
             <tbody className="divide-y divide-slate-800">
               {scheduledHearings.map((sh) => (
-                <tr key={sh.id} className="hover:bg-[#0c1830]/50 transition-colors">
+                <tr key={sh.id} className="hover:bg-slate-800/30 transition-colors cursor-pointer border-b border-slate-800/50">
                   <td className="p-3.5 space-y-1">
                     <strong className="text-slate-100 block font-sans font-bold">{sh.clientName}</strong>
                     <span className="text-xs text-slate-300 font-bold block">القضية: {sh.caseName} (رقم: {sh.caseNumber})</span>
@@ -788,7 +815,7 @@ export default function WhatsappTemplates() {
                   </td>
 
                   <td className="p-3.5 font-sans font-bold">
-                    <span className="text-amber-400 bg-amber-955/40 border border-amber-800 px-2 py-0.5 rounded-lg text-xs">
+                    <span className="text-amber-400 bg-amber-900/40 border border-amber-800 px-2 py-0.5 rounded-lg text-xs">
                       ⏰ متبقي غداً (أقل من ٢٤ ساعة)
                     </span>
                   </td>
@@ -802,7 +829,7 @@ export default function WhatsappTemplates() {
                         sh.sentStatus === 'failed' ? 'bg-rose-500' : 'bg-slate-600'
                       }`} />
                       <span className={`text-xs font-bold ${
-                        sh.sentStatus === 'sent' ? 'text-emerald-400' :
+                        sh.sentStatus === 'sent' ? 'text-[#53bdeb]' :
                         sh.sentStatus === 'sending' ? 'text-amber-450' :
                         sh.sentStatus === 'failed' ? 'text-rose-400' : 'text-slate-400'
                       } `}>
@@ -821,7 +848,7 @@ export default function WhatsappTemplates() {
                         {sh.sentStatus === 'sending' ? 'جاري الإرسال...' : '🚀 إرسال التنبيه الآن'}
                       </button>
                     ) : (
-                      <div className="inline-flex items-center gap-1 text-emerald-400 bg-emerald-950/40 border border-emerald-800 py-1 px-2.5 rounded-lg text-xs font-bold">
+                      <div className="inline-flex items-center gap-1 text-[#53bdeb] bg-emerald-950/40 border border-emerald-800 py-1 px-2.5 rounded-lg text-xs font-bold">
                         <span>✓ تم الاستلام والتوصيل بالواتساب</span>
                       </div>
                     )}
@@ -836,6 +863,67 @@ export default function WhatsappTemplates() {
         <div className="bg-slate-900 p-4 rounded-2xl border border-slate-800 flex flex-wrap justify-between items-center text-xs font-bold text-slate-300 gap-3 font-sans">
           <span>🛡️ متطابق مع لوائح الهيئة السعودية للاتصالات وتقنية المعلومات لرسائل تنبيه الموعد</span>
           <span>الحساب المصدق: <span className="font-mono text-primary">TW-ACCOUNT-SID: ACc2d*** (نشط ومطابق لقواعد البث)</span></span>
+        </div>
+      </MotionLuminanceCard>
+
+      {/* Inbox section requested by user */}
+      <MotionLuminanceCard className="bg-slate-900 border border-slate-800 rounded-[2.5rem] p-8 shadow-2xl space-y-6 text-right relative overflow-hidden mt-8">
+        <div className="border-b border-slate-800 pb-4">
+          <h2 className="text-lg font-black text-white flex items-center gap-2">
+            <span>صندوق الوارد (مراسلات العملاء)</span>
+          </h2>
+          <p className="text-xs text-slate-400 font-bold mt-2">استعراض وتتبع استفسارات العملاء والمراسلات الواردة لمركز العناية بالموكلين.</p>
+        </div>
+
+        <div className="grid grid-cols-1 gap-4">
+          {inboxMessages.map(msg => {
+            let badgeColors = '';
+            let badgeIcon = '';
+            if (msg.status === 'تم القراءة') {
+              badgeColors = 'bg-slate-200 text-slate-600 border-slate-300';
+              badgeIcon = '✓✓';
+            } else if (msg.status === 'بانتظار الرد') {
+              badgeColors = 'bg-amber-100/80 text-amber-800 border-amber-300';
+              badgeIcon = '⏰';
+            } else if (msg.status === 'عاجل') {
+              badgeColors = 'bg-rose-100 text-rose-800 border-rose-300 animate-pulse shadow-sm';
+              badgeIcon = '⚠️';
+            }
+
+            return (
+              <div 
+                key={msg.id} 
+                className="notifications-email-card bg-slate-50 text-slate-900 p-5 rounded-3xl border border-slate-200 hover:shadow-md hover:bg-white hover:-translate-y-0.5 transition-all duration-200 ease-out cursor-pointer relative group"
+              >
+                <div className="absolute top-4 left-4 z-10">
+                  <span className={`flex items-center gap-1.5 text-[10px] font-black px-3 py-1 rounded-full border ${badgeColors}`}>
+                    <span>{badgeIcon}</span>
+                    <span>{msg.status}</span>
+                  </span>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-[1.2fr_1.5fr_3fr] gap-5 items-start mt-4 md:mt-0">
+                  
+                  <div className="space-y-1 pl-4 md:border-l md:border-slate-200 pt-1">
+                    <span className="text-[10px] text-slate-400 font-black block uppercase tracking-widest">المرسل</span>
+                    <strong className="text-sm font-black text-slate-900 block">{msg.sender}</strong>
+                    <span className="text-[10px] text-slate-500 font-bold">{msg.date}</span>
+                  </div>
+                  
+                  <div className="space-y-1 pl-4 md:border-l md:border-slate-200 pt-1">
+                    <span className="text-[10px] text-slate-400 font-black block uppercase tracking-widest">العنوان</span>
+                    <h3 className="text-[13px] font-black text-slate-800 line-clamp-2 leading-snug">{msg.subject}</h3>
+                  </div>
+
+                  <div className="space-y-1 pt-1 md:pr-4">
+                     <span className="text-[10px] text-slate-400 font-black block uppercase tracking-widest">محتوى الرسالة</span>
+                     <p className="text-xs text-slate-600 font-bold leading-relaxed line-clamp-2">{msg.message}</p>
+                  </div>
+
+                </div>
+              </div>
+            );
+          })}
         </div>
       </MotionLuminanceCard>
 

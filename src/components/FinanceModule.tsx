@@ -1907,21 +1907,21 @@ export default function FinanceModule({
               </div>
 
               {/* ZATCA Phase 2 Submission Controller - NEW UI */}
-              <div className="bg-white border border-slate-800 p-5 rounded-2xl space-y-4">
-                <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <div className="bg-white border border-blue-100 p-5 rounded-2xl space-y-4">
+                <div className="flex items-center justify-between border-b border-blue-50 pb-3">
                   <div className="flex items-center gap-2">
-                    <span className="p-1 px-2 bg-emerald-500 text-white text-[10px] rounded font-black">ZATCA V2</span>
-                    <h3 className="text-sm font-bold text-slate-900">إرسال الفاتورة لمنصة (فاتورة) الهيئة</h3>
+                    <span className="p-1 px-2 bg-blue-100 text-blue-950 border border-blue-200 text-[10px] rounded font-black">ZATCA V2</span>
+                    <h3 className="text-sm font-bold text-blue-950">إرسال الفاتورة لمنصة (فاتورة) الهيئة</h3>
                   </div>
                   <div className="flex items-center gap-1.5">
                     <div className={`w-2 h-2 rounded-full ${isZatcaConnected ? 'bg-emerald-500' : 'bg-slate-300'}`} />
-                    <span className="text-[10px] font-bold text-slate-500 font-sans">{isZatcaConnected ? 'CONNECTED' : 'DISCONNECTED'}</span>
+                    <span className="text-[10px] font-bold text-blue-900 font-sans">{isZatcaConnected ? 'CONNECTED' : 'DISCONNECTED'}</span>
                   </div>
                 </div>
 
                 <div className="flex items-center justify-between">
                   {invoices.find(i => i.id === selectedSimInvoiceId)?.isZatcaSubmitted ? (
-                    <div className="w-full py-3 bg-emerald-50 border border-emerald-100 text-emerald-700 rounded-xl text-xs font-black flex items-center justify-center gap-2">
+                    <div className="w-full py-3 bg-blue-50 border border-blue-100 text-blue-900 rounded-xl text-xs font-black flex items-center justify-center gap-2">
                       <CheckCircle className="w-4 h-4" />
                       <span>تم رفع الفاتورة واعتمادها في منصة زاتكا بموجب المرحلة الثانية</span>
                     </div>
@@ -1930,47 +1930,47 @@ export default function FinanceModule({
                       type="button"
                       onClick={handleZatcaSubmission}
                       disabled={!selectedSimInvoiceId || isSubmittingZatca}
-                      className={`flex-1 bg-emerald-600 text-white py-3 rounded-xl text-xs font-black transition-all flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20 ${isSubmittingZatca ? 'animate-pulse' : ''}`}
+                      className={`flex-1 bg-[#020D1F] hover:bg-[#031530] text-yellow-400 py-3 rounded-xl text-xs font-black transition-all flex items-center justify-center gap-2 shadow-lg disabled:opacity-50 border border-[#0A1A3F] ${isSubmittingZatca ? 'animate-pulse' : ''}`}
                     >
-                      {isSubmittingZatca ? <RefreshCw className="w-4 h-4 animate-spin" /> : <CloudUpload className="w-4 h-4" />}
-                      <span>{isSubmittingZatca ? 'جاري التحقق والرفع...' : 'اعتماد وإرسال الفاتورة ضريبياً (Submit to ZATCA)'}</span>
+                      {isSubmittingZatca ? <RefreshCw className="w-4 h-4 animate-spin text-white" /> : <CloudUpload className="w-4 h-4 text-white" />}
+                      <span className="text-white">{isSubmittingZatca ? 'جاري التحقق والرفع...' : 'اعتماد وإرسال الفاتورة ضريبياً (Submit to ZATCA)'}</span>
                     </button>
                   )}
                 </div>
-                <p className="text-[10px] text-slate-500 leading-relaxed font-bold">
+                <p className="text-[10px] text-blue-900 leading-relaxed font-bold">
                   سيتم توليد رقم UUID الفرعي، التوقيع الرقمي للمسودة، وطباعة رمز QR متوافق مع المرحلة الثانية لهيئة الزكاة والضريبة والجمارك آلياً بعد مطابقة الملف الضريبي للمكتب.
                 </p>
               </div>
 
               {/* ZATCA Audit Trail - NEW INTERFACE */}
-              <div className="bg-slate-900 border border-slate-700 p-6 rounded-2xl space-y-4 shadow-2xl">
+              <div className="bg-[#020D1F] border border-[#0d1f3b] p-6 rounded-2xl space-y-4 shadow-2xl">
                 <div className="flex items-center gap-3 border-b border-white/10 pb-3">
-                  <div className="p-2 bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 rounded-lg">
+                  <div className="p-2 bg-yellow-400/10 text-yellow-400 border border-yellow-400/20 rounded-lg">
                     <Activity className="w-4 h-4" />
                   </div>
-                  <h3 className="text-sm font-black text-white">سجل تدقيق الامتثال الضريبي (ZATCA Audit Trail)</h3>
+                  <h3 className="text-sm font-black text-yellow-400">سجل تدقيق الامتثال الضريبي (ZATCA Audit Trail)</h3>
                 </div>
 
                 <div className="space-y-3 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
                   {zatcaAuditLogs.length === 0 ? (
                     <div className="text-center py-8">
-                       <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest italic">لا توجد عمليات إرسال مسجلة حالياً</p>
+                       <p className="text-[10px] font-black text-white/50 uppercase tracking-widest italic">لا توجد عمليات إرسال مسجلة حالياً</p>
                     </div>
                   ) : (
                     zatcaAuditLogs.map((log) => (
                       <div key={log.id} className="p-3.5 bg-white/5 border border-white/10 rounded-xl space-y-2 transition-all">
                         <div className="flex justify-between items-center">
                           <span className={`text-[9px] font-black px-2 py-0.5 rounded uppercase tracking-tighter ${
-                            log.type === 'success' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
+                            log.type === 'success' ? 'bg-yellow-400/20 text-yellow-400 border border-yellow-400/30' : 'bg-white/20 text-white border border-white/30'
                           }`}>
                             {log.status}
                           </span>
-                          <span className="text-[9px] text-slate-500 font-bold font-sans">{log.timestamp}</span>
+                          <span className="text-[9px] text-white/60 font-bold font-sans">{log.timestamp}</span>
                         </div>
-                        <p className="text-[10px] text-slate-300 font-bold leading-relaxed">{log.details}</p>
+                        <p className="text-[10px] text-white font-bold leading-relaxed">{log.details}</p>
                         <div className="flex items-center gap-2 pt-1 border-t border-white/5">
-                          <span className="text-[9px] text-slate-500">الفاتورة: {log.invoiceId.substring(4)}</span>
-                          <span className="text-[9px] text-emerald-500/70">Signature: Verified ✅</span>
+                          <span className="text-[9px] text-white/60">الفاتورة: {log.invoiceId.substring(4)}</span>
+                          <span className="text-[9px] text-yellow-400">Signature: Verified ✅</span>
                         </div>
                       </div>
                     ))
@@ -2206,29 +2206,29 @@ export default function FinanceModule({
           </div>
 
           {/* Right column ZATCA compliance and QR validations card */}
-          <div className="lg:col-span-5 bg-sky-50 text-white rounded-3xl border border-slate-850 p-6 space-y-6 shadow-2xl relative overflow-hidden flex flex-col justify-between">
-            <div className="absolute top-0 right-0 w-24 h-24 bg-gold/5 rounded-full blur-2xl pointer-events-none"></div>
+          <div className="lg:col-span-5 bg-[#020D1F] text-white rounded-3xl border border-[#0d1f3b] p-6 space-y-6 shadow-2xl relative overflow-hidden flex flex-col justify-between">
+            <div className="absolute top-0 right-0 w-24 h-24 bg-yellow-400/5 rounded-full blur-2xl pointer-events-none"></div>
             
             <div className="space-y-4">
-              <div className="flex items-center gap-3 border-b border-slate-850 pb-4">
-                <div className="p-2.5 bg-emerald-500 text-emerald-400 rounded-xl border border-emerald-500">
+              <div className="flex items-center gap-3 border-b border-white/10 pb-4">
+                <div className="p-2.5 bg-yellow-400/10 text-yellow-400 rounded-xl border border-yellow-400/20">
                   <Shield className="w-5.5 h-5.5" />
                 </div>
                 <div>
-                  <h4 className="font-extrabold text-[#c5a880] text-sm flex items-center gap-2">
+                  <h4 className="font-extrabold text-yellow-400 text-sm flex items-center gap-2">
                     <span>مركز الفوترة الإلكترونية (ZATCA Phase II)</span>
                   </h4>
-                  <p className="text-[11px] text-emerald-500 font-bold block mt-0.5"> ربط واعتماد رسمي مع هيئة الزكاة والضريبة </p>
+                  <p className="text-[11px] text-white/50 font-bold block mt-0.5"> ربط واعتماد رسمي مع هيئة الزكاة والضريبة </p>
                 </div>
               </div>
 
-              <p className="text-xs text-slate-900  leading-relaxed text-justify">
+              <p className="text-xs text-white leading-relaxed text-justify">
                 تلتزم موكل للمحاماة بنظام الفوترة الإلكترونية المعتمد بالمملكة العربية السعودية للاستيراد المبرمج وإصدار الفواتير الضريبية ذات التشفير المزدوج (FATOORA).
               </p>
 
               {/* Diagnostic checklist */}
-              <div className="space-y-2.5 text-xs font-semibold bg-sky-100 p-4 rounded-xl border border-slate-850">
-                <span className="text-slate-900 block pb-1 border-b border-slate-900 font-extrabold">مؤشرات ومعايرة السلامة والتوثيق المزدوج:</span>
+              <div className="space-y-2.5 text-xs font-semibold bg-white/5 p-4 rounded-xl border border-white/10">
+                <span className="text-yellow-400 block pb-1 border-b border-white/10 font-extrabold">مؤشرات ومعايرة السلامة والتوثيق المزدوج:</span>
                 {[
                   { label: 'كود الفاتورة المشفر UUID', val: 'ZATCA-8291-0A82B1', ok: true },
                   { label: 'الرقم الضريبي للمكتب (TRN)', val: '310182749200003', ok: true },
@@ -2236,42 +2236,42 @@ export default function FinanceModule({
                   { label: 'توقيع المفتاح العام (Cryptographic SHA-256)', val: '0x8A8E9A...FEE2', ok: true },
                 ].map((item, idx) => (
                   <div key={idx} className="flex justify-between items-center py-1">
-                    <span className="text-slate-900">{item.label}:</span>
-                    <span className="font-mono text-slate-200">{item.val}</span>
+                    <span className="text-white opacity-80">{item.label}:</span>
+                    <span className="font-mono text-yellow-400">{item.val}</span>
                   </div>
                 ))}
               </div>
 
               {/* Interactive QR Decoder widget */}
-              <div className="bg-sky-100 p-5 rounded-2xl border border-slate-200 shadow-inner flex flex-col items-center justify-center text-center space-y-4 relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/10 rounded-full blur-3xl"></div>
+              <div className="bg-[#010814] p-5 rounded-2xl border border-white/10 shadow-inner flex flex-col items-center justify-center text-center space-y-4 relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-yellow-400/5 rounded-full blur-3xl"></div>
                 {/* ZATCA compliant visual QR Code representation */}
-                <div className="w-32 h-32 bg-white p-2 rounded-xl flex items-center justify-center border-2 border-indigo-500/30 relative shadow-xl z-10 transition-transform duration-300">
+                <div className="w-32 h-32 bg-white p-2 rounded-xl flex items-center justify-center border-2 border-yellow-400/30 relative shadow-xl z-10 transition-transform duration-300">
                   <div className="absolute inset-0 bg-[url('https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=ZATCA-PHASE-2-TEST-HASH')] bg-center bg-cover opacity-80 rounded-lg"></div>
-                  <div className="absolute -right-2 -bottom-2 bg-indigo-600 text-[10px] text-white font-black font-mono leading-none px-2 py-1 rounded shadow-md border border-white">
+                  <div className="absolute -right-2 -bottom-2 bg-[#020D1F] text-[10px] text-yellow-400 font-black font-mono leading-none px-2 py-1 rounded shadow-md border border-yellow-400/50">
                      ZATCA II
                   </div>
                 </div>
 
                 <div className="space-y-3 relative z-10 w-full">
-                  <span className="text-xs font-black text-slate-800 flex items-center justify-center gap-2">
-                    <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
+                  <span className="text-xs font-black text-yellow-400 flex items-center justify-center gap-2">
+                    <div className="w-2 h-2 rounded-full bg-yellow-400 animate-pulse"></div>
                     متصل بمحركات منصة (فاتورة)
                   </span>
-                  <p className="text-[10px] text-slate-500 max-w-[200px] mx-auto font-bold leading-relaxed">
+                  <p className="text-[10px] text-white/60 max-w-[200px] mx-auto font-bold leading-relaxed">
                     يتم تحويل صيغة الفاتورة إلى XML (UBL 2.1) وإرسالها للحصول على الختم الكريبتوغرافي من واجهات برمجة هيئة الزكاة.
                   </p>
 
-                  <button className="w-full mt-4 bg-slate-900 text-white font-black text-xs py-3 px-4 rounded-xl shadow-lg transition-all flex items-center justify-center gap-2">
-                    <Scan className="w-4 h-4" />
-                    اختبار التحقق من رمز QR
+                  <button className="w-full mt-4 bg-white/10 hover:bg-white/20 text-white font-black text-xs py-3 px-4 rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 border border-white/20">
+                    <Scan className="w-4 h-4 text-yellow-400" />
+                    <span className="text-white">اختبار التحقق من رمز QR</span>
                   </button>
                 </div>
               </div>
 
             </div>
 
-            <div className="bg-sky-100 p-4 border border-slate-850 rounded-2xl text-xs text-slate-900 text-center leading-relaxed">
+            <div className="bg-white/5 p-4 border border-white/10 rounded-2xl text-xs text-white/80 font-bold text-center leading-relaxed">
               تضمن العدالة سلامة العمليات وعدم إغلاق أي جلسات قضائية أو معاملة تصفية مالية إلا بعد مطابقة البنك وتوثيق السند الضريبي.
             </div>
 
@@ -2864,7 +2864,7 @@ export default function FinanceModule({
                     onClick={() => {
                       alert("تم رصد مطابقة الدفعات البنكية للحسابات واستقطاب الفواتير مع ZATCA بنجاح تام.");
                     }}
-                    className="p-3.5 rounded-2xl border border-dashed border-slate-350 font-black text-xs text-slate-800 bg-slate-50 leading-relaxed text-center shadow-sm cursor-pointer"
+                    className="p-3.5 rounded-2xl border border-dashed border-blue-200 font-black text-xs text-blue-950 bg-blue-50 hover:bg-blue-100 transition-all cursor-pointer shadow-sm text-center"
                   >
                     🔄 مطابقة الدفعات مع فواتير زاتكا
                   </button>
@@ -2994,15 +2994,15 @@ export default function FinanceModule({
               <div className="flex flex-col md:flex-row justify-between items-start gap-8 pt-6">
                 
                 {/* ZATCA QR Code Representation */}
-                <div className="flex items-center gap-5 p-6 bg-slate-50 border border-slate-800 rounded-3xl">
-                  <div className="w-24 h-24 bg-white p-2 border-2 border-slate-800 rounded-2xl flex items-center justify-center relative">
-                    <div className="w-full h-full bg-sky-50 rounded-lg flex items-center justify-center">
-                       <span className="text-xs text-white font-black font-mono tracking-widest uppercase">ZATCA</span>
+                <div className="flex items-center gap-5 p-6 bg-blue-50/50 border border-blue-100 rounded-3xl">
+                  <div className="w-24 h-24 bg-white p-2 border-2 border-blue-200 rounded-2xl flex items-center justify-center relative">
+                    <div className="w-full h-full bg-blue-50 rounded-lg flex items-center justify-center">
+                       <span className="text-xs text-blue-950 font-black font-mono tracking-widest uppercase">ZATCA</span>
                     </div>
                   </div>
                   <div className="max-w-[180px]">
-                    <div className="text-xs font-black text-slate-900  mb-1 leading-tight">هذه فاتورة ضريبية رسمية تخضع لنظام الفوترة الإلكترونية.</div>
-                    <div className="text-xs text-slate-900  font-bold leading-relaxed">تم التوليد والتشفير آلياً عبر خوارزميات الربط المعتمدة.</div>
+                    <div className="text-xs font-black text-blue-950 mb-1 leading-tight">هذه فاتورة ضريبية رسمية تخضع لنظام الفوترة الإلكترونية.</div>
+                    <div className="text-xs text-blue-900 font-bold leading-relaxed">تم التوليد والتشفير آلياً عبر خوارزميات الربط المعتمدة.</div>
                   </div>
                 </div>
 

@@ -27,7 +27,9 @@ import {
   Cloud,
   CloudDownload,
   CloudUpload,
-  LogOut
+  LogOut,
+  Lock,
+  Landmark
 } from 'lucide-react';
 import { Document, Client, Case } from '@/types';
 import { storage, auth } from '@/lib/firebase';
@@ -1262,16 +1264,17 @@ export default function DocumentsModule({
           <div className="lg:col-span-6 space-y-6">
 
           {/* Storage Tab Switcher: Local vs Google Drive */}
-          <div className="flex bg-[#0c1830] p-2.5 rounded-[2.5rem] border border-yellow-500/20 gap-3">
+          <div className="flex bg-[#020D1F] p-2.5 rounded-[2.5rem] border border-[#0d1f3b] gap-3">
             <button
               onClick={() => setActiveStorageTab('local')}
               className={`flex-1 flex items-center justify-center gap-2.5 py-3.5 rounded-2xl text-xs font-black transition-all duration-300 cursor-pointer ${
                 activeStorageTab === 'local'
-                  ? 'bg-gradient-to-r from-amber-600 to-amber-400 text-slate-950 shadow-lg scale-[1.02]'
-                  : 'text-slate-300'
+                  ? 'bg-[#0A1A3F] text-yellow-400 shadow-md scale-[1.02] border border-[#0d1f3b]'
+                  : 'text-white/60 hover:text-white hover:bg-white/5'
               }`}
             >
-              <span>🏛️ أرشيف العدالة المحلي</span>
+              <Landmark className={`w-4 h-4 ${activeStorageTab === 'local' ? 'text-yellow-400' : ''}`} />
+              <span>أرشيف العدالة المحلي</span>
             </button>
             <button
               onClick={() => {
@@ -1282,12 +1285,12 @@ export default function DocumentsModule({
               }}
               className={`flex-1 flex items-center justify-center gap-2.5 py-3.5 rounded-2xl text-xs font-black transition-all duration-300 cursor-pointer ${
                 activeStorageTab === 'gdrive'
-                  ? 'bg-gradient-to-r from-blue-600 to-blue-450 text-white shadow-lg scale-[1.02] border border-blue-400/30'
-                  : 'text-slate-300'
+                  ? 'bg-[#0A1A3F] text-yellow-400 shadow-md scale-[1.02] border border-[#0d1f3b]'
+                  : 'text-white/60 hover:text-white hover:bg-white/5'
               }`}
             >
-              <Cloud className="w-4 h-4 text-blue-300" />
-              <span>☁️ سحابة Google Drive المتكاملة</span>
+              <Cloud className={`w-4 h-4 ${activeStorageTab === 'gdrive' ? 'text-yellow-400' : ''}`} />
+              <span>سحابة Google Drive المتكاملة</span>
               {googleAccessToken && (
                 <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
               )}
@@ -1355,18 +1358,18 @@ export default function DocumentsModule({
           </div>
 
           {/* Advanced AI-Integrated Search Tool */}
-          <div className={`p-6 rounded-[2.5rem] border transition-all duration-700 space-y-6 shadow-2xl relative overflow-hidden backdrop-blur-md ${
+          <div className={`p-6 rounded-[2.5rem] border transition-all duration-700 space-y-6 shadow-md relative overflow-hidden backdrop-blur-md ${
             isDeepSearch 
-              ? 'bg-blue-950/40 border-blue-500/50 shadow-[0_0_50px_rgba(59,130,246,0.15)] ring-1 ring-blue-400/20' 
-              : 'bg-slate-900/40 border-slate-700/80 shadow-black/20'
+              ? 'bg-blue-50/50 border-blue-200 shadow-[0_0_50px_rgba(59,130,246,0.1)] ring-1 ring-blue-300' 
+              : 'bg-white border-slate-200 shadow-slate-200/50'
           }`}>
             {isDeepSearch && (
-              <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/10 blur-[80px] rounded-full pointer-events-none animate-pulse"></div>
+              <div className="absolute top-0 right-0 w-64 h-64 bg-blue-400/10 blur-[80px] rounded-full pointer-events-none animate-pulse"></div>
             )}
             
             <div className="flex flex-col lg:flex-row gap-5 relative z-10">
               <div className="relative flex-1 group">
-                <div className={`absolute right-4 top-1/2 -translate-y-1/2 p-2 rounded-xl transition-all duration-300 ${isDeepSearch ? 'bg-blue-500 text-white shadow-[0_0_15px_rgba(59,130,246,0.5)]' : 'bg-slate-800 text-slate-400 group-focus-within:bg-amber-500 group-focus-within:text-white'}`}>
+                <div className={`absolute right-4 top-1/2 -translate-y-1/2 p-2 rounded-xl transition-all duration-300 ${isDeepSearch ? 'bg-blue-600 text-white shadow-md shadow-blue-500/30' : 'bg-slate-100 text-slate-500 group-focus-within:bg-blue-600 group-focus-within:text-white'}`}>
                   <Search className={`w-4 h-4 ${isDeepSearch ? 'animate-pulse' : ''}`} />
                 </div>
                 <input 
@@ -1374,10 +1377,10 @@ export default function DocumentsModule({
                   placeholder={isDeepSearch ? "جاري محاكاة البحث العميق في نصوص المستندات (NLP)..." : "ابحث باسم المرفق، الرقم القضائي، أو الكلمات المفتاحية..."}
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className={`w-full bg-slate-950/80 border text-sm py-4 pr-14 pl-4 rounded-2xl transition-all duration-500 focus:outline-none font-bold placeholder-slate-500 ${
+                  className={`w-full bg-slate-50 text-sm py-4 pr-14 pl-4 rounded-2xl transition-all duration-500 focus:outline-none font-bold placeholder-slate-400 ${
                     isDeepSearch 
-                      ? 'border-blue-400/50 text-blue-100 focus:border-blue-400 focus:shadow-[0_0_20px_rgba(59,130,246,0.3)] ring-2 ring-blue-400/10' 
-                      : 'border-slate-700/50 text-white focus:border-amber-500'
+                      ? 'border border-blue-300/50 text-blue-900 focus:border-blue-400 focus:shadow-[0_0_20px_rgba(59,130,246,0.1)] ring-2 ring-blue-400/10' 
+                      : 'border border-slate-200 text-slate-800 focus:border-blue-500 focus:ring-2 focus:ring-blue-100'
                   }`}
                 />
                 {isDeepSearch && (
@@ -1386,7 +1389,7 @@ export default function DocumentsModule({
                       <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
                       <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
                     </span>
-                    <span className="text-[10px] text-blue-400 font-black tracking-widest uppercase">NLP Analyzer On</span>
+                    <span className="text-[10px] text-blue-600 font-black tracking-widest uppercase">NLP Analyzer On</span>
                   </div>
                 )}
               </div>
@@ -1394,13 +1397,13 @@ export default function DocumentsModule({
               <div className="flex flex-wrap lg:flex-nowrap gap-3 shrink-0">
                 <button 
                   onClick={() => setIsDeepSearch(!isDeepSearch)}
-                  className={`flex items-center gap-3 px-8 py-5 rounded-2xl text-[12px] font-black transition-all duration-500 active:scale-95 whitespace-nowrap overflow-hidden relative group/deep shadow-xl ${
+                  className={`flex items-center gap-3 px-8 py-5 rounded-2xl text-[12px] font-black transition-all duration-500 active:scale-95 whitespace-nowrap overflow-hidden relative group/deep shadow-md ${
                     isDeepSearch 
-                      ? 'bg-blue-600 text-white shadow-blue-950/50 ring-2 ring-blue-400/50' 
-                      : 'bg-white border-2 border-slate-300 text-slate-900 shadow-slate-200/50'
+                      ? 'bg-blue-600 text-white shadow-blue-500/30' 
+                      : 'bg-white border border-slate-200 text-slate-800 hover:bg-slate-50'
                   }`}
                 >
-                  <div className={`p-2 rounded-xl transition-all ${isDeepSearch ? 'bg-white/20' : 'bg-blue-50 text-blue-900 ring-1 ring-blue-100'}`}>
+                  <div className={`p-2 rounded-xl transition-all ${isDeepSearch ? 'bg-white/20' : 'bg-blue-50 text-blue-700 ring-1 ring-blue-100'}`}>
                     <Sparkles className="w-4 h-4" />
                   </div>
                   <span className="tracking-tight">{isDeepSearch ? 'تم تفعيل المسح العميق ✨' : 'تفعيل البحث بالذكاء الاصطناعي'}</span>
@@ -1410,72 +1413,71 @@ export default function DocumentsModule({
             </div>
             
             <div className="flex flex-wrap gap-4 items-center justify-between relative z-10 pt-2">
-              <div className="flex flex-wrap gap-5">
-                <div className="flex items-center gap-3 bg-slate-950/40 px-3 py-1.5 rounded-xl border border-slate-800/50">
-                  <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">تاريخ الرفع:</span>
-                  <div className="relative group">
-                    <Calendar className="absolute left-2 top-1/2 -translate-y-1/2 w-3 h-3 text-slate-500 transition-colors" />
+              <div className="flex flex-wrap gap-3">
+                <div className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-xl border border-slate-200 shadow-sm focus-within:ring-2 focus-within:ring-blue-100 transition-all">
+                  <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest whitespace-nowrap">تاريخ الرفع:</span>
+                  <div className="relative group flex items-center">
+                    <Calendar className="w-3 h-3 text-slate-400 ml-1" />
                     <input 
                       type="date"
                       value={dateFilter}
                       onChange={e => setDateFilter(e.target.value)}
-                      className="bg-transparent border-none p-1 text-[10px] font-bold text-white outline-none cursor-pointer placeholder-slate-600 min-w-[100px]"
+                      className="bg-transparent border-none py-1 pr-1 pl-4 text-[10px] font-bold text-slate-800 outline-none cursor-pointer min-w-[100px] focus:ring-0"
                     />
                   </div>
                 </div>
 
-                <div className="flex items-center gap-3 bg-slate-950/40 px-3 py-1.5 rounded-xl border border-slate-800/50">
-                  <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">العميل:</span>
+                <div className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-xl border border-slate-200 shadow-sm focus-within:ring-2 focus-within:ring-blue-100 transition-all">
+                  <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest whitespace-nowrap">العميل:</span>
                   <select 
                     value={clientFilter}
                     onChange={e => setClientFilter(e.target.value)}
-                    className="bg-transparent border-none p-1 text-[10px] font-bold text-white outline-none cursor-pointer"
+                    className="bg-transparent border-none p-1 text-[10px] font-bold text-slate-800 outline-none cursor-pointer focus:ring-0 appearance-none pr-8 relative"
                   >
-                    <option value="" className="bg-slate-900">كافة العملاء</option>
-                    {clients.map(c => <option key={c.id} value={c.name} className="bg-slate-900">{c.name}</option>)}
+                    <option value="">كافة العملاء</option>
+                    {clients.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
                   </select>
                 </div>
 
-                <div className="flex items-center gap-3 bg-slate-950/40 px-3 py-1.5 rounded-xl border border-slate-800/50">
-                  <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">القضية:</span>
+                <div className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-xl border border-slate-200 shadow-sm focus-within:ring-2 focus-within:ring-blue-100 transition-all">
+                  <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest whitespace-nowrap">القضية:</span>
                   <select 
                     value={caseFilter}
                     onChange={e => setCaseFilter(e.target.value)}
-                    className="bg-transparent border-none p-1 text-[10px] font-bold text-white outline-none cursor-pointer"
+                    className="bg-transparent border-none p-1 text-[10px] font-bold text-slate-800 outline-none cursor-pointer focus:ring-0 appearance-none pr-8 relative"
                   >
-                    <option value="" className="bg-slate-900">كافة القضايا</option>
-                    {cases.map(c => <option key={c.id} value={c.caseName} className="bg-slate-900">{c.caseName}</option>)}
+                    <option value="">كافة القضايا</option>
+                    {cases.map(c => <option key={c.id} value={c.caseName}>{c.caseName}</option>)}
                   </select>
                 </div>
 
-                <div className="flex items-center gap-3 bg-slate-950/40 px-3 py-1.5 rounded-xl border border-slate-800/50">
-                  <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">التصنيف:</span>
+                <div className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-xl border border-slate-200 shadow-sm focus-within:ring-2 focus-within:ring-blue-100 transition-all">
+                  <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest whitespace-nowrap">التصنيف:</span>
                   <select 
                     value={typeFilter}
                     onChange={e => setTypeFilter(e.target.value)}
-                    className="bg-transparent border-none p-1 text-[10px] font-bold text-white outline-none cursor-pointer"
+                    className="bg-transparent border-none p-1 text-[10px] font-bold text-slate-800 outline-none cursor-pointer focus:ring-0 appearance-none pr-8 relative"
                   >
-                    <option value="" className="bg-slate-900">كافة التصنيفات</option>
-                    {folders.slice(1).map(f => <option key={f.id} value={f.id} className="bg-slate-900">{f.name}</option>)}
+                    {folders.slice(1).map(f => <option key={f.id} value={f.id}>{f.name}</option>)}
                   </select>
                 </div>
 
-                <div className="flex items-center gap-3 bg-slate-950/40 px-3 py-1.5 rounded-xl border border-slate-800/50">
-                  <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">الوسوم الذكية:</span>
+                <div className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-xl border border-slate-200 shadow-sm focus-within:ring-2 focus-within:ring-blue-100 transition-all">
+                  <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest whitespace-nowrap">الوسوم الذكية:</span>
                   <select 
                     value={selectedTagFilter || ''}
                     onChange={e => setSelectedTagFilter(e.target.value || null)}
-                    className="bg-transparent border-none p-1 text-[10px] font-bold text-white outline-none cursor-pointer"
+                    className="bg-transparent border-none p-1 text-[10px] font-bold text-slate-800 outline-none cursor-pointer focus:ring-0 appearance-none pr-8 relative"
                   >
-                    <option value="" className="bg-slate-900">كافة الوسوم</option>
-                    {allAvailableTags.map(tag => <option key={tag} value={tag} className="bg-slate-900">{tag}</option>)}
+                    <option value="">كافة الوسوم</option>
+                    {allAvailableTags.map(tag => <option key={tag} value={tag}>{tag}</option>)}
                   </select>
                 </div>
               </div>
 
-              <div className="flex items-center gap-3">
-                <div className="text-[10px] text-slate-500 font-bold px-3 py-1 border-r border-slate-800">
-                  تمت أرشفة <span className="text-amber-500 font-mono">{documents.length}</span> وثيقة قانونية بإجمالي <span className="text-emerald-500 font-mono">1.2GB</span>
+              <div className="flex items-center gap-3 mt-4 lg:mt-0 w-full lg:w-auto overflow-hidden">
+                <div className="text-[10px] text-slate-500 font-bold px-3 py-1 border-r border-slate-200">
+                  تمت أرشفة <span className="text-blue-600 font-mono font-black">{documents.length}</span> وثيقة قانونية بإجمالي <span className="text-emerald-600 font-mono font-black">1.2GB</span>
                 </div>
                 <button 
                   onClick={() => {
@@ -1487,7 +1489,7 @@ export default function DocumentsModule({
                      setActiveFolderFilter('all');
                      setIsDeepSearch(false);
                   }}
-                  className="px-4 py-2 bg-slate-800/50 text-slate-400 border border-slate-700/50 rounded-xl text-[10px] font-black transition-all active:scale-95"
+                  className="mr-auto lg:mr-0 px-4 py-2 bg-red-50 text-red-600 hover:bg-red-100 border border-red-100 rounded-xl text-[10px] font-black transition-all active:scale-95 whitespace-nowrap"
                 >
                   تصفير الفلاتر ⟲
                 </button>
@@ -1653,15 +1655,15 @@ export default function DocumentsModule({
                   </div>
                 </div>
               ) : (
-                <div className="bg-[#0c1830] border-2 border-dashed border-blue-500/30 rounded-[2.5rem] p-8 text-center space-y-6 shadow-xl relative overflow-hidden">
+                <div className="bg-[#020D1F] border border-[#0d1f3b] rounded-[2.5rem] p-8 text-center space-y-6 shadow-xl relative overflow-hidden">
                   <div className="absolute top-0 left-0 w-64 h-64 bg-blue-500/5 blur-[80px] rounded-full pointer-events-none"></div>
                   
                   <div className="flex flex-col items-center justify-center space-y-4">
-                    <div className="p-5 bg-blue-500/10 text-blue-400 rounded-3xl border border-blue-500/30 shadow-lg shadow-blue-500/5 animate-pulse inline-flex">
+                    <div className="p-5 bg-[#0A1A3F] text-blue-400 rounded-3xl border border-blue-900 shadow-[0_0_15px_rgba(37,99,235,0.2)] animate-pulse inline-flex">
                       <Cloud className="w-12 h-12" />
                     </div>
-                    <h3 className="text-lg font-black text-white">ربط سحابة Google Drive القضائية 🏛️</h3>
-                    <p className="text-xs text-slate-300 max-w-md mx-auto leading-relaxed text-center">
+                    <h3 className="text-lg font-black text-white">ربط سحابة Google Drive القضائية <Landmark className="w-5 h-5 inline text-slate-400" /></h3>
+                    <p className="text-xs text-white/50 max-w-md mx-auto leading-relaxed text-center font-bold">
                       قم بتمكين المزامنة الحية لتتمكن من تصفح ملفات القضايا، العقود والاتفاقيات، والأقراص الذكية من حسابك السحابي مباشرةً واستيرادها أو تصديرها بامتثال أمني كامل.
                     </p>
                   </div>
@@ -1671,7 +1673,7 @@ export default function DocumentsModule({
                     <button
                       onClick={handleGoogleSignIn}
                       disabled={isGdriveLoading}
-                      className="bg-white text-slate-900 border border-slate-200 font-bold py-3.5 px-6 rounded-2xl text-xs flex items-center justify-center gap-3 shadow-md transition-all active:scale-95 cursor-pointer max-w-xs w-full"
+                      className="bg-white text-slate-900 border border-slate-200 font-bold py-3.5 px-6 rounded-2xl text-xs flex items-center justify-center gap-3 shadow-md transition-all hover:bg-slate-50 cursor-pointer max-w-xs w-full"
                     >
                       <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
@@ -1682,8 +1684,9 @@ export default function DocumentsModule({
                       <span>{isGdriveLoading ? 'جاري الاتصال بالسحابة...' : 'تسجيل الدخول وربط حساب Google'}</span>
                     </button>
                     
-                    <span className="text-[10px] text-slate-400 font-bold block pt-1 text-center">
-                      🔐 حماية معززة وتشفير طرفي متطوع بالنظم المعيارية لهيئة الأمن السيبراني والمحاكم السعودية.
+                    <span className="text-[10px] text-white/40 font-bold flex items-center justify-center gap-1.5 pt-1 text-center">
+                      <Lock className="w-3 h-3 text-yellow-500" />
+                      حماية معززة وتشفير طرفي متطوع بالنظم المعيارية لهيئة الأمن السيبراني والمحاكم السعودية.
                     </span>
                   </div>
                   
