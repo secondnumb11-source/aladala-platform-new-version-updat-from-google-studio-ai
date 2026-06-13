@@ -1,0 +1,13 @@
+"cssnano":
+"devDependencies":
+"firebase-tools":
+"imagemin":
+"imagemin-pngquant":
+"imagemin-svgo":
+"@playwright/test":
+"postcss":
+"stylelint":
+"stylelint-config-standard":
+"stylelint-config-tailwindcss":
+"ts-morph":
+"@types/react-window":

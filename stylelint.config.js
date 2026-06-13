@@ -1,0 +1,15 @@
+export default {
+  extends: [
+    'stylelint-config-standard',
+    'stylelint-config-tailwindcss'
+  ],
+  rules: {
+    'at-rule-no-unknown': [
+      true,
+      {
+        ignoreAtRules: ['tailwind', 'theme', 'apply', 'variants', 'responsive', 'screen']
+      }
+    ],
+    'no-descending-specificity': null
+  }
+};

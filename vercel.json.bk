@@ -1,0 +1,32 @@
+{
+  "version": 2,
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "server.ts"
+    },
+    {
+      "src": "/assets/(.*)",
+      "dest": "dist/assets/$1"
+    },
+    {
+      "src": "/logo.png",
+      "dest": "dist/logo.png"
+    },
+    {
+      "src": "/logo.svg",
+      "dest": "dist/logo.svg"
+    },
+    {
+      "src": "/najiz-extension/(.*)",
+      "dest": "dist/najiz-extension/$1"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "dist/index.html",
+      "headers": {
+        "cache-control": "no-cache"
+      }
+    }
+  ]
+}
