@@ -4,11 +4,11 @@ import {
   QrCode, 
   UploadCloud, 
   CreditCard, 
-  Bot, 
   ShieldCheck, 
   RefreshCw,
-  TrendingUp, 
-  DollarSign 
+  Terminal,
+  Activity,
+  Cpu
 } from 'lucide-react';
 import { motion } from 'motion/react';
 
@@ -52,7 +52,7 @@ export default function AIZatcaTool({ invoices = [] }: { invoices?: Invoice[] })
 
     const steps = [
       '[ZATCA] تهيئة خوارزمية الربط العالي للبنية والرموز...',
-      `[ZATCA] فحص مصفوفة الفاتورة ومعرف UUID: ${Math.random().toString(36).substring(7)}`,
+      `[ZATCA] فحص مصفوفة الفاتورة ومعرف UUID: ${Math.random().toString(36).substring(7).toUpperCase()}`,
       '[ZATCA] استخراج التوقيع الرقمي المشفر والممتثل للمرحلة الثانية...',
       '[ZATCA] تقديم الطلب الموثق لمنصة فاتورة (Fatoora) بـ Sandbox...',
       '[ZATCA] استجابة ناجحة بالرمز 201 (تم الاعتماد والأرشفة الضريبية بنجاح)'
@@ -65,7 +65,7 @@ export default function AIZatcaTool({ invoices = [] }: { invoices?: Invoice[] })
           setIsSubmitting(false);
           setSubmitSuccess(true);
         }
-      }, (index + 1) * 800);
+      }, (index + 1) * 600);
     });
   };
 
@@ -91,110 +91,145 @@ export default function AIZatcaTool({ invoices = [] }: { invoices?: Invoice[] })
           setIsPaying(false);
           setPaymentSuccess(true);
         }
-      }, (index + 1) * 700);
+      }, (index + 1) * 500);
     });
   };
 
   return (
-    <div className="space-y-6 animate-fade-in" dir="rtl">
-      {/* Upper Banner */}
-      <div className="bg-[#020D1F] p-8 rounded-[2.5rem] border border-[#0d1f3b] shadow-2xl relative overflow-hidden">
-        <div className="absolute top-0 right-0 p-12 opacity-5">
-          <QrCode className="w-48 h-48 text-white" />
+    <div className="space-y-8 animate-fade-in font-sans p-1 md:p-3" dir="rtl" id="zatca-tool-container">
+      {/* Visual Header Banner - Clean, High Contrast Slate Metallic Style */}
+      <div className="relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-slate-950 via-slate-900 to-slate-900 border border-slate-800 p-8 md:p-10 shadow-xl">
+        <div className="absolute top-0 left-0 w-80 h-80 bg-blue-500/10 rounded-full blur-[100px] pointer-events-none" />
+        <div className="absolute -bottom-10 -right-10 opacity-5 pointer-events-none">
+          <QrCode className="w-64 h-64 text-white" />
         </div>
-        <div className="relative z-10">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="p-2.5 bg-yellow-400/10 rounded-xl border border-yellow-400/20">
-              <ShieldCheck className="w-6 h-6 text-yellow-400" />
+        
+        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div className="space-y-3">
+            <div className="flex items-center gap-3">
+              <span className="text-[10px] bg-emerald-500/20 text-emerald-300 font-extrabold px-3 py-1 rounded-full border border-emerald-500/30 uppercase tracking-widest">
+                الربط الإلكتروني والامتثال
+              </span>
+              <span className="text-[10px] bg-slate-800 text-slate-300 font-bold px-3 py-1 rounded-full border border-slate-700">
+                المرحلة الثانية (Phase 2)
+              </span>
             </div>
-            <h2 className="text-2xl font-display font-black tracking-tight text-yellow-400">الفواتير المعتمدة وتقارير الربط الضريبي والمدفوعات (ZATCA Portal)</h2>
+            <h1 className="text-2xl md:text-3.5xl font-black text-white tracking-tight leading-tight">
+              مركز الفوترة الإلكترونية وبوابات الدفع (ZATCA Portal)
+            </h1>
+            <p className="text-slate-300 max-w-2xl text-xs md:text-sm font-medium leading-relaxed">
+              مراقبة وتصميم الفواتير المتكاملة والموقعة إلكترونياً مع مصلحة الضرائب وهيئة الزكاة والضريبة والجمارك السعودية، بالإضافة لربط تحصيلات بطاقات الدفع الفورية.
+            </p>
           </div>
-          <p className="text-white max-w-3xl leading-relaxed text-sm font-bold">
-            تسجيل ومزامنة الفواتير كلياً مع منصة فاتورة التابعة لهيئة الزكاة والضريبة والجمارك (ZATCA Phase 2)، 
-            إضافة لإدارة بوابات السداد المحلية والتحصيلات الإلكترونية الفورية المتوافقة لمحامي العدالة.
-          </p>
+          <div className="p-4 bg-slate-900/80 border border-slate-800 rounded-2xl flex items-center gap-3 shrink-0 self-start md:self-center">
+            <div className="p-2.5 bg-emerald-500/10 rounded-xl">
+              <ShieldCheck className="w-6 h-6 text-emerald-400 animate-pulse" />
+            </div>
+            <div>
+              <div className="text-[10px] text-slate-400 font-bold font-mono">ENCRYPTED LINK</div>
+              <div className="text-xs text-emerald-400 font-black">حالة الامتثال: متصل ونشط</div>
+            </div>
+          </div>
         </div>
       </div>
 
+      {/* Primary Forms Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Tab 1: بوابات الدفع الإلكتروني الالي */}
-        <div className="bg-white border border-blue-100 p-8 rounded-[2.5rem] shadow-sm space-y-6">
-          <div className="flex items-center gap-3 border-b border-blue-50 pb-4">
-            <div className="p-3 bg-blue-50 border border-blue-100 text-blue-900 rounded-2xl">
-              <CreditCard className="w-6 h-6" />
-            </div>
-            <div>
-              <h3 className="font-black text-blue-950 text-lg">بوابات الدفع الإلكتروني الآلي (Saudi Payment Gateways)</h3>
-              <p className="text-[11px] text-blue-900 font-bold mt-1">تسهيل دفع وسداد أتعاب الموكلين عبر شبكة مدى وسداد والبطاقات الإئتمانية</p>
-            </div>
-          </div>
-
-          <div className="space-y-4">
-            <div>
-              <label className="text-[10px] font-black text-blue-900 uppercase tracking-widest mb-2.5 block">1. اختر الفاتورة المراد تحصيلها:</label>
-              <select
-                value={selectedInvoiceId}
-                onChange={(e) => {
-                  setSelectedInvoiceId(e.target.value);
-                  setPaymentLogs([]);
-                  setPaymentSuccess(false);
-                  setSubmitLogs([]);
-                  setSubmitSuccess(false);
-                }}
-                className="w-full bg-blue-50/50 border border-blue-200 p-3.5 rounded-xl text-xs font-bold text-blue-950 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all font-sans cursor-pointer placeholder-blue-300"
-              >
-                <option value="">-- حدد مطالبة أو فاتورة من اللائحة --</option>
-                {availableInvoices.map((inv) => (
-                  <option key={inv.id} value={inv.id}>
-                    {inv.id} - العميل: {inv.clientName} - المبلغ: {inv.totalAmount.toLocaleString()} ر.س
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label className="text-[10px] font-black text-blue-900 uppercase tracking-widest mb-2.5 block">2. حدد بوابة الدفع التلقائي المعتمدة:</label>
-              <div className="grid grid-cols-4 gap-2">
-                {[
-                  { id: 'mada', label: 'مدى mada' },
-                  { id: 'stcpay', label: 'stc pay' },
-                  { id: 'applepay', label: 'Apple Pay' },
-                  { id: 'visa', label: 'بطاقة ائتمان' }
-                ].map(gateway => (
-                  <button
-                    key={gateway.id}
-                    onClick={() => setActiveGateway(gateway.id as any)}
-                    className={`p-3 rounded-xl text-[10px] font-black transition-all border text-center ${
-                      activeGateway === gateway.id 
-                        ? 'bg-[#020D1F] text-yellow-400 border-[#020D1F] shadow-md' 
-                        : 'bg-white text-blue-900 hover:bg-blue-50 border-blue-200'
-                    }`}
-                  >
-                    {gateway.label}
-                  </button>
-                ))}
+        {/* Card 1: بوابات الدفع الإلكتروني الالي */}
+        <div className="bg-white border border-slate-200/80 p-8 rounded-[2rem] shadow-sm hover:shadow-md transition-all space-y-6 flex flex-col justify-between">
+          <div className="space-y-6">
+            <div className="flex items-center gap-4 border-b border-slate-100 pb-5">
+              <div className="p-3 bg-slate-50 border border-slate-200 text-slate-800 rounded-2xl">
+                <CreditCard className="w-6 h-6" />
+              </div>
+              <div>
+                <h3 className="font-black text-slate-900 text-lg">بوابات الدفع الإلكتروني الآلي (Saudi Payment Gateways)</h3>
+                <p className="text-xs text-slate-500 font-bold mt-1">تسهيل تحصيل أتعاب القضايا والاستشارات عبر مدى، STC Pay، وApple Pay</p>
               </div>
             </div>
 
+            <div className="space-y-5">
+              <div className="space-y-2">
+                <label className="text-[11px] font-black text-slate-800 uppercase tracking-wider block">1. اختر الفاتورة المراد تحصيلها:</label>
+                <select
+                  value={selectedInvoiceId}
+                  onChange={(e) => {
+                    setSelectedInvoiceId(e.target.value);
+                    setPaymentLogs([]);
+                    setPaymentSuccess(false);
+                    setSubmitLogs([]);
+                    setSubmitSuccess(false);
+                  }}
+                  className="w-full bg-slate-50 border border-slate-200 p-4 rounded-xl text-xs font-bold text-slate-900 outline-none focus:bg-white focus:border-slate-900 focus:ring-4 focus:ring-slate-950/5 transition-all cursor-pointer"
+                >
+                  <option value="">-- اختر مطالبة موكل أو فاتورة معلقة للربط --</option>
+                  {availableInvoices.map((inv) => (
+                    <option key={inv.id} value={inv.id}>
+                      #{inv.id} - {inv.clientName} [الإجمالي: {inv.totalAmount.toLocaleString()} ر.س]
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="space-y-3">
+                <label className="text-[11px] font-black text-slate-800 uppercase tracking-wider block">2. حدد شبكة الدفع الفوري الآمنة:</label>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5">
+                  {[
+                    { id: 'mada', label: 'مدى mada' },
+                    { id: 'stcpay', label: 'stc pay' },
+                    { id: 'applepay', label: 'Apple Pay' },
+                    { id: 'visa', label: 'البطاقات الائتمانية' }
+                  ].map(gateway => (
+                    <button
+                      key={gateway.id}
+                      onClick={() => setActiveGateway(gateway.id as any)}
+                      className={`p-3.5 rounded-xl text-xs font-black transition-all border text-center cursor-pointer ${
+                        activeGateway === gateway.id 
+                          ? 'bg-slate-950 text-white border-slate-950 shadow-md' 
+                          : 'bg-slate-50 text-slate-700 hover:bg-slate-100 border-slate-200/60'
+                      }`}
+                    >
+                      {gateway.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="space-y-4 pt-6">
             <button
               onClick={handleSimulatePayment}
               disabled={isPaying || !selectedInvoiceId}
-              className="w-full bg-[#020D1F] text-white hover:bg-[#031530] py-4 rounded-xl text-xs font-black transition-all flex items-center justify-center gap-2 shadow-lg disabled:opacity-50 cursor-pointer border border-[#0A1A3F]"
+              className="w-full bg-slate-900 hover:bg-slate-800 text-white py-4 rounded-xl text-xs font-black transition-all flex items-center justify-center gap-2 shadow-md disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
             >
-              {isPaying ? <RefreshCw className="w-4 h-4 animate-spin text-yellow-400" /> : <CreditCard className="w-4 h-4 text-yellow-400" />}
-              <span>{isPaying ? 'جاري السداد والربط...' : 'دفع أوتوماتيكي وتسجيل الفاتورة'}</span>
+              {isPaying ? <RefreshCw className="w-4 h-4 animate-spin text-emerald-400" /> : <CreditCard className="w-4 h-4 text-emerald-400" />}
+              <span>{isPaying ? 'جاري التحصيل والتبادل الآمن للبيانات...' : 'أرسل أمر الدفع الفوري للموكل'}</span>
             </button>
 
-            {/* Sim Logs */}
+            {/* Sim Logs Dashboard Console style */}
             {(paymentLogs.length > 0 || isPaying) && (
-              <div className="bg-[#010814] p-4 rounded-xl text-[11px] font-mono whitespace-pre-wrap text-left text-white border border-[#0d1f3b] leading-normal max-h-[180px] overflow-y-auto">
-                {paymentLogs.map((log, i) => (
-                  <div key={i} className="mb-1 text-white opacity-90">{log}</div>
-                ))}
-                {isPaying && <div className="text-yellow-400 animate-pulse mt-2">جاري الاستعلام والمزامنة...</div>}
+              <div className="bg-slate-950 border border-slate-800 p-5 rounded-2xl shadow-inner max-h-[190px] overflow-y-auto">
+                <div className="flex items-center justify-between mb-3 pb-2 border-b border-slate-800">
+                  <span className="text-[9px] font-mono font-bold text-slate-500 tracking-wider flex items-center gap-1">
+                    <Terminal className="w-3 h-3 text-emerald-400" /> LOCAL_GATEWAY_TERMINAL
+                  </span>
+                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                </div>
+                <div className="space-y-1.5 font-mono text-[11px] text-emerald-400/90 text-left">
+                  {paymentLogs.map((log, i) => (
+                    <div key={i} className="leading-relaxed">{log}</div>
+                  ))}
+                  {isPaying && (
+                    <div className="text-yellow-400 animate-pulse flex items-center gap-1.5 mt-1">
+                      <span className="w-1.5 h-1.5 bg-yellow-400 rounded-full animate-ping" />
+                      مزامنة خوادم سداد الحكومية...
+                    </div>
+                  )}
+                </div>
                 {paymentSuccess && (
-                  <div className="text-yellow-400 bg-yellow-400/10 px-3 py-2 rounded-lg border border-yellow-400/20 mt-3 text-right">
-                    ✅ تم السداد وحفظه بنجاح! تم الامتثال ورفع مستندات QR المشفرة لمنصة الهيئة (ZATCA).
+                  <div className="mt-4 p-3 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 rounded-xl text-right text-xs font-bold leading-relaxed">
+                    🎉 تم تحصيل الأتعاب بنجاح! تم حفظ السجل الضريبي وإصدار توقيع تشفير الهيئة (ZATCA compliant QR) وتثبيته في كشف العميل.
                   </div>
                 )}
               </div>
@@ -202,97 +237,114 @@ export default function AIZatcaTool({ invoices = [] }: { invoices?: Invoice[] })
           </div>
         </div>
 
-        {/* Tab 2: زاتكا والربط الإلزامي */}
-        <div className="bg-white border border-blue-100 p-8 rounded-[2.5rem] shadow-sm space-y-6">
-          <div className="flex items-center gap-3 border-b border-blue-50 pb-4">
-            <div className="p-3 bg-blue-50 border border-blue-100 text-blue-900 rounded-2xl">
-              <QrCode className="w-6 h-6" />
+        {/* Card 2: زاتكا والربط الإلزامي */}
+        <div className="bg-white border border-slate-200/80 p-8 rounded-[2rem] shadow-sm hover:shadow-md transition-all space-y-6 flex flex-col justify-between">
+          <div className="space-y-6">
+            <div className="flex items-center gap-4 border-b border-slate-100 pb-5">
+              <div className="p-3 bg-slate-50 border border-slate-200 text-slate-800 rounded-2xl">
+                <QrCode className="w-6 h-6" />
+              </div>
+              <div>
+                <h3 className="font-black text-slate-900 text-lg">بوابة ZATCA والاعتماد الفوري لهيئة الزكاة والجمارك</h3>
+                <p className="text-xs text-slate-500 font-bold mt-1">تسجيل الفواتير ضريبياً والتحقق من طوابع التشفير والأرشفة</p>
+              </div>
             </div>
-            <div>
-              <h3 className="font-black text-blue-950 text-lg">بوابة ZATCA والاعتماد الفوري لهيئة الزكاة والجمارك</h3>
-              <p className="text-[11px] text-blue-900 font-bold mt-1">المرحلة الثانية للربط التقني والفني للتكامل مع الفواتير الضريبية</p>
+
+            <div className="bg-slate-50 border border-slate-200/60 p-5 rounded-2xl space-y-4">
+              <div className="flex items-center gap-2 text-slate-900 font-extrabold text-xs">
+                <Cpu className="w-4 h-4 text-slate-700" />
+                <span>بيانات التشفير وخوارزميات الامتثال المعتمدة:</span>
+              </div>
+              <div className="grid grid-cols-2 gap-3.5 text-[10px] font-bold">
+                <div className="bg-white p-3 border border-slate-200/60 rounded-xl shadow-xs">
+                  <span className="text-slate-500 block font-bold mb-1">شهادة تشفير الربط (CCSID)</span>
+                  <span className="text-slate-900 font-extrabold font-mono text-[11px] block">ZATCA Cryptographic ID</span>
+                </div>
+                <div className="bg-white p-3 border border-slate-200/60 rounded-xl shadow-xs">
+                  <span className="text-slate-500 block font-bold mb-1">إصدار الهيكل (Schema)</span>
+                  <span className="text-slate-900 font-extrabold font-mono text-[11px] block">XML Schema Standard V2</span>
+                </div>
+              </div>
             </div>
           </div>
 
-          <div className="space-y-4">
-            <div>
-              <label className="text-[10px] font-black text-blue-900 uppercase tracking-widest mb-2.5 block">فحص يدوي ورفع الفاتورة لمنصة الهيئة:</label>
-              <button
-                onClick={handleZatcaSubmit}
-                disabled={isSubmitting || !selectedInvoiceId}
-                className="w-full bg-[#020D1F] hover:bg-[#031530] text-yellow-400 py-4 rounded-xl text-xs font-black transition-all flex items-center justify-center gap-2 shadow-lg disabled:opacity-50 cursor-pointer border border-[#0A1A3F]"
-              >
-                {isSubmitting ? <RefreshCw className="w-4 h-4 animate-spin text-white" /> : <UploadCloud className="w-4 h-4 text-white" />}
-                <span className="text-white">{isSubmitting ? 'جاري الرفع والاعتماد الضريبي...' : 'إرسال مباشر لهيئة الزكاة والضريبة (Send to ZATCA v2)'}</span>
-              </button>
-            </div>
+          <div className="space-y-4 pt-6">
+            <button
+              onClick={handleZatcaSubmit}
+              disabled={isSubmitting || !selectedInvoiceId}
+              className="w-full bg-slate-900 hover:bg-slate-800 text-white py-4 rounded-xl text-xs font-black transition-all flex items-center justify-center gap-2 shadow-md disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+            >
+              {isSubmitting ? <RefreshCw className="w-4 h-4 animate-spin text-emerald-400" /> : <UploadCloud className="w-4 h-4 text-emerald-400" />}
+              <span>{isSubmitting ? 'جاري توقيع وتقديم الفاتورة ضريبياً...' : 'إرسال الفاتورة ضريبياً والاعتماد الآن'}</span>
+            </button>
 
             {/* Submission logs */}
             {(submitLogs.length > 0 || isSubmitting) && (
-              <div className="bg-[#010814] p-4 rounded-xl text-[11px] font-mono whitespace-pre-wrap text-left text-white border border-[#0d1f3b] leading-normal max-h-[180px] overflow-y-auto">
-                {submitLogs.map((log, i) => (
-                  <div key={i} className="mb-1 text-white opacity-90">{log}</div>
-                ))}
-                {isSubmitting && <div className="text-yellow-400 animate-pulse mt-2">جاري التحقق من التشفير...</div>}
+              <div className="bg-slate-950 border border-slate-800 p-5 rounded-2xl shadow-inner max-h-[190px] overflow-y-auto">
+                <div className="flex items-center justify-between mb-3 pb-2 border-b border-slate-800">
+                  <span className="text-[9px] font-mono font-bold text-slate-500 tracking-wider flex items-center gap-1">
+                    <Activity className="w-3 h-3 text-emerald-400" /> ZATCA_FATOORA_CONFORMITY_CON
+                  </span>
+                  <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                </div>
+                <div className="space-y-1.5 font-mono text-[11px] text-emerald-300/90 text-left">
+                  {submitLogs.map((log, i) => (
+                    <div key={i} className="leading-relaxed">{log}</div>
+                  ))}
+                  {isSubmitting && (
+                    <div className="text-yellow-400 animate-pulse flex items-center gap-1.5 mt-1">
+                      <span className="w-1.5 h-1.5 bg-yellow-400 rounded-full animate-ping" />
+                      توليد بصمة الفاتورة (Invoice Hash)...
+                    </div>
+                  )}
+                </div>
                 {submitSuccess && (
-                  <div className="text-yellow-400 bg-yellow-400/10 px-3 py-2 rounded-lg border border-yellow-400/20 mt-3 text-right">
-                    ✅ تم الاعتماد القانوني والتحقق من التوقيع الرقمي بنجاح!
+                  <div className="mt-4 p-3 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 rounded-xl text-right text-xs font-bold leading-relaxed">
+                    ✅ تم التحقق الضريبي وتقديم المستندات والاعتماد في بوابة الهيئة (Fatoora Phase II). الفاتورة الآن رسمية ومسجلة بالأرشيف العام.
                   </div>
                 )}
               </div>
             )}
-
-            <div className="bg-blue-50 border border-blue-100 p-4 rounded-2xl space-y-3">
-              <h4 className="text-xs font-black text-blue-950">بيانات التشفير والامتثال الحالية:</h4>
-              <div className="grid grid-cols-2 gap-3 text-[10px] font-bold">
-                <div className="bg-white p-2 border border-blue-100 rounded-lg shadow-sm">
-                  <span className="text-blue-900 block font-normal">نوع شهادة الربط</span>
-                  <span className="text-blue-950 font-extrabold leading-relaxed">Cryptographic ID (CCSID)</span>
-                </div>
-                <div className="bg-white p-2 border border-blue-100 rounded-lg shadow-sm">
-                  <span className="text-blue-900 block font-normal">نسخة التوافق</span>
-                  <span className="text-blue-950 font-extrabold leading-relaxed">ZATCA XML V2 Schema</span>
-                </div>
-              </div>
-            </div>
           </div>
         </div>
       </div>
 
-      {/* Audit Logs Table */}
-      <div className="bg-white border border-blue-100 rounded-[2.5rem] shadow-sm overflow-hidden">
-        <div className="p-8 border-b border-blue-100 flex items-center justify-between bg-blue-50/50">
+      {/* Audit Logs Table - Beautiful high contrast elegant list */}
+      <div className="bg-white border border-slate-200/80 rounded-[2rem] shadow-sm overflow-hidden">
+        <div className="p-6 md:p-8 border-b border-slate-100 flex flex-col md:flex-row md:items-center justify-between bg-slate-50/50 gap-4">
           <div className="flex items-center gap-3">
-            <CheckCircle2 className="w-6 h-6 text-blue-900" />
+            <div className="p-2 bg-slate-900 text-white rounded-xl">
+              <CheckCircle2 className="w-5 h-5 text-emerald-400" />
+            </div>
             <div>
-              <h3 className="font-black text-blue-950 text-lg">سجل الامتثال للفواتير الضريبية (ZATCA Approved Invoices Ledger)</h3>
-              <p className="text-[11px] text-blue-900 font-bold mt-0.5">جميع الفواتير والعمليات المحصلة بالاتصال الفوري والتوقيع المترابط</p>
+              <h3 className="font-black text-slate-900 text-lg">سجل الامتثال للفواتير الضريبية (ZATCA Compliance Invoices)</h3>
+              <p className="text-xs text-slate-500 font-bold mt-0.5">تفاصيل الفواتير المسجلة بمصلحة الضرائب لتقارير ضريبة القيمة المضافة 15%</p>
             </div>
           </div>
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full text-right">
+          <table className="w-full text-right border-collapse">
             <thead>
-              <tr className="bg-white border-b border-blue-100">
-                <th className="py-4 px-6 text-[11px] font-black text-blue-900 uppercase">الرقم المرجعي</th>
-                <th className="py-4 px-6 text-[11px] font-black text-blue-900 uppercase">العميل</th>
-                <th className="py-4 px-6 text-[11px] font-black text-blue-900 uppercase">الضريبة (VAT)</th>
-                <th className="py-4 px-6 text-[11px] font-black text-blue-900 uppercase">الإجمالي</th>
-                <th className="py-4 px-6 text-[11px] font-black text-blue-900 uppercase text-center">أثر بوابة المزامنة</th>
+              <tr className="bg-slate-50 border-b border-slate-200 text-slate-700 text-xs font-black">
+                <th className="py-4.5 px-6 font-semibold">الرقم المرجعي</th>
+                <th className="py-4.5 px-6 font-semibold">الموكل / العميل</th>
+                <th className="py-4.5 px-6 font-semibold">مبلغ الضريبة (15% VAT)</th>
+                <th className="py-4.5 px-6 font-semibold">المبلغ الإجمالي المعتمد</th>
+                <th className="py-4.5 px-6 font-semibold text-center">أثر بوابة المزامنة</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-blue-50">
+            <tbody className="divide-y divide-slate-100 text-slate-900 font-bold text-sm">
               {availableInvoices.map((inv, idx) => (
-                <tr key={idx} className="hover:bg-blue-50/50 transition-colors">
-                  <td className="py-4 px-6 font-mono text-xs font-bold text-blue-900">#{inv.id}</td>
-                  <td className="py-4 px-6 font-bold text-sm text-blue-950">{inv.clientName}</td>
-                  <td className="py-4 px-6 font-bold text-xs text-blue-900">{inv.vatAmount.toLocaleString()} ر.س</td>
-                  <td className="py-4 px-6 font-black text-xs text-blue-950">{inv.totalAmount.toLocaleString()} ر.س</td>
-                  <td className="py-4 px-6 text-center">
-                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black bg-blue-100 text-blue-950 border border-blue-200">
-                      <CheckCircle2 className="w-3 h-3" />
-                      معتمد ومحصّل QR
+                <tr key={idx} className="hover:bg-slate-50/50 transition-colors">
+                  <td className="py-4.5 px-6 font-mono text-xs text-slate-600">#{inv.id}</td>
+                  <td className="py-4.5 px-6 font-black text-slate-900">{inv.clientName}</td>
+                  <td className="py-4.5 px-6 font-mono text-slate-700 text-xs">{inv.vatAmount.toLocaleString()} ر.س</td>
+                  <td className="py-4.5 px-6 font-mono text-slate-900">{inv.totalAmount.toLocaleString()} ر.س</td>
+                  <td className="py-4.5 px-6 text-center">
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-black bg-emerald-50 text-emerald-700 border border-emerald-200/40">
+                      <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full" />
+                      معتمد ومحصّل ضريبياً
                     </span>
                   </td>
                 </tr>

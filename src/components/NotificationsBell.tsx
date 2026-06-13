@@ -156,10 +156,40 @@ export default function NotificationsBell() {
           }
         });
 
+        // Fetch Powers of Attorney close to expiry
+        const poasSnap = await getDocs(collection(db, 'powersOfAttorney'));
+        const poasAlerts: Notification[] = [];
+        poasSnap.forEach(poaDoc => {
+          const poa = poaDoc.data();
+          if (poa.expiryDate) {
+            let expDate = new Date();
+            try { expDate = new Date(poa.expiryDate); } catch(e){}
+            const today = new Date();
+            expDate.setHours(0, 0, 0, 0);
+            today.setHours(0, 0, 0, 0);
+            const diffTime = expDate.getTime() - today.getTime();
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            
+            if (diffDays <= 60 && diffDays >= -15) {
+              poasAlerts.push({
+                id: `real-poa-alert-${poaDoc.id}`,
+                title: diffDays <= 0 ? `وكالة منتهية الصلاحية` : `قرب انتهاء صلاحية وكالة`,
+                message: diffDays <= 0 
+                  ? `انتهى سريان الوكالة رقم ${poa.poaNumber || ''} للموكل "${poa.clientName || ''}"`
+                  : `متبقي ${diffDays} يوماً على انتهـاء الوكالة رقم ${poa.poaNumber || ''} للمוکل "${poa.clientName || ''}"`,
+                time: 'تنبيه أمان 📄',
+                read: false,
+                type: diffDays <= 30 ? 'urgent' : 'warning',
+                action: 'agencies'
+              });
+            }
+          }
+        });
+
         // Add to Notifications
         setNotifications(prev => {
           const filteredPrev = prev.filter(p => !p.id.startsWith('real-'));
-          return [...invoicesAlerts, ...activeCasesAlerts, ...tasksAlerts, ...filteredPrev];
+          return [...invoicesAlerts, ...activeCasesAlerts, ...tasksAlerts, ...poasAlerts, ...filteredPrev];
         });
 
       } catch(e) {

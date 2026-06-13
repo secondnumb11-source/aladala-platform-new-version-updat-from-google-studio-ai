@@ -28,7 +28,10 @@ import {
   CheckCircle2
 } from 'lucide-react';
 import { Task, Case } from '@/types';
+import { db } from '@/lib/firebase';
+import { collection, onSnapshot, query, where, updateDoc, doc } from 'firebase/firestore';
 import { motion, AnimatePresence } from 'motion/react';
+import TaskCountdown from './TaskCountdown';
 import { 
   DndContext, 
   closestCenter, 
@@ -135,19 +138,14 @@ export default function TasksModule({
   const [teamMembers, setTeamMembers] = useState<any[]>([]);
 
   useEffect(() => {
-    const fetchTeam = async () => {
-      try {
-        const resp = await fetch("/api/team/members");
-        if (resp.ok) {
-          const data = await resp.json();
-          setTeamMembers(data);
-          if (data.length > 0) setTaskAssigned(data[0].name);
-        }
-      } catch (err) {
-        console.error(err);
+    const unsubscribe = onSnapshot(collection(db, 'employees'), (snapshot) => {
+      const emps = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as any));
+      setTeamMembers(emps);
+      if (emps.length > 0 && !taskAssigned) {
+         setTaskAssigned(emps[0].name);
       }
-    };
-    fetchTeam();
+    });
+    return () => unsubscribe();
   }, []);
 
   // Smart Sorting and Notification Alerts state
@@ -1282,24 +1280,7 @@ export default function TasksModule({
                                         </span>
                                         
                                         {/* Countdown Timer Badge */}
-                                        {t.status !== 'done' && (
-                                          <div className={`px-2 py-1 flex items-center gap-1.5 rounded-full border ${
-                                            getDaysLeft(t.dueDate) < 0 
-                                              ? 'bg-rose-100 border-rose-300 text-rose-700' 
-                                              : getDaysLeft(t.dueDate) <= 2 
-                                                ? 'bg-amber-100 border-amber-300 text-amber-800' 
-                                                : 'bg-slate-50 border-slate-200 text-slate-600'
-                                          }`}>
-                                            <Clock className="w-3 h-3" />
-                                            <span className="text-[10px] font-black leading-none font-mono">
-                                              {getDaysLeft(t.dueDate) < 0 
-                                                ? 'منتهي ⚠️' 
-                                                : getDaysLeft(t.dueDate) === 0 
-                                                  ? 'اليوم ⚡' 
-                                                  : `ت - ${getDaysLeft(t.dueDate)} يوم`}
-                                            </span>
-                                          </div>
-                                        )}
+                                        <TaskCountdown dueDate={t.dueDate} status={t.status} />
                                       </div>
 
                                       <div className="flex items-center gap-1 order-first">

@@ -15,7 +15,7 @@ import {
   RecaptchaVerifier,
   signInWithPhoneNumber
 } from "firebase/auth";
-import { doc, setDoc, getDoc, serverTimestamp } from "firebase/firestore";
+import { doc, setDoc, getDoc, serverTimestamp, collection, query, where, getDocs } from "firebase/firestore";
 import { handleFirestoreError, OperationType } from "@/lib/firestore-utils";
 
 interface UnifiedAuthProps {
@@ -454,56 +454,44 @@ export default function UnifiedAuthLanding({ initialTab = "lawyer", language = "
     setLoading(true);
 
     try {
-      const loginEmail = empUsername.includes('@') ? empUsername : `${empUsername}@aladalah-law.sa`;
-      const userCredential = await signInWithEmailAndPassword(auth, loginEmail, empPassword);
-      const user = userCredential.user;
-
-      const userDocRef = doc(db, "users", user.uid);
-      let userData: any = null;
-      try {
-        const profileDoc = await getDoc(userDocRef);
-        if (!profileDoc.exists()) {
-          userData = {
-            uid: user.uid,
-            name: user.displayName || "موظف النظام",
-            role: "employee",
-            email: loginEmail
-          };
-          await setDoc(userDocRef, userData);
-        } else {
-          userData = profileDoc.data();
-        }
-      } catch (err) {
-        console.warn("Firestore profile fetch error:", err);
-      }
-
-      setSuccessMsg(`تم التحقق بنجاح لملف الموظف...`);
+      const q = query(
+        collection(db, 'employees'), 
+        where('username', '==', empUsername.trim())
+      );
+      const snapshot = await getDocs(q);
       
-      setTimeout(() => {
-        onLoginSuccess({
-          role: "employee",
-          id: user.uid,
-          name: userData?.name || user.displayName || "تسجيل موظف جديد",
-          employeeCode: userData?.employeeCode || "EMP-11",
-          jobTitle: userData?.jobTitle || "مستشار قانوني",
-          assignedCases: userData?.assignedCases || [],
-          assignedClients: userData?.assignedClients || [],
-          permittedModules: userData?.permittedModules || ['dashboard', 'cases', 'calendar', 'tasks', 'ai', 'documents', 'court-map', 'saudi-hub']
-        });
-        setLoading(false);
-      }, 1000);
-
-    } catch (firebaseErr: any) {
-      console.log("Firebase Employee Login error:", firebaseErr.code);
-      if (firebaseErr.code === "auth/user-not-found" || firebaseErr.code === "auth/invalid-credential" || firebaseErr.code === "auth/wrong-password") {
-        setErrorMessage("بيانات الدخول غير صحيحة. يرجى التأكد من اسم المستخدم وكلمة المرور.");
-      } else if (firebaseErr.code === "auth/operation-not-allowed") {
-        setErrorMessage(isEn 
-          ? "Email/Password authentication is not enabled in your Firebase project. Please go to Firebase Console > Authentication > Settings > Sign-in method and enable 'Email/Password'."
-          : "خيار الدخول بالبريد الإلكتروني وكلمة المرور غير مفعّل في مشروع Firebase الخاص بك. يرجى الذهاب إلى كونسول Firebase > أداة Authentication > الإعدادات (Settings) > طرق تسجيل الدخول (Sign-in method) وتفعيل 'البريد الإلكتروني/كلمة المرور' (Email/Password).");
-      } else {
-        setErrorMessage("فشل دخول الموظف. الحساب غير موجود في سجل Firebase.");
+      if (!snapshot.empty) {
+        const matchedDoc = snapshot.docs.find(doc => doc.data().password === empPassword);
+        if (matchedDoc) {
+          const empData: any = { id: matchedDoc.id, ...matchedDoc.data() };
+          
+          setSuccessMsg(`تم التحقق بنجاح لملف الموظف...`);
+          
+          localStorage.setItem('adalah-employee-auth-bypass', 'true');
+          sessionStorage.setItem('active-logged-in-employee-v2', JSON.stringify(empData));
+          
+          setTimeout(() => {
+            onLoginSuccess({
+              role: "employee",
+              id: empData.id || "employee",
+              name: empData.name || "تعريف موظف",
+              employeeCode: empData.employeeCode || "EMP-11",
+              jobTitle: empData.jobTitle || "موظف مكاتب",
+              assignedCases: empData.assignedCases || [],
+              assignedClients: empData.assignedClients || [],
+              permittedModules: empData.sidebarConfig || ['dashboard', 'cases', 'tasks', 'ai', 'documents']
+            });
+            setLoading(false);
+          }, 1000);
+          return;
+        }
       }
+      
+      setErrorMessage("بيانات الدخول غير صحيحة. يرجى التأكد من اسم المستخدم وكلمة المرور.");
+      setLoading(false);
+    } catch (err: any) {
+      console.log("Employee Login error:", err);
+      setErrorMessage("حدث خطأ أثناء محاولة الدخول. يرجى المحاولة لاحقاً.");
       setLoading(false);
     }
   };

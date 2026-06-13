@@ -23,6 +23,7 @@ import {
   useSortable 
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import TaskCountdown from './TaskCountdown';
 import { 
   Users, 
   Briefcase, 
@@ -1833,8 +1834,8 @@ const Dashboard = function Dashboard({
                            <div key={i} className="flex gap-3 items-center group cursor-pointer transition-all hover:bg-slate-50 p-2 rounded-xl border border-transparent hover:border-slate-100">
                               <div className="w-2 h-2 rounded-full bg-rose-500 shrink-0" />
                               <div className="flex-1 min-w-0">
-                                <h4 className="text-xs font-black text-slate-800 line-clamp-1 truncate">{t.title}</h4>
-                                <p className="text-[10px] text-slate-500 font-bold truncate">{new Date(t.dueDate!).toLocaleDateString('ar-SA')} - {t.assignedTo}</p>
+                                <h4 className="text-xs font-black text-slate-800 line-clamp-1 truncate mb-1.5">{t.title}</h4>
+                                <TaskCountdown dueDate={t.dueDate!} status={t.status} />
                               </div>
                            </div>
                         ))}

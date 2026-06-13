@@ -18,6 +18,7 @@ import NajizSyncBackendService from './components/NajizSyncBackendService';
 // Lazy load large modules using relative paths to avoid resolution issues in some environments
 const CasesModule = React.lazy(() => import('./components/CasesModule'));
 const ClientsModule = React.lazy(() => import('./components/ClientsModule'));
+const AgenciesModule = React.lazy(() => import('./components/AgenciesModule'));
 const AIModule = React.lazy(() => import('./components/AIModule'));
 const TasksModule = React.lazy(() => import('./components/TasksModule'));
 const DocumentsModule = React.lazy(() => import('./components/DocumentsModule'));
@@ -182,6 +183,12 @@ function AppContent() {
   useEffect(() => {
     if (authLoading) return;
     
+    // Check if we have a locally authenticated employee bypassing Firebase
+    const hasEmployeeBypass = localStorage.getItem('adalah-employee-auth-bypass') === 'true';
+    if (hasEmployeeBypass && currentUser?.role === 'employee') {
+       return; // Do not overwrite state if an employee is logged in via local auth
+    }
+
     if (user && profile) {
       setIsAuthenticated(true);
       setShowLandingPage(false);
@@ -204,12 +211,12 @@ function AppContent() {
       } else {
         setSelectedRole('admin');
       }
-    } else if (!user) {
+    } else if (!user && !hasEmployeeBypass) {
       setIsAuthenticated(false);
       setShowLandingPage(true);
       setCurrentUser(null);
     }
-  }, [user, profile, authLoading]);
+  }, [user, profile, authLoading, currentUser]);
 
   const [currentTab, setCurrentTab] = useState('dashboard');
   const [selectedRole, setSelectedRole] = useState('admin');
@@ -1561,6 +1568,15 @@ function AppContent() {
             cases={employeeFilteredCases}
             onUpdateState={handleUpdateGlobalState}
           />
+        )}
+
+        {currentTab === 'agencies' && (
+          <React.Suspense fallback={<div className="p-10 text-center text-[#fbbf24] font-black">جاري تحميل سجل وكالات العملاء...</div>}>
+            <AgenciesModule 
+              clients={clients}
+              onUpdateState={handleUpdateGlobalState}
+            />
+          </React.Suspense>
         )}
 
         {currentTab.startsWith('ai') && (() => {

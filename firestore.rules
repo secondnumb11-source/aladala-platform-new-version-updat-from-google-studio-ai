@@ -128,5 +128,11 @@ service cloud.firestore {
       allow create: if true; 
       allow read: if isStaff();
     }
+
+    // POWERS OF ATTORNEY COLLECTION
+    match /powersOfAttorney/{poaId} {
+       allow read: if isStaff() || (isSignedIn() && existing().clientId == request.auth.uid);
+       allow write: if isStaff();
+    }
   }
 }

@@ -158,6 +158,26 @@
         "type": { "type": "string" }
       },
       "required": ["id", "timestamp", "action"]
+    },
+    "PowerOfAttorney": {
+      "title": "PowerOfAttorney",
+      "description": "Represents a Power of Attorney (PoA) document.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "poaNumber": { "type": "string" },
+        "issueDate": { "type": "string" },
+        "expiryDate": { "type": "string" },
+        "lawyerName": { "type": "string" },
+        "clientName": { "type": "string" },
+        "status": { "type": "string" },
+        "clientId": { "type": "string" },
+        "scope": { "type": "string" },
+        "clauses": { "type": "array" },
+        "parties": { "type": "array" },
+        "isNajizSync": { "type": "boolean" }
+      },
+      "required": ["id", "poaNumber", "clientName", "expiryDate"]
     }
   },
   "firestore": {
@@ -169,6 +189,7 @@
     "/timelogs/{logId}": { "schema": "TimeLog", "description": "Time tracking." },
     "/invoices/{invoiceId}": { "schema": "Invoice", "description": "Tax invoices." },
     "/vouchers/{voucherId}": { "schema": "Voucher", "description": "Financial vouchers." },
-    "/library/{itemId}": { "schema": "LibraryItem", "description": "Legal library." }
+    "/library/{itemId}": { "schema": "LibraryItem", "description": "Legal library." },
+    "/powersOfAttorney/{poaId}": { "schema": "PowerOfAttorney", "description": "Powers of attorney catalog." }
   }
 }

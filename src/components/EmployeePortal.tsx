@@ -31,76 +31,7 @@ import {
 import { db } from '@/lib/firebase';
 import { Case, Client, Task, Employee, LeaveRequest, AttendanceRecord } from '@/types';
 
-// Countdown Timer Component for Tasks
-function TaskCountdown({ dueDate }: { dueDate: string }) {
-  const [timeLeft, setTimeLeft] = useState<{
-    days: number;
-    hours: number;
-    minutes: number;
-    seconds: number;
-    isOverdue: boolean;
-  }>({ days: 0, hours: 0, minutes: 0, seconds: 0, isOverdue: false });
-
-  useEffect(() => {
-    const calculateTime = () => {
-      if (!dueDate) return;
-      const targetTime = new Date(dueDate).getTime();
-      const now = new Date().getTime();
-      const difference = targetTime - now;
-
-      if (difference <= 0) {
-        setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0, isOverdue: true });
-        return;
-      }
-
-      const days = Math.floor(difference / (1000 * 60 * 60 * 24));
-      const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-      const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
-      const seconds = Math.floor((difference % (1000 * 60)) / 1000);
-
-      setTimeLeft({ days, hours, minutes, seconds, isOverdue: false });
-    };
-
-    calculateTime();
-    const interval = setInterval(calculateTime, 1000);
-    return () => clearInterval(interval);
-  }, [dueDate]);
-
-  if (timeLeft.isOverdue) {
-    return (
-      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-500/20 text-white border border-rose-500/30 text-[10px] font-black animate-pulse">
-        <AlertCircle className="w-3.5 h-3.5 text-rose-400" />
-        مكتملة الصلاحية / متأخرة!
-      </span>
-    );
-  }
-
-  // Warning state if overdue is less than 24 hours
-  const totalHours = timeLeft.days * 24 + timeLeft.hours;
-  const isUrgent = totalHours < 24;
-
-  return (
-    <div className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border font-mono text-[10px] font-black transition-all ${
-      isUrgent 
-        ? 'bg-amber-500/20 text-yellow-300 border-amber-500/40 animate-pulse'
-        : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
-    }`}>
-      <Clock className="w-3.5 h-3.5" />
-      <span>المتبقي:</span>
-      <span className="tracking-wide">
-        {timeLeft.days > 0 && `${timeLeft.days}ي `}
-        {timeLeft.hours > 0 && `${timeLeft.hours}س `}
-        {timeLeft.minutes > 0 && `${timeLeft.minutes}د `}
-        {timeLeft.seconds}ث
-      </span>
-      {isUrgent && (
-        <span className="text-[9px] font-black bg-amber-500 text-slate-950 px-1.5 py-0.5 rounded ml-1 animate-bounce">
-          عاجل!
-        </span>
-      )}
-    </div>
-  );
-}
+import TaskCountdown from './TaskCountdown';
 
 // Custom Searchable Dropdown Multi-Select
 interface DropdownSelectProps {
@@ -298,17 +229,53 @@ export default function EmployeePortal({
     if (!selectedConfigEmployee) return;
     setIsSaving(true);
     
-    const formData = new FormData(e.currentTarget);
-    const updates: Partial<Employee> = {
-      username: (formData.get('username') as string || '').trim(),
-      password: (formData.get('password') as string || ''),
-      jobTitle: (formData.get('jobTitle') as string || ''),
-      branch: (formData.get('branch') as string || ''),
-      startDate: (formData.get('startDate') as string || ''),
-      employeeCode: (formData.get('employeeCode') as string || ''),
-      status: (formData.get('status') as string || 'نشط'),
-      najizApiKey: (formData.get('najizApiKey') as string || '').trim(),
-      portalLink: `${window.location.origin}/employee-portal`,
+    // Fallback selectors to parse form inputs securely
+    const form = e.currentTarget;
+    const usernameInput = form.querySelector('[name="username"]') as HTMLInputElement;
+    const passwordInput = form.querySelector('[name="password"]') as HTMLInputElement;
+    const employeeCodeInput = form.querySelector('[name="employeeCode"]') as HTMLInputElement;
+    const jobTitleInput = form.querySelector('[name="jobTitle"]') as HTMLInputElement;
+    const branchInput = form.querySelector('[name="branch"]') as HTMLInputElement;
+    const startDateInput = form.querySelector('[name="startDate"]') as HTMLInputElement;
+    const statusInput = form.querySelector('[name="status"]') as HTMLSelectElement;
+    const najizApiKeyInput = form.querySelector('[name="najizApiKey"]') as HTMLInputElement;
+
+    const username = (usernameInput?.value || '').trim();
+    const password = (passwordInput?.value || '').trim();
+    const employeeCode = (employeeCodeInput?.value || '').trim();
+    const jobTitle = (jobTitleInput?.value || '').trim();
+    const branch = (branchInput?.value || '').trim();
+    const startDate = (startDateInput?.value || '').trim();
+    const status = (statusInput?.value || 'نشط').trim();
+    const najizApiKey = (najizApiKeyInput?.value || '').trim();
+
+    if (!username) {
+      alert('⚠️ الرجاء تحديد اسم المستخدم الموحد للموظف.');
+      setIsSaving(false);
+      return;
+    }
+
+    if (!password) {
+      alert('⚠️ الرجاء تعيين كلمة مرور أمنية لبوابة الموظف.');
+      setIsSaving(false);
+      return;
+    }
+
+    const customLoginToken = selectedConfigEmployee.customLoginToken || btoa(`${selectedConfigEmployee.id}-${Math.random().toString(36).substring(2, 10)}`);
+    const portalLink = `${window.location.origin}/employee-portal?user=${username}&token=${customLoginToken}`;
+
+    const updates: any = {
+      ...selectedConfigEmployee, // Maximize synchronization: preserve name, nationalId, phone, etc.
+      username,
+      password,
+      jobTitle,
+      branch,
+      startDate,
+      employeeCode,
+      status,
+      najizApiKey,
+      portalLink,
+      customLoginToken,
       assignedCases: selectedConfigEmployee.assignedCases || [],
       assignedClients: selectedConfigEmployee.assignedClients || [],
       sidebarConfig: selectedConfigEmployee.sidebarConfig || [],
@@ -318,21 +285,24 @@ export default function EmployeePortal({
 
     // Ensure no undefined values are sent to Firestore
     Object.keys(updates).forEach(key => {
-      if ((updates as any)[key] === undefined) {
-        delete (updates as any)[key];
+      if (updates[key] === undefined) {
+        delete updates[key];
       }
     });
 
     try {
-      await updateDoc(doc(db, 'employees', selectedConfigEmployee.id), updates);
+      console.log('Attempting to save employee config:', selectedConfigEmployee.id, updates);
+      await setDoc(doc(db, 'employees', selectedConfigEmployee.id), updates, { merge: true });
       
       // Update the local list to ensure immediate responsiveness
       setEmployees(prev => prev.map(e => e.id === selectedConfigEmployee.id ? { ...e, ...updates } : e));
-      setSelectedConfigEmployee(null); // Close the card immediately
       
-      alert('تم حفظ كود ومزامنة بوابة الموظف والصلاحيات بنجاح ✅');
-    } catch (err) {
-      alert('حدث خطأ أثناء حفظ الإعدادات لقاعدة البيانات.');
+      alert('تم حفظ البيانات ومزامنة الصلاحيات لبوابة الموظف بنجاح ✅');
+      setTimeout(() => setSelectedConfigEmployee(null), 100);
+      
+    } catch (err: any) {
+      console.error('Error saving employee config:', err);
+      alert('حدث خطأ أثناء حفظ الإعدادات لقاعدة البيانات: ' + err.message);
     } finally {
       setIsSaving(false);
     }
@@ -703,6 +673,10 @@ export default function EmployeePortal({
   // Safe task status switcher that updates Firestore live & alerts master
   const handleToggleTaskStatus = async (taskId: string, newStatus: string) => {
     try {
+      const taskObj = tasks.find((t: any) => t.id === taskId);
+      if (taskObj) {
+         onUpdateState('tasks', { ...taskObj, status: newStatus });
+      }
       await updateDoc(doc(db, 'tasks', taskId), { status: newStatus });
       if (loggedInEmployee) {
         await writeAuditLog('تحديث حالة المهمة', `تحديث حالة المهمة إلى: ${newStatus}`, loggedInEmployee);
@@ -781,15 +755,52 @@ export default function EmployeePortal({
               <motion.div 
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="py-32 bg-white border-2 border-dashed border-slate-200 rounded-[3rem] flex flex-col items-center justify-center text-center gap-8 shadow-sm"
+                className="space-y-6"
               >
-                <div className="w-28 h-28 bg-blue-50 border border-blue-100 rounded-full flex items-center justify-center text-blue-600">
-                  <Users className="w-14 h-14" />
-                </div>
-                <div>
-                  <h3 className="text-2xl font-black text-slate-900">جاهز للبدء في التهيئة</h3>
-                  <p className="text-slate-500 font-bold max-w-md mt-2">حدد موظفاً من القائمة أعلاه للوصول إلى لوحة التحكم الفردية، ضبط الصلاحيات، وإصدار مفاتيح الدخول الأمنة.</p>
-                </div>
+                {employees.filter(e => e.username).length > 0 ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {employees.filter(e => e.username).map(e => (
+                      <div key={e.id} className="bg-white border border-slate-200 p-6 rounded-[2.5rem] shadow-sm flex flex-col gap-4 relative overflow-hidden group hover:border-blue-300 transition-all">
+                        <div className="absolute top-0 right-0 w-1.5 h-full bg-blue-600/10" />
+                        <div className="flex justify-between items-start">
+                           <div>
+                             <h4 className="font-black text-slate-900 text-lg mb-1">{e.name}</h4>
+                             <p className="text-[10px] text-slate-400 font-bold">{e.jobTitle}</p>
+                           </div>
+                           <div className="w-10 h-10 bg-slate-50 border border-slate-100 rounded-full flex items-center justify-center text-slate-400">
+                             <Users className="w-4 h-4" />
+                           </div>
+                        </div>
+                        <div className="bg-slate-50 rounded-xl p-3 border border-slate-100 space-y-2 mt-auto">
+                           <div className="flex justify-between text-[10px] font-bold">
+                             <span className="text-slate-400">اسم المستخدم:</span>
+                             <span className="text-blue-600 font-mono text-left" dir="ltr">{e.username}</span>
+                           </div>
+                           <div className="flex justify-between text-[10px] font-bold">
+                             <span className="text-slate-400">عدد الأقسام المسموحة:</span>
+                             <span className="text-emerald-600">{e.sidebarConfig?.length || 0} أقسام</span>
+                           </div>
+                        </div>
+                        <button 
+                          onClick={() => setSelectedConfigEmployee(e)}
+                          className="w-full bg-slate-100 hover:bg-blue-600 hover:text-white text-slate-700 py-3 rounded-xl font-black text-xs transition-all"
+                        >
+                          تعديل الصلاحيات والبوابة
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="py-32 bg-white border-2 border-dashed border-slate-200 rounded-[3rem] flex flex-col items-center justify-center text-center gap-8 shadow-sm">
+                    <div className="w-28 h-28 bg-blue-50 border border-blue-100 rounded-full flex items-center justify-center text-blue-600">
+                      <Users className="w-14 h-14" />
+                    </div>
+                    <div>
+                      <h3 className="text-2xl font-black text-slate-900">جاهز للبدء في التهيئة</h3>
+                      <p className="text-slate-500 font-bold max-w-md mt-2">حدد موظفاً من القائمة أعلاه للوصول إلى لوحة التحكم الفردية، ضبط الصلاحيات، وإصدار مفاتيح الدخول الأمنة.</p>
+                    </div>
+                  </div>
+                )}
               </motion.div>
             ) : (
               <motion.div 
@@ -1122,12 +1133,12 @@ export default function EmployeePortal({
   if (!loggedInEmployee) {
     // Elegant Light-Themed Login Screen
     return (
-      <div className="min-h-screen flex items-center justify-center p-8 bg-slate-50 font-sans relative overflow-hidden" dir="rtl">
+      <div className="min-h-screen flex items-center justify-center p-8 bg-[#F8FAFC] font-sans relative overflow-hidden" dir="rtl">
         
         {/* Soft Background Accents */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-blue-100/50 rounded-full blur-[120px]" />
-          <div className="absolute bottom-[-10%] right-[-5%] w-[40%] h-[40%] bg-indigo-100/50 rounded-full blur-[120px]" />
+          <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-slate-200/50 rounded-full blur-[120px]" />
+          <div className="absolute bottom-[-10%] right-[-5%] w-[40%] h-[40%] bg-blue-100/30 rounded-full blur-[120px]" />
         </div>
 
         <motion.div 
@@ -1135,15 +1146,15 @@ export default function EmployeePortal({
           animate={{ opacity: 1, scale: 1 }}
           className="w-full max-w-lg relative z-10"
         >
-          <div className="bg-white border border-slate-200 rounded-[3rem] p-12 shadow-[0_20px_60px_-15px_rgba(30,58,138,0.1)] space-y-10 relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-full h-2 bg-gradient-to-r from-blue-600 to-indigo-500" />
+          <div className="bg-white border border-slate-200 rounded-[3rem] p-12 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.05)] space-y-10 relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-full h-2 bg-[#0f172a]" />
             
             <div className="text-center space-y-4">
-              <div className="w-20 h-20 bg-blue-600 text-white rounded-3xl flex items-center justify-center mx-auto shadow-xl shadow-blue-600/20 mb-8">
+              <div className="w-20 h-20 bg-[#0f172a] text-white rounded-3xl flex items-center justify-center mx-auto shadow-xl shadow-slate-900/10 mb-8">
                 <Shield className="w-10 h-10" />
               </div>
               <h2 className="text-3xl font-black text-slate-900 leading-tight">بوابة الموظف الموحدة</h2>
-              <p className="text-slate-500 font-bold text-base">منصة العدالة الرقمية • مركز التحكم المهني المستقل</p>
+              <p className="text-slate-500 font-bold text-sm bg-slate-50 border border-slate-100 px-4 py-2 rounded-full inline-block mx-auto">مركز العمل القضائي المتكامل</p>
             </div>
 
             <form onSubmit={handleLogin} className="space-y-8">
@@ -1226,7 +1237,10 @@ export default function EmployeePortal({
   );
   
   const myTasks = tasks.filter(t => 
-    t.assignedTo === loggedInEmployee?.name
+    t.assignedTo === loggedInEmployee?.name ||
+    t.assignedTo === loggedInEmployee?.username ||
+    t.assignedTo === loggedInEmployee?.id ||
+    (t.assignedTo && loggedInEmployee?.name && t.assignedTo.includes(loggedInEmployee.name))
   );
   
   const myClients = clients.filter(cl => 
@@ -1352,34 +1366,34 @@ export default function EmployeePortal({
   const selectedDaySessions = mySessions.filter(s => s.date === selectedCalendarDateStr);
 
     return (
-      <div className="flex-1 h-full flex flex-row bg-slate-50 text-slate-900 font-sans overflow-hidden" dir="rtl">
+      <div className="flex-1 h-full flex flex-row bg-[#F8FAFC] text-slate-900 font-sans overflow-hidden" dir="rtl">
         
         {/* Modern Employee Portal Navigation / Sidebar */}
-        <aside className="w-80 border-l border-slate-200 bg-white hidden lg:flex flex-col p-6 space-y-8 overflow-y-auto shadow-sm">
+        <aside className="w-72 border-l border-slate-200 bg-white hidden lg:flex flex-col p-6 space-y-8 overflow-y-auto shadow-sm">
           <div className="flex flex-col items-center gap-4 pb-8 border-b border-slate-100">
-            <div className="w-20 h-20 bg-blue-600 rounded-3xl flex items-center justify-center text-white text-3xl font-black shadow-xl shadow-blue-600/20">
+            <div className="w-20 h-20 bg-[#0f172a] rounded-[1.5rem] flex items-center justify-center text-white text-3xl font-black shadow-xl">
               {loggedInEmployee.name.charAt(0)}
             </div>
             <div className="text-center">
-              <h2 className="text-lg font-black text-slate-900">{loggedInEmployee.name}</h2>
-              <div className="flex items-center justify-center gap-2 mt-1">
-                <span className="text-[10px] bg-blue-50 text-blue-600 px-2.5 py-0.5 rounded-full font-black border border-blue-100">
+              <h2 className="text-lg font-black text-slate-900 tracking-tight">{loggedInEmployee.name}</h2>
+              <div className="flex items-center justify-center gap-2 mt-1.5">
+                <span className="text-[10px] bg-slate-100 text-slate-600 px-2.5 py-1 rounded-full font-black border border-slate-200 uppercase">
                   {loggedInEmployee.employeeCode || `EMP-${loggedInEmployee.id.slice(-4).toUpperCase()}`}
                 </span>
-                <span className="text-[10px] text-slate-500 font-bold">{loggedInEmployee.jobTitle}</span>
+                <span className="text-[11px] text-slate-500 font-bold">{loggedInEmployee.jobTitle}</span>
               </div>
             </div>
           </div>
 
           <nav className="space-y-1">
-            <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-3 mb-2 text-right">أدوات العمل المهني</div>
+            <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-3 mb-3 text-right">قائمة الوصول السريع</div>
             {[
               { id: 'dashboard', name: 'لوحة التحكم والمتابعة', icon: Layout },
               { id: 'cases', name: 'ملفات القضايا المسندة', icon: Briefcase },
-              { id: 'tasks', name: 'قاعة المهام التكليفية', icon: CheckSquare },
-              { id: 'clients', name: 'سجل الموكلين النشطين', icon: Users },
+              { id: 'tasks', name: 'التكاليف والمهام', icon: CheckSquare },
+              { id: 'clients', name: 'الموكلين والجهات', icon: Users },
               { id: 'ai', name: 'المساعد القانوني AI', icon: Sparkles },
-              { id: 'ai-search', name: 'مرصد الأنظمة والبحث الذكي', icon: Search },
+              { id: 'ai-search', name: 'البحث والاستعلام الذكي', icon: Search },
               { id: 'najiz', name: 'مزامنة بوابة ناجز', icon: RefreshCw },
               { id: 'hr', name: 'الشؤون الإدارية (HR)', icon: UserCheck },
             ].filter(item => 
@@ -1391,10 +1405,10 @@ export default function EmployeePortal({
               <button
                 key={item.id}
                 onClick={() => setActivePortalTab(item.id)}
-                className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl text-xs font-black transition-all ${
+                className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-xl text-xs font-black transition-all ${
                   activePortalTab === item.id 
-                    ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20' 
-                    : 'text-slate-600 hover:bg-slate-50 hover:text-blue-600'
+                    ? 'bg-[#0f172a] text-white shadow-md' 
+                    : 'text-slate-600 hover:bg-slate-50 hover:text-[#0f172a]'
                 }`}
               >
                 <item.icon className="w-4 h-4" />
@@ -1406,43 +1420,41 @@ export default function EmployeePortal({
           <div className="mt-auto pt-6 border-t border-slate-100">
             <button 
               onClick={handleLogoutPortal}
-              className="w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl text-xs font-black text-rose-600 hover:bg-rose-50 transition-all border border-transparent hover:border-rose-100"
+              className="w-full flex items-center gap-3 px-4 py-3.5 rounded-xl text-xs font-black text-rose-600 hover:bg-rose-50 transition-all border border-transparent hover:border-rose-100 active:scale-95"
             >
               <LogOut className="w-4 h-4" />
-              <span>تسجيل الخروج الآمن</span>
+              <span>تسجيل خروج آمن</span>
             </button>
           </div>
         </aside>
 
         {/* Main Content Area */}
-        <div className="flex-1 flex flex-col min-w-0 bg-slate-50 relative">
+        <div className="flex-1 flex flex-col min-w-0 bg-[#F8FAFC] relative">
           {/* Header / Welcome Section */}
-          <header className="p-8 border-b border-slate-200 flex flex-col md:flex-row md:items-center justify-between gap-6 bg-white relative overflow-hidden group">
-            <div className="absolute top-0 right-0 w-full h-[2px] bg-gradient-to-r from-blue-600 via-indigo-400 to-blue-500" />
-            
+          <header className="p-6 md:p-8 border-b border-slate-200 flex flex-col md:flex-row md:items-center justify-between gap-6 bg-white relative overflow-hidden">
             <div className="z-10 flex items-center gap-5">
-              <div className="hidden lg:flex flex-col gap-1 pr-6 border-r border-slate-200 py-1 text-right" dir="rtl">
+              <div className="hidden md:flex flex-col gap-1 pr-6 border-r border-slate-200 py-1 text-right" dir="rtl">
                  <h1 className="text-2xl font-black text-slate-900 tracking-tight">أهلاً بك، الأستاذ {loggedInEmployee.name.split(' ')[0]} 👋</h1>
-                 <p className="text-slate-400 font-bold text-[11px] uppercase tracking-wider mt-0.5">مركز العمل القضائي المتكامل • بيئة سحابية آمنة</p>
+                 <p className="text-slate-500 font-bold text-xs mt-0.5">مركز العمل القضائي المتكامل • بيئة سحابية آمنة</p>
               </div>
             </div>
 
-            <div className="z-10 flex items-center gap-4">
-              <div className="bg-slate-50 p-3.5 rounded-2xl border border-slate-200 flex items-center gap-4 shadow-sm">
+            <div className="z-10 flex items-center gap-3 md:gap-4">
+              <div className="bg-[#F8FAFC] px-5 py-3 rounded-[1rem] border border-slate-100 flex items-center gap-4 shadow-sm">
                  <div className="text-right">
-                   <p className="text-[10px] font-black text-blue-600 uppercase tracking-widest leading-none">رصيد الإجازات</p>
+                   <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest leading-none">رصيد الإجازات</p>
                    <p className="text-lg font-black text-slate-900 mt-1 leading-none">{vacationBalance.remaining} يوماً</p>
                  </div>
-                 <div className="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center text-blue-600">
+                 <div className="w-10 h-10 bg-white rounded-[0.75rem] shadow-sm border border-slate-100 flex items-center justify-center text-[#0f172a]">
                    <Calendar className="w-5 h-5" />
                  </div>
               </div>
 
-              <div className="bg-slate-50 p-1.5 rounded-2xl border border-slate-200 flex items-center gap-2 shadow-sm">
+              <div className="bg-[#F8FAFC] p-1.5 rounded-[1.25rem] border border-slate-100 flex items-center gap-2 shadow-sm">
                  <button 
                    onClick={() => handleCheckIn('qr')}
                    disabled={isCheckingIn}
-                   className="bg-blue-600 hover:bg-blue-500 text-white font-black px-6 py-3 rounded-xl text-xs flex items-center gap-2 transition-all active:scale-95 disabled:opacity-50 shadow-md shadow-blue-600/10"
+                   className="bg-[#0f172a] hover:bg-slate-800 text-white font-black px-5 py-2.5 rounded-xl text-xs flex items-center gap-2 transition-all active:scale-95 disabled:opacity-50 shadow-sm"
                  >
                    <QrCode className="w-4 h-4" />
                    <span>إثبات (QR)</span>
@@ -1450,7 +1462,7 @@ export default function EmployeePortal({
                  <button 
                    onClick={() => handleCheckIn('location')}
                    disabled={isCheckingIn}
-                   className="bg-white hover:bg-slate-100 text-slate-700 font-black px-6 py-3 rounded-xl text-xs flex items-center gap-2 transition-all active:scale-95 disabled:opacity-50 border border-slate-200 shadow-sm"
+                   className="bg-white hover:bg-slate-50 text-slate-700 font-black px-5 py-2.5 rounded-xl text-xs flex items-center gap-2 transition-all active:scale-95 disabled:opacity-50 border border-slate-200 shadow-sm"
                  >
                    <MapPin className="w-4 h-4 text-emerald-600" />
                    <span>إثبات (موقع)</span>
@@ -1462,13 +1474,13 @@ export default function EmployeePortal({
                   onClick={() => setShowNotificationDrawer(!showNotificationDrawer)}
                   className={`p-3 rounded-xl border transition-all relative cursor-pointer shadow-sm ${
                     urgentTasks.length > 0 
-                      ? 'bg-rose-600 text-white border-rose-500 shadow-md shadow-rose-600/20' 
-                      : 'bg-white text-slate-400 border-slate-200 hover:border-blue-300 hover:text-blue-600'
+                      ? 'bg-rose-50 text-rose-600 border-rose-200' 
+                      : 'bg-white text-slate-400 border-slate-200 hover:text-slate-600 hover:border-slate-300'
                   }`}
                 >
                   <Bell className={`w-5 h-5 ${urgentTasks.length > 0 ? 'animate-bounce' : ''}`} />
                   {urgentTasks.length > 0 && (
-                    <span className="absolute -top-1.5 -right-1.5 bg-rose-700 text-white font-black text-[9px] w-5 h-5 rounded-full flex items-center justify-center border-2 border-white animate-pulse">
+                    <span className="absolute -top-1.5 -right-1.5 bg-rose-600 text-white font-black text-[9px] w-5 h-5 rounded-full flex items-center justify-center shadow-md animate-pulse">
                       {urgentTasks.length}
                     </span>
                   )}
@@ -1477,7 +1489,7 @@ export default function EmployeePortal({
             </div>
           </header>
 
-          <main className="flex-1 overflow-y-auto p-8 space-y-8 custom-scrollbar">
+          <main className="flex-1 overflow-y-auto p-6 md:p-8 space-y-8 custom-scrollbar">
             
             {/* Urgent Task Warnings (< 24 Hours) */}
             <AnimatePresence>
@@ -1580,33 +1592,32 @@ export default function EmployeePortal({
                     { label: 'المهام المعلقة / قيد العمل', value: myTasks.filter(t => t.status === 'todo' || t.status === 'in_progress' || t.status === 'review').length, color: 'text-blue-600', bg: 'bg-blue-50 text-blue-900', accent: 'bg-blue-100', icon: Clock },
                     { label: 'المهام المتأخرة / قريبة', value: myTasks.filter(t => (t.status === 'todo' || t.status === 'in_progress') && t.dueDate && t.dueDate < new Date().toISOString().split('T')[0]).length, color: 'text-rose-600', bg: 'bg-rose-50 text-rose-900', accent: 'bg-rose-100', icon: AlertTriangle }
                   ].map((stat, i) => (
-                    <div key={i} className={`${stat.bg} border border-[#e2e8f0] p-6 rounded-[2.5rem] flex flex-col justify-between shadow-sm relative overflow-hidden min-h-[160px]`}>
-                       <stat.icon className={`w-8 h-8 ${stat.color} mb-4 relative z-10`} />
+                    <div key={i} className={`${stat.bg} border border-[#e2e8f0] p-6 rounded-[2.5rem] flex flex-col justify-between shadow-sm relative overflow-hidden min-h-[160px] group hover:-translate-y-1 transition-all`}>
+                       <stat.icon className={`w-8 h-8 ${stat.color} mb-4 relative z-10 transition-transform group-hover:scale-110`} />
                        <div className="relative z-10">
-                          <div className={`text-4xl font-black ${stat.color} mb-1`}>{stat.value}</div>
+                          <div className={`text-4xl font-black ${stat.color} mb-1 tracking-tight`}>{stat.value}</div>
                           <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">{stat.label}</span>
                        </div>
-                       <div className={`absolute -bottom-8 -right-8 w-32 h-32 rounded-full ${stat.accent} opacity-50`} />
                     </div>
                   ))}
 
-                  <div className="col-span-2 md:col-span-4 bg-white border border-slate-200 p-8 rounded-[2.5rem] flex items-center justify-between">
+                  <div className="col-span-2 md:col-span-4 bg-white border border-slate-200 p-8 rounded-[2.5rem] flex items-center justify-between shadow-sm hover:border-slate-300 transition-colors">
                      <div className="space-y-1">
                         <h4 className="text-sm font-black text-slate-900 flex items-center gap-2">
-                           <Award className="w-5 h-5 text-emerald-500" />
+                           <Award className="w-5 h-5 text-indigo-500" />
                            نسبة الإنجاز ونجاح المهام
                         </h4>
                         <p className="text-[10px] text-slate-400 font-bold">بناءً على المهام المنجزة مقارنة بالمهام الكلية المسندة لك.</p>
                      </div>
-                     <div className="flex items-center gap-4">
-                        <div className="w-48 h-3 bg-slate-100 rounded-full overflow-hidden">
+                     <div className="flex items-center gap-4 w-1/2">
+                        <div className="w-full h-3 bg-slate-100 rounded-full overflow-hidden flex-1 shadow-inner">
                            <motion.div 
                              initial={{ width: 0 }}
                              animate={{ width: `${myTasks.length > 0 ? Math.round((myTasks.filter(t => t.status === 'completed' || t.status === 'done').length / myTasks.length) * 100) : 0}%` }}
-                             className="h-full bg-emerald-500 rounded-full"
+                             className="h-full bg-indigo-500 rounded-full"
                            />
                         </div>
-                        <span className="text-xl font-black text-slate-900">
+                        <span className="text-xl font-black text-slate-900 w-12 left-0 text-left">
                            {myTasks.length > 0 ? Math.round((myTasks.filter(t => t.status === 'completed' || t.status === 'done').length / myTasks.length) * 100) : 0}%
                         </span>
                      </div>
