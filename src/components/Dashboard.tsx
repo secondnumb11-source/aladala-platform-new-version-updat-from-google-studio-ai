@@ -200,6 +200,7 @@ const Dashboard = function Dashboard({
   const [isCustomizing, setIsCustomizing] = useState(false);
 
   const [employees, setEmployees] = useState<any[]>([]);
+  const [agencies, setAgencies] = useState<any[]>([]);
 
   useEffect(() => {
     const backup = localStorage.getItem('employees_backup');
@@ -217,8 +218,41 @@ const Dashboard = function Dashboard({
     }, (error) => {
       console.warn("Error subscribing to employees in Dashboard:", error);
     });
-    return () => unsubscribe();
+
+    const qAgencies = query(collection(db, 'powersOfAttorney'));
+    const unsubAgencies = onSnapshot(qAgencies, (snapshot) => {
+      const agList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setAgencies(agList);
+    }, (error) => {
+      console.warn("Error subscribing to agencies in Dashboard:", error);
+    });
+
+    return () => {
+      unsubscribe();
+      unsubAgencies();
+    };
   }, []);
+
+  const expiringAgencies = React.useMemo(() => {
+    return agencies.filter(poa => {
+      if (!poa.expiryDate) return false;
+      const expiryDate = new Date(poa.expiryDate);
+      const today = new Date();
+      expiryDate.setHours(0, 0, 0, 0);
+      today.setHours(0, 0, 0, 0);
+      const timeDiff = expiryDate.getTime() - today.getTime();
+      const daysDiff = Math.ceil(timeDiff / (1000 * 3600 * 24));
+      return daysDiff > 0 && daysDiff <= 60;
+    }).map(poa => {
+      const expiryDate = new Date(poa.expiryDate);
+      const today = new Date();
+      expiryDate.setHours(0, 0, 0, 0);
+      today.setHours(0, 0, 0, 0);
+      const timeDiff = expiryDate.getTime() - today.getTime();
+      const daysLeft = Math.ceil(timeDiff / (1000 * 3600 * 24));
+      return { ...poa, daysLeft };
+    });
+  }, [agencies]);
 
   const expiringEmployees = React.useMemo(() => {
     return employees.filter(emp => {
@@ -738,6 +772,43 @@ const Dashboard = function Dashboard({
             className="px-6 py-3 bg-[#0f172a] hover:bg-slate-800 text-white font-black text-xs rounded-xl transition-all shadow-md shrink-0 self-end md:self-center"
           >
             إدارة بيانات الموظفين
+          </button>
+        </motion.div>
+      )}
+
+      {/* Expiry alerts for Agencies */}
+      {expiringAgencies.length > 0 && (
+        <motion.div 
+          initial={{ opacity: 0, y: -10 }} 
+          animate={{ opacity: 1, y: 0 }} 
+          className="bg-rose-50 border border-rose-200 rounded-[2rem] p-6 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-6 relative overflow-hidden"
+        >
+          <div className="absolute top-0 left-0 w-32 h-32 bg-rose-500/5 rounded-full blur-2xl" />
+          <div className="flex items-start gap-4">
+            <div className="w-12 h-12 bg-rose-500 text-white rounded-2xl flex items-center justify-center shrink-0 shadow-md">
+              <AlertTriangle className="w-6 h-6 animate-pulse" />
+            </div>
+            <div className="space-y-1">
+              <h3 className="text-base font-black text-slate-900">🔔 تنبيه عاجل: وكالات شارفت على الانتهاء!</h3>
+              <p className="text-xs text-rose-700 font-bold">يوجد {expiringAgencies.length} وكالات أوشكت على الانتهاء. تجنباً لتوقف الإجراءات وسقوط الترافع في ناجز والمحاكم، يرجى التجديد فوراً.</p>
+              
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2 mt-4 pt-4 border-t border-rose-200">
+                {expiringAgencies.map((poa: any) => (
+                  <div key={poa.id} className="flex items-center gap-2 text-xs">
+                    <span className="w-2 h-2 rounded-full bg-rose-500 shrink-0 animate-pulse" />
+                    <span className="font-extrabold text-slate-800">رقم: {poa.poaNumber}</span>
+                    <span className="text-slate-600 font-bold">({poa.clientName})</span>
+                    <span className="font-mono bg-rose-100 text-rose-700 px-2 py-0.5 rounded font-black border border-rose-200">⏳ متبقي {poa.daysLeft} أيام</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+          <button 
+            onClick={() => onNavigate('agencies')}
+            className="px-6 py-3 bg-slate-900 hover:bg-slate-800 text-white font-black text-xs rounded-xl transition-all shadow-md shrink-0 self-end md:self-center"
+          >
+            إدارة الوكالات
           </button>
         </motion.div>
       )}

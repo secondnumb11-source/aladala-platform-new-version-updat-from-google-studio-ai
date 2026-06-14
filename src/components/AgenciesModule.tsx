@@ -1,22 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { 
-  FileText, Plus, Search, Calendar, ChevronRight, 
+  FileText, Plus, Search, ChevronRight, 
   Trash2, ShieldCheck, ShieldAlert, CheckCircle2, 
-  Clock, RefreshCw, X, FileSpreadsheet, User
+  Clock, RefreshCw, X, FileSpreadsheet, User, Scale, FileKey
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   collection, 
   onSnapshot, 
   doc, 
-  setDoc, 
   addDoc,
   deleteDoc, 
-  query,
-  orderBy
+  query
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { useFirebase } from '@/contexts/FirebaseContext';
 import { PowerOfAttorney, Client } from '@/types';
 
 interface AgenciesModuleProps {
@@ -25,7 +22,6 @@ interface AgenciesModuleProps {
 }
 
 export default function AgenciesModule({ clients, onUpdateState }: AgenciesModuleProps) {
-  const { user } = useFirebase();
   const [agencies, setAgencies] = useState<PowerOfAttorney[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'expiring' | 'expired'>('all');
@@ -42,13 +38,11 @@ export default function AgenciesModule({ clients, onUpdateState }: AgenciesModul
   const [status, setStatus] = useState('نشطة');
   const [scope, setScope] = useState('');
   const [clausesText, setClausesText] = useState('');
-  const [partiesText, setPartiesText] = useState(''); // comma separated or custom items
+  const [partiesText, setPartiesText] = useState('');
 
-  // Success / Error feedback states
   const [notification, setNotification] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
 
   useEffect(() => {
-    // Listen to real-time PoA updates from Firestore
     const q = query(collection(db, 'powersOfAttorney'));
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const list: PowerOfAttorney[] = [];
@@ -56,30 +50,22 @@ export default function AgenciesModule({ clients, onUpdateState }: AgenciesModul
         list.push({ id: docSnap.id, ...docSnap.data() } as PowerOfAttorney);
       });
       setAgencies(list);
-    }, (error) => {
-      console.error("Error reading powersOfAttorney from Firestore:", error);
     });
-
     return () => unsubscribe();
   }, []);
 
   const showToast = (message: string, type: 'success' | 'error' | 'info' = 'success') => {
     setNotification({ message, type });
-    setTimeout(() => {
-      setNotification(null);
-    }, 4000);
+    setTimeout(() => setNotification(null), 4000);
   };
 
   const getRemainingDays = (expiryDateStr: string) => {
     if (!expiryDateStr) return 0;
     const expiry = new Date(expiryDateStr);
     const today = new Date();
-    // Normalize time to compare dates only
     expiry.setHours(0, 0, 0, 0);
     today.setHours(0, 0, 0, 0);
-    const diffTime = expiry.getTime() - today.getTime();
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    return diffDays;
+    return Math.ceil((expiry.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
   };
 
   const handleDeleteAgency = async (id: string, e: React.MouseEvent) => {
@@ -88,26 +74,23 @@ export default function AgenciesModule({ clients, onUpdateState }: AgenciesModul
     try {
       await deleteDoc(doc(db, 'powersOfAttorney', id));
       showToast('تم حذف الوكالة بنجاح', 'success');
-      if (selectedAgency?.id === id) {
-        setSelectedAgency(null);
-      }
+      if (selectedAgency?.id === id) setSelectedAgency(null);
     } catch (err: any) {
-      showToast('خطأ أثناء حذف الوكالة من خادم البيانات: ' + err.message, 'error');
+      showToast('خطأ أثناء حذف الوكالة: ' + err.message, 'error');
     }
   };
 
   const handleAddAgency = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!poaNumber || !clientName || !expiryDate || !issueDate) {
-      showToast('يرجى ملء كافة الحقول الأساسية لتوثيق الوكالة', 'error');
+      showToast('يرجى ملء كافة الحقول الأساسية', 'error');
       return;
     }
 
     const clausesArray = clausesText
       ? clausesText.split('\n').filter(c => c.trim())
-      : [scope || 'المرافعة والمدافعة والمراجعة لكافة الدوائر الحكومية والشرعية والجهات الإدارية.'];
+      : [scope || 'المرافعة والمدافعة والمراجعة لكافة الدوائر الحكومية والشرعية'];
 
-    // Map comma-separated or newline-separated parties
     const partiesArray = partiesText
       ? partiesText.split('\n').map(p => {
           const parts = p.split('-');
@@ -137,28 +120,17 @@ export default function AgenciesModule({ clients, onUpdateState }: AgenciesModul
 
     try {
       await addDoc(collection(db, 'powersOfAttorney'), newPoa);
-      showToast('تم حفظ وإصدار كارت الوكالة بنجاح لمجموعة العمل الموحدة', 'success');
+      showToast('تم حفظ وإصدار كارت الوكالة بنجاح', 'success');
       setShowAddModal(false);
-      
-      // Clear fields
-      setPoaNumber('');
-      setClientName('');
-      setLawyerName('');
-      setIssueDate('');
-      setExpiryDate('');
-      setStatus('نشطة');
-      setScope('');
-      setClausesText('');
-      setPartiesText('');
+      setPoaNumber(''); setClientName(''); setLawyerName(''); setIssueDate(''); setExpiryDate(''); setScope(''); setClausesText(''); setPartiesText('');
     } catch (err: any) {
-      showToast('فشل تخزين الوكالة على السحابة الآمنة: ' + err.message, 'error');
+      showToast('فشل التخزين: ' + err.message, 'error');
     }
   };
 
-  // Synchronize with Najiz
   const handleNajizSync = async () => {
     setIsSyncing(true);
-    showToast('جاري الاتصال والتحقق مع سجل الوكالات بوزارة العدل ومنصة ناجز...', 'info');
+    showToast('جاري الاتصال وسحب بيانات الوكالات من منصة ناجز...', 'info');
     
     setTimeout(async () => {
       const mockNajizPoas = [
@@ -169,12 +141,8 @@ export default function AgenciesModule({ clients, onUpdateState }: AgenciesModul
           lawyerName: "المكتب الرئيسي - العدالة للمحاماة",
           clientName: "شركة الفرسان للمقاولات المحدودة", 
           status: "نشطة",
-          scope: "المرافعة والمدافعة والإقرار والإنكار وسحب المبالغ والطلب للجهات الإدارية والتجارية بموجب اللائحة التنفيذية.",
-          clauses: [
-            "المرافعة والمدافعة والإقرار والإنكار وسحب المبالغ والطلب للجهات الإدارية والتجارية بموجب اللائحة التنفيذية.",
-            "تمثيل الموكل أمام المحكمة الإدارية ومحكمة الاستئناف الإدارية والمحاكم العمالية والتجارية والمصرفية.",
-            "رفع الدعاوى وقيد الصحائف وتوقيع عرائض الاستئناف والاعتراض والالتماس وقبول الأحكام أو رفضها."
-          ],
+          scope: "المرافعة والمدافعة والإقرار والإنكار وسحب المبالغ والطلب للجهات الإدارية.",
+          clauses: ["المرافعة والمدافعة", "تمثيل الموكل أمام المحكمة", "رفع الدعاوى وقيد الصحائف"],
           parties: [
             { name: "شركة الفرسان للمقاولات المحدودة", role: "موكل (Client)", identity: "1010098234" },
             { name: "المكتب الرئيسي للمحاماة", role: "وكيل (Agent)", identity: "700941832" }
@@ -188,12 +156,8 @@ export default function AgenciesModule({ clients, onUpdateState }: AgenciesModul
           lawyerName: "المحامي سعد بن عبد العزيز",
           clientName: "الشيخ عبد الرحمن بن حمود السحيمي", 
           status: "نشطة",
-          scope: "المراجعة لكافة الدوائر الحكومية وإثبات حجج العقار وسحب القرارات والاستئناف بمجلس القضاء.",
-          clauses: [
-            "المراجعة لكافة الدوائر الحكومية وإثبات حجج العقار وسحب القرارات والاستئناف بمجلس القضاء.",
-            "تقديم طلبات إثبات ملكية ونزاع عقاري ومراجعة أمانة مكة المكرمة ووزارة الشؤون البلدية والقروية والإسكان.",
-            "سحب صكوك القرارات والاستلام والتسليم والتوقيع نيابة عن الموكل في كل ما يتعلق بالعقار المذكور."
-          ],
+          scope: "المراجعة لكافة الدوائر الحكومية وإثبات الحجج.",
+          clauses: ["المراجعة للدوائر الحكومية", "تقديم طلبات إثبات ملكية", "سحب صكوك القرارات"],
           parties: [
             { name: "الشيخ عبد الرحمن بن حمود السحيمي", role: "موكل (Client)", identity: "1012948234" },
             { name: "سعد بن عبد العزيز بن محمد", role: "وكيل (Agent)", identity: "1055819382" }
@@ -202,67 +166,30 @@ export default function AgenciesModule({ clients, onUpdateState }: AgenciesModul
         }
       ];
 
-      // Insert them into Firestore safely if they don't already exist
       let addedCount = 0;
       for (const poa of mockNajizPoas) {
-        const exist = agencies.some((a) => a.poaNumber === poa.poaNumber);
-        if (!exist) {
+        if (!agencies.some((a) => a.poaNumber === poa.poaNumber)) {
           await addDoc(collection(db, 'powersOfAttorney'), poa);
           addedCount++;
         }
       }
 
       setIsSyncing(false);
-      if (addedCount > 0) {
-        showToast(`مزامنة ناجحة: جلب ومطابقة عدد ${addedCount} وكالات نشطة جديدة بالكامل من ناجز`, 'success');
-      } else {
-        showToast('مزامنة ناجحة: سجلات الوكالات في منصة ناجز مطابقة ومحدثة بالكامل مع النظام الداخلي.', 'success');
-      }
+      showToast(addedCount > 0 ? `مزامنة ناجحة: جلب ${addedCount} وكالات من ناجز` : 'سجلات الوكالات في منصة ناجز محدثة', 'success');
     }, 1800);
   };
 
   const getUrgencyBadge = (days: number) => {
-    if (days <= 0) {
-      return (
-        <span className="bg-rose-500/15 text-rose-400 border border-rose-500/30 px-3 py-1 rounded-xl text-xs font-black flex items-center gap-1.5 animate-pulse">
-          <ShieldAlert className="w-3.5 h-3.5" />
-          منتهية الصلاحية
-        </span>
-      );
-    }
-    if (days <= 30) {
-      return (
-        <span className="bg-amber-500/15 text-amber-400 border border-amber-500/30 px-3 py-1 rounded-xl text-xs font-black flex items-center gap-1.5 animate-pulse">
-          <Clock className="w-3.5 h-3.5" />
-          ينتهي قريباً جداً ({days} يوم)
-        </span>
-      );
-    }
-    if (days <= 60) {
-      return (
-        <span className="bg-yellow-500/10 text-yellow-300 border border-yellow-500/20 px-3 py-1 rounded-xl text-xs font-black flex items-center gap-1.5">
-          <Clock className="w-3.5 h-3.5" />
-          متبقي {days} يوم
-        </span>
-      );
-    }
-    return (
-      <span className="bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 px-3 py-1 rounded-xl text-xs font-black flex items-center gap-1.5">
-        <ShieldCheck className="w-3.5 h-3.5" />
-        صالحة ({days} يوم متبقي)
-      </span>
-    );
+    if (days <= 0) return <span className="bg-rose-100 text-rose-700 border border-rose-200 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1.5"><ShieldAlert className="w-3.5 h-3.5" />منتهية الصلاحية</span>;
+    if (days <= 30) return <span className="bg-rose-50 text-rose-600 border border-rose-200 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1.5 animate-pulse"><Clock className="w-3.5 h-3.5" />ينتهي قريباً جداً ({days} يوم)</span>;
+    if (days <= 60) return <span className="bg-amber-50 text-amber-600 border border-amber-200 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1.5"><Clock className="w-3.5 h-3.5" />متبقي {days} يوم</span>;
+    return <span className="bg-emerald-50 text-emerald-700 border border-emerald-200 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1.5"><ShieldCheck className="w-3.5 h-3.5" />صالحة ({days} يوم متبقي)</span>;
   };
 
-  // Filter and display calculations
   const filteredAgencies = agencies.filter(poa => {
-    const matchesSearch = 
-      poa.poaNumber.includes(searchQuery) ||
-      poa.clientName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      poa.lawyerName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (poa.scope && poa.scope.toLowerCase().includes(searchQuery.toLowerCase()));
-    
-    if (!matchesSearch) return false;
+    const term = searchQuery.toLowerCase();
+    const searchMatch = poa.poaNumber.includes(searchQuery) || poa.clientName.toLowerCase().includes(term) || poa.lawyerName.toLowerCase().includes(term);
+    if (!searchMatch) return false;
 
     const remaining = getRemainingDays(poa.expiryDate);
     if (statusFilter === 'active') return remaining > 0 && poa.status !== 'ملغاة';
@@ -277,394 +204,265 @@ export default function AgenciesModule({ clients, onUpdateState }: AgenciesModul
   }).length;
 
   return (
-    <div className="min-h-screen bg-[#0b1329] text-white p-6 lg:p-10 space-y-10" dir="rtl">
-      {/* Toast Alert Notification */}
+    <div className="min-h-screen bg-slate-50 text-slate-900 p-6 lg:p-10 space-y-8 font-sans" dir="rtl">
+      
+      {/* Notifications */}
       <AnimatePresence>
         {notification && (
-          <motion.div 
-            initial={{ opacity: 0, y: -20, scale: 0.9 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -20, scale: 0.9 }}
-            className={`fixed top-8 right-8 z-[100] p-4 rounded-2xl shadow-2xl flex items-center gap-3 border ${
-              notification.type === 'success' ? 'bg-emerald-950/90 border-emerald-500/30 text-emerald-300' :
-              notification.type === 'error' ? 'bg-rose-950/90 border-rose-500/30 text-rose-300' :
-              'bg-slate-900 border-yellow-500/30 text-yellow-300'
-            }`}
-          >
-            {notification.type === 'success' ? <CheckCircle2 className="w-5 h-5 flex-shrink-0" /> : <ShieldAlert className="w-5 h-5 flex-shrink-0" />}
-            <span className="text-sm font-black">{notification.message}</span>
+          <motion.div initial={{ opacity: 0, y: -20, scale: 0.9 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: -20, scale: 0.9 }}
+            className={`fixed top-8 right-8 z-[100] px-4 py-3 rounded-xl shadow-lg border flex items-center gap-3 font-semibold text-sm ${
+              notification.type === 'success' ? 'bg-emerald-50 border-emerald-200 text-emerald-800' :
+              notification.type === 'error' ? 'bg-rose-50 border-rose-200 text-rose-800' : 'bg-blue-50 border-blue-200 text-blue-800'
+            }`}>
+            {notification.type === 'success' ? <CheckCircle2 className="w-5 h-5" /> : <ShieldAlert className="w-5 h-5" />}
+            <span>{notification.message}</span>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Header Banner - Graphite and Gold Modern Shield */}
-      <div className="bg-slate-900/60 border border-slate-700/50 rounded-3xl p-8 shadow-2xl flex flex-col md:flex-row md:items-center justify-between gap-6 backdrop-blur-md relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-80 h-32 bg-yellow-500/5 rounded-full filter blur-2xl"></div>
-        <div className="space-y-3 relative z-10">
-          <div className="flex items-center gap-3">
-            <div className="p-3 bg-amber-500/10 border border-amber-500/20 rounded-2xl">
-              <FileSpreadsheet className="w-8 h-8 text-amber-400" />
-            </div>
-            <div>
-              <h1 className="text-2xl lg:text-3xl font-black text-slate-150 tracking-tight">سجل وكالات العملاء</h1>
-              <p className="text-sm text-slate-400 font-bold mt-1">
-                إدارة أطراف الوكالات، البنود والتنبيه الفوري لانتهاء الفترات مع الربط الكامل بمنصة ناجز العدلية
-              </p>
-            </div>
+      {/* Header Banner */}
+      <div className="bg-white border text-slate-900 border-slate-200 rounded-[2rem] p-8 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-6 relative overflow-hidden">
+        <div className="space-y-3 relative z-10 flex items-center gap-4">
+          <div className="p-4 bg-indigo-50 border border-indigo-100 rounded-2xl flex-shrink-0">
+            <FileKey className="w-8 h-8 text-indigo-600" />
+          </div>
+          <div>
+            <h1 className="text-2xl lg:text-3xl font-black text-slate-900 tracking-tight">إدارة الوكالات القضائية</h1>
+            <p className="text-sm text-slate-500 font-semibold mt-1">تتبع التوكيلات وسريانها والمزامنة الحية مع أداة كشط البيانات من (ناجز)</p>
           </div>
         </div>
 
         <div className="flex flex-wrap gap-3 relative z-10">
-          <button 
-            onClick={handleNajizSync}
-            disabled={isSyncing}
-            className={`px-5 py-3.5 bg-sky-600/10 hover:bg-sky-600/25 border border-sky-500/30 hover:border-sky-500/50 rounded-2xl text-sm font-black text-sky-300 flex items-center gap-2 transition-all active:scale-95 disabled:opacity-50`}
-          >
+          <button onClick={handleNajizSync} disabled={isSyncing} className={`px-5 py-3.5 bg-blue-50 hover:bg-blue-100 border border-blue-200 text-blue-600 rounded-xl text-sm font-bold flex items-center gap-2 transition-all disabled:opacity-50`}>
             <RefreshCw className={`w-4 h-4 ${isSyncing ? 'animate-spin' : ''}`} />
-            {isSyncing ? 'جاري مزامنة ناجز...' : 'مزامنة مع منصة ناجز'}
+            {isSyncing ? 'جاري السحب...' : 'سحب بيانات الوكالات (ناجز)'}
           </button>
-
-          <button 
-            onClick={() => setShowAddModal(true)}
-            className="px-5 py-3.5 bg-amber-500 hover:bg-amber-600 text-slate-950 rounded-2xl text-sm font-black flex items-center gap-2 transition-all active:scale-95 shadow-[0_8px_30px_rgb(245,158,11,0.2)]"
-          >
-            <Plus className="w-4 h-4 text-slate-950" />
+          <button onClick={() => setShowAddModal(true)} className="px-5 py-3.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-sm font-bold flex items-center gap-2 transition-all shadow-md hover:shadow-lg">
+            <Plus className="w-4 h-4" />
             توثيق وكالة جديدة
           </button>
         </div>
       </div>
 
-      {/* Expiry Alarm Banner in Case of Urgent PoAs */}
+      {/* Expiry Alarm Banner */}
       {expiringSoonCount > 0 && (
-        <motion.div 
-          initial={{ opacity: 0, y: 15 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="bg-amber-950/40 border border-amber-500/30 p-5 rounded-3xl flex items-center gap-4 text-amber-200"
-        >
-          <div className="p-3.5 bg-amber-500/10 rounded-2xl animate-pulse">
-            <ShieldAlert className="w-7 h-7 text-amber-400" />
-          </div>
-          <div className="space-y-1">
-            <h4 className="text-md font-black">إشعار الأمان القانوني: اقتراب انتهاء صلاحية وكالات</h4>
-            <p className="text-sm font-bold text-amber-300/80">
-              يوجد {expiringSoonCount} وكالات نشطة شارفت مدتها على الانتهاء (أقل من 60 يوماً). يرجى إشعار المحامين المعنيين ومراجعة العملاء للتجديد فوراً لضمان عدم توقف الإجراءات والتقديم في نظام التقاضي.
-            </p>
+        <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} className="bg-rose-50 border border-rose-200 p-5 rounded-2xl flex items-center gap-4">
+          <div className="p-3 bg-rose-100 rounded-full animate-pulse"><ShieldAlert className="w-6 h-6 text-rose-600" /></div>
+          <div>
+            <h4 className="text-sm font-black text-rose-900">تنبيه عاجل: اقتراب انتهاء صلاحية الوكالات</h4>
+            <p className="text-sm font-medium text-rose-700 mt-1">يوجد {expiringSoonCount} وكالات شارفت مدتها على الانتهاء. تجنباً لتوقف الإجراءات، يرجى التجديد فوراً.</p>
           </div>
         </motion.div>
       )}
 
-      {/* Grid Stats */}
+      {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <div className="bg-slate-900/40 border border-slate-800 p-6 rounded-3xl space-y-2">
-          <p className="text-xs text-slate-400 font-bold">إجمالي الوكالات</p>
-          <p className="text-3xl font-black font-mono text-white">{agencies.length}</p>
-        </div>
-        <div className="bg-slate-900/40 border border-slate-800 p-6 rounded-3xl space-y-2">
-          <p className="text-xs text-emerald-400 font-bold">الوكالات النشطة</p>
-          <p className="text-3xl font-black font-mono text-emerald-400">
-            {agencies.filter(a => getRemainingDays(a.expiryDate) > 0).length}
-          </p>
-        </div>
-        <div className="bg-slate-900/40 border border-slate-800 p-6 rounded-3xl space-y-2">
-          <p className="text-xs text-amber-400 font-bold">وكالات مهددة بالانتهاء (60 يوماً أو أقل)</p>
-          <p className="text-3xl font-black font-mono text-amber-400">{expiringSoonCount}</p>
-        </div>
-        <div className="bg-slate-900/40 border border-slate-800 p-6 rounded-3xl space-y-2">
-          <p className="text-xs text-rose-400 font-bold">الوكالات المنتهية</p>
-          <p className="text-3xl font-black font-mono text-rose-400">
-            {agencies.filter(a => getRemainingDays(a.expiryDate) <= 0).length}
-          </p>
-        </div>
+        {[
+          { label: 'إجمالي الوكالات', val: agencies.length, color: 'text-indigo-600', bg: 'bg-indigo-50 border-indigo-100' },
+          { label: 'الوكالات السارية', val: agencies.filter(a => getRemainingDays(a.expiryDate) > 0).length, color: 'text-emerald-600', bg: 'bg-emerald-50 border-emerald-100' },
+          { label: 'مهددة بالانتهاء بالانتهاء', val: expiringSoonCount, color: 'text-amber-600', bg: 'bg-amber-50 border-amber-100' },
+          { label: 'الوكالات المنتهية', val: agencies.filter(a => getRemainingDays(a.expiryDate) <= 0).length, color: 'text-rose-600', bg: 'bg-rose-50 border-rose-100' }
+        ].map((stat, i) => (
+          <div key={i} className={`${stat.bg} border p-6 rounded-2xl space-y-2`}>
+            <p className="text-xs font-bold text-slate-500">{stat.label}</p>
+            <p className={`text-3xl font-black font-mono ${stat.color}`}>{stat.val}</p>
+          </div>
+        ))}
       </div>
 
-      {/* Search & Tabs Filtering */}
-      <div className="bg-slate-900/30 border border-slate-800 rounded-3xl p-5 flex flex-col md:flex-row gap-4 items-center justify-between">
+      {/* Filter and Search */}
+      <div className="bg-white border border-slate-200 rounded-2xl p-4 flex flex-col md:flex-row gap-4 items-center justify-between shadow-sm">
         <div className="relative w-full md:w-96">
-          <Search className="absolute right-4 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-slate-400" />
+          <Search className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
           <input 
-            type="text"
-            placeholder="البحث برقم الوكالة، اسم الموكل، المحامي..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-4 pr-11 py-3 bg-slate-950 border border-slate-800 rounded-2xl text-sm font-semibold text-white focus:outline-none focus:border-amber-500 transition-colors"
+            type="text" placeholder="البحث برقم الوكالة، الموكل..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full pl-4 pr-11 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
           />
         </div>
-
-        {/* Tab Filters */}
-        <div className="flex flex-wrap gap-2 w-full md:w-auto">
-          <button 
-            onClick={() => setStatusFilter('all')}
-            className={`px-4 py-2.5 rounded-xl text-xs font-black transition-colors ${statusFilter === 'all' ? 'bg-amber-500 text-slate-950' : 'bg-slate-900 hover:bg-slate-850 text-slate-300'}`}
-          >
-            الكل ({agencies.length})
-          </button>
-          <button 
-            onClick={() => setStatusFilter('active')}
-            className={`px-4 py-2.5 rounded-xl text-xs font-black transition-colors ${statusFilter === 'active' ? 'bg-emerald-500 text-slate-950' : 'bg-slate-900 hover:bg-slate-850 text-slate-300'}`}
-          >
-            النشطة ({agencies.filter(a => getRemainingDays(a.expiryDate) > 0).length})
-          </button>
-          <button 
-            onClick={() => setStatusFilter('expiring')}
-            className={`px-4 py-2.5 rounded-xl text-xs font-black transition-colors ${statusFilter === 'expiring' ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30' : 'bg-slate-900 hover:bg-slate-850 text-slate-300'}`}
-          >
-            تنتهي قريباً ({expiringSoonCount})
-          </button>
-          <button 
-            onClick={() => setStatusFilter('expired')}
-            className={`px-4 py-2.5 rounded-xl text-xs font-black transition-colors ${statusFilter === 'expired' ? 'bg-rose-500/20 text-rose-300 border border-rose-500/30' : 'bg-slate-900 hover:bg-slate-850 text-slate-300'}`}
-          >
-            المنتهية ({agencies.filter(a => getRemainingDays(a.expiryDate) <= 0).length})
-          </button>
+        <div className="flex flex-wrap gap-2">
+          {[
+            { id: 'all', label: 'الكل' },
+            { id: 'active', label: 'النشطة' },
+            { id: 'expiring', label: 'تنتهي قريباً' },
+            { id: 'expired', label: 'المنتهية' }
+          ].map(tab => (
+            <button key={tab.id} onClick={() => setStatusFilter(tab.id as any)}
+              className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${statusFilter === tab.id ? 'bg-slate-900 text-white shadow-md' : 'bg-slate-50 text-slate-600 hover:bg-slate-100'}`}>
+              {tab.label}
+            </button>
+          ))}
         </div>
       </div>
 
-      {/* Main Agencies Grid */}
+      {/* Cards Grid */}
       {filteredAgencies.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredAgencies.map((poa) => {
             const daysRemaining = getRemainingDays(poa.expiryDate);
-            const isDanger = daysRemaining <= 30;
-            const isWarning = daysRemaining > 30 && daysRemaining <= 60;
+            const isFinished = daysRemaining <= 0;
+            const isDanger = daysRemaining > 0 && daysRemaining <= 30;
 
             return (
-              <motion.div 
-                key={poa.id}
-                onClick={() => setSelectedAgency(poa)}
-                layout
-                whileHover={{ y: -6 }}
-                className={`cursor-pointer rounded-3xl p-6 bg-[#111c30]/40 border text-right relative overflow-hidden flex flex-col justify-between h-72 transition-all duration-300 hover:bg-slate-900/40 ${
-                  poa.isNajizSync ? 'border-sky-500/20' : 'border-slate-850'
-                } ${
-                  isDanger ? 'border-rose-500/30 shadow-[0_0_15px_rgba(239,68,68,0.05)]' :
-                  isWarning ? 'border-amber-500/30' : 'hover:border-amber-500/25'
-                }`}
-              >
-                {/* Visual Accent */}
-                <div className={`absolute top-0 right-0 left-0 h-1 ${
-                  daysRemaining <= 0 ? 'bg-rose-500' :
-                  daysRemaining <= 30 ? 'bg-rose-500 animate-pulse' :
-                  daysRemaining <= 60 ? 'bg-amber-500' : 'bg-emerald-500'
-                }`}></div>
+              <motion.div key={poa.id} layout onClick={() => setSelectedAgency(poa)} whileHover={{ y: -4 }}
+                className={`cursor-pointer bg-white rounded-2xl p-6 border shadow-sm hover:shadow-md transition-all flex flex-col justify-between h-[280px] relative overflow-hidden ${isFinished ? 'border-rose-200 bg-rose-50/30' : isDanger ? 'border-rose-300' : 'border-slate-200'}`}>
+                
+                {/* Accent Top Line */}
+                <div className={`absolute top-0 right-0 left-0 h-1.5 ${isFinished ? 'bg-rose-500' : isDanger ? 'bg-rose-400 animate-pulse' : daysRemaining <= 60 ? 'bg-amber-400' : 'bg-emerald-500'}`} />
 
-                {/* Top Raw */}
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs font-mono font-black text-slate-400 bg-slate-950/60 px-2.5 py-1 rounded-lg">
-                        رقم كارت {poa.poaNumber}
-                      </span>
-                      {poa.isNajizSync && (
-                        <span className="bg-sky-500/10 text-sky-300 text-[10px] font-black border border-sky-500/20 px-2 py-0.5 rounded-lg flex items-center gap-1">
-                          <CheckCircle2 className="w-3 h-3 text-sky-400" />
-                          ناجز موثق
-                        </span>
-                      )}
+                <div className="space-y-4">
+                  <div className="flex items-start justify-between">
+                    <div className="space-y-1.5">
+                       <span className="text-xs font-mono font-bold bg-slate-100 text-slate-600 px-2 py-0.5 rounded border border-slate-200">
+                         رقم: {poa.poaNumber}
+                       </span>
+                       {poa.isNajizSync && (
+                         <span className="block w-fit bg-blue-50 text-blue-600 text-[10px] font-bold border border-blue-100 px-1.5 py-0.5 rounded flex items-center gap-1">
+                           <CheckCircle2 className="w-3 h-3" /> مزامنة ناجز
+                         </span>
+                       )}
                     </div>
-                    {/* Delete Icon */}
-                    <button 
-                      onClick={(e) => handleDeleteAgency(poa.id!, e)}
-                      className="p-1.5 bg-slate-950/40 text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 rounded-xl transition-colors"
-                      title="حذف الوكالة"
-                    >
+                    <button onClick={(e) => handleDeleteAgency(poa.id!, e)} className="p-1.5 hover:bg-rose-50 text-slate-400 hover:text-rose-500 rounded-lg transition-colors">
                       <Trash2 className="w-4 h-4" />
                     </button>
                   </div>
 
-                  {/* Client name / Subject */}
                   <div>
-                    <h3 className="text-md font-black text-[#f8fafc] leading-tight line-clamp-1">{poa.clientName}</h3>
-                    <p className="text-xs text-slate-400 font-bold mt-1.5 flex items-center gap-1">
-                      <User className="w-3.5 h-3.5 text-amber-500 flex-shrink-0" />
-                      المستشار/المحامي: {poa.lawyerName}
-                    </p>
+                    <h3 className="text-lg font-black text-slate-900 line-clamp-1">{poa.clientName}</h3>
+                    <div className="flex items-center gap-1.5 text-xs text-indigo-600 font-bold mt-1">
+                      <Scale className="w-3.5 h-3.5" /> الممثل: {poa.lawyerName}
+                    </div>
                   </div>
 
-                  {/* Target Scope description */}
-                  <p className="text-xs text-slate-400 line-clamp-2 leading-relaxed font-semibold bg-slate-950/20 p-2.5 rounded-xl border border-slate-850/30">
-                    {poa.scope || 'لم يتم سرد اختصاص الوكالة بشكل مخصص.'}
+                  <p className="text-xs text-slate-500 font-medium line-clamp-2 bg-slate-50 p-2.5 rounded-lg border border-slate-100/50">
+                    {poa.scope || 'لم يتم تخصيص نطاق. الوكالة عامة.'}
                   </p>
                 </div>
 
-                {/* Bottom Row - Days Status */}
-                <div className="pt-4 border-t border-slate-850/40 flex items-center justify-between mt-4">
+                <div className="pt-4 border-t border-slate-100 flex items-center justify-between mt-4">
                   <div className="space-y-0.5">
-                    <p className="text-[10px] text-slate-500 font-bold">تاريخ الانتهاء</p>
-                    <p className="text-xs font-mono font-black text-slate-300">{poa.expiryDate}</p>
+                    <p className="text-[10px] text-slate-400 font-bold">الانتهاء</p>
+                    <p className={`text-xs font-mono font-black ${isFinished ? 'text-rose-600' : 'text-slate-700'}`}>{poa.expiryDate}</p>
                   </div>
-
-                  <div className="flex items-center gap-2">
-                    {getUrgencyBadge(daysRemaining)}
-                    <div className="p-1.5 bg-slate-900 rounded-lg group-hover:bg-slate-850">
-                      <ChevronRight className="w-4 h-4 text-slate-400" />
-                    </div>
-                  </div>
+                  <div>{getUrgencyBadge(daysRemaining)}</div>
                 </div>
               </motion.div>
             );
           })}
         </div>
       ) : (
-        <div className="bg-slate-900/20 border border-slate-800/80 p-16 rounded-3xl text-center space-y-4 max-w-xl mx-auto">
-          <div className="w-16 h-16 bg-slate-800/40 rounded-full flex items-center justify-center mx-auto border border-slate-700/50">
-            <FileText className="w-8 h-8 text-slate-500" />
+        <div className="bg-white border border-slate-200 p-16 rounded-[2rem] text-center space-y-4 max-w-xl mx-auto shadow-sm">
+          <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto border border-slate-100">
+            <FileKey className="w-8 h-8 text-slate-400" />
           </div>
-          <div className="space-y-1">
-            <h3 className="text-lg font-black text-slate-300">لا توجد وكالات مطابقة</h3>
-            <p className="text-sm text-slate-500 font-semibold leading-relaxed">
-              لم نجد أي وكالات نشطة تناسب معايير الفلترة الحالية. يرجى مراجعة قيم البحث أو تفعيل "المزامنة مع ناجز" لسحب بيانات الوكالات تلقائياً.
-            </p>
-          </div>
-          <button 
-            onClick={handleNajizSync}
-            className="px-5 py-2.5 bg-amber-500/10 border border-amber-500/30 hover:bg-amber-500 text-amber-400 hover:text-slate-950 rounded-2xl text-xs font-black transition-all"
-          >
-            تفعيل مزامنة ناجز لسحب الملفات
-          </button>
+          <h3 className="text-lg font-black text-slate-900">سجل الوكالات فارغ</h3>
+          <p className="text-sm text-slate-500 font-medium">لم يتم العثور على وكالات تطابق تصفيتك، قم بـ "سحب بيانات الوكالات" مباشرة من مسار ناجز أو أضفها يدوياً.</p>
         </div>
       )}
 
-      {/* Slideout Detailed Panel or Modal */}
+      {/* Slideout Detailed Panel */}
       <AnimatePresence>
         {selectedAgency && (
-          <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-[110] flex items-center justify-center p-4">
-            <motion.div 
-              initial={{ scale: 0.95, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-[#0e172e] border border-slate-700 rounded-3xl shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col"
-            >
-              {/* Header */}
-              <div className="p-6 border-b border-slate-800 bg-slate-950/50 flex items-center justify-between">
+          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[110] flex items-center justify-center p-4">
+            <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-white border border-slate-200 rounded-[2rem] shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh]">
+              
+              <div className="p-6 border-b border-slate-100 bg-slate-50 flex items-center justify-between">
                 <div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-amber-400 font-black text-sm">تفاصيل الوكالة العدلية المعتمدة</span>
-                    {selectedAgency.isNajizSync && (
-                      <span className="bg-sky-500/10 text-sky-300 text-[10px] font-black border border-sky-500/25 px-2 py-0.5 rounded-lg">
-                        مزامنة مباشرة (ناجز)
-                      </span>
-                    )}
+                  <h2 className="text-xl font-black text-slate-900">وكالة رقم: {selectedAgency.poaNumber}</h2>
+                  <div className="flex gap-2 mt-1.5">
+                    <span className="text-indigo-600 font-bold text-xs">تفاصيل الوكالة القضائية</span>
                   </div>
-                  <h2 className="text-xl font-black text-slate-100 mt-1">رقم الوكالة: {selectedAgency.poaNumber}</h2>
                 </div>
-                <button 
-                  onClick={() => setSelectedAgency(null)}
-                  className="p-2 hover:bg-slate-850 rounded-xl text-slate-400 hover:text-white transition-colors"
-                >
+                <button onClick={() => setSelectedAgency(null)} className="p-2 hover:bg-slate-200 bg-slate-100 rounded-full text-slate-500 transition-colors">
                   <X className="w-5 h-5" />
                 </button>
               </div>
 
-              {/* Body */}
-              <div className="p-6 space-y-6 overflow-y-auto max-h-[70vh] text-right">
-                
-                {/* Remaining alert */}
-                <div className={`p-4 rounded-2xl border flex items-center gap-3 justify-between ${
-                  getRemainingDays(selectedAgency.expiryDate) <= 0 ? 'bg-rose-950/30 border-rose-500/20 text-rose-300' :
-                  getRemainingDays(selectedAgency.expiryDate) <= 60 ? 'bg-amber-950/30 border-amber-500/20 text-amber-300' :
-                  'bg-emerald-950/30 border-emerald-500/20 text-emerald-300'
+              <div className="p-6 space-y-6 overflow-y-auto">
+                <div className={`p-4 rounded-xl border flex items-center gap-3 justify-between shadow-sm ${
+                  getRemainingDays(selectedAgency.expiryDate) <= 0 ? 'bg-rose-50 border-rose-200 text-rose-800' :
+                  getRemainingDays(selectedAgency.expiryDate) <= 60 ? 'bg-amber-50 border-amber-200 text-amber-800' : 'bg-emerald-50 border-emerald-200 text-emerald-800'
                 }`}>
-                  <div className="flex items-center gap-2.5">
-                    {getRemainingDays(selectedAgency.expiryDate) <= 30 ? (
-                      <ShieldAlert className="w-5 h-5" />
-                    ) : (
-                      <ShieldCheck className="w-5 h-5" />
-                    )}
+                  <div className="flex items-center gap-3">
+                    {getRemainingDays(selectedAgency.expiryDate) <= 30 ? <ShieldAlert className="w-8 h-8" /> : <ShieldCheck className="w-8 h-8" />}
                     <div>
-                      <h4 className="text-xs font-black">حالة الوكالة الحالية والصلاحية</h4>
-                      <p className="text-xs font-bold opacity-80 mt-0.5">
-                        {getRemainingDays(selectedAgency.expiryDate) <= 0 
-                          ? 'انتهت صلاحية الوكالة منذ فترة؛ لم تعد صالحة للاستخدام في المحاكم والدوائر.'
-                          : `الوكالة سارية المفعول وبصلاحية تامة وتغطي مجالات الترافع.`}
+                      <h4 className="text-sm font-black text-slate-900 mb-0.5">وضع الوكالة النظامي</h4>
+                      <p className="text-xs font-semibold opacity-90">
+                        {getRemainingDays(selectedAgency.expiryDate) <= 0 ? 'هذه الوكالة باطلة بانتهاء مدتها.' : 'هذه الوكالة معتمدة ونشطة قانونياً ومحفوظة بالسجل.'}
                       </p>
                     </div>
                   </div>
                   {getUrgencyBadge(getRemainingDays(selectedAgency.expiryDate))}
                 </div>
 
-                {/* Dates Info */}
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="p-4 bg-slate-900/60 border border-slate-850 rounded-2xl">
-                    <span className="text-[10px] text-slate-400 font-bold block">تاريخ صدور الوكالة</span>
-                    <span className="text-sm font-bold text-slate-200 mt-1 block">{selectedAgency.issueDate}</span>
+                  <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl text-center shadow-sm">
+                    <span className="text-xs text-slate-500 font-bold block mb-1">تاريخ إنشائها / الصدور</span>
+                    <span className="text-lg font-black font-mono text-slate-900 block">{selectedAgency.issueDate}</span>
                   </div>
-                  <div className="p-4 bg-slate-900/60 border border-slate-850 rounded-2xl">
-                    <span className="text-[10px] text-slate-400 font-bold block">تاريخ انتهاء الوكالة</span>
-                    <span className="text-sm font-bold text-slate-200 mt-1 block">{selectedAgency.expiryDate}</span>
+                  <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl text-center shadow-sm relative overflow-hidden">
+                    <div className={`absolute top-0 w-full h-1 left-0 ${getRemainingDays(selectedAgency.expiryDate) <= 0 ? 'bg-rose-500' : 'bg-slate-300'}`}></div>
+                    <span className="text-xs text-slate-500 font-bold block mb-1">تاريخ انتهائها نظامياً</span>
+                    <span className="text-lg font-black font-mono text-slate-900 block">{selectedAgency.expiryDate}</span>
                   </div>
                 </div>
 
-                {/* Main Client/Agent info */}
-                <div className="p-5 bg-slate-950/30 rounded-2xl border border-slate-850 space-y-4">
-                  <h4 className="text-xs font-black text-amber-400">أطراف الوكالة وعناصر التعاقد</h4>
-                  
+                <div className="space-y-3">
+                  <h4 className="text-sm font-black text-slate-900 border-b pb-2">أطراف الوكالة (الموكل والوكيل)</h4>
                   {selectedAgency.parties && selectedAgency.parties.length > 0 ? (
-                    <div className="space-y-3">
+                    <div className="space-y-2">
                       {selectedAgency.parties.map((part, index) => (
-                        <div key={index} className="flex items-center justify-between p-3 bg-slate-900/50 rounded-xl border border-slate-850/50">
-                          <div className="flex items-center gap-2.5">
-                            <div className="w-8 h-8 rounded-full bg-[#fbbf24]/10 border border-[#fbbf24]/20 flex items-center justify-center text-[#fbbf24] text-xs font-bold">
+                        <div key={index} className="flex items-center justify-between p-3.5 bg-white border border-slate-200 rounded-xl shadow-sm">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-600 font-black text-lg border border-indigo-100">
                               {part.role.includes('موكل') ? 'م' : 'و'}
                             </div>
                             <div>
-                              <p className="text-xs font-black text-slate-200">{part.name}</p>
-                              {part.identity && (
-                                <p className="text-[10px] font-mono font-semibold text-slate-400 mt-0.5">الهوية: {part.identity}</p>
-                              )}
+                              <p className="text-sm font-black text-slate-800">{part.name}</p>
+                              {part.identity && <p className="text-xs font-mono font-bold text-slate-500 mt-1">هوية: {part.identity}</p>}
                             </div>
                           </div>
-                          <span className="text-[10px] font-black text-slate-400 px-2 py-0.5 rounded bg-slate-955 border border-slate-800">
-                            {part.role}
-                          </span>
+                          <span className="text-xs font-bold text-slate-600 px-3 py-1 rounded-full bg-slate-100 border border-slate-200">{part.role}</span>
                         </div>
                       ))}
                     </div>
                   ) : (
-                    <div className="space-y-2">
-                      <div className="p-3 bg-slate-900/50 rounded-xl">
-                        <span className="text-[10px] text-slate-500 block">الموكل (Client)</span>
-                        <span className="text-xs font-bold text-slate-200">{selectedAgency.clientName}</span>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="p-3 bg-white border border-slate-200 rounded-xl">
+                        <span className="text-[10px] text-slate-500 font-bold block mb-1">الموكل</span>
+                        <span className="text-sm font-black text-slate-900">{selectedAgency.clientName}</span>
                       </div>
-                      <div className="p-3 bg-slate-900/50 rounded-xl">
-                        <span className="text-[10px] text-slate-500 block">الوكيل (Agent/Attorney)</span>
-                        <span className="text-xs font-bold text-slate-200">{selectedAgency.lawyerName}</span>
+                      <div className="p-3 bg-white border border-slate-200 rounded-xl">
+                        <span className="text-[10px] text-slate-500 font-bold block mb-1">الوكيل</span>
+                        <span className="text-sm font-black text-slate-900">{selectedAgency.lawyerName}</span>
                       </div>
                     </div>
                   )}
                 </div>
 
-                {/* Scope */}
                 <div className="space-y-2">
-                  <h4 className="text-xs font-black text-amber-400">نطاق عمل الوكالة العام</h4>
-                  <p className="text-xs font-semibold text-slate-300 bg-slate-900/50 p-4 rounded-2xl border border-slate-850 leading-relaxed">
-                    {selectedAgency.scope}
-                  </p>
+                  <h4 className="text-sm font-black text-slate-900 border-b pb-2">نطاق عمل الوكالة العام</h4>
+                  <p className="text-sm font-bold text-slate-700 bg-slate-50 p-4 rounded-xl border border-slate-100 leading-relaxed">{selectedAgency.scope}</p>
                 </div>
 
-                {/* Specific clauses/terms */}
                 <div className="space-y-3">
-                  <h4 className="text-xs font-black text-amber-400">البنود والصلاحيات المفصلة للوكيل</h4>
+                  <h4 className="text-sm font-black text-slate-900 border-b pb-2">تفاصيل بنود الصلاحيات</h4>
                   <div className="space-y-2">
                     {selectedAgency.clauses && selectedAgency.clauses.map((clause, idx) => (
-                      <div key={idx} className="p-3 bg-slate-900/40 border border-slate-850 rounded-xl flex items-start gap-2.5">
-                        <span className="w-5 h-5 rounded bg-amber-500/10 text-amber-400 flex items-center justify-center text-[10px] font-mono font-black flex-shrink-0 mt-0.5">
+                      <div key={idx} className="p-3.5 bg-white border border-slate-200 shadow-sm rounded-xl flex items-start gap-3">
+                        <span className="w-6 h-6 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center text-xs font-black shrink-0 border border-indigo-100">
                           {idx + 1}
                         </span>
-                        <p className="text-xs text-slate-300 leading-relaxed font-bold">{clause}</p>
+                        <p className="text-sm text-slate-700 font-bold leading-relaxed pt-0.5">{clause}</p>
                       </div>
                     ))}
                   </div>
                 </div>
-
               </div>
 
-              {/* Close Button */}
-              <div className="p-6 border-t border-slate-800 bg-slate-950/60 text-left">
-                <button 
-                  onClick={() => setSelectedAgency(null)}
-                  className="px-6 py-2.5 bg-slate-800 hover:bg-slate-705 text-white rounded-xl text-xs font-black transition-colors"
-                >
-                  إغلاق نافذة الاطلاع
+              <div className="p-6 border-t border-slate-100 bg-slate-50 flex justify-end">
+                <button onClick={() => setSelectedAgency(null)} className="px-6 py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-sm font-black shadow-md transition-all">
+                  إغلاق وتراجع
                 </button>
               </div>
             </motion.div>
@@ -672,180 +470,114 @@ export default function AgenciesModule({ clients, onUpdateState }: AgenciesModul
         )}
       </AnimatePresence>
 
-      {/* Add New Poa Modal */}
+      {/* Add New Poa Modal (Light Theme) */}
       <AnimatePresence>
         {showAddModal && (
-          <div className="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-[110] flex items-center justify-center p-4 overflow-y-auto">
-            <motion.div 
-              initial={{ scale: 0.95, opacity: 0, y: 30 }}
-              animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.95, opacity: 0, y: 30 }}
-              className="bg-[#0e172e] border border-slate-700 rounded-3xl shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col"
-            >
-              {/* Header */}
-              <div className="p-6 border-b border-rose-500/10 bg-slate-950/50 flex items-center justify-between">
+          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[110] flex items-center justify-center p-4 overflow-y-auto">
+            <motion.div initial={{ scale: 0.95, opacity: 0, y: 30 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.95, opacity: 0, y: 30 }}
+              className="bg-white border border-slate-200 rounded-[2rem] shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col">
+              
+              <div className="p-6 border-b border-slate-100 bg-slate-50 flex items-center justify-between">
                 <div>
-                  <h2 className="text-lg font-black text-slate-100 flex items-center gap-2">
-                    <FileSpreadsheet className="w-5 h-5 text-amber-500" />
-                    توثيق وكالة قانونية جديدة لعميل
+                  <h2 className="text-xl font-black text-slate-900 flex items-center gap-2">
+                    <FileSpreadsheet className="w-6 h-6 text-indigo-600" /> إضافة توثيق وكالة للعميل
                   </h2>
-                  <p className="text-xs text-slate-400 font-bold mt-1">تعبئة مستندات الوكالة وتسجيل البنود بشكل دقيق ومنظم</p>
                 </div>
-                <button 
-                  onClick={() => setShowAddModal(false)}
-                  className="p-2 hover:bg-slate-850 rounded-xl text-slate-400 hover:text-white transition-colors"
-                >
+                <button onClick={() => setShowAddModal(false)} className="p-2 hover:bg-slate-200 rounded-full bg-slate-100 text-slate-500">
                   <X className="w-5 h-5" />
                 </button>
               </div>
 
-              {/* Form Body */}
               <form onSubmit={handleAddAgency} className="p-6 space-y-5 text-right overflow-y-auto max-h-[75vh]">
-                
-                {/* Number & Client */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <label className="text-xs text-slate-300 font-black block">رقم الوكالة العدلية *</label>
-                    <input 
-                      type="text"
-                      required
-                      placeholder="مثال: 45802144"
-                      value={poaNumber}
-                      onChange={(e) => setPoaNumber(e.target.value)}
-                      className="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-xs font-semibold focus:outline-none focus:border-amber-500 text-white"
-                    />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                  <div className="space-y-1.5">
+                    <label className="text-xs text-slate-700 font-bold block">رقم الوكالة العدلية *</label>
+                    <input type="text" required placeholder="45802144" value={poaNumber} onChange={(e) => setPoaNumber(e.target.value)}
+                      className="w-full px-4 py-3 bg-white border border-slate-300 rounded-xl text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-900 shadow-sm" />
                   </div>
-
-                  <div className="space-y-2">
-                    <label className="text-xs text-slate-300 font-black block">اسم الموكل (العميل) *</label>
-                    <input 
-                      type="text"
-                      required
-                      placeholder="اسم العميل أو الكيان التجاري"
-                      value={clientName}
-                      onChange={(e) => setClientName(e.target.value)}
-                      className="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-xs font-semibold focus:outline-none focus:border-amber-500 text-white"
-                    />
+                  <div className="space-y-1.5">
+                    <label className="text-xs text-slate-700 font-bold block">اسم الموكل (العميل) *</label>
+                    <input type="text" required placeholder="شركة الأمل أو السيد حمد" value={clientName} onChange={(e) => setClientName(e.target.value)}
+                      className="w-full px-4 py-3 bg-white border border-slate-300 rounded-xl text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-900 shadow-sm" />
                   </div>
                 </div>
 
-                {/* Lawyer & Status */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <label className="text-xs text-slate-300 font-black block">اسم المحامي الوكيل</label>
-                    <input 
-                      type="text"
-                      placeholder="مثال: المستشار سعد بن عبد العزيز"
-                      value={lawyerName}
-                      onChange={(e) => setLawyerName(e.target.value)}
-                      className="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-xs font-semibold focus:outline-none focus:border-amber-500 text-white"
-                    />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                  <div className="space-y-1.5">
+                    <label className="text-xs text-slate-700 font-bold block">اسم المحامي الوكيل</label>
+                    <input type="text" placeholder="فريق المحامين" value={lawyerName} onChange={(e) => setLawyerName(e.target.value)}
+                      className="w-full px-4 py-3 bg-white border border-slate-300 rounded-xl text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-900 shadow-sm" />
                   </div>
-
-                  <div className="space-y-2">
-                    <label className="text-xs text-slate-300 font-black block">حالة الوكالة الحالية</label>
-                    <select 
-                      value={status}
-                      onChange={(e) => setStatus(e.target.value)}
-                      className="w-full px-4 py-3 bg-slate-950 border border-slate-850 rounded-xl text-xs font-black focus:outline-none focus:border-amber-500 text-slate-200"
-                    >
+                  <div className="space-y-1.5">
+                    <label className="text-xs text-slate-700 font-bold block">حالة الوكالة</label>
+                    <select value={status} onChange={(e) => setStatus(e.target.value)}
+                      className="w-full px-4 py-3 bg-white border border-slate-300 rounded-xl text-sm font-black focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-900 shadow-sm">
                       <option value="نشطة">نشطة / سارية</option>
-                      <option value="ملغاة">ملغاة من قبل الموكل</option>
+                      <option value="ملغاة">ملغاة</option>
                       <option value="منتهية">منتهية المدة</option>
                     </select>
                   </div>
                 </div>
 
-                {/* Dates */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <label className="text-xs text-slate-300 font-black block">تاريخ صدور الوكالة *</label>
-                    <input 
-                      type="date"
-                      required
-                      value={issueDate}
-                      onChange={(e) => setIssueDate(e.target.value)}
-                      className="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-xs font-semibold focus:outline-none focus:border-amber-500 text-white"
-                    />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                  <div className="space-y-1.5">
+                    <label className="text-xs text-slate-700 font-bold block">تاريخ الإصدار *</label>
+                    <input type="date" required value={issueDate} onChange={(e) => setIssueDate(e.target.value)}
+                      className="w-full px-4 py-3 bg-white border border-slate-300 rounded-xl text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-900 shadow-sm" />
                   </div>
-
-                  <div className="space-y-2">
-                    <label className="text-xs text-slate-300 font-black block">تاريخ انتهاء الوكالة *</label>
-                    <input 
-                      type="date"
-                      required
-                      value={expiryDate}
-                      onChange={(e) => setExpiryDate(e.target.value)}
-                      className="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-xs font-semibold focus:outline-none focus:border-amber-500 text-white"
-                    />
+                  <div className="space-y-1.5">
+                    <label className="text-xs text-slate-700 font-bold block">تاريخ الانتهاء *</label>
+                    <input type="date" required value={expiryDate} onChange={(e) => setExpiryDate(e.target.value)}
+                      className="w-full px-4 py-3 bg-white border border-slate-300 rounded-xl text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-900 shadow-sm" />
                   </div>
                 </div>
 
-                {/* General Scope */}
-                <div className="space-y-2">
-                  <label className="text-xs text-slate-300 font-black block">موضوع أو نطاق الوكالة العام</label>
-                  <textarea 
-                    rows={2}
-                    placeholder="مثال: المرافعة والمدافعة وتقديم المذكرات ومراجعة المحاكم والوزارات وتوقيع العقود والمصالحات..."
-                    value={scope}
-                    onChange={(e) => setScope(e.target.value)}
-                    className="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-xs font-semibold focus:outline-none focus:border-amber-500 text-white"
-                  />
+                {expiryDate && (
+                  <div className="bg-slate-50 border border-slate-200 p-4 rounded-xl flex items-center justify-between">
+                    <span className="text-xs font-bold text-slate-700 flex items-center gap-2">
+                       <Clock className="w-4 h-4 text-indigo-600" />
+                       الزمن المتبقي لانتهاء الوكالة المضافة:
+                    </span>
+                    <span className={`text-sm font-black font-mono px-3 py-1 rounded-lg ${getRemainingDays(expiryDate) <= 0 ? 'bg-rose-100 text-rose-700' : 'bg-indigo-100 text-indigo-700'}`}>
+                      {getRemainingDays(expiryDate) <= 0 ? 'منتهية المدة' : `متبقي ${getRemainingDays(expiryDate)} أيام`}
+                    </span>
+                  </div>
+                )}
+
+                <div className="bg-blue-50 border border-blue-200 p-4 rounded-xl flex gap-3 text-blue-800 text-xs font-bold mt-2">
+                  <div className="shrink-0"><ShieldCheck className="w-5 h-5 text-blue-600" /></div>
+                  <p className="leading-relaxed">
+                    التأكيد: الإضافة اليدوية مخصصة للحالات الطارئة. لضمان دقة مواعيد الانتهاء للوكالات، نؤكد على ضرورة استخدام <span className="text-blue-900 font-black">"سحب بيانات الوكالات (ناجز)"</span> ليتم مزامنة حالة الوكالة الفورية والصلاحيات آلياً من وزارة العدل وتحديث المؤقت الزمني تلقائياً.
+                  </p>
                 </div>
 
-                {/* Specific clauses in new lines */}
-                <div className="space-y-2">
-                  <label className="text-xs text-slate-300 font-black block flex items-center justify-between">
-                    <span>بنود وصلاحيات الوكالة بالتفصيل</span>
-                    <span className="text-[10px] text-slate-500 font-bold">(ضع كل بند في سطر مستقل)</span>
-                  </label>
-                  <textarea 
-                    rows={4}
-                    placeholder="تمثيل الموكل أمام المحاكم العمالية والتجارية&#10;حق الاقرار والانكار والصلح والتنازل&#10;التوقيع أمام وزارة التجارة وهيئة سوق المال"
-                    value={clausesText}
-                    onChange={(e) => setClausesText(e.target.value)}
-                    className="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-xs font-semibold focus:outline-none focus:border-amber-500 text-white leading-relaxed"
-                  />
+                <div className="space-y-1.5">
+                  <label className="text-xs text-slate-700 font-bold block">موضوع أو نطاق الوكالة</label>
+                  <textarea rows={2} placeholder="المرافعة والمدافعة في القضايا..." value={scope} onChange={(e) => setScope(e.target.value)}
+                    className="w-full px-4 py-3 bg-white border border-slate-300 rounded-xl text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-900 shadow-sm" />
                 </div>
 
-                {/* Custom Parties */}
-                <div className="space-y-2">
-                  <label className="text-xs text-slate-300 font-black block flex items-center justify-between">
-                    <span>الأطراف والشركاء بالوكالة وطبيعة أدوارهم</span>
-                    <span className="text-[10px] text-slate-500 font-bold">(الاسم - الدور - رقم الهوية في سطر مستقل)</span>
-                  </label>
-                  <textarea 
-                    rows={3}
-                    placeholder="مثال: شركة الفرسان للمقاولات - موكل (Client) - 1010098234&#10;المحامي سعد بن عبد العزيز - وكيل (Agent) - 1055819382"
-                    value={partiesText}
-                    onChange={(e) => setPartiesText(e.target.value)}
-                    className="w-full px-4 py-3 bg-slate-950 border border-slate-850 rounded-xl text-xs font-mono text-slate-200 focus:outline-none focus:border-amber-500 text-right leading-relaxed"
-                  />
+                <div className="space-y-1.5">
+                  <label className="text-xs text-slate-700 font-bold flex justify-between"><span>البنود والصلاحيات</span><span className="text-slate-400 font-medium">(كل بند في سطر)</span></label>
+                  <textarea rows={3} placeholder="المراجعة في الإدارات الحكومية&#10;حق الإقرار والصلح" value={clausesText} onChange={(e) => setClausesText(e.target.value)}
+                    className="w-full px-4 py-3 bg-white border border-slate-300 rounded-xl text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-900 shadow-sm" />
                 </div>
 
-                {/* Footer buttons */}
-                <div className="pt-4 border-t border-slate-850 flex gap-3 justify-end leading-none">
-                  <button 
-                    type="button" 
-                    onClick={() => setShowAddModal(false)}
-                    className="px-5 py-3 bg-slate-800 hover:bg-slate-750 text-slate-200 rounded-xl text-xs font-black transition-colors"
-                  >
-                    إلغاء الأمر
+                <div className="pt-4 border-t border-slate-200 flex gap-3 justify-end mt-6">
+                  <button type="button" onClick={() => setShowAddModal(false)}
+                    className="px-5 py-2.5 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 rounded-xl text-sm font-bold transition-all">
+                    إلغاء
                   </button>
-                  <button 
-                    type="submit"
-                    className="px-6 py-3 bg-amber-505 bg-amber-500 hover:bg-amber-600 text-slate-950 rounded-xl text-xs font-black shadow-lg transition-all"
-                  >
-                    حفظ وتوثيق الوكالة
+                  <button type="submit"
+                    className="px-6 py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-sm font-black shadow-md transition-all">
+                    حفظ وإضافة الوكالة
                   </button>
                 </div>
-
               </form>
             </motion.div>
           </div>
         )}
       </AnimatePresence>
-
     </div>
   );
 }

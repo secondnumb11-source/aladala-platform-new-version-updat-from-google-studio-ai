@@ -24,6 +24,7 @@ const TasksModule = React.lazy(() => import('./components/TasksModule'));
 const DocumentsModule = React.lazy(() => import('./components/DocumentsModule'));
 const FinanceModule = React.lazy(() => import('./components/FinanceModule'));
 const WorkspaceSync = React.lazy(() => import('./components/WorkspaceSync'));
+const NajizExtensionHub = React.lazy(() => import('./components/NajizExtensionHub'));
 const ClientPortal = React.lazy(() => import('./components/ClientPortal'));
 const AuditLogs = React.lazy(() => import('./components/AuditLogs'));
 const Settings = React.lazy(() => import('./components/Settings'));
@@ -1641,6 +1642,13 @@ function AppContent() {
             clients={employeeFilteredClients}
             cases={employeeFilteredCases}
             expenses={expenses}
+            onUpdateState={handleUpdateGlobalState}
+          />
+        )}
+
+        {currentTab === 'najiz' && (
+          <NajizExtensionHub 
+            currentUser={currentUser}
             onUpdateState={handleUpdateGlobalState}
           />
         )}

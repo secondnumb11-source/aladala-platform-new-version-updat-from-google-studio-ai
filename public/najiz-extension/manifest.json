@@ -1,0 +1,32 @@
+{
+  "manifest_version": 3,
+  "name": "منصة العدالة لإدارة مكاتب المحاماه",
+  "version": "1.0.0",
+  "description": "أداة ذكية للمزامنة التلقائية لبيانات ناجز إلى نظام إدارة مكاتب المحاماة بكبسة زر.",
+  "permissions": [
+    "activeTab",
+    "storage",
+    "alarms",
+    "scripting"
+  ],
+  "host_permissions": [
+    "https://www.najiz.sa/*",
+    "https://najiz.sa/*",
+    "http://*/*",
+    "https://*/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "منصة العدالة - مزامنة ناجز"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://www.najiz.sa/*", "https://najiz.sa/*"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}
