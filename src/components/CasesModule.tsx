@@ -585,7 +585,8 @@ export default React.memo(function CasesModule({
   const [isFocusMode, setIsFocusMode] = useState(false);
   const [expandedCaseModal, setExpandedCaseModal] = useState<Case | null>(null);
   const [isLegalReviewMode, setIsLegalReviewMode] = useState(false);
-  const [categoryFilter, setCategoryFilter] = useState('all');
+  const [categoryFilter, setCategoryFilter] = useState<string[]>([]);
+  const [reportModalCase, setReportModalCase] = useState<Case | null>(null);
   const [stageFilter, setStageFilter] = useState('all');
   const [priorityFilter, setPriorityFilter] = useState('all');
   const [viewMode, setViewMode] = useState<'grid' | 'table'>(() => {
@@ -1622,16 +1623,16 @@ export default React.memo(function CasesModule({
     // Auto-archive filter logic:
     // If 'archived' category is selected, show only archived cases.
     // Otherwise, show only non-archived cases matching other filters.
-    const isArchivedRequested = categoryFilter === 'archived';
+    const isArchivedRequested = categoryFilter.includes('archived');
     const isArchived = c.archived === true || c.status === 'closed' && isArchivedRequested; 
     
-    if (isArchivedRequested) {
+    if (isArchivedRequested && categoryFilter.length === 1) {
       if (!c.archived && c.status !== 'closed') return false;
-    } else {
+    } else if (!isArchivedRequested) {
       if (c.archived) return false;
     }
 
-    const matchesCategory = categoryFilter === 'all' || categoryFilter === 'archived' || c.category === categoryFilter;
+    const matchesCategory = categoryFilter.length === 0 || categoryFilter.includes(c.category) || (isArchivedRequested && categoryFilter.length === 1);
     const matchesStage = stageFilter === 'all' || c.stage === stageFilter;
     const matchesCourt = courtFilter === 'all' || c.courtName.includes(courtFilter);
     
@@ -1811,13 +1812,19 @@ export default React.memo(function CasesModule({
           <div className="flex items-center gap-3 overflow-x-auto no-scrollbar pb-2">
             {categories.map((cat) => {
               const Icon = cat.icon;
-              const isActive = categoryFilter === cat.id;
+              const isActive = cat.id === 'all' ? categoryFilter.length === 0 : categoryFilter.includes(cat.id);
               const count = cat.id === 'all' ? cases.filter(c => !c.archived).length : countByCategory(cat.id);
               
               return (
                 <button
                   key={cat.id}
-                  onClick={() => setCategoryFilter(cat.id)}
+                  onClick={() => {
+                    if (cat.id === 'all') {
+                      setCategoryFilter([]);
+                    } else {
+                      setCategoryFilter(prev => prev.includes(cat.id) ? prev.filter(id => id !== cat.id) : [...prev, cat.id]);
+                    }
+                  }}
                   className={`flex items-center gap-3 px-5 py-3 rounded-2xl text-xs font-black transition-all border shrink-0 relative group ${
                     isActive 
                       ? 'bg-amber-600 text-white border-amber-500 shadow-xl shadow-amber-600/20' 
@@ -2750,59 +2757,59 @@ export default React.memo(function CasesModule({
                      </div>
                   </motion.div>
 
-                  <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="card-professional no-hover-parallax border-2 p-10 bg-[#050e21] border-slate-800 shadow-2xl relative group overflow-hidden cursor-default">
-                <div className="absolute -bottom-8 -left-8 w-32 h-32 bg-emerald-500 blur-3xl rounded-full transition-all duration-700"></div>
+                  <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="card-professional no-hover-parallax border-2 p-10 bg-slate-50 border-slate-200 shadow-2xl relative group overflow-hidden cursor-default">
+                <div className="absolute -bottom-8 -left-8 w-32 h-32 bg-emerald-500/10 blur-3xl rounded-full transition-all duration-700"></div>
                 <div className="relative flex flex-col gap-8">
                   <div className="flex items-center justify-between">
-                     <div className="w-16 h-16 bg-emerald-500 rounded-[1.5rem] flex items-center justify-center text-emerald-500 border border-emerald-500 shadow-inner transition-transform duration-500">
+                     <div className="w-16 h-16 bg-emerald-100 rounded-[1.5rem] flex items-center justify-center text-emerald-600 border border-emerald-200 shadow-inner transition-transform duration-500">
                        <Check className="w-8 h-8" />
                      </div>
                      <div className="text-right">
-                        <h4 className="text-xs font-black  text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]   uppercase tracking-[0.2em] mb-2 px-1 border-r-2 border-emerald-500">منتهية نهائياً</h4>
-                        <span className="text-4xl font-display font-black  text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]   tracking-tighter tabular-nums">{cases.filter(c => c.status === 'closed').length}</span>
+                        <h4 className="text-xs font-black text-slate-900 uppercase tracking-[0.2em] mb-2 px-1 border-r-2 border-emerald-500">منتهية نهائياً</h4>
+                        <span className="text-4xl font-display font-black text-slate-900 tracking-tighter tabular-nums">{cases.filter(c => c.status === 'closed').length}</span>
                      </div>
                   </div>
-                  <div className="w-full bg-slate-100  h-2.5 rounded-full overflow-hidden shadow-inner border border-slate-800 ">
-                    <motion.div initial={{ width: 0 }} animate={{ width: '45%' }} transition={{ duration: 1.5, ease: "easeOut", delay: 0.6 }} className="bg-emerald-500 h-full shadow-[0_0_20px_rgba(16,185,129,0.5)]" />
+                  <div className="w-full bg-slate-200 h-2.5 rounded-full overflow-hidden shadow-inner border border-slate-300">
+                    <motion.div initial={{ width: 0 }} animate={{ width: '45%' }} transition={{ duration: 1.5, ease: "easeOut", delay: 0.6 }} className="bg-emerald-500 h-full shadow-[0_0_20px_rgba(16,185,129,0.3)]" />
                   </div>
                   <div className="flex items-center justify-between">
-                     <p className="text-xs text-emerald-500 font-black uppercase tracking-widest flex items-center gap-2">Legal Outcome: Positive</p>
-                     <span className="text-xs  text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]   font-mono font-black">45.8%</span>
+                     <p className="text-xs text-emerald-600 font-black uppercase tracking-widest flex items-center gap-2">Legal Outcome: Positive</p>
+                     <span className="text-xs text-slate-600 font-mono font-black">45.8%</span>
                   </div>
                 </div>
              </motion.div>
 
-             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="card-professional border-2 p-10 bg-[#050e21] border-slate-800 shadow-2xl relative group overflow-hidden cursor-default">
-                <div className="absolute -top-12 -right-12 w-48 h-48 bg-amber-500 blur-3xl rounded-full transition-all duration-1000"></div>
+             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="card-professional border-2 p-10 bg-slate-50 border-slate-200 shadow-2xl relative group overflow-hidden cursor-default">
+                <div className="absolute -top-12 -right-12 w-48 h-48 bg-amber-500/10 blur-3xl rounded-full transition-all duration-1000"></div>
                 <div className="relative flex flex-col gap-8">
                   <div className="flex items-center justify-between">
-                     <div className="w-16 h-16 bg-amber-500 rounded-[1.5rem] flex items-center justify-center text-amber-600 border border-amber-500 shadow-inner transition-transform">
-                       <div className="flex items-center justify-center font-black text-white text-2xl tracking-tighter w-8 h-8">ر.س</div>
+                     <div className="w-16 h-16 bg-amber-100 rounded-[1.5rem] flex items-center justify-center text-amber-600 border border-amber-200 shadow-inner transition-transform">
+                       <div className="flex items-center justify-center font-black text-amber-700 text-2xl tracking-tighter w-8 h-8">ر.س</div>
                      </div>
                      <div className="text-right">
-                        <h4 className="text-xs font-black  text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]   uppercase tracking-[0.2em] mb-2 px-1 border-r-2 border-amber-600">حصيلة التنفيذ</h4>
-                        <span className="text-3xl font-display font-black  text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]   tracking-tighter tabular-nums">485,000 <span className="text-xs uppercase opacity-40">ريال سعودي</span></span>
+                        <h4 className="text-xs font-black text-slate-900 uppercase tracking-[0.2em] mb-2 px-1 border-r-2 border-amber-600">حصيلة التنفيذ</h4>
+                        <span className="text-3xl font-display font-black text-slate-900 tracking-tighter tabular-nums">485,000 <span className="text-xs uppercase opacity-60">ريال سعودي</span></span>
                      </div>
                   </div>
-                  <div className="w-full bg-slate-100  h-2.5 rounded-full overflow-hidden shadow-inner border border-slate-800 ">
-                    <motion.div initial={{ width: 0 }} animate={{ width: '85%' }} transition={{ duration: 1.5, ease: "easeOut", delay: 0.7 }} className="bg-amber-600 h-full shadow-[0_0_20px_rgba(217,119,6,0.5)]" />
+                  <div className="w-full bg-slate-200 h-2.5 rounded-full overflow-hidden shadow-inner border border-slate-300">
+                    <motion.div initial={{ width: 0 }} animate={{ width: '85%' }} transition={{ duration: 1.5, ease: "easeOut", delay: 0.7 }} className="bg-amber-600 h-full shadow-[0_0_20px_rgba(217,119,6,0.3)]" />
                   </div>
                   <div className="flex items-center justify-between">
                      <p className="text-xs text-amber-600 font-black uppercase tracking-widest flex items-center gap-2">Recovery: Phase 5 Optimized</p>
-                     <span className="text-xs  text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]   font-mono font-black">85.0%</span>
+                     <span className="text-xs text-slate-600 font-mono font-black">85.0%</span>
                   </div>
                 </div>
              </motion.div>
           </div>
 
-          <div className="flex flex-col lg:flex-row items-center justify-between gap-6 bg-[#050e21] p-8 rounded-[2.5rem] border border-slate-800 shadow-2xl mb-10 relative z-20">
+          <div className="flex flex-col lg:flex-row items-center justify-between gap-6 bg-slate-50 p-8 rounded-[2.5rem] border border-slate-200 shadow-2xl mb-10 relative z-20">
             <div className="flex flex-wrap items-center gap-6">
               <div className="flex flex-col space-y-3">
-                <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] mr-1">Litigation Stage</label>
+                <label className="text-[10px] font-black text-slate-900 uppercase tracking-[0.3em] mr-1">Litigation Stage</label>
                 <select 
                   value={stageFilter}
                   onChange={(e) => setStageFilter(e.target.value)}
-                  className="bg-slate-900 border-2 border-slate-800 text-white px-6 py-4 rounded-2xl text-[11px] font-black focus:border-amber-500/50 outline-none transition-all cursor-pointer min-w-[180px] appearance-none"
+                  className="bg-white border-2 border-slate-200 text-slate-900 px-6 py-4 rounded-2xl text-[11px] font-black focus:border-amber-500 outline-none transition-all cursor-pointer min-w-[180px] appearance-none shadow-sm hover:border-slate-300"
                 >
                   <option value="all">كافة المراحل</option>
                   <option value="primary">الدرجة الاولى</option>
@@ -2813,11 +2820,11 @@ export default React.memo(function CasesModule({
               </div>
 
               <div className="flex flex-col space-y-3 font-sans">
-                <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] mr-1">Court Venue</label>
+                <label className="text-[10px] font-black text-slate-900 uppercase tracking-[0.3em] mr-1">Court Venue</label>
                 <select 
                   value={courtFilter}
                   onChange={(e) => setCourtFilter(e.target.value)}
-                  className="bg-slate-900 border-2 border-slate-800 text-white px-6 py-4 rounded-2xl text-[11px] font-black focus:border-amber-500/50 outline-none transition-all cursor-pointer min-w-[180px] appearance-none"
+                  className="bg-white border-2 border-slate-200 text-slate-900 px-6 py-4 rounded-2xl text-[11px] font-black focus:border-amber-500 outline-none transition-all cursor-pointer min-w-[180px] appearance-none shadow-sm hover:border-slate-300"
                 >
                   <option value="all">كافة المحاكم</option>
                   <option value="التجارية">المحكمة التجارية</option>
@@ -2831,11 +2838,11 @@ export default React.memo(function CasesModule({
               </div>
 
               <div className="flex flex-col space-y-3 font-sans">
-                <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] mr-1">Document Tag (AI)</label>
+                <label className="text-[10px] font-black text-slate-900 uppercase tracking-[0.3em] mr-1">Document Tag (AI)</label>
                 <select 
                   value={selectedDocTag}
                   onChange={(e) => setSelectedDocTag(e.target.value)}
-                  className="bg-slate-900 border-2 border-slate-800 text-white px-6 py-4 rounded-2xl text-[11px] font-black focus:border-amber-500/50 outline-none transition-all cursor-pointer min-w-[200px] appearance-none"
+                  className="bg-white border-2 border-slate-200 text-slate-900 px-6 py-4 rounded-2xl text-[11px] font-black focus:border-amber-500 outline-none transition-all cursor-pointer min-w-[200px] appearance-none shadow-sm hover:border-slate-300"
                 >
                   <option value="all">كافة التصنيفات الآلية</option>
                   <option value="مفهرس_آلياً">مفهرس آلياً</option>
@@ -2854,31 +2861,28 @@ export default React.memo(function CasesModule({
             </div>
           </div>
 
-          {/* Statistical Counters shelf for classifications */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 mb-6 w-full text-right animate-in fade-in slide-in-from-top-4 duration-500" dir="rtl">
+          {/* Filtering Tags for classifications */}
+          <div className="flex flex-wrap items-center gap-3 mb-6 w-full text-right animate-in fade-in slide-in-from-top-4 duration-500" dir="rtl">
+            <span className="text-[11px] font-black text-slate-500 ml-2">تصفية القضايا حسب النوع:</span>
             {[
-              { key: 'commercial', label: 'تجارية ومصرفية', count: countByCategory('commercial'), color: 'from-amber-500/15 to-amber-600/5', border: 'border-amber-500/30 text-amber-300' },
-              { key: 'labor', label: 'شؤون عمالية', count: countByCategory('labor'), color: 'from-teal-500/15 to-teal-600/5', border: 'border-teal-500/30 text-teal-300' },
-              { key: 'criminal', label: 'جزائية جنائية', count: countByCategory('criminal'), color: 'from-rose-500/15 to-rose-600/5', border: 'border-rose-500/30 text-rose-300' },
-              { key: 'personal_status', label: 'أحوال شخصية وإرث', count: countByCategory('personal_status'), color: 'from-purple-500/15 to-purple-600/5', border: 'border-purple-500/30 text-purple-300' },
-              { key: 'administrative', label: 'إدارية ومظالم', count: countByCategory('administrative'), color: 'from-sky-500/15 to-sky-600/5', border: 'border-sky-500/30 text-sky-300' },
-              { key: 'financial', label: 'مالية وضريبية', count: countByCategory('financial'), color: 'from-yellow-400/15 to-yellow-500/5', border: 'border-yellow-400/30 text-yellow-300' }
+              { key: 'civil', label: 'شرعية' },
+              { key: 'commercial', label: 'تجارية' },
+              { key: 'labor', label: 'عمالية' },
+              { key: 'personal_status', label: 'أحوال شخصية' }
             ].map((item) => {
-              const isActive = categoryFilter === item.key;
+              const isActive = categoryFilter.includes(item.key);
               return (
                 <button
                   type="button"
                   key={item.key}
-                  onClick={() => setCategoryFilter(isActive ? 'all' : item.key)}
-                  className={`p-4 rounded-2xl bg-[#0c1a35]/90 border ${item.border} flex flex-col justify-between items-start gap-2[1.03] active:scale-95 transition-all cursor-pointer relative overflow-hidden group/stat shadow-md ${isActive ? 'ring-2 ring-amber-500 border-amber-500 shadow-amber-500/10' : ''}`}
+                  onClick={() => setCategoryFilter(prev => prev.includes(item.key) ? prev.filter(k => k !== item.key) : [...prev, item.key])}
+                  className={`px-5 py-2.5 rounded-full text-xs font-black transition-all cursor-pointer shadow-sm border ${
+                    isActive 
+                      ? 'bg-amber-500 border-amber-500 text-slate-900 shadow-amber-500/20' 
+                      : 'bg-[#050e21] border-slate-700 text-slate-300 hover:border-slate-500'
+                  }`}
                 >
-                  <span className="text-[10px] font-black opacity-85 uppercase tracking-wide">{item.label}</span>
-                  <div className="flex items-center justify-between w-full mt-1">
-                     <span className="text-xl font-display font-black tracking-tight tabular-nums">{item.count}</span>
-                     <span className="text-[9px] bg-white/10 px-2 py-0.5 rounded-full font-black opacity-65 group-hover/stat:opacity-100 transition-opacity">
-                       {isActive ? 'نشط' : 'تصفية'}
-                     </span>
-                  </div>
+                  {item.label}
                 </button>
               );
             })}
@@ -3199,6 +3203,25 @@ export default React.memo(function CasesModule({
                         </div>
 
                         <div className={`${isLegalReviewMode ? 'opacity-10' : ''}`}>
+                          {(() => {
+                             const hist = getCaseActivityTimeline(c).slice(0, 3);
+                             if (hist.length > 0) {
+                               return (
+                                 <div className="mt-3 mb-3 p-3 bg-slate-100/5 dark:bg-slate-900/40 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm relative z-10 font-sans">
+                                   <div className="text-[10px] font-black text-slate-500 mb-2 flex items-center gap-1.5 border-b border-slate-200 dark:border-slate-800 pb-1.5"><Clock className="w-3 h-3"/> سجل تغييرات مصغر</div>
+                                   <div className="space-y-2">
+                                     {hist.map((h: any, hIdx: number) => (
+                                       <div key={hIdx} className="flex justify-between items-center text-[10px] gap-2">
+                                         <span className={`truncate font-bold ${isHighContrast ? 'text-slate-800' : 'text-slate-300'}`}>{h.title || h.notes || 'تحديث حالة القضية'}</span>
+                                         <span className="text-slate-400 font-mono font-bold shrink-0">{h.date}</span>
+                                       </div>
+                                     ))}
+                                   </div>
+                                 </div>
+                               );
+                             }
+                             return null;
+                           })()}
                           <CaseProgressBar caseObj={c} />
                         </div>
 
@@ -3272,6 +3295,18 @@ export default React.memo(function CasesModule({
                             >
                                <span>🔔</span>
                                <span className="text-[10px] font-black">تذكير 24س</span>
+                            </button>
+                             <button
+                               type="button"
+                               onClick={(e) => {
+                                 e.stopPropagation();
+                                 setReportModalCase(c);
+                               }}
+                               className="px-3 py-1.5 rounded-lg bg-emerald-500/10 text-emerald-500 border border-emerald-500/30 transition-colors cursor-pointer z-35 shadow-sm flex items-center gap-1"
+                               title="توليد تقرير سريع"
+                            >
+                               <Printer className="w-3 h-3" />
+                               <span className="text-[10px] font-black">تقرير سريع</span>
                             </button>
                           </div>
                         </div>
@@ -3391,7 +3426,7 @@ export default React.memo(function CasesModule({
                     </div>
                     <div className="space-y-2">
                       <label className="text-[10px] font-black text-[#FACC15] uppercase">التصنيف</label>
-                      <select value={newCategory} onChange={(e) => { setNewCategory(e.target.value); setCategoryFilter(e.target.value); }}
+                      <select value={newCategory} onChange={(e) => { setNewCategory(e.target.value); setCategoryFilter([e.target.value]); }}
                         className="w-full theme-card-bg border border-slate-700/50 rounded-xl py-2 px-3 text-xs font-black text-white focus:outline-none focus:border-amber-500 transition-colors"
                       >
                         <option value="criminal">جزائية 🛡️</option>
@@ -3751,6 +3786,96 @@ export default React.memo(function CasesModule({
         })()}
       </AnimatePresence>
       <DocumentVaultModal />
+      <AnimatePresence>
+        {reportModalCase && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-10"
+            dir="rtl"
+          >
+            <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-md" onClick={() => setReportModalCase(null)}></div>
+            <motion.div 
+              initial={{ scale: 0.95, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.95, y: 20 }}
+              className="relative w-full max-w-lg bg-white rounded-[2rem] shadow-2xl overflow-hidden flex flex-col"
+            >
+              <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+                <div className="flex items-center gap-3">
+                  <Printer className="w-5 h-5 text-emerald-600" />
+                  <h3 className="font-black text-slate-900 text-lg">تقرير حالة القضية</h3>
+                </div>
+                <button onClick={() => setReportModalCase(null)} className="p-2 text-slate-400 hover:text-slate-600 cursor-pointer transition-colors">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              <div className="p-8 space-y-6">
+                <div className="bg-slate-50 p-6 flex flex-col items-center justify-center border-2 border-dashed border-slate-200 rounded-2xl mb-6">
+                   <div className="w-12 h-12 bg-white rounded-xl shadow-sm border border-slate-100 flex items-center justify-center mb-3">
+                     <FileText className="w-6 h-6 text-slate-400" />
+                   </div>
+                   <h4 className="text-sm font-black text-slate-800">توليد تقرير وملخص للقضية</h4>
+                   <p className="text-xs text-center text-slate-500 font-bold mt-2">
+                      تم تجهيز ملخص جاهز للطباعة يحتوي على رقم القضية واسم الموكل وتاريخ الجلسة القادمة.
+                   </p>
+                </div>
+              </div>
+              <div className="p-6 border-t border-slate-100 bg-slate-50 flex gap-3">
+                <button 
+                  onClick={() => {
+                    const printWindow = window.open('', '_blank');
+                    if (printWindow) {
+                        printWindow.document.write(`
+                            <html dir="rtl"><head><title>تقرير القضية - ${reportModalCase.caseNumber}</title>
+                            <style>
+                                body { font-family: system-ui, sans-serif; padding: 40px; color: #020617; }
+                                .header { border-bottom: 2px solid #e2e8f0; padding-bottom: 20px; margin-bottom: 30px; display: flex; justify-content: space-between; align-items: start; }
+                                .title { margin: 0; font-size: 24px; color: #0f172a; }
+                                .date { color: #64748b; font-size: 14px; }
+                                .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 40px; }
+                                .label { color: #64748b; font-size: 12px; text-transform: uppercase; margin-bottom: 5px; }
+                                .value { font-size: 16px; font-weight: bold; margin: 0; padding: 10px; background: #f8fafc; border-radius: 8px; border: 1px solid #f1f5f9; }
+                                .summary { line-height: 1.6; font-size: 14px; background: #f8fafc; padding: 20px; border-radius: 8px; border: 1px solid #f1f5f9; }
+                            </style>
+                            </head><body>
+                            <div class="header">
+                                <div>
+                                    <h1 class="title">تقرير حالة الدعوى</h1>
+                                    <p class="date">تاريخ الإصدار: ${new Date().toLocaleDateString('ar-SA')}</p>
+                                </div>
+                            </div>
+                            <div class="grid">
+                                <div><div class="label">اسم الموكل</div><div class="value">${reportModalCase.clientName}</div></div>
+                                <div><div class="label">رقم الدعوى</div><div class="value">${reportModalCase.caseNumber}</div></div>
+                                <div><div class="label">الحالة الحالية</div><div class="value">${reportModalCase.status}</div></div>
+                                <div><div class="label">تاريخ الجلسة القادمة</div><div class="value" style="color: #e11d48; font-weight: bold;">${reportModalCase.nextSessionDate || 'غير محدد'}</div></div>
+                            </div>
+                            <div class="label">ملخص البيان</div>
+                            <div class="summary">${reportModalCase.summary || 'لا توجد بيانات تفصيلية مسجلة.'}</div>
+                            </body></html>
+                        `);
+                        printWindow.document.close();
+                        printWindow.print();
+                    }
+                    setReportModalCase(null);
+                  }}
+                  className="flex-[2] bg-slate-900 border border-slate-900 text-white font-black py-3 rounded-xl hover:bg-slate-800 transition-colors shadow-lg shadow-slate-900/10"
+                >
+                  صياغة وطباعة
+                </button>
+                <button 
+                  onClick={() => setReportModalCase(null)}
+                  className="flex-[1] bg-white border border-slate-200 text-slate-700 font-black py-3 rounded-xl hover:bg-slate-50 transition-colors shadow-sm"
+                >
+                  إلغاء
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 });

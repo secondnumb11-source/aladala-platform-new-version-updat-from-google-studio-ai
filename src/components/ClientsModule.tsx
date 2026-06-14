@@ -23,16 +23,24 @@ import {
   Clock,
   ShieldCheck,
   ChevronRight,
-  Filter
+  Filter,
+  RefreshCw,
+  LogOut,
+  UserPlus
 } from 'lucide-react';
 import { Client, Case } from '@/types';
 import { generateUsername, generatePassword } from '@/utils/credentials';
+import { auth } from '@/lib/firebase';
+import { GoogleAuthProvider, signInWithPopup, onAuthStateChanged } from 'firebase/auth';
 
 interface ClientsModuleProps {
   clients: Client[];
   cases: Case[];
   onUpdateState: (type: string, data: any) => void;
 }
+
+// Module-level in-memory cache for Google Access Token
+let cachedGoogleAccessToken: string | null = null;
 
 export default function ClientsModule({
   clients,
@@ -41,6 +49,11 @@ export default function ClientsModule({
 }: ClientsModuleProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [isAdding, setIsAdding] = useState(false);
+  
+  // Google Integration States
+  const [googleAccessToken, setGoogleAccessToken] = useState<string | null>(cachedGoogleAccessToken);
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [syncError, setSyncError] = useState<string | null>(null);
   
   // Form values for new client
   const [newName, setNewName] = useState('');
@@ -164,6 +177,115 @@ export default function ClientsModule({
     setCustomMsg('');
   };
 
+  const handleGoogleSignIn = async () => {
+    setIsSyncing(true);
+    setSyncError(null);
+    try {
+      const provider = new GoogleAuthProvider();
+      provider.addScope('https://www.googleapis.com/auth/contacts.readonly');
+      provider.addScope('https://www.googleapis.com/auth/userinfo.email');
+      provider.addScope('https://www.googleapis.com/auth/userinfo.profile');
+      
+      const result = await signInWithPopup(auth, provider);
+      const credential = GoogleAuthProvider.credentialFromResult(result);
+      if (!credential?.accessToken) {
+        throw new Error('فشل الحصول على رمز الوصول من مصادقة Google.');
+      }
+      
+      const token = credential.accessToken;
+      cachedGoogleAccessToken = token;
+      setGoogleAccessToken(token);
+      
+      // Auto trigger sync after login
+      await importGoogleContacts(token);
+    } catch (err: any) {
+      console.error('[Google Contacts] Auth error:', err);
+      if (err.code === 'auth/popup-closed-by-user') {
+        setSyncError(null);
+      } else if (err.code === 'auth/popup-blocked') {
+        setSyncError('تم حظر النافذة المنبثقة لمصادقة Google بواسطة المتصفح. يرجى تفعيل النوافذ المنبثقة وإعادة المحاولة.');
+      } else {
+        setSyncError(err.message || 'فشلت عملية المصادقة الرقمية مع حساب Google');
+      }
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+
+  const importGoogleContacts = async (token: string) => {
+    setIsSyncing(true);
+    setSyncError(null);
+    try {
+      const response = await fetch(
+        'https://people.googleapis.com/v1/people/me/connections?personFields=names,emailAddresses,phoneNumbers&pageSize=50',
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        }
+      );
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          setGoogleAccessToken(null);
+          cachedGoogleAccessToken = null;
+          throw new Error('انتهت صلاحية جلسة الاتصال. يرجى تسجيل الدخول مجدداً.');
+        }
+        throw new Error(`فشل جلب جهات الاتصال (الرمز: ${response.status})`);
+      }
+
+      const data = await response.json();
+      const connections = data.connections || [];
+      
+      let importedCount = 0;
+      connections.forEach((person: any) => {
+        const name = person.names?.[0]?.displayName;
+        const phone = person.phoneNumbers?.[0]?.value;
+        const email = person.emailAddresses?.[0]?.value;
+
+        if (name && phone) {
+          // Check if already exists by phone
+          const exists = clients.some(c => c.phone === phone);
+          if (!exists) {
+            const token = `portal-${Date.now()}-${Math.random()}`;
+            const id = `client-google-${Date.now()}-${Math.random()}`;
+            const genUser = generateUsername(name, phone.slice(-4));
+            const genPass = generatePassword();
+
+            const newCl: Client = {
+              id,
+              name,
+              isCompany: false,
+              nationalId: `G-${phone.slice(-6)}`,
+              phone,
+              email: email || '',
+              portalUsername: genUser,
+              portalPassword: genPass,
+              casesCount: 0,
+              billingTotal: 0,
+              activePortal: true,
+              portalToken: token,
+              portalLink: `/portal?token=${token}`
+            };
+            onUpdateState('clients', newCl);
+            importedCount++;
+          }
+        }
+      });
+
+      if (importedCount > 0) {
+        alert(`✅ تم استيراد ومزامنة ${importedCount} جهة اتصال جديدة بنجاح من حساب Google الخاص بك!`);
+      } else {
+        alert('ℹ️ لا توجد جهات اتصال جديدة للاستيراد أو أن جميع جهات الاتصال مسجلة مسبقاً.');
+      }
+    } catch (err: any) {
+      console.error('[Google Contacts] Sync error:', err);
+      setSyncError(err.message || 'خطأ أثناء مزامنة جهات الاتصال');
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+
   const filteredClients = clients.filter(cl =>
     cl.name.includes(searchTerm) || 
     cl.nationalId.includes(searchTerm) || 
@@ -185,25 +307,35 @@ export default function ClientsModule({
       </div>
 
       {/* Search and Quick Action Bar */}
-      <div className="bg-white p-4 rounded-2xl border border-slate-200 flex flex-col md:flex-row items-center justify-between gap-4 shadow-sm">
-        <div className="relative w-full md:w-96">
-          <Search className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-          <input 
-            type="text" 
-            placeholder="البحث بالاسم، الهوية، أو الجوال..." 
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 pr-11 pl-4 text-sm font-bold text-slate-900 focus:outline-none focus:border-amber-500 transition-all"
-          />
+      <div className="bg-white p-4 rounded-2xl border border-slate-200 flex flex-col lg:flex-row items-center justify-between gap-4 shadow-sm">
+        <div className="flex flex-col md:flex-row items-center gap-4 w-full lg:w-auto">
+          <div className="relative w-full md:w-96">
+            <Search className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+            <input 
+              type="text" 
+              placeholder="البحث بالاسم، الهوية، أو الجوال..." 
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 pr-11 pl-4 text-sm font-bold text-slate-900 focus:outline-none focus:border-amber-500 transition-all"
+            />
+          </div>
         </div>
+
         <button
           onClick={() => setIsAdding(true)}
-          className="w-full md:w-auto bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs py-2.5 px-6 rounded-xl flex items-center justify-center gap-2 transition-all shadow-md active:scale-95"
+          className="w-full lg:w-auto bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs py-2.5 px-6 rounded-xl flex items-center justify-center gap-2 transition-all shadow-md active:scale-95"
         >
           <Plus className="w-4 h-4" />
           <span>إضافة موكل جديد</span>
         </button>
       </div>
+
+      {syncError && (
+        <div className="bg-rose-50 border border-rose-200 p-3 rounded-xl text-xs text-rose-900 font-bold flex justify-between items-center animate-in slide-in-from-top-2">
+          <span>⚠️ {syncError}</span>
+          <button onClick={() => setSyncError(null)} className="text-rose-400 hover:text-rose-600">✕</button>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 xl:grid-cols-12 gap-8">
         

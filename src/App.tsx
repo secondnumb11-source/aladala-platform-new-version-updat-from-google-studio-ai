@@ -1591,6 +1591,20 @@ function AppContent() {
                 cases={employeeFilteredCases}
                 expenses={expenses}
                 onUpdateState={handleUpdateGlobalState}
+                viewMode="billing"
+              />
+            );
+          }
+
+          if (aiSubTab === 'judicial-calc') {
+            return (
+              <FinanceModule 
+                invoices={invoices}
+                clients={employeeFilteredClients}
+                cases={employeeFilteredCases}
+                expenses={expenses}
+                onUpdateState={handleUpdateGlobalState}
+                viewMode="calculator"
               />
             );
           }

@@ -17,7 +17,11 @@ import {
   AlertTriangle,
   Play,
   Sun,
-  Moon
+  Moon,
+  Clock,
+  ChevronDown,
+  Archive,
+  MailOpen
 } from 'lucide-react';
 import { motion } from 'motion/react';
 
@@ -168,13 +172,14 @@ export default function WhatsappTemplates() {
   const [newTriggerEvent, setNewTriggerEvent] = useState('حالة مخصصة');
   const [newTemplateText, setNewTemplateText] = useState('السلام عليكم {اسم_الالعدالة}...');
 
-  const [inboxMessages] = useState([
+  const [inboxMessages, setInboxMessages] = useState([
     {
       id: 'msg-1',
       sender: 'شركة المراعي',
       subject: 'استفسار بخصوص موعد جلسة الاستئناف',
       message: 'نأمل منكم إفادتنا بخصوص الموعد الجديد لجلسة الاستئناف، حيث لم يصلنا تبليغ ناجز حتى الآن. يرجى المتابعة العاجلة.',
       status: 'عاجل',
+      type: 'قانوني',
       date: 'منذ ١٠ دقائق'
     },
     {
@@ -183,17 +188,72 @@ export default function WhatsappTemplates() {
       subject: 'إرسال مستندات إضافية - قضية مقاولات',
       message: 'مرفق لكم الملاحق والفواتير الخاصة بعقد المقاولة كما طلبتم. بانتظار تأكيد استلامكم والمضي قدماً.',
       status: 'بانتظار الرد',
+      type: 'إداري',
       date: 'منذ ساعتين'
     },
     {
       id: 'msg-3',
       sender: 'عاصم بن طلال العقاد',
       subject: 'طلب استشارة هاتفية',
-      message: 'أحتاج لترتيب مكالمة قصيرة مع المستشار غداً لمراجعة بعض البنود قبل توقيع المخالصة النهائية.',
-      status: 'تم القراءة',
+      message: 'أحتاج لترتيب مكالمة قصيرة مع المستشار غداً لمراجعة بعض البنود قبل توقيع المخالصة النهائية. يرجى إعلامي بالوقت المناسب لتنسيق الموعد نظرا لارتباطي بعدة التزامات.',
+      status: 'مقروء',
+      type: 'مالي',
       date: 'امس'
     }
   ]);
+
+  const [upcomingReminders] = useState([
+    {
+      id: 'rem-1',
+      client: 'شركة تبوك للتنمية الزراعية',
+      caseNumber: '420391823 - نزاع عقاري',
+      scheduledDate: '2023-11-05 08:00',
+      templateName: 'تذكير آلي بالجلسة (24 ساعة)',
+      status: 'آلي',
+      type: 'تذكير جلسة'
+    },
+    {
+      id: 'rem-2',
+      client: 'مؤسسة الشايع الطبية',
+      caseNumber: '419284711 - تصفية شراكة',
+      scheduledDate: '2023-11-10 10:30',
+      templateName: 'مطالبة بسداد دفعة أتعاب',
+      status: 'مجدول',
+      type: 'إشعار مالي'
+    }
+  ]);
+
+  const [expandedMsgIds, setExpandedMsgIds] = useState<string[]>([]);
+  const [sentSearchTerm, setSentSearchTerm] = useState('');
+  const [sentMessages, setSentMessages] = useState([
+    { id: 1, client: 'شركة نادك للتنمية', caseName: 'نزاع تجاري', date: '2026-06-12', msg: 'تذكير بموعد الجلسة غداً...', status: 'success', read: true },
+    { id: 2, client: 'مؤسسة الشايع الطبية', caseName: 'تصفية شراكة', date: '2026-06-10', msg: 'مرفق لكم فاتورة أتعاب...', status: 'success', read: true },
+    { id: 3, client: 'فيصل الحربي', caseName: 'قضية عمالية', date: '2026-06-08', msg: 'نعتذر، تم تأجيل الجلسة...', status: 'failed', read: false },
+    { id: 4, client: 'عاصم العقاد', caseName: 'مخالصة نهائية', date: '2026-06-05', msg: 'عاجل: نأمل حضوركم للتوقيع على...', status: 'urgent', read: false }
+  ]);
+
+  const filteredSentMessages = sentMessages.filter(row => 
+    row.client.includes(sentSearchTerm) || 
+    row.caseName.includes(sentSearchTerm) || 
+    row.msg.includes(sentSearchTerm)
+  );
+
+  const filteredInboxMessages = inboxMessages.filter(msg =>
+    msg.sender.includes(sentSearchTerm) ||
+    msg.subject.includes(sentSearchTerm) ||
+    msg.message.includes(sentSearchTerm)
+  );
+
+  const toggleMsgExpand = (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setExpandedMsgIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
+  };
+
+  const executeMsgAction = (id: string, actionName: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    // Simulate action
+    setInboxMessages(prev => prev.map(msg => msg.id === id ? { ...msg, status: actionName === 'archive' ? 'مؤرشف' : (actionName === 'unread' ? 'بانتظار الرد' : msg.status) } : msg));
+  };
 
   // --- AUTOMATED 24-HOUR REMINDERS DASHBOARD STATE & ACTIONS ---
   const [automatedRemindersActive, setAutomatedRemindersActive] = useState(true);
@@ -409,6 +469,13 @@ export default function WhatsappTemplates() {
     setTimeout(() => setTestSendResult('idle'), 5000);
   };
 
+  const [activeTab, setActiveTab] = useState<'new_notification' | 'outbox' | 'templates' | 'drafts'>('new_notification');
+  const [drafts, setDrafts] = useState([
+    { id: 'd-1', recipient: 'فهد العتيبي', subject: 'تنبيه موعد خبير', date: '2026-06-13', content: 'نحيطكم علما بأن الدائرة قررت ندب خبير...' },
+    { id: 'd-2', recipient: 'منى السليمان', subject: 'طلب تزويدنا بالعقود', date: '2026-06-11', content: 'نأمل تزويدنا بأصول العقود الموقعة...' }
+  ]);
+  const [requestSignature, setRequestSignature] = useState(false);
+
   // Preview replacement simulation
   const getRenderedPreview = (text: string) => {
     return text
@@ -436,9 +503,9 @@ export default function WhatsappTemplates() {
               <span className="h-2 w-2 rounded-full bg-amber-400 animate-pulse"></span>
               <span>مركز التحكم التلقائي وإشعارات قنوات الواتساب الموثقة API</span>
             </span>
-            <h1 className="text-xl md:text-2xl font-black text-slate-100 mt-3">قوالب وإرسال رسائل WhatsApp الآلية المعتمدة</h1>
+            <h1 className="text-xl md:text-2xl font-black text-slate-100 mt-3">إشعارات ومراسلة العملاء المعتمدة</h1>
             <p className="text-xs text-slate-300 mt-1.5 font-bold leading-relaxed max-w-2xl">
-              قم بتهيئة القوالب النصية لمخاطبة الموكلين ببيانات ناجز العدلية الموثقة، واختبار الإرسال مسبقاً قبل تفعيله عبر الخوادم بشكل تلقائي.
+              إدارة الإشعارات النصية ورسائل الواتساب، إنشاء قوالب جاهزة، ومتابعة سجل المراسلات الصادرة للعملاء بكل سهولة.
             </p>
           </div>
           
@@ -449,18 +516,41 @@ export default function WhatsappTemplates() {
             >
               {theme === 'dark' ? <Sun className="w-4.5 h-4.5"/> : <Moon className="w-4.5 h-4.5"/>}
             </button>
-            <button
-              onClick={() => setIsNewTemplateOpen(true)}
-              className="bg-amber-500 hover:bg-amber-600 text-slate-950 font-black text-xs py-3.5 px-5 rounded-2xl shadow-lg active:scale-95 transition-all"
-            >
-              + إنشاء قالب إشعار واتساب جديد
-            </button>
           </div>
         </div>
       </div>
 
+      {/* Navigation Tabs */}
+      <div className="bg-[#0b1325] border border-slate-800 rounded-2xl p-2 flex items-center gap-2 overflow-x-auto no-scrollbar shadow-lg">
+        {[
+          { id: 'new_notification', label: 'الإشعارات الجديدة', icon: Send },
+          { id: 'drafts', label: 'مسودات الرسائل', icon: Smartphone },
+          { id: 'outbox', label: 'المراسلات الصادرة', icon: Clock },
+          { id: 'templates', label: 'قوالب الرسائل الجاهزة', icon: MessageSquare }
+        ].map(tab => {
+          const Icon = tab.icon;
+          const isActive = activeTab === tab.id;
+          return (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id as any)}
+              className={`flex items-center gap-2 px-5 py-3 rounded-xl text-xs font-black transition-all ${
+                isActive 
+                  ? 'bg-amber-500 text-slate-900 shadow-md transform scale-100 -translate-y-0.5' 
+                  : 'text-slate-400 hover:bg-slate-800/50 hover:text-slate-200'
+              }`}
+            >
+              <Icon className={`w-4 h-4 ${isActive ? 'text-slate-900' : 'text-slate-500'}`} />
+              <span>{tab.label}</span>
+            </button>
+          );
+        })}
+      </div>
+
       {/* Main Body */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+      {activeTab === 'templates' && (
+        <>
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         
         {/* Right side: Templates Navigation & Editor */}
         <div className="lg:col-span-8 space-y-8">
@@ -704,7 +794,7 @@ export default function WhatsappTemplates() {
             </div>
 
             {/* Simulated Keyboard Entry area */}
-            <div className="bg-[#101d25] p-3 flex items-center justify-between gap-1 border-t border-[#12222d] text-xs font-sans font-sans">
+            <div className="bg-[#101d25] p-3 flex items-center justify-between gap-1 border-t border-[#12222d] text-xs font-sans">
               <span className="text-lg">😊</span>
               <div className="bg-[#2a3942] rounded-full flex-1 py-2 px-4.5 text-right text-slate-400 font-sans leading-none text-xs">
                 كتابة إشعار مخصص يدوي...
@@ -716,7 +806,7 @@ export default function WhatsappTemplates() {
 
           {/* Compliance Card */}
           <div className="bg-[#0b1325] border border-amber-500/20 p-5 rounded-2xl space-y-2">
-            <h4 className="text-xs text-amber-400 font-black">🛡️ شهادة الامتثال وموثوقية الهوية (Meta API Certified)</h4>
+            <h4 className="text-xs text-amber-400 font-black">🛡️ شهادة الامتثال وموائمة الهوية (Meta API Certified)</h4>
             <p className="text-[10px] text-slate-400 leading-relaxed font-sans text-right">
               هذه اللوحة مرتبطة بشكل مشفر بالرقم الرسمي المسجل والمصدّق لمكتب المحاماة لدى شركة Meta. جميع القوالب تخضع لمعالجة مسبقة ذكية لتجنب إرسال أي رسائل غير مطابقة لقوانين حماية خصوصية العملاء المعمول بها قانوناً بالمملكة.
             </p>
@@ -727,22 +817,22 @@ export default function WhatsappTemplates() {
       </div>
 
       {/* Dynamic 24-Hour Automated reminders console section */}
-      <div className="bg-[#0b1325] border border-amber-500/20 rounded-[2.5rem] p-8 shadow-2xl space-y-6 text-white text-right relative overflow-hidden">
+      <div className="bg-[#0b1325] border border-amber-500/20 rounded-[2.5rem] p-8 shadow-2xl space-y-6 text-white text-right relative overflow-hidden mt-8">
         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 border-b border-slate-800 pb-5">
           <div className="space-y-1">
-            <span className="text-[10px] bg-amber-500/10 text-amber-400 px-3 py-1 rounded-full border border-amber-500/25 font-bold uppercase tracking-wide">⏰ محرك الجدولة العدلية التلقائي للـ 24 ساعة (Twilio Engine)</span>
-            <h2 className="text-lg font-black text-slate-100 flex items-center gap-2 mt-2">
+            <span className="text-[10px] bg-amber-500/10 text-amber-400 px-3 py-1 rounded-full border border-amber-500/25 font-bold uppercase tracking-wide font-sans">⏰ محرك الجدولة العدلية التلقائي للـ 24 ساعة (Twilio Engine)</span>
+            <h2 className="text-lg font-black text-slate-100 flex items-center gap-2 mt-2 font-sans">
               <span>تذكيرات جلسات المحاكم المرتبطة (بانتظار الإرسال والمطابقة قبل الموعد بـ 24 ساعة)</span>
             </h2>
-            <p className="text-xs text-slate-400 font-bold mt-1">يقوم المحرك الفني للربط الرقمي بمسح الجلسات القضائية القادمة وتنبيه الموكلين عبر الواتساب تلقائياً.</p>
+            <p className="text-xs text-slate-400 font-bold mt-1 font-sans">يقوم المحرك الفني للربط الرقمي بمسح الجلسات القضائية القادمة وتنبيه الموكلين عبر الواتساب تلقائياً.</p>
           </div>
 
           <div className="flex items-center gap-3.5 bg-[#050b16] p-4 rounded-2xl border border-slate-800 w-full lg:w-auto self-stretch lg:self-auto justify-between lg:justify-start">
             <div className="text-right">
-              <span className="text-[9px] text-slate-500 block font-bold uppercase tracking-widest leading-none">حالة الكرون كيمون (Scheduler):</span>
-              <div className="flex items-center gap-1.5 mt-2 font-bold">
+              <span className="text-[9px] text-[#8696a0] block font-bold uppercase tracking-widest leading-none font-sans">حالة الجدولة (Scheduler):</span>
+              <div className="flex items-center gap-1.5 mt-2 font-bold font-sans">
                 <span className={`h-2.5 w-2.5 rounded-full ${automatedRemindersActive ? 'bg-emerald-400 animate-pulse' : 'bg-rose-500'}`} />
-                <span className="text-xs text-slate-300 font-mono">
+                <span className="text-xs text-slate-300">
                   {automatedRemindersActive ? `نشط (القادم بعد ${cronCountdown} ثانية)` : 'متوقف ومقيد'}
                 </span>
               </div>
@@ -753,18 +843,18 @@ export default function WhatsappTemplates() {
               className={`text-xs px-3.5 py-1.5 rounded-xl font-black transition-all ${
                 automatedRemindersActive 
                   ? 'bg-rose-950/40 text-rose-300 border border-rose-500/20 hover:bg-rose-900/40' 
-                  : 'bg-emerald-950/40 text-emerald-300 border border-emerald-500/20 hover:bg-emerald-900/40'
-              } cursor-pointer`}
+                  : 'bg-emerald-950/40 text-emerald-300 border border-emerald-500/20 hover:bg-emerald-905/40'
+              } cursor-pointer font-sans`}
             >
               {automatedRemindersActive ? 'إيقاف مؤقت 🛑' : 'تفعيل المحرك 🛰️'}
             </button>
           </div>
         </div>
 
-        {/* Reminders Grid Card Layout - Bypasses global tables to secure contrast */}
+        {/* Reminders Grid Card Layout */}
         <div className="space-y-4 pt-2">
           {/* Header row for large screens */}
-          <div className="hidden lg:grid lg:grid-cols-12 gap-4 px-6 py-3.5 bg-[#050b16] border border-slate-850 rounded-2xl text-[#c5a880] font-black text-xs">
+          <div className="hidden lg:grid lg:grid-cols-12 gap-4 px-6 py-3.5 bg-[#050b16] border border-slate-850 rounded-2xl text-[#c5a880] font-black text-xs font-sans">
             <div className="col-span-3">اسم العميل والقضية</div>
             <div className="col-span-3">المحكمة وموعد الجلسة المجدول</div>
             <div className="col-span-2">التوقيت المتبقي التقريبي</div>
@@ -781,29 +871,29 @@ export default function WhatsappTemplates() {
               >
                 {/* 1. Client Name & Case Details */}
                 <div className="col-span-3 space-y-1">
-                  <span className="text-[10px] uppercase font-bold text-slate-500 block lg:hidden pb-1">اسم العميل والقضية:</span>
+                  <span className="text-[10px] uppercase font-bold text-slate-500 block lg:hidden pb-1 font-sans">اسم العميل والقضية:</span>
                   <strong className="text-slate-100 text-[14px] font-black block leading-snug">{sh.clientName}</strong>
                   <span className="text-xs text-amber-400 font-bold block">القضية: {sh.caseName} (رقم: {sh.caseNumber})</span>
                 </div>
 
                 {/* 2. Court and Scheduled Hearing Date */}
                 <div className="col-span-3 space-y-1">
-                  <span className="text-[10px] uppercase font-bold text-slate-500 block lg:hidden pb-1">المحكمة وموعد الجلسة المجدول:</span>
+                  <span className="text-[10px] uppercase font-bold text-slate-500 block lg:hidden pb-1 font-sans">المحكمة وموعد الجلسة المجدول:</span>
                   <strong className="text-slate-200 block font-extrabold text-[13px]">{sh.courtName}</strong>
                   <span className="text-xs text-slate-300 block font-medium">الموعد: {sh.hearingDate} <span className="text-[#c5a880] font-bold">الساعة {sh.hearingTime}</span></span>
                 </div>
 
                 {/* 3. Approx Time Remaining */}
                 <div className="col-span-2 flex items-center">
-                  <span className="text-[10px] uppercase font-bold text-slate-500 block lg:hidden ml-2 pb-1">التوقيت المتبقي:</span>
-                  <span className="text-amber-300 bg-amber-950/50 border border-amber-500/30 px-3 py-1.5 rounded-xl text-xs font-black inline-flex items-center gap-1.5 shadow-sm">
+                  <span className="text-[10px] uppercase font-bold text-slate-500 block lg:hidden ml-2 pb-1 font-sans">التوقيت المتبقي:</span>
+                  <span className="text-amber-300 bg-amber-950/50 border border-amber-500/30 px-3 py-1.5 rounded-xl text-xs font-black inline-flex items-center gap-1.5 shadow-sm font-sans">
                     ⏰ متبقي غداً (أقل من ٢٤ ساعة)
                   </span>
                 </div>
 
                 {/* 4. Client phone & Twilio Status */}
                 <div className="col-span-2 space-y-1.5">
-                  <span className="text-[10px] uppercase font-bold text-slate-500 block lg:hidden pb-1">رقم هاتف العميل وحالة الإرسال:</span>
+                  <span className="text-[10px] uppercase font-bold text-slate-500 block lg:hidden pb-1 font-sans">رقم هاتف العميل وحالة الإرسال:</span>
                   <div className="font-mono text-slate-200 text-xs font-bold leading-none tracking-wide">{sh.clientPhone}</div>
                   <div className="flex items-center gap-2">
                     <span className={`h-2.5 w-2.5 rounded-full ${
@@ -811,7 +901,7 @@ export default function WhatsappTemplates() {
                       sh.sentStatus === 'sending' ? 'bg-amber-400 animate-pulse' :
                       sh.sentStatus === 'failed' ? 'bg-rose-500 animate-pulse' : 'bg-slate-500'
                     }`} />
-                    <span className={`text-[11px] font-black ${
+                    <span className={`text-[11px] font-black font-sans ${
                       sh.sentStatus === 'sent' ? 'text-emerald-400' :
                       sh.sentStatus === 'sending' ? 'text-amber-400' :
                       sh.sentStatus === 'failed' ? 'text-rose-400' : 'text-slate-300'
@@ -827,12 +917,12 @@ export default function WhatsappTemplates() {
                     <button
                       onClick={() => handleDispatchHearingReminder(sh.id)}
                       disabled={sh.sentStatus === 'sending'}
-                      className="w-full lg:w-auto bg-amber-500 hover:bg-amber-600 disabled:bg-slate-800 disabled:text-slate-500 text-slate-950 font-black text-xs py-2.5 px-5 rounded-2xl shadow-md transition-all cursor-pointer active:scale-95"
+                      className="w-full lg:w-auto bg-amber-500 hover:bg-amber-600 disabled:bg-slate-800 disabled:text-slate-500 text-slate-950 font-black text-xs py-2.5 px-5 rounded-2xl shadow-md transition-all cursor-pointer active:scale-95 font-sans"
                     >
                       {sh.sentStatus === 'sending' ? 'جاري الإرسال...' : '🚀 إرسال التنبيه الآن'}
                     </button>
                   ) : (
-                    <div className="w-full lg:w-auto inline-flex items-center justify-center gap-1.5 text-emerald-400 bg-emerald-950/40 border border-emerald-500/30 py-2.5 px-4 rounded-xl text-xs font-black shadow-sm">
+                    <div className="w-full lg:w-auto inline-flex items-center justify-center gap-1.5 text-emerald-400 bg-emerald-950/40 border border-emerald-500/30 py-2.5 px-4 rounded-xl text-xs font-black shadow-sm font-sans">
                       <span>✓ تم الاستلام والتوصيل بالواتساب</span>
                     </div>
                   )}
@@ -847,71 +937,482 @@ export default function WhatsappTemplates() {
           <span>🛡️ متطابق مع لوائح الهيئة السعودية للاتصالات وتقنية المعلومات لرسائل تنبيه الموعد</span>
           <span>الحساب المصدق: <span className="font-mono text-amber-400/90">TW-ACCOUNT-SID: ACc2d*** (نشط ومطابق لقواعد البث)</span></span>
         </div>
-      </div >
+      </div>
+      </>
+      )}
+
+      {/* Manual Notification Dispatch Section */}
+      {activeTab === 'new_notification' && (
+      <div className="bg-[#0b1325] border border-amber-500/20 rounded-[2.5rem] p-8 shadow-2xl space-y-6 text-right relative overflow-hidden mt-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 border-b border-slate-800 pb-5">
+           <div className="space-y-1">
+             <span className="text-[10px] bg-sky-500/10 text-sky-400 px-3 py-1 rounded-full border border-sky-500/25 font-bold uppercase tracking-wide font-sans">📤 إرسال إشعار فوري وتذكير</span>
+             <h2 className="text-lg font-black text-slate-100 flex items-center gap-2 mt-2 font-sans">
+               <span>إرسال إشعار مخصص للعملاء (مراسلة سريعة)</span>
+             </h2>
+             <p className="text-xs text-slate-400 font-bold mt-1 font-sans">قم بتحديد العميل والقضية واختر قالباً جاهزاً أو اكتب رسالتك ليتم إرسالها فوراً.</p>
+           </div>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="space-y-2">
+            <label className="text-[11px] text-slate-300 font-bold">العميل المستفيد:</label>
+            <select id="clientSelect" className="w-full bg-[#050b16] border border-slate-800 text-slate-100 font-sans text-xs rounded-xl py-3 px-4 focus:outline-none focus:border-amber-500">
+              <option value="">-- اختر العميل --</option>
+              <option value="شركة نادك للتنمية الزراعية">شركة نادك للتنمية الزراعية</option>
+              <option value="إسماعيل بن فيصل الحربي">إسماعيل بن فيصل الحربي</option>
+              <option value="عاصم بن طلال العقاد">عاصم بن طلال العقاد</option>
+            </select>
+          </div>
+          <div className="space-y-2">
+            <label className="text-[11px] text-slate-300 font-bold">القضية / الملف:</label>
+            <select id="caseSelect" className="w-full bg-[#050b16] border border-slate-800 text-slate-100 font-sans text-xs rounded-xl py-3 px-4 focus:outline-none focus:border-amber-500">
+              <option value="">-- اختر القضية --</option>
+              <option value="437194619">437194619 - نزاع عقد توريد</option>
+              <option value="419284711">419284711 - استخلاص مبالغ مقاولة</option>
+              <option value="420391823">420391823 - نزاع حول ملكية عقارية</option>
+            </select>
+          </div>
+          <div className="col-span-1 md:col-span-2 space-y-2">
+            <label className="text-[11px] text-slate-300 font-bold">اختر من القوالب الجاهزة (اختياري):</label>
+            <select 
+               className="w-full bg-[#050b16] border border-slate-800 text-amber-100 font-sans text-xs rounded-xl py-3 px-4 focus:outline-none focus:border-amber-500"
+               onChange={(e) => {
+                 const t = templates.find(t => t.id === e.target.value);
+                 if(t) {
+                   const clientEl = document.getElementById('clientSelect') as HTMLSelectElement;
+                   const caseEl = document.getElementById('caseSelect') as HTMLSelectElement;
+                   const clientName = clientEl?.value || '{اسم_الالعدالة}';
+                   const caseNumber = caseEl?.value || '{رقم_القضية}';
+                   // Auto-fill template with selected dropdown values if present
+                   const filledText = t.messageText
+                      .replace(/{اسم_الالعدالة}/g, clientName)
+                      .replace(/{رقم_القضية}/g, caseNumber);
+                   setEditorText(filledText);
+                 }
+               }}
+            >
+              <option value="">-- قوالب جاهزة --</option>
+              {templates.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
+            </select>
+          </div>
+        </div>
+        <div className="space-y-2">
+           <label className="text-[11px] text-slate-300 font-bold">نص الإشعار:</label>
+           <textarea
+              rows={4}
+              value={editorText}
+              onChange={(e) => setEditorText(e.target.value)}
+              className="w-full bg-[#050b16] border border-slate-800 rounded-xl p-4 text-xs text-slate-100 leading-relaxed text-right font-sans focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500/20 transition-all"
+              placeholder="اكتب رسالة الإشعار هنا..."
+           />
+        </div>
+        <div className="flex items-center gap-4 pt-2">
+           <label className="flex items-center gap-2 cursor-pointer group">
+              <input 
+                type="checkbox" 
+                checked={requestSignature}
+                onChange={(e) => setRequestSignature(e.target.checked)}
+                className="w-4 h-4 accent-amber-500 rounded border-slate-700 bg-slate-900"
+              />
+              <span className="text-xs font-bold text-slate-300 group-hover:text-amber-500 transition-colors">طلب توقيع العميل (رابط تفعيل رقمي آمن)</span>
+           </label>
+        </div>
+        
+        <div className="flex justify-end gap-3 pt-2">
+           <button
+              type="button"
+              onClick={() => alert('تم حفظ المسودة بنجاح!')}
+              className="bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs py-3 px-6 rounded-xl transition-all"
+           >
+              حفظ كمسودة
+           </button>
+           <button
+              type="button"
+              className="bg-amber-500 hover:bg-amber-600 text-slate-950 font-black text-xs py-3 px-8 rounded-xl transition-all active:scale-95 shadow-[0_4px_15px_rgba(245,158,11,0.25)] cursor-pointer flex items-center gap-2"
+           >
+              <Send className="w-4 h-4" />
+              <span>إرسال الإشعار الآن</span>
+           </button>
+        </div>
+      </div>
+      )}
+
+      {/* Outbox & Inbox Tab Content */}
+      {activeTab === 'outbox' && (
+        <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+          
+          {/* Sent Messages Data Table section */}
+          <div className="bg-[#0b1325] border border-slate-800 rounded-[2.5rem] p-8 shadow-2xl space-y-6 text-right relative overflow-hidden mt-8">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-slate-800 pb-5">
+              <div className="space-y-1">
+                <h2 className="text-lg font-black text-slate-100 flex items-center gap-2">
+                  <Send className="w-5 h-5 text-amber-500" />
+                  <span>المراسلات الصادرة (Sent)</span>
+                </h2>
+                <p className="text-xs text-slate-400 font-bold mt-1.5 font-sans">جدول عرض بيانات الإشعارات السابقة المرسلة للعملاء.</p>
+              </div>
+              <div className="flex items-center gap-3">
+                <input 
+                  type="text" 
+                  value={sentSearchTerm}
+                  onChange={(e) => setSentSearchTerm(e.target.value)}
+                  placeholder="بحث في المراسلات..." 
+                  className="bg-[#050b16] border border-slate-700 text-slate-200 text-xs px-4 py-2 rounded-xl focus:border-amber-500 outline-none w-64"
+                />
+                <button className="bg-slate-800 text-slate-200 px-4 py-2 rounded-xl text-xs font-bold hover:bg-slate-700">تصفية</button>
+              </div>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="w-full text-right font-sans border-separate border-spacing-y-2">
+                <thead>
+                  <tr className="text-[10px] text-slate-400 font-black uppercase tracking-wider">
+                    <th className="pb-3 px-4 w-1/4">العميل</th>
+                    <th className="pb-3 px-4 w-1/5">القضية</th>
+                    <th className="pb-3 px-4 w-1/3">نص الرسالة المختصر</th>
+                    <th className="pb-3 px-4">تاريخ الإرسال</th>
+                    <th className="pb-3 px-4 text-center">الحالة</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredSentMessages.map(row => (
+                    <tr key={row.id} className={`bg-[#111c30]/50 hover:bg-[#111c30] transition-colors border-l-2 border-transparent hover:border-amber-500 group ${row.status === 'urgent' ? 'shadow-[0_0_15px_rgba(245,158,11,0.15)] ring-1 ring-amber-500/10' : ''}`}>
+                      <td className="p-4 rounded-r-xl border-y border-r border-slate-800/50">
+                        <div className="flex items-center gap-2">
+                          <span className={`w-2 h-2 rounded-full ${row.read ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]' : 'bg-slate-500 opacity-40'}`} title={row.read ? 'تمت القراءة' : 'لم يقرأ بعد'} />
+                          <strong className="text-xs text-slate-200">{row.client}</strong>
+                        </div>
+                      </td>
+                      <td className="p-4 border-y border-slate-800/50 text-xs text-slate-300 font-bold">{row.caseName}</td>
+                      <td className="p-4 border-y border-slate-800/50 text-[11px] text-slate-400 truncate max-w-[200px]">{row.msg}</td>
+                      <td className="p-4 border-y border-slate-800/50 text-xs text-slate-400 font-mono" dir="ltr">{row.date}</td>
+                      <td className="p-4 rounded-l-xl border-y border-l border-slate-800/50 text-center">
+                        <span className={`inline-flex items-center justify-center px-2.5 py-1 rounded-full text-[9px] font-black w-20 ${
+                          row.status === 'success' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-rose-500/10 text-rose-400 border border-rose-500/20'
+                        }`}>
+                          {row.status === 'success' ? 'مستلمة' : 'فشلت'}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
 
       {/* Inbox section requested by user */}
       <div className="bg-[#0b1325] border border-amber-500/10 rounded-[2.5rem] p-8 shadow-2xl space-y-6 text-right relative overflow-hidden mt-8">
         <div className="border-b border-slate-800 pb-5">
           <h2 className="text-lg font-black text-slate-100 flex items-center gap-2">
-            <span>صندوق الوارد (مراسلات العملاء)</span>
+            <span>بيانات الإشعارات السابقة (صندوق الوارد)</span>
           </h2>
-          <p className="text-xs text-slate-400 font-bold mt-1.5">استعراض وتتبع استفسارات ومراسلات العملاء الواردة لمركز العناية بالموكلين.</p>
+          <p className="text-xs text-slate-400 font-bold mt-1.5 font-sans">سجل تاريخي بمراسلات واسفسارات العملاء الواردة وتتبع حالتها.</p>
         </div>
 
+        <style>{`
+          .notifications-email-card {
+            border-radius: 16px !important;
+            overflow: hidden !important;
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            display: grid;
+            padding: 1.5rem;
+            grid-template-areas: 
+              "badge badge"
+              "sender sender"
+              "title category"
+              "content content"
+              "actions actions";
+            grid-template-columns: 1fr auto;
+            gap: 1rem; /* gap-4 (16px) */
+            align-items: start;
+            -webkit-font-smoothing: antialiased !important;
+            -moz-osx-font-smoothing: grayscale !important;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            cursor: pointer;
+            direction: rtl;
+            position: relative;
+          }
+          
+          .notifications-email-card:hover {
+            border-color: #f59e0b;
+            box-shadow: 0 10px 25px -5px rgba(245, 158, 11, 0.15);
+            transform: translateY(-2px);
+          }
+
+          .area-badge {
+            grid-area: badge;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #f1f5f9;
+            padding-bottom: 0.5rem;
+            margin-bottom: 0.25rem;
+          }
+          .area-sender {
+            grid-area: sender;
+            color: #0f172a !important; /* Slate-900 */
+            font-weight: 700 !important; /* font-bold */
+            font-size: 1.05rem; /* Slightly larger */
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+          }
+          .area-title {
+            grid-area: title;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+          }
+          .area-category {
+            grid-area: category;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            justify-content: flex-end;
+          }
+          .area-content {
+            grid-area: content;
+            color: #334155 !important; /* Slate-700 */
+            font-size: 0.875rem;
+            line-height: 1.5rem;
+          }
+          .area-actions {
+            grid-area: actions;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 0.75rem;
+            margin-top: 0.5rem;
+            padding: 0.75rem 1rem;
+            background-color: #f8fafc !important; /* Custom Contrast Toolbar */
+            border-top: 1px solid #e2e8f0;
+            border-radius: 8px;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.3s ease;
+          }
+          .notifications-email-card:hover .area-actions,
+          .notifications-email-card:focus-within .area-actions {
+            opacity: 1;
+            pointer-events: auto;
+          }
+
+          .category-tag {
+            font-size: 10px;
+            font-weight: 800;
+            padding: 3px 10px;
+            border-radius: 6px;
+            text-transform: uppercase;
+            width: fit-content;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+          }
+          
+          .tag-legal {
+            background-color: #64748b !important; /* Slate-500 */
+            color: #ffffff !important;
+          }
+          .tag-financial {
+            background-color: #3b82f6 !important; /* Blue-500 */
+            color: #ffffff !important;
+          }
+          .tag-administrative {
+            background-color: #10b981 !important; /* Emerald-500 */
+            color: #ffffff !important;
+          }
+          
+          .custom-badge-emerald { background-color: rgba(16, 185, 129, 0.1); color: #059669; border: 1px solid rgba(16, 185, 129, 0.2); }
+          .custom-badge-amber { background-color: rgba(245, 158, 11, 0.1); color: #d97706; border: 1px solid rgba(245, 158, 11, 0.2); }
+          .custom-badge-rose { background-color: rgba(243, 68, 68, 0.1); color: #dc2626; border: 1px solid rgba(243, 68, 68, 0.2); }
+          .custom-badge-slate { background-color: rgba(148, 163, 184, 0.1); color: #475569; border: 1px solid rgba(148, 163, 184, 0.2); }
+        `}</style>
+
         <div className="grid grid-cols-1 gap-5">
-          {inboxMessages.map(msg => {
-            let badgeColors = '';
-            let badgeIcon = '';
-            if (msg.status === 'تم القراءة' || msg.status === 'مقروء') {
-              badgeColors = 'bg-emerald-50 text-emerald-700 border-emerald-200';
-              badgeIcon = '✓✓';
-            } else if (msg.status === 'بانتظار الرد' || msg.status === 'معلق') {
-              badgeColors = 'bg-amber-50 text-amber-700 border-amber-200';
-              badgeIcon = '⏰';
-            } else if (msg.status === 'عاجل') {
-              badgeColors = 'bg-rose-50 text-rose-700 border-rose-200 animate-pulse shadow-sm';
-              badgeIcon = '⚠️';
+          {filteredInboxMessages.map(msg => {
+            let badgeClass = 'custom-badge-slate';
+            if (msg.status === 'تم القراءة' || msg.status === 'مقروء') badgeClass = 'custom-badge-emerald';
+            else if (msg.status === 'بانتظار الرد' || msg.status === 'معلق') badgeClass = 'custom-badge-amber';
+            else if (msg.status === 'عاجل') badgeClass = 'custom-badge-rose';
+
+            const isExpanded = expandedMsgIds.includes(msg.id);
+
+            // Determine tag styling based on Arabic or English category
+            let categoryLabelAr = 'قانوني';
+            let categoryLabelEn = 'Legal';
+            let tagBgClass = 'bg-slate-500 text-white';
+
+            const normType = (msg.type || '').trim();
+            if (normType === 'إداري' || normType === 'Administrative') {
+              categoryLabelAr = 'إداري';
+              categoryLabelEn = 'Administrative';
+              tagBgClass = 'bg-emerald-500 text-white';
+            } else if (normType === 'مالي' || normType === 'Financial') {
+              categoryLabelAr = 'مالي';
+              categoryLabelEn = 'Financial';
+              tagBgClass = 'bg-blue-500 text-white';
             }
 
             return (
               <div 
                 key={msg.id} 
-                className="notifications-email-card bg-slate-50 text-slate-900 p-6 rounded-3xl border border-slate-200 hover:border-slate-300 hover:bg-slate-100/60 shadow-sm hover:shadow-md transition-all duration-300 cursor-pointer relative group"
+                id={`notification-card-${msg.id}`}
+                className="notifications-email-card group relative overflow-hidden"
+                tabIndex={0}
+                onClick={(e) => toggleMsgExpand(msg.id, e)}
               >
-                {/* Dynamic Badge in the top-left (for RTL top-left is left-5/top-5) */}
-                <div className="absolute top-5 left-5 z-10">
-                  <span className={`flex items-center gap-1.5 text-[10px] font-extrabold px-3 py-1.5 rounded-full border ${badgeColors}`}>
-                    <span>{badgeIcon}</span>
-                    <span>{msg.status}</span>
-                  </span>
-                </div>
+                {/* Visual Accent - Vertical Bar */}
+                <div className="absolute top-0 right-0 w-1.5 h-full bg-slate-200 group-hover:bg-amber-500 transition-colors" />
                 
-                {/* Full CSS Grid restructuring for Sender, Subject, Message content */}
-                <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start text-right">
-                  
-                  {/* Grid column 1: Sender (Arabic: المرسل) */}
-                  <div className="md:col-span-3 col-span-1 space-y-1.5 pl-4 md:border-l border-slate-200 pb-3 md:pb-0 pt-1">
-                    <span className="text-[10px] text-slate-500 font-extrabold block uppercase tracking-widest leading-none">المرسل</span>
-                    <strong className="text-sm font-black text-slate-900 block mt-2">{msg.sender}</strong>
-                    <span className="text-[10px] text-slate-500 font-bold font-mono block mt-1">{msg.date}</span>
+                {/* Area: Badge */}
+                <div className="area-badge">
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">فئة الإشعار</span>
+                    <span className={`inline-flex items-center gap-1 text-[10px] font-black px-2 py-0.5 rounded-full ${badgeClass}`}>
+                      <span>{msg.status}</span>
+                    </span>
                   </div>
-                  
-                  {/* Grid column 2: Subject (Arabic: العنوان) */}
-                  <div className="md:col-span-4 col-span-1 space-y-1.5 pl-4 md:border-l border-slate-200 pb-3 md:pb-0 pt-1">
-                    <span className="text-[10px] text-slate-500 font-extrabold block uppercase tracking-widest leading-none">العنوان</span>
-                    <h3 className="text-[13px] font-black text-slate-800 line-clamp-2 leading-snug mt-2">{msg.subject}</h3>
+                  <div className="flex items-center gap-1 text-xs text-slate-500">
+                    <Clock className="w-3.5 h-3.5 opacity-60" />
+                    <span>{msg.date}</span>
                   </div>
+                </div>
 
-                  {/* Grid column 3: Message Content (Arabic: محتوى الرسالة) */}
-                  <div className="md:col-span-5 col-span-1 space-y-1.5 pt-1 md:pr-4">
-                     <span className="text-[10px] text-slate-500 font-extrabold block uppercase tracking-widest leading-none">محتوى الرسالة</span>
-                     <p className="text-xs text-slate-600 font-bold leading-relaxed line-clamp-2 mt-2 group-hover:text-slate-800 transition-colors">{msg.message}</p>
+                {/* Area: Sender */}
+                <div className="area-sender flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-slate-100 border border-slate-200 text-slate-800 flex items-center justify-center font-black text-sm shrink-0 font-mono">
+                    {msg.sender.charAt(0)}
                   </div>
+                  <div className="flex flex-col gap-0.5 min-w-0">
+                    <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest leading-none">المرسل</span>
+                    <strong className="text-[15px] font-bold text-slate-900">{msg.sender}</strong>
+                  </div>
+                </div>
 
+                {/* Area: Title */}
+                <div className="area-title mt-1.5 flex flex-col gap-2">
+                  <div>
+                    <span className="text-[10px] font-bold uppercase tracking-widest leading-none opacity-60 text-slate-400">الموضوع</span>
+                    <h3 className="text-sm font-bold text-slate-800 leading-snug mt-1">{msg.subject}</h3>
+                  </div>
+                  <div className="flex items-center">
+                    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 text-[10px] font-bold rounded shadow-sm ${tagBgClass}`}>
+                      <span>{categoryLabelAr}</span>
+                    </span>
+                  </div>
+                </div>
+
+                {/* Area: Category (Tags) */}
+                <div className="area-category mt-1.5 flex items-center justify-end gap-3">
+                  {/* Visual Hover Arrow Indicator */}
+                  <div className="opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-x-2 group-hover:translate-x-0 ml-1">
+                    <ChevronDown className={`w-5 h-5 text-amber-500 transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`} />
+                  </div>
+                </div>
+
+                {/* Area: Content (Smooth Transition with max-h logic) */}
+                <div className={`area-content overflow-hidden transition-all duration-300 ${isExpanded ? 'max-h-[1000px] opacity-100 mt-2' : 'max-h-[60px] opacity-90'}`}>
+                  <span className="text-[10px] font-bold uppercase tracking-widest leading-none opacity-40 block mb-1">المحتوى التفصيلي</span>
+                  <p className="text-xs leading-relaxed text-slate-700">
+                    {msg.message}
+                  </p>
+                </div>
+
+                {/* Area: Actions (Hidden toolbar custom container) */}
+                <div className={`area-actions ${isExpanded ? 'opacity-100 pointer-events-auto' : ''}`}>
+                  <button 
+                    onClick={(e) => executeMsgAction(msg.id, 'unread', e)}
+                    className="px-4 py-2 rounded-xl text-[10px] font-bold text-slate-600 bg-slate-50 border border-slate-200 hover:bg-slate-100 transition-colors flex items-center gap-1.5 shadow-sm active:scale-95"
+                  >
+                    <MailOpen className="w-3.5 h-3.5" />
+                    <span>علامة غير مقروء</span>
+                  </button>
+                  <button 
+                    onClick={(e) => executeMsgAction(msg.id, 'archive', e)}
+                    className="px-4 py-2 rounded-xl text-[10px] font-bold text-amber-600 bg-amber-50 border border-amber-200 hover:bg-amber-100 transition-colors flex items-center gap-1.5 shadow-sm active:scale-95"
+                  >
+                    <Archive className="w-3.5 h-3.5" />
+                    <span>أرشفة</span>
+                  </button>
                 </div>
               </div>
             );
           })}
+        </div>
+      </div>
+      </div>
+      )}
+
+      {/* Drafts Tab Content */}
+      {activeTab === 'drafts' && (
+        <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+           <div className="bg-[#0b1325] border border-slate-800 rounded-[2.5rem] p-8 shadow-2xl space-y-6 text-right">
+              <div className="border-b border-slate-800 pb-5">
+                <h2 className="text-lg font-black text-slate-100 flex items-center gap-2">
+                  <Smartphone className="w-5 h-5 text-amber-500" />
+                  <span>مسودات الرسائل (Drafts)</span>
+                </h2>
+                <p className="text-xs text-slate-400 font-bold mt-1.5 ">قائمة بالرسائل التي تم حفظها ولم يتم إرسالها بعد.</p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                 {drafts.map(draft => (
+                    <div key={draft.id} className="bg-[#050b16] border border-slate-800 rounded-2xl p-5 flex flex-col gap-3 group hover:border-amber-500/50 transition-all">
+                       <div className="flex justify-between items-center">
+                          <span className="text-[10px] text-amber-500 font-black uppercase">مسودة</span>
+                          <span className="text-[10px] text-slate-400 font-mono">{draft.date}</span>
+                       </div>
+                       <div className="space-y-1">
+                          <h4 className="text-sm font-black text-slate-100">{draft.recipient}</h4>
+                          <p className="text-xs text-amber-400 border-b border-slate-800 pb-2">{draft.subject}</p>
+                          <p className="text-[11px] text-slate-400 line-clamp-2 leading-relaxed pt-1">{draft.content}</p>
+                       </div>
+                       <div className="flex gap-2 pt-3">
+                          <button className="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-200 text-[10px] font-bold py-2 rounded-lg transition-colors">تعديل المسودة</button>
+                          <button className="bg-amber-500 hover:bg-amber-400 text-slate-900 text-[10px] font-black px-4 py-2 rounded-lg transition-colors">إرسال الآن</button>
+                       </div>
+                    </div>
+                 ))}
+              </div>
+           </div>
+        </div>
+      )}
+      
+      {/* Upcoming Reminders Section */}
+      <div className="bg-[#0b1325] border border-slate-800 rounded-[2.5rem] p-8 shadow-2xl space-y-6 text-right relative overflow-hidden mt-8">
+        <div className="border-b border-slate-800 pb-5">
+           <h2 className="text-lg font-black text-slate-100 flex items-center gap-2">
+             <span>تنبيه بالإشعارات القادمة (مجدولة)</span>
+           </h2>
+           <p className="text-xs text-slate-400 font-bold mt-1.5 font-sans">تتبع الإشعارات والتنبيهات المجدولة بانتظار الإرسال الألي.</p>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+           {upcomingReminders.map(rem => (
+              <div key={rem.id} className="bg-[#050b16] border border-slate-800 rounded-2xl p-5 flex flex-col gap-3 group hover:border-amber-500/50 transition-colors">
+                  <div className="flex justify-between items-start">
+                     <span className="text-[10px] bg-slate-800 text-slate-300 font-bold px-2 py-1 rounded-md">{rem.type}</span>
+                     <span className={`text-[10px] font-black px-2 py-1 rounded-md ${rem.status === 'آلي' ? 'bg-indigo-950/40 text-indigo-400 border border-indigo-500/20' : 'bg-emerald-950/40 text-emerald-400 border border-emerald-500/20'}`}>
+                        {rem.status}
+                     </span>
+                  </div>
+                  <div className="space-y-1">
+                     <h4 className="text-sm font-black text-slate-100">{rem.client}</h4>
+                     <p className="text-xs text-slate-400 font-sans">{rem.caseNumber}</p>
+                  </div>
+                  <div className="mt-auto pt-3 border-t border-slate-800 flex justify-between items-center">
+                     <div className="flex flex-col gap-0.5">
+                       <span className="text-[9px] text-slate-500 uppercase tracking-widest font-black">القالب المستخدم</span>
+                       <span className="text-[11px] text-amber-500 font-bold">{rem.templateName}</span>
+                     </div>
+                     <div className="flex items-center gap-1.5 bg-slate-900 px-2.5 py-1.5 rounded-lg border border-slate-800">
+                        <Clock className="w-3.5 h-3.5 text-slate-500" />
+                        <span className="text-[11px] text-slate-300 font-black" dir="ltr">{rem.scheduledDate}</span>
+                     </div>
+                  </div>
+              </div>
+           ))}
         </div>
       </div>
 

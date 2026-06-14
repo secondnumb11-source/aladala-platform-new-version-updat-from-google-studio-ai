@@ -44,11 +44,15 @@ import {
   ChevronDown,
   ChevronUp,
   FileSpreadsheet,
-  Search
+  Edit3,
+  Search,
+  Calculator
 } from 'lucide-react';
 
 import ThemeToggle from './ThemeToggle';
 import { Case } from '@/types';
+import { auth, db } from '@/lib/firebase';
+import { doc, setDoc } from 'firebase/firestore';
 
 interface SidebarProps {
   currentTab: string;
@@ -118,6 +122,69 @@ export default function Sidebar({
   const [isGeneratingPlan, setIsGeneratingPlan] = React.useState(false);
   const [isExporting, setIsExporting] = React.useState(false);
 
+  const [isHijri, setIsHijri] = React.useState(() => {
+    const saved = localStorage.getItem('adalah-clock-hijri');
+    return saved ? JSON.parse(saved) : true;
+  });
+
+  const toggleCalendar = () => {
+    const nextHijri = !isHijri;
+    setIsHijri(nextHijri);
+    localStorage.setItem('adalah-clock-hijri', JSON.stringify(nextHijri));
+  };
+
+  const [showClockSettings, setShowClockSettings] = React.useState(false);
+  const [time, setTime] = React.useState(new Date());
+
+  React.useEffect(() => {
+    const timer = setInterval(() => setTime(new Date()), 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const [userName, setUserName] = React.useState(() => {
+    try {
+      return localStorage.getItem('adalah-dashboard-username') || 'المستخدم';
+    } catch {
+      return 'المستخدم';
+    }
+  });
+  const [isEditingUserName, setIsEditingUserName] = React.useState(false);
+
+  React.useEffect(() => {
+    const handleUsernameChange = () => {
+      try {
+        setUserName(localStorage.getItem('adalah-dashboard-username') || 'المستخدم');
+      } catch {}
+    };
+    window.addEventListener('adalah-username-changed', handleUsernameChange);
+    return () => window.removeEventListener('adalah-username-changed', handleUsernameChange);
+  }, []);
+
+  React.useEffect(() => {
+    if (currentUser?.name) {
+      setUserName(currentUser.name);
+      localStorage.setItem('adalah-dashboard-username', currentUser.name);
+    }
+  }, [currentUser]);
+
+  const handleSaveUserName = async (val: string) => {
+    setUserName(val);
+    localStorage.setItem('adalah-dashboard-username', val);
+    window.dispatchEvent(new Event('adalah-username-changed'));
+
+    try {
+      const uid = auth?.currentUser?.uid;
+      if (uid) {
+        await setDoc(doc(db, 'users', uid), { name: val }, { merge: true });
+        if (onUpdateState) {
+          onUpdateState('users', { id: uid, name: val });
+        }
+      }
+    } catch (err) {
+      console.warn("Failed to save name to Firestore", err);
+    }
+  };
+
   const handleGeneratePlan = () => {
     setIsGeneratingPlan(true);
     setTimeout(() => {
@@ -179,6 +246,7 @@ export default function Sidebar({
     { id: 'ai-analysis', name: 'المحلل الذكي', icon: Brain, isPremium: true },
     { id: 'ai-contract_audit', name: 'صياغة العقود', icon: Gavel, isPremium: true },
     { id: 'ai-finance-vat', name: 'إصدار الفواتير', icon: Wallet, isPremium: true },
+    { id: 'ai-judicial-calc', name: 'الحاسبة القضائية', icon: Calculator, isPremium: true },
     { id: 'ai-deadlines', name: 'حاسبة المهل والمدد النظاميه', icon: Clock, isPremium: true },
     { id: 'ai-swot', name: 'تحليل المخاطر SWOT', icon: Brain, isPremium: true },
     { id: 'ai-finance', name: 'المحاسب القانوني AI', icon: Wallet, isPremium: true },
@@ -224,6 +292,18 @@ export default function Sidebar({
           onMouseDown={startResizing}
           className={`absolute left-0 top-0 bottom-0 w-2 cursor-col-resize z-50 transition-colors ${isResizing ? 'bg-amber-500/50' : ''}`}
         />
+
+        {/* Elegant Vertical Designer Ruler */}
+        <div className="absolute left-0 top-0 bottom-0 w-[4px] z-50 pointer-events-none overflow-hidden flex flex-col justify-between items-center py-10">
+          <div className="w-full h-full bg-gradient-to-b from-slate-900 via-amber-600 to-amber-200 opacity-80" 
+               style={{ background: 'linear-gradient(to bottom, #020617 0%, #0c1424 30%, #9a7d2c 70%, #d4af37 100%)' }} />
+          {/* Tic marks for 'ruler' feel */}
+          <div className="absolute inset-0 flex flex-col justify-around py-4 opacity-30">
+            {[...Array(60)].map((_, i) => (
+              <div key={i} className={`w-full border-b border-white ${i % 5 === 0 ? 'h-[2px] opacity-60' : 'h-[1px] opacity-30'}`} />
+            ))}
+          </div>
+        </div>
         <div className="flex-1 flex flex-col overflow-hidden w-full">
           {/* Logo & Platform Name */}
           <div className="p-8 border-b border-slate-800 relative overflow-hidden">
@@ -250,58 +330,130 @@ export default function Sidebar({
           </div>
 
           <div className="p-5 flex-1 overflow-y-auto space-y-8 sidebar-scrollbar relative w-full overflow-x-hidden">
-            {/* Role selector with elite styling or Employee status badge */}
-            {currentUser?.role === 'client' ? (
-              <div className="bg-slate-900 border border-slate-800 p-4 rounded-2xl shadow-inner space-y-2">
-                <div className="flex items-center gap-2 text-[10px] text-amber-450 font-black mb-1.5 uppercase tracking-widest animate-pulse">
-                  <div className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-ping"></div>
-                  <span>بطاقة العميل الإلكترونية المعتمدة 👤</span>
+            {/* ⏰ CUSTOMIZABLE COMPACT SIDEBAR CLOCK WITH WELCOME GREETING */}
+            <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-3.5 shadow-lg relative overflow-visible group/clock-card">
+              <div className="absolute inset-0 bg-gradient-to-tr from-amber-500/5 to-transparent pointer-events-none rounded-2xl"></div>
+              
+              <div className="flex items-center justify-between gap-3 relative z-10 w-full">
+                <div className="flex flex-col text-right select-none md:max-w-[125px]">
+                  {isEditingUserName ? (
+                    <input 
+                      autoFocus
+                      className="text-xs font-black text-amber-400 bg-slate-950 border border-slate-700/80 rounded px-1.5 py-0.5 focus:outline-none focus:border-amber-500 transition-all w-[90px] text-right"
+                      value={userName}
+                      onChange={(e) => setUserName(e.target.value)}
+                      onBlur={() => {
+                        setIsEditingUserName(false);
+                        handleSaveUserName(userName);
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          setIsEditingUserName(false);
+                          handleSaveUserName(userName);
+                        }
+                      }}
+                    />
+                  ) : (
+                    <div 
+                      className="cursor-pointer group flex flex-col items-start text-right hover:text-amber-100 transition-colors"
+                      onClick={() => setIsEditingUserName(true)}
+                      title="اضغط لتعديل اسمك"
+                    >
+                      <span className="text-[12px] font-black text-white leading-tight">
+                        مرحباً بك،
+                      </span>
+                      <div className="flex items-center gap-1 select-none">
+                        <span className="text-[11px] font-black text-amber-400 truncate max-w-[85px]" title={userName}>
+                          {userName} 👋
+                        </span>
+                        <Edit3 className="w-2.5 h-2.5 opacity-0 group-hover:opacity-100 text-amber-500 transition-opacity shrink-0" />
+                      </div>
+                    </div>
+                  )}
+                  {/* Date and Toggle */}
+                  <div className="flex items-center gap-1.5 mt-1">
+                    <span className="text-[10px] text-slate-300 font-bold">
+                      {isHijri 
+                        ? time.toLocaleDateString('ar-SA-u-ca-islamic', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })
+                        : time.toLocaleDateString('ar-EG', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })
+                      }
+                    </span>
+                    <button 
+                      onClick={toggleCalendar}
+                      className="text-[8px] bg-slate-800 hover:bg-slate-700 text-amber-500 px-1.5 py-0.5 rounded border border-slate-700 transition-colors"
+                      title="تبديل التاريخ (هجري/ميلادي)"
+                    >
+                      {isHijri ? 'ميلادي' : 'هجري'}
+                    </button>
+                  </div>
                 </div>
-                <div className="space-y-1">
-                  <div className="text-xs font-black text-white">{currentUser.name}</div>
-                  <div className="text-[10px] text-slate-400 font-bold leading-tight">بوابة المتابعة ومصادقة التعاملات</div>
-                  <div className="text-[9px] text-[#aa8c2c] font-black inline-block mt-1 uppercase font-sans">رقم نفاذ موحد: Verified Client</div>
-                </div>
-              </div>
-            ) : currentUser?.role === 'employee' ? (
-              <div className="bg-slate-900 border border-slate-800 p-4 rounded-2xl shadow-inner space-y-2">
-                <div className="flex items-center gap-2 text-[10px] text-amber-450 font-black mb-1.5 uppercase tracking-widest animate-pulse">
-                  <Crown className="w-3.5 h-3.5 text-amber-400" />
-                  <span>بطاقة المستشار الرقميّة</span>
-                </div>
-                <div className="space-y-1">
-                  <div className="text-xs font-black text-white">{currentUser.name}</div>
-                  <div className="text-[10px] text-amber-450 font-mono font-bold bg-[#aa8c2c]/10 px-2 py-0.5 rounded-md inline-block">كود المالك: {currentUser.employeeCode || 'EMP-11'}</div>
-                  <div className="text-[10px] text-slate-300 font-bold leading-tight mt-1">{currentUser.jobTitle || 'مستشار قانوني'}</div>
-                </div>
-              </div>
-            ) : (
-              <div className="bg-slate-900 border border-slate-800 p-3 rounded-2xl shadow-inner relative overflow-hidden group">
-                <div className="absolute inset-0 bg-gradient-to-tr from-[#D4AF37]/5 to-[#FACC15]/5 opacity-0 transition-opacity"></div>
-                <div className="flex items-center gap-2 text-[11px] pb-2 uppercase tracking-widest justify-center mb-1 drop-shadow-[0_0_10px_rgba(212,175,55,0.7)] font-black text-transparent bg-clip-text bg-gradient-to-r from-[#D4AF37] via-[#FACC15] to-[#fef08a] relative z-10">
-                  <Crown className="w-4 h-4 text-[#FACC15] drop-shadow-[0_0_5px_rgba(212,175,55,0.9)]" />
-                  <span>مدير المنصة / المستخدمين الآخرين</span>
-                </div>
-                <div className="relative z-10">
-                  <select
-                    value={selectedRole}
-                    onChange={(e) => {
-                      onRoleChange(e.target.value);
-                      setMobileOpen(false);
-                    }}
-                    className="w-full bg-slate-900 text-[#D4AF37] text-xs py-2.5 px-3 rounded-xl border border-[#D4AF37]/30 focus:outline-none focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37]/30 font-bold transition-all cursor-pointer appearance-none shadow-sm"
-                     id="role-select"
+
+                {/* Clock Box */}
+                <div className="flex items-center gap-2 shrink-0">
+                  <div 
+                    className="rounded-xl bg-slate-950/80 border border-slate-800 shadow-md flex items-center justify-center select-none transition-all duration-350 px-3 py-1.5"
                   >
-                    {roles.map(r => (
-                      <option key={r.id} value={r.id}>{r.name}</option>
-                    ))}
-                  </select>
-                  <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none text-[#D4AF37]">
-                    <Menu className="w-3.5 h-3.5" />
+                    <span 
+                      className="tabular-nums font-black font-mono tracking-wider text-sm" 
+                      style={{ color: '#39ff14', textShadow: '0 0 5px rgba(57,255,20,0.4)' }}
+                    >
+                      {time.toLocaleTimeString('ar-SA', { 
+                        hour: '2-digit', 
+                        minute: '2-digit', 
+                        second: '2-digit', 
+                        hour12: true 
+                      })}
+                    </span>
+                  </div>
+
+                  {/* Settings Trigger Icon */}
+                  <div className="relative">
+                    <button 
+                      onClick={() => setShowClockSettings(!showClockSettings)}
+                      className={`p-1.5 rounded-lg text-slate-500 hover:text-amber-500 hover:bg-slate-800 transition-all ${showClockSettings ? 'bg-slate-800 text-amber-500 rotate-45' : ''}`}
+                      title="صلاحية النظام"
+                      aria-label="Settings"
+                    >
+                      <Settings className="w-4 h-4" />
+                    </button>
+
+                    {/* dropdown options */}
+                    {showClockSettings && (
+                      <div className="absolute left-0 top-full mt-2 w-64 bg-slate-950 border border-slate-800 shadow-[0_20px_50px_rgba(0,0,0,0.8)] rounded-2xl p-4.5 z-50 dir-rtl border-amber-500/20">
+                        <div className="absolute top-0 right-1/2 translate-x-1/2 -translate-y-[6px] w-3 h-3 rotate-45 bg-slate-950 border-t border-r border-slate-800"></div>
+                        <div className="space-y-4 relative z-10">
+                          {/* Optional Quick Role Switcher inside menu */}
+                          {currentUser?.role !== 'client' && currentUser?.role !== 'employee' && (
+                            <div className="pt-2 border-t border-slate-850">
+                              <span className="text-[10px] font-black text-slate-400 mb-1 block">صلاحية النظام</span>
+                              <select
+                                value={selectedRole}
+                                onChange={(e) => {
+                                  onRoleChange(e.target.value);
+                                  setMobileOpen(false);
+                                }}
+                                className="w-full bg-slate-900 text-[#D4AF37] text-[10px] py-1 px-2 rounded-xl border border-slate-800 focus:outline-none focus:border-amber-500 font-bold cursor-pointer"
+                              >
+                                {roles.map(r => (
+                                  <option key={r.id} value={r.id}>{r.name.replace('⚖️', '').replace('🎓', '').replace('👑', '').replace('📅', '').replace('💰', '').trim()}</option>
+                                ))}
+                              </select>
+                            </div>
+                          )}
+
+                          <button 
+                            onClick={() => setShowClockSettings(false)}
+                            className="w-full text-center text-[10px] py-1.5 text-amber-500 hover:text-amber-400 font-black border-t border-slate-850 pt-2 block transition-colors"
+                          >
+                            حفظ وإغلاق التخصيص
+                          </button>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
-            )}
+            </div>
 
           {/* Main Navigation */}
           <div className="space-y-6 pb-6">
@@ -320,7 +472,7 @@ export default function Sidebar({
               },
               {
                 title: 'الذكاء الاصطناعي والأدوات',
-                itemIds: ['ai', 'ai-drafting', 'ai-analysis', 'ai-contract_audit', 'ai-finance-vat', 'ai-deadlines', 'ai-swot', 'ai-finance', 'ai-zatca', 'ai-search']
+                itemIds: ['ai', 'ai-drafting', 'ai-analysis', 'ai-contract_audit', 'ai-finance-vat', 'ai-judicial-calc', 'ai-deadlines', 'ai-swot', 'ai-finance', 'ai-zatca', 'ai-search']
               },
               {
                 title: 'خدمات المسانده والتحقق الذكي',

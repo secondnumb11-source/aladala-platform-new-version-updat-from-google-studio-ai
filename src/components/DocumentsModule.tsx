@@ -213,7 +213,8 @@ export default function DocumentsModule({
       if (err.code === 'auth/popup-blocked') {
         setGdriveError('تم حظر النافذة المنبثقة لمصادقة Google بواسطة المتصفح. يرجى تفعيل النوافذ المنبثقة وإعادة المحاولة.');
       } else if (err.code === 'auth/popup-closed-by-user') {
-        setGdriveError('تم إغلاق نافذة الدخول بواسطة المستخدم قبل إتمام الاتصال السحابي.');
+        // User cancelled, we just silently clear loading state
+        setGdriveError(null);
       } else if (err.code === 'auth/unauthorized-domain') {
         const currentHost = window.location.hostname;
         setGdriveError(`خطأ في نطاق مصادقة Google (Unauthorized Domain): النطاق الحالي للتشغيل (${currentHost}) غير معتمد في مشروع Firebase الخاص بك. لحل هذه المشكلة، اذهب إلى كونسول Firebase > أداة Authentication > الإعدادات (Settings) > النطاقات المعتمدة (Authorized domains) ثم اضغط 'إضافة نطاق' وأدخل: ${currentHost} | Authorization Domain Error: Please add ${currentHost} to Authorized domains in Firebase Authentication settings.`);
@@ -1263,43 +1264,7 @@ export default function DocumentsModule({
         {!isFocusedRead && (
           <div className="lg:col-span-6 space-y-6">
 
-          {/* Storage Tab Switcher: Local vs Google Drive */}
-          <div className="flex bg-[#020D1F] p-2.5 rounded-[2.5rem] border border-[#0d1f3b] gap-3">
-            <button
-              onClick={() => setActiveStorageTab('local')}
-              className={`flex-1 flex items-center justify-center gap-2.5 py-3.5 rounded-2xl text-xs font-black transition-all duration-300 cursor-pointer ${
-                activeStorageTab === 'local'
-                  ? 'bg-[#0A1A3F] text-yellow-400 shadow-md scale-[1.02] border border-[#0d1f3b]'
-                  : 'text-white/60 hover:text-white hover:bg-white/5'
-              }`}
-            >
-              <Landmark className={`w-4 h-4 ${activeStorageTab === 'local' ? 'text-yellow-400' : ''}`} />
-              <span>أرشيف العدالة المحلي</span>
-            </button>
-            <button
-              onClick={() => {
-                setActiveStorageTab('gdrive');
-                if (googleAccessToken) {
-                  fetchGdriveFiles();
-                }
-              }}
-              className={`flex-1 flex items-center justify-center gap-2.5 py-3.5 rounded-2xl text-xs font-black transition-all duration-300 cursor-pointer ${
-                activeStorageTab === 'gdrive'
-                  ? 'bg-[#0A1A3F] text-yellow-400 shadow-md scale-[1.02] border border-[#0d1f3b]'
-                  : 'text-white/60 hover:text-white hover:bg-white/5'
-              }`}
-            >
-              <Cloud className={`w-4 h-4 ${activeStorageTab === 'gdrive' ? 'text-yellow-400' : ''}`} />
-              <span>سحابة Google Drive المتكاملة</span>
-              {googleAccessToken && (
-                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-              )}
-            </button>
-          </div>
-
-          {activeStorageTab === 'local' ? (
-            <>
-            {/* Responsive Drag & Drop panel */}
+          {/* Responsive Drag & Drop panel */}
           <div 
             onDragOver={handleDragOver}
             onDrop={handleDropSimulation}
@@ -1563,16 +1528,7 @@ export default function DocumentsModule({
                       >
                          <QrCode className="w-4 h-4 stroke-[2.5px]" />
                       </button>
-                      {/* Export to Google Drive */}
-                      <button 
-                        onClick={() => handleExportDocToGdrive(doc)}
-                        className={`text-white bg-[#0e1e3b] border border-blue-500/30 px-3 py-2 rounded-xl text-xs font-black flex items-center gap-1.5 cursor-pointer transition-all shadow-md  ${isExportingDocId === doc.id ? 'animate-bounce' : ''}`}
-                        disabled={isExportingDocId === doc.id}
-                        title="تصدير المستند قانونياً إلى حساب Google Drive"
-                      >
-                        {isExportingDocId === doc.id ? <RefreshCw className="w-3 h-3 animate-spin" /> : <CloudUpload className="w-3.5 h-3.5 text-blue-400" />}
-                        <span>{googleAccessToken ? 'مزامنة السحاب ☁️' : 'تصدير السحاب ☁️'}</span>
-                      </button>
+
 
                       <button 
                         onClick={() => handleAiClassify(doc)}
@@ -1619,224 +1575,6 @@ export default function DocumentsModule({
               );
             })}
           </div>
-          </>
-          ) : (
-            <div className="space-y-6 animate-fade-in text-right">
-              
-              {/* Authenticated GDrive Info Header */}
-              {googleAccessToken ? (
-                <div className="bg-[#0c1830] border-2 border-blue-500/20 rounded-[2.5rem] p-6 flex flex-col sm:flex-row justify-between items-center gap-4 shadow-xl">
-                  <div className="flex items-center gap-4 text-right">
-                    <div className="w-12 h-12 rounded-full bg-blue-500/10 border border-blue-500/30 flex items-center justify-center text-blue-400 font-bold shrink-0">
-                      {gdriveUser?.displayName ? gdriveUser.displayName.charAt(0) : 'G'}
-                    </div>
-                    <div>
-                      <h4 className="font-black text-sm text-white">{gdriveUser?.displayName || 'العضو السحابي'}</h4>
-                      <p className="text-xs text-blue-300/80 font-mono mt-0.5">{gdriveUser?.email || 'google-drive@adal.sa'}</p>
-                    </div>
-                  </div>
-                  
-                  <div className="flex gap-2.5">
-                    <button
-                      onClick={fetchGdriveFiles}
-                      disabled={isGdriveLoading}
-                      className="bg-slate-800 text-white font-bold py-2.5 px-4 rounded-xl text-xs flex items-center gap-2 border border-slate-700 active:scale-95 transition-all cursor-pointer inline-flex"
-                    >
-                      <RefreshCw className={`w-3.5 h-3.5 ${isGdriveLoading ? 'animate-spin' : ''}`} />
-                      <span>تحديث الملفات</span>
-                    </button>
-                    <button
-                      onClick={handleGoogleSignOut}
-                      className="bg-rose-950/40 text-rose-300 border border-rose-500/30 font-bold py-2.5 px-4 rounded-xl text-xs flex items-center gap-2 active:scale-95 transition-all cursor-pointer inline-flex"
-                    >
-                      <LogOut className="w-3.5 h-3.5" />
-                      <span>فصل السحابة</span>
-                    </button>
-                  </div>
-                </div>
-              ) : (
-                <div className="bg-[#020D1F] border border-[#0d1f3b] rounded-[2.5rem] p-8 text-center space-y-6 shadow-xl relative overflow-hidden">
-                  <div className="absolute top-0 left-0 w-64 h-64 bg-blue-500/5 blur-[80px] rounded-full pointer-events-none"></div>
-                  
-                  <div className="flex flex-col items-center justify-center space-y-4">
-                    <div className="p-5 bg-[#0A1A3F] text-blue-400 rounded-3xl border border-blue-900 shadow-[0_0_15px_rgba(37,99,235,0.2)] animate-pulse inline-flex">
-                      <Cloud className="w-12 h-12" />
-                    </div>
-                    <h3 className="text-lg font-black text-white">ربط سحابة Google Drive القضائية <Landmark className="w-5 h-5 inline text-slate-400" /></h3>
-                    <p className="text-xs text-white/50 max-w-md mx-auto leading-relaxed text-center font-bold">
-                      قم بتمكين المزامنة الحية لتتمكن من تصفح ملفات القضايا، العقود والاتفاقيات، والأقراص الذكية من حسابك السحابي مباشرةً واستيرادها أو تصديرها بامتثال أمني كامل.
-                    </p>
-                  </div>
-
-                  <div className="flex flex-col items-center justify-center gap-3">
-                    {/* Officially styled Google Sign-In Button */}
-                    <button
-                      onClick={handleGoogleSignIn}
-                      disabled={isGdriveLoading}
-                      className="bg-white text-slate-900 border border-slate-200 font-bold py-3.5 px-6 rounded-2xl text-xs flex items-center justify-center gap-3 shadow-md transition-all hover:bg-slate-50 cursor-pointer max-w-xs w-full"
-                    >
-                      <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
-                        <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-                        <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" fill="#FBBC05"/>
-                        <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" fill="#EA4335"/>
-                      </svg>
-                      <span>{isGdriveLoading ? 'جاري الاتصال بالسحابة...' : 'تسجيل الدخول وربط حساب Google'}</span>
-                    </button>
-                    
-                    <span className="text-[10px] text-white/40 font-bold flex items-center justify-center gap-1.5 pt-1 text-center">
-                      <Lock className="w-3 h-3 text-yellow-500" />
-                      حماية معززة وتشفير طرفي متطوع بالنظم المعيارية لهيئة الأمن السيبراني والمحاكم السعودية.
-                    </span>
-                  </div>
-                  
-                  {gdriveError && (
-                    <div className="bg-rose-950/35 border border-rose-500/40 p-4 rounded-2xl text-xs text-rose-300 text-right font-bold mt-4 animate-shake">
-                      ⚠️ {gdriveError}
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {/* GDrive Files Panel */}
-              {googleAccessToken && (
-                <div className="space-y-6">
-                  {/* Filter / Search for GDrive files */}
-                  <div className="bg-[#0c1830] border border-slate-700/80 rounded-[2.5rem] p-6 space-y-4 shadow-xl">
-                    <div className="flex flex-col sm:flex-row gap-4">
-                      {/* Search */}
-                      <div className="relative flex-1 group">
-                        <div className="absolute right-4 top-1/2 -translate-y-1/2 p-2 bg-slate-800 text-slate-400 rounded-xl">
-                          <Search className="w-4 h-4" />
-                        </div>
-                        <input
-                          type="text"
-                          placeholder="ابحث باسم المستند السحابي في Google Drive..."
-                          value={gdriveSearchTerm}
-                          onChange={(e) => setGdriveSearchTerm(e.target.value)}
-                          className="w-full bg-slate-950/80 border border-slate-700/50 text-sm py-3.5 pr-14 pl-4 rounded-2xl focus:outline-none font-bold text-white focus:border-blue-500 text-right"
-                        />
-                      </div>
-
-                      {/* Type Filter */}
-                      <div className="flex items-center gap-3 bg-slate-950/40 px-4 py-2.5 rounded-2xl border border-slate-800/50 shrink-0">
-                        <span className="text-[11px] font-black text-slate-500 uppercase tracking-widest">نوع الملف:</span>
-                        <select
-                          value={gdriveTypeFilter}
-                          onChange={(e) => setGdriveTypeFilter(e.target.value)}
-                          className="bg-transparent border-none text-[11px] font-black text-white outline-none cursor-pointer"
-                        >
-                          <option value="all" className="bg-slate-900">كافة الصيغ والأوراق</option>
-                          <option value="pdf" className="bg-slate-900">ملفات أكروبات PDF</option>
-                          <option value="doc" className="bg-slate-900">مستندات Word / Docs</option>
-                          <option value="sheet" className="bg-slate-900">جداول Excel / Sheets</option>
-                          <option value="image" className="bg-slate-900">صور صق وقضايا ورقية</option>
-                        </select>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Files Grid */}
-                  {isGdriveLoading ? (
-                    <div className="text-center py-16 space-y-4">
-                      <RefreshCw className="w-10 h-10 animate-spin text-blue-500 mx-auto" />
-                      <p className="text-xs text-blue-300 font-bold text-center">جاري تحميل وفهرسة مستندات Google Drive آمن...</p>
-                    </div>
-                  ) : gdriveError ? (
-                    <div className="bg-rose-950/20 border border-rose-500/30 rounded-3xl p-8 text-center text-rose-300 text-xs font-bold">
-                      فشل الاتصال بـ Google Drive: {gdriveError}
-                    </div>
-                  ) : gdriveFiles.length === 0 ? (
-                    <div className="bg-slate-900/10 border-2 border-dashed border-slate-800 rounded-3xl p-16 text-center space-y-3">
-                      <p className="text-sm font-black text-slate-400 text-center">لا توجد ملفات متطابقة في حساب Google Drive الخاص بك</p>
-                      <p className="text-xs text-slate-500 max-w-sm mx-auto leading-relaxed text-center">
-                        تأكت من رفع مستنداتك أو صكوكك في حساب الـ Drive ثم اضغط على زر "تحديث الملفات" بالأعلى.
-                      </p>
-                    </div>
-                  ) : (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                      {gdriveFiles
-                        .filter(f => f.name.toLowerCase().includes(gdriveSearchTerm.toLowerCase()))
-                        .map((file, idx) => {
-                          const isPdf = file.mimeType === 'application/pdf';
-                          const isDoc = file.mimeType.includes('document');
-                          const isSheet = file.mimeType.includes('spreadsheet');
-                          const isImage = file.mimeType.startsWith('image/');
-                          
-                          let fileTypeLabel = 'مستند سحابي';
-                          let fileColorClass = 'text-blue-400 bg-blue-500/10 border-blue-500/30';
-                          if (isPdf) {
-                            fileTypeLabel = 'أكروبات PDF';
-                            fileColorClass = 'text-rose-400 bg-rose-500/10 border-rose-500/30';
-                          } else if (isDoc) {
-                            fileTypeLabel = 'مستند Word';
-                            fileColorClass = 'text-sky-400 bg-sky-500/10 border-sky-500/30';
-                          } else if (isSheet) {
-                            fileTypeLabel = 'جدول بيانات Excel';
-                            fileColorClass = 'text-emerald-400 bg-emerald-500/10 border-emerald-500/30';
-                          } else if (isImage) {
-                            fileTypeLabel = 'صورة صك / تظلم';
-                            fileColorClass = 'text-amber-400 bg-amber-500/10 border-amber-500/30';
-                          }
-
-                          return (
-                            <motion.div
-                              key={file.id}
-                              initial={{ opacity: 0, y: 10 }}
-                              animate={{ opacity: 1, y: 0 }}
-                              transition={{ delay: idx * 0.03 }}
-                              className="bg-[#0c1830] border-2 border-blue-500/25 rounded-3xl p-5 flex flex-col justify-between transition-all duration-300 shadow-md relative group overflow-hidden"
-                            >
-                              <div className="absolute inset-0 bg-blue-500/5 opacity-0 transition-opacity duration-300 pointer-events-none" />
-                              
-                              <div className="space-y-3 relative z-10">
-                                <div className="flex items-center justify-between border-b border-white/5 pb-2">
-                                  <span className="text-[9px] text-slate-500 font-mono">{file.createdTime ? file.createdTime.split('T')[0] : 'سحابي'}</span>
-                                  <span className={`text-[9px] px-2 py-0.5 rounded border font-bold ${fileColorClass}`}>{fileTypeLabel}</span>
-                                </div>
-                                
-                                <div className="flex items-start gap-3">
-                                  <div className="p-2.5 bg-slate-950 rounded-xl border border-white/10 transition-all duration-300 shrink-0">
-                                    <Cloud className="w-5 h-5 text-blue-400" />
-                                  </div>
-                                  <div className="flex-1 min-w-0">
-                                    <h4 className="font-bold text-xs text-white line-clamp-2 leading-relaxed text-right" title={file.name}>{file.name}</h4>
-                                    <p className="text-[10px] text-slate-400 text-right mt-1 font-mono">
-                                      {file.size ? `${(parseInt(file.size) / (1024 * 1024)).toFixed(2)} MB` : 'حجم سحابي'}
-                                    </p>
-                                  </div>
-                                </div>
-                              </div>
-                              
-                              <div className="border-t border-white/5 pt-3 mt-4 flex justify-between items-center relative z-10">
-                                <a
-                                  href={file.webViewLink}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="text-slate-300 flex items-center gap-1.5 text-[10px] font-bold bg-slate-800 px-2.5 py-1.5 rounded-xl border border-slate-700 cursor-pointer inline-flex"
-                                >
-                                  <ExternalLink className="w-3 h-3" />
-                                  <span>تصفح السحاب 🌐</span>
-                                </a>
-                                
-                                <button
-                                  onClick={() => handleImportDriveFile(file)}
-                                  className="text-slate-950 bg-gradient-to-r from-blue-400 to-sky-300 shadow-md font-black px-3 py-1.5 rounded-xl text-[10px] flex items-center gap-1.5 active:scale-95 transition-all cursor-pointer inline-flex"
-                                >
-                                  <CloudDownload className="w-3.5 h-3.5" />
-                                  <span>استيراد تظلم / عقد DX</span>
-                                </button>
-                              </div>
-                            </motion.div>
-                          );
-                        })}
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-          )}
-
         </div>
         )}
 

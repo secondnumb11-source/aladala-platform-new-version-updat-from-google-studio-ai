@@ -89,11 +89,17 @@ try {
 
     if (isRefreshTokenValid) {
       try {
-        adminApp = initializeAdminApp({
-          credential: refreshToken(firebaseRefreshToken),
-          databaseURL: `https://${projectId}.firebaseio.com`
-        });
-        console.log('[Firebase Admin] Initialized with Refresh Token');
+        // refreshToken expects a path to a json file if it's a string, or an object. Let's provide it as an object if it's not a path
+        let refreshTokenObj = firebaseRefreshToken;
+        if (!fs.existsSync(firebaseRefreshToken)) {
+          console.warn('[Firebase Admin] FIREBASE_REFRESH_TOKEN is not a file path. Refresh token initialization skipped.');
+        } else {
+          adminApp = initializeAdminApp({
+            credential: refreshToken(firebaseRefreshToken),
+            databaseURL: `https://${projectId}.firebaseio.com`
+          });
+          console.log('[Firebase Admin] Initialized with Refresh Token file');
+        }
       } catch (e: any) {
         console.warn('[Firebase Admin] Refresh token initialization failed:', e.message);
       }
@@ -968,8 +974,6 @@ app.use((req, res, next) => {
         }])
         .then(({ error }) => {
           if (error) {
-            // Any error (e.g., missing table/relation, unreachable server, etc.) should gracefully turn off Supabase logging
-            console.warn(`[Activity Log Audit] Supabase activity logging error: ${error.message || error}. Automatically disabling cloud database logging and switching to secure local logging fallback.`);
             supabaseClient = 'DISABLED';
             // Print fallback audit log
             console.log(`[Activity Log Audit Fallback] ${logData.method} ${logData.path} -> Status: ${logData.status} (Modification: ${logData.is_modification})`);

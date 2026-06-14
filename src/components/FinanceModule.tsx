@@ -105,6 +105,7 @@ interface FinanceModuleProps {
   cases: Case[];
   expenses: { id: string; description: string; amount: number; category: string; date: string; caseNumber?: string }[];
   onUpdateState: (type: string, data: any) => void;
+  viewMode?: 'billing' | 'calculator';
 }
 
 export default function FinanceModule({
@@ -112,7 +113,8 @@ export default function FinanceModule({
   clients,
   cases,
   expenses,
-  onUpdateState
+  onUpdateState,
+  viewMode = 'billing'
 }: FinanceModuleProps) {
   
   const [themeTick, setThemeTick] = useState(Date.now());
@@ -741,8 +743,10 @@ export default function FinanceModule({
   return (
     <div className="finance-module-container space-y-8 text-right animate-fade-in" dir="rtl">
       
-      {/* Severe Overdue Alert */}
-      {severeOverdueInvoices.length > 0 && (
+      {viewMode === 'billing' && (
+        <>
+          {/* Severe Overdue Alert */}
+          {severeOverdueInvoices.length > 0 && (
         <div className="bg-rose-50 border-2 border-rose-200 rounded-[2.5rem] p-6 relative overflow-hidden shadow-sm">
            <div className="absolute top-0 right-0 w-32 h-32 bg-rose-200/50 rounded-full blur-3xl" />
            <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
@@ -810,23 +814,23 @@ export default function FinanceModule({
         {/* Card 1: Tax Fee Invoice */}
         <ContrastMotionDiv 
           onClick={() => setIsInvoiceOpen(true)}
-          className="bg-slate-900 border-[#d4af37] rounded-[2rem] cursor-default relative overflow-hidden h-[400px]"
+          className="bg-slate-950 border border-amber-500/20 rounded-[1.5rem] cursor-pointer relative overflow-hidden h-[210px] hover:border-amber-400 group transition-all duration-300"
           id="action-box-invoice"
-          bgClass="bg-slate-900"
+          bgClass="bg-slate-950"
         >
-          <div className="absolute top-0 right-0 w-60 h-60 bg-[#d4af37]/10 rounded-full blur-[80px] translate-x-20 -translate-y-20"></div>
-          <div className="p-8 h-full flex flex-col justify-between">
-            <div className="flex justify-between items-center mb-6">
-              <div className="p-4 bg-[#d4af37] text-slate-900 rounded-2xl shadow-md">
-                <Plus className="w-8 h-8" />
+          <div className="absolute top-0 right-0 w-32 h-32 bg-[#d4af37]/5 rounded-full blur-[40px] translate-x-10 -translate-y-10 group-hover:bg-[#d4af37]/10 transition-colors"></div>
+          <div className="p-5 h-full flex flex-col justify-between relative z-10">
+            <div className="flex justify-between items-center mb-2">
+              <div className="p-2 bg-[#d4af37] text-slate-950 rounded-xl shadow-md">
+                <Plus className="w-5 h-5 stroke-[2.5]" />
               </div>
-              <span className="text-[9px] font-black bg-white/90 text-[#d4af37] px-4 py-2 rounded-full border border-[#d4af37]/30 shadow-sm uppercase tracking-widest leading-none">Compliant ZATCA</span>
+              <span className="text-[8px] font-black bg-slate-900 text-amber-400 px-2 py-0.5 rounded-full border border-amber-500/20 uppercase tracking-widest leading-none">Compliant ZATCA</span>
             </div>
             <div>
-              <h3 className="text-2xl font-black transition-colors leading-[1.1] mb-3">
+              <h3 className="text-sm font-black text-white group-hover:text-amber-400 transition-colors leading-snug mb-1">
                 توليد فاتورة أتعاب ضريبية
               </h3>
-              <p className="text-sm font-bold leading-relaxed opacity-85 transition-colors">
+              <p className="text-[11px] font-bold text-slate-300 leading-normal">
                 إصدار وتحرير عقود الفواتير الضريبية المبسطة والشاملة.
               </p>
             </div>
@@ -836,23 +840,23 @@ export default function FinanceModule({
         {/* Card 2: Electronic Payment Gateways */}
         <ContrastMotionDiv 
           onClick={() => setIsGatewaysOpen(true)}
-          className="bg-slate-900 border-[#d4af37] rounded-[2rem] cursor-default relative overflow-hidden h-[400px]"
+          className="bg-slate-950 border border-amber-500/20 rounded-[1.5rem] cursor-pointer relative overflow-hidden h-[210px] hover:border-amber-400 group transition-all duration-300"
           id="action-box-gateways"
-          bgClass="bg-slate-900"
+          bgClass="bg-slate-950"
         >
-          <div className="absolute top-0 right-0 w-60 h-60 bg-[#d4af37]/10 rounded-full blur-[80px] translate-x-20 -translate-y-20"></div>
-          <div className="p-8 h-full flex flex-col justify-between">
-            <div className="flex justify-between items-center mb-6">
-              <div className="p-4 bg-[#d4af37] text-slate-900 rounded-2xl shadow-md">
-                <CreditCard className="w-8 h-8" />
+          <div className="absolute top-0 right-0 w-32 h-32 bg-[#d4af37]/5 rounded-full blur-[40px] translate-x-10 -translate-y-10 group-hover:bg-[#d4af37]/10 transition-colors"></div>
+          <div className="p-5 h-full flex flex-col justify-between relative z-10">
+            <div className="flex justify-between items-center mb-2">
+              <div className="p-2 bg-[#d4af37] text-slate-950 rounded-xl shadow-md">
+                <CreditCard className="w-5 h-5 stroke-[2.5]" />
               </div>
-              <span className="text-[9px] font-black bg-white/90 text-[#d4af37] px-4 py-2 rounded-full border border-[#d4af37]/30 shadow-sm uppercase tracking-widest leading-none">Direct Sync</span>
+              <span className="text-[8px] font-black bg-slate-900 text-amber-400 px-2 py-0.5 rounded-full border border-amber-500/20 uppercase tracking-widest leading-none">Direct Sync</span>
             </div>
             <div>
-              <h3 className="text-2xl font-black transition-colors leading-[1.1] mb-3">
+              <h3 className="text-sm font-black text-white group-hover:text-amber-400 transition-colors leading-snug mb-1">
                 بوابات الدفع الإلكتروني
               </h3>
-              <p className="text-sm font-bold leading-relaxed opacity-85 transition-colors">
+              <p className="text-[11px] font-bold text-slate-300 leading-normal">
                 مزامنة بوابات STC Pay و مدي و Apple Pay والروابط الآلية.
               </p>
             </div>
@@ -862,23 +866,23 @@ export default function FinanceModule({
         {/* Card 3: Receipt Voucher */}
         <ContrastMotionDiv 
           onClick={() => setIsReceiptOpen(true)}
-          className="bg-slate-900 border-[#d4af37] rounded-[2rem] cursor-default relative overflow-hidden h-[400px]"
+          className="bg-slate-950 border border-amber-500/20 rounded-[1.5rem] cursor-pointer relative overflow-hidden h-[210px] hover:border-amber-400 group transition-all duration-300"
           id="action-box-receipt"
-          bgClass="bg-slate-900"
+          bgClass="bg-slate-950"
         >
-          <div className="absolute top-0 right-0 w-60 h-60 bg-[#d4af37]/10 rounded-full blur-[80px] translate-x-20 -translate-y-20"></div>
-          <div className="p-8 h-full flex flex-col justify-between">
-            <div className="flex justify-between items-center mb-6">
-              <div className="p-4 bg-[#d4af37] text-slate-900 rounded-2xl shadow-md">
-                <Printer className="w-8 h-8" />
+          <div className="absolute top-0 right-0 w-32 h-32 bg-[#d4af37]/5 rounded-full blur-[40px] translate-x-10 -translate-y-10 group-hover:bg-[#d4af37]/10 transition-colors"></div>
+          <div className="p-5 h-full flex flex-col justify-between relative z-10">
+            <div className="flex justify-between items-center mb-2">
+              <div className="p-2 bg-[#d4af37] text-slate-950 rounded-xl shadow-md">
+                <Printer className="w-5 h-5 stroke-[2.5]" />
               </div>
-              <span className="text-[9px] font-black bg-white/90 text-[#d4af37] px-4 py-2 rounded-full border border-[#d4af37]/30 shadow-sm uppercase tracking-widest leading-none">Ready to Print</span>
+              <span className="text-[8px] font-black bg-slate-900 text-amber-400 px-2 py-0.5 rounded-full border border-amber-500/20 uppercase tracking-widest leading-none">Ready to Print</span>
             </div>
             <div>
-              <h3 className="text-2xl font-black transition-colors leading-[1.1] mb-3">
+              <h3 className="text-sm font-black text-white group-hover:text-amber-400 transition-colors leading-snug mb-1">
                 إصدار سند قبض رسمي
               </h3>
-              <p className="text-sm font-bold leading-relaxed opacity-85 transition-colors">
+              <p className="text-[11px] font-bold text-slate-300 leading-normal">
                 رصد المقبوضات وتوليد سند قبض فوري مع رمز QR المشفر.
               </p>
             </div>
@@ -888,48 +892,49 @@ export default function FinanceModule({
         {/* Card 4: Payment Voucher */}
         <ContrastMotionDiv 
           onClick={() => setIsPaymentOpen(true)}
-          className="bg-slate-900 border-[#d4af37] rounded-[2rem] cursor-default relative overflow-hidden h-[400px]"
+          className="bg-slate-950 border border-amber-500/20 rounded-[1.5rem] cursor-pointer relative overflow-hidden h-[210px] hover:border-amber-400 group transition-all duration-300"
           id="action-box-payment"
-          bgClass="bg-slate-900"
+          bgClass="bg-slate-950"
         >
-          <div className="absolute top-0 right-0 w-60 h-60 bg-[#d4af37]/10 rounded-full blur-[80px] translate-x-20 -translate-y-20"></div>
-          <div className="p-8 h-full flex flex-col justify-between">
-            <div className="flex justify-between items-center mb-6">
-              <div className="p-4 bg-[#d4af37] text-slate-900 rounded-2xl shadow-md">
-                <TrendingDown className="w-8 h-8" />
+          <div className="absolute top-0 right-0 w-32 h-32 bg-[#d4af37]/5 rounded-full blur-[40px] translate-x-10 -translate-y-10 group-hover:bg-[#d4af37]/10 transition-colors"></div>
+          <div className="p-5 h-full flex flex-col justify-between relative z-10">
+            <div className="flex justify-between items-center mb-2">
+              <div className="p-2 bg-[#d4af37] text-slate-950 rounded-xl shadow-md">
+                <TrendingDown className="w-5 h-5 stroke-[2.5]" />
               </div>
-              <span className="text-[9px] font-black bg-white/90 text-[#d4af37] px-4 py-2 rounded-full border border-[#d4af37]/30 shadow-sm uppercase tracking-widest leading-none">Financial Audit</span>
+              <span className="text-[8px] font-black bg-slate-900 text-amber-400 px-2 py-0.5 rounded-full border border-amber-500/20 uppercase tracking-widest leading-none">Financial Audit</span>
             </div>
             <div>
-              <h3 className="text-2xl font-black transition-colors leading-[1.1] mb-3">
+              <h3 className="text-sm font-black text-white group-hover:text-amber-400 transition-colors leading-snug mb-1">
                 إصدار سند صرف معتمد
               </h3>
-              <p className="text-sm font-bold leading-relaxed opacity-85 transition-colors">
+              <p className="text-[11px] font-bold text-slate-300 leading-normal">
                 إثبات المصروفات التشغيلية والرسوم القضائية.
               </p>
             </div>
           </div>
         </ContrastMotionDiv>
-        {/* Card 4: Legal Fees Calculator (New) */}
+
+        {/* Card 5: Legal Fees Calculator */}
         <ContrastMotionDiv 
           onClick={() => setIsCalculatorOpen(true)}
-          className="bg-slate-900 border-[#d4af37] rounded-[2rem] cursor-default relative overflow-hidden h-[400px]"
+          className="bg-slate-950 border border-amber-500/20 rounded-[1.5rem] cursor-pointer relative overflow-hidden h-[210px] hover:border-amber-400 group transition-all duration-300"
           id="action-box-calculator"
-          bgClass="bg-slate-900"
+          bgClass="bg-slate-950"
         >
-          <div className="absolute top-0 right-0 w-60 h-60 bg-[#d4af37]/10 rounded-full blur-[80px] translate-x-20 -translate-y-20"></div>
-          <div className="p-8 h-full flex flex-col justify-between">
-            <div className="flex justify-between items-center mb-6">
-              <div className="p-4 bg-[#d4af37] text-slate-900 rounded-2xl shadow-md">
-                <Calculator className="w-8 h-8" />
+          <div className="absolute top-0 right-0 w-32 h-32 bg-[#d4af37]/5 rounded-full blur-[40px] translate-x-10 -translate-y-10 group-hover:bg-[#d4af37]/10 transition-colors"></div>
+          <div className="p-5 h-full flex flex-col justify-between relative z-10">
+            <div className="flex justify-between items-center mb-2">
+              <div className="p-2 bg-[#d4af37] text-slate-950 rounded-xl shadow-md">
+                <Calculator className="w-5 h-5 stroke-[2.5]" />
               </div>
-              <span className="text-[9px] font-black bg-white/90 text-[#d4af37] px-4 py-2 rounded-full border border-[#d4af37]/30 shadow-sm uppercase tracking-widest leading-none">Smart Calculation</span>
+              <span className="text-[8px] font-black bg-slate-900 text-amber-400 px-2 py-0.5 rounded-full border border-amber-500/20 uppercase tracking-widest leading-none">Smart Calc</span>
             </div>
             <div>
-              <h3 className="text-2xl font-black transition-colors leading-[1.1] mb-3">
+              <h3 className="text-sm font-black text-white group-hover:text-amber-400 transition-colors leading-snug mb-1">
                 حاسبة الأتعاب الذكية
               </h3>
-              <p className="text-sm font-bold leading-relaxed opacity-85 transition-colors">
+              <p className="text-[11px] font-bold text-slate-300 leading-normal">
                 احتساب تقديري لأتعاب المحاماة بناءً على قيمة المطالبة ونسبة المسعى.
               </p>
             </div>
@@ -1000,7 +1005,12 @@ export default function FinanceModule({
           </motion.div>
         </div>
       )}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 border-b border-slate-200 pb-8 mt-4">
+        </>
+      )}
+
+      {viewMode === 'calculator' && (
+        <>
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 border-b border-slate-200 pb-8 mt-4">
         <div>
           <h1 className="text-3xl font-display font-black text-slate-900 tracking-tight flex items-center gap-3">
             <div className="p-2 bg-primary text-white rounded-xl shadow-lg">
@@ -1099,72 +1109,85 @@ export default function FinanceModule({
 
       {/* KPI Cards section */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        
         {[
           { label: 'المقبوضات المحصلة', value: totalRevenuePaid, icon: <TrendingUp className="w-4 h-4" />, color: 'emerald', sub: 'أرباح الخدمات المستلمة', bg: 'bg-emerald-500' },
           { label: 'مستحقات قيد الانتظار', value: totalRevenuePending, icon: <Clock className="w-4 h-4" />, color: 'amber', sub: 'مطالبات معلقة نظاماً', bg: 'bg-amber-500' },
           { label: 'المصاريف والرسوم', value: totalExpenses, icon: <TrendingDown className="w-4 h-4" />, color: 'rose', sub: 'رسوم الأسانيد والحظر', bg: 'bg-rose-500' },
           { label: 'صافي الربح الفعلي', value: netProfit, icon: <Calculator className="w-4 h-4" />, color: 'gold', sub: 'السيولة بعد الاستقطاع', bg: 'bg-[#d4af37]' }
-        ].map((kpi, idx) => (
-          <ContrastMotionDiv 
-            key={idx} 
-            bgClass={`${kpi.bg} border-slate-800/20`}
-            className="rounded-[2.5rem] p-6 shadow-xl transition-all[1.02] cursor-default"
-          >
-            <div className="flex items-center justify-between mb-4">
-              <span className="text-[10px] font-black uppercase tracking-widest opacity-80">{kpi.label}</span>
-              <div className="p-2.5 rounded-xl bg-white/20 backdrop-blur-md text-inherit border border-white/20">
-                {kpi.icon}
+        ].map((kpi, idx) => {
+          const kpiColors: { [key: string]: { border: string; text: string; bar: string; iconBg: string } } = {
+            emerald: { border: 'border-emerald-100', text: 'text-emerald-700', bar: 'bg-emerald-500', iconBg: 'bg-emerald-50 text-emerald-600' },
+            amber: { border: 'border-amber-100', text: 'text-amber-700', bar: 'bg-amber-500', iconBg: 'bg-amber-50 text-amber-600' },
+            rose: { border: 'border-rose-100', text: 'text-rose-700', bar: 'bg-rose-500', iconBg: 'bg-rose-50 text-rose-600' },
+            gold: { border: 'border-[#d4af37]/30', text: 'text-amber-700', bar: 'bg-amber-500', iconBg: 'bg-amber-50 text-amber-600' }
+          };
+          const styleConfig = kpiColors[kpi.color] || kpiColors.gold;
+
+          return (
+            <motion.div 
+              key={idx} 
+              whileHover={{ scale: 1.02, translateY: -2 }}
+              className={`bg-white border ${styleConfig.border} rounded-[2rem] p-6 shadow-sm hover:shadow-md relative overflow-hidden flex flex-col justify-between h-[160px] transition-all`}
+            >
+              <div className={`absolute top-0 right-0 w-2 h-full ${styleConfig.bar}`} />
+              
+              <div className="flex items-center justify-between mb-4 pr-3 pointer-events-none">
+                <span className="text-[11px] font-black uppercase tracking-widest text-slate-500">{kpi.label}</span>
+                <div className={`p-2 rounded-xl ${styleConfig.iconBg} border border-slate-100`}>
+                  {kpi.icon}
+                </div>
               </div>
-            </div>
-            <div className="flex items-baseline gap-2">
-              <span className="text-3xl font-display font-black tabular-nums">
-                {kpi.value.toLocaleString()}
-              </span>
-              <span className="text-xs font-black opacity-70">ر.س</span>
-            </div>
-            <div className="mt-4 flex items-center gap-2 pt-3 border-t border-white/10">
-               <div className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
-               <p className="text-[10px] font-black opacity-80">{kpi.sub}</p>
-            </div>
-          </ContrastMotionDiv>
-        ))}
+              
+              <div className="flex items-baseline gap-2 pr-3 pointer-events-none">
+                <span className="text-3xl font-black text-slate-900 tabular-nums tracking-tight">
+                  {kpi.value.toLocaleString()}
+                </span>
+                <span className="text-xs font-black text-slate-400">ر.س</span>
+              </div>
+              
+              <div className="mt-4 flex items-center gap-2 pt-3 border-t border-slate-100 pr-3 pointer-events-none">
+                <div className={`w-1.5 h-1.5 rounded-full ${styleConfig.bar} animate-pulse`} />
+                <p className="text-[10px] font-black text-slate-500 font-sans">{kpi.sub}</p>
+              </div>
+            </motion.div>
+          );
+        })}
       </div>
 
       {/* Recharts Graphical Analysis Section - Dual Columns layout (Pie + Area Chart) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         
-        {/* Left Column: Pie Chart (7 columns on large screens) */}
-        <div className="lg:col-span-5 bg-white border border-slate-800 rounded-2xl p-6 shadow-sm flex flex-col justify-between space-y-6">
+        {/* Left Column: Pie Chart (5 columns on large screens) */}
+        <div className="lg:col-span-5 bg-white border border-slate-200 rounded-2xl p-6 shadow-sm hover:shadow-md transition-all flex flex-col justify-between space-y-6">
           <div className="space-y-3">
-            <span className="text-[10px] uppercase font-black tracking-widest text-[#b8860b] block font-sans">تسميات السيولة العامة</span>
-            <h2 className="text-base font-black text-slate-950">توزيع الإيرادات والمصروفات</h2>
-            <p className="text-xs text-slate-850 leading-relaxed font-black">
+            <span className="text-[10px] uppercase font-black tracking-widest text-amber-600 block font-sans">تسميات السيولة العامة</span>
+            <h2 className="text-base font-black text-slate-900">توزيع الإيرادات والمصروفات</h2>
+            <p className="text-xs text-slate-500 leading-relaxed font-bold">
               تمثيل بصري مقارن لنسبة المقبوضات المحصلة من أتعاب الموكلين مقابل المصروفات والرسوم المعلقة.
             </p>
             <div className="grid grid-cols-3 gap-3 pt-3 text-[10px] border-t border-slate-100">
               <div>
-                <span className="text-slate-800 block font-black">نسبة المحصّل</span>
-                <strong className="text-emerald-700 font-black font-mono text-[11px]">
+                <span className="text-slate-500 block font-black">نسبة المحصّل</span>
+                <strong className="text-emerald-600 font-black font-mono text-[11px]">
                   {totalRevenuePaid + totalExpenses > 0 ? Math.round((totalRevenuePaid / (totalRevenuePaid + totalRevenuePending + totalExpenses)) * 100) : 0}%
                 </strong>
               </div>
               <div>
-                <span className="text-slate-800 block font-black">نسبة المعلق</span>
-                <strong className="text-amber-700 font-black font-mono text-[11px]">
+                <span className="text-slate-500 block font-black">نسبة المعلق</span>
+                <strong className="text-amber-600 font-black font-mono text-[11px]">
                   {totalRevenuePending + totalExpenses > 0 ? Math.round((totalRevenuePending / (totalRevenuePaid + totalRevenuePending + totalExpenses)) * 100) : 0}%
                 </strong>
               </div>
               <div>
-                <span className="text-slate-800 block font-black">نسبة الرسوم</span>
-                <strong className="text-rose-700 font-black font-mono text-[11px]">
+                <span className="text-slate-500 block font-black">نسبة الرسوم</span>
+                <strong className="text-rose-600 font-black font-mono text-[11px]">
                   {totalExpenses + totalRevenuePaid > 0 ? Math.round((totalExpenses / (totalRevenuePaid + totalRevenuePending + totalExpenses)) * 100) : 0}%
                 </strong>
               </div>
             </div>
           </div>
 
-          <div style={{ height: '220px', width: '100%', minWidth: 0 }} className="flex items-center justify-center relative bg-slate-50/50 rounded-xl p-2 border border-slate-100">
+          <div style={{ height: '220px', width: '100%', minWidth: 0 }} className="flex items-center justify-center relative bg-slate-50 rounded-xl p-2 border border-slate-200 shadow-inner">
             <div style={{ width: '100%', height: '100%', minWidth: 0 }}>
               <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0} key={themeTick}>
                 <PieChart>
@@ -1178,40 +1201,40 @@ export default function FinanceModule({
                     dataKey="value"
                   >
                     {distributionData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={isHighContrast ? '#fbbf24' : entry.color} />
+                       <Cell key={`cell-${index}`} fill={entry.color} />
                     ))}
                   </Pie>
                   <RechartsTooltip 
                     formatter={(value: any) => [`${Number(value).toLocaleString()} ر.س`, '']}
-                    contentStyle={{ backgroundColor: isHighContrast ? '#0f172a' : '#020D1F', borderRadius: '12px', border: '1px solid #334155', color: isHighContrast ? '#fbbf24' : '#fff' }}
+                    contentStyle={{ backgroundColor: '#ffffff', borderRadius: '12px', border: '1px solid #e2e8f0', color: '#0f172a', fontWeight: 'bold' }}
                   />
                   <Legend 
                     verticalAlign="bottom" 
                     height={36} 
                     iconType="circle"
-                    wrapperStyle={{ fontSize: '9px', fontWeight: 'bold' }}
+                    wrapperStyle={{ fontSize: '9px', fontWeight: 'bold', color: '#64748b' }}
                   />
                 </PieChart>
               </ResponsiveContainer>
             </div>
             <div className="absolute top-[40%] flex flex-col items-center justify-center pointer-events-none">
-              <span className="text-[8px] text-slate-400 uppercase font-black font-sans">إجمالي السيولة</span>
-              <span className="text-xs font-bold text-slate-900 font-mono">{(totalRevenuePaid + totalRevenuePending + totalExpenses).toLocaleString()}</span>
+              <span className="text-[8px] text-slate-500 uppercase font-black font-sans">إجمالي السيولة</span>
+              <span className="text-xs font-black text-slate-900 font-mono">{(totalRevenuePaid + totalRevenuePending + totalExpenses).toLocaleString()}</span>
             </div>
           </div>
         </div>
 
-        {/* Right Column: Interactive AreaChart representing Progression over last 6 months (7 columns on large screens) */}
-        <div className="lg:col-span-7 bg-white border border-slate-800 rounded-2xl p-6 shadow-sm flex flex-col justify-between space-y-4">
+        {/* Right Column: Interactive AreaChart representing Progression over last 6 months */}
+        <div className="lg:col-span-7 bg-white border border-slate-200 rounded-2xl p-6 shadow-sm hover:shadow-md transition-all flex flex-col justify-between space-y-4">
           <div className="space-y-1">
-            <span className="text-[10px] uppercase font-black tracking-widest text-[#b8860b] block font-sans">دراسة الأثر المالي ودورة النمو</span>
-            <h2 className="text-base font-black text-slate-950">المخطط البياني التفاعلي للمقبوضات والمصروفات الشهرية</h2>
-            <p className="text-xs text-slate-800 leading-relaxed font-black">
+            <span className="text-[10px] uppercase font-black tracking-widest text-amber-600 block font-sans">دراسة الأثر المالي ودورة النمو</span>
+            <h2 className="text-base font-black text-slate-900">المخطط البياني التفاعلي للمقبوضات والمصروفات الشهرية</h2>
+            <p className="text-xs text-slate-500 leading-relaxed font-bold">
               منحنى تفاعلي يرصد المقبوضات الضريبية المحصلة مقابل تكاليف التشغيل والرسوم العدلية على مدى الـ 6 أشهر الماضية.
             </p>
           </div>
 
-          <div style={{ height: '220px', width: '100%', minWidth: 0 }} className="bg-slate-50/50 border border-slate-100 rounded-xl p-2.5">
+          <div style={{ height: '220px', width: '100%', minWidth: 0 }} className="bg-slate-50 border border-slate-200 rounded-xl p-2.5 shadow-inner">
             <div style={{ width: '100%', height: '100%', minWidth: 0 }}>
               <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0} key={themeTick}>
                 <AreaChart
@@ -1220,24 +1243,24 @@ export default function FinanceModule({
                 >
                   <defs>
                     <linearGradient id="colorIncome" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor={isHighContrast ? '#f8fafc' : '#10b981'} stopOpacity={0.3}/>
-                      <stop offset="95%" stopColor={isHighContrast ? '#f8fafc' : '#10b981'} stopOpacity={0}/>
+                      <stop offset="5%" stopColor="#10b981" stopOpacity={0.3}/>
+                      <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
                     </linearGradient>
                     <linearGradient id="colorExpense" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor={isHighContrast ? '#fbbf24' : '#f43f5e'} stopOpacity={0.3}/>
-                      <stop offset="95%" stopColor={isHighContrast ? '#fbbf24' : '#f43f5e'} stopOpacity={0}/>
+                      <stop offset="5%" stopColor="#f43f5e" stopOpacity={0.3}/>
+                      <stop offset="95%" stopColor="#f43f5e" stopOpacity={0}/>
                     </linearGradient>
                   </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke={isHighContrast ? '#334155' : '#e2e8f0'} />
-                  <XAxis dataKey="name" tick={{ fontSize: 9, fontWeight: 'bold' }} stroke={isHighContrast ? '#f8fafc' : '#94a3b8'} />
-                  <YAxis tick={{ fontSize: 8, fontWeight: 'bold' }} stroke={isHighContrast ? '#f8fafc' : '#94a3b8'} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                  <XAxis dataKey="name" tick={{ fontSize: 9, fontWeight: 'bold', fill: '#64748b' }} stroke="#e2e8f0" />
+                  <YAxis tick={{ fontSize: 8, fontWeight: 'bold', fill: '#64748b' }} stroke="#e2e8f0" />
                   <RechartsTooltip 
                     formatter={(value: any) => [`${Number(value).toLocaleString()} ر.س`, '']}
-                    contentStyle={{ backgroundColor: isHighContrast ? '#0f172a' : '#020D1F', borderRadius: '12px', border: '1px solid #334155', color: isHighContrast ? '#fbbf24' : '#fff' }}
+                    contentStyle={{ backgroundColor: '#ffffff', borderRadius: '12px', border: '1px solid #e2e8f0', color: '#0f172a', fontWeight: 'bold' }}
                   />
-                  <Legend iconType="circle" wrapperStyle={{ fontSize: '9px', fontWeight: 'bold' }} />
-                  <Area type="monotone" name="الأتعاب المحصلة" dataKey="income" stroke={isHighContrast ? '#f8fafc' : '#10b981'} fillOpacity={1} fill="url(#colorIncome)" strokeWidth={2.5} />
-                  <Area type="monotone" name="المصروفات والضرائب" dataKey="expense" stroke={isHighContrast ? '#fbbf24' : '#f43f5e'} fillOpacity={1} fill="url(#colorExpense)" strokeWidth={2.5} />
+                  <Legend iconType="circle" wrapperStyle={{ fontSize: '9px', fontWeight: 'bold', color: '#64748b' }} />
+                  <Area type="monotone" name="الأتعاب المحصلة" dataKey="income" stroke="#10b981" fillOpacity={1} fill="url(#colorIncome)" strokeWidth={2.5} />
+                  <Area type="monotone" name="المصروفات والضرائب" dataKey="expense" stroke="#f43f5e" fillOpacity={1} fill="url(#colorExpense)" strokeWidth={2.5} />
                 </AreaChart>
               </ResponsiveContainer>
             </div>
@@ -2278,6 +2301,8 @@ export default function FinanceModule({
           </div>
 
         </div>
+      )}
+        </>
       )}
 
       {/* Invoice Generator Modal Popup Form */}

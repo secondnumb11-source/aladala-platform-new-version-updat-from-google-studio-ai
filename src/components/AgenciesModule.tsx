@@ -4,6 +4,7 @@ import {
   Trash2, ShieldCheck, ShieldAlert, CheckCircle2, 
   Clock, RefreshCw, X, FileSpreadsheet, User, Scale, FileKey
 } from 'lucide-react';
+import CountdownTimer from './CountdownTimer';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   collection, 
@@ -407,6 +408,13 @@ export default function AgenciesModule({ clients, onUpdateState }: AgenciesModul
                   </div>
                 </div>
 
+                {getRemainingDays(selectedAgency.expiryDate) > 0 && (
+                  <div className="p-4 bg-rose-50/50 border border-rose-100 rounded-2xl flex flex-col items-center gap-2">
+                    <span className="text-[10px] font-black text-rose-500 uppercase tracking-widest">العد التنازلي لانتهاء الصلاحية</span>
+                    <CountdownTimer targetDate={selectedAgency.expiryDate} />
+                  </div>
+                )}
+
                 <div className="space-y-3">
                   <h4 className="text-sm font-black text-slate-900 border-b pb-2">أطراف الوكالة (الموكل والوكيل)</h4>
                   {selectedAgency.parties && selectedAgency.parties.length > 0 ? (
@@ -533,14 +541,14 @@ export default function AgenciesModule({ clients, onUpdateState }: AgenciesModul
                 </div>
 
                 {expiryDate && (
-                  <div className="bg-slate-50 border border-slate-200 p-4 rounded-xl flex items-center justify-between">
-                    <span className="text-xs font-bold text-slate-700 flex items-center gap-2">
-                       <Clock className="w-4 h-4 text-indigo-600" />
-                       الزمن المتبقي لانتهاء الوكالة المضافة:
-                    </span>
-                    <span className={`text-sm font-black font-mono px-3 py-1 rounded-lg ${getRemainingDays(expiryDate) <= 0 ? 'bg-rose-100 text-rose-700' : 'bg-indigo-100 text-indigo-700'}`}>
-                      {getRemainingDays(expiryDate) <= 0 ? 'منتهية المدة' : `متبقي ${getRemainingDays(expiryDate)} أيام`}
-                    </span>
+                  <div className="bg-slate-50 border border-slate-200 p-5 rounded-2xl flex items-center justify-between shadow-inner">
+                    <div className="space-y-1">
+                      <span className="text-[10px] font-black text-indigo-500 uppercase tracking-widest block">المؤقت الزمني التنازلي</span>
+                      <span className="text-xs font-bold text-slate-700 flex items-center gap-2">
+                         الزمن المتبقي لانتهاء الوكالة المضافة:
+                      </span>
+                    </div>
+                    <CountdownTimer targetDate={expiryDate} />
                   </div>
                 )}
 

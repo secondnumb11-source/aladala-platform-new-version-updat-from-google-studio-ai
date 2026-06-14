@@ -861,26 +861,27 @@ export default function CalendarModule({ cases, hearings, tasks, invoices = [], 
           </div>
 
           {/* Interactive Quick Add Commitment & Real-time Conflict Analyzer Form */}
-          <div className="bg-gradient-to-br from-[#9A7D2C] via-[#0D1B2A] to-[#0284C7] border-2 border-[#9A7D2C] rounded-2xl p-5 space-y-4 text-white shadow-2xl">
-            <div className="flex items-center gap-2 border-b border-white/20 pb-2.5">
-              <Sparkles className="w-5 h-5 text-yellow-300 animate-pulse" />
-              <h2 className="text-xs font-black text-white">إضافة التزام قضائي وفحص التعارض الفوري</h2>
+          <div className="bg-slate-50 border-2 border-slate-200 rounded-2xl p-6 space-y-6 text-slate-900 shadow-2xl relative overflow-hidden">
+            <div className="absolute top-0 left-0 w-1 h-full bg-amber-500"></div>
+            <div className="flex items-center gap-3 border-b border-slate-200 pb-4">
+              <Sparkles className="w-5 h-5 text-amber-600 animate-pulse" />
+              <h2 className="text-sm font-black text-slate-900 uppercase tracking-tight">إضافة التزام قضائي وفحص التعارض الفوري</h2>
             </div>
             
-            <p className="text-xs text-yellow-100 leading-normal mb-2 font-bold">
+            <p className="text-xs text-slate-600 leading-relaxed mb-2 font-bold">
               قم بإدخال تفاصيل الجلسة القضائية أو المهمة الإدارية لتحليل ملاءمة الأوقات وتفادي الغياب أو التداخل بالدائرة.
             </p>
 
-            <form onSubmit={handleAddNewCommitment} className="space-y-3">
+            <form onSubmit={handleAddNewCommitment} className="space-y-4">
               {/* Type selector */}
-              <div className="grid grid-cols-2 gap-2 bg-[#040d1f] p-1 rounded-xl border border-slate-850">
+              <div className="grid grid-cols-2 gap-2 bg-slate-200/50 p-1 rounded-xl border border-slate-200">
                 <button
                   type="button"
                   onClick={() => setNewCommType("hearing")}
-                  className={`py-1.5 rounded-lg text-xs font-black transition-all ${
+                  className={`py-2 rounded-lg text-xs font-black transition-all ${
                     newCommType === "hearing" 
-                      ? "bg-yellow-500 text-slate-950 shadow-sm" 
-                      : "text-slate-200"
+                      ? "bg-amber-500 text-white shadow-md scale-100" 
+                      : "text-slate-600 hover:bg-slate-200"
                   } `}
                 >
                   ⚖️ جلسة قضائية
@@ -888,10 +889,10 @@ export default function CalendarModule({ cases, hearings, tasks, invoices = [], 
                 <button
                   type="button"
                   onClick={() => setNewCommType("obligation")}
-                  className={`py-1.5 rounded-lg text-xs font-black transition-all ${
+                  className={`py-2 rounded-lg text-xs font-black transition-all ${
                     newCommType === "obligation" 
-                      ? "bg-yellow-500 text-slate-950 shadow-sm" 
-                      : "text-slate-200"
+                      ? "bg-amber-500 text-white shadow-md scale-100" 
+                      : "text-slate-600 hover:bg-slate-200"
                   } `}
                 >
                   📌 التزام / مهمة
@@ -899,72 +900,74 @@ export default function CalendarModule({ cases, hearings, tasks, invoices = [], 
               </div>
 
               {/* Title Input */}
-              <div className="space-y-1">
-                <label className="text-xs text-slate-200 font-bold block">موضوع الجلسة / الالتزام الجديد *</label>
+              <div className="space-y-1.5">
+                <label className="text-xs text-slate-900 font-black flex items-center gap-1.5 uppercase tracking-wide">
+                   موضوع الجلسة / الالتزام الجديد *
+                </label>
                 <input
                   type="text"
                   required
                   placeholder={newCommType === "hearing" ? "مثال: مرافعة بطلان عقد توريد" : "مثال: اجتماع عمل استشاري"}
                   value={newTitle}
                   onChange={(e) => setNewTitle(e.target.value)}
-                  className="w-full bg-[#040d1f] border border-slate-850 text-xs py-1.5 px-2.5 rounded-xl text-white outline-none focus:ring-1 focus:ring-yellow-500 transition-all font-sans text-right placeholder-slate-500"
+                  className="w-full bg-white border-2 border-slate-200 text-xs py-2.5 px-3.5 rounded-xl text-slate-900 outline-none focus:border-amber-500 transition-all font-sans text-right placeholder-slate-400 shadow-sm"
                 />
               </div>
 
               {/* Client and Lawyer row */}
-              <div className="grid grid-cols-2 gap-2">
-                <div className="space-y-1">
-                  <label className="text-xs text-slate-200 font-bold block">اسم العميل</label>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <label className="text-xs text-slate-900 font-black uppercase tracking-wide">اسم العميل</label>
                   <input
                     type="text"
                     placeholder="مثال: شركة سابك"
                     value={newClient}
                     onChange={(e) => setNewClient(e.target.value)}
-                    className="w-full bg-[#040d1f] border border-slate-850 text-xs py-1.5 px-2 rounded-xl text-white outline-none focus:ring-1 focus:ring-yellow-500 transition-all font-sans text-right placeholder-slate-500"
+                    className="w-full bg-white border-2 border-slate-200 text-xs py-2.5 px-3 rounded-xl text-slate-900 outline-none focus:border-amber-500 transition-all font-sans text-right placeholder-slate-400 shadow-sm"
                   />
                 </div>
-                <div className="space-y-1">
-                  <label className="text-xs text-slate-200 font-bold block">المحامي المسؤول</label>
+                <div className="space-y-1.5">
+                  <label className="text-xs text-slate-900 font-black uppercase tracking-wide">المحامي المسؤول</label>
                   <input
                     type="text"
                     placeholder="شريك أول"
                     value={newLawyer}
                     onChange={(e) => setNewLawyer(e.target.value)}
-                    className="w-full bg-[#040d1f] border border-slate-850 text-xs py-1.5 px-2 rounded-xl text-white outline-none focus:ring-1 focus:ring-yellow-500 transition-all font-sans text-right placeholder-slate-500"
+                    className="w-full bg-white border-2 border-slate-200 text-xs py-2.5 px-3 rounded-xl text-slate-900 outline-none focus:border-amber-500 transition-all font-sans text-right placeholder-slate-400 shadow-sm"
                   />
                 </div>
               </div>
 
               {/* Court Details */}
-              <div className="space-y-1">
-                <label className="text-xs text-slate-200 font-bold block">المحكمة / موقع الانعقاد</label>
+              <div className="space-y-1.5">
+                <label className="text-xs text-slate-900 font-black uppercase tracking-wide">المحكمة / موقع الانعقاد</label>
                 <input
                   type="text"
                   placeholder="المحكمة التجارية بالرياض - الدائرة الثالثة"
                   value={newCourt}
                   onChange={(e) => setNewCourt(e.target.value)}
-                  className="w-full bg-[#040d1f] border border-slate-850 text-xs py-1.5 px-2.5 rounded-xl text-white outline-none focus:ring-1 focus:ring-yellow-500 transition-all font-sans text-right placeholder-slate-500"
+                  className="w-full bg-white border-2 border-slate-200 text-xs py-2.5 px-3.5 rounded-xl text-slate-900 outline-none focus:border-amber-500 transition-all font-sans text-right placeholder-slate-400 shadow-sm"
                 />
               </div>
 
               {/* Date & Time Row */}
-              <div className="grid grid-cols-2 gap-2">
-                <div className="space-y-1">
-                  <label className="text-xs text-slate-200 font-bold block">التاريخ المعين</label>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <label className="text-xs text-slate-900 font-black uppercase tracking-wide">التاريخ المعين</label>
                   <input
                     type="date"
                     required
                     value={newDate}
                     onChange={(e) => setNewDate(e.target.value)}
-                    className="w-full bg-[#040d1f] border border-slate-850 text-xs py-1 px-1.5 rounded-xl text-white outline-none focus:ring-1 focus:ring-yellow-500 transition-all font-mono text-center"
+                    className="w-full bg-white border-2 border-slate-200 text-xs py-2 px-2 rounded-xl text-slate-900 outline-none focus:border-amber-500 transition-all font-mono text-center shadow-sm"
                   />
                 </div>
-                <div className="space-y-1">
-                  <label className="text-xs text-slate-200 font-bold block">التوقيت</label>
+                <div className="space-y-1.5">
+                  <label className="text-xs text-slate-900 font-black uppercase tracking-wide">التوقيت</label>
                   <select
                     value={newTime}
                     onChange={(e) => setNewTime(e.target.value)}
-                    className="w-full bg-[#040d1f] border border-slate-850 text-xs py-1.5 px-1.5 rounded-xl text-white outline-none focus:ring-1 focus:ring-yellow-500 transition-all font-sans text-center"
+                    className="w-full bg-white border-2 border-slate-200 text-xs py-2.5 px-2 rounded-xl text-slate-900 outline-none focus:border-amber-500 transition-all font-sans text-center shadow-sm"
                   >
                     <option value="08:00 صباحاً">08:00 صباحاً</option>
                     <option value="09:00 صباحاً">09:00 صباحاً</option>
@@ -978,23 +981,23 @@ export default function CalendarModule({ cases, hearings, tasks, invoices = [], 
 
               {/* Visual Instant Conflict Alerts Panel */}
               {instantConflict && (
-                <div className="bg-rose-950/80 border border-rose-800 p-3 rounded-xl text-xs text-rose-300 space-y-1 animate-pulse">
+                <div className="bg-rose-50 border-2 border-rose-200 p-4 rounded-xl text-xs text-rose-900 space-y-1 animate-pulse">
                   <div className="font-extrabold flex items-center gap-1 justify-start">
                     <span>🚨</span>
                     <span>كشف تعارض آني:</span>
                   </div>
-                  <p className="leading-relaxed font-bold text-right text-rose-200">{instantConflict.message}</p>
+                  <p className="leading-relaxed font-bold text-right text-rose-800">{instantConflict.message}</p>
                 </div>
               )}
               {!instantConflict && newTitle.trim() && (
-                <div className="bg-emerald-950/80 border border-emerald-800 p-2 rounded-xl text-xs text-emerald-300 font-bold flex items-center gap-1 justify-start">
+                <div className="bg-emerald-50 border-2 border-emerald-200 p-3 rounded-xl text-xs text-emerald-900 font-bold flex items-center gap-2 justify-start">
                   <span>🟢</span>
                   <span>الموعد متاح وخالي من التعارضات بالأجندة.</span>
                 </div>
               )}
 
               {addingSuccess && (
-                <div className="bg-emerald-950 border border-emerald-800 p-2 rounded-xl text-xs text-emerald-300 font-extrabold text-center">
+                <div className="bg-emerald-100 border-2 border-emerald-300 p-3 rounded-xl text-xs text-emerald-900 font-extrabold text-center shadow-sm">
                   ✅ تم الحفظ وإدراج الموعد بالأجندة محلياً وسحابياً!
                 </div>
               )}

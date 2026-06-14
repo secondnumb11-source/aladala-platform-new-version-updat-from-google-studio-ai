@@ -594,29 +594,35 @@ export default function MainLandingPage({ onSignInSelect, onTrialSelect }: MainL
                   </h4>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                     {/* Before Method */}
-                    <div className={`p-4 border-2 rounded-2xl text-right relative overflow-hidden shadow-sm ${
+                    <div className={`p-6 border rounded-[2rem] text-right relative overflow-hidden shadow-md transition-all duration-300 ${
                       activeTab === 'ai-drafting' 
-                        ? 'bg-[#5c0d12]/90 border-rose-300/40' 
-                        : 'bg-rose-50/90 border-rose-300/80'
+                        ? 'bg-rose-950/40 border-rose-500/30' 
+                        : 'bg-rose-50 border-rose-200'
                     }`}>
-                      <span className="text-[9.5px] bg-rose-100 text-rose-800 font-black px-2.5 py-1 rounded w-fit block mb-2 uppercase">
-                        🔴 {isEn ? "Before (Traditional Method)" : "العمل بالطرق التقليدية اليدوية"}
+                      <div className="absolute top-0 left-0 w-24 h-24 bg-rose-500/5 rounded-full -translate-x-1/2 -translate-y-1/2 blur-2xl" />
+                      <span className={`text-[10px] font-black px-3 py-1.5 rounded-lg w-fit block mb-4 uppercase tracking-wider ${
+                        activeTab === 'ai-drafting' ? 'bg-rose-500 text-white' : 'bg-rose-100 text-rose-700'
+                      }`}>
+                        🔴 {isEn ? "Traditional Method" : "العمل بالطرق التقليدية اليدوية"}
                       </span>
-                      <p className="text-xs md:text-sm leading-relaxed text-slate-950 font-bold">
+                      <p className={`text-sm leading-relaxed font-bold ${activeTab === 'ai-drafting' ? 'text-rose-50' : 'text-slate-900'}`}>
                         {isEn ? matchingF.workflowBeforeEn : matchingF.workflowBeforeAr}
                       </p>
                     </div>
 
                     {/* After Method */}
-                    <div className={`p-4 border-2 rounded-2xl text-right relative overflow-hidden shadow-sm ${
+                    <div className={`p-6 border rounded-[2rem] text-right relative overflow-hidden shadow-md transition-all duration-300 ${
                       activeTab === 'ai-drafting' 
-                        ? 'bg-[#0f3d1b]/90 border-emerald-300/40' 
-                        : 'bg-emerald-50/90 border-emerald-300/80'
+                        ? 'bg-emerald-950/40 border-emerald-500/30' 
+                        : 'bg-emerald-50 border-emerald-200'
                     }`}>
-                      <span className="text-[9.5px] bg-emerald-100 text-emerald-800 font-black px-2.5 py-1 rounded w-fit block mb-2 uppercase">
+                      <div className="absolute top-0 left-0 w-24 h-24 bg-emerald-500/5 rounded-full -translate-x-1/2 -translate-y-1/2 blur-2xl" />
+                      <span className={`text-[10px] font-black px-3 py-1.5 rounded-lg w-fit block mb-4 uppercase tracking-wider ${
+                        activeTab === 'ai-drafting' ? 'bg-emerald-500 text-white' : 'bg-emerald-100 text-emerald-700'
+                      }`}>
                         🟢 {isEn ? "After Al-Adalah Platform" : "بينما مع حلول منصة العدالة"}
                       </span>
-                      <p className="text-xs md:text-sm leading-relaxed text-slate-950 font-extrabold">
+                      <p className={`text-sm leading-relaxed font-extrabold ${activeTab === 'ai-drafting' ? 'text-emerald-50' : 'text-slate-900'}`}>
                         {isEn ? matchingF.workflowAfterEn : matchingF.workflowAfterAr}
                       </p>
                     </div>
@@ -624,46 +630,50 @@ export default function MainLandingPage({ onSignInSelect, onTrialSelect }: MainL
                 </div>
 
                 {/* Direct Comparison inside the feature explorer */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 border-t border-slate-150 ">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 pt-8 border-t border-slate-100/10">
                   
                   {/* MoAdalah Card */}
-                  <div className={`p-4 border-2 rounded-2xl space-y-1.5 text-right flex flex-col justify-between shadow-sm ${
+                  <div className={`p-6 border rounded-[2.5rem] space-y-4 text-right flex flex-col justify-between shadow-xl transition-all duration-500 hover:scale-[1.02] ${
                     activeTab === 'ai-drafting' 
-                      ? 'bg-[#8c6d12]/90 border-emerald-350/40' 
-                      : 'bg-emerald-50/90 border-emerald-350'
+                      ? 'bg-amber-500/10 border-amber-500/30 ring-1 ring-amber-500/20' 
+                      : 'bg-emerald-50/50 border-emerald-100 shadow-emerald-500/5'
                   }`}>
                     <div>
-                      <span className="text-xs bg-emerald-100 text-emerald-850 font-extrabold px-2.5 py-1 rounded w-fit block mb-1">
+                      <span className={`text-[10px] font-black px-4 py-2 rounded-xl w-fit block mb-4 uppercase tracking-[0.1em] shadow-sm ${
+                        activeTab === 'ai-drafting' ? 'bg-amber-500 text-white' : 'bg-white text-emerald-700 border border-emerald-100'
+                      }`}>
                         ⚖️ {isEn ? "Al-Adalah Advantage" : "منفعة منصة العدالة الحصرية"}
                       </span>
-                      <p className={`text-[11.5px] leading-relaxed font-extrabold ${activeTab === 'ai-drafting' ? 'text-[#0c2461]' : 'text-slate-950'}`}>
+                      <p className={`text-[13px] leading-relaxed font-black ${activeTab === 'ai-drafting' ? 'text-amber-50' : 'text-slate-900'}`}>
                         {matchingF.advAdalah}
                       </p>
                     </div>
-                    <span className="text-xs text-slate-700 mt-2 font-mono flex items-center gap-1.5 font-bold">
-                      <Check className="w-4 h-4 text-emerald-700 font-black" />
+                    <div className={`flex items-center gap-2.5 text-[10px] font-black mt-4 pt-4 border-t ${activeTab === 'ai-drafting' ? 'border-amber-500/10 text-amber-400' : 'border-emerald-200/50 text-emerald-600'}`}>
+                      <CheckCircle2 className="w-4 h-4 flex-shrink-0" />
                       <span>{isEn ? "Included in Trial Version" : "مفعَّل بالنسخة التجريبية"}</span>
-                    </span>
+                    </div>
                   </div>
 
                   {/* Competitor Card */}
-                  <div className={`p-4 border-2 rounded-2xl space-y-1.5 text-right flex flex-col justify-between shadow-sm ${
+                  <div className={`p-6 border rounded-[2.5rem] space-y-4 text-right flex flex-col justify-between shadow-lg transition-all duration-500 hover:scale-[1.01] ${
                     activeTab === 'ai-drafting' 
-                      ? 'bg-[#5c0d12]/90 border-red-350/40' 
-                      : 'bg-red-50/90 border-red-350'
+                      ? 'bg-rose-500/5 border-rose-500/20' 
+                      : 'bg-rose-50/30 border-rose-100 shadow-rose-500/5'
                   }`}>
                     <div>
-                      <span className="text-xs bg-red-100 text-red-850 font-extrabold px-2.5 py-1 rounded w-fit block mb-1">
+                      <span className={`text-[10px] font-black px-4 py-2 rounded-xl w-fit block mb-4 uppercase tracking-[0.1em] shadow-sm ${
+                        activeTab === 'ai-drafting' ? 'bg-rose-500 text-white' : 'bg-white text-rose-700 border border-rose-100'
+                      }`}>
                         ✘ {isEn ? "Standard Competitor Systems" : "العيوب بالبرامج الأخرى"}
                       </span>
-                      <p className={`text-[11.5px] leading-relaxed font-bold ${activeTab === 'ai-drafting' ? 'text-[#0c2461]' : 'text-slate-950'}`}>
+                      <p className={`text-[13px] leading-relaxed font-bold ${activeTab === 'ai-drafting' ? 'text-rose-100/80' : 'text-slate-600'}`}>
                         {matchingF.advCompetitors}
                       </p>
                     </div>
-                    <span className="text-xs text-red-750 mt-2 flex items-center gap-1.5 font-extrabold">
-                      <span className="text-red-650">⚠️</span>
-                      <span>{isEn ? "Fails at Scale" : "يهدر الساعات ويؤخر الأداء"}</span>
-                    </span>
+                    <div className={`flex items-center gap-2.5 text-[10px] font-black mt-4 pt-4 border-t ${activeTab === 'ai-drafting' ? 'border-rose-500/10 text-rose-400' : 'border-rose-200/50 text-rose-400'}`}>
+                      <ShieldAlert className="w-4 h-4 flex-shrink-0" />
+                      <span>{isEn ? "High operational risk & missing sync" : "يهدر الساعات ويؤخر الأداء"}</span>
+                    </div>
                   </div>
 
                 </div>

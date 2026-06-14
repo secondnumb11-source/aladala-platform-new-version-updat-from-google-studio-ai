@@ -24,13 +24,14 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import TaskCountdown from './TaskCountdown';
+import CountdownTimer from './CountdownTimer';
 import { 
   Users, 
   Briefcase, 
   CheckSquare, 
   DollarSign, 
   Calendar, 
-  Clock, 
+  Clock as ClockIcon, 
   AlertCircle, 
   Cpu, 
   ChevronLeft,
@@ -70,9 +71,12 @@ import {
   Keyboard,
   Info,
   ArrowRight,
-  Activity
+  Activity,
+  Layers,
+  Heart,
+  LayoutGrid
 } from 'lucide-react';
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 import { Case, Client, Invoice, Task, Hearing } from '@/types';
 import HearingCustomTimer from './HearingCustomTimer';
 import { InteractiveCard } from './InteractiveCard';
@@ -89,7 +93,8 @@ import { Upload, Download, Eye, EyeOff } from 'lucide-react';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import { NajizWidget } from './NajizWidget';
-import NajizPerformanceWidget from './NajizPerformanceWidget';
+
+import { NajizPerformanceWidget, AgenciesAlertWidget, OverdueTasksWidget, DeadlinesWidget, UpcomingHearingsList, EmployeePerformanceKPI } from './dashboard/DashboardWidgets';
 
 const GaugeMeter = React.memo(({ percentage, color = '#b8860b', label }: { percentage: number, color?: string, label: string }) => {
   const radius = 42;
@@ -116,7 +121,7 @@ const GaugeMeter = React.memo(({ percentage, color = '#b8860b', label }: { perce
   );
 });
 
-const SummaryWidget = ({ icon, title, description, badgeValue, children }: { icon: React.ReactNode, title: string, description: string, badgeValue?: string | number, children: React.ReactNode }) => (
+export const SummaryWidget = ({ icon, title, description, badgeValue, children }: { icon: React.ReactNode, title: string, description: string, badgeValue?: string | number, children: React.ReactNode }) => (
   <div className="bg-slate-900 border border-[#D4AF37]/30 rounded-3xl p-6 shadow-xl border-[#D4AF37]/60 flex flex-col h-full card-professional relative overflow-hidden">
     <div className="absolute inset-0 bg-gradient-to-br from-[#D4AF37]/10 to-transparent opacity-0 pointer-events-none"></div>
     <div className="flex items-center justify-between mb-4 relative z-10">
@@ -126,7 +131,7 @@ const SummaryWidget = ({ icon, title, description, badgeValue, children }: { ico
         </div>
         <div>
           <h4 className="font-black text-white text-base tracking-tight">{title}</h4>
-          <p className="text-[10px] text-slate-400 font-bold mt-0.5">{description}</p>
+          <p className="text-[11px] text-slate-300 font-semibold mt-0.5">{description}</p>
         </div>
       </div>
       {badgeValue !== undefined && (
@@ -177,6 +182,109 @@ const ensureKpisFirst = (items: any[]) => {
 
 import { useRenderPerformance } from '../lib/PerformanceOptimizer';
 
+const DashboardClock = ({ style = 'digital', color = '#D4AF37' }: { style?: string, color?: string }) => {
+  const [time, setTime] = useState(new Date());
+
+  useEffect(() => {
+    const timer = setInterval(() => setTime(new Date()), 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const timeString = time.toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit', second: style === 'digital' ? '2-digit' : undefined });
+  const dateString = time.toLocaleDateString('ar-SA', { weekday: 'long', day: 'numeric', month: 'long' });
+
+  if (style === 'minimal') {
+    return (
+      <div className="flex flex-col items-end">
+        <span className="text-2xl font-black tracking-tighter" style={{ color }}>{timeString}</span>
+        <span className="text-[11px] font-bold text-slate-300">{dateString}</span>
+      </div>
+    );
+  }
+
+  if (style === 'classic') {
+    return (
+      <div className="flex items-center gap-4 bg-slate-900/50 backdrop-blur-xl border border-white/20 px-6 py-3 rounded-2xl shadow-2xl">
+        <div className="w-10 h-10 rounded-full border-2 border-amber-500/50 flex items-center justify-center relative">
+          <div className="w-1 h-3 bg-amber-500 rounded-full absolute top-2 origin-bottom animate-[spin_60s_linear_infinite]" style={{ transformOrigin: 'bottom center' }}></div>
+          <div className="w-1 h-4 bg-slate-200 rounded-full absolute top-1 origin-bottom animate-[spin_3600s_linear_infinite]"></div>
+          <div className="w-1.5 h-1.5 bg-white rounded-full z-10"></div>
+        </div>
+        <div className="flex flex-col">
+          <span className="text-xl font-black text-white leading-none">{timeString}</span>
+          <span className="text-[11px] font-bold text-amber-400 uppercase tracking-widest mt-1">{dateString}</span>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="p-4 bg-gradient-to-br from-slate-900 to-slate-800 rounded-3xl border border-[#D4AF37]/30 shadow-2xl flex flex-col items-center justify-center min-w-[180px]">
+      <div className="flex items-center gap-2 mb-1">
+        <ClockIcon className="w-3.5 h-3.5 text-amber-500" />
+        <span className="text-[10px] font-black text-amber-400 uppercase tracking-widest">الوقت الحالي</span>
+      </div>
+      <span className="text-3xl font-black text-white tabular-nums tracking-tighter" style={{ color }}>{timeString}</span>
+      <div className="mt-2 text-[11px] font-bold text-slate-200 bg-white/10 py-1 px-3 rounded-full">{dateString}</div>
+    </div>
+  );
+};
+
+const EnhancedSortableWidgetWrapper = ({ id, children, className, isCustomizing, widgetSize, onResize }: any) => {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging
+  } = useSortable({ id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    zIndex: isDragging ? 100 : undefined,
+    opacity: isDragging ? 0.3 : 1,
+  };
+
+  return (
+    <div 
+      ref={setNodeRef} 
+      style={style} 
+      className={`${className} transition-all duration-300 relative ${isCustomizing ? 'ring-[3px] ring-dashed ring-amber-500/50 rounded-[2.5rem] p-2' : ''}`}
+    >
+      {isCustomizing && (
+        <div className="absolute -top-4 right-8 z-50 flex gap-2 w-max">
+          <button 
+            {...attributes} 
+            {...listeners}
+            className="p-2 bg-slate-900 text-white rounded-xl shadow-lg cursor-grab active:cursor-grabbing hover:bg-amber-500 transition-colors"
+          >
+            <GripVertical size={16} />
+          </button>
+          
+          <div className="flex bg-slate-900/90 backdrop-blur-md rounded-xl p-1 border border-white/10 shadow-lg">
+            {['qr', 'half', 'full'].map(size => (
+              <button
+                key={size}
+                onClick={() => onResize(id, size)}
+                className={`px-2 py-1 rounded-lg text-[10px] font-black uppercase transition-all ${
+                  widgetSize === size ? 'bg-amber-500 text-slate-900' : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                {size}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+      <div className={`h-full rounded-[2.5rem] shadow-[0_10px_30px_rgba(0,0,0,0.05)] overflow-hidden transition-all duration-500 ${isDragging ? 'scale-95 shadow-2xl' : ''}`}>
+        {children}
+      </div>
+    </div>
+  );
+};
+
 const Dashboard = function Dashboard({
   cases = [],
   clients = [],
@@ -198,6 +306,68 @@ const Dashboard = function Dashboard({
   const [performanceTab, setPerformanceTab] = useState<'overview' | 'trends' | 'comparison'>('overview');
   const [isHighContrast, setIsHighContrast] = useState(() => document.body.classList.contains('high-contrast-mode'));
   const [isCustomizing, setIsCustomizing] = useState(false);
+  const [isLibraryOpen, setIsLibraryOpen] = useState(false);
+  const [userName, setUserName] = useState(() => localStorage.getItem('adalah-dashboard-username') || 'المستخدم');
+  const [isEditingUserName, setIsEditingUserName] = useState(false);
+
+  useEffect(() => {
+    const handleUsernameChange = () => {
+      try {
+        setUserName(localStorage.getItem('adalah-dashboard-username') || 'المستخدم');
+      } catch {}
+    };
+    window.addEventListener('adalah-username-changed', handleUsernameChange);
+    return () => window.removeEventListener('adalah-username-changed', handleUsernameChange);
+  }, []);
+
+  useEffect(() => {
+    if (currentUser?.name) {
+      setUserName(currentUser.name);
+      localStorage.setItem('adalah-dashboard-username', currentUser.name);
+    }
+  }, [currentUser]);
+
+  const handleSaveUserName = async (val: string) => {
+    setUserName(val);
+    localStorage.setItem('adalah-dashboard-username', val);
+    window.dispatchEvent(new Event('adalah-username-changed'));
+
+    try {
+      const uid = auth?.currentUser?.uid;
+      if (uid) {
+        await setDoc(doc(db, 'users', uid), { name: val }, { merge: true });
+        if (onUpdateState) {
+          onUpdateState('users', { id: uid, name: val });
+        }
+      }
+    } catch (err) {
+      console.warn("Failed to save name to Firestore", err);
+    }
+  };
+
+  const [clockSettings, setClockSettings] = useState(() => {
+    const saved = localStorage.getItem('adalah-dashboard-clock-settings');
+    return saved ? JSON.parse(saved) : { style: 'digital', color: '#D4AF37', enabled: true };
+  });
+
+  const availableWidgets = [
+    { id: 'najizPerformance', name: 'أداء ناجز', icon: <Activity className="w-4 h-4" /> },
+    { id: 'employeePerformanceKPI', name: 'أداء الموظفين', icon: <Users className="w-4 h-4" /> },
+    { id: 'upcomingHearingsCard', name: 'الجلسات القادمة', icon: <Calendar className="w-4 h-4" /> },
+    { id: 'summaryAI', name: 'مستشار AI ذكي', icon: <Cpu className="w-4 h-4" /> },
+    { id: 'taskSuggestions', name: 'اقتراحات المهام AI', icon: <Sparkles className="w-4 h-4" /> },
+    { id: 'agenciesAlerts', name: 'تنبيهات الوكالات', icon: <ShieldCheck className="w-4 h-4" /> },
+    { id: 'overdueTasks', name: 'المهام المتأخرة', icon: <AlertTriangle className="w-4 h-4" /> },
+    { id: 'deadlinesWidget', name: 'مهل الاستئناف', icon: <ClockIcon className="w-4 h-4" /> },
+    { id: 'kpiCases', name: 'إحصائيات القضايا', icon: <Briefcase className="w-4 h-4" /> },
+    { id: 'kpiClients', name: 'إحصائيات الموكلين', icon: <Users className="w-4 h-4" /> },
+    { id: 'kpiInvoices', name: 'الفواتير الغير مسددة', icon: <DollarSign className="w-4 h-4" /> },
+    { id: 'kpiTasks', name: 'المهام المعلقة', icon: <CheckSquare className="w-4 h-4" /> },
+    { id: 'partnerAnalytics', name: 'تحليلات الشريك', icon: <Crown className="w-4 h-4" /> },
+    { id: 'efficiency', name: 'كفاءة العمليات', icon: <TrendingUp className="w-4 h-4" /> },
+    { id: 'appealsReminder', name: 'مواعيد الاستئناف', icon: <AlertCircle className="w-4 h-4" /> },
+    { id: 'timelineCard', name: 'الجدول الزمني', icon: <Calendar className="w-4 h-4" /> }
+  ];
 
   const [employees, setEmployees] = useState<any[]>([]);
   const [agencies, setAgencies] = useState<any[]>([]);
@@ -318,6 +488,14 @@ const Dashboard = function Dashboard({
       window.removeEventListener('adalah-advanced-config-updated', handleThemeEvent);
       clearTimeout(loader);
     };
+  }, []);
+
+  // Clock state for real-time header
+  const [currentTime, setCurrentTime] = useState(new Date());
+
+  useEffect(() => {
+    const timer = setInterval(() => setCurrentTime(new Date()), 1000);
+    return () => clearInterval(timer);
   }, []);
 
   useEffect(() => {
@@ -550,6 +728,16 @@ const Dashboard = function Dashboard({
   const handleUpdateWidgetSize = (id: string, newSize: string) => {
     const updated = widgets.map((w: any) => w.id === id ? { ...w, size: newSize } : w);
     setWidgets(updated);
+    saveWidgets(updated);
+  };
+
+  const handleUpdateWidgetColor = (id: string, color: string) => {
+    const updated = widgets.map((w: any) => w.id === id ? { ...w, color } : w);
+    setWidgets(updated);
+    saveWidgets(updated);
+  };
+
+  const saveWidgets = (updated: any) => {
     localStorage.setItem(`dashboard_widgets_config_${selectedRole}_v2`, JSON.stringify(updated));
     const uid = auth.currentUser?.uid;
     if (uid) {
@@ -697,6 +885,34 @@ const Dashboard = function Dashboard({
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
   );
 
+  const toggleWidgetVisibility = (id: string) => {
+    let exists = false;
+    let updated = widgets.map((w: any) => {
+      if (w.id === id) {
+        exists = true;
+        return { ...w, visible: w.visible === false ? true : false };
+      }
+      return w;
+    });
+    
+    if (!exists) {
+      updated.push({ id, visible: false, order: updated.length, size: 'half' });
+    }
+    
+    setWidgets(updated);
+    saveWidgets(updated);
+  };
+
+  const imminentHearings = React.useMemo(() => {
+    const now = new Date();
+    const fortyEightHoursLater = new Date(now.getTime() + 48 * 60 * 60 * 1000);
+    return hearings.filter(h => {
+      if (!h.date) return false;
+      const hDate = new Date(h.date);
+      return hDate >= now && hDate <= fortyEightHoursLater;
+    }).slice(0, 1);
+  }, [hearings]);
+
   return (
     <SystemErrorRecovery 
       isError={dataError} 
@@ -706,38 +922,187 @@ const Dashboard = function Dashboard({
     >
       <div className="space-y-10 animate-fade-in" dir="rtl">
       
-      {/* InteractionGuideComponent disabled as requested */}
-      {/* Header */}
-      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
-        <div>
-          <h1 className="text-3xl font-black text-slate-900 tracking-tight">لوحة التحكم الرئيسية</h1>
-          <p className="text-slate-400 font-bold mt-1">متابعة دقيقة لمؤشرات أداء المكتب والقضايا الجارية.</p>
+      {imminentHearings.length > 0 && (
+        <div 
+          onClick={() => onNavigate('calendar')}
+          className="bg-rose-500 text-white rounded-2xl p-4 shadow-lg shadow-rose-500/20 flex items-center justify-between cursor-pointer hover:bg-rose-600 transition-colors border border-rose-400"
+        >
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-white/20 rounded-full animate-pulse">
+              <AlertCircle className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <h4 className="font-black text-sm text-white">تنبيه عاجل: جلسة قضائية قريبة</h4>
+              <p className="text-xs font-medium text-white/90">
+                يوجد جلسة ({imminentHearings[0].caseName}) بتاريخ {imminentHearings[0].date}. اضغط هنا للانتقال إلى التقويم والجلسات.
+              </p>
+            </div>
+          </div>
+          <ChevronLeft className="w-5 h-5 text-white/50" />
         </div>
-        <div className="flex gap-3">
-          <button 
-            onClick={() => setIsCustomizing(!isCustomizing)}
-            className={`flex items-center gap-2 border px-5 py-3 rounded-2xl text-xs font-black transition-all active:scale-95 ${
-              isCustomizing 
-                ? 'bg-amber-500 text-white border-amber-600 shadow-lg' 
-                : 'bg-slate-100 border-slate-200 text-slate-600'
-            }`}
+      )}
+      
+      {/* Header & Greeting Section */}
+      <div className="relative p-8 lg:p-12 bg-slate-950 rounded-[3rem] border border-white/5 shadow-2xl overflow-hidden min-h-[220px] flex flex-col lg:flex-row justify-between items-center gap-8">
+        <div className="absolute inset-0 bg-gradient-to-br from-amber-500/10 via-transparent to-blue-500/5 pointer-events-none"></div>
+        <div className="absolute -top-24 -right-24 w-64 h-64 bg-amber-500/10 rounded-full blur-[100px] pointer-events-none"></div>
+        <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-blue-500/10 rounded-full blur-[100px] pointer-events-none"></div>
+        
+        <div className="relative z-10 space-y-4 text-center lg:text-right w-full lg:w-auto">
+          <motion.div 
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            className="inline-flex items-center gap-2 bg-amber-500/10 border border-amber-500/20 px-4 py-2 rounded-2xl text-amber-400 text-xs font-black uppercase tracking-widest"
           >
-            {isCustomizing ? <Check size={16} /> : <Settings2 size={16} className="text-amber-500" />}
-            {isCustomizing ? 'حفظ الترتيب' : 'تخصيص اللوحة'}
-          </button>
-          <button 
-            onClick={() => window.dispatchEvent(new CustomEvent('najiz-sync-toggle-settings'))}
-            className="flex items-center gap-2 bg-slate-100 border border-slate-200 text-slate-600 px-5 py-3 rounded-2xl text-xs font-black transition-all"
+            <Sparkles size={14} className="animate-pulse" />
+            <span>أهلاً بك في منصة العدالة الذكية</span>
+          </motion.div>
+          
+          <motion.h1 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="text-4xl lg:text-5xl font-black text-white tracking-tight leading-tight min-h-[50px] flex items-center justify-center lg:justify-start lg:min-w-[300px]"
           >
-            <Activity size={16} className="text-amber-500" />
-            إعدادات المزامنة
-          </button>
-          <button onClick={() => onNavigate('cases')} className="flex items-center gap-2 bg-slate-900 text-white px-6 py-3 rounded-2xl text-xs font-black shadow-xl transition-all">
-            <Plus size={16} />
-            إضافة قضية جديدة
-          </button>
+            {isEditingUserName ? (
+              <input 
+                autoFocus
+                className="text-4xl lg:text-5xl font-black text-amber-400 bg-transparent border-b-2 border-amber-500 focus:outline-none focus:border-amber-600 transition-all w-full text-center lg:text-right"
+                value={userName}
+                onChange={(e) => setUserName(e.target.value)}
+                onBlur={() => {
+                  setIsEditingUserName(false);
+                  handleSaveUserName(userName);
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    setIsEditingUserName(false);
+                    handleSaveUserName(userName);
+                  }
+                }}
+              />
+            ) : (
+              <div 
+                className="cursor-pointer group flex items-center gap-2 hover:text-amber-100 transition-all"
+                onClick={() => setIsEditingUserName(true)}
+                title="اضغط لتعديل الاسم"
+              >
+                <span>مرحباً بك، </span>
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-amber-200 select-none">
+                  {userName}
+                </span>
+                <span> 👋</span>
+                <Edit3 className="w-5 h-5 opacity-0 group-hover:opacity-100 text-amber-400 transition-opacity" />
+              </div>
+            )}
+          </motion.h1>
+          
+          <motion.p 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.2 }}
+            className="text-slate-200 font-semibold leading-relaxed max-w-xl"
+          >
+            لديك اليوم <span className="text-white underline decoration-amber-500 decoration-2 underline-offset-4">{tasks.filter(t => t.status !== 'done').length} مهام</span> معلقة و <span className="text-white underline decoration-blue-500 decoration-2 underline-offset-4">{hearings.filter(h => h.status === 'upcoming').length} جلسات</span> قادمة. نتمنى لك يوماً مثمراً!
+          </motion.p>
+        </div>
+
+        <div className="relative z-10 flex flex-col items-center lg:items-end gap-6 shrink-0 justify-center">
+          <div className="flex gap-3">
+            <button 
+              onClick={() => setIsLibraryOpen(true)}
+              className="flex items-center gap-2 bg-white/5 hover:bg-white/10 border border-white/10 text-white px-5 py-3 rounded-2xl text-xs font-black transition-all active:scale-95 group"
+            >
+              <LayoutGrid size={16} className="text-amber-500 group-hover:rotate-90 transition-transform duration-500" />
+              مكتبة الكروت
+            </button>
+            <button 
+              onClick={() => setIsCustomizing(!isCustomizing)}
+              className={`flex items-center gap-2 border px-6 py-3 rounded-2xl text-xs font-black transition-all active:scale-95 shadow-xl ${
+                isCustomizing 
+                  ? 'bg-amber-500 text-slate-900 border-amber-600 shadow-amber-500/20' 
+                  : 'bg-slate-800 border-white/10 text-white'
+              }`}
+            >
+              {isCustomizing ? <Check size={16} /> : <Settings2 size={16} className="text-amber-500" />}
+              {isCustomizing ? 'حفظ الترتيب' : 'تخصيص اللوحة'}
+            </button>
+          </div>
         </div>
       </div>
+
+      {/* Widget Library Modal */}
+      <AnimatePresence>
+        {isLibraryOpen && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 lg:p-8">
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsLibraryOpen(false)}
+              className="absolute inset-0 bg-slate-950/80 backdrop-blur-md"
+            />
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="relative w-full max-w-4xl bg-slate-900 border border-white/10 rounded-[3rem] shadow-2xl overflow-hidden flex flex-col max-h-[80vh]"
+             dir="rtl">
+              <div className="p-8 border-b border-white/5 flex justify-between items-center">
+                <div className="flex items-center gap-4">
+                  <div className="p-3 bg-amber-500 text-slate-900 rounded-2xl">
+                    <LayoutGrid size={24} />
+                  </div>
+                  <div>
+                    <h2 className="text-2xl font-black text-white">مكتبة الكروت الذكية</h2>
+                    <p className="text-slate-300 font-semibold text-sm mt-1">اختر الكروت التي ترغب في ظهورها في لوحة التحكم الرئيسية.</p>
+                  </div>
+                </div>
+                <button onClick={() => setIsLibraryOpen(false)} className="p-2 hover:bg-white/10 rounded-full transition-colors text-slate-300">
+                  <X size={24} />
+                </button>
+              </div>
+              
+              <div className="flex-1 overflow-y-auto p-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {availableWidgets.map(w => {
+                  const isVisible = widgets.find((widget: any) => widget.id === w.id)?.visible !== false;
+                  return (
+                    <button
+                      key={w.id}
+                      onClick={() => toggleWidgetVisibility(w.id)}
+                      className={`flex items-center gap-4 p-5 rounded-[2rem] border transition-all text-right relative group ${
+                        isVisible 
+                          ? 'bg-amber-500/10 border-amber-500/40 text-white ring-2 ring-amber-500/20' 
+                          : 'bg-slate-800/80 border-white/10 text-slate-300 hover:border-white/20 hover:text-white'
+                      }`}
+                    >
+                      <div className={`p-4 rounded-2xl transition-colors ${isVisible ? 'bg-amber-500 text-slate-900' : 'bg-slate-700 text-slate-200'}`}>
+                        {w.icon}
+                      </div>
+                      <div className="flex flex-col flex-1">
+                        <span className="font-black text-sm">{w.name}</span>
+                        <span className="text-[11px] font-semibold opacity-80 mt-0.5">كارت لوحة العمل</span>
+                      </div>
+                      <div className={`w-6 h-6 rounded-full flex items-center justify-center border-2 transition-all ${isVisible ? 'bg-amber-500 border-amber-400 text-slate-900' : 'border-slate-700'}`}>
+                        {isVisible && <Check size={14} />}
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+              
+              <div className="p-8 border-t border-white/5 bg-slate-950/30 flex justify-end">
+                <button 
+                  onClick={() => setIsLibraryOpen(false)}
+                  className="bg-amber-500 text-slate-900 px-8 py-4 rounded-2xl font-black text-sm shadow-xl shadow-amber-500/20 active:scale-95 transition-all"
+                >
+                  تم، حفظ التغييرات
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
 
       {/* Expiry alerts for Document/Iqama */}
       {expiringEmployees.length > 0 && (
@@ -794,11 +1159,20 @@ const Dashboard = function Dashboard({
               
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2 mt-4 pt-4 border-t border-rose-200">
                 {expiringAgencies.map((poa: any) => (
-                  <div key={poa.id} className="flex items-center gap-2 text-xs">
-                    <span className="w-2 h-2 rounded-full bg-rose-500 shrink-0 animate-pulse" />
-                    <span className="font-extrabold text-slate-800">رقم: {poa.poaNumber}</span>
-                    <span className="text-slate-600 font-bold">({poa.clientName})</span>
-                    <span className="font-mono bg-rose-100 text-rose-700 px-2 py-0.5 rounded font-black border border-rose-200">⏳ متبقي {poa.daysLeft} أيام</span>
+                  <div key={poa.id} className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-4 bg-white/50 border border-rose-100 rounded-2xl shadow-sm hover:shadow-md transition-all">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-xl bg-rose-100 flex items-center justify-center text-rose-600 border border-rose-200">
+                        <Scale className="w-4 h-4" />
+                      </div>
+                      <div>
+                        <span className="font-extrabold text-slate-800 text-xs block">رقم: {poa.poaNumber}</span>
+                        <span className="text-[10px] text-slate-500 font-bold block">{poa.clientName}</span>
+                      </div>
+                    </div>
+                    <div className="flex flex-col items-end gap-1">
+                      <span className="text-[9px] text-rose-400 font-black uppercase mb-1">العد التنازلي للانتهاء</span>
+                      <CountdownTimer targetDate={poa.expiryDate} />
+                    </div>
                   </div>
                 ))}
               </div>
@@ -813,198 +1187,197 @@ const Dashboard = function Dashboard({
         </motion.div>
       )}
 
-      {/* Widgets Content */}
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
         <SortableContext items={widgets.map((w: any) => w.id)} strategy={rectSortingStrategy}>
-          <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 ${isCustomizing ? 'ring-2 ring-amber-500/20 p-4 rounded-[2.5rem] bg-amber-50/5' : ''}`}>
+          <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 ${isCustomizing ? 'ring-4 ring-amber-500/10 p-8 rounded-[5rem] bg-amber-50/5' : ''}`}>
             {widgets.map((widget: any) => {
               if (widget.visible === false) return null;
-              // KPI Widgets
-              if (widget.id === 'kpiCases') {
-                const card = { label: 'القضايا النشطة', value: cases.length, max: 100, icon: <Briefcase />, color: 'bg-blue-500', sparklineData: [{x: 'W1', y: 4}, {x: 'W2', y: 7}, {x: 'W3', y: 5}, {x: 'W4', y: cases.length}] };
-                return (
-                  <SortableWidgetWrapper className={getWidgetClassName(widget.size)} key="kpiCases" id="kpiCases" isCustomizing={isCustomizing} widgetSize={widget.size} onResize={handleUpdateWidgetSize}>
-                    <div className={`bg-white border border-slate-200 p-6 rounded-3xl shadow-sm transition-all duration-300 relative overflow-hidden cursor-pointer h-full ${isCustomizing ? 'opacity-80 ring-2 ring-dashed ring-amber-400' : ''}`}>
-                      {isCustomizing && (
-                        <div className="absolute inset-0 bg-amber-500/5 z-50 flex items-center justify-center">
-                          <GripVertical className="w-8 h-8 text-amber-500 animate-pulse" />
-                        </div>
-                      )}
-                      <div className="absolute inset-0 bg-slate-50 opacity-0 pointer-events-none"></div>
-                      <div className="relative z-10 flex flex-col justify-between h-full">
-                        <div className="flex items-center justify-between mb-4">
-                          <div className={`p-3 ${card.color} text-white rounded-2xl shadow-lg transition-transform duration-300`}>{card.icon}</div>
-                          <span className="text-3xl font-black text-slate-900 drop-shadow-sm">{card.value}</span>
-                        </div>
-                        <div className="flex items-center justify-between mb-8">
-                          <span className="text-[11px] font-black text-slate-400 uppercase tracking-widest">{card.label}</span>
-                          <span className="text-[9px] font-black text-emerald-500 bg-emerald-50 px-1.5 py-0.5 rounded transition-all duration-300">
-                            {Math.round((card.value / (card.max || 1)) * 100)}% من المستهدف
-                          </span>
-                        </div>
+
+              const wrapWidget = (content: React.ReactNode) => (
+                <EnhancedSortableWidgetWrapper 
+                  widgetColor={widget.color} 
+                  onChangeColor={handleUpdateWidgetColor} 
+                  className={getWidgetClassName(widget.size)} 
+                  key={widget.id} 
+                  id={widget.id} 
+                  isCustomizing={isCustomizing} 
+                  widgetSize={widget.size} 
+                  onResize={handleUpdateWidgetSize}
+                >
+                  <div className="h-full">
+                    {content}
+                  </div>
+                </EnhancedSortableWidgetWrapper>
+              );
+
+              if (['kpiCases', 'kpiClients'].includes(widget.id)) {
+                
+                const getKpiData = () => {
+                  switch(widget.id) {
+                    case 'kpiCases': return { label: 'القضايا القائمة', value: cases.length, icon: <Briefcase /> };
+                    case 'kpiClients': default: return { label: 'الموكلين', value: clients.length, icon: <Users /> };
+                  }
+                };
+                
+                const kpi = getKpiData();
+
+                return wrapWidget(
+                  <div className="bg-slate-50 border border-slate-200 rounded-[2.5rem] p-8 shadow-sm h-full flex flex-col justify-between transition-all duration-300">
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="p-4 bg-white border border-slate-200 text-slate-800 rounded-[1.25rem] shadow-sm">
+                        {kpi.icon}
                       </div>
-                      <div className="absolute bottom-0 left-0 w-full h-1/2 transition-all duration-500 pointer-events-none">
-                        <div style={{ width: '100%', height: '100%', minWidth: 0 }}>
-                          <ResponsiveContainer width="100%" height="100%" key={themeTick}>
-                            <AreaChart data={card.sparklineData} margin={{ top: 10, right: 0, left: 0, bottom: 0 }}>
-                              <defs>
-                                <linearGradient id="color-stats-cases" x1="0" y1="0" x2="0" y2="1">
-                                  <stop offset="5%" stopColor={card.color.replace('bg-', '').replace('500', '400')} stopOpacity={0.2} />
-                                  <stop offset="95%" stopColor={card.color.replace('bg-', '').replace('500', '400')} stopOpacity={0} />
-                                </linearGradient>
-                              </defs>
-                              <Area type="monotone" dataKey="y" stroke={card.color.replace('bg-', '').replace('500', '400')} strokeWidth={2} fillOpacity={1} fill="url(#color-stats-cases)" />
-                            </AreaChart>
-                          </ResponsiveContainer>
-                        </div>
-                      </div>
-                    </div>
-                  </SortableWidgetWrapper>
-                );
-              }
-              if (widget.id === 'kpiClients') {
-                const card = { label: 'العملاء', value: clients.length, max: 200, icon: <Users />, color: 'bg-indigo-500', sparklineData: [{x: 'W1', y: 10}, {x: 'W2', y: 15}, {x: 'W3', y: 12}, {x: 'W4', y: clients.length}] };
-                return (
-                  <SortableWidgetWrapper className={getWidgetClassName(widget.size)} key="kpiClients" id="kpiClients" isCustomizing={isCustomizing} widgetSize={widget.size} onResize={handleUpdateWidgetSize}>
-                    <div className={`bg-white border border-slate-200 p-6 rounded-3xl shadow-sm transition-all duration-300 relative overflow-hidden cursor-pointer h-full ${isCustomizing ? 'opacity-80 ring-2 ring-dashed ring-amber-400' : ''}`}>
-                      {isCustomizing && (
-                        <div className="absolute inset-0 bg-amber-500/5 z-50 flex items-center justify-center">
-                          <GripVertical className="w-8 h-8 text-amber-500 animate-pulse" />
-                        </div>
-                      )}
-                      <div className="absolute inset-0 bg-slate-50 opacity-0 pointer-events-none"></div>
-                      <div className="relative z-10 flex flex-col justify-between h-full">
-                        <div className="flex items-center justify-between mb-4">
-                          <div className={`p-3 ${card.color} text-white rounded-2xl shadow-lg transition-transform duration-300`}>{card.icon}</div>
-                          <span className="text-3xl font-black text-slate-900 drop-shadow-sm">{card.value}</span>
-                        </div>
-                        <div className="flex items-center justify-between mb-8">
-                          <span className="text-[11px] font-black text-slate-400 uppercase tracking-widest">{card.label}</span>
-                          <span className="text-[9px] font-black text-emerald-500 bg-emerald-50 px-1.5 py-0.5 rounded transition-all duration-300">
-                            {Math.round((card.value / (card.max || 1)) * 100)}% من المستهدف
-                          </span>
-                        </div>
-                      </div>
-                      <div className="absolute bottom-0 left-0 w-full h-1/2 transition-all duration-500 pointer-events-none">
-                        <div style={{ width: '100%', height: '100%', minWidth: 0 }}>
-                          <ResponsiveContainer width="100%" height="100%" key={themeTick}>
-                            <AreaChart data={card.sparklineData} margin={{ top: 10, right: 0, left: 0, bottom: 0 }}>
-                              <defs>
-                                <linearGradient id="color-stats-clients" x1="0" y1="0" x2="0" y2="1">
-                                  <stop offset="5%" stopColor={card.color.replace('bg-', '').replace('500', '400')} stopOpacity={0.2} />
-                                  <stop offset="95%" stopColor={card.color.replace('bg-', '').replace('500', '400')} stopOpacity={0} />
-                                </linearGradient>
-                              </defs>
-                              <Area type="monotone" dataKey="y" stroke={card.color.replace('bg-', '').replace('500', '400')} strokeWidth={2} fillOpacity={1} fill="url(#color-stats-clients)" />
-                            </AreaChart>
-                          </ResponsiveContainer>
-                        </div>
+                      <div className="text-4xl font-black text-slate-900 drop-shadow-sm tabular-nums tracking-tighter">
+                        {kpi.value}
                       </div>
                     </div>
-                  </SortableWidgetWrapper>
+                    <div>
+                      <h3 className="text-slate-700 font-bold text-sm tracking-wide">{kpi.label}</h3>
+                    </div>
+                  </div>
                 );
               }
+
+              switch (widget.id) {
+                case 'najizPerformance':
+                  return wrapWidget(<NajizPerformanceWidget sessions={hearings} />);
+                
+                case 'summaryPlatform':
+                  return wrapWidget(
+                    <SummaryWidget icon={<ShieldCheck className="w-5 h-5" />} title="مميزات المنصة" description="نظام متكامل وحماية سحابية 24/7">
+                      <ul className="space-y-4 text-xs font-bold text-slate-300">
+                        <li className="flex items-center gap-3"><CheckCircle2 size={18} className="text-amber-500" /> إدارة قضايا متكاملة</li>
+                        <li className="flex items-center gap-3"><CheckCircle2 size={18} className="text-amber-500" /> أدوات ذكاء اصطناعي</li>
+                        <li className="flex items-center gap-3"><CheckCircle2 size={18} className="text-amber-500" /> ربط مباشر مع ناجز</li>
+                      </ul>
+                    </SummaryWidget>
+                  );
+
+                case 'legalRiskMatrix':
+                  return wrapWidget(<LegalRiskMatrix cases={cases} isHighContrast={isHighContrast} />);
+
+                case 'summaryAI':
+                  return wrapWidget(
+                    <SummaryWidget icon={<Cpu className="w-5 h-5" />} title="تحليلات الذكاء الاصطناعي" description="المحلل القانوني الذكي">
+                      <p className="text-[10px] text-slate-400 font-bold">بوابة التحليل القانوني المتطورة</p>
+                    </SummaryWidget>
+                  );
+
+                case 'taskSuggestions':
+                  return wrapWidget(<TaskSuggestions hearings={hearings} tasks={tasks} onAddTask={() => {}} />);
+
+                case 'upcomingHearingsCard':
+                  return wrapWidget(<UpcomingHearingsList hearings={hearings} cases={cases} />);
+
+                case 'agenciesAlerts':
+                  return wrapWidget(<AgenciesAlertWidget agencies={agencies} />);
+
+                case 'overdueTasks':
+                  return wrapWidget(<OverdueTasksWidget tasks={tasks} />);
+
+                case 'deadlinesWidget':
+                  return wrapWidget(<DeadlinesWidget cases={cases} />);
+
+                case 'employeePerformanceKPI':
+                  return wrapWidget(<EmployeePerformanceKPI tasks={tasks} />);
+                
+                case 'najizWidget':
+                  return wrapWidget(<NajizWidget />);
+
+                case 'partnerAnalytics':
+                  return wrapWidget(partnerAnalyticsWidgetMarkup);
+
+              }
+              
               if (widget.id === 'kpiInvoices') {
                 const card = { label: 'الفواتير المعلقة', value: invoices.filter(i => i.status === 'pending').length, max: 50, icon: <DollarSign />, color: 'bg-amber-500', sparklineData: [{x: 'W1', y: 5}, {x: 'W2', y: 8}, {x: 'W3', y: 12}, {x: 'W4', y: invoices.filter(i => i.status === 'pending').length}] };
                 return (
-                  <SortableWidgetWrapper className={getWidgetClassName(widget.size)} key="kpiInvoices" id="kpiInvoices" isCustomizing={isCustomizing} widgetSize={widget.size} onResize={handleUpdateWidgetSize}>
-                    <div className={`bg-white border border-slate-200 p-6 rounded-3xl shadow-sm transition-all duration-300 relative overflow-hidden cursor-pointer h-full ${isCustomizing ? 'opacity-80 ring-2 ring-dashed ring-amber-400' : ''}`}>
+                  <EnhancedSortableWidgetWrapper widgetColor={widget.color} onChangeColor={handleUpdateWidgetColor} className={getWidgetClassName(widget.size)} key="kpiInvoices" id="kpiInvoices" isCustomizing={isCustomizing} widgetSize={widget.size} onResize={handleUpdateWidgetSize}>
+                    <div className={`bg-slate-50 border border-slate-200 rounded-[2.5rem] p-8 shadow-sm h-full flex flex-col justify-between transition-all duration-300 relative overflow-hidden cursor-pointer ${isCustomizing ? 'opacity-80 ring-2 ring-dashed ring-amber-400' : ''}`}>
                       {isCustomizing && (
                         <div className="absolute inset-0 bg-amber-500/5 z-50 flex items-center justify-center">
                           <GripVertical className="w-8 h-8 text-amber-500 animate-pulse" />
                         </div>
                       )}
-                      <div className="absolute inset-0 bg-slate-50 opacity-0 pointer-events-none"></div>
+                      
                       <div className="relative z-10 flex flex-col justify-between h-full">
                         <div className="flex items-center justify-between mb-4">
-                          <div className={`p-3 ${card.color} text-white rounded-2xl shadow-lg transition-transform duration-300`}>{card.icon}</div>
-                          <span className="text-3xl font-black text-slate-900 drop-shadow-sm">{card.value}</span>
+                          <div className={`p-4 bg-white border border-slate-200 text-slate-800 rounded-[1.25rem] shadow-sm`}>{card.icon}</div>
+                          <span className="text-4xl font-black text-slate-900 drop-shadow-sm tabular-nums tracking-tighter">{card.value}</span>
                         </div>
-                        <div className="flex items-center justify-between mb-8">
-                          <span className="text-[11px] font-black text-slate-400 uppercase tracking-widest">{card.label}</span>
-                          <span className="text-[9px] font-black text-emerald-500 bg-emerald-50 px-1.5 py-0.5 rounded transition-all duration-300">
-                            {Math.round((card.value / (card.max || 1)) * 100)}% من المستهدف
+                        <div className="flex items-center justify-between mt-auto mb-2 relative z-10">
+                          <h3 className="text-slate-700 font-bold text-sm tracking-wide">{card.label}</h3>
+                          <span className="text-[10px] font-black text-emerald-600 bg-emerald-100 px-2 py-1 rounded-lg">
+                            {Math.round((card.value / (card.max || 1)) * 100)}% مستهدف
                           </span>
                         </div>
                       </div>
-                      <div className="absolute bottom-0 left-0 w-full h-1/2 transition-all duration-500 pointer-events-none">
+                      
+                      <div className="absolute bottom-0 left-0 w-full h-1/2 transition-all duration-500 pointer-events-none opacity-60">
                         <div style={{ width: '100%', height: '100%', minWidth: 0 }}>
                           <ResponsiveContainer width="100%" height="100%" key={themeTick}>
                             <AreaChart data={card.sparklineData} margin={{ top: 10, right: 0, left: 0, bottom: 0 }}>
                               <defs>
-                                <linearGradient id="color-stats-invoices" x1="0" y1="0" x2="0" y2="1">
-                                  <stop offset="5%" stopColor={card.color.replace('bg-', '').replace('500', '400')} stopOpacity={0.2} />
-                                  <stop offset="95%" stopColor={card.color.replace('bg-', '').replace('500', '400')} stopOpacity={0} />
+                                <linearGradient id={`color-stats-${widget.id}`} x1="0" y1="0" x2="0" y2="1">
+                                  <stop offset="5%" stopColor="#f59e0b" stopOpacity={0.3} />
+                                  <stop offset="95%" stopColor="#f59e0b" stopOpacity={0} />
                                 </linearGradient>
                               </defs>
-                              <Area type="monotone" dataKey="y" stroke={card.color.replace('bg-', '').replace('500', '400')} strokeWidth={2} fillOpacity={1} fill="url(#color-stats-invoices)" />
+                              <Area type="monotone" dataKey="y" stroke="#f59e0b" strokeWidth={3} fillOpacity={1} fill={`url(#color-stats-${widget.id})`} />
                             </AreaChart>
                           </ResponsiveContainer>
                         </div>
                       </div>
                     </div>
-                  </SortableWidgetWrapper>
-                );
-              }
-              if (widget.id === 'najizPerformance') {
-                return (
-                  <SortableWidgetWrapper className={getWidgetClassName(widget.size)} key="najizPerformance" id="najizPerformance" isCustomizing={isCustomizing} widgetSize={widget.size} onResize={handleUpdateWidgetSize}>
-                    <div className="h-full">
-                      {isCustomizing && (
-                        <div className="absolute inset-0 bg-amber-500/5 z-50 flex items-center justify-center pointer-events-none">
-                          <GripVertical className="w-8 h-8 text-amber-500 animate-pulse" />
-                        </div>
-                      )}
-                      <NajizPerformanceWidget />
-                    </div>
-                  </SortableWidgetWrapper>
+                  </EnhancedSortableWidgetWrapper>
                 );
               }
               if (widget.id === 'kpiTasks') {
                 const card = { label: 'المهام المنجزة', value: tasks.filter(t => t.status === 'done').length, max: 300, icon: <CheckSquare />, color: 'bg-emerald-500', sparklineData: [{x: 'W1', y: 40}, {x: 'W2', y: 65}, {x: 'W3', y: 80}, {x: 'W4', y: tasks.filter(t => t.status === 'done').length}] };
                 return (
-                  <SortableWidgetWrapper className={getWidgetClassName(widget.size)} key="kpiTasks" id="kpiTasks" isCustomizing={isCustomizing} widgetSize={widget.size} onResize={handleUpdateWidgetSize}>
-                    <div className={`bg-white border border-slate-200 p-6 rounded-3xl shadow-sm transition-all duration-300 relative overflow-hidden cursor-pointer h-full ${isCustomizing ? 'opacity-80 ring-2 ring-dashed ring-amber-400' : ''}`}>
+                  <EnhancedSortableWidgetWrapper widgetColor={widget.color} onChangeColor={handleUpdateWidgetColor} className={getWidgetClassName(widget.size)} key="kpiTasks" id="kpiTasks" isCustomizing={isCustomizing} widgetSize={widget.size} onResize={handleUpdateWidgetSize}>
+                    <div className={`bg-slate-50 border border-slate-200 rounded-[2.5rem] p-8 shadow-sm h-full flex flex-col justify-between transition-all duration-300 relative overflow-hidden cursor-pointer ${isCustomizing ? 'opacity-80 ring-2 ring-dashed ring-amber-400' : ''}`}>
                       {isCustomizing && (
                         <div className="absolute inset-0 bg-amber-500/5 z-50 flex items-center justify-center">
                           <GripVertical className="w-8 h-8 text-amber-500 animate-pulse" />
                         </div>
                       )}
-                      <div className="absolute inset-0 bg-slate-50 opacity-0 pointer-events-none"></div>
+                      
                       <div className="relative z-10 flex flex-col justify-between h-full">
                         <div className="flex items-center justify-between mb-4">
-                          <div className={`p-3 ${card.color} text-white rounded-2xl shadow-lg transition-transform duration-300`}>{card.icon}</div>
-                          <span className="text-3xl font-black text-slate-900 drop-shadow-sm">{card.value}</span>
+                          <div className={`p-4 bg-white border border-slate-200 text-slate-800 rounded-[1.25rem] shadow-sm`}>{card.icon}</div>
+                          <span className="text-4xl font-black text-slate-900 drop-shadow-sm tabular-nums tracking-tighter">{card.value}</span>
                         </div>
-                        <div className="flex items-center justify-between mb-8">
-                          <span className="text-[11px] font-black text-slate-400 uppercase tracking-widest">{card.label}</span>
-                          <span className="text-[9px] font-black text-emerald-500 bg-emerald-50 px-1.5 py-0.5 rounded transition-all duration-300">
-                            {Math.round((card.value / (card.max || 1)) * 100)}% من المستهدف
+                        <div className="flex items-center justify-between mt-auto mb-2 relative z-10">
+                          <h3 className="text-slate-700 font-bold text-sm tracking-wide">{card.label}</h3>
+                          <span className="text-[10px] font-black text-emerald-600 bg-emerald-100 px-2 py-1 rounded-lg">
+                            {Math.round((card.value / (card.max || 1)) * 100)}% مستهدف
                           </span>
                         </div>
                       </div>
-                      <div className="absolute bottom-0 left-0 w-full h-1/2 transition-all duration-500 pointer-events-none">
+                      
+                      <div className="absolute bottom-0 left-0 w-full h-1/2 transition-all duration-500 pointer-events-none opacity-60">
                         <div style={{ width: '100%', height: '100%', minWidth: 0 }}>
                           <ResponsiveContainer width="100%" height="100%" key={themeTick}>
                             <AreaChart data={card.sparklineData} margin={{ top: 10, right: 0, left: 0, bottom: 0 }}>
                               <defs>
-                                <linearGradient id="color-stats-tasks" x1="0" y1="0" x2="0" y2="1">
-                                  <stop offset="5%" stopColor={card.color.replace('bg-', '').replace('500', '400')} stopOpacity={0.2} />
-                                  <stop offset="95%" stopColor={card.color.replace('bg-', '').replace('500', '400')} stopOpacity={0} />
+                                <linearGradient id={`color-stats-${widget.id}`} x1="0" y1="0" x2="0" y2="1">
+                                  <stop offset="5%" stopColor="#10b981" stopOpacity={0.3} />
+                                  <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
                                 </linearGradient>
                               </defs>
-                              <Area type="monotone" dataKey="y" stroke={card.color.replace('bg-', '').replace('500', '400')} strokeWidth={2} fillOpacity={1} fill="url(#color-stats-tasks)" />
+                              <Area type="monotone" dataKey="y" stroke="#10b981" strokeWidth={3} fillOpacity={1} fill={`url(#color-stats-${widget.id})`} />
                             </AreaChart>
                           </ResponsiveContainer>
                         </div>
                       </div>
                     </div>
-                  </SortableWidgetWrapper>
+                  </EnhancedSortableWidgetWrapper>
                 );
               }
 
               if (widget.id === 'summaryPlatform') return (
-                <SortableWidgetWrapper className={getWidgetClassName(widget.size)} key="summaryPlatform" id="summaryPlatform" isCustomizing={isCustomizing} widgetSize={widget.size} onResize={handleUpdateWidgetSize}>
+                <EnhancedSortableWidgetWrapper widgetColor={widget.color} onChangeColor={handleUpdateWidgetColor} className={getWidgetClassName(widget.size)} key="summaryPlatform" id="summaryPlatform" isCustomizing={isCustomizing} widgetSize={widget.size} onResize={handleUpdateWidgetSize}>
                   <div className={`h-full relative ${isCustomizing ? 'opacity-80 ring-2 ring-dashed ring-amber-400 rounded-3xl' : ''}`}>
                     {isCustomizing && (
                       <div className="absolute inset-0 bg-amber-500/5 z-50 flex items-center justify-center rounded-3xl">
@@ -1020,7 +1393,7 @@ const Dashboard = function Dashboard({
                     </ul>
                   </SummaryWidget>
                   </div>
-                </SortableWidgetWrapper>
+                </EnhancedSortableWidgetWrapper>
               );
               if (widget.id === 'summaryCases') {
                 const filteredCasesList = cases.filter(c => {
@@ -1055,7 +1428,7 @@ const Dashboard = function Dashboard({
                 ].filter(d => d.value > 0);
 
                 return (
-                  <SortableWidgetWrapper className={getWidgetClassName(widget.size)} key="summaryCases" id="summaryCases" isCustomizing={isCustomizing} widgetSize={widget.size} onResize={handleUpdateWidgetSize}>
+                  <EnhancedSortableWidgetWrapper widgetColor={widget.color} onChangeColor={handleUpdateWidgetColor} className={getWidgetClassName(widget.size)} key="summaryCases" id="summaryCases" isCustomizing={isCustomizing} widgetSize={widget.size} onResize={handleUpdateWidgetSize}>
                     <div className={`h-full relative ${isCustomizing ? 'opacity-80 ring-2 ring-dashed ring-amber-400 rounded-3xl' : ''}`}>
                       {isCustomizing && (
                         <div className="absolute inset-0 bg-amber-500/5 z-50 flex items-center justify-center rounded-3xl">
@@ -1064,30 +1437,30 @@ const Dashboard = function Dashboard({
                       )}
                       
                       <SummaryWidget icon={<Scale className="w-5 h-5 text-amber-500 mt-1" />} title="الإحصائيات الحية للقضايا" description="توزيع ونسب القضايا والقرارات" badgeValue={filteredCasesList.length}>
-                        <div className="flex items-center justify-between gap-1 mt-1 mb-2 bg-slate-900/60 p-1 rounded-xl border border-slate-800/80">
-                          <span className="text-[9px] text-slate-400 font-bold px-1">التصفية:</span>
+                        <div className="flex items-center justify-between gap-1 mt-1 mb-2 bg-slate-900/60 p-1 rounded-xl border border-slate-700/80">
+                          <span className="text-[10px] text-slate-300 font-bold px-1">التصفية:</span>
                           <div className="flex gap-1">
                             <button
                               onClick={() => setCasesTimeFilter('all')}
-                              className={`text-[8px] px-1.5 py-0.5 rounded-lg font-bold transition-all shrink-0 ${casesTimeFilter === 'all' ? 'bg-amber-500 text-slate-950 shadow-md' : 'text-slate-400'}`}
+                              className={`text-[9px] px-1.5 py-0.5 rounded-lg font-bold transition-all shrink-0 ${casesTimeFilter === 'all' ? 'bg-amber-500 text-slate-900 shadow-md' : 'text-slate-300'}`}
                             >
                               الكل
                             </button>
                             <button
                               onClick={() => setCasesTimeFilter('month')}
-                              className={`text-[8px] px-1.5 py-0.5 rounded-lg font-bold transition-all shrink-0 ${casesTimeFilter === 'month' ? 'bg-amber-500 text-slate-950 shadow-md' : 'text-slate-400'}`}
+                              className={`text-[9px] px-1.5 py-0.5 rounded-lg font-bold transition-all shrink-0 ${casesTimeFilter === 'month' ? 'bg-amber-500 text-slate-900 shadow-md' : 'text-slate-300'}`}
                             >
                               الشهر
                             </button>
                             <button
                               onClick={() => setCasesTimeFilter('3months')}
-                              className={`text-[8px] px-1.5 py-0.5 rounded-lg font-bold transition-all shrink-0 ${casesTimeFilter === '3months' ? 'bg-amber-500 text-slate-950 shadow-md' : 'text-slate-400'}`}
+                              className={`text-[9px] px-1.5 py-0.5 rounded-lg font-bold transition-all shrink-0 ${casesTimeFilter === '3months' ? 'bg-amber-500 text-slate-900 shadow-md' : 'text-slate-300'}`}
                             >
                               3 أسهر
                             </button>
                             <button
                               onClick={() => setCasesTimeFilter('year')}
-                              className={`text-[8px] px-1.5 py-0.5 rounded-lg font-bold transition-all shrink-0 ${casesTimeFilter === 'year' ? 'bg-amber-500 text-slate-950 shadow-md' : 'text-slate-400'}`}
+                              className={`text-[9px] px-1.5 py-0.5 rounded-lg font-bold transition-all shrink-0 ${casesTimeFilter === 'year' ? 'bg-amber-500 text-slate-900 shadow-md' : 'text-slate-300'}`}
                             >
                               عام
                             </button>
@@ -1122,28 +1495,28 @@ const Dashboard = function Dashboard({
                           </div>
                         </div>
 
-                        <div className="grid grid-cols-3 gap-1 mt-1 pt-1.5 border-t border-slate-800/80">
-                          <div className="bg-emerald-505/10 border border-emerald-500/15 p-1 rounded-lg text-center">
-                            <span className="block text-emerald-440 font-sans font-black text-[11px] leading-none">{activeCount}</span>
-                            <span className="text-[8px] font-bold text-emerald-300">قيد التداول</span>
+                        <div className="grid grid-cols-3 gap-2 mt-1 pt-2 border-t border-slate-700/80">
+                          <div className="bg-emerald-500/10 border border-emerald-500/20 p-1.5 rounded-xl text-center">
+                            <span className="block text-emerald-400 font-sans font-black text-sm leading-none mb-1">{activeCount}</span>
+                            <span className="text-[9px] font-bold text-emerald-300">قيد التداول</span>
                           </div>
-                          <div className="bg-amber-500/10 border border-amber-500/15 p-1 rounded-lg text-center">
-                            <span className="block text-amber-500 font-sans font-black text-[11px] leading-none">{reservedCount}</span>
-                            <span className="text-[8px] font-bold text-amber-400">محجوزة</span>
+                          <div className="bg-amber-500/10 border border-amber-500/20 p-1.5 rounded-xl text-center">
+                            <span className="block text-amber-400 font-sans font-black text-sm leading-none mb-1">{reservedCount}</span>
+                            <span className="text-[9px] font-bold text-amber-300">محجوزة</span>
                           </div>
-                          <div className="bg-slate-500/10 border border-slate-500/15 p-1 rounded-lg text-center font-sans">
-                            <span className="block text-slate-300 font-sans font-black text-[11px] leading-none">{closedCount}</span>
-                            <span className="text-[8px] font-bold text-slate-400">منتهية</span>
+                          <div className="bg-slate-700/50 border border-slate-600/50 p-1.5 rounded-xl text-center font-sans">
+                            <span className="block text-slate-200 font-sans font-black text-sm leading-none mb-1">{closedCount}</span>
+                            <span className="text-[9px] font-bold text-slate-300">منتهية</span>
                           </div>
                         </div>
 
                       </SummaryWidget>
                     </div>
-                  </SortableWidgetWrapper>
+                  </EnhancedSortableWidgetWrapper>
                 );
               }
               if (widget.id === 'najizPerformance') return (
-                <SortableWidgetWrapper className={getWidgetClassName(widget.size)} key="najizPerformance" id="najizPerformance" isCustomizing={isCustomizing} widgetSize={widget.size} onResize={handleUpdateWidgetSize}>
+                <EnhancedSortableWidgetWrapper widgetColor={widget.color} onChangeColor={handleUpdateWidgetColor} className={getWidgetClassName(widget.size)} key="najizPerformance" id="najizPerformance" isCustomizing={isCustomizing} widgetSize={widget.size} onResize={handleUpdateWidgetSize}>
                   <div className={`h-full relative ${isCustomizing ? 'opacity-80 ring-2 ring-dashed ring-amber-400 rounded-3xl' : ''}`}>
                     {isCustomizing && (
                       <div className="absolute inset-0 bg-amber-500/5 z-50 flex items-center justify-center rounded-3xl">
@@ -1152,10 +1525,10 @@ const Dashboard = function Dashboard({
                     )}
                     <NajizWidget />
                   </div>
-                </SortableWidgetWrapper>
+                </EnhancedSortableWidgetWrapper>
               );
               if (widget.id === 'summaryKPI') return (
-                <SortableWidgetWrapper className={getWidgetClassName(widget.size)} key="summaryKPI" id="summaryKPI" isCustomizing={isCustomizing} widgetSize={widget.size} onResize={handleUpdateWidgetSize}>
+                <EnhancedSortableWidgetWrapper widgetColor={widget.color} onChangeColor={handleUpdateWidgetColor} className={getWidgetClassName(widget.size)} key="summaryKPI" id="summaryKPI" isCustomizing={isCustomizing} widgetSize={widget.size} onResize={handleUpdateWidgetSize}>
                   <div className={`h-full relative ${isCustomizing ? 'opacity-80 ring-2 ring-dashed ring-amber-400 rounded-3xl' : ''}`}>
                     {isCustomizing && (
                       <div className="absolute inset-0 bg-amber-500/5 z-50 flex items-center justify-center rounded-3xl">
@@ -1175,8 +1548,8 @@ const Dashboard = function Dashboard({
                        </div>
                        <div className="w-full bg-slate-800 rounded-full h-1.5"><div className="bg-[#D4AF37] h-1.5 rounded-full" style={{ width: '88%' }}></div></div>
                        
-                       <div className="mt-3 pt-3 border-t border-slate-800/80">
-                         <span className="text-[9px] font-black tracking-wider text-slate-400 block mb-1.5">أداء الـ 7 أيام الماضية (الإنجاز للقضايا vs الوقت)</span>
+                       <div className="mt-3 pt-3 border-t border-slate-700/80">
+                         <span className="text-[10px] font-bold tracking-wider text-slate-300 block mb-1.5">أداء الـ 7 أيام الماضية (الإنجاز للقضايا vs الوقت)</span>
                          <div className="h-24 w-full">
                            <ResponsiveContainer width="100%" height="100%" key={themeTick}>
                              <AreaChart data={miniPerformanceData} margin={{ top: 2, right: 2, left: 2, bottom: 2 }}>
@@ -1203,13 +1576,13 @@ const Dashboard = function Dashboard({
                            </ResponsiveContainer>
                          </div>
                        </div>
-                     </div>
-                  </SummaryWidget>
+                      </div>
+                   </SummaryWidget>
                   </div>
-                </SortableWidgetWrapper>
+                </EnhancedSortableWidgetWrapper>
               );
               if (widget.id === 'legalRiskMatrix') return (
-                <SortableWidgetWrapper className={getWidgetClassName(widget.size)} key="legalRiskMatrix" id="legalRiskMatrix" isCustomizing={isCustomizing} widgetSize={widget.size} onResize={handleUpdateWidgetSize}>
+                <EnhancedSortableWidgetWrapper widgetColor={widget.color} onChangeColor={handleUpdateWidgetColor} className={getWidgetClassName(widget.size)} key="legalRiskMatrix" id="legalRiskMatrix" isCustomizing={isCustomizing} widgetSize={widget.size} onResize={handleUpdateWidgetSize}>
                   <div className={`h-full relative ${isCustomizing ? 'opacity-80 ring-2 ring-dashed ring-amber-400 rounded-[2.5rem]' : ''}`}>
                     {isCustomizing && (
                       <div className="absolute inset-0 bg-amber-500/10 z-50 flex items-center justify-center rounded-[2.5rem]">
@@ -1218,10 +1591,10 @@ const Dashboard = function Dashboard({
                     )}
                     <LegalRiskMatrix cases={cases} isHighContrast={isHighContrast} />
                   </div>
-                </SortableWidgetWrapper>
+                </EnhancedSortableWidgetWrapper>
               );
               if (widget.id === 'summaryAI') return (
-                <SortableWidgetWrapper className={getWidgetClassName(widget.size)} key="summaryAI" id="summaryAI" isCustomizing={isCustomizing} widgetSize={widget.size} onResize={handleUpdateWidgetSize}>
+                <EnhancedSortableWidgetWrapper widgetColor={widget.color} onChangeColor={handleUpdateWidgetColor} className={getWidgetClassName(widget.size)} key="summaryAI" id="summaryAI" isCustomizing={isCustomizing} widgetSize={widget.size} onResize={handleUpdateWidgetSize}>
                   <div className={`h-full relative ${isCustomizing ? 'opacity-80 ring-2 ring-dashed ring-amber-400 rounded-3xl' : ''}`}>
                     {isCustomizing && (
                       <div className="absolute inset-0 bg-amber-500/5 z-50 flex items-center justify-center rounded-3xl">
@@ -1229,30 +1602,30 @@ const Dashboard = function Dashboard({
                       </div>
                     )}
                     <SummaryWidget icon={<Cpu className="w-5 h-5" />} title="استخدامات الذكاء الاصطناعي" description="تحليلات المحلل الذكي">
-                     <div className="grid grid-cols-2 gap-2 mt-2 h-full">
+                      <div className="grid grid-cols-2 gap-2 mt-2 h-full">
                         <div className="flex flex-col items-center justify-center p-2 bg-slate-800/80 rounded-xl border border-slate-700">
-                          <Cpu className="w-3.5 h-3.5 text-[#D4AF37] mb-1" />
-                          <span className="text-[8px] font-bold text-slate-400 text-center">توليد وصياغة لوائح</span>
+                          <Cpu className="w-4 h-4 text-[#D4AF37] mb-1" />
+                          <span className="text-[10px] font-semibold text-slate-300 text-center">توليد وصياغة لوائح</span>
                         </div>
                         <div className="flex flex-col items-center justify-center p-2 bg-slate-800/80 rounded-xl border border-slate-700">
-                          <Search className="w-3.5 h-3.5 text-blue-400 mb-1" />
-                          <span className="text-[8px] font-bold text-slate-400 text-center">بحث بالمكتبة الرقمية</span>
+                          <Search className="w-4 h-4 text-blue-400 mb-1" />
+                          <span className="text-[10px] font-semibold text-slate-300 text-center">بحث بالمكتبة الرقمية</span>
                         </div>
                         <div className="flex flex-col items-center justify-center p-2 bg-slate-800/80 rounded-xl border border-slate-700">
-                          <AlertTriangle className="w-3.5 h-3.5 text-rose-400 mb-1" />
-                          <span className="text-[8px] font-bold text-slate-400 text-center">تحليل مخاطر SWOT</span>
+                          <AlertTriangle className="w-4 h-4 text-rose-400 mb-1" />
+                          <span className="text-[10px] font-semibold text-slate-300 text-center">تحليل مخاطر SWOT</span>
                         </div>
                         <div className="flex flex-col items-center justify-center p-2 bg-slate-800/80 rounded-xl border border-slate-700">
-                          <Zap className="w-3.5 h-3.5 text-emerald-400 mb-1" />
-                           <span className="text-[8px] font-bold text-slate-400 text-center">استخراج الثغرات</span>
+                          <Zap className="w-4 h-4 text-emerald-400 mb-1" />
+                           <span className="text-[10px] font-semibold text-slate-300 text-center">استخراج الثغرات</span>
                         </div>
-                     </div>
-                  </SummaryWidget>
+                      </div>
+                   </SummaryWidget>
                   </div>
-                </SortableWidgetWrapper>
+                </EnhancedSortableWidgetWrapper>
               );
               if (widget.id === 'summaryCalendar') return (
-                <SortableWidgetWrapper className={getWidgetClassName(widget.size)} key="summaryCalendar" id="summaryCalendar" isCustomizing={isCustomizing} widgetSize={widget.size} onResize={handleUpdateWidgetSize}>
+                <EnhancedSortableWidgetWrapper widgetColor={widget.color} onChangeColor={handleUpdateWidgetColor} className={getWidgetClassName(widget.size)} key="summaryCalendar" id="summaryCalendar" isCustomizing={isCustomizing} widgetSize={widget.size} onResize={handleUpdateWidgetSize}>
                   <div className={`h-full relative ${isCustomizing ? 'opacity-80 ring-2 ring-dashed ring-amber-400 rounded-3xl' : ''}`}>
                     {isCustomizing && (
                       <div className="absolute inset-0 bg-amber-500/5 z-50 flex items-center justify-center rounded-3xl">
@@ -1278,17 +1651,17 @@ const Dashboard = function Dashboard({
                       </div>
                     </SummaryWidget>
                   </div>
-                </SortableWidgetWrapper>
+                </EnhancedSortableWidgetWrapper>
               );
               if (widget.id === 'deadlinesWidget') return (
-                <SortableWidgetWrapper className={getWidgetClassName(widget.size)} key="deadlinesWidget" id="deadlinesWidget" isCustomizing={isCustomizing} widgetSize={widget.size} onResize={handleUpdateWidgetSize}>
+                <EnhancedSortableWidgetWrapper widgetColor={widget.color} onChangeColor={handleUpdateWidgetColor} className={getWidgetClassName(widget.size)} key="deadlinesWidget" id="deadlinesWidget" isCustomizing={isCustomizing} widgetSize={widget.size} onResize={handleUpdateWidgetSize}>
                   <div className={`h-full relative ${isCustomizing ? 'opacity-80 ring-2 ring-dashed ring-amber-400 rounded-3xl' : ''}`}>
                     {isCustomizing && (
                       <div className="absolute inset-0 bg-amber-500/5 z-50 flex items-center justify-center rounded-3xl">
                         <GripVertical className="w-8 h-8 text-amber-500 animate-pulse" />
                       </div>
                     )}
-                    <SummaryWidget icon={<Clock className="w-5 h-5 text-[#fbbf24]" />} title="تنبيهات مهل/مدد الاستئناف" description="المواعيد الزمنية النظامية للقضايا الفعالة">
+                    <SummaryWidget icon={<ClockIcon className="w-5 h-5 text-[#fbbf24]" />} title="تنبيهات مهل/مدد الاستئناف" description="المواعيد الزمنية النظامية للقضايا الفعالة">
                       <div className="space-y-3 mt-1 max-h-[220px] overflow-y-auto custom-scrollbar">
                          {(() => {
                            const criticalCases = cases.filter((c: any) => 
@@ -1362,10 +1735,10 @@ const Dashboard = function Dashboard({
                       </div>
                    </SummaryWidget>
                    </div>
-                </SortableWidgetWrapper>
+                </EnhancedSortableWidgetWrapper>
               );
               if (widget.id === 'summaryInvoicesAI') return (
-                <SortableWidgetWrapper className={getWidgetClassName(widget.size)} key="summaryInvoicesAI" id="summaryInvoicesAI" isCustomizing={isCustomizing} widgetSize={widget.size} onResize={handleUpdateWidgetSize}>
+                <EnhancedSortableWidgetWrapper widgetColor={widget.color} onChangeColor={handleUpdateWidgetColor} className={getWidgetClassName(widget.size)} key="summaryInvoicesAI" id="summaryInvoicesAI" isCustomizing={isCustomizing} widgetSize={widget.size} onResize={handleUpdateWidgetSize}>
                   <div className={`h-full relative ${isCustomizing ? 'opacity-80 ring-2 ring-dashed ring-amber-400 rounded-3xl' : ''}`}>
                     {isCustomizing && (
                       <div className="absolute inset-0 bg-amber-500/5 z-50 flex items-center justify-center rounded-3xl">
@@ -1385,11 +1758,11 @@ const Dashboard = function Dashboard({
                       </div>
                     </SummaryWidget>
                   </div>
-                </SortableWidgetWrapper>
+                </EnhancedSortableWidgetWrapper>
               );
 
               if (widget.id === 'taskSuggestions') return (
-                <SortableWidgetWrapper className={getWidgetClassName(widget.size)} key="taskSuggestions" id="taskSuggestions" isCustomizing={isCustomizing} widgetSize={widget.size} onResize={handleUpdateWidgetSize}>
+                <EnhancedSortableWidgetWrapper widgetColor={widget.color} onChangeColor={handleUpdateWidgetColor} className={getWidgetClassName(widget.size)} key="taskSuggestions" id="taskSuggestions" isCustomizing={isCustomizing} widgetSize={widget.size} onResize={handleUpdateWidgetSize}>
                   <div className={`h-full relative ${isCustomizing ? 'opacity-80 ring-2 ring-dashed ring-amber-400 rounded-[2.5rem]' : ''}`}>
                     {isCustomizing && (
                       <div className="absolute inset-0 bg-amber-500/10 z-50 flex items-center justify-center rounded-[2.5rem]">
@@ -1417,10 +1790,10 @@ const Dashboard = function Dashboard({
                     }}
                   />
                   </div>
-                </SortableWidgetWrapper>
+                </EnhancedSortableWidgetWrapper>
               );
               if (widget.id === 'upcomingHearingsCard') return (
-                <SortableWidgetWrapper className={getWidgetClassName(widget.size)} key="upcomingHearingsCard" id="upcomingHearingsCard" isCustomizing={isCustomizing} widgetSize={widget.size} onResize={handleUpdateWidgetSize}>
+                <EnhancedSortableWidgetWrapper widgetColor={widget.color} onChangeColor={handleUpdateWidgetColor} className={getWidgetClassName(widget.size)} key="upcomingHearingsCard" id="upcomingHearingsCard" isCustomizing={isCustomizing} widgetSize={widget.size} onResize={handleUpdateWidgetSize}>
                   <div className={`group bg-white border border-slate-200 rounded-[2.5rem] p-8 shadow-sm space-y-6 relative h-full ${isCustomizing ? 'opacity-80 ring-2 ring-dashed ring-amber-400' : ''}`}>
                     {isCustomizing && (
                       <div className="absolute inset-0 bg-amber-500/5 z-50 flex items-center justify-center rounded-[2.5rem]">
@@ -1469,11 +1842,11 @@ const Dashboard = function Dashboard({
                       )}
                     </div>
                   </div>
-                </SortableWidgetWrapper>
+                </EnhancedSortableWidgetWrapper>
               );
 
               if (widget.id === 'legalPerformanceMetrics') return (
-                <SortableWidgetWrapper className={getWidgetClassName(widget.size)} key="legalPerformanceMetrics" id="legalPerformanceMetrics" isCustomizing={isCustomizing} widgetSize={widget.size} onResize={handleUpdateWidgetSize}>
+                <EnhancedSortableWidgetWrapper widgetColor={widget.color} onChangeColor={handleUpdateWidgetColor} className={getWidgetClassName(widget.size)} key="legalPerformanceMetrics" id="legalPerformanceMetrics" isCustomizing={isCustomizing} widgetSize={widget.size} onResize={handleUpdateWidgetSize}>
                   <div id="legal-performance-report-container" className={`bg-white border border-slate-200 rounded-[2.5rem] p-8 shadow-xl space-y-6 relative overflow-hidden h-full ${isCustomizing ? 'opacity-80 ring-2 ring-dashed ring-amber-400' : ''}`}>
                     {isCustomizing && (
                       <div className="absolute inset-0 bg-amber-500/5 z-50 flex items-center justify-center rounded-[2.5rem]">
@@ -1720,7 +2093,7 @@ const Dashboard = function Dashboard({
                       </button>
                     </div>
                   </div>
-                </SortableWidgetWrapper>
+                </EnhancedSortableWidgetWrapper>
               );
 
               
@@ -1771,7 +2144,7 @@ const Dashboard = function Dashboard({
                  }));
 
                  return (
-                 <SortableWidgetWrapper className={getWidgetClassName(widget.size)} key="employeePerformanceKPI" id="employeePerformanceKPI" isCustomizing={isCustomizing} widgetSize={widget.size} onResize={handleUpdateWidgetSize}>
+                 <EnhancedSortableWidgetWrapper widgetColor={widget.color} onChangeColor={handleUpdateWidgetColor} className={getWidgetClassName(widget.size)} key="employeePerformanceKPI" id="employeePerformanceKPI" isCustomizing={isCustomizing} widgetSize={widget.size} onResize={handleUpdateWidgetSize}>
                     <div className="bg-white border border-slate-200 rounded-[2.5rem] p-8 shadow-sm space-y-6 text-right" dir="rtl">
                       <h3 className="font-black text-slate-900 text-lg flex items-center gap-2">
                         <Activity className="w-5 h-5 text-purple-500" />
@@ -1815,7 +2188,7 @@ const Dashboard = function Dashboard({
                       </div>
                       )}
                     </div>
-                 </SortableWidgetWrapper>
+                 </EnhancedSortableWidgetWrapper>
                  );
               }
 
@@ -1823,7 +2196,7 @@ const Dashboard = function Dashboard({
               if (widget.id === 'stats') return null;
               if (widget.id === 'timelineD3') return null;
               if (widget.id === 'partnerAnalytics') return (
-                <SortableWidgetWrapper className={getWidgetClassName(widget.size)} key="partnerAnalytics" id="partnerAnalytics" isCustomizing={isCustomizing} widgetSize={widget.size} onResize={handleUpdateWidgetSize}>
+                <EnhancedSortableWidgetWrapper widgetColor={widget.color} onChangeColor={handleUpdateWidgetColor} className={getWidgetClassName(widget.size)} key="partnerAnalytics" id="partnerAnalytics" isCustomizing={isCustomizing} widgetSize={widget.size} onResize={handleUpdateWidgetSize}>
                   <div className={`h-full relative ${isCustomizing ? 'opacity-80 ring-2 ring-dashed ring-amber-400 rounded-[2.5rem]' : ''}`}>
                     {isCustomizing && (
                       <div className="absolute inset-0 bg-amber-500/10 z-50 flex items-center justify-center rounded-[2.5rem]">
@@ -1832,10 +2205,10 @@ const Dashboard = function Dashboard({
                     )}
                     {partnerAnalyticsWidgetMarkup}
                   </div>
-                </SortableWidgetWrapper>
+                </EnhancedSortableWidgetWrapper>
               );
               if (widget.id === 'efficiency') return (
-                <SortableWidgetWrapper className={getWidgetClassName(widget.size)} key="efficiency" id="efficiency" isCustomizing={isCustomizing} widgetSize={widget.size} onResize={handleUpdateWidgetSize}>
+                <EnhancedSortableWidgetWrapper widgetColor={widget.color} onChangeColor={handleUpdateWidgetColor} className={getWidgetClassName(widget.size)} key="efficiency" id="efficiency" isCustomizing={isCustomizing} widgetSize={widget.size} onResize={handleUpdateWidgetSize}>
                   <div className={`h-full relative ${isCustomizing ? 'opacity-80 ring-2 ring-dashed ring-amber-400 rounded-[1.5rem]' : ''}`}>
                     {isCustomizing && (
                       <div className="absolute inset-0 bg-amber-500/10 z-50 flex items-center justify-center rounded-[1.5rem]">
@@ -1892,10 +2265,10 @@ const Dashboard = function Dashboard({
                     </div>
                   </div>
                 </div>
-                </SortableWidgetWrapper>
+                </EnhancedSortableWidgetWrapper>
               );
               if (widget.id === 'timelineCard') return (
-                <SortableWidgetWrapper className={getWidgetClassName(widget.size)} key="timelineCard" id="timelineCard" isCustomizing={isCustomizing} widgetSize={widget.size} onResize={handleUpdateWidgetSize}>
+                <EnhancedSortableWidgetWrapper widgetColor={widget.color} onChangeColor={handleUpdateWidgetColor} className={getWidgetClassName(widget.size)} key="timelineCard" id="timelineCard" isCustomizing={isCustomizing} widgetSize={widget.size} onResize={handleUpdateWidgetSize}>
                   <div className={`h-full relative ${isCustomizing ? 'opacity-80 ring-2 ring-dashed ring-amber-400 rounded-[2.5rem]' : ''}`}>
                     {isCustomizing && (
                       <div className="absolute inset-0 bg-amber-500/5 z-50 flex items-center justify-center rounded-[2.5rem]">
@@ -1914,11 +2287,11 @@ const Dashboard = function Dashboard({
                       </div>
                     </div>
                   </div>
-                </SortableWidgetWrapper>
+                </EnhancedSortableWidgetWrapper>
               );
 
               if (widget.id === 'appealsReminder') return (
-                <SortableWidgetWrapper className={getWidgetClassName(widget.size)} key="appealsReminder" id="appealsReminder" isCustomizing={isCustomizing} widgetSize={widget.size} onResize={handleUpdateWidgetSize}>
+                <EnhancedSortableWidgetWrapper widgetColor={widget.color} onChangeColor={handleUpdateWidgetColor} className={getWidgetClassName(widget.size)} key="appealsReminder" id="appealsReminder" isCustomizing={isCustomizing} widgetSize={widget.size} onResize={handleUpdateWidgetSize}>
                   <div className={`h-full relative ${isCustomizing ? 'opacity-80 ring-2 ring-dashed ring-amber-400 rounded-[2.5rem]' : ''}`}>
                     {isCustomizing && (
                       <div className="absolute inset-0 bg-amber-500/5 z-50 flex items-center justify-center rounded-[2.5rem]">
@@ -1961,11 +2334,11 @@ const Dashboard = function Dashboard({
                        </div>
                     </div>
                   </div>
-                </SortableWidgetWrapper>
+                </EnhancedSortableWidgetWrapper>
               );
 
               if (widget.id === 'overdueTasks') return (
-                <SortableWidgetWrapper className={getWidgetClassName(widget.size)} key="overdueTasks" id="overdueTasks" isCustomizing={isCustomizing} widgetSize={widget.size} onResize={handleUpdateWidgetSize}>
+                <EnhancedSortableWidgetWrapper widgetColor={widget.color} onChangeColor={handleUpdateWidgetColor} className={getWidgetClassName(widget.size)} key="overdueTasks" id="overdueTasks" isCustomizing={isCustomizing} widgetSize={widget.size} onResize={handleUpdateWidgetSize}>
                   <div className={`h-full relative ${isCustomizing ? 'opacity-80 ring-2 ring-dashed ring-amber-400 rounded-[2.5rem]' : ''}`}>
                     {isCustomizing && (
                       <div className="absolute inset-0 bg-amber-500/5 z-50 flex items-center justify-center rounded-[2.5rem]">
@@ -1998,7 +2371,7 @@ const Dashboard = function Dashboard({
                       </div>
                     </div>
                   </div>
-                </SortableWidgetWrapper>
+                </EnhancedSortableWidgetWrapper>
               );
 
               if (widget.id === 'activeCaseTracking') return null;

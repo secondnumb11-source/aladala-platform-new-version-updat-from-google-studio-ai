@@ -31,7 +31,7 @@
 }
 
 .no-hover-parallax,
-.no-hover-parallax *:hover-off {
+.no-hover-parallax *:not(:hover) {
   transform: none !important;
   transition: none !important;
   background-color: inherit !important;
@@ -52,7 +52,7 @@
   box-shadow: var(--shadow-depth-1);
 }
 
-.card-professional:hover-off {
+.card-professional:not(:hover) {
   transform: none !important;
   box-shadow: var(--shadow-depth-1) !important;
 }
@@ -155,7 +155,7 @@ body {
   box-shadow: var(--shadow-depth-1);
 }
 
-.card-professional:hover-off {
+.card-professional:not(:hover) {
   background-color: var(--bg-card);
   transform: none;
   box-shadow: var(--shadow-depth-1);
@@ -358,7 +358,7 @@ html.dark.elegant-gold-active {
   background: linear-gradient(45deg, #dfcf9d, #f5ecd1, #dfcf9d) !important;
 }
 
-.card-professional:hover-off::before {
+.card-professional:not(:hover)::before {
   animation: borderPulseGold 1.5s infinite ease-in-out;
 }
 
@@ -378,7 +378,7 @@ html.dark.elegant-gold-active {
   );
   z-index: 10;
 }
-.card-professional:hover-off::after {
+.card-professional:not(:hover)::after {
   opacity: 1;
 }
 
@@ -415,7 +415,7 @@ html.dark .glass-panel {
 }
 
 /* Unified static card style */
-.card-professional:hover-off {
+.card-professional:not(:hover) {
   transform: none !important;
   background-color: var(--bg-card) !important;
   box-shadow: var(--shadow-depth-1) !important;
@@ -423,7 +423,7 @@ html.dark .glass-panel {
 
 /* Glass reflection removed as requested */
 /* Make text crisp and contrasted inside the card on hover */
-.card-professional:hover-off * {
+.card-professional:not(:hover) * {
   text-shadow: 0 0 1px rgba(0,0,0,0.1);
 }
 
@@ -436,40 +436,40 @@ html.dark .glass-panel {
 }
 
 /* No hover transform on cards */
-html:not(.dark) .card-professional:hover-off, html:not(.dark) .card-professional-item:hover-off {
+html:not(.dark) .card-professional:not(:hover), html:not(.dark) .card-professional-item:not(:hover) {
   background-color: var(--bg-card) !important;
   transform: none !important;
   box-shadow: var(--shadow-depth-1) !important;
 }
 
 /* Ensure text is readable when card turns light yellow/beige */
-html:not(.dark) .card-professional:hover-off h1,
-html:not(.dark) .card-professional:hover-off h2,
-html:not(.dark) .card-professional:hover-off h3,
-html:not(.dark) .card-professional:hover-off h4,
-html:not(.dark) .card-professional:hover-off p,
-html:not(.dark) .card-professional:hover-off span,
-html:not(.dark) .card-professional:hover-off div,
-html:not(.dark) .card-professional-item:hover-off h1,
-html:not(.dark) .card-professional-item:hover-off h2,
-html:not(.dark) .card-professional-item:hover-off h3,
-html:not(.dark) .card-professional-item:hover-off h4,
-html:not(.dark) .card-professional-item:hover-off p,
-html:not(.dark) .card-professional-item:hover-off span,
-html:not(.dark) .card-professional-item:hover-off div {
+html:not(.dark) .card-professional:not(:hover) h1,
+html:not(.dark) .card-professional:not(:hover) h2,
+html:not(.dark) .card-professional:not(:hover) h3,
+html:not(.dark) .card-professional:not(:hover) h4,
+html:not(.dark) .card-professional:not(:hover) p,
+html:not(.dark) .card-professional:not(:hover) span,
+html:not(.dark) .card-professional:not(:hover) div,
+html:not(.dark) .card-professional-item:not(:hover) h1,
+html:not(.dark) .card-professional-item:not(:hover) h2,
+html:not(.dark) .card-professional-item:not(:hover) h3,
+html:not(.dark) .card-professional-item:not(:hover) h4,
+html:not(.dark) .card-professional-item:not(:hover) p,
+html:not(.dark) .card-professional-item:not(:hover) span,
+html:not(.dark) .card-professional-item:not(:hover) div {
   color: #0f172a;
 }
 /* except primary colorful badges */
-html:not(.dark) .card-professional:hover-off .text-primary, html:not(.dark) .card-professional-item:hover-off .text-primary { color: #b8860b !important; }
-html:not(.dark) .card-professional:hover-off .text-rose-400, html:not(.dark) .card-professional-item:hover-off .text-rose-400 { color: #e11d48 !important; }
-html:not(.dark) .card-professional:hover-off .text-rose-500, html:not(.dark) .card-professional-item:hover-off .text-rose-500 { color: #e11d48 !important; }
-html:not(.dark) .card-professional:hover-off .text-emerald-400, html:not(.dark) .card-professional-item:hover-off .text-emerald-400 { color: #059669 !important; }
-html:not(.dark) .card-professional:hover-off .text-emerald-500, html:not(.dark) .card-professional-item:hover-off .text-emerald-500 { color: #059669 !important; }
-html:not(.dark) .card-professional:hover-off .text-amber-500, html:not(.dark) .card-professional-item:hover-off .text-amber-500 { color: #d97706 !important; }
-html:not(.dark) .card-professional:hover-off .bg-primary\/10, html:not(.dark) .card-professional-item:hover-off .bg-primary\/10 { background-color: rgba(184,134,11,0.15) !important; }
+html:not(.dark) .card-professional:not(:hover) .text-primary, html:not(.dark) .card-professional-item:not(:hover) .text-primary { color: #b8860b !important; }
+html:not(.dark) .card-professional:not(:hover) .text-rose-400, html:not(.dark) .card-professional-item:not(:hover) .text-rose-400 { color: #e11d48 !important; }
+html:not(.dark) .card-professional:not(:hover) .text-rose-500, html:not(.dark) .card-professional-item:not(:hover) .text-rose-500 { color: #e11d48 !important; }
+html:not(.dark) .card-professional:not(:hover) .text-emerald-400, html:not(.dark) .card-professional-item:not(:hover) .text-emerald-400 { color: #059669 !important; }
+html:not(.dark) .card-professional:not(:hover) .text-emerald-500, html:not(.dark) .card-professional-item:not(:hover) .text-emerald-500 { color: #059669 !important; }
+html:not(.dark) .card-professional:not(:hover) .text-amber-500, html:not(.dark) .card-professional-item:not(:hover) .text-amber-500 { color: #d97706 !important; }
+html:not(.dark) .card-professional:not(:hover) .bg-primary\/10, html:not(.dark) .card-professional-item:not(:hover) .bg-primary\/10 { background-color: rgba(184,134,11,0.15) !important; }
 
 /* Make text crisp and contrasted inside the card on hover */
-.card-professional:hover-off *, .card-professional-item:hover-off * {
+.card-professional:not(:hover) *, .card-professional-item:not(:hover) * {
   text-shadow: 0 0 1px rgba(0,0,0,0.1);
 }
 
@@ -811,7 +811,7 @@ html.dark [class*="bg-slate-50"] svg {
   box-shadow: 0 4px 6px -1px var(--shadow-color), 0 2px 4px -1px var(--shadow-color);
 }
 
-.card-professional:hover-off {
+.card-professional:not(:hover) {
   border-color: var(--primary) !important;
   z-index: 10;
 }
@@ -833,7 +833,7 @@ html.dark [class*="bg-slate-50"] svg {
   z-index: 10;
 }
 
-.card-professional:hover-off::before {
+.card-professional:not(:hover)::before {
   opacity: 1;
   animation: borderGlowPulse 2s infinite ease-in-out;
 }
@@ -868,13 +868,13 @@ html.dark [class*="bg-slate-50"] svg {
   opacity: 0;
 }
 
-.card-professional:hover-off::after {
+.card-professional:not(:hover)::after {
   opacity: 1;
   transform: rotate(45deg) translate(25%, 25%);
 }
 
 /* Icon scaling on card hover */
-.card-professional:hover-off svg {
+.card-professional:not(:hover) svg {
   transform: scale(1.25) rotate(5deg);
   transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
@@ -924,62 +924,117 @@ aside, aside * {
 .group-hover\/card\:text-shadow-none {
   text-shadow: none !important;
 }
-.widget-theme-slate .card-professional,
-.widget-theme-slate > div,
-.widget-theme-slate .bg-white {
-  background-color: #0f172a !important;
-  background-image: none !important;
-  color: #f8fafc !important;
-  border-color: #1e293b !important;
-}
-.widget-theme-slate *:not(.bg-emerald-500):not(.text-emerald-600) {
-  color: inherit;
+/* =========================================================================
+   WIDGET COLOR AND THEME CUSTOMIZATION SYSTEM (تخصيص كامل لألوان الكروت)
+   ========================================================================= */
+
+.widget-custom-styled {
+  border-width: 3px !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05) !important;
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1) !important;
 }
 
-.widget-theme-primary .card-professional,
-.widget-theme-primary > div,
-.widget-theme-primary .bg-white {
-  background-color: #b8860b !important;
-  background-image: none !important;
-  color: #ffffff !important;
-  border-color: #fff !important;
-}
-.widget-theme-primary *:not(.bg-emerald-500):not(.text-emerald-600) {
-  color: inherit;
+/* Default Theme Styling */
+.widget-theme-default {
+  background-color: #ffffff !important;
+  border-color: #c0a060 !important;
+  color: #020617 !important;
 }
 
-.widget-theme-sky .card-professional,
-.widget-theme-sky > div,
-.widget-theme-sky .bg-white {
-  background-color: #0284c7 !important;
-  background-image: none !important;
-  color: #ffffff !important;
-  border-color: #38bdf8 !important;
-}
-.widget-theme-sky *:not(.bg-emerald-500):not(.text-emerald-600) {
-  color: inherit;
-}
-
-.widget-theme-rose .card-professional,
-.widget-theme-rose > div,
-.widget-theme-rose .bg-white {
-  background-color: #e11d48 !important;
-  background-image: none !important;
-  color: #ffffff !important;
-  border-color: #fb7185 !important;
-}
-.widget-theme-rose *:not(.bg-emerald-500):not(.text-emerald-600) {
-  color: inherit;
-}
-
-.widget-theme-slate .text-slate-900, .widget-theme-primary .text-slate-900, .widget-theme-sky .text-slate-900, .widget-theme-rose .text-slate-900,
-.widget-theme-slate .text-slate-500, .widget-theme-primary .text-slate-500, .widget-theme-sky .text-slate-500, .widget-theme-rose .text-slate-500 {
+/* Base style for custom colored cards */
+.widget-theme-slate,
+.widget-theme-blue,
+.widget-theme-emerald,
+.widget-theme-rose {
   color: #f8fafc !important;
 }
 
-.widget-theme-slate .bg-slate-50, .widget-theme-primary .bg-slate-50, .widget-theme-sky .bg-slate-50, .widget-theme-rose .bg-slate-50 {
-  background-color: rgba(255, 255, 255, 0.1) !important;
-  color: white !important;
+/* Unique full-bleed backgrounds and borders for widgets */
+.widget-theme-slate {
+  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%) !important;
+  border-color: #475569 !important;
+  box-shadow: 0 15px 35px rgba(15, 23, 42, 0.35) !important;
+}
+
+.widget-theme-blue {
+  background: linear-gradient(135deg, #1e3a8a 0%, #0f172a 100%) !important;
+  border-color: #3b82f6 !important;
+  box-shadow: 0 15px 35px rgba(30, 58, 138, 0.35) !important;
+}
+
+.widget-theme-emerald {
+  background: linear-gradient(135deg, #064e3b 0%, #022c22 100%) !important;
+  border-color: #10b981 !important;
+  box-shadow: 0 15px 35px rgba(6, 78, 59, 0.35) !important;
+}
+
+.widget-theme-rose {
+  background: linear-gradient(135deg, #4c0519 0%, #111827 100%) !important;
+  border-color: #f43f5e !important;
+  box-shadow: 0 15px 35px rgba(76, 5, 25, 0.35) !important;
+}
+
+/* Force all inner nested container backgrounds to be transparent for dark environments */
+.widget-theme-slate .bg-white, .widget-theme-slate .bg-slate-50, .widget-theme-slate .bg-slate-100, .widget-theme-slate .bg-gray-50, .widget-theme-slate .bg-gray-100, .widget-theme-slate [class*="bg-slate-"], .widget-theme-slate [class*="bg-gray-"], .widget-theme-slate [class*="bg-sky-"],
+.widget-theme-blue .bg-white, .widget-theme-blue .bg-slate-50, .widget-theme-blue .bg-slate-100, .widget-theme-blue .bg-gray-50, .widget-theme-blue .bg-gray-100, .widget-theme-blue [class*="bg-slate-"], .widget-theme-blue [class*="bg-gray-"], .widget-theme-blue [class*="bg-sky-"],
+.widget-theme-emerald .bg-white, .widget-theme-emerald .bg-slate-50, .widget-theme-emerald .bg-slate-100, .widget-theme-emerald .bg-gray-50, .widget-theme-emerald .bg-gray-100, .widget-theme-emerald [class*="bg-slate-"], .widget-theme-emerald [class*="bg-gray-"], .widget-theme-emerald [class*="bg-sky-"],
+.widget-theme-rose .bg-white, .widget-theme-rose .bg-slate-50, .widget-theme-rose .bg-slate-100, .widget-theme-rose .bg-gray-50, .widget-theme-rose .bg-gray-100, .widget-theme-rose [class*="bg-slate-"], .widget-theme-rose [class*="bg-gray-"], .widget-theme-rose [class*="bg-sky-"] {
+  background-color: transparent !important;
+  background-image: none !important;
+}
+
+/* Force inner borders to be thin transparent lines */
+.widget-theme-slate .border, .widget-theme-slate .border-slate-100, .widget-theme-slate .border-slate-200, .widget-theme-slate .border-gray-100, .widget-theme-slate .border-gray-200,
+.widget-theme-blue .border, .widget-theme-blue .border-slate-100, .widget-theme-blue .border-slate-200, .widget-theme-blue .border-gray-100, .widget-theme-blue .border-gray-200,
+.widget-theme-emerald .border, .widget-theme-emerald .border-slate-100, .widget-theme-emerald .border-slate-200, .widget-theme-emerald .border-gray-100, .widget-theme-emerald .border-gray-200,
+.widget-theme-rose .border, .widget-theme-rose .border-slate-100, .widget-theme-rose .border-slate-200, .widget-theme-rose .border-gray-100, .widget-theme-rose .border-gray-200 {
+  border-color: rgba(255, 255, 255, 0.12) !important;
+}
+
+/* High contrast white and light text for ultra readability indoors */
+.widget-theme-slate h1, .widget-theme-slate h2, .widget-theme-slate h3, .widget-theme-slate h4, .widget-theme-slate h5, .widget-theme-slate p, .widget-theme-slate span, .widget-theme-slate strong, .widget-theme-slate div, .widget-theme-slate label, .widget-theme-slate li, .widget-theme-slate button:not([class*="bg-amber"]):not([class*="bg-emerald"]):not([class*="bg-red"]),
+.widget-theme-blue h1, .widget-theme-blue h2, .widget-theme-blue h3, .widget-theme-blue h4, .widget-theme-blue h5, .widget-theme-blue p, .widget-theme-blue span, .widget-theme-blue strong, .widget-theme-blue div, .widget-theme-blue label, .widget-theme-blue li, .widget-theme-blue button:not([class*="bg-amber"]):not([class*="bg-emerald"]):not([class*="bg-red"]),
+.widget-theme-emerald h1, .widget-theme-emerald h2, .widget-theme-emerald h3, .widget-theme-emerald h4, .widget-theme-emerald h5, .widget-theme-emerald p, .widget-theme-emerald span, .widget-theme-emerald strong, .widget-theme-emerald div, .widget-theme-emerald label, .widget-theme-emerald li, .widget-theme-emerald button:not([class*="bg-amber"]):not([class*="bg-emerald"]):not([class*="bg-red"]),
+.widget-theme-rose h1, .widget-theme-rose h2, .widget-theme-rose h3, .widget-theme-rose h4, .widget-theme-rose h5, .widget-theme-rose p, .widget-theme-rose span, .widget-theme-rose strong, .widget-theme-rose div, .widget-theme-rose label, .widget-theme-rose li, .widget-theme-rose button:not([class*="bg-amber"]):not([class*="bg-emerald"]):not([class*="bg-red"]) {
+  color: #ffffff !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.15) !important;
+}
+
+/* Ensure bright yellow highlights and custom status chips stay visible */
+.widget-theme-slate .text-slate-900, .widget-theme-slate .text-slate-950, .widget-theme-slate .text-slate-800,
+.widget-theme-blue .text-slate-900, .widget-theme-blue .text-slate-950, .widget-theme-blue .text-slate-800,
+.widget-theme-emerald .text-slate-900, .widget-theme-emerald .text-slate-950, .widget-theme-emerald .text-slate-800,
+.widget-theme-rose .text-slate-900, .widget-theme-rose .text-slate-950, .widget-theme-rose .text-slate-800 {
+  color: #ffffff !important;
+}
+
+/* Dynamic color tints for muted details to provide beautiful structural balance */
+.widget-theme-slate .text-slate-500, .widget-theme-slate .text-slate-400, .widget-theme-slate .text-slate-600, .widget-theme-slate .text-gray-500, .widget-theme-slate .text-gray-400,
+.widget-theme-slate span[class*="text-slate-"], .widget-theme-slate span[class*="text-gray-"] {
+  color: #94a3b8 !important;
+}
+
+.widget-theme-blue .text-slate-500, .widget-theme-blue .text-slate-400, .widget-theme-blue .text-slate-600, .widget-theme-blue .text-gray-500, .widget-theme-blue .text-gray-400, .widget-theme-blue .text-blue-500, .widget-theme-blue .text-blue-400,
+.widget-theme-blue span[class*="text-slate-"], .widget-theme-blue span[class*="text-gray-"], .widget-theme-blue span[class*="text-blue-"] {
+  color: #93c5fd !important;
+}
+
+.widget-theme-emerald .text-slate-500, .widget-theme-emerald .text-slate-400, .widget-theme-emerald .text-slate-600, .widget-theme-emerald .text-gray-500, .widget-theme-emerald .text-gray-400, .widget-theme-emerald .text-emerald-500, .widget-theme-emerald .text-emerald-400,
+.widget-theme-emerald span[class*="text-slate-"], .widget-theme-emerald span[class*="text-gray-"], .widget-theme-emerald span[class*="text-emerald-"] {
+  color: #6ee7b7 !important;
+}
+
+.widget-theme-rose .text-slate-500, .widget-theme-rose .text-slate-400, .widget-theme-rose .text-slate-600, .widget-theme-rose .text-gray-500, .widget-theme-rose .text-gray-400, .widget-theme-rose .text-rose-500, .widget-theme-rose .text-rose-400,
+.widget-theme-rose span[class*="text-slate-"], .widget-theme-rose span[class*="text-gray-"], .widget-theme-rose span[class*="text-rose-"] {
+  color: #fda4af !important;
+}
+
+/* Interactive list items and hover effect optimization */
+.widget-theme-slate .hover\:bg-slate-50:hover, .widget-theme-slate .hover\:bg-gray-50:hover,
+.widget-theme-blue .hover\:bg-slate-50:hover, .widget-theme-blue .hover\:bg-gray-50:hover,
+.widget-theme-emerald .hover\:bg-slate-50:hover, .widget-theme-emerald .hover\:bg-gray-50:hover,
+.widget-theme-rose .hover\:bg-slate-50:hover, .widget-theme-rose .hover\:bg-gray-50:hover {
+  background-color: rgba(255, 255, 255, 0.05) !important;
 }
 
 /* HIGH-DENSITY GOLDEN GRADIENT WITH PULSING INTERACTIVE BEHAVIOR */
@@ -1021,7 +1076,7 @@ aside, aside * {
   background: linear-gradient(45deg, #c5a059, #f3e5ab, #c5a059) !important;
 }
 
-.card-professional-gold-bordered:hover-off::before, .card-professional-gold-bordered:focus-within::before {
+.card-professional-gold-bordered:not(:hover)::before, .card-professional-gold-bordered:focus-within::before {
   animation: borderPulseGold 1.5s infinite ease-in-out !important;
 }
 
@@ -1071,7 +1126,7 @@ button:not(.rounded-full), input:not(.rounded-full), select, textarea, .p-2, .p-
 }
 
 /* User-requested: Disabled hover color/glow overrides on Case Cards to keep them static as requested */
-.card-professional-case:hover-off {
+.card-professional-case:not(:hover) {
   /* Keep shadow or border static so no color variations happen on hover */
   border-color: #fbbf24 !important;
   box-shadow: 0 0 20px rgba(251, 191, 36, 0.45) !important;
@@ -1211,28 +1266,28 @@ button:not(.rounded-full), input:not(.rounded-full), select, textarea, .p-2, .p-
 }
 
 /* Hover text transformation inside case cards: swap dark colored items on gold background */
-.card-professional-stable:hover-off .case-name-text {
+.card-professional-stable:not(:hover) .case-name-text {
   color: #050e21 !important;
   text-shadow: none !important;
 }
 
-.card-professional-stable:hover-off .case-header-title {
+.card-professional-stable:not(:hover) .case-header-title {
   color: #091730 !important; 
 }
 
 /* On card hover, the inner card box reverts to elegant deep dark blue */
-.card-professional-stable:hover-off .inner-card-box {
+.card-professional-stable:not(:hover) .inner-card-box {
   background-color: #050e21 !important;
   border-color: #D4AF37 !important;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4) !important;
   color: #ffffff !important;
 }
 
-.card-professional-stable:hover-off .inner-card-box * {
+.card-professional-stable:not(:hover) .inner-card-box * {
   color: #ffffff !important;
 }
 
-.card-professional-stable:hover-off .inner-card-box .inner-top-left-text {
+.card-professional-stable:not(:hover) .inner-card-box .inner-top-left-text {
   color: #fb7185 !important;
 }
 
@@ -1459,17 +1514,17 @@ body.focus-mode-active main {
   transition: background-color 0.25s ease, border-color 0.25s ease, color 0.25s ease !important;
 }
 
-.card-professional:hover-off,
-.card-professional-case:hover-off,
-.card-professional-item:hover-off,
-.inner-card-box:hover-off,
-.glass-panel:hover-off,
-.bento-card:hover-off,
-.relative.group:hover-off,
-.group\/card:hover-off,
-[class*="group"]:hover-off,
-[class*="card"]:hover-off,
-[class*="widget"]:hover-off {
+.card-professional:not(:hover),
+.card-professional-case:not(:hover),
+.card-professional-item:not(:hover),
+.inner-card-box:not(:hover),
+.glass-panel:not(:hover),
+.bento-card:not(:hover),
+.relative.group:not(:hover),
+.group\/card:not(:hover),
+[class*="group"]:not(:hover),
+[class*="card"]:not(:hover),
+[class*="widget"]:not(:hover) {
   transform: none !important;
   scale: 1 !important;
   translate: 0px 0px !important;
@@ -1478,36 +1533,36 @@ body.focus-mode-active main {
 }
 
 /* Maintain identical shadow and position for gold-bordered and custom cases on hover */
-.card-professional-gold-bordered:hover-off {
+.card-professional-gold-bordered:not(:hover) {
   transform: none !important;
   scale: 1 !important;
   box-shadow: none !important;
 }
 
 /* Disable any children transformations such as SVG scales or icons rotations inside hovered cards */
-.card-professional:hover-off *,
-.card-professional-case:hover-off *,
-.card-professional-item:hover-off *,
-[class*="card"]:hover-off *,
-[class*="widget"]:hover-off *,
-.bento-card:hover-off * {
+.card-professional:not(:hover) *,
+.card-professional-case:not(:hover) *,
+.card-professional-item:not(:hover) *,
+[class*="card"]:not(:hover) *,
+[class*="widget"]:not(:hover) *,
+.bento-card:not(:hover) * {
   transform: none !important;
   scale: 1 !important;
 }
 
 /* Maintain static state or hide hover-only pseudo-effects */
-.card-professional:hover-off::before,
-.card-professional-gold-bordered:hover-off::before,
-[class*="card-professional"]:hover-off::before,
-.card-professional-case:hover-off::before {
+.card-professional:not(:hover)::before,
+.card-professional-gold-bordered:not(:hover)::before,
+[class*="card-professional"]:not(:hover)::before,
+.card-professional-case:not(:hover)::before {
   animation: none !important;
   opacity: 0.15 !important;
 }
 
-.card-professional:hover-off::after,
-.card-professional-gold-bordered:hover-off::after,
-[class*="card-professional"]:hover-off::after,
-.card-professional-case:hover-off::after {
+.card-professional:not(:hover)::after,
+.card-professional-gold-bordered:not(:hover)::after,
+[class*="card-professional"]:not(:hover)::after,
+.card-professional-case:not(:hover)::after {
   animation: none !important;
   opacity: 0 !important;
   transform: none !important;
@@ -1515,14 +1570,289 @@ body.focus-mode-active main {
 
 /* Ensure no visual hover flicker, bounce or lifting for specific custom widgets */
 .no-hover-parallax,
-.no-hover-parallax *:hover-off,
-.parallax-container:hover-off,
-.parallax-container *:hover-off,
-.interactive-card:hover-off,
-.interactive-card *:hover-off {
+.no-hover-parallax *:not(:hover),
+.parallax-container:not(:hover),
+.parallax-container *:not(:hover),
+.interactive-card:not(:hover),
+.interactive-card *:not(:hover) {
   transform: none !important;
   transition: none !important;
 }
+
+/* ==========================================================================
+   CARD SYSTEM COLOR SCHEMES
+   ========================================================================== */
+
+/* 1. Golden Theme (ذهبي نخبوي) */
+.card-scheme-golden,
+.card-scheme-golden > div,
+.card-scheme-golden .bg-white,
+.card-scheme-golden .bg-slate-50,
+.card-scheme-golden .bg-slate-100,
+.card-scheme-golden .card-professional,
+.card-scheme-golden .widget-custom-styled > div {
+  background: linear-gradient(135deg, #070d19 0%, #152033 100%) !important;
+  background-color: #070d19 !important;
+  border: 1px solid rgba(212, 175, 55, 0.55) !important;
+  box-shadow: 0 10px 30px rgba(212, 175, 55, 0.08) !important;
+}
+
+/* Base text elements golden setup - eliminating wildcards for elegant cascade */
+.card-scheme-golden h1,
+.card-scheme-golden h2,
+.card-scheme-golden h3,
+.card-scheme-golden h4,
+.card-scheme-golden h5,
+.card-scheme-golden h6,
+.card-scheme-golden label,
+.card-scheme-golden strong,
+.card-scheme-golden b {
+  color: #ffffff !important;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.4) !important;
+}
+
+.card-scheme-golden p,
+.card-scheme-golden li,
+.card-scheme-golden span,
+.card-scheme-golden small,
+.card-scheme-golden td,
+.card-scheme-golden th {
+  color: #feedd1 !important; /* Soft sand gold with supreme readability ratio > 5:1 on dark background */
+}
+
+/* Override primary text colors to bright white for supreme readability contrast */
+.card-scheme-golden .text-slate-950,
+.card-scheme-golden .text-slate-900,
+.card-scheme-golden .text-slate-850,
+.card-scheme-golden .text-slate-800,
+.card-scheme-golden .text-slate-700,
+.card-scheme-golden .text-slate-600,
+.card-scheme-golden .font-black {
+  color: #ffffff !important;
+}
+
+/* Soft muted gold/amber for secondary info/labels */
+.card-scheme-golden .text-slate-500,
+.card-scheme-golden .text-slate-400,
+.card-scheme-golden .text-slate-350,
+.card-scheme-golden .text-slate-300 {
+  color: #ffdca3 !important; /* Warm readable cream-gold */
+  opacity: 1 !important;
+}
+
+/* Inner block elements inside golden cards should be deep dark space-blue in color */
+.card-scheme-golden .bg-white,
+.card-scheme-golden .bg-slate-50,
+.card-scheme-golden .bg-slate-100,
+.card-scheme-golden .bg-slate-50\/50,
+.card-scheme-golden .bg-slate-900\/60,
+.card-scheme-golden .bg-slate-950 {
+  background-color: rgba(6, 11, 22, 0.85) !important;
+  border-color: rgba(212, 175, 55, 0.25) !important;
+}
+
+/* Icons, buttons and interactivity adjustments */
+.card-scheme-golden button,
+.card-scheme-golden .btn {
+  border: 1px solid rgba(212, 175, 55, 0.45) !important;
+  background-color: rgba(6, 11, 22, 0.5) !important;
+  color: #ffffff !important;
+}
+.card-scheme-golden button:hover,
+.card-scheme-golden .btn:hover {
+  background-color: #d4af37 !important;
+  color: #070d19 !important;
+}
+
+.card-scheme-golden .text-amber-500,
+.card-scheme-golden .text-\[\#D4AF37\],
+.card-scheme-golden .text-amber-400,
+.card-scheme-golden .text-amber-300 {
+  color: #f59e0b !important;
+}
+
+.card-scheme-golden .text-emerald-500,
+.card-scheme-golden .text-emerald-440,
+.card-scheme-golden .text-emerald-400 {
+  color: #4ade80 !important;
+}
+
+/* Charts and grid axis adjustments */
+.card-scheme-golden .recharts-text {
+  fill: #ffdca3 !important;
+}
+.card-scheme-golden .recharts-cartesian-grid-horizontal line,
+.card-scheme-golden .recharts-cartesian-grid-vertical line {
+  stroke: rgba(212, 175, 55, 0.12) !important;
+}
+.card-scheme-golden .bg-emerald-50, 
+.card-scheme-golden .bg-emerald-500\/10 {
+  background-color: rgba(16, 185, 129, 0.15) !important;
+  color: #4ade80 !important;
+}
+.card-scheme-golden .bg-amber-50, 
+.card-scheme-golden .bg-amber-500\/10 {
+  background-color: rgba(245, 158, 11, 0.15) !important;
+  color: #fbbf24 !important;
+}
+
+/* 2. Deep Dark Theme (داكن مريح) */
+.card-scheme-dark,
+.card-scheme-dark > div,
+.card-scheme-dark .bg-white,
+.card-scheme-dark .bg-slate-50,
+.card-scheme-dark .bg-slate-100,
+.card-scheme-dark .card-professional,
+.card-scheme-dark .widget-custom-styled > div {
+  background: linear-gradient(135deg, #0b0f19 0%, #1e293b 100%) !important;
+  background-color: #0b0f19 !important;
+  border: 1px solid #334155 !important;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.4) !important;
+}
+
+/* Base text elements dark setup */
+.card-scheme-dark h1,
+.card-scheme-dark h2,
+.card-scheme-dark h3,
+.card-scheme-dark h4,
+.card-scheme-dark h5,
+.card-scheme-dark h6,
+.card-scheme-dark label,
+.card-scheme-dark strong,
+.card-scheme-dark b {
+  color: #ffffff !important;
+}
+
+.card-scheme-dark p,
+.card-scheme-dark li,
+.card-scheme-dark span,
+.card-scheme-dark small,
+.card-scheme-dark td,
+.card-scheme-dark th {
+  color: #e2e8f0 !important;
+}
+
+/* High-contrast colors for headings & primary values */
+.card-scheme-dark .text-slate-950,
+.card-scheme-dark .text-slate-900,
+.card-scheme-dark .text-slate-850,
+.card-scheme-dark .text-slate-800,
+.card-scheme-dark .text-slate-700,
+.card-scheme-dark .text-slate-600,
+.card-scheme-dark .font-black {
+  color: #ffffff !important;
+}
+
+/* Muted grey for secondary info and labels */
+.card-scheme-dark .text-slate-500,
+.card-scheme-dark .text-slate-400,
+.card-scheme-dark .text-slate-350,
+.card-scheme-dark .text-slate-300 {
+  color: #94a3b8 !important;
+  opacity: 1 !important;
+}
+
+/* Internal backgrounds */
+.card-scheme-dark .bg-white,
+.card-scheme-dark .bg-slate-50,
+.card-scheme-dark .bg-slate-100,
+.card-scheme-dark .bg-slate-50\/50,
+.card-scheme-dark .bg-slate-900\/60,
+.card-scheme-dark .bg-slate-950 {
+  background-color: #0f172a !important;
+  border-color: #1e293b !important;
+}
+
+.card-scheme-dark .recharts-text {
+  fill: #94a3b8 !important;
+}
+.card-scheme-dark .recharts-cartesian-grid-horizontal line,
+.card-scheme-dark .recharts-cartesian-grid-vertical line {
+  stroke: #1e293b !important;
+}
+
+/* 3. High Contrast Theme (تباين عالي) */
+.card-scheme-contrast,
+.card-scheme-contrast > div,
+.card-scheme-contrast .bg-white,
+.card-scheme-contrast .bg-slate-50,
+.card-scheme-contrast .bg-slate-100,
+.card-scheme-contrast .card-professional,
+.card-scheme-contrast .widget-custom-styled > div {
+  background-color: #000000 !important;
+  background: #000000 !important;
+  border: 3px solid #ffffff !important;
+  box-shadow: none !important;
+}
+
+/* Base text elements contrast setup */
+.card-scheme-contrast h1,
+.card-scheme-contrast h2,
+.card-scheme-contrast h3,
+.card-scheme-contrast h4,
+.card-scheme-contrast h5,
+.card-scheme-contrast h6,
+.card-scheme-contrast label,
+.card-scheme-contrast p,
+.card-scheme-contrast li,
+.card-scheme-contrast span,
+.card-scheme-contrast small,
+.card-scheme-contrast td,
+.card-scheme-contrast th,
+.card-scheme-contrast select,
+.card-scheme-contrast option,
+.card-scheme-contrast strong,
+.card-scheme-contrast b {
+  color: #ffff00 !important; /* Vivid Yellow */
+  font-weight: 800 !important;
+}
+
+/* Primary white override for headlines */
+.card-scheme-contrast .text-slate-950,
+.card-scheme-contrast .text-slate-900,
+.card-scheme-contrast .text-slate-850,
+.card-scheme-contrast .text-slate-800,
+.card-scheme-contrast .text-slate-700,
+.card-scheme-contrast .text-slate-600,
+.card-scheme-contrast .font-black {
+  color: #ffffff !important;
+}
+
+/* Secondary override */
+.card-scheme-contrast .text-slate-500,
+.card-scheme-contrast .text-slate-400,
+.card-scheme-contrast .text-slate-350,
+.card-scheme-contrast .text-slate-300 {
+  color: #ffff00 !important;
+  opacity: 1 !important;
+}
+
+/* Internal backgrounds */
+.card-scheme-contrast .bg-white,
+.card-scheme-contrast .bg-slate-50,
+.card-scheme-contrast .bg-slate-100,
+.card-scheme-contrast .bg-slate-50\/50,
+.card-scheme-contrast .bg-slate-900\/60,
+.card-scheme-contrast .bg-slate-950 {
+  background-color: #000000 !important;
+  border-color: #ffffff !important;
+}
+
+.card-scheme-contrast button,
+.card-scheme-contrast .btn {
+  border: 2px solid #ffff00 !important;
+  background-color: #000000 !important;
+  color: #ffff00 !important;
+  font-weight: 900 !important;
+}
+.card-scheme-contrast .recharts-text {
+  fill: #ffff00 !important;
+}
+.card-scheme-contrast .recharts-cartesian-grid-horizontal line,
+.card-scheme-contrast .recharts-cartesian-grid-vertical line {
+  stroke: #ffffff !important;
+}
+
 
 
 
