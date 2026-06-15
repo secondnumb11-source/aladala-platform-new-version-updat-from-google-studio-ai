@@ -98,7 +98,7 @@ export default function AIZatcaTool({ invoices = [] }: { invoices?: Invoice[] })
   return (
     <div className="space-y-8 animate-fade-in font-sans p-1 md:p-3" dir="rtl" id="zatca-tool-container">
       {/* Visual Header Banner - Clean, High Contrast Slate Metallic Style */}
-      <div className="relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-slate-950 via-slate-900 to-slate-900 border border-slate-800 p-8 md:p-10 shadow-xl">
+      <div className="relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-slate-950 via-slate-900 to-slate-900 border border-slate-800 p-8 md:p-10 shadow-xl text-high-contrast-light-bg">
         <div className="absolute top-0 left-0 w-80 h-80 bg-blue-500/10 rounded-full blur-[100px] pointer-events-none" />
         <div className="absolute -bottom-10 -right-10 opacity-5 pointer-events-none">
           <QrCode className="w-64 h-64 text-white" />
@@ -185,7 +185,7 @@ export default function AIZatcaTool({ invoices = [] }: { invoices?: Invoice[] })
                       onClick={() => setActiveGateway(gateway.id as any)}
                       className={`p-3.5 rounded-xl text-xs font-black transition-all border text-center cursor-pointer ${
                         activeGateway === gateway.id 
-                          ? 'bg-slate-950 text-white border-slate-950 shadow-md' 
+                          ? 'bg-slate-950 text-white border-slate-950 shadow-md text-high-contrast-light-bg' 
                           : 'bg-slate-50 text-slate-700 hover:bg-slate-100 border-slate-200/60'
                       }`}
                     >

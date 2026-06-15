@@ -1635,6 +1635,7 @@ function AppContent() {
         {/* Module Router Multiplexer */}
         {currentTab !== 'landing' ? (
           <RouteGuard isAuthenticated={isAuthenticated} setCurrentTab={setCurrentTab}>
+            <React.Suspense fallback={<SkeletonLoader />}>
             {currentTab === 'dashboard' && (
               <Dashboard 
                 cases={employeeFilteredCases}
@@ -1810,18 +1811,20 @@ function AppContent() {
         )}
 
         {currentTab === 'client-portal' && (
-          <ClientPortal 
-            clients={clients}
-            cases={cases}
-            invoices={invoices}
-            messages={messages}
-            hearings={hearings}
-            contracts={contracts}
-            documents={documents}
-            onUpdateState={handleUpdateGlobalState}
-            currentUser={currentUser}
-            onNavigate={setCurrentTab}
-          />
+          <React.Suspense fallback={<SkeletonLoader />}>
+            <ClientPortal 
+              clients={clients}
+              cases={cases}
+              invoices={invoices}
+              messages={messages}
+              hearings={hearings}
+              contracts={contracts}
+              documents={documents}
+              onUpdateState={handleUpdateGlobalState}
+              currentUser={currentUser}
+              onNavigate={setCurrentTab}
+            />
+          </React.Suspense>
         )}
 
         {currentTab === 'audit-logs' && selectedRole === 'admin' && (
@@ -1903,16 +1906,18 @@ function AppContent() {
         )}
 
         {currentTab === 'employee-portal' && (
-          <EmployeePortal 
-            cases={cases}
-            clients={clients}
-            tasks={tasks}
-            currentUser={currentUser}
-            selectedRole={selectedRole}
-            onUpdateState={handleUpdateGlobalState}
-          />
+          <React.Suspense fallback={<SkeletonLoader />}>
+            <EmployeePortal 
+              cases={cases}
+              clients={clients}
+              tasks={tasks}
+              currentUser={currentUser}
+              selectedRole={selectedRole}
+              onUpdateState={handleUpdateGlobalState}
+            />
+          </React.Suspense>
         )}
-        
+            </React.Suspense>
           </RouteGuard>
         ) : (
           currentTab === 'landing' && <MainLandingPage onSignInSelect={() => setCurrentTab('dashboard')} onTrialSelect={() => setCurrentTab('dashboard')} />

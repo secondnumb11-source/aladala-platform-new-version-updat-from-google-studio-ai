@@ -1253,11 +1253,22 @@ const Dashboard = function Dashboard({
         </motion.div>
       )}
 
+      {widgets.find(w => w.id === 'timelineCard')?.visible !== false && (
+        <motion.div 
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="w-full relative z-10"
+        >
+          <TimelineD3 hearings={hearings} tasks={tasks} />
+        </motion.div>
+      )}
+
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
         <SortableContext items={widgets.map((w: any) => w.id)} strategy={rectSortingStrategy}>
           <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 ${isCustomizing ? 'ring-4 ring-amber-500/10 p-8 rounded-[5rem] bg-amber-50/5' : ''}`}>
             {widgets.map((widget: any) => {
               if (widget.visible === false) return null;
+              if (widget.id === 'timelineCard') return null;
 
               const wrapWidget = (content: React.ReactNode) => (
                 <EnhancedSortableWidgetWrapper 
@@ -2345,21 +2356,21 @@ const Dashboard = function Dashboard({
                         <GripVertical className="w-8 h-8 text-amber-500 animate-pulse" />
                       </div>
                     )}
-                    <div className={`bg-gradient-to-br from-[#110406] to-[#1e070c] border border-rose-500/30 rounded-[2.5rem] ${widget.size === 'qr' ? 'p-4 space-y-3' : 'p-6 space-y-4 md:p-8 md:space-y-6'} text-white h-full relative overflow-hidden flex flex-col justify-between`}>
+                    <div className={`bg-gradient-to-br from-[#110406] to-[#1e070c] border border-rose-500/30 rounded-3xl ${widget.size === 'qr' ? 'p-3.5 space-y-2' : 'p-4 space-y-3 md:p-4.5 md:space-y-3.5'} text-white h-full relative overflow-hidden flex flex-col justify-between`}>
                        <div className="flex justify-between items-center relative z-10">
-                          <h3 className={`font-black ${widget.size === 'qr' ? 'text-xs' : 'text-sm md:text-base'} flex items-center gap-1.5 text-[#fecdd3]`}>
-                             <AlertTriangle className={`${widget.size === 'qr' ? 'w-4 h-4' : 'w-5.5 h-5.5'} text-rose-400 animate-pulse`} />
+                          <h3 className={`font-black ${widget.size === 'qr' ? 'text-xs' : 'text-xs md:text-sm'} flex items-center gap-1.5 text-[#fecdd3]`}>
+                             <AlertTriangle className={`${widget.size === 'qr' ? 'w-3.5 h-3.5' : 'w-4.5 h-4.5'} text-rose-400 animate-pulse`} />
                              تنبيهات مهل الاستئناف
                           </h3>
                           <div className={`bg-rose-500/25 px-2 py-0.5 rounded-lg ${widget.size === 'qr' ? 'text-[9px]' : 'text-[10px]'} font-black text-rose-300 border border-rose-500/35`}>
                             {cases.filter(c => c.appeal_deadline).length} مهل
                           </div>
                        </div>
-                       <div className={`space-y-2 relative z-10 overflow-y-auto custom-scrollbar flex-1 ${widget.size === 'qr' ? 'max-h-[140px]' : 'max-h-[190px]'}`}>
+                       <div className={`space-y-1 relative z-10 overflow-y-auto custom-scrollbar flex-1 ${widget.size === 'qr' ? 'max-h-[110px]' : 'max-h-[145px]'}`}>
                           {cases.filter(c => c.appeal_deadline).sort((a,b) => new Date(a.appeal_deadline!).getTime() - new Date(b.appeal_deadline!).getTime()).slice(0, 3).map((c, i) => {
                             const isUrgent = new Date(c.appeal_deadline!).getTime() - new Date().getTime() < 3 * 24 * 60 * 60 * 1000;
                             return (
-                              <div key={i} className={`bg-slate-900/85 hover:bg-slate-900 border border-rose-950 p-2.5 rounded-xl flex items-center justify-between gap-1.5 transition-colors`}>
+                              <div key={i} className={`bg-slate-900/85 hover:bg-slate-900 border border-rose-950 p-2 rounded-lg flex items-center justify-between gap-1 transition-colors`}>
                                 <div className="min-w-0 flex-1 text-right">
                                   <h4 className="font-extrabold text-[11px] text-white truncate">{c.caseName}</h4>
                                   <p className="text-[9px] text-[#fca5a5] mt-0.5 opacity-90 truncate font-bold">رقم {c.caseNumber}</p>

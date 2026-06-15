@@ -57,7 +57,7 @@ export function ContrastMotionDiv({ bgClass = "", className = "", style = {}, ch
 
   return (
     <motion.div
-      className={`${bgClass} ${textColorClass} ${className} transition-colors duration-500`}
+      className={`${bgClass} ${textColorClass} ${isDarkBg ? "text-high-contrast-light-bg" : ""} ${className} transition-colors duration-500`}
       style={style}
       {...props}
     >

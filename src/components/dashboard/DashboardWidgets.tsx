@@ -184,35 +184,35 @@ export const UpcomingHearingsList = ({ hearings, cases }: { hearings: any[], cas
   const upcoming = hearings.filter(h => new Date(h.date) >= new Date()).slice(0, 3);
 
   return (
-    <div className="bg-white border border-slate-200 rounded-[2.5rem] p-8 shadow-sm h-full flex flex-col">
-      <div className="flex items-center justify-between mb-6">
-        <h3 className="font-black text-slate-900 text-lg flex items-center gap-2">
+    <div className="bg-white border border-slate-200 rounded-3xl p-5 shadow-sm h-full flex flex-col">
+      <div className="flex items-center justify-between mb-3">
+        <h3 className="font-black text-slate-900 text-base flex items-center gap-2">
           <Calendar className="w-5 h-5 text-indigo-500" />
           مواعيد الجلسات
         </h3>
         <button className="text-[10px] font-black text-indigo-600 hover:underline">عرض الكل</button>
       </div>
-      <div className="space-y-4 flex-1">
+      <div className="space-y-2.5 flex-1">
         {upcoming.length > 0 ? (
           upcoming.map((h, i) => (
-            <div key={i} className="p-4 bg-slate-50 border border-slate-100 rounded-2xl flex items-center gap-4 hover:bg-indigo-50 transition-colors cursor-pointer group">
-              <div className="w-12 h-12 bg-white text-indigo-600 rounded-xl flex flex-col items-center justify-center shrink-0 shadow-sm group-hover:text-white group-hover:bg-indigo-500 transition-all">
-                <span className="text-[10px] font-black">{new Date(h.date).getDate()}</span>
-                <span className="text-[10px] font-bold">{new Date(h.date).toLocaleDateString('ar-SA', { month: 'short' })}</span>
+            <div key={i} className="p-2.5 bg-slate-50 border border-slate-100 rounded-xl flex items-center gap-3 hover:bg-indigo-50 transition-colors cursor-pointer group">
+              <div className="w-10 h-10 bg-white text-indigo-600 rounded-xl flex flex-col items-center justify-center shrink-0 shadow-sm group-hover:text-white group-hover:bg-indigo-500 transition-all">
+                <span className="text-[10.5px] font-black leading-none">{new Date(h.date).getDate()}</span>
+                <span className="text-[9.5px] font-bold mt-0.5 leading-none">{new Date(h.date).toLocaleDateString('ar-SA', { month: 'short' })}</span>
               </div>
               <div className="flex-1 min-w-0 text-right">
-                <h4 className="text-xs font-black text-slate-800 line-clamp-1">{h.caseName}</h4>
-                <div className="flex items-center gap-2 mt-1">
-                  <Clock size={10} className="text-slate-200 font-bold" />
+                <h4 className="text-xs font-black text-slate-850 line-clamp-1">{h.caseName}</h4>
+                <div className="flex items-center gap-1.5 mt-0.5">
+                  <Clock size={10} className="text-indigo-400 font-bold" />
                   <span className="text-[10px] text-slate-700 font-bold">{h.time}</span>
                 </div>
               </div>
             </div>
           ))
         ) : (
-          <div className="flex-1 flex flex-col items-center justify-center text-center py-8 opacity-40">
-            <Calendar size={40} className="mb-4" />
-            <p className="text-xs font-black text-slate-200 font-bold">لا توجد جلسات قادمة</p>
+          <div className="flex-1 flex flex-col items-center justify-center text-center py-6 opacity-40">
+            <Calendar size={32} className="mb-2" />
+            <p className="text-xs font-black text-slate-350 font-bold">لا توجد جلسات قادمة</p>
           </div>
         )}
       </div>

@@ -569,7 +569,7 @@ export default function DocumentsModule({
             initial={{ scale: 0.95, y: 15 }}
             animate={{ scale: 1, y: 0 }}
             exit={{ scale: 0.95, y: 15 }}
-            className="bg-slate-900 border border-slate-800 rounded-[2.5rem] p-8 max-w-4xl w-full relative z-10 shadow-2xl flex flex-col max-h-[90vh] overflow-hidden text-right text-white"
+            className="bg-slate-900 border border-slate-800 rounded-[2.5rem] p-8 max-w-4xl w-full relative z-10 shadow-2xl flex flex-col max-h-[90vh] overflow-hidden text-right text-white text-high-contrast-light-bg"
             dir="rtl"
           >
             <div className="flex justify-between items-center mb-6 border-b border-slate-800 pb-4">

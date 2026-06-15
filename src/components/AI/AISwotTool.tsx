@@ -83,10 +83,10 @@ export default function AISwotTool() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         {/* Input Panel */}
         <div className="lg:col-span-4 space-y-6">
-          <div className="bg-slate-900 border border-slate-800 p-8 rounded-[2.5rem] shadow-2xl relative overflow-hidden group">
+          <div className="bg-slate-900 border border-slate-800 p-8 rounded-[2.5rem] shadow-2xl relative overflow-hidden group text-high-contrast-light-bg">
             <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/10 blur-3xl rounded-full -translate-y-16 translate-x-16"></div>
             <h3 className="text-xl font-black text-white flex items-center gap-3 relative z-10">
-              <Scale className="w-6 h-6 text-indigo-400" />
+              <Scale className="w-6 h-6 text-amber-400" />
               محلل الموقف النظامي (SWOT)
             </h3>
             <p className="text-slate-200 font-bold text-[10px] mt-2 font-bold leading-relaxed relative z-10">
@@ -226,7 +226,7 @@ export default function AISwotTool() {
                     )}
                   </div>
 
-                  <div className="bg-slate-900 text-white p-8 rounded-[2.5rem] shadow-2xl relative overflow-hidden">
+                  <div className="bg-slate-900 text-white p-8 rounded-[2.5rem] shadow-2xl relative overflow-hidden text-high-contrast-light-bg">
                     <div className="absolute top-0 left-0 w-32 h-32 bg-amber-500/10 blur-3xl rounded-full -translate-x-16 -translate-y-16"></div>
                     <div className="flex items-start gap-4 relative z-10">
                       <Lightbulb className="w-6 h-6 text-amber-500 shrink-0" />

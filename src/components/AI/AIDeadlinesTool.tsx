@@ -26,7 +26,7 @@ export default function AIDeadlinesTool() {
   return (
     <div className="space-y-8" dir="rtl">
       {/* Header */}
-      <div className="bg-slate-900 border border-slate-800 p-8 rounded-[2.5rem] shadow-2xl relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-6">
+      <div className="bg-slate-900 border border-slate-800 p-8 rounded-[2.5rem] shadow-2xl relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-6 text-high-contrast-light-bg">
         <div className="absolute top-0 right-0 w-64 h-64 bg-amber-500/5 blur-[100px] rounded-full translate-x-32 -translate-y-32"></div>
         <div className="relative z-10">
           <h2 className="text-2xl font-black text-white flex items-center gap-4">
@@ -60,7 +60,7 @@ export default function AIDeadlinesTool() {
                     onClick={() => setType(t.id as any)}
                     className={`flex items-center gap-4 p-5 rounded-2xl border-2 transition-all text-right ${
                       type === t.id 
-                        ? 'bg-slate-900 text-white border-amber-500 shadow-xl' 
+                        ? 'bg-slate-900 text-white border-amber-500 shadow-xl text-high-contrast-light-bg' 
                         : 'bg-slate-50 text-slate-900 border-slate-100'
                     }`}
                   >
@@ -89,7 +89,7 @@ export default function AIDeadlinesTool() {
               </div>
             </div>
 
-            <button className="w-full bg-slate-900 text-white py-5 rounded-2xl text-xs font-black shadow-xl transition-all flex items-center justify-center gap-2">
+            <button className="w-full bg-slate-900 text-white py-5 rounded-2xl text-xs font-black shadow-xl transition-all flex items-center justify-center gap-2 text-high-contrast-light-bg">
               <Bell className="w-4 h-4 text-amber-500" />
               تفعيل التنبيهات الذكية لهذا الموعد
             </button>

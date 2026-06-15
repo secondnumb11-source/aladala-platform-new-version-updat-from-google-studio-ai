@@ -25,6 +25,8 @@ import {
   AlertCircle,
   Download,
   Users,
+  User,
+  Edit2,
   Calendar,
   Briefcase,
   Layers,
@@ -2836,71 +2838,89 @@ export default React.memo(function CasesModule({
                 {!isFocusMode && filterBarMarkup}
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
-                  <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="card-professional border-2 p-10 bg-gradient-to-br from-[#050e21] to-[#0c1a35] border-primary/30 shadow-2xl relative overflow-hidden group">
-                     <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 blur-3xl rounded-full transition-all"></div>
+                  <motion.div 
+                    initial={{ opacity: 0, y: 20 }} 
+                    animate={{ opacity: 1, y: 0 }} 
+                    transition={{ delay: 0.1 }} 
+                    className="border-2 p-10 bg-gradient-to-br from-[#0b1329] to-[#050e21] border-[#d4af37] shadow-2xl relative overflow-hidden rounded-[2rem] group"
+                    style={{ background: 'linear-gradient(135deg, #0b1329 0%, #050e21 100%)', borderColor: '#d4af37', borderWidth: '2px' }}
+                  >
+                     <div className="absolute top-0 right-0 w-32 h-32 bg-[#d4af37]/10 blur-3xl rounded-full transition-all"></div>
                      <div className="relative z-10 flex flex-col gap-8">
                        <div className="flex items-center justify-between">
-                          <div className="w-16 h-16 bg-primary/10 rounded-[1.5rem] flex items-center justify-center text-primary border border-primary/20 shadow-inner transition-transform duration-500">
-                            <Clock className="w-8 h-8" />
+                          <div className="w-16 h-16 rounded-[1.5rem] flex items-center justify-center border shadow-inner transition-transform duration-500" style={{ backgroundColor: 'rgba(212, 175, 55, 0.15)', borderColor: '#d4af37' }}>
+                            <Clock className="w-8 h-8 text-[#facc15]" />
                           </div>
                           <div className="text-right">
-                             <h4 className="text-xs font-black  text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]   uppercase tracking-[0.2em] mb-2 px-1 border-r-2 border-primary">قضايا نشطة</h4>
-                             <span className="text-4xl font-display font-black text-white tracking-tighter tabular-nums">{cases.filter(c => c.status === 'active' || c.status === 'new').length}</span>
+                             <h4 className="text-sm font-black mb-2 px-2 border-r-4 border-[#d4af37]" style={{ color: '#ffd700', textShadow: '0 0 10px rgba(212, 175, 55, 0.4)' }}>قضايا نشطة</h4>
+                             <span className="text-4xl font-display font-black tracking-tighter tabular-nums" style={{ color: '#ffffff', textShadow: '0 2px 10px rgba(255, 255, 255, 0.3)' }}>{cases.filter(c => c.status === 'active' || c.status === 'new').length}</span>
                           </div>
                        </div>
-                       <div className="w-full bg-[#050e21] h-2.5 rounded-full overflow-hidden border border-white shadow-inner">
-                         <motion.div initial={{ width: 0 }} animate={{ width: '70%' }} transition={{ duration: 1.5, ease: "easeOut", delay: 0.5 }} className="bg-gradient-to-r from-primary to-primary-light h-full shadow-[0_0_20px_rgba(184,134,11,0.6)]" />
+                       <div className="w-full bg-[#030712] h-3 rounded-full overflow-hidden border border-amber-500/30 shadow-inner">
+                         <motion.div initial={{ width: 0 }} animate={{ width: '70%' }} transition={{ duration: 1.5, ease: "easeOut", delay: 0.5 }} className="bg-gradient-to-r from-[#ffd700] via-[#facc15] to-[#b8860b] h-full shadow-[0_0_15px_rgba(250,204,21,0.5)]" />
                        </div>
                        <div className="flex items-center justify-between">
-                          <div className="text-xs text-primary font-black uppercase tracking-widest flex items-center gap-2">
-                             <div className="w-1.5 h-1.5 bg-primary rounded-full animate-ping"></div>
+                          <div className="text-xs font-black flex items-center gap-2" style={{ color: '#facc15' }}>
+                             <div className="w-1.5 h-1.5 bg-[#facc15] rounded-full animate-ping"></div>
                              System Response: Strategic
                           </div>
-                          <span className="text-xs  text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]   font-mono font-black">70.2%</span>
+                          <span className="text-xs font-mono font-black animate-pulse" style={{ color: '#ffffff', textShadow: '0 0 8px rgba(255, 255, 255, 0.8)' }}>70.2%</span>
                        </div>
                      </div>
                   </motion.div>
 
-                  <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="card-professional no-hover-parallax border-2 p-10 bg-slate-50 border-slate-200 shadow-2xl relative group overflow-hidden cursor-default">
-                <div className="absolute -bottom-8 -left-8 w-32 h-32 bg-emerald-500/10 blur-3xl rounded-full transition-all duration-700"></div>
-                <div className="relative flex flex-col gap-8">
-                  <div className="flex items-center justify-between">
-                     <div className="w-16 h-16 bg-emerald-100 rounded-[1.5rem] flex items-center justify-center text-emerald-600 border border-emerald-200 shadow-inner transition-transform duration-500">
-                       <Check className="w-8 h-8" />
+                  <motion.div 
+                    initial={{ opacity: 0, y: 20 }} 
+                    animate={{ opacity: 1, y: 0 }} 
+                    transition={{ delay: 0.2 }} 
+                    className="border-2 p-10 bg-white shadow-2xl relative overflow-hidden rounded-[2rem] cursor-default group"
+                    style={{ backgroundColor: '#ffffff', borderColor: '#d4af37', borderWidth: '2px' }}
+                  >
+                     <div className="absolute -bottom-8 -left-8 w-32 h-32 bg-emerald-500/5 blur-3xl rounded-full"></div>
+                     <div className="relative flex flex-col gap-8">
+                       <div className="flex items-center justify-between">
+                          <div className="w-16 h-16 rounded-[1.5rem] flex items-center justify-center border shadow-inner transition-transform duration-500" style={{ backgroundColor: 'rgba(16, 185, 129, 0.08)', borderColor: 'rgba(16, 185, 129, 0.3)' }}>
+                            <Check className="w-8 h-8 text-emerald-600" />
+                          </div>
+                          <div className="text-right">
+                             <h4 className="text-sm font-black mb-2 px-2 border-r-4 border-emerald-500" style={{ color: '#0f172a' }}>منتهية نهائياً</h4>
+                             <span className="text-4xl font-display font-black tracking-tighter tabular-nums" style={{ color: '#0f172a' }}>{cases.filter(c => c.status === 'closed').length}</span>
+                          </div>
+                       </div>
+                       <div className="w-full bg-slate-100 h-3 rounded-full overflow-hidden shadow-inner border border-slate-200">
+                         <motion.div initial={{ width: 0 }} animate={{ width: '45%' }} transition={{ duration: 1.5, ease: "easeOut", delay: 0.6 }} className="bg-gradient-to-r from-emerald-400 to-emerald-600 h-full shadow-[0_0_15px_rgba(16,185,129,0.3)]" />
+                       </div>
+                       <div className="flex items-center justify-between">
+                          <p className="text-xs font-black flex items-center gap-2" style={{ color: '#059669' }}>Legal Outcome: Positive</p>
+                          <span className="text-xs font-mono font-black bg-emerald-50 text-emerald-700 px-3 py-1 rounded-lg border border-emerald-200">45.8%</span>
+                       </div>
                      </div>
-                     <div className="text-right">
-                        <h4 className="text-xs font-black text-slate-900 uppercase tracking-[0.2em] mb-2 px-1 border-r-2 border-emerald-500">منتهية نهائياً</h4>
-                        <span className="text-4xl font-display font-black text-slate-900 tracking-tighter tabular-nums">{cases.filter(c => c.status === 'closed').length}</span>
-                     </div>
-                  </div>
-                  <div className="w-full bg-slate-200 h-2.5 rounded-full overflow-hidden shadow-inner border border-slate-300">
-                    <motion.div initial={{ width: 0 }} animate={{ width: '45%' }} transition={{ duration: 1.5, ease: "easeOut", delay: 0.6 }} className="bg-emerald-500 h-full shadow-[0_0_20px_rgba(16,185,129,0.3)]" />
-                  </div>
-                  <div className="flex items-center justify-between">
-                     <p className="text-xs text-emerald-600 font-black uppercase tracking-widest flex items-center gap-2">Legal Outcome: Positive</p>
-                     <span className="text-xs text-white font-black font-bold font-mono font-black">45.8%</span>
-                  </div>
-                </div>
-             </motion.div>
+                  </motion.div>
 
-             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="card-professional border-2 p-10 bg-slate-50 border-slate-200 shadow-2xl relative group overflow-hidden cursor-default">
-                <div className="absolute -top-12 -right-12 w-48 h-48 bg-amber-500/10 blur-3xl rounded-full transition-all duration-1000"></div>
+             <motion.div 
+               initial={{ opacity: 0, y: 20 }} 
+               animate={{ opacity: 1, y: 0 }} 
+               transition={{ delay: 0.3 }} 
+               className="border-2 p-10 bg-white shadow-2xl relative overflow-hidden rounded-[2rem] cursor-default group"
+               style={{ backgroundColor: '#ffffff', borderColor: '#d4af37', borderWidth: '2px' }}
+             >
+                <div className="absolute -top-12 -right-12 w-48 h-48 bg-amber-500/5 blur-3xl rounded-full"></div>
                 <div className="relative flex flex-col gap-8">
                   <div className="flex items-center justify-between">
-                     <div className="w-16 h-16 bg-amber-100 rounded-[1.5rem] flex items-center justify-center text-amber-400 font-black border border-amber-200 shadow-inner transition-transform">
-                       <div className="flex items-center justify-center font-black text-amber-400 font-black text-2xl tracking-tighter w-8 h-8">ر.س</div>
+                     <div className="w-16 h-16 rounded-[1.5rem] flex items-center justify-center border shadow-inner transition-transform" style={{ backgroundColor: 'rgba(217, 119, 6, 0.08)', borderColor: 'rgba(217, 119, 6, 0.3)' }}>
+                       <div className="flex items-center justify-center font-black text-amber-600 font-bold text-lg leading-none" style={{ color: '#d97706' }}>ر.س</div>
                      </div>
                      <div className="text-right">
-                        <h4 className="text-xs font-black text-slate-900 uppercase tracking-[0.2em] mb-2 px-1 border-r-2 border-amber-600">حصيلة التنفيذ</h4>
-                        <span className="text-3xl font-display font-black text-slate-900 tracking-tighter tabular-nums">485,000 <span className="text-xs uppercase opacity-60">ريال سعودي</span></span>
+                        <h4 className="text-xs font-black mb-2 px-2 border-r-4 border-amber-600" style={{ color: '#0f172a' }}>حصيلة التنفيذ</h4>
+                        <span className="text-3xl font-display font-black tracking-tighter tabular-nums" style={{ color: '#0f172a' }}>485,000 <span className="text-xs uppercase opacity-60">ريال سعودي</span></span>
                      </div>
                   </div>
-                  <div className="w-full bg-slate-200 h-2.5 rounded-full overflow-hidden shadow-inner border border-slate-300">
-                    <motion.div initial={{ width: 0 }} animate={{ width: '85%' }} transition={{ duration: 1.5, ease: "easeOut", delay: 0.7 }} className="bg-amber-600 h-full shadow-[0_0_20px_rgba(217,119,6,0.3)]" />
+                  <div className="w-full bg-slate-100 h-3 rounded-full overflow-hidden shadow-inner border border-slate-200">
+                    <motion.div initial={{ width: 0 }} animate={{ width: '85%' }} transition={{ duration: 1.5, ease: "easeOut", delay: 0.7 }} className="bg-gradient-to-r from-amber-500 to-amber-600 h-full shadow-[0_0_15px_rgba(217,119,6,0.3)]" />
                   </div>
                   <div className="flex items-center justify-between">
-                     <p className="text-xs text-amber-400 font-black font-black uppercase tracking-widest flex items-center gap-2">Recovery: Phase 5 Optimized</p>
-                     <span className="text-xs text-white font-black font-bold font-mono font-black">85.0%</span>
+                     <p className="text-xs font-black flex items-center gap-2" style={{ color: '#b45309' }}>Recovery: Phase 5 Optimized</p>
+                     <span className="text-xs font-mono font-black bg-amber-50 text-amber-700 px-3 py-1 rounded-lg border border-amber-200">85.0%</span>
                   </div>
                 </div>
              </motion.div>
@@ -3242,6 +3262,21 @@ export default React.memo(function CasesModule({
                                <Bot className={`w-4 h-4 ${isSyncing === c.id ? 'animate-spin' : ''}`} />
                                <span className="text-[10px] font-black">{isSyncing === c.id ? 'جاري السحب...' : 'مزامنة ناجز'}</span>
                              </button>
+                             {c.isNajizSync ? (
+                               <span className={`text-[11px] font-black px-2 py-1 rounded-lg border-2 flex items-center gap-1 transition-colors font-sans shadow-md ${
+                                   isHighContrast ? 'bg-[#adff2f] text-black border-black/10' : 'bg-[#adff2f] text-black border-[#adff2f]/50 drop-shadow-[0_0_8px_rgba(173,255,47,0.4)]'
+                                 }`}>
+                                  <Bot className="w-3.5 h-3.5 text-black" />
+                                  <span className="text-black">من ناجز</span>
+                               </span>
+                             ) : (
+                               <span className={`text-[11px] font-black px-2 py-1 rounded-lg border-2 flex items-center gap-1 transition-colors font-sans shadow-md ${
+                                   isHighContrast ? 'bg-orange-100 text-orange-900 border-orange-200' : 'bg-[#ffb067] text-[#4a2600] border-[#ffb067]/50 drop-shadow-[0_0_8px_rgba(255,176,103,0.3)]'
+                                 }`}>
+                                  <Edit2 className="w-3.5 h-3.5" />
+                                  <span>يدويا</span>
+                               </span>
+                             )}
                              {(() => {
                                const styles = getStatusKineticStyles(c.status);
                                return (
@@ -3394,7 +3429,7 @@ export default React.memo(function CasesModule({
                   <ShieldAlert className="w-8 h-8" />
                 </div>
                 <div>
-                  <h2 className="font-display font-black text-2xl tracking-tight uppercase">منصة العدالة لإدارة مكاتب المحاماة</h2>
+                  <h2 className="font-display font-black text-2xl tracking-tight uppercase text-white" style={{ color: '#ffffff' }}>منصة العدالة لإدارة مكاتب المحاماة</h2>
                   <p className="text-primary text-xs font-black mt-2 uppercase tracking-[0.2em] opacity-80">عميل جديد</p>
                 </div>
               </div>

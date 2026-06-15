@@ -87,9 +87,9 @@ export default function AIFinanceTool({ invoices = [] }: { invoices?: Invoice[] 
         </div>
         
         <div className="lg:col-span-4 space-y-6">
-          <div className="bg-slate-900 p-8 rounded-[2.5rem] shadow-2xl relative overflow-hidden text-center text-white flex flex-col justify-center items-center h-[200px]">
+          <div className="bg-slate-900 p-8 rounded-[2.5rem] shadow-2xl relative overflow-hidden text-center text-white flex flex-col justify-center items-center h-[200px] text-high-contrast-light-bg">
              <div className="absolute top-0 right-0 w-32 h-32 bg-slate-800 blur-3xl rounded-full -translate-y-16 translate-x-16"></div>
-             <DollarSign className="w-12 h-12 text-blue-400 mb-4 relative z-10" />
+             <DollarSign className="w-12 h-12 text-amber-400 mb-4 relative z-10" />
              <h4 className="font-black text-lg mb-2 relative z-10 text-white">إحصائيات فورية</h4>
              <p className="text-3xl font-black text-white relative z-10">{invoices.length || 3}</p>
              <p className="text-xs text-slate-200 font-bold font-bold mt-1 relative z-10">إجمالي الفواتير المسجلة</p>
@@ -112,7 +112,7 @@ export default function AIFinanceTool({ invoices = [] }: { invoices?: Invoice[] 
       </div>
 
       {/* Duplicated & Embedded Judicial Fees Calculator with Extreme Contrast & Gold Identity */}
-      <div className="bg-[#0b1325] border border-amber-500/20 rounded-[2.5rem] p-8 shadow-2xl relative overflow-hidden mt-8 text-right">
+      <div className="bg-[#0b1325] border border-amber-500/20 rounded-[2.5rem] p-8 shadow-2xl relative overflow-hidden mt-8 text-right text-high-contrast-light-bg">
         <div className="absolute top-0 left-0 w-64 h-64 bg-amber-500/5 rounded-full blur-[80px] -translate-x-10 -translate-y-10"></div>
         <div className="border-b border-slate-800 pb-5 mb-6 font-sans">
           <div className="flex items-center gap-3">

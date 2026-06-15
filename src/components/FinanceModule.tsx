@@ -82,7 +82,7 @@ function ContrastMotionDiv({ bgClass = "", className = "", style = {}, children,
 
   return (
     <motion.div
-      className={`${bgClass} ${className} transition-all duration-700 relative overflow-hidden`}
+      className={`${bgClass} ${className} ${isDark ? "text-high-contrast-light-bg" : ""} transition-all duration-700 relative overflow-hidden`}
       animate={{ 
         color: contrastColor,
         borderColor: isDark ? "rgba(212, 175, 55, 0.3)" : goldBrand
