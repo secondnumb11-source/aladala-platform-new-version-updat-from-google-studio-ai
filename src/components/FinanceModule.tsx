@@ -34,7 +34,7 @@ import {
 , Bell } from 'lucide-react';
 import { Invoice, Client, Case } from '@/types';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip, Legend, AreaChart, Area, XAxis, YAxis, CartesianGrid } from 'recharts';
-const QRCodeSVG = React.lazy(() => import('qrcode.react').then(module => ({ default: module.QRCodeSVG })));
+import { QRCodeSVG } from 'qrcode.react';
 
 // A custom motion.div wrapper that analyzes background class/color and enforces a perfectly contrasting text color.
 interface ContrastMotionDivProps extends Omit<React.ComponentPropsWithoutRef<typeof motion.div>, 'children'> {

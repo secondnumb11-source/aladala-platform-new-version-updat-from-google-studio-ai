@@ -31,9 +31,13 @@
 }
 
 /* Accessible Text Semantic Tokens */
-.text-primary-ui { @apply text-slate-950 dark:text-slate-50; }
-.text-secondary-ui { @apply text-slate-700 dark:text-slate-300; }
+.text-primary-ui { @apply text-slate-900 dark:text-slate-50; }
+.text-secondary-ui { @apply text-slate-600 dark:text-slate-300; }
 .text-muted-ui { @apply text-slate-500 dark:text-slate-400; }
+.text-on-dark { @apply text-white; }
+.text-on-dark-muted { @apply text-slate-300; }
+.text-gold-ui { @apply text-[#D4AF37]; }
+.text-yellow-bright { @apply text-[#fbbf24]; }
 
 .no-hover-parallax,
 .no-hover-parallax *:not(:hover) {

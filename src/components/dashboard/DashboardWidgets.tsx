@@ -82,14 +82,14 @@ export const AgenciesAlertWidget = ({ agencies }: { agencies: any[] }) => {
             <div key={agency.id} className={`p-4 rounded-2xl border transition-all hover:bg-white hover:shadow-lg group ${isUrgent ? 'bg-rose-50 border-rose-100 ring-1 ring-rose-200' : 'bg-slate-50 border-slate-100'}`}>
               <div className="flex justify-between items-start mb-2">
                 <span className="text-xs font-black text-slate-800 line-clamp-1 group-hover:text-[#c0a060] transition-colors">{agency.client}</span>
-                <span className={`text-[9px] font-black px-2 py-1 rounded-lg ${isUrgent ? 'bg-rose-500 text-white shadow-sm' : 'bg-slate-200 text-slate-700'}`}>
+                <span className={`text-[9px] font-black px-2 py-1 rounded-lg ${isUrgent ? 'bg-rose-500 text-white shadow-sm' : 'bg-slate-200 text-slate-500'}`}>
                   {isUrgent ? 'تنتهي قريباً' : 'سارية'}
                 </span>
               </div>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-1.5">
                   <Clock size={12} className={isUrgent ? 'text-rose-500' : 'text-slate-400'} />
-                  <span className={`text-[10px] font-bold ${isUrgent ? 'text-rose-700 animate-pulse' : 'text-slate-600'}`}>
+                  <span className={`text-[10px] font-bold ${isUrgent ? 'text-rose-600 animate-pulse' : 'text-slate-500'}`}>
                     {isUrgent ? `متبقي ${daysLeft} يوم!` : `متبقي ${daysLeft} يوم`}
                   </span>
                 </div>
@@ -129,7 +129,7 @@ export const OverdueTasksWidget = ({ tasks }: { tasks: any[] }) => {
               </div>
               <div className="flex-1 min-w-0">
                 <h4 className="text-xs font-black text-slate-800 line-clamp-1">{task.title}</h4>
-                <p className="text-[10px] font-black text-rose-700 mt-1">تأخرت منذ {Math.abs(Math.ceil((new Date(task.dueDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)))} يوم</p>
+                <p className="text-[10px] font-black text-rose-600 mt-1">تأخرت منذ {Math.abs(Math.ceil((new Date(task.dueDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)))} يوم</p>
               </div>
             </div>
           ))

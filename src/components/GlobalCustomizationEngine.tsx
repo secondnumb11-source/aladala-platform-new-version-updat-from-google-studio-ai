@@ -121,16 +121,6 @@ export default function GlobalCustomizationEngine() {
 
     return () => {
       observer.disconnect();
-      // Cleanup event listeners from all customizable elements to prevent memory leaks
-      const customElements = document.querySelectorAll('.customizable-card');
-      customElements.forEach(el => {
-        const hEl = el as HTMLElement;
-        hEl.removeEventListener('contextmenu', handleContextMenu);
-        hEl.removeEventListener('dragstart', handleDragStart);
-        hEl.removeEventListener('dragover', handleDragOver);
-        hEl.removeEventListener('drop', handleDrop);
-        hEl.removeEventListener('mouseup', handleResizeEnd);
-      });
     };
   }, [isActive]);
 

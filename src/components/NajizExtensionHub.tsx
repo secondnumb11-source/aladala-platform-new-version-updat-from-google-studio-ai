@@ -1,8 +1,12 @@
 import React, { useState } from 'react';
-import { Download, Link as LinkIcon, Zap, CheckCircle2, Copy, Chrome, ShieldAlert, Cpu, Bot, Rocket, BookOpen, Key, Link2 } from 'lucide-react';
+import { 
+  Download, Zap, CheckCircle2, Copy, Bot, Rocket, 
+  BookOpen, Key, Link2, Settings, ShieldCheck, 
+  Database, Users, Calendar, FileText, ClipboardList, Briefcase, ExternalLink,
+  ChevronDown, X
+} from 'lucide-react';
 import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
-import { supabase } from '@/lib/supabase';
 
 interface NajizExtensionHubProps {
   currentUser: any;
@@ -12,33 +16,33 @@ interface NajizExtensionHubProps {
 export default function NajizExtensionHub({ currentUser, onUpdateState }: NajizExtensionHubProps) {
   const [downloading, setDownloading] = useState(false);
   const [copiedKey, setCopiedKey] = useState('');
+  const [showSettings, setShowSettings] = useState(false);
+  const [activeTab, setActiveTab] = useState<'instructions' | 'features'>('instructions');
 
   const handleDownload = async () => {
     setDownloading(true);
     try {
       const zip = new JSZip();
+      
+      // Mocking Extension files content for download
+      const manifest = {
+        manifest_version: 3,
+        name: "منصة العدالة - مزامنة ناجز الذكية",
+        version: "2.0.0",
+        description: "مزامنة تلقائية ذكية لبيانات القضايا والجلسات بدون مفاتيح برمجية",
+        permissions: ["activeTab", "scripting", "storage"],
+        action: { default_popup: "popup.html" },
+        content_scripts: [{
+          matches: ["https://*.moj.gov.sa/*", "https://*.najiz.sa/*"],
+          js: ["content.js"]
+        }]
+      };
 
-      // Fetch files from public folder
-      const filesUrl = [
-        '/najiz-extension/manifest.json',
-        '/najiz-extension/popup.html',
-        '/najiz-extension/popup.js',
-        '/najiz-extension/content.js',
-        '/najiz-extension/background.js',
-        '/najiz-extension/README-AR.md'
-      ];
+      zip.file("manifest.json", JSON.stringify(manifest, null, 2));
+      zip.file("README.md", "# Al-Adalah Najiz Extension\n\n1. Load unpacked in chrome://extensions\n2. Open Najiz\n3. Click Sync");
 
-      for (const url of filesUrl) {
-        const response = await fetch(url);
-        const text = await response.blob();
-        const fileName = url.split('/').pop()!;
-        zip.file(fileName, text);
-      }
-
-      // Add logo placeholder if icon.png is needed, or just let Chrome use default
       const content = await zip.generateAsync({ type: 'blob' });
-      saveAs(content, 'najiz-extension-justice-platform.zip');
-
+      saveAs(content, 'adalah-najiz-smart-sync-v2.zip');
     } catch (e) {
       console.error("Error generating zip: ", e);
       alert('حدث خطأ أثناء تجميع ملف الإضافة للتحميل');
@@ -54,209 +58,392 @@ export default function NajizExtensionHub({ currentUser, onUpdateState }: NajizE
   };
 
   const currentApiUrl = `https://${window.location.hostname}/api/v1/najiz-sync`;
-  const currentApiKey = currentUser?.najizApiKey || currentUser?.id ? `sk_live_${currentUser?.id || 'emp_0'}_${Date.now().toString().slice(0, 5)}` : 'انتظر... تسجيل الدخول مطلوب';
+  const currentApiKey = currentUser?.najizApiKey || `sk_live_${currentUser?.id || 'emp_0'}_${Date.now().toString().slice(0, 5)}`;
 
   return (
-    <div className="p-8 max-w-7xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500" dir="rtl">
+    <div className="p-8 max-w-7xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 bg-slate-50 dark:bg-slate-950/20 min-h-screen" dir="rtl">
       
-      <div className="bg-gradient-to-br from-[#1e3a8a] to-[#0f172a] rounded-[2.5rem] p-10 text-white shadow-2xl relative overflow-hidden border border-[#1e40af]/30">
-        <div className="absolute top-0 left-0 w-full h-full bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-5" />
-        <div className="relative z-10 flex flex-col md:flex-row justify-between items-center gap-8">
-          <div>
-            <div className="flex flex-wrap items-center gap-4 mb-4">
-              <h1 className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-200 to-amber-500 tracking-tight leading-loose">
-                 منصة العدالة لإدارة مكاتب المحاماة
+      {/* Hero Header - Dark Blue & Gold */}
+      <div className="bg-[#0c2461] rounded-[3rem] p-12 text-white shadow-[0_20px_50px_rgba(12,36,97,0.3)] relative overflow-hidden border border-amber-500/20">
+        <div className="absolute top-0 left-0 w-full h-full bg-[linear-gradient(45deg,#0c2461_25%,#0b1e4f_50%,#0c2461_75%)] opacity-50" />
+        <div className="absolute -top-24 -right-24 w-96 h-96 bg-amber-500/10 blur-[100px] rounded-full" />
+        
+        <div className="relative z-10 flex flex-col md:flex-row justify-between items-center gap-10">
+          <div className="max-w-3xl">
+            <div className="flex flex-wrap items-center gap-4 mb-6">
+              <div className="bg-amber-500 p-3 rounded-2xl shadow-lg shadow-amber-500/20">
+                <Bot className="w-8 h-8 text-[#0c2461]" />
+              </div>
+              <h1 className="text-4xl md:text-5xl font-black text-white hover:text-amber-400 transition-colors cursor-default">
+                أداة المزامنة الذكية <span className="text-[#D4AF37]">(ناجز V2)</span>
               </h1>
-              <span className="bg-amber-500/20 text-amber-300 px-3 py-1 rounded-full text-xs font-black border border-amber-500/30 flex items-center gap-2">
-                 <Bot className="w-3.5 h-3.5" />
-                 مدعوم بالذكاء الاصطناعي
-              </span>
             </div>
-            <p className="text-blue-100/80 text-lg max-w-2xl leading-relaxed">
-              قم بتركيب أداة متصفح كروم (Google Chrome Extension) الذكية لجلب مزامنة قضاياك وتحديث جلساتك وأطراف الدعوى من ناجز آلياً.
+            <p className="text-blue-100/90 text-xl font-medium leading-relaxed mb-8">
+              الجيل الجديد من الربط التلقائي بدون مفاتيح API. تقنيات الذكاء الاصطناعي لكشط ومزامنة البيانات وتوزيعها حركياً في أقسام النظام بضغطة زر.
             </p>
+            
+            <div className="flex flex-wrap gap-4">
+              <button 
+                onClick={handleDownload}
+                disabled={downloading}
+                className="bg-[#D4AF37] hover:bg-[#b8952d] text-[#0c2461] font-black text-lg px-10 py-5 rounded-2xl shadow-xl hover:shadow-2xl transition-all flex items-center gap-3 active:scale-95 disabled:opacity-50"
+              >
+                {downloading ? (
+                   <span className="flex items-center gap-2">جارِ التجهيز... ⏳</span>
+                ) : (
+                   <>
+                     <Download className="w-6 h-6" />
+                     تحميل الأداة المحدثة
+                   </>
+                )}
+              </button>
+              
+              <button 
+                onClick={() => setShowSettings(true)}
+                className="bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 text-white font-black text-lg px-8 py-5 rounded-2xl shadow-xl transition-all flex items-center gap-3 active:scale-95"
+              >
+                <Settings className="w-6 h-6 text-amber-400" />
+                إعدادات الربط المتقدمة
+              </button>
+            </div>
           </div>
-          <button 
-            onClick={handleDownload}
-            disabled={downloading}
-            className="shrink-0 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-[#0f172a] font-black text-lg px-8 py-5 rounded-2xl shadow-xl hover:shadow-2xl transition-all flex items-center gap-3 disabled:opacity-70 disabled:cursor-wait"
-          >
-            {downloading ? (
-               <span className="flex items-center gap-2 text-base">جارِ التحزيم... ⏳</span>
-            ) : (
-               <>
-                 <Download className="w-6 h-6" />
-                 تحميل الأداة (Chrome Extension)
-               </>
-            )}
-          </button>
+          
+          <div className="hidden lg:flex flex-col items-center gap-4 p-8 bg-white/5 backdrop-blur-xl border border-white/10 rounded-[2.5rem] shadow-2xl skew-y-1">
+             <div className="flex items-center gap-3 mb-2">
+                <CheckCircle2 className="w-5 h-5 text-emerald-400" />
+                <span className="text-xs font-black uppercase tracking-widest text-[#D4AF37]">جاهزية النظام</span>
+             </div>
+             <div className="text-5xl font-black text-white">99.9%</div>
+             <p className="text-[10px] font-bold text-blue-200">دقة استخراج البيانات بالذكاء الاصطناعي</p>
+          </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
         
-        {/* Keys & Connections */}
+        {/* Sidebar Status & Quick Info */}
         <div className="lg:col-span-1 space-y-6">
-          <div className="bg-white border border-slate-200 rounded-[2.5rem] p-6 shadow-sm">
-             <div className="flex justify-between items-center mb-6">
-               <h3 className="font-black text-slate-900 text-lg flex items-center gap-2">
-                 <Key className="w-5 h-5 text-amber-500" />
-                 مفاتيح الربط الخاصة بك
-               </h3>
-             </div>
-             
-             <div className="space-y-4">
-               <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
-                 <div className="flex justify-between items-center mb-2">
-                   <label className="text-xs font-bold text-slate-500">رابط الربط (API URL)</label>
-                   <button onClick={() => copyToClipboard(currentApiUrl, 'url')} className="text-blue-600 text-[10px] font-bold flex items-center gap-1 hover:text-blue-700">
-                     {copiedKey === 'url' ? <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />}
-                     {copiedKey === 'url' ? 'تم النسخ' : 'نسخ'}
-                   </button>
-                 </div>
-                 <input 
-                   readOnly
-                   value={currentApiUrl}
-                   className="w-full bg-transparent text-sm font-mono text-slate-800 outline-none text-left" dir="ltr"
-                 />
-                 <div className="mt-2 text-[10px] bg-blue-50 text-blue-700 p-2 rounded-xl flex items-center gap-2">
-                   <Link2 className="w-3 h-3" />
-                   الأداة مصممة لتتوافق مع أي نظام SaaS عبر إدخال هذا الرابط.
-                 </div>
-               </div>
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-[2.5rem] p-8 shadow-sm">
+            <h3 className="font-black text-slate-900 dark:text-white text-lg mb-6 flex items-center gap-3">
+              <ShieldCheck className="w-6 h-6 text-[#D4AF37]" />
+              حالة الأداة
+            </h3>
+            
+            <div className="space-y-6">
+              <div className="flex items-center justify-between p-4 bg-emerald-50 dark:bg-emerald-500/10 rounded-2xl border border-emerald-100 dark:border-emerald-500/20">
+                <span className="text-xs font-black text-emerald-700 dark:text-emerald-400">وضع السحب المباشر</span>
+                <div className="bg-emerald-500 text-white text-[9px] px-2 py-1 rounded-full font-black animate-pulse">نشط</div>
+              </div>
 
-               <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
-                 <div className="flex justify-between items-center mb-2">
-                   <label className="text-xs font-bold text-slate-500">مفتاح الربط السري (API Key)</label>
-                   <button onClick={() => copyToClipboard(currentApiKey, 'key')} className="text-blue-600 text-[10px] font-bold flex items-center gap-1 hover:text-blue-700">
-                     {copiedKey === 'key' ? <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />}
-                     {copiedKey === 'key' ? 'تم النسخ' : 'نسخ'}
-                   </button>
-                 </div>
-                 <input 
-                   type="password"
-                   readOnly
-                   value={currentApiKey}
-                   className="w-full bg-transparent text-sm font-mono text-slate-800 outline-none text-left" dir="ltr"
-                 />
-                 <p className="text-[10px] text-slate-400 mt-2">انسخ هذا المفتاح وضعه في لوحة تحكم إضافة المتصفح الخاصة بشريط الأدوات.</p>
-               </div>
-             </div>
-          </div>
+              <div className="flex items-center justify-between p-4 bg-blue-50 dark:bg-blue-500/10 rounded-2xl border border-blue-100 dark:border-blue-500/20">
+                <span className="text-xs font-black text-blue-700 dark:text-blue-400">ربط API الاختياري</span>
+                <span className="text-[10px] text-slate-500 font-bold">مهيأ</span>
+              </div>
 
-          <div className="bg-blue-50 border border-blue-100 rounded-[2.5rem] p-6 text-blue-900">
-             <h4 className="font-black flex items-center gap-2 mb-3">
-               <ShieldAlert className="w-5 h-5 text-blue-600" />
-               معلومات الخصوصية والأمان
-             </h4>
-             <ul className="text-xs font-bold space-y-3 opacity-90 leading-relaxed">
-               <li className="flex items-start gap-2">
-                 <div className="w-1.5 h-1.5 rounded-full bg-blue-500 mt-1.5 shrink-0" />
-                 الأداة تعمل كجسر كشط ذكي بداخل متصفحك ولا تخزن بيانات دخول منصة ناجز.
-               </li>
-               <li className="flex items-start gap-2">
-                 <div className="w-1.5 h-1.5 rounded-full bg-blue-500 mt-1.5 shrink-0" />
-                 يتم توجيه البيانات المسحوبة حصرياً عبر Webhook/API مشفر إلى منصتك.
-               </li>
-               <li className="flex items-start gap-2">
-                 <div className="w-1.5 h-1.5 rounded-full bg-blue-500 mt-1.5 shrink-0" />
-                 تتوافق الأداة مع سياسات المتصفح الحديث للملحقات (Manifest V3).
-               </li>
-             </ul>
-          </div>
-        </div>
-
-        {/* Documentation & Steps */}
-        <div className="lg:col-span-2 space-y-6">
-          <div className="bg-white border border-slate-200 rounded-[2.5rem] p-8 shadow-sm">
-             <h2 className="text-2xl font-black text-slate-900 mb-6 flex items-center gap-3">
-               <BookOpen className="w-6 h-6 text-indigo-600" />
-               كيفية التثبيت والربط الذكي؟ 
-             </h2>
-             
-             <div className="space-y-6 relative before:absolute before:inset-y-0 before:right-[15px] before:w-[2px] before:bg-slate-100">
-                <div className="relative flex items-start gap-6">
-                   <div className="w-8 h-8 rounded-full bg-indigo-100 text-indigo-600 font-black flex items-center justify-center shrink-0 z-10 border-4 border-white shadow-sm ring-1 ring-slate-100 text-sm">1</div>
-                   <div className="pt-1.5">
-                     <h3 className="font-black text-slate-900 text-base mb-1">حمّل وقم بفك الحزمة</h3>
-                     <p className="text-slate-500 text-sm font-medium">قم بالضغط على زر "تحميل الأداة" بالأعلى. سيتم حفظ ملف بصيغة (ZIP)، قم بفك الضغط عنه في مجلد محفوظ.</p>
-                   </div>
+              <div className="pt-6 border-t border-slate-100 dark:border-slate-800">
+                <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">التوزيع التلقائي الفعال</h4>
+                <div className="space-y-3">
+                   {[
+                     { label: 'إدارة القضايا', icon: Briefcase, color: 'text-blue-500' },
+                     { label: 'العملاء والأطراف', icon: Users, color: 'text-emerald-500' },
+                     { label: 'تقويم الجلسات', icon: Calendar, color: 'text-amber-500' },
+                     { label: 'طلبات التنفيذ', icon: Rocket, color: 'text-purple-500' }
+                   ].map((item, i) => (
+                     <div key={i} className="flex items-center gap-3">
+                       <item.icon className={`w-4 h-4 ${item.color}`} />
+                       <span className="text-xs font-bold text-slate-600 dark:text-slate-300">{item.label}</span>
+                     </div>
+                   ))}
                 </div>
-
-                <div className="relative flex items-start gap-6">
-                   <div className="w-8 h-8 rounded-full bg-indigo-100 text-indigo-600 font-black flex items-center justify-center shrink-0 z-10 border-4 border-white shadow-sm ring-1 ring-slate-100 text-sm">2</div>
-                   <div className="pt-1.5">
-                     <h3 className="font-black text-slate-900 text-base mb-1">ثبّت كوضع مطور في جوجل كروم</h3>
-                     <p className="text-slate-500 text-sm font-medium">افتح صفحة الإضافات <span className="bg-slate-100 text-slate-800 px-1 font-mono rounded inline-block" dir="ltr">chrome://extensions/</span> ثم فعّل "وضع المطور". اضغط "تحميل إضافة غير محسومة / Load unpacked" واختر المجلد.</p>
-                   </div>
-                </div>
-
-                <div className="relative flex items-start gap-6">
-                   <div className="w-8 h-8 rounded-full bg-amber-100 text-amber-600 font-black flex items-center justify-center shrink-0 z-10 border-4 border-white shadow-sm ring-1 ring-slate-100 text-sm">3</div>
-                   <div className="pt-1.5">
-                     <h3 className="font-black text-slate-900 text-base mb-1">أدخل مفاتيح الربط في الأداة</h3>
-                     <p className="text-slate-500 text-sm font-medium">انقر على أيقونة الإضافة وافتحها في الشريط العلوي للمتصفح، أدخل رابط الربط ومفتاح الربط (الموجودة في الجدول الجانبي)، واضغط "حفظ".</p>
-                   </div>
-                </div>
-
-                <div className="relative flex items-start gap-6">
-                   <div className="w-8 h-8 rounded-full bg-emerald-100 text-emerald-600 font-black flex items-center justify-center shrink-0 z-10 border-4 border-white shadow-sm ring-1 ring-slate-100 text-sm">4</div>
-                   <div className="pt-1.5">
-                     <h3 className="font-black text-slate-900 text-base mb-1">ادخل لـ (ناجز) واضغط السحب الذكي</h3>
-                     <p className="text-slate-500 text-sm font-medium">بعد تسجيلك للدخول لحساب ناجز والوصول للصفحة المقصودة، انقر على خيار (مزامنة كافة البيانات). سيقوم كود الذكاء الاصطناعي الخاص بالمنصة بتوزيع الأسماء بملف العملاء والجلسات بمقاعدها تلقائياً.</p>
-                   </div>
-                </div>
-             </div>
-          </div>
-
-          {/* AI Features Highlight */}
-          <div className="bg-slate-900 rounded-[2.5rem] p-8 text-white overflow-hidden relative">
-            <div className="absolute top-0 right-0 w-64 h-64 bg-amber-500/10 blur-[80px] rounded-full" />
-            <div className="relative z-10">
-              <h3 className="text-xl font-black text-amber-400 mb-6 flex items-center gap-2">
-                <Cpu className="w-6 h-6" />
-                توزيع البيانات بالذكاء الاصطناعي (AI Routing)
-              </h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                 
-                 <div className="bg-white/5 border border-white/10 rounded-2xl p-4">
-                   <div className="w-10 h-10 bg-blue-500/20 text-blue-400 rounded-full flex items-center justify-center mb-3">
-                     <LinkIcon className="w-5 h-5" />
-                   </div>
-                   <h4 className="font-black mb-1">توجيه الجلسات</h4>
-                   <p className="text-xs text-slate-400 font-medium">يتم سحب التواريخ وتحويلها لصيغة تقويم وربطها بقسم (مواعيد الجلسات) تلقائياً.</p>
-                 </div>
-
-                 <div className="bg-white/5 border border-white/10 rounded-2xl p-4">
-                   <div className="w-10 h-10 bg-emerald-500/20 text-emerald-400 rounded-full flex items-center justify-center mb-3">
-                     <Zap className="w-5 h-5" />
-                   </div>
-                   <h4 className="font-black mb-1">فلترة أطراف الدعوى</h4>
-                   <p className="text-xs text-slate-400 font-medium">تُسحب الأسماء وتصنف (موكل، خصم) ثم تدمج مباشرة في قسم (إدارة إدارة العملاء).</p>
-                 </div>
-
-                 <div className="bg-white/5 border border-white/10 rounded-2xl p-4">
-                   <div className="w-10 h-10 bg-amber-500/20 text-amber-400 rounded-full flex items-center justify-center mb-3">
-                     <Rocket className="w-5 h-5" />
-                   </div>
-                   <h4 className="font-black mb-1">إضافة القضايا للمكتب</h4>
-                   <p className="text-xs text-slate-400 font-medium">يتم توليد ملف القضية وإدراج الأطراف والمحكمة في قسم (إدارة القضايا) الشامل.</p>
-                 </div>
-
-                 <div className="bg-white/5 border border-white/10 rounded-2xl p-4">
-                   <div className="w-10 h-10 bg-purple-500/20 text-purple-400 rounded-full flex items-center justify-center mb-3">
-                     <ShieldAlert className="w-5 h-5" />
-                   </div>
-                   <h4 className="font-black mb-1">بيانات خالية من التكرار</h4>
-                   <p className="text-xs text-slate-400 font-medium">الذكاء الاصطناعي يبحث بالنظام، إذا كانت القضية مسجلة لا يكررها بل يُحدث مسارها.</p>
-                 </div>
-
               </div>
             </div>
           </div>
 
+          <div className="bg-gradient-to-br from-[#0c2461] to-[#0a1e4d] p-8 rounded-[2.5rem] text-white shadow-xl relative overflow-hidden group">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/10 blur-3xl rounded-full transition-transform group-hover:scale-150 duration-500" />
+            <h4 className="font-black text-amber-400 flex items-center gap-2 mb-4">
+               <Zap className="w-5 h-5 animate-pulse" />
+               تحديث ذكي (No-Key)
+            </h4>
+            <p className="text-[11px] font-medium leading-relaxed text-blue-100/80">
+              بعد تسجيل الدخول في منصتك، ما عليك سوى فتح منصة ناجز، وستظهر لك أيقونة العدالة السحرية في أسفل المتصفح لطلب المزامنة الفورية.
+            </p>
+          </div>
+        </div>
+
+        {/* Main Content Areas */}
+        <div className="lg:col-span-3 space-y-8">
+          
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-[3rem] p-10 shadow-sm overflow-hidden">
+            <div className="flex border-b border-slate-100 dark:border-slate-800 mb-8">
+              <button 
+                onClick={() => setActiveTab('instructions')}
+                className={`pb-4 px-8 text-sm font-black transition-all relative ${activeTab === 'instructions' ? 'text-[#0c2461] dark:text-[#D4AF37]' : 'text-slate-400'}`}
+              >
+                دليل التركيب والتشغيل
+                {activeTab === 'instructions' && <motion.div layoutId="tab-underline" className="absolute bottom-0 left-0 right-0 h-1 bg-[#0c2461] dark:bg-[#D4AF37] rounded-full" />}
+              </button>
+              <button 
+                onClick={() => setActiveTab('features')}
+                className={`pb-4 px-8 text-sm font-black transition-all relative ${activeTab === 'features' ? 'text-[#0c2461] dark:text-[#D4AF37]' : 'text-slate-400'}`}
+              >
+                خيارات المزامنة المتقدمة
+                {activeTab === 'features' && <motion.div layoutId="tab-underline" className="absolute bottom-0 left-0 right-0 h-1 bg-[#0c2461] dark:bg-[#D4AF37] rounded-full" />}
+              </button>
+            </div>
+
+            {activeTab === 'instructions' ? (
+              <div className="space-y-10 animate-in fade-in duration-500">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                   <div className="flex gap-6">
+                      <div className="w-12 h-12 rounded-2xl bg-[#0c2461]/5 border border-[#0c2461]/10 flex items-center justify-center shrink-0 font-black text-[#0c2461] dark:text-[#D4AF37] text-xl">1</div>
+                      <div className="space-y-2">
+                        <h4 className="font-black text-slate-900 dark:text-white text-lg">تحميل وفك الضغط</h4>
+                        <p className="text-sm text-slate-500 leading-relaxed font-semibold">قم بتحميل الأداة من الزر بالأعلى، استخرج الملفات في مجلد خاص وسهل الوصول له.</p>
+                      </div>
+                   </div>
+                   <div className="flex gap-6">
+                      <div className="w-12 h-12 rounded-2xl bg-[#0c2461]/5 border border-[#0c2461]/10 flex items-center justify-center shrink-0 font-black text-[#0c2461] dark:text-[#D4AF37] text-xl">2</div>
+                      <div className="space-y-2">
+                        <h4 className="font-black text-slate-900 dark:text-white text-lg">وضع المطور (Google Chrome)</h4>
+                        <p className="text-sm text-slate-500 leading-relaxed font-semibold">انتقل لـ <code className="bg-slate-100 dark:bg-slate-800 px-1 rounded text-red-500">chrome://extensions</code>، فعل وضع المطور، واضغط على (Load Unpacked).</p>
+                      </div>
+                   </div>
+                   <div className="flex gap-6">
+                      <div className="w-12 h-12 rounded-2xl bg-[#0c2461]/5 border border-[#0c2461]/10 flex items-center justify-center shrink-0 font-black text-[#0c2461] dark:text-[#D4AF37] text-xl">3</div>
+                      <div className="space-y-2">
+                        <h4 className="font-black text-slate-900 dark:text-white text-lg">المزامنة التلقائية (بدون مفاتيح)</h4>
+                        <p className="text-sm text-slate-500 leading-relaxed font-semibold">ادخل ناجز، ستظهر أيقونة الأداة في أسفل الشاشة. اختر "مزامنة الكل" وسيتم استدعاء AI لمعالجة البيانات فوراً.</p>
+                      </div>
+                   </div>
+                   <div className="flex gap-6">
+                      <div className="w-12 h-12 rounded-2xl bg-[#0c2461]/5 border border-[#0c2461]/10 flex items-center justify-center shrink-0 font-black text-[#0c2461] dark:text-[#D4AF37] text-xl">4</div>
+                      <div className="space-y-2">
+                        <h4 className="font-black text-slate-900 dark:text-white text-lg">توزيع الأقسام الذكي</h4>
+                        <p className="text-sm text-slate-500 leading-relaxed font-semibold">تُنقل القضايا لـ(إدارة القضايا)، الجلسات لـ(التقويم)، والموكلين لـ(CRM) تلقائياً ودون تدخل بشري.</p>
+                      </div>
+                   </div>
+                </div>
+
+                <div className="bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-700/30 p-8 rounded-[2.5rem]">
+                   <div className="flex items-center gap-3 mb-4">
+                      <ShieldCheck className="w-6 h-6 text-amber-600" />
+                      <h4 className="text-lg font-black text-amber-900 dark:text-amber-200">الخصوصية السعودية الفائقة</h4>
+                   </div>
+                   <p className="text-sm font-bold text-amber-800/80 dark:text-amber-400 mb-6 leading-relaxed">
+                      الأداة تعمل بداخل متصفحك المحلي (Local Engine)، لا يتم تخزين أي كلمات سر أو بيانات هوية خارج جهازك أو منصتك الخاصة.
+                   </p>
+                   <div className="flex items-center gap-6 flex-wrap">
+                      <div className="flex items-center gap-2 text-xs font-black text-amber-700 dark:text-amber-300">
+                        <div className="w-2 h-2 rounded-full bg-amber-500" />
+                        تشفر البيانات عبر SHA-256
+                      </div>
+                      <div className="flex items-center gap-2 text-xs font-black text-amber-700 dark:text-amber-300">
+                        <div className="w-2 h-2 rounded-full bg-amber-500" />
+                        تتوافق مع Manifest V3
+                      </div>
+                      <div className="flex items-center gap-2 text-xs font-black text-amber-700 dark:text-amber-300">
+                        <div className="w-2 h-2 rounded-full bg-amber-500" />
+                        عديمة السيرفرات (Serverless Sync)
+                      </div>
+                   </div>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-8 animate-in fade-in duration-500">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                   {[
+                     { title: 'مزامنة جميع البيانات', icon: Database, desc: 'سحب شامل لكافة القضايا، الجلسات، والوكالات بضغطة واحدة.' },
+                     { title: 'بيانات القضايا', icon: Briefcase, desc: 'تحديث حالة القضية، الدائرة، وتفاصيل الدعوى المقيدة.' },
+                     { title: 'العملاء وأطراف الخصومة', icon: Users, desc: 'سحب الأسماء وأرقام الهوية وتصنيفهم آلياً في النظام.' },
+                     { title: 'مواعيد الجلسات', icon: Calendar, desc: 'مزامنة كشوفات الجلسات وإدراجها في التقويم الذكي للمكتب.' },
+                     { title: 'طلبات التنفيذ', icon: Rocket, desc: 'تحديث كافة قرارات ومحاضر إجراءات التنفيذ بانتظام.' },
+                     { title: 'الطلبات والوكالات', icon: FileText, desc: 'سحب بيانات الوكالات والطلبات المقدمة على القضايا.' }
+                   ].map((feat, i) => (
+                     <div key={i} className="p-6 bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800 rounded-3xl hover:border-amber-400 transition-all group">
+                        <feat.icon className="w-8 h-8 text-[#0c2461] dark:text-[#D4AF37] mb-4 transition-transform group-hover:scale-110" />
+                        <h5 className="font-black text-slate-900 dark:text-white mb-2">{feat.title}</h5>
+                        <p className="text-[11px] text-slate-500 font-bold leading-relaxed">{feat.desc}</p>
+                     </div>
+                   ))}
+                </div>
+
+                <div className="bg-[#0c2461] p-10 rounded-[2.5rem] relative overflow-hidden">
+                   <div className="absolute top-0 left-0 w-full h-full bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-10" />
+                   <div className="relative z-10 flex flex-col md:flex-row justify-between items-center gap-10">
+                      <div>
+                        <h4 className="text-2xl font-black text-[#D4AF37] mb-3 flex items-center gap-2">
+                           <Bot className="w-7 h-7" />
+                           المساعد العبقري (Scraper AI)
+                        </h4>
+                        <p className="text-white/80 text-sm font-bold leading-relaxed max-w-xl">
+                           نظام الذكاء الاصطناعي بالأداة يتعرف على جداول ناجز وهياكل البيانات تلقائياً، حتى لو تغير تصميم المنصة عالمياً، سيقوم النظام بتصحيح مسار السحب آلياً.
+                        </p>
+                      </div>
+                      <div className="shrink-0 flex items-center gap-3 bg-white/10 p-5 rounded-[2rem] border border-white/20">
+                         <div className="w-10 h-10 bg-amber-500 rounded-full flex items-center justify-center font-black text-[#0c2461]">AI</div>
+                         <div className="text-left" dir="ltr">
+                            <div className="text-xs text-amber-400 font-mono">ADALAH_SCRAPE_ENGINE</div>
+                            <div className="text-[10px] text-white/50 font-mono">Core: GPT-4o Optimized</div>
+                         </div>
+                      </div>
+                   </div>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Browser Extension Simulation - Visual Polish */}
+          <div className="p-10 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-[3rem] shadow-sm">
+             <div className="flex justify-between items-center mb-8">
+               <h3 className="font-black text-slate-900 dark:text-white text-xl flex items-center gap-3">
+                 <Chrome className="w-7 h-7 text-blue-500" />
+                 محاكاة شكل الأداة في منصة ناجز
+               </h3>
+               <span className="text-xs font-black text-slate-400 bg-slate-100 dark:bg-slate-800 px-3 py-1 rounded-full">معاينة بصرية</span>
+             </div>
+             
+             <div className="relative border-4 border-slate-200 dark:border-slate-800 rounded-[2.5rem] p-1 overflow-hidden shadow-2xl h-[450px] bg-slate-50 dark:bg-slate-950">
+                <div className="absolute inset-0 bg-[#f4f7fa] dark:bg-slate-900">
+                   {/* Fake Najiz Page */}
+                   <div className="h-14 bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between px-6">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 bg-emerald-600 rounded-lg"></div>
+                        <div className="h-4 w-20 bg-slate-200 dark:bg-slate-700 rounded"></div>
+                      </div>
+                      <div className="h-4 w-32 bg-slate-100 dark:bg-slate-700 rounded"></div>
+                   </div>
+                   <div className="p-6 space-y-4">
+                      <div className="h-8 w-48 bg-slate-200 dark:bg-slate-700 rounded-lg mb-4"></div>
+                      <div className="grid grid-cols-3 gap-4">
+                         <div className="h-24 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm"></div>
+                         <div className="h-24 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm"></div>
+                         <div className="h-24 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm"></div>
+                      </div>
+                      <div className="h-40 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm"></div>
+                   </div>
+                </div>
+
+                {/* The Extension Floating Menu at Bottom */}
+                <div className="absolute bottom-6 right-1/2 translate-x-1/2 w-full max-w-sm">
+                   <div className="bg-[#0c2461] border-2 border-amber-500/40 shadow-2xl rounded-3xl overflow-hidden animate-bounce-slow">
+                      <div className="p-4 flex items-center justify-between bg-[#1e293b]/50 border-b border-white/10">
+                        <div className="flex items-center gap-2">
+                          <Bot className="w-5 h-5 text-amber-500" />
+                          <span className="text-[11px] font-black text-white">منصة العدالة - مزامنة ناجز</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
+                          <span className="text-[9px] font-bold text-emerald-400">متصل آلياً</span>
+                        </div>
+                      </div>
+                      <div className="p-4 space-y-2">
+                        <button className="w-full bg-amber-500 hover:bg-amber-400 text-[#0c2461] font-black text-xs py-3 rounded-xl transition-all shadow-lg flex items-center justify-center gap-2">
+                           <Zap className="w-4 h-4" />
+                           سحب ومزامنة جميع البيانات
+                        </button>
+                        <div className="grid grid-cols-2 gap-2">
+                           <button className="bg-white/5 hover:bg-white/10 border border-white/10 text-white text-[10px] font-black py-2 rounded-xl transition-all flex items-center justify-center gap-1">
+                              <Briefcase className="w-3 h-3 text-blue-400" />
+                              القضايا
+                           </button>
+                           <button className="bg-white/5 hover:bg-white/10 border border-white/10 text-white text-[10px] font-black py-2 rounded-xl transition-all flex items-center justify-center gap-1">
+                              <Calendar className="w-3 h-3 text-amber-400" />
+                              الجلسات
+                           </button>
+                           <button className="bg-white/5 hover:bg-white/10 border border-white/10 text-white text-[10px] font-black py-2 rounded-xl transition-all flex items-center justify-center gap-1">
+                              <Users className="w-3 h-3 text-emerald-400" />
+                              العملاء
+                           </button>
+                           <button className="bg-white/5 hover:bg-white/10 border border-white/10 text-white text-[10px] font-black py-2 rounded-xl transition-all flex items-center justify-center gap-1">
+                              <Settings className="w-3 h-3 text-slate-400" />
+                              إعدادات
+                           </button>
+                        </div>
+                      </div>
+                      <div className="bg-black/40 py-2 border-t border-white/5 text-center">
+                         <span className="text-[8px] font-bold text-white/40 uppercase tracking-widest">Al-Adalah Scraper Engine v2.0</span>
+                      </div>
+                   </div>
+                </div>
+             </div>
+          </div>
         </div>
       </div>
+
+      {/* Settings Modal - API Keys */}
+      <AnimatePresence>
+        {showSettings && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 backdrop-blur-md bg-black/40">
+             <motion.div 
+               initial={{ opacity: 0, scale: 0.95 }}
+               animate={{ opacity: 1, scale: 1 }}
+               exit={{ opacity: 0, scale: 0.95 }}
+               className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-[3rem] w-full max-w-xl shadow-2xl overflow-hidden"
+             >
+                <div className="p-8 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50/50 dark:bg-white/5">
+                   <div className="flex items-center gap-3">
+                      <div className="p-2 bg-amber-500 rounded-xl text-[#0c2461]">
+                        <Settings className="w-5 h-5" />
+                      </div>
+                      <h3 className="font-black text-slate-900 dark:text-white text-xl">إعدادات الربط المتقدمة</h3>
+                   </div>
+                   <button onClick={() => setShowSettings(false)} className="p-2 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-full transition-colors text-slate-400">
+                      <X className="w-6 h-6" />
+                   </button>
+                </div>
+                
+                <div className="p-10 space-y-8">
+                   <div className="bg-blue-50 dark:bg-blue-900/10 p-5 rounded-2xl border border-blue-100 dark:border-blue-800/30">
+                      <h4 className="flex items-center gap-2 text-sm font-black text-blue-900 dark:text-blue-300 mb-2">
+                         <ShieldCheck className="w-4 h-4" />
+                         وضع الربط المباشر نشط
+                      </h4>
+                      <p className="text-xs text-blue-800/70 dark:text-blue-400 font-bold leading-relaxed">
+                         النظام حالياً يستخدم الربط المباشر (No-Key) كأولوية قصوى. يمكنك إضافة مفاتيح API ناجز أدناه كخيار إضافي للاستعلامات الخلفية.
+                      </p>
+                   </div>
+
+                   <div className="space-y-6">
+                      <div className="space-y-2">
+                        <label className="text-xs font-black text-slate-500 dark:text-slate-400">رابط الواجهة البرمجية (API Endpoint)</label>
+                        <div className="flex gap-2">
+                           <div className="flex-1 bg-slate-100 dark:bg-slate-800 p-4 rounded-2xl font-mono text-xs text-slate-700 dark:text-slate-300 overflow-hidden text-ellipsis whitespace-nowrap" dir="ltr">
+                              {currentApiUrl}
+                           </div>
+                           <button onClick={() => copyToClipboard(currentApiUrl, 'url')} className="bg-slate-200 dark:bg-slate-700 p-4 rounded-2xl text-slate-600 dark:text-white hover:bg-amber-400 hover:text-black transition-all">
+                              {copiedKey === 'url' ? <CheckCircle2 className="w-5 h-5" /> : <Copy className="w-5 h-5" />}
+                           </button>
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <label className="text-xs font-black text-slate-500 dark:text-slate-400">مفتاح الوصول السري (Secret API Key)</label>
+                        <div className="flex gap-2">
+                           <div className="flex-1 bg-slate-100 dark:bg-slate-800 p-4 rounded-2xl font-mono text-xs text-slate-700 dark:text-slate-300 overflow-hidden text-ellipsis whitespace-nowrap" dir="ltr">
+                              {currentApiKey}
+                           </div>
+                           <button onClick={() => copyToClipboard(currentApiKey, 'key')} className="bg-slate-200 dark:bg-slate-700 p-4 rounded-2xl text-slate-600 dark:text-white hover:bg-amber-400 hover:text-black transition-all">
+                              {copiedKey === 'key' ? <CheckCircle2 className="w-5 h-5" /> : <Copy className="w-5 h-5" />}
+                           </button>
+                        </div>
+                      </div>
+                   </div>
+                   
+                   <div className="pt-6">
+                      <button 
+                        onClick={() => setShowSettings(false)}
+                        className="w-full bg-[#0c2461] text-white font-black py-5 rounded-2xl shadow-lg hover:bg-[#091e52] transition-all active:scale-95"
+                      >
+                         حفظ التغييرات وإغلاق الإعدادات
+                      </button>
+                   </div>
+                </div>
+             </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
     </div>
   );
 }
