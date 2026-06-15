@@ -129,8 +129,8 @@ export const SummaryWidget = ({ icon, title, description, badgeValue, children }
           {icon}
         </div>
         <div>
-          <h4 className="font-black text-on-dark text-base tracking-tight">{title}</h4>
-          <p className="text-[11px] text-on-dark-muted font-semibold mt-0.5">{description}</p>
+          <h4 className="font-black text-white text-base tracking-tight">{title}</h4>
+          <p className="text-[11px] text-slate-300 font-semibold mt-0.5">{description}</p>
         </div>
       </div>
       {badgeValue !== undefined && (
@@ -195,8 +195,8 @@ const DashboardClock = ({ style = 'digital', color = '#D4AF37' }: { style?: stri
   if (style === 'minimal') {
     return (
       <div className="flex flex-col items-end">
-        <span className="text-2xl font-black tracking-tighter text-yellow-bright">{timeString}</span>
-        <span className="text-[11px] font-bold text-on-dark-muted">{dateString}</span>
+        <span className="text-2xl font-black tracking-tighter text-[#D4AF37]">{timeString}</span>
+        <span className="text-[11px] font-bold text-slate-400">{dateString}</span>
       </div>
     );
   }
@@ -220,8 +220,8 @@ const DashboardClock = ({ style = 'digital', color = '#D4AF37' }: { style?: stri
   return (
     <div className="p-4 bg-gradient-to-br from-slate-900 to-slate-800 rounded-3xl border border-[#D4AF37]/30 shadow-2xl flex flex-col items-center justify-center min-w-[180px]">
       <div className="flex items-center gap-2 mb-1">
-        <ClockIcon className="w-3.5 h-3.5 text-yellow-bright" />
-        <span className="text-[10px] font-black text-yellow-bright uppercase tracking-widest">الوقت الحالي</span>
+        <ClockIcon className="w-3.5 h-3.5 text-[#D4AF37]" />
+        <span className="text-[10px] font-black text-[#D4AF37] uppercase tracking-widest">الوقت الحالي</span>
       </div>
       <span className="text-3xl font-black text-white tabular-nums tracking-tighter">{timeString}</span>
       <div className="mt-2 text-[11px] font-bold text-white bg-white/10 py-1 px-3 rounded-full">{dateString}</div>
@@ -984,7 +984,7 @@ const Dashboard = function Dashboard({
         <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-blue-500/10 rounded-full blur-[100px] pointer-events-none"></div>
         
         <div className="relative z-10 space-y-4 text-center lg:text-right w-full lg:w-auto">
-            <span className="inline-flex items-center gap-2 bg-amber-500/10 border border-amber-500/20 px-4 py-2 rounded-2xl text-yellow-bright text-xs font-black uppercase tracking-widest">
+            <span className="inline-flex items-center gap-2 bg-amber-500/10 border border-amber-500/20 px-4 py-2 rounded-2xl text-[#D4AF37] text-xs font-black uppercase tracking-widest">
               <Sparkles size={14} className="animate-pulse" />
               <span>أهلاً بك في منصة العدالة الذكية</span>
             </span>
@@ -1032,7 +1032,7 @@ const Dashboard = function Dashboard({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.2 }}
-            className="text-on-dark-muted font-semibold leading-relaxed max-w-xl"
+            className="text-slate-300 font-semibold leading-relaxed max-w-xl"
           >
             لديك اليوم <span className="text-white underline decoration-amber-500 decoration-2 underline-offset-4">{tasks.filter(t => t.status !== 'done').length} مهام</span> معلقة و <span className="text-white underline decoration-blue-500 decoration-2 underline-offset-4">{hearings.filter(h => h.status === 'upcoming').length} جلسات</span> قادمة. نتمنى لك يوماً مثمراً!
           </motion.p>
@@ -1089,7 +1089,7 @@ const Dashboard = function Dashboard({
                     <p className="text-slate-300 font-semibold text-sm mt-1">اختر الكروت التي ترغب في ظهورها في لوحة التحكم الرئيسية.</p>
                   </div>
                 </div>
-                <button onClick={() => setIsLibraryOpen(false)} className="p-2 hover:bg-white/10 rounded-full transition-colors text-slate-300">
+                <button onClick={() => setIsLibraryOpen(false)} className="p-2 hover:bg-white/10 rounded-full transition-colors text-slate-500">
                   <X size={24} />
                 </button>
               </div>
@@ -1869,7 +1869,7 @@ const Dashboard = function Dashboard({
                          );
                       })}
                       {hearings.filter(h => h.date >= new Date().toISOString().split('T')[0]).length === 0 && (
-                         <div className="p-6 text-center text-slate-400 font-bold text-xs bg-slate-50 rounded-2xl border border-slate-100">لا توجد جلسات قادمة مجدولة</div>
+                         <div className="p-6 text-center text-slate-500 font-bold text-xs bg-slate-50 rounded-2xl border border-slate-100">لا توجد جلسات قادمة مجدولة</div>
                       )}
                     </div>
                   </div>
@@ -2396,7 +2396,7 @@ const Dashboard = function Dashboard({
                         ))}
                         {tasks.filter(t => t.dueDate && new Date(t.dueDate) < new Date() && t.status !== 'done').length === 0 && (
                           <div className="h-full flex items-center justify-center">
-                            <p className="text-center text-xs font-bold text-slate-400 py-8 bg-slate-50 rounded-2xl border border-slate-100 border-dashed w-full">المهام مكتملة، عمل ممتاز ✅</p>
+                            <p className="text-center text-xs font-bold text-slate-500 py-8 bg-slate-50 rounded-2xl border border-slate-100 border-dashed w-full">المهام مكتملة، عمل ممتاز ✅</p>
                           </div>
                         )}
                       </div>

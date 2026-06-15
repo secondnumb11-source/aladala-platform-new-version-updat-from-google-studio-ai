@@ -687,8 +687,8 @@ export default function UnifiedAuthLanding({ initialTab = "lawyer", language = "
             </button>
           )}
           <div className="flex flex-col items-center text-center">
-            <h1 className="text-3xl font-black text-yellow-bright mb-4 leading-tight drop-shadow-[0_2px_4px_rgba(0,0,0,0.6)]">منصة العدالة لإدارة مكاتب المحاماة</h1>
-            <p className="text-sm text-on-dark font-extrabold leading-relaxed max-w-lg mx-auto drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)]">
+            <h1 className="text-3xl font-black text-white mb-4 leading-tight drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">منصة العدالة لإدارة مكاتب المحاماة</h1>
+            <p className="text-sm text-slate-300 font-extrabold leading-relaxed max-w-lg mx-auto drop-shadow-md">
               حلول قانونية رقمية استثنائية تعزز من كفاءة العمل وترفع مستوى الحوكمة وإدارة المخاطر.
             </p>
           </div>
@@ -697,23 +697,23 @@ export default function UnifiedAuthLanding({ initialTab = "lawyer", language = "
             <div className="bg-[#0f172a]/95 border-2 border-yellow-500/30 hover:border-yellow-400 hover:shadow-[0_0_20px_rgba(250,204,21,0.15)] p-5 rounded-2xl transition-all duration-300 shadow-xl group">
               <div className="flex items-center gap-3 mb-3">
                 <div className="bg-yellow-500/15 p-2.5 rounded-xl border border-yellow-500/35">
-                  <RefreshCw className="w-5 h-5 text-yellow-bright group-hover:rotate-180 transition-transform duration-700" />
+                  <RefreshCw className="w-5 h-5 text-yellow-400 group-hover:rotate-180 transition-transform duration-700" />
                 </div>
-                <h3 className="font-black text-yellow-bright text-base">مزامنة ذكية مع وزارة العدل</h3>
+                <h3 className="font-black text-white text-base">مزامنة ذكية مع وزارة العدل</h3>
                </div>
-              <p className="text-xs text-on-dark-muted font-semibold leading-relaxed text-justify">
-                تكامل مباشر وحي مع بوابة ناجز، ديوان المظالم، وتراضي. يقوم المساعد الرقمي بتحليل البيانات الواردة وعكسها تلقائياً على سجلات القضايا وجداول الجلسات الخاصة بك.
+              <p className="text-xs text-slate-300 font-bold leading-relaxed text-justify">
+                تكامل مباشر وحي مع بوابة ناجز وديوان المظالم. يقوم المساعد الرقمي بتحليل البيانات وعكسها تلقائياً على النظام (بدون الحاجة لمفاتيح API، حيث تتم المزامنة من خلال الجلسة الشرعية المسجلة للمحامي لاستيراد البيانات مباشرة).
               </p>
             </div>
 
             <div className="bg-[#0f172a]/95 border-2 border-yellow-500/30 hover:border-yellow-400 hover:shadow-[0_0_20px_rgba(250,204,21,0.15)] p-5 rounded-2xl transition-all duration-300 shadow-xl group">
               <div className="flex items-center gap-3 mb-3">
                 <div className="bg-yellow-500/15 p-2.5 rounded-xl border border-yellow-500/35">
-                  <Building className="w-5 h-5 text-yellow-bright" />
+                  <Building className="w-5 h-5 text-yellow-400" />
                 </div>
-                <h3 className="font-black text-yellow-bright text-base">إدارة الأصول والكيانات المستقلة</h3>
+                <h3 className="font-black text-white text-base">إدارة الأصول والكيانات المستقلة</h3>
               </div>
-              <p className="text-xs text-on-dark-muted font-semibold leading-relaxed text-justify">
+              <p className="text-xs text-slate-300 font-bold leading-relaxed text-justify">
                 لوحات قيادة استراتيجية لمراقبة الأصول عالية القيمة، وتتبع حالات الضمان القضائي ومستويات السرية، مع إشعارات استباقية لانقضاء صلاحية التراخيص والتعميلات.
               </p>
             </div>
@@ -721,18 +721,18 @@ export default function UnifiedAuthLanding({ initialTab = "lawyer", language = "
             <div className="bg-[#0f172a]/95 border-2 border-yellow-500/30 hover:border-yellow-400 hover:shadow-[0_0_20px_rgba(250,204,21,0.15)] p-5 rounded-2xl transition-all duration-300 shadow-xl group">
               <div className="flex items-center gap-3 mb-3">
                 <div className="bg-yellow-500/15 p-2.5 rounded-xl border border-yellow-500/35">
-                  <CheckCircle2 className="w-5 h-5 text-yellow-bright" />
+                  <CheckCircle2 className="w-5 h-5 text-yellow-400" />
                 </div>
-                <h3 className="font-black text-yellow-bright text-base">التحليل المالي ورقابة الميزانيات</h3>
+                <h3 className="font-black text-white text-base">التحليل المالي ورقابة الميزانيات</h3>
               </div>
-              <p className="text-xs text-on-dark-muted font-semibold leading-relaxed text-justify">
+              <p className="text-xs text-slate-300 font-bold leading-relaxed text-justify">
                 تقارير ديناميكية ومؤشرات بصرية لمتابعة الإنفاق القضائي، القيم التقديرية التراكمية، ومؤشرات الأداء المهني للطاقم القانوني بضغطة زر.
               </p>
             </div>
           </div>
           
           <div className="mt-auto pt-8 border-t border-slate-800">
-            <p className="text-xs text-on-dark-muted font-extrabold text-center leading-relaxed">
+            <p className="text-xs text-slate-400 font-bold text-center leading-relaxed">
               كافة البيانات والاتصالات بمكتب المحاماة مشفرة بالكامل ومعتمدة لمتطلبات الأمن السيبراني والسيادة الوطنية السعودية.
             </p>
           </div>

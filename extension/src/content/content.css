@@ -1,0 +1,40 @@
+#adalah-sync-widget {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 999999;
+    background-color: #0c2461;
+    color: #ffffff;
+    border: 2px solid #D4AF37;
+    border-radius: 16px;
+    padding: 15px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+    font-family: system-ui, -apple-system, sans-serif;
+    width: 300px;
+    direction: rtl;
+}
+#adalah-sync-widget .ad-btn {
+    width: 100%;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    color: #fff;
+    padding: 8px;
+    border-radius: 8px;
+    margin-bottom: 6px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 13px;
+    transition: all 0.2s;
+}
+#adalah-sync-widget .ad-btn.primary {
+    background: #D4AF37;
+    color: #0c2461;
+    border: none;
+}
+#adalah-sync-widget .ad-btn:hover {
+    background: rgba(212, 175, 55, 0.2);
+    border-color: #D4AF37;
+}
+#adalah-sync-widget .ad-btn.primary:hover {
+    background: #e5c358;
+}

@@ -67,6 +67,13 @@ export default function NotificationsBell() {
       try {
         const res = await fetch('/api/state');
         if (!res.ok) return;
+        
+        const contentType = res.headers.get("content-type");
+        if (!contentType || !contentType.includes("application/json")) {
+          console.error("Received non-JSON response from /api/state");
+          return;
+        }
+        
         const stateData = await res.json();
         
         const realCases = stateData.cases || [];

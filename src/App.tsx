@@ -117,9 +117,18 @@ function RouteGuard({ children, isAuthenticated, setCurrentTab }: { children: Re
   ) : null;
 }
 
+import { ErrorToaster } from '@/components/ErrorToaster';
+import { ErrorReporting } from '@/lib/ErrorReporting';
+
 function AppContent() {
   const { user, profile, loading: authLoading, connectionStatus } = useSupabase();
   const { cases, clients, tasks, loading: dataLoading, createRecord, updateRecord, deleteRecord, refresh } = useSupabaseData();
+
+  useEffect(() => {
+    if (user) {
+      ErrorReporting.setGlobalContext({ user: user.id });
+    }
+  }, [user]);
   
   // Implementation of periodic localStorage cache cleanup and state conflict resolution
   useEffect(() => {
@@ -1161,6 +1170,30 @@ function AppContent() {
     };
   }, []);
 
+  const syncWithBackend = (type: string, data: any) => {
+    return fetch('/api/state/update', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ type, data })
+    })
+    .then(async (res) => {
+      if (res.ok) {
+        const d = await res.json();
+        if (d.success && d.state) {
+          if (d.state.hearings) setHearings(d.state.hearings);
+          if (d.state.documents) setDocuments(d.state.documents);
+          if (d.state.invoices) setInvoices(d.state.invoices);
+          if (d.state.expenses) setExpenses(d.state.expenses);
+          if (d.state.messages) setMessages(d.state.messages);
+          if (d.state.contracts) setContracts(d.state.contracts);
+        }
+      }
+    })
+    .catch(err => {
+      console.warn("Update API offline - falling back to instant local React state:", err);
+    });
+  };
+
   // --- Dynamic State Update Multiplexer ---
   const handleUpdateGlobalState = (type: string, data: any) => {
     // Intercept Supabase managed entities
@@ -1170,16 +1203,19 @@ function AppContent() {
         updateRecord('cases', data.id, data);
       } else {
         createRecord('cases', data);
-        const newHearing: Hearing = {
-          id: `h-${Date.now()}`,
-          caseNumber: data.caseNumber,
-          caseName: data.caseName,
-          date: data.nextSessionDate || "2026-06-30",
-          time: data.nextSessionTime || "09:00 صباحاً",
-          courtName: data.courtName,
-          status: 'upcoming'
-        };
-        setHearings(prev => [newHearing, ...prev]);
+        if (data.nextSessionDate) {
+          const newHearing: Hearing = {
+            id: `h-${Date.now()}`,
+            caseNumber: data.caseNumber,
+            caseName: data.caseName,
+            date: data.nextSessionDate,
+            time: data.nextSessionTime || "09:00 صباحاً",
+            courtName: data.courtName,
+            status: 'upcoming'
+          };
+          syncWithBackend('hearings', newHearing);
+          setHearings(prev => [newHearing, ...prev]);
+        }
       }
       return;
     } else if (type === 'clients') {
@@ -1201,29 +1237,7 @@ function AppContent() {
     }
 
     // Send state change immediately to server
-    fetch('/api/state/update', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ type, data })
-    })
-    .then(async (res) => {
-      if (res.ok) {
-        const d = await res.json();
-        if (d.success && d.state) {
-          // Sync state back
-          // cases, clients, tasks handled by useSupabaseData
-          if (d.state.hearings) setHearings(d.state.hearings);
-          if (d.state.documents) setDocuments(d.state.documents);
-          if (d.state.invoices) setInvoices(d.state.invoices);
-          if (d.state.expenses) setExpenses(d.state.expenses);
-          if (d.state.messages) setMessages(d.state.messages);
-          if (d.state.contracts) setContracts(d.state.contracts);
-        }
-      }
-    })
-    .catch(err => {
-      console.warn("Update API offline - falling back to instant local React state:", err);
-    });
+    syncWithBackend(type, data);
 
     // Instant local state transition fallback so user interaction is ultra-snappy
     if (type === 'contracts') {
@@ -2123,6 +2137,7 @@ function AppContent() {
 
       {/* Vercel Speed Insights */}
       <SpeedInsights />
+      <ErrorToaster />
     </div>
     </div>
   );

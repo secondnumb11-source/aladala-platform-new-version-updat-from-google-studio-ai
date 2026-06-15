@@ -1,6 +1,12 @@
 import { supabase } from './supabase';
 
+let globalAppContext: Record<string, any> = {};
+
 export const ErrorReporting = {
+  setGlobalContext: (context: Record<string, any>) => {
+    globalAppContext = { ...globalAppContext, ...context };
+  },
+
   log: async (error: Error, contextInfo?: Record<string, any>) => {
     try {
       // Helper to recursively replace any Error objects with their message string
@@ -23,7 +29,7 @@ export const ErrorReporting = {
         return obj;
       };
 
-      const sanitizedContext = sanitizeContext(contextInfo || {});
+      const sanitizedContext = sanitizeContext({ ...globalAppContext, ...(contextInfo || {}) });
 
       const errorPayload = {
         message: error.message,
@@ -40,6 +46,10 @@ export const ErrorReporting = {
       // Keep only last 20 errors to prevent storage bloat
       if (localLogs.length > 20) localLogs.shift();
       localStorage.setItem('adalah-error-logs', JSON.stringify(localLogs));
+
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('adalah_error_logged', { detail: errorPayload }));
+      }
 
       // 2. Transmit to Supabase for remote auditing and compliance
       try {

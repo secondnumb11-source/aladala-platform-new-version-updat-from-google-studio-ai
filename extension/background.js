@@ -1,0 +1,1 @@
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => { if (request.action === 'START_SYNC') { sendResponse({ success: true, message: 'Started offline sync background task' }); return true; } });
