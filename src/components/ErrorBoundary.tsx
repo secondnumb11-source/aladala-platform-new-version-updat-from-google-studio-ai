@@ -76,7 +76,7 @@ class ErrorBoundary extends Component<Props, State> {
               
               <div className="space-y-2">
                 <h1 className="text-2xl font-black text-white">عذراً، تطلب النظام تدخل المحامي التقني</h1>
-                <p className="text-slate-400 text-sm font-medium leading-relaxed">
+                <p className="text-slate-200 font-bold text-sm font-medium leading-relaxed">
                   حدث تعارض في معالجة واجهة المستخدم. يمكنك العودة للوحة التحكم أو تصدير سجل الخطأ للدعم الفني.
                 </p>
               </div>
@@ -101,7 +101,7 @@ class ErrorBoundary extends Component<Props, State> {
               <div className="w-full pt-4 border-t border-white/5">
                 <button 
                   onClick={() => this.setState({ showDetails: !this.state.showDetails })}
-                  className="text-[11px] font-black text-slate-500 transition-colors uppercase tracking-widest"
+                  className="text-[11px] font-black text-slate-700 transition-colors uppercase tracking-widest"
                 >
                   {this.state.showDetails ? 'إخفاء التقرير الفني ↑' : 'عرض التقرير الفني (للمطورين) ↓'}
                 </button>
@@ -111,7 +111,7 @@ class ErrorBoundary extends Component<Props, State> {
                     <div className="w-full bg-black/60 border border-white/10 rounded-2xl p-6 text-xs font-mono text-amber-200/80 text-left overflow-auto max-h-48 scrollbar-thin">
                       <p className="font-bold mb-2 text-amber-500">// Technical Stack Trace</p>
                       {this.state.error?.toString()}
-                      <div className="mt-4 text-slate-500 border-t border-white/5 pt-2">
+                      <div className="mt-4 text-slate-700 border-t border-white/5 pt-2">
                         {this.state.errorInfo?.componentStack}
                       </div>
                     </div>
@@ -127,7 +127,7 @@ class ErrorBoundary extends Component<Props, State> {
             </div>
             
             <div className="text-center pt-8">
-              <span className="text-[10px] font-bold text-slate-600 uppercase tracking-widest">adalah-os system | error boundary v2.2</span>
+              <span className="text-[10px] font-bold text-slate-200 font-bold uppercase tracking-widest">adalah-os system | error boundary v2.2</span>
             </div>
           </div>
         </div>

@@ -241,7 +241,7 @@ export default function CommandPalette({
                 placeholder="ابحث عن قضية، موكل، مهمة، أو تنقل عبر الأقسام... (Ctrl+Space)"
                 className="w-full bg-transparent border-none text-slate-100 placeholder-slate-500 outline-none text-sm font-sans"
               />
-              <div className="bg-slate-800 text-[10px] text-slate-400 font-mono font-bold px-2.5 py-1 rounded-lg border border-slate-700/60 shrink-0 shadow-sm">
+              <div className="bg-slate-800 text-[10px] text-slate-200 font-bold font-mono font-bold px-2.5 py-1 rounded-lg border border-slate-700/60 shrink-0 shadow-sm">
                 ESC لإغلاق
               </div>
             </div>
@@ -252,10 +252,10 @@ export default function CommandPalette({
               className="flex-1 overflow-y-auto p-3 space-y-2 select-none scrollbar-thin scrollbar-thumb-slate-800"
             >
               {filtered.length === 0 ? (
-                <div className="text-center py-24 text-slate-400 space-y-2">
+                <div className="text-center py-24 text-slate-200 font-bold space-y-2">
                   <span className="text-2xl">🔍</span>
                   <p className="text-xs font-bold font-sans">لم نجد أي نتائج تطابق عملية البحث "{query}"</p>
-                  <p className="text-[10px] text-slate-500">حاول البحث بكلمة أخرى أو رقم قضية</p>
+                  <p className="text-[10px] text-slate-700">حاول البحث بكلمة أخرى أو رقم قضية</p>
                 </div>
               ) : (
                 <>
@@ -272,25 +272,25 @@ export default function CommandPalette({
                         className={`item flex items-center justify-between p-3.5 rounded-2xl transition-all cursor-pointer ${
                           isActive 
                             ? "item-active bg-amber-500/10 border border-amber-500/40 text-amber-500" 
-                            : "bg-transparent border border-transparent text-slate-300"
+                            : "bg-transparent border border-transparent text-white font-bold"
                         }`}
                       >
                         <div className="flex items-center gap-3.5 min-w-0">
                           <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 shadow transition-colors ${
-                            isActive ? "bg-amber-500/20 text-amber-500" : "bg-slate-800/80 text-slate-400"
+                            isActive ? "bg-amber-500/20 text-amber-500" : "bg-slate-800/80 text-slate-200 font-bold"
                           }`}>
                             <Icon className="w-4 h-4" />
                           </div>
                           <div className="text-right min-w-0">
                             <h4 className="text-xs font-black font-sans truncate">{item.label}</h4>
-                            <p className="text-[10px] text-slate-400 truncate mt-0.5">{item.detail}</p>
+                            <p className="text-[10px] text-slate-200 font-bold truncate mt-0.5">{item.detail}</p>
                           </div>
                         </div>
 
                         {/* Direct action indicator on right side */}
                         <div className="flex items-center gap-2">
                           {item.category === "action" && (
-                            <span className="text-[9px] bg-red-500/15 text-red-400 px-2.5 py-0.5 rounded-lg border border-red-500/25 font-bold shrink-0">
+                            <span className="text-[11px] bg-red-500/15 text-red-400 px-2.5 py-0.5 rounded-lg border border-red-500/25 font-bold shrink-0">
                               إجراء فوري
                             </span>
                           )}
@@ -306,7 +306,7 @@ export default function CommandPalette({
             </div>
 
             {/* Footer Legend */}
-            <div className="bg-[#050f1c] border-t border-slate-800/70 p-3.5 flex items-center justify-between text-[10px] text-slate-400">
+            <div className="bg-[#050f1c] border-t border-slate-800/70 p-3.5 flex items-center justify-between text-[10px] text-slate-200 font-bold">
               <div className="flex items-center gap-3">
                 <span className="flex items-center gap-1">
                   <kbd className="bg-slate-800 px-1 rounded-sm border border-slate-700/80 font-mono">↑↓</kbd> للتنقل

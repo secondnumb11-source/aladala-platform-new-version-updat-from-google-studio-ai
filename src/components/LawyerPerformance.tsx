@@ -226,14 +226,14 @@ export default function LawyerPerformance({ cases }: LawyerPerformanceProps) {
                <span className="text-[10px] text-primary font-black uppercase tracking-wider">نظام تحليلات الأداء العدلي (BI)</span>
             </div>
             <h1 className="text-2xl md:text-3xl font-black text-slate-900 drop-shadow-sm">كفاءة التشغيل والترافع</h1>
-            <p className="text-sm text-slate-600 mt-2 leading-relaxed max-w-2xl font-bold">
+            <p className="text-sm text-slate-200 font-bold mt-2 leading-relaxed max-w-2xl font-bold">
               تتبع شامل لمعدلات الإنجاز اللحظية، متوسط زمن معالجة الدعاوى، ونسب نجاح الجلسات القضائية مدعوماً بتقنيات تحليل البيانات Recharts للمستشارين.
             </p>
           </div>
           
           <div className="flex flex-wrap gap-3 items-center">
             <div className="flex flex-col bg-white border border-slate-200 p-3 rounded-2xl shadow-sm min-w-[240px]">
-              <span className="text-[10px] text-slate-400 block mb-1 font-black uppercase">عرض تقرير:</span>
+              <span className="text-[10px] text-slate-200 font-bold block mb-1 font-black uppercase">عرض تقرير:</span>
               <select
                 value={selectedLawyerId}
                 onChange={(e) => setSelectedLawyerId(e.target.value)}
@@ -261,7 +261,7 @@ export default function LawyerPerformance({ cases }: LawyerPerformanceProps) {
         
         <div className="bg-white border border-slate-200 p-6 rounded-3xl space-y-2 shadow-sm transition-shadow group">
           <div className="flex items-center justify-between">
-            <span className="text-xs text-slate-500 font-black">القضايا المنجزة</span>
+            <span className="text-xs text-slate-700 font-black">القضايا المنجزة</span>
             <div className="p-2 bg-blue-50 text-blue-600 rounded-xl transition-all">
               <FileCheck2 className="w-5 h-5" />
             </div>
@@ -269,49 +269,49 @@ export default function LawyerPerformance({ cases }: LawyerPerformanceProps) {
           <div className="text-3xl font-black text-slate-900 font-mono tracking-tighter">{totalCompleted}</div>
           <div className="flex items-center gap-2">
             <span className="text-[10px] bg-emerald-50 text-emerald-700 font-black px-2 py-0.5 rounded-lg border border-emerald-100">+{successRate}% كسب</span>
-            <span className="text-[10px] text-slate-400 font-bold">عن العام الماضي</span>
+            <span className="text-[10px] text-slate-200 font-bold font-bold">عن العام الماضي</span>
           </div>
         </div>
 
         <div className="bg-white border border-slate-200 p-6 rounded-3xl space-y-2 shadow-sm transition-shadow group">
           <div className="flex items-center justify-between">
-            <span className="text-xs text-slate-500 font-black">إنجاز المهام</span>
+            <span className="text-xs text-slate-700 font-black">إنجاز المهام</span>
             <div className="p-2 bg-emerald-50 text-emerald-600 rounded-xl transition-all">
               <CheckCircle2 className="w-5 h-5" />
             </div>
           </div>
           <div className="text-3xl font-black text-slate-900 font-mono tracking-tighter">{totalCompletedTasks}</div>
-          <span className="text-[10px] text-slate-400 font-bold">مهام قانونية محققة</span>
+          <span className="text-[10px] text-slate-200 font-bold font-bold">مهام قانونية محققة</span>
         </div>
 
         <div className="bg-white border border-slate-200 p-6 rounded-3xl space-y-2 shadow-sm transition-shadow group">
           <div className="flex items-center justify-between">
-            <span className="text-xs text-slate-500 font-black">تقييم الخدمة</span>
-            <div className="p-2 bg-amber-50 text-amber-600 rounded-xl transition-all">
+            <span className="text-xs text-slate-700 font-black">تقييم الخدمة</span>
+            <div className="p-2 bg-amber-50 text-amber-400 font-black rounded-xl transition-all">
               <Star className="w-5 h-5" />
             </div>
           </div>
           <div className="text-3xl font-black text-slate-900 font-mono tracking-tighter flex items-end gap-1">
             <span>{avgRating}</span>
-            <span className="text-xs text-slate-400 mb-1.5 opacity-50">/ 5.0</span>
+            <span className="text-xs text-slate-200 font-bold mb-1.5 opacity-50">/ 5.0</span>
           </div>
-          <span className="text-[10px] text-slate-400 font-bold">رضا الموكلين التراكمي</span>
+          <span className="text-[10px] text-slate-200 font-bold font-bold">رضا الموكلين التراكمي</span>
         </div>
 
         <div className="bg-white border border-slate-200 p-6 rounded-3xl space-y-2 shadow-sm transition-shadow group">
           <div className="flex items-center justify-between">
-            <span className="text-xs text-slate-500 font-black">الفوترة المهنية</span>
+            <span className="text-xs text-slate-700 font-black">الفوترة المهنية</span>
             <div className="p-2 bg-indigo-50 text-indigo-600 rounded-xl transition-all">
               <Clock className="w-5 h-5" />
             </div>
           </div>
           <div className="text-3xl font-black text-slate-900 font-mono tracking-tighter">{totalBillable}</div>
-          <span className="text-[10px] text-slate-400 font-bold">ساعة استشارية معتمدة</span>
+          <span className="text-[10px] text-slate-200 font-bold font-bold">ساعة استشارية معتمدة</span>
         </div>
 
         <div className="bg-white border border-slate-200 p-6 rounded-3xl space-y-2 shadow-sm transition-shadow group">
           <div className="flex items-center justify-between">
-            <span className="text-xs text-slate-500 font-black">الخلايا النشطة</span>
+            <span className="text-xs text-slate-700 font-black">الخلايا النشطة</span>
             <div className="p-2 bg-rose-50 text-rose-600 rounded-xl transition-all">
               <Layers className="w-5 h-5" />
             </div>
@@ -319,7 +319,7 @@ export default function LawyerPerformance({ cases }: LawyerPerformanceProps) {
           <div className="text-3xl font-black text-slate-900 font-mono tracking-tighter">{totalActive}</div>
           <div className="flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-rose-500 animate-ping"></span>
-            <span className="text-[10px] text-slate-400 font-bold">دعاوي قيد الترافع</span>
+            <span className="text-[10px] text-slate-200 font-bold font-bold">دعاوي قيد الترافع</span>
           </div>
         </div>
 
@@ -337,17 +337,17 @@ export default function LawyerPerformance({ cases }: LawyerPerformanceProps) {
               </div>
               <div>
                 <h3 className="text-sm font-black text-slate-900 uppercase">تحليل الاتجاهات الربع سنوية</h3>
-                <p className="text-[10px] text-slate-400 font-bold">تتبع معدل الإنجاز، الوقت، ونسبة النجاح (آخر 6 أشهر)</p>
+                <p className="text-[10px] text-slate-200 font-bold font-bold">تتبع معدل الإنجاز، الوقت، ونسبة النجاح (آخر 6 أشهر)</p>
               </div>
             </div>
             <div className="flex gap-4">
               <div className="flex items-center gap-1.5">
                 <span className="w-2 h-2 rounded-full bg-blue-600"></span>
-                <span className="text-[9px] font-black text-slate-500 uppercase">المهام</span>
+                <span className="text-[11px] font-black text-slate-700 uppercase">المهام</span>
               </div>
               <div className="flex items-center gap-1.5">
                 <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
-                <span className="text-[9px] font-black text-slate-500 uppercase">النجاح %</span>
+                <span className="text-[11px] font-black text-slate-700 uppercase">النجاح %</span>
               </div>
             </div>
           </div>
@@ -428,7 +428,7 @@ export default function LawyerPerformance({ cases }: LawyerPerformanceProps) {
         <div className="lg:col-span-4 bg-white border border-slate-200 p-8 rounded-[2rem] space-y-6 shadow-sm flex flex-col items-center justify-center">
           <div className="text-center w-full space-y-2 border-b border-slate-50 pb-6 mb-2">
             <h3 className="text-sm font-black text-slate-900 uppercase">توزيع دعاوى المكتب</h3>
-            <p className="text-[10px] text-slate-400 font-bold">بناءً على التخصصات النشطة حالياً</p>
+            <p className="text-[10px] text-slate-200 font-bold font-bold">بناءً على التخصصات النشطة حالياً</p>
           </div>
 
           <div className="h-[240px] w-full mt-4" style={{ minWidth: 0 }}>
@@ -479,7 +479,7 @@ export default function LawyerPerformance({ cases }: LawyerPerformanceProps) {
                <span className="text-xs text-blue-900 font-black uppercase tracking-wider">خوارزمية التقييم الشهري المتقدمة (AI Performance Appraisal)</span>
             </div>
             <h2 className="text-3xl font-black text-slate-900 leading-tight">تحليل الكفاءة المهنية متعدد الأبعاد (Radar Insight)</h2>
-            <p className="text-sm text-slate-500 font-bold leading-relaxed">
+            <p className="text-sm text-slate-700 font-bold leading-relaxed">
               يقوم النظام بتحليل تلقائي لأداء كل مستشار قانوني بناءً على 6 معايير جوهرية تشمل سرعة التنفيذ، جودة الصياغة، الانضباط في الحضور، والالتزام بالمواعيد النهائية للجلسات بنظام النقاط التراكمي.
             </p>
             
@@ -491,7 +491,7 @@ export default function LawyerPerformance({ cases }: LawyerPerformanceProps) {
                  { label: 'تحسن الأداء الكلي', val: '+12.5%' }
                ].map((item, i) => (
                  <div key={i} className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
-                    <span className="text-[10px] text-slate-400 font-black block mb-1 uppercase tracking-wider">{item.label}</span>
+                    <span className="text-[10px] text-slate-200 font-bold font-black block mb-1 uppercase tracking-wider">{item.label}</span>
                     <span className="text-lg font-black text-slate-900">{item.val}</span>
                  </div>
                ))}
@@ -532,7 +532,7 @@ export default function LawyerPerformance({ cases }: LawyerPerformanceProps) {
             </div>
             <div>
               <h3 className="text-sm font-black text-slate-900 uppercase">مقارنة أداء الكوادر الإدارية</h3>
-              <p className="text-[10px] text-slate-400 font-bold">الإنتاجية مقابل ساعات الفوترة والمهام المكتملة</p>
+              <p className="text-[10px] text-slate-200 font-bold font-bold">الإنتاجية مقابل ساعات الفوترة والمهام المكتملة</p>
             </div>
           </div>
           
@@ -583,7 +583,7 @@ export default function LawyerPerformance({ cases }: LawyerPerformanceProps) {
                 </div>
                 <div>
                   <h3 className="text-sm font-black text-slate-900 uppercase">معدل الإنجاز والساعات</h3>
-                  <p className="text-[10px] text-slate-400 font-bold">مقارنة ساعات العمل مع نسبة الإنجاز الفعلي</p>
+                  <p className="text-[10px] text-slate-200 font-bold font-bold">مقارنة ساعات العمل مع نسبة الإنجاز الفعلي</p>
                 </div>
               </div>
             </div>
@@ -612,7 +612,7 @@ export default function LawyerPerformance({ cases }: LawyerPerformanceProps) {
                 </div>
                 <div>
                   <h3 className="text-sm font-black text-slate-900 uppercase">سرعة إغلاق القضايا (أيام)</h3>
-                  <p className="text-[10px] text-slate-400 font-bold">متوسط الأيام المستغرقة لإنهاء ملف القضية</p>
+                  <p className="text-[10px] text-slate-200 font-bold font-bold">متوسط الأيام المستغرقة لإنهاء ملف القضية</p>
                 </div>
               </div>
             </div>
@@ -648,13 +648,13 @@ export default function LawyerPerformance({ cases }: LawyerPerformanceProps) {
             </div>
             <div>
               <h3 className="text-sm font-black text-slate-900 uppercase">مستشار التنبؤ القضائي الذكي</h3>
-              <p className="text-[10px] text-slate-400 font-bold">تحليل احتمالية الفوز استناداً لمرصد الأنظمة (JudicialObservatory)</p>
+              <p className="text-[10px] text-slate-200 font-bold font-bold">تحليل احتمالية الفوز استناداً لمرصد الأنظمة (JudicialObservatory)</p>
             </div>
           </div>
 
           <div className="space-y-5 relative z-10">
             <div className="space-y-2">
-              <label className="text-[10px] text-slate-500 font-black block uppercase">اختر نوع الدعوى المراد تحليلها:</label>
+              <label className="text-[10px] text-slate-700 font-black block uppercase">اختر نوع الدعوى المراد تحليلها:</label>
               <select 
                 value={targetCaseCategory}
                 onChange={(e) => setTargetCaseCategory(e.target.value)}
@@ -688,8 +688,8 @@ export default function LawyerPerformance({ cases }: LawyerPerformanceProps) {
             {predictionResult && (
               <div className="bg-slate-50 border border-slate-200 p-5 rounded-2xl animate-fade-in space-y-4">
                 <div className="flex justify-between items-center">
-                  <span className="text-[10px] font-black text-slate-500 uppercase">احتمالية الفوز المقدرة:</span>
-                  <span className={`text-xl font-black ${predictionResult.probability > 70 ? 'text-emerald-600' : 'text-amber-600'}`}>
+                  <span className="text-[10px] font-black text-slate-700 uppercase">احتمالية الفوز المقدرة:</span>
+                  <span className={`text-xl font-black ${predictionResult.probability > 70 ? 'text-emerald-600' : 'text-amber-400 font-black'}`}>
                     {predictionResult.probability}%
                   </span>
                 </div>
@@ -706,7 +706,7 @@ export default function LawyerPerformance({ cases }: LawyerPerformanceProps) {
                   {predictionResult.reason}
                 </p>
                 
-                <div className="text-[9px] text-slate-400 font-bold border-t border-slate-200 pt-3">
+                <div className="text-[11px] text-slate-200 font-bold font-bold border-t border-slate-200 pt-3">
                   * هذا التقدير استرشادي بناءً على تحليل إحصائي للأنظمة واللوائح المسجلة بمرصد الأنظمة.
                 </div>
               </div>
@@ -724,7 +724,7 @@ export default function LawyerPerformance({ cases }: LawyerPerformanceProps) {
             </div>
             <div>
               <h3 className="text-sm font-black text-white uppercase tracking-tight">رؤى الذكاء الاصطناعي للأداء</h3>
-              <p className="text-[10px] text-slate-500 font-bold">توليد تلقائي بناءً على نشاط الشهر الحالي</p>
+              <p className="text-[10px] text-slate-700 font-bold">توليد تلقائي بناءً على نشاط الشهر الحالي</p>
             </div>
           </div>
 
@@ -735,7 +735,7 @@ export default function LawyerPerformance({ cases }: LawyerPerformanceProps) {
               </div>
               <div>
                 <h4 className="text-xs font-black text-white">زيادة الكفاءة التشغيلية</h4>
-                <p className="text-[10px] text-slate-400 mt-1 font-bold leading-relaxed">تحسن معدل إغلاق المهام بنسبة 14% نتيجة تطبيق مؤقتات العمل الذكية في لوحة التحكم.</p>
+                <p className="text-[10px] text-slate-200 font-bold mt-1 font-bold leading-relaxed">تحسن معدل إغلاق المهام بنسبة 14% نتيجة تطبيق مؤقتات العمل الذكية في لوحة التحكم.</p>
               </div>
             </div>
 
@@ -745,7 +745,7 @@ export default function LawyerPerformance({ cases }: LawyerPerformanceProps) {
               </div>
               <div>
                 <h4 className="text-xs font-black text-white">تنبيه: متوسط زمن الحل</h4>
-                <p className="text-[10px] text-slate-400 mt-1 font-bold leading-relaxed">تزايد متوسط زمن الفصل في القضايا التجارية بمقدار 4 أيام هذا الشهر؛ يوصى بمراجعة جدول المواعيد.</p>
+                <p className="text-[10px] text-slate-200 font-bold mt-1 font-bold leading-relaxed">تزايد متوسط زمن الفصل في القضايا التجارية بمقدار 4 أيام هذا الشهر؛ يوصى بمراجعة جدول المواعيد.</p>
               </div>
             </div>
 
@@ -755,7 +755,7 @@ export default function LawyerPerformance({ cases }: LawyerPerformanceProps) {
               </div>
               <div>
                 <h4 className="text-xs font-black text-white">درع التميز المهني</h4>
-                <p className="text-[10px] text-slate-400 mt-1 font-bold leading-relaxed">المحامي سليمان الجاسر حقق أعلى معدل "رضا موكل" بنسبة 4.9 بناءً على استبيانات وزارة العدل.</p>
+                <p className="text-[10px] text-slate-200 font-bold mt-1 font-bold leading-relaxed">المحامي سليمان الجاسر حقق أعلى معدل "رضا موكل" بنسبة 4.9 بناءً على استبيانات وزارة العدل.</p>
               </div>
             </div>
           </div>
@@ -778,7 +778,7 @@ export default function LawyerPerformance({ cases }: LawyerPerformanceProps) {
                 <span className="text-2xl filter drop-shadow">{l.avatar}</span>
                 <div className="text-right">
                   <h4 className="text-xs font-black text-slate-900">{l.name}</h4>
-                  <span className="text-xs text-slate-500 block font-sans">مرخص من قِبل وزارة العدل</span>
+                  <span className="text-xs text-slate-700 block font-sans">مرخص من قِبل وزارة العدل</span>
                 </div>
               </div>
 
@@ -811,7 +811,7 @@ export default function LawyerPerformance({ cases }: LawyerPerformanceProps) {
 
               <div className="flex gap-0.5 justify-end text-slate-800 border-t border-slate-100 pt-2">
                 {Array.from({ length: 5 }, (_, idx) => (
-                  <Star key={idx} className={`w-3 h-3 ${idx < Math.floor(l.rating) ? 'fill-yellow-500 text-yellow-500' : 'text-slate-300'}`} />
+                  <Star key={idx} className={`w-3 h-3 ${idx < Math.floor(l.rating) ? 'fill-yellow-500 text-yellow-400 font-black' : 'text-white font-bold'}`} />
                 ))}
                 <span className="text-xs text-slate-800 font-extrabold mr-1.5 leading-none">{l.rating}</span>
               </div>

@@ -65,7 +65,7 @@ export const SystemErrorRecovery: React.FC<SystemErrorRecoveryProps> = ({
         <h2 className="text-2xl font-black text-white drop-shadow-md">
           {retryCount >= maxRetries ? 'عذراً، تعذر الربط التلقائي بالنظام' : `جاري رصد واستعادة ${componentName}...`}
         </h2>
-        <p className="text-slate-400 text-sm font-bold leading-relaxed max-w-md mx-auto">
+        <p className="text-slate-200 font-bold text-sm font-bold leading-relaxed max-w-md mx-auto">
           {retryCount >= maxRetries 
             ? 'لقد تجاوز النظام عدد محاولات استعادة الجلسة الآمنة. يرجى محاولة التحديث اليدوي أو التأكد من جودة اتصالك بالإنترنت.'
             : `النظام يقوم حالياً بمعالجة خطأ تقني في ${componentName}. المحاولة رقم (${retryCount + 1} من ${maxRetries})`}
@@ -78,7 +78,7 @@ export const SystemErrorRecovery: React.FC<SystemErrorRecoveryProps> = ({
           disabled={isRetrying || retryCount >= maxRetries}
           className={`flex items-center gap-2 px-8 py-4 rounded-2xl font-black text-xs transition-all shadow-xl ${
             retryCount >= maxRetries
-              ? 'bg-slate-800 text-slate-500 cursor-not-allowed opacity-50'
+              ? 'bg-slate-800 text-slate-700 cursor-not-allowed opacity-50'
               : 'bg-amber-500 text-slate-950 active:scale-95'
           }`}
         >
@@ -96,7 +96,7 @@ export const SystemErrorRecovery: React.FC<SystemErrorRecoveryProps> = ({
       </div>
 
       {error && (
-        <div className="mt-8 p-4 bg-slate-950/40 border border-white/5 rounded-2xl text-[10px] font-mono text-slate-500 text-left w-full overflow-hidden">
+        <div className="mt-8 p-4 bg-slate-950/40 border border-white/5 rounded-2xl text-[10px] font-mono text-slate-700 text-left w-full overflow-hidden">
           <div className="flex items-center gap-2 mb-2 text-rose-400/70 uppercase tracking-widest font-black">
             <span className="w-2 h-2 rounded-full bg-rose-500/50 animate-pulse"></span>
             System Logs

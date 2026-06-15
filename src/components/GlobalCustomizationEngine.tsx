@@ -256,7 +256,7 @@ export default function GlobalCustomizationEngine() {
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
         className={`global-customization-engine-ui fixed bottom-24 left-6 z-[9999] w-14 h-14 rounded-full flex items-center justify-center shadow-2xl transition-colors border-2 ${
-          isActive ? 'bg-[#D4AF37] text-white border-white' : 'bg-slate-900 border-[#D4AF37]/50 text-[#D4AF37]'
+          isActive ? 'bg-[#D4AF37] text-[#0b1329] font-black border-white' : 'bg-slate-900 border-[#D4AF37]/50 text-[#FACC15] font-black'
         }`}
         title="تخصيص الواجهات الشامل (تغيير الألوان، الأحجام، ترتيب الكروت)"
       >
@@ -281,13 +281,13 @@ export default function GlobalCustomizationEngine() {
             }}
           >
             <div className="flex items-center gap-2 mb-3 border-b border-slate-100 dark:border-slate-800 pb-2">
-              <Palette className="w-4 h-4 text-[#D4AF37]" />
+              <Palette className="w-4 h-4 text-[#FACC15] font-black" />
               <h4 className="text-sm font-black text-slate-800 dark:text-white">تخصيص هوية المربع</h4>
             </div>
 
             <div className="space-y-4">
               <div>
-                <p className="text-xs font-bold text-slate-500 mb-2">لون الخلفية (مع التباين الآلي)</p>
+                <p className="text-xs font-bold text-slate-700 mb-2">لون الخلفية (مع التباين الآلي)</p>
                 <div className="flex flex-wrap gap-2">
                   {COLORS.map(color => (
                     <button
@@ -305,9 +305,9 @@ export default function GlobalCustomizationEngine() {
               </div>
 
               <div>
-                <p className="text-xs font-bold text-slate-500 mb-2">الحدود والإطار</p>
+                <p className="text-xs font-bold text-slate-700 mb-2">الحدود والإطار</p>
                 <div className="flex gap-2">
-                   <button onClick={() => { selectedElement.style.border = '2px solid #D4AF37'; saveStyle(selectedElement.id, { border: '2px solid #D4AF37' }); }} className="flex-1 py-1 text-xs font-bold border border-[#D4AF37] text-[#D4AF37] rounded-lg">إطار ذهبي</button>
+                   <button onClick={() => { selectedElement.style.border = '2px solid #D4AF37'; saveStyle(selectedElement.id, { border: '2px solid #D4AF37' }); }} className="flex-1 py-1 text-xs font-bold border border-[#D4AF37] text-[#FACC15] font-black rounded-lg">إطار ذهبي</button>
                    <button onClick={() => { selectedElement.style.border = '1px solid #334155'; saveStyle(selectedElement.id, { border: '1px solid #334155' }); }} className="flex-1 py-1 text-xs font-bold bg-slate-100 text-slate-700 rounded-lg">إطار داكن</button>
                    <button onClick={() => { selectedElement.style.border = 'none'; saveStyle(selectedElement.id, { border: 'none' }); }} className="flex-1 py-1 text-xs font-bold bg-slate-100 text-slate-700 rounded-lg">بدون</button>
                 </div>
@@ -327,7 +327,7 @@ export default function GlobalCustomizationEngine() {
             className="global-customization-engine-ui fixed top-0 left-0 right-0 h-14 bg-[#1E293B] border-b border-[#D4AF37]/30 z-[9998] flex items-center justify-between px-6 shadow-2xl"
           >
             <div className="flex items-center gap-3">
-              <Settings className="w-5 h-5 text-[#D4AF37] animate-spin-slow" />
+              <Settings className="w-5 h-5 text-[#FACC15] font-black animate-spin-slow" />
               <span className="font-black text-sm text-transparent bg-clip-text bg-gradient-to-r from-[#D4AF37] to-[#FACC15]">
                 وضع التخصيص الحر مفعل (اسحب لإعادة الترتيب، كبر/صغر من الزوايا، كليك يمين لتغيير اللون)
               </span>
@@ -335,7 +335,7 @@ export default function GlobalCustomizationEngine() {
             <div className="flex items-center gap-3">
               <button 
                 onClick={resetAllStyles}
-                className="flex items-center gap-2 px-3 py-1.5 bg-rose-500/10 text-rose-400 rounded-lg text-xs font-bold transition-colors"
+                className="flex items-center gap-2 px-3 py-1.5 bg-rose-500/10 border border-rose-500/30 text-rose-400 font-bold rounded-lg text-xs font-bold transition-colors"
               >
                 <Undo2 className="w-3.5 h-3.5" />
                 استعادة الافتراضي

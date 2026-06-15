@@ -86,7 +86,7 @@ export const LegalRiskMatrix: React.FC<LegalRiskMatrixProps> = ({ selectedCase, 
     switch (impact) {
       case 'positive': return <TrendingUp className="w-4 h-4 text-emerald-400" />;
       case 'negative': return <TrendingDown className="w-4 h-4 text-rose-400" />;
-      default: return <Info className="w-4 h-4 text-slate-400" />;
+      default: return <Info className="w-4 h-4 text-slate-200 font-bold" />;
     }
   };
 
@@ -102,11 +102,11 @@ export const LegalRiskMatrix: React.FC<LegalRiskMatrixProps> = ({ selectedCase, 
           </div>
           <div>
             <h3 className="text-sm font-black text-white">مصفوفة تحليل المخاطر (Legal Risk Matrix)</h3>
-            <p className="text-[10px] text-slate-400 font-bold">تحليل الذكاء الاصطناعي للسوابق القضائية والمستندات</p>
+            <p className="text-[10px] text-slate-200 font-bold font-bold">تحليل الذكاء الاصطناعي للسوابق القضائية والمستندات</p>
           </div>
         </div>
         {selectedCase && (
-          <span className="text-[10px] font-black px-2.5 py-1 bg-slate-900 border border-slate-800 rounded-lg text-slate-300">
+          <span className="text-[10px] font-black px-2.5 py-1 bg-slate-900 border border-slate-800 rounded-lg text-white font-bold">
             {selectedCase.caseNumber}
           </span>
         )}
@@ -123,7 +123,7 @@ export const LegalRiskMatrix: React.FC<LegalRiskMatrixProps> = ({ selectedCase, 
               className="flex flex-col items-center justify-center py-12 space-y-4"
             >
               <RefreshCw className="w-8 h-8 text-amber-500 animate-spin" />
-              <p className="text-[11px] font-black text-slate-400 animate-pulse">جاري فحص 2500 سابقة قضائية مماثلة...</p>
+              <p className="text-[11px] font-black text-slate-200 font-bold animate-pulse">جاري فحص 2500 سابقة قضائية مماثلة...</p>
             </motion.div>
           ) : (
             <motion.div 
@@ -163,7 +163,7 @@ export const LegalRiskMatrix: React.FC<LegalRiskMatrixProps> = ({ selectedCase, 
                     <span className={`text-3xl font-black ${getProbabilityColor(winProbability || 0)}`}>
                       {winProbability}%
                     </span>
-                    <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">فرصة النجاح</span>
+                    <span className="text-[11px] font-black text-slate-200 font-bold uppercase tracking-widest">فرصة النجاح</span>
                   </div>
                 </div>
               </div>
@@ -177,9 +177,9 @@ export const LegalRiskMatrix: React.FC<LegalRiskMatrixProps> = ({ selectedCase, 
                         {getImpactIcon(factor.impact)}
                         <span className="text-[10.5px] font-bold text-white leading-none">{factor.label}</span>
                       </div>
-                      <span className="text-[9.5px] font-black text-slate-500">{factor.weight}%</span>
+                      <span className="text-[9.5px] font-black text-slate-700">{factor.weight}%</span>
                     </div>
-                    <p className="text-[9px] text-slate-500 font-medium leading-relaxed pr-6">{factor.description}</p>
+                    <p className="text-[11px] text-slate-700 font-medium leading-relaxed pr-6">{factor.description}</p>
                   </div>
                 ))}
               </div>

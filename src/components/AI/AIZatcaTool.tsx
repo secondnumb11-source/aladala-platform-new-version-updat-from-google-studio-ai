@@ -110,14 +110,14 @@ export default function AIZatcaTool({ invoices = [] }: { invoices?: Invoice[] })
               <span className="text-[10px] bg-emerald-500/20 text-emerald-300 font-extrabold px-3 py-1 rounded-full border border-emerald-500/30 uppercase tracking-widest">
                 الربط الإلكتروني والامتثال
               </span>
-              <span className="text-[10px] bg-slate-800 text-slate-300 font-bold px-3 py-1 rounded-full border border-slate-700">
+              <span className="text-[10px] bg-slate-800 text-white font-bold font-bold px-3 py-1 rounded-full border border-slate-700">
                 المرحلة الثانية (Phase 2)
               </span>
             </div>
             <h1 className="text-2xl md:text-3.5xl font-black text-white tracking-tight leading-tight">
               مركز الفوترة الإلكترونية وبوابات الدفع (ZATCA Portal)
             </h1>
-            <p className="text-slate-300 max-w-2xl text-xs md:text-sm font-medium leading-relaxed">
+            <p className="text-white font-bold max-w-2xl text-xs md:text-sm font-medium leading-relaxed">
               مراقبة وتصميم الفواتير المتكاملة والموقعة إلكترونياً مع مصلحة الضرائب وهيئة الزكاة والضريبة والجمارك السعودية، بالإضافة لربط تحصيلات بطاقات الدفع الفورية.
             </p>
           </div>
@@ -126,7 +126,7 @@ export default function AIZatcaTool({ invoices = [] }: { invoices?: Invoice[] })
               <ShieldCheck className="w-6 h-6 text-emerald-400 animate-pulse" />
             </div>
             <div>
-              <div className="text-[10px] text-slate-400 font-bold font-mono">ENCRYPTED LINK</div>
+              <div className="text-[10px] text-slate-200 font-bold font-bold font-mono">ENCRYPTED LINK</div>
               <div className="text-xs text-emerald-400 font-black">حالة الامتثال: متصل ونشط</div>
             </div>
           </div>
@@ -144,7 +144,7 @@ export default function AIZatcaTool({ invoices = [] }: { invoices?: Invoice[] })
               </div>
               <div>
                 <h3 className="font-black text-slate-900 text-lg">بوابات الدفع الإلكتروني الآلي (Saudi Payment Gateways)</h3>
-                <p className="text-xs text-slate-500 font-bold mt-1">تسهيل تحصيل أتعاب القضايا والاستشارات عبر مدى، STC Pay، وApple Pay</p>
+                <p className="text-xs text-slate-700 font-bold mt-1">تسهيل تحصيل أتعاب القضايا والاستشارات عبر مدى، STC Pay، وApple Pay</p>
               </div>
             </div>
 
@@ -211,7 +211,7 @@ export default function AIZatcaTool({ invoices = [] }: { invoices?: Invoice[] })
             {(paymentLogs.length > 0 || isPaying) && (
               <div className="bg-slate-950 border border-slate-800 p-5 rounded-2xl shadow-inner max-h-[190px] overflow-y-auto">
                 <div className="flex items-center justify-between mb-3 pb-2 border-b border-slate-800">
-                  <span className="text-[9px] font-mono font-bold text-slate-500 tracking-wider flex items-center gap-1">
+                  <span className="text-[11px] font-mono font-bold text-slate-700 tracking-wider flex items-center gap-1">
                     <Terminal className="w-3 h-3 text-emerald-400" /> LOCAL_GATEWAY_TERMINAL
                   </span>
                   <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
@@ -246,7 +246,7 @@ export default function AIZatcaTool({ invoices = [] }: { invoices?: Invoice[] })
               </div>
               <div>
                 <h3 className="font-black text-slate-900 text-lg">بوابة ZATCA والاعتماد الفوري لهيئة الزكاة والجمارك</h3>
-                <p className="text-xs text-slate-500 font-bold mt-1">تسجيل الفواتير ضريبياً والتحقق من طوابع التشفير والأرشفة</p>
+                <p className="text-xs text-slate-700 font-bold mt-1">تسجيل الفواتير ضريبياً والتحقق من طوابع التشفير والأرشفة</p>
               </div>
             </div>
 
@@ -257,11 +257,11 @@ export default function AIZatcaTool({ invoices = [] }: { invoices?: Invoice[] })
               </div>
               <div className="grid grid-cols-2 gap-3.5 text-[10px] font-bold">
                 <div className="bg-white p-3 border border-slate-200/60 rounded-xl shadow-xs">
-                  <span className="text-slate-500 block font-bold mb-1">شهادة تشفير الربط (CCSID)</span>
+                  <span className="text-slate-700 block font-bold mb-1">شهادة تشفير الربط (CCSID)</span>
                   <span className="text-slate-900 font-extrabold font-mono text-[11px] block">ZATCA Cryptographic ID</span>
                 </div>
                 <div className="bg-white p-3 border border-slate-200/60 rounded-xl shadow-xs">
-                  <span className="text-slate-500 block font-bold mb-1">إصدار الهيكل (Schema)</span>
+                  <span className="text-slate-700 block font-bold mb-1">إصدار الهيكل (Schema)</span>
                   <span className="text-slate-900 font-extrabold font-mono text-[11px] block">XML Schema Standard V2</span>
                 </div>
               </div>
@@ -282,7 +282,7 @@ export default function AIZatcaTool({ invoices = [] }: { invoices?: Invoice[] })
             {(submitLogs.length > 0 || isSubmitting) && (
               <div className="bg-slate-950 border border-slate-800 p-5 rounded-2xl shadow-inner max-h-[190px] overflow-y-auto">
                 <div className="flex items-center justify-between mb-3 pb-2 border-b border-slate-800">
-                  <span className="text-[9px] font-mono font-bold text-slate-500 tracking-wider flex items-center gap-1">
+                  <span className="text-[11px] font-mono font-bold text-slate-700 tracking-wider flex items-center gap-1">
                     <Activity className="w-3 h-3 text-emerald-400" /> ZATCA_FATOORA_CONFORMITY_CON
                   </span>
                   <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
@@ -318,7 +318,7 @@ export default function AIZatcaTool({ invoices = [] }: { invoices?: Invoice[] })
             </div>
             <div>
               <h3 className="font-black text-slate-900 text-lg">سجل الامتثال للفواتير الضريبية (ZATCA Compliance Invoices)</h3>
-              <p className="text-xs text-slate-500 font-bold mt-0.5">تفاصيل الفواتير المسجلة بمصلحة الضرائب لتقارير ضريبة القيمة المضافة 15%</p>
+              <p className="text-xs text-slate-700 font-bold mt-0.5">تفاصيل الفواتير المسجلة بمصلحة الضرائب لتقارير ضريبة القيمة المضافة 15%</p>
             </div>
           </div>
         </div>
@@ -337,7 +337,7 @@ export default function AIZatcaTool({ invoices = [] }: { invoices?: Invoice[] })
             <tbody className="divide-y divide-slate-100 text-slate-900 font-bold text-sm">
               {availableInvoices.map((inv, idx) => (
                 <tr key={idx} className="hover:bg-slate-50/50 transition-colors">
-                  <td className="py-4.5 px-6 font-mono text-xs text-slate-600">#{inv.id}</td>
+                  <td className="py-4.5 px-6 font-mono text-xs text-slate-200 font-bold">#{inv.id}</td>
                   <td className="py-4.5 px-6 font-black text-slate-900">{inv.clientName}</td>
                   <td className="py-4.5 px-6 font-mono text-slate-700 text-xs">{inv.vatAmount.toLocaleString()} ر.س</td>
                   <td className="py-4.5 px-6 font-mono text-slate-900">{inv.totalAmount.toLocaleString()} ر.س</td>

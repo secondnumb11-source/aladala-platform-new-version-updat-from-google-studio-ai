@@ -664,16 +664,16 @@ export default function WscatModule() {
           input: 'text-amber-300 placeholder-amber-800 font-mono',
           badge: 'bg-amber-950/50 border-amber-800 text-amber-500',
           cursor: 'bg-amber-500',
-          inputLine: 'text-amber-600'
+          inputLine: 'text-amber-400 font-black'
         };
       case 'classic':
         return {
           bg: 'bg-zinc-950 border-zinc-800',
           text: 'text-zinc-100 font-mono',
           input: 'text-white placeholder-zinc-700 font-mono',
-          badge: 'bg-zinc-900 border-zinc-700 text-zinc-300',
+          badge: 'bg-zinc-900 border-zinc-700 text-white font-bold',
           cursor: 'bg-zinc-100',
-          inputLine: 'text-zinc-400'
+          inputLine: 'text-white font-bold'
         };
       case 'dracula':
       default:
@@ -725,14 +725,14 @@ export default function WscatModule() {
               مطور النظام (DevMode)
             </span>
           </div>
-          <p className="text-xs text-slate-400">
+          <p className="text-xs text-slate-200 font-bold">
             مُحاكي بروتوكولات الربط المباشر الموحد (wscat) للاتصال وقنوات البث ثنائية الاتجاه مع بوابات الأنظمة والوزارات.
           </p>
         </div>
         <div className="flex items-center gap-2">
           <button
             onClick={() => setShowHelpModal(true)}
-            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl border border-slate-800 bg-slate-900/50 text-xs text-slate-300 transition-all font-sans"
+            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl border border-slate-800 bg-slate-900/50 text-xs text-white font-bold transition-all font-sans"
           >
             <HelpCircle className="w-3.5 h-3.5" />
             دليل الأوامر السريعة
@@ -761,7 +761,7 @@ export default function WscatModule() {
           className={`pb-3 text-xs md:text-sm font-semibold transition-all relative ${
             activeTab === 'wscat'
               ? 'text-amber-500 border-b-2 border-amber-500'
-              : 'text-slate-400'
+              : 'text-slate-200 font-bold'
           }`}
         >
           محاكي وطرفية wscat (الربط والاتصال الفوري الخام)
@@ -771,7 +771,7 @@ export default function WscatModule() {
           className={`pb-3 text-xs md:text-sm font-semibold transition-all relative ${
             activeTab === 'piesocket_sdk'
               ? 'text-amber-500 border-b-2 border-amber-500'
-              : 'text-slate-400'
+              : 'text-slate-200 font-bold'
           }`}
         >
           بوابة حزمة PieSocket SDK المتكاملة ✨
@@ -786,12 +786,12 @@ export default function WscatModule() {
           <div className="flex items-center justify-between px-3">
             <div className="flex items-center gap-2">
               <span className="inline-block w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse" />
-              <span className="text-xs font-semibold text-slate-300 font-sans">طرفية wscat التفاعلية</span>
+              <span className="text-xs font-semibold text-white font-bold font-sans">طرفية wscat التفاعلية</span>
             </div>
             
             {/* Terminal Theme Select */}
             <div className="flex items-center gap-1.5 bg-slate-950/80 px-2.5 py-1 rounded-xl border border-slate-800">
-              <span className="text-[10px] text-slate-500 font-sans">النمط:</span>
+              <span className="text-[10px] text-slate-700 font-sans">النمط:</span>
               <button 
                 onClick={() => setTerminalTheme('dracula')}
                 className={`w-3 h-3 rounded-full bg-indigo-600 border ${terminalTheme === 'dracula' ? 'border-white scale-125' : 'border-slate-900'} transition-transform`}
@@ -837,12 +837,12 @@ export default function WscatModule() {
                 if (line.type === 'system') colorClass = 'text-sky-400 font-semibold';
                 if (line.type === 'error') colorClass = 'text-red-400 font-medium font-sans';
                 if (line.type === 'success') colorClass = 'text-emerald-400 font-medium';
-                if (line.type === 'input') colorClass = line.isPrefixCmd ? 'text-yellow-300 font-semibold' : 'text-slate-400 italic';
+                if (line.type === 'input') colorClass = line.isPrefixCmd ? 'text-yellow-300 font-semibold' : 'text-slate-200 font-bold italic';
                 
                 return (
                   <div key={idx} className="group relative py-0.5 rounded px-1 transition-all duration-150">
                     <div className="flex items-start gap-2.5">
-                      <span className="text-[10px] text-slate-600 select-none font-mono mt-1 opacity-60">
+                      <span className="text-[10px] text-slate-200 font-bold select-none font-mono mt-1 opacity-60">
                         [{line.timestamp}]
                       </span>
                       <pre className={`flex-1 text-xs whitespace-pre-wrap ${colorClass}`}>
@@ -894,7 +894,7 @@ export default function WscatModule() {
               />
               <button 
                 type="submit" 
-                className="p-1 px-2.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-300 text-xs transition z-10"
+                className="p-1 px-2.5 rounded-lg bg-slate-900 border border-slate-800 text-white font-bold text-xs transition z-10"
               >
                 {!socket ? 'تنفيذ الأوامر' : 'إرسال'}
               </button>
@@ -914,7 +914,7 @@ export default function WscatModule() {
                     <Database className="w-4 h-4 text-indigo-400" />
                     لوحة تحكم حزمة PieSocket SDK 🚀
                   </h2>
-                  <p className="text-[11px] text-slate-400">
+                  <p className="text-[11px] text-slate-200 font-bold">
                     تهيّئ حزمة التوصيل الرسمية PieSocket JS مع غرف الاستماع المخصصة وتجاوز أخطاء البث.
                   </p>
                 </div>
@@ -923,7 +923,7 @@ export default function WscatModule() {
                 <div className="space-y-3">
                   <div className="grid grid-cols-2 gap-2">
                     <div className="space-y-1 text-right">
-                      <label className="text-[10px] font-medium text-slate-300 block font-sans">معرف العنقود (Cluster ID):</label>
+                      <label className="text-[10px] font-medium text-white font-bold block font-sans">معرف العنقود (Cluster ID):</label>
                       <input
                         type="text"
                         value={clusterId}
@@ -935,7 +935,7 @@ export default function WscatModule() {
                       />
                     </div>
                     <div className="space-y-1 text-right">
-                      <label className="text-[10px] font-medium text-slate-300 block font-sans">اسم قناة البث (Channel/Room):</label>
+                      <label className="text-[10px] font-medium text-white font-bold block font-sans">اسم قناة البث (Channel/Room):</label>
                       <input
                         type="text"
                         value={channelRoom}
@@ -949,7 +949,7 @@ export default function WscatModule() {
                   </div>
 
                   <div className="space-y-1 text-right">
-                    <label className="text-[10px] font-medium text-slate-300 block font-sans text-right">مفتاح المنصة (API Key):</label>
+                    <label className="text-[10px] font-medium text-white font-bold block font-sans text-right">مفتاح المنصة (API Key):</label>
                     <input
                       type="text"
                       value={apiKey}
@@ -962,7 +962,7 @@ export default function WscatModule() {
                   </div>
 
                   <div className="flex items-center justify-between pb-1 text-right">
-                    <span className="text-[10px] text-slate-400 font-sans">إرسال الحدث والرسالة لذات المرسِل:</span>
+                    <span className="text-[10px] text-slate-200 font-bold font-sans">إرسال الحدث والرسالة لذات المرسِل:</span>
                     <label className="relative inline-flex items-center cursor-pointer">
                       <input 
                         type="checkbox" 
@@ -1000,7 +1000,7 @@ export default function WscatModule() {
                 {/* Connection Status Badge HUD */}
                 <div className="p-3 rounded-2xl bg-slate-950 border border-slate-800/65 grid grid-cols-2 gap-4">
                   <div className="space-y-0.5 text-right">
-                    <span className="text-[10px] text-slate-500 block">حالة عميل SDK:</span>
+                    <span className="text-[10px] text-slate-700 block">حالة عميل SDK:</span>
                     <div className="flex items-center gap-1.5">
                       <span className={`w-2 h-2 rounded-full ${
                         pieSocketStatus === 'connected' ? 'bg-emerald-500' :
@@ -1016,7 +1016,7 @@ export default function WscatModule() {
                   </div>
 
                   <div className="space-y-0.5 text-right">
-                    <span className="text-[10px] text-slate-500 block">المستمعين المتاحين:</span>
+                    <span className="text-[10px] text-slate-700 block">المستمعين المتاحين:</span>
                     <span className="text-xs font-bold text-slate-350 font-mono">
                       {pieSocketStatus === 'connected' ? '1 (مستمع نشط)' : '--'}
                     </span>
@@ -1035,7 +1035,7 @@ export default function WscatModule() {
 
                 <div className="space-y-3">
                   <div className="text-right">
-                    <label className="text-[10px] font-medium text-slate-300 block mb-1 font-sans">اسم الحدث المراد نشره (Event Name):</label>
+                    <label className="text-[10px] font-medium text-white font-bold block mb-1 font-sans">اسم الحدث المراد نشره (Event Name):</label>
                     <select
                       id="pie-event-select"
                       defaultValue="new_message"
@@ -1047,7 +1047,7 @@ export default function WscatModule() {
                   </div>
 
                   <div className="text-right">
-                    <label className="text-[10px] font-medium text-slate-300 block mb-1 font-sans font-sans text-right">محتوى البيانات (Payload JSON):</label>
+                    <label className="text-[10px] font-medium text-white font-bold block mb-1 font-sans font-sans text-right">محتوى البيانات (Payload JSON):</label>
                     <textarea
                       id="pie-payload-textarea"
                       defaultValue={JSON.stringify({ message: "مستند قضائي فوري جاهز للتوريد", case_status: "مكتمل", sender: "مدير منصة العدالة" }, null, 2)}
@@ -1081,11 +1081,11 @@ export default function WscatModule() {
                 {/* Metrics indicators */}
                 <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-800/50">
                   <div className="bg-slate-950/50 p-2 text-center rounded-xl border border-slate-850">
-                    <span className="text-[10px] text-slate-500 block">مرسل عبر SDK:</span>
+                    <span className="text-[10px] text-slate-700 block">مرسل عبر SDK:</span>
                     <span className="text-xs font-black text-indigo-400 font-mono inline-block">{sentCount}</span>
                   </div>
                   <div className="bg-slate-950/50 p-2 text-center rounded-xl border border-slate-850">
-                    <span className="text-[10px] text-slate-500 block">مستقبل عبر SDK:</span>
+                    <span className="text-[10px] text-slate-700 block">مستقبل عبر SDK:</span>
                     <span className="text-xs font-black text-emerald-400 font-mono inline-block">{recvCount}</span>
                   </div>
                 </div>
@@ -1100,14 +1100,14 @@ export default function WscatModule() {
                     <Database className="w-4 h-4 text-amber-500" />
                     لوحة تحكم الاتصال التفاعلية
                   </h2>
-                  <p className="text-[11px] text-slate-400">
+                  <p className="text-[11px] text-slate-200 font-bold">
                     أدخل الرابط يدوياً أو اختر من الخوادم التجريبية المعدة مسبقاً.
                   </p>
                 </div>
 
                 {/* Input target URL */}
                 <div className="space-y-2">
-                  <label className="text-[11px] font-medium text-slate-300 block font-sans">
+                  <label className="text-[11px] font-medium text-white font-bold block font-sans">
                     رابط خادم البث الفوري (WebSocket URL):
                   </label>
                   <div className="flex gap-2" dir="ltr">
@@ -1146,7 +1146,7 @@ export default function WscatModule() {
                 {/* Connection Status Badge HUD */}
                 <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800/60 grid grid-cols-2 gap-4">
                   <div className="space-y-1">
-                    <span className="text-[10px] text-slate-500 block">حالة الاتصال الالكترونية:</span>
+                    <span className="text-[10px] text-slate-700 block">حالة الاتصال الالكترونية:</span>
                     <div className="flex items-center gap-1.5">
                       <span className={`w-2 h-2 rounded-full ${
                         connectionStatus === 'connected' ? 'bg-emerald-500 animate-pulse' :
@@ -1162,7 +1162,7 @@ export default function WscatModule() {
                   </div>
 
                   <div className="space-y-1">
-                    <span className="text-[10px] text-slate-500 block">استجابة البث (Latency):</span>
+                    <span className="text-[10px] text-slate-700 block">استجابة البث (Latency):</span>
                     <span className="text-xs font-bold text-slate-350 font-mono">
                       {latency !== null ? `${latency}ms` : '--'}
                     </span>
@@ -1171,7 +1171,7 @@ export default function WscatModule() {
 
                 {/* Quick Presets Select Buttons */}
                 <div className="space-y-2">
-                  <span className="text-[11px] font-medium text-slate-300 block font-sans">
+                  <span className="text-[11px] font-medium text-white font-bold block font-sans">
                     خوادم ومنافذ الربط الجاهزة للاختبار:
                   </span>
                   <div className="grid grid-cols-1 gap-2">
@@ -1198,8 +1198,8 @@ export default function WscatModule() {
                           <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
                           {preset.name}
                         </span>
-                        <span className="text-[10px] text-slate-500 mt-0.5">{preset.desc}</span>
-                        <span className="text-[9px] text-slate-600 font-mono mt-1 break-all" dir="ltr">{preset.url}</span>
+                        <span className="text-[10px] text-slate-700 mt-0.5">{preset.desc}</span>
+                        <span className="text-[11px] text-slate-200 font-bold font-mono mt-1 break-all" dir="ltr">{preset.url}</span>
                       </button>
                     ))}
                   </div>
@@ -1219,7 +1219,7 @@ export default function WscatModule() {
                     <button
                       type="button"
                       onClick={() => setPayloadType('text')}
-                      className={`px-2 py-0.5 rounded text-[10px] font-sans ${payloadType === 'text' ? 'bg-indigo-600 text-white' : 'text-slate-400'}`}
+                      className={`px-2 py-0.5 rounded text-[10px] font-sans ${payloadType === 'text' ? 'bg-indigo-600 text-white' : 'text-slate-200 font-bold'}`}
                     >
                       TEXT
                     </button>
@@ -1229,7 +1229,7 @@ export default function WscatModule() {
                         setPayloadType('json');
                         setMessageInput(JSON.stringify({ event: "ping", data: { client: "wscat-client", timeMs: Date.now() } }, null, 2));
                       }}
-                      className={`px-2 py-0.5 rounded text-[10px] font-sans ${payloadType === 'json' ? 'bg-indigo-600 text-white' : 'text-slate-400'}`}
+                      className={`px-2 py-0.5 rounded text-[10px] font-sans ${payloadType === 'json' ? 'bg-indigo-600 text-white' : 'text-slate-200 font-bold'}`}
                     >
                       JSON
                     </button>
@@ -1266,7 +1266,7 @@ export default function WscatModule() {
                         ]);
                       }}
                       title="تصفير الإحصائية"
-                      className="p-2 border border-slate-850 bg-slate-950 rounded-xl text-slate-400 transition"
+                      className="p-2 border border-slate-850 bg-slate-950 rounded-xl text-slate-200 font-bold transition"
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
@@ -1276,11 +1276,11 @@ export default function WscatModule() {
                 {/* Metrics indicators */}
                 <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-800/50">
                   <div className="bg-slate-950/50 p-2.5 rounded-xl border border-slate-850 text-center">
-                    <span className="text-[10px] text-slate-500 block">الباقات الصادرة (Sent):</span>
+                    <span className="text-[10px] text-slate-700 block">الباقات الصادرة (Sent):</span>
                     <span className="text-sm font-black text-indigo-400 font-mono mt-0.5 inline-block">{sentCount}</span>
                   </div>
                   <div className="bg-slate-950/50 p-2.5 rounded-xl border border-slate-850 text-center">
-                    <span className="text-[10px] text-slate-500 block">الباقات الواردة (Recv):</span>
+                    <span className="text-[10px] text-slate-700 block">الباقات الواردة (Recv):</span>
                     <span className="text-sm font-black text-emerald-400 font-mono mt-0.5 inline-block">{recvCount}</span>
                   </div>
                 </div>
@@ -1291,20 +1291,20 @@ export default function WscatModule() {
           {/* Quick Logs Exporter */}
           <div className="bg-slate-900/40 p-4 rounded-2xl border border-slate-800/55 flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Layers className="w-3.5 h-3.5 text-slate-400" />
-              <span className="text-xs font-sans text-slate-300">سجل البيانات المتدفقة</span>
+              <Layers className="w-3.5 h-3.5 text-slate-200 font-bold" />
+              <span className="text-xs font-sans text-white font-bold">سجل البيانات المتدفقة</span>
             </div>
             <div className="flex gap-1.5">
               <button
                 onClick={exportLogHistory}
-                className="flex items-center gap-1 px-3 py-1 rounded-lg border border-slate-800 bg-slate-900 text-[10px] font-sans text-slate-300 transition"
+                className="flex items-center gap-1 px-3 py-1 rounded-lg border border-slate-800 bg-slate-900 text-[10px] font-sans text-white font-bold transition"
               >
                 <Download className="w-3 h-3" />
                 تحميل السجل (.txt)
               </button>
               <button
                 onClick={() => setTerminalLines([])}
-                className="flex items-center gap-1 px-3 py-1 rounded-lg border border-slate-800 bg-slate-900 text-[10px] font-sans text-slate-300 transition"
+                className="flex items-center gap-1 px-3 py-1 rounded-lg border border-slate-800 bg-slate-900 text-[10px] font-sans text-white font-bold transition"
               >
                 تفريغ الشاشة
               </button>
@@ -1320,10 +1320,10 @@ export default function WscatModule() {
           <Sparkles className="w-4 h-4 text-amber-400" />
           حول بروتوكول البث والاستدعاء الذكي في الأنظمة القضائية
         </h3>
-        <p className="text-xs text-slate-400 leading-relaxed font-sans">
+        <p className="text-xs text-slate-200 font-bold leading-relaxed font-sans">
           تعتمد المنصات الرقمية الكبرى (مثل بوابة ناجز السحابية ونظام معين لديوان المظالم بالمملكة) على الربط ثنائي الاتجاه من خلال 
           بروتوكول WebSocket لتمكين التنبيهات الفورية، التحديثات المباشرة لجدول الجلسات، والمزامنة اللحظية لعقود الضمان والدفوع القضائية. 
-          تساعدك أداة <code className="font-mono bg-slate-950 px-1.5 py-0.5 rounded text-amber-450 text-[11px]">wscat</code> كمهندس نظام على إجراء الاتصالات الفورية واختبار قنوات الربط للتأكد من سلامة نقل الصكوك والمستندات قبل تفعيل قنوات الإنتاج الفعلية.
+          تساعدك أداة <code className="font-mono bg-slate-950 px-1.5 py-0.5 rounded text-amber-400 text-[11px]">wscat</code> كمهندس نظام على إجراء الاتصالات الفورية واختبار قنوات الربط للتأكد من سلامة نقل الصكوك والمستندات قبل تفعيل قنوات الإنتاج الفعلية.
         </p>
       </div>
 
@@ -1336,28 +1336,28 @@ export default function WscatModule() {
               دليل تشغيل واجهات wscat
             </h3>
             
-            <p className="text-xs text-slate-400 leading-relaxed font-sans">
+            <p className="text-xs text-slate-200 font-bold leading-relaxed font-sans">
               يمكنك محاكاة الخطوات البرمجية الدقيقة المذكورة في طلب التكامل كالتالي:
             </p>
 
             <div className="space-y-3 font-mono text-left" dir="ltr">
               <div className="bg-slate-950 p-3 rounded-xl border border-slate-800 relative group">
-                <span className="text-[10px] text-slate-500 block mb-1 font-sans text-right">خطوة 1: تثبيت الحزمة على الخادم:</span>
+                <span className="text-[10px] text-slate-700 block mb-1 font-sans text-right">خطوة 1: تثبيت الحزمة على الخادم:</span>
                 <code className="text-emerald-400 text-xs">npm install -g wscat</code>
                 <button 
                   onClick={() => copyTextToClipboard('npm install -g wscat', 999)}
-                  className="absolute right-2 top-2 bg-slate-900 rounded p-1 text-slate-400"
+                  className="absolute right-2 top-2 bg-slate-900 rounded p-1 text-slate-200 font-bold"
                 >
                   {copiedIndex === 999 ? <Check className="w-3.5 h-3.5 text-green-400" /> : <Copy className="w-3.5 h-3.5" />}
                 </button>
               </div>
 
               <div className="bg-slate-950 p-3 rounded-xl border border-slate-800 relative group">
-                <span className="text-[10px] text-slate-500 block mb-1 font-sans text-right">خطوة 2: تشغيل الاتصال والربط:</span>
+                <span className="text-[10px] text-slate-700 block mb-1 font-sans text-right">خطوة 2: تشغيل الاتصال والربط:</span>
                 <code className="text-emerald-400 text-xs">wscat -c wss://echo.websocket.org</code>
                 <button 
                   onClick={() => copyTextToClipboard('wscat -c wss://echo.websocket.org', 998)}
-                  className="absolute right-2 top-2 bg-slate-900 rounded p-1 text-slate-400"
+                  className="absolute right-2 top-2 bg-slate-900 rounded p-1 text-slate-200 font-bold"
                 >
                   {copiedIndex === 998 ? <Check className="w-3.5 h-3.5 text-green-400" /> : <Copy className="w-3.5 h-3.5" />}
                 </button>

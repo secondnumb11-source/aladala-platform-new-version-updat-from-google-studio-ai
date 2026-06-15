@@ -99,7 +99,7 @@ export default function CourtMapAndServices({
               <MapPin className="text-yellow-300 w-4 h-4 animate-bounce" />
               <span>{t.title}</span>
             </h3>
-            <p className={`text-xs mt-0.5 ${theme === "light" ? "text-slate-600" : "text-yellow-100 font-bold"}`}>{t.sub}</p>
+            <p className={`text-xs mt-0.5 ${theme === "light" ? "text-slate-200 font-bold" : "text-yellow-100 font-bold"}`}>{t.sub}</p>
           </div>
 
           <div className={`text-center py-1.5 text-xs font-sans font-bold border rounded-lg ${

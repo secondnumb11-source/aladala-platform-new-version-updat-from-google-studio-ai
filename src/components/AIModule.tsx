@@ -111,9 +111,9 @@ export default function AIModule({ onUpdateState, cases = [], invoices = [], ini
           <div>
             <h1 className="text-2xl font-black text-slate-900 flex items-center gap-3">
               المساعد القانوني الخارق AI
-              <span className="text-[10px] bg-amber-500/10 text-amber-600 px-3 py-1 rounded-full border border-amber-200 uppercase tracking-widest font-black">Pro Version</span>
+              <span className="text-[10px] bg-amber-500/10 border border-amber-500/30 text-amber-400 font-bold font-black px-3 py-1 rounded-full border border-amber-200 uppercase tracking-widest font-black">Pro Version</span>
             </h1>
-            <p className="text-slate-400 text-sm mt-1 font-bold">منظومة ذكاء اصطناعي متكاملة لدعم صياغة وتحليل وبحث الأنظمة السعودية.</p>
+            <p className="text-slate-200 font-bold text-sm mt-1 font-bold">منظومة ذكاء اصطناعي متكاملة لدعم صياغة وتحليل وبحث الأنظمة السعودية.</p>
           </div>
         </div>
 
@@ -137,7 +137,7 @@ export default function AIModule({ onUpdateState, cases = [], invoices = [], ini
               className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-[10px] font-black transition-all ${
                 activeTab === tab.id 
                   ? 'bg-slate-900 text-white shadow-lg' 
-                  : 'text-slate-500'
+                  : 'text-slate-700'
               } `}
             >
               {tab.icon}
@@ -158,7 +158,7 @@ export default function AIModule({ onUpdateState, cases = [], invoices = [], ini
                   <div className="w-3 h-3 bg-emerald-500 rounded-full animate-pulse"></div>
                   <h4 className="text-sm font-black text-slate-900">غرفة المشورة القانونية المباشرة</h4>
                 </div>
-                <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Powered by Gemini 1.5 Pro</div>
+                <div className="text-[10px] font-black text-slate-200 font-bold uppercase tracking-widest">Powered by Gemini 1.5 Pro</div>
               </div>
 
               <div className="flex-1 overflow-y-auto p-8 space-y-6 bg-slate-50/30">
@@ -174,12 +174,12 @@ export default function AIModule({ onUpdateState, cases = [], invoices = [], ini
                     } `}>
                       {msg.text}
                     </div>
-                    <span className="text-[10px] text-slate-400 font-bold px-2">{msg.time}</span>
+                    <span className="text-[10px] text-slate-200 font-bold font-bold px-2">{msg.time}</span>
                   </div>
                 ))}
                 {isAiLoading && (
                   <div className="flex flex-col gap-2 opacity-70 animate-pulse">
-                    <div className="px-6 py-4 bg-white border border-slate-100 rounded-3xl rounded-tl-none text-sm font-bold text-slate-400 flex items-center gap-3">
+                    <div className="px-6 py-4 bg-white border border-slate-100 rounded-3xl rounded-tl-none text-sm font-bold text-slate-200 font-bold flex items-center gap-3">
                       <div className="flex gap-1">
                         <div className="w-1.5 h-1.5 bg-amber-500 rounded-full animate-bounce"></div>
                         <div className="w-1.5 h-1.5 bg-amber-500 rounded-full animate-bounce delay-150"></div>
@@ -219,7 +219,7 @@ export default function AIModule({ onUpdateState, cases = [], invoices = [], ini
                   <Database className="w-6 h-6 text-amber-500" />
                   تحليل البيانات الضخمة (RAG)
                 </h4>
-                <p className="text-slate-400 text-xs font-bold leading-relaxed mb-6 relative z-10">قم برفع ملفات القضية لمساءلتها دلالياً واستخراج الإجابات من متونها مباشرة.</p>
+                <p className="text-slate-200 font-bold text-xs font-bold leading-relaxed mb-6 relative z-10">قم برفع ملفات القضية لمساءلتها دلالياً واستخراج الإجابات من متونها مباشرة.</p>
                 <button className="w-full bg-amber-500 text-slate-950 py-3 rounded-2xl text-xs font-black shadow-lg transition-all relative z-10">تفعيل الفهرسة المتجهة 📂</button>
               </div>
 
@@ -238,10 +238,10 @@ export default function AIModule({ onUpdateState, cases = [], invoices = [], ini
                     <button 
                       key={i}
                       onClick={() => setAiInput(tpl)}
-                      className="w-full text-right p-4 bg-slate-50 rounded-2xl text-[11px] font-bold text-slate-600 border border-slate-100 transition-all group flex items-center justify-between"
+                      className="w-full text-right p-4 bg-slate-50 rounded-2xl text-[11px] font-bold text-slate-200 font-bold border border-slate-100 transition-all group flex items-center justify-between"
                     >
                       {tpl}
-                      <ArrowRight className="w-3.5 h-3.5 text-slate-300" />
+                      <ArrowRight className="w-3.5 h-3.5 text-white font-bold" />
                     </button>
                   ))}
                 </div>

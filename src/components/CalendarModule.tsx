@@ -426,22 +426,22 @@ export default function CalendarModule({ cases, hearings, tasks, invoices = [], 
       )}
 
       {/* Header Banner */}
-      <div className="bg-gradient-to-r from-[#9A7D2C] via-[#1E3A8A] to-[#0284C7] border-2 border-[#9A7D2C] p-6 rounded-3xl relative overflow-hidden shadow-2xl text-white[0_0_50px_rgba(255,255,255,0.3)] transition-all duration-500[1.01]">
+      <div className="bg-gradient-to-r from-[#9A7D2C] via-[#1E3A8A] to-[#0284C7] border-2 border-[#9A7D2C] p-6 rounded-3xl relative overflow-hidden shadow-2xl transition-all duration-500">
         <div className="absolute top-0 left-0 w-32 h-32 bg-yellow-400 blur-3xl rounded-full opacity-30"></div>
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 relative z-10">
           <div>
-            <span className="text-xs text-yellow-300 font-black uppercase drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]">📅 التقويم القضائي والجلسات</span>
-            <h1 className="text-2xl md:text-3xl font-black text-white mt-2 drop-shadow-[0_2px_8px_rgba(0,0,0,0.6)] tracking-wide">
+            <span className="text-xs text-[#FACC15] font-black uppercase" style={{ textShadow: 'none', color: '#FACC15' }}>📅 التقويم القضائي والجلسات</span>
+            <h1 className="text-2xl md:text-3xl font-black text-[#FFFFFF] mt-2 tracking-wide" style={{ textShadow: 'none', color: '#FFFFFF' }}>
               التقويم القضائي والجلسات
             </h1>
-            <p className="text-xs text-white mt-2 leading-relaxed font-black drop-shadow-[0_1px_2px_rgba(0,0,0,0.4)]">
+            <p className="text-xs text-[#FFFFFF] mt-2 leading-relaxed font-black" style={{ textShadow: 'none', color: '#FFFFFF' }}>
               تصفح مواعيد الجلسات والنزاعات الممتدة لعملاء المكتب اليومية، مع ميزة التنبؤ بالخريطة الجغرافية ومطابقة التقويم الخارجي.
             </p>
           </div>
           <button 
             onClick={handleScanHearings}
             disabled={isScanning}
-            className="bg-yellow-300 text-slate-950 font-extrabold px-4 py-2.5 rounded-xl text-xs flex items-center gap-2 shadow-[0_0_20px_rgba(253,224,71,0.5)][0_0_30px_rgba(253,224,71,0.8)] transition-all"
+            className="bg-yellow-300 text-slate-950 font-extrabold px-4 py-2.5 rounded-xl text-xs flex items-center gap-2 shadow-[0_0_20px_rgba(253,224,71,0.5)] transition-all"
           >
             <RefreshCw className={`w-4 h-4 ${isScanning ? 'animate-spin' : ''}`} />
             <span>{isScanning ? 'جاري الفحص الموقوت...' : 'مسح وتنبيه الجلسات القادمة (48 ساعة)'}</span>
@@ -453,12 +453,12 @@ export default function CalendarModule({ cases, hearings, tasks, invoices = [], 
         
         {/* RIGHT COLUMN: Calendar Grid Selector (8/12) */}
         <div className="lg:col-span-8 space-y-6">
-          <div className="bg-[#07132c] border-2 border-yellow-500/30 rounded-3xl p-6 shadow-[0_0_30px_rgba(234,179,8,0.1)] relative overflow-hidden group[0_0_50px_rgba(255,255,255,0.2)] transition-all duration-500">
+          <div className="bg-[#07132c] border-2 border-yellow-500/30 rounded-3xl p-6 shadow-[0_0_30px_rgba(234,179,8,0.1)] relative overflow-hidden group transition-all duration-500">
             <div className="absolute inset-0 bg-yellow-500/5 opacity-0 transition-opacity pointer-events-none"></div>
             <div className="flex items-center justify-between border-b border-yellow-500/30 pb-4 mb-4 relative z-10">
               <div className="flex items-center gap-2">
-                <CalendarIcon className="w-5 h-5 text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]" />
-                <h2 className="text-sm font-black text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]">أجندة شهر يونيو 2026 (June 2026)</h2>
+                <CalendarIcon className="w-5 h-5 text-white" />
+                <h2 className="text-sm font-black text-[#FFFFFF]" style={{ textShadow: 'none', color: '#FFFFFF' }}>أجندة شهر يونيو 2026 (June 2026)</h2>
               </div>
               <div className="flex items-center gap-2">
                 <button
@@ -469,21 +469,21 @@ export default function CalendarModule({ cases, hearings, tasks, invoices = [], 
                 >
                   <span>طباعة الأجندة 🖨️</span>
                 </button>
-                <span className="text-xs font-mono text-slate-950 drop-shadow-[0_0_8px_rgba(255,255,255,0.8)] bg-yellow-500 px-2.5 py-0.5 rounded font-black shadow-[0_0_15px_rgba(234,179,8,0.5)]">
+                <span className="text-xs font-mono text-slate-950 bg-yellow-500 px-2.5 py-0.5 rounded font-black shadow-[0_0_15px_rgba(234,179,8,0.5)]">
                   {hearings.length} جلسات مسجلة
                 </span>
               </div>
             </div>
 
             {/* Grid calendar */}
-            <div className="grid grid-cols-7 gap-2 text-center text-xs font-bold text-yellow-100 drop-shadow-[0_0_5px_rgba(253,224,71,0.4)] mb-2 relative z-10">
-              <div>الأحد</div>
-              <div>الإثنين</div>
-              <div>الثلاثاء</div>
-              <div>الأربعاء</div>
-              <div>الخميس</div>
-              <div>الجمعة</div>
-              <div>السبت</div>
+            <div className="grid grid-cols-7 gap-2 text-center text-xs font-black text-[#FACC15] mb-2 relative z-10">
+              <div style={{ textShadow: 'none', color: '#FACC15' }}>الأحد</div>
+              <div style={{ textShadow: 'none', color: '#FACC15' }}>الإثنين</div>
+              <div style={{ textShadow: 'none', color: '#FACC15' }}>الثلاثاء</div>
+              <div style={{ textShadow: 'none', color: '#FACC15' }}>الأربعاء</div>
+              <div style={{ textShadow: 'none', color: '#FACC15' }}>الخميس</div>
+              <div style={{ textShadow: 'none', color: '#FACC15' }}>الجمعة</div>
+              <div style={{ textShadow: 'none', color: '#FACC15' }}>السبت</div>
             </div>
 
             <div className="grid grid-cols-7 gap-2 font-mono relative z-10">
@@ -503,18 +503,18 @@ export default function CalendarModule({ cases, hearings, tasks, invoices = [], 
                     onDrop={(e) => handleDropOnDay(e, day.dateStr)}
                     className={`h-28 rounded-xl border text-right p-2 flex flex-col justify-between transition-all relative group/day ${
                       isSelected 
-                        ? 'bg-gradient-to-br from-yellow-500/20 to-yellow-500/5 border-yellow-500 text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.8)] ring-1 ring-yellow-500' 
-                        : 'bg-[#040d1f][#0c1830] border-yellow-500/20 text-yellow-100 drop-shadow-[0_0_5px_rgba(253,224,71,0.4)]'
-                    }`}
+                        ? 'bg-gradient-to-br from-yellow-500/20 to-yellow-500/5 border-yellow-500 text-white ring-1 ring-yellow-500 shadow-[0_0_15px_rgba(250,204,21,0.3)]' 
+                        : 'bg-[#0c1830] border-yellow-500/20 text-white'
+                    } shadow-sm group/day`}
                   >
-                    <span className="text-xs font-black">{day.dayNum}</span>
+                    <span className="text-xs font-black" style={{ color: '#FFFFFF', textShadow: 'none' }}>{day.dayNum}</span>
                     <div className="flex flex-col gap-1 w-full overflow-hidden">
                       {day.hearings.map(h => (
                         <div 
                           key={h.id}
                           draggable
                           onDragStart={(e) => handleDragStartEvent(e, h.id, 'hearing')}
-                          className="w-full h-4 bg-yellow-500 rounded text-[8px] px-1 text-slate-950 font-black truncate cursor-move"
+                          className="w-full h-4 bg-yellow-500 rounded text-[10px] px-1 text-slate-950 font-black truncate cursor-move"
                           title={h.caseName}
                         >
                           ⚖️ {h.caseName}
@@ -525,7 +525,7 @@ export default function CalendarModule({ cases, hearings, tasks, invoices = [], 
                           key={t.id}
                           draggable
                           onDragStart={(e) => handleDragStartEvent(e, t.id, 'task')}
-                          className="w-full h-4 bg-blue-500 rounded text-[8px] px-1 text-white font-black truncate cursor-move"
+                          className="w-full h-4 bg-blue-500 rounded text-[10px] px-1 text-white font-black truncate cursor-move"
                           title={t.title}
                         >
                           📝 {t.title}
@@ -539,39 +539,39 @@ export default function CalendarModule({ cases, hearings, tasks, invoices = [], 
           </div>
 
           {/* Details of Selected Date */}
-          <div className="bg-gradient-to-br from-[#9A7D2C]/90 via-[#0D1B2A] to-[#0284C7]/80 border-2 border-[#9A7D2C] rounded-2xl p-6 space-y-4 text-white shadow-xl">
-            <h3 className="text-xs font-black text-yellow-300 border-b border-white/20 pb-2">
-              جدول أعمال تاريخ: <span className="text-white underline font-mono">{selectedDate}</span>
+          <div className="bg-gradient-to-br from-[#9A7D2C] via-[#0C1220] to-[#1E3A8A] border-2 border-[#9A7D2C] rounded-2xl p-6 space-y-4 shadow-xl">
+            <h3 className="text-xs font-black border-b border-white/25 pb-2" style={{ color: '#FACC15', textShadow: 'none' }}>
+              جدول أعمال تاريخ: <span className="underline font-mono" style={{ color: '#FFFFFF', textShadow: 'none' }}>{selectedDate}</span>
             </h3>
 
             {juneDays.find(d => d.dateStr === selectedDate)?.hearings.length === 0 && 
              juneDays.find(d => d.dateStr === selectedDate)?.tasks.length === 0 ? (
-              <div className="py-6 text-center text-xs text-white">
+              <div className="py-6 text-center text-xs font-black" style={{ color: '#FFFFFF', textShadow: 'none' }}>
                 لا توجد جلسات أو مهام مجدولة لهذا اليوم.
               </div>
             ) : (
               <div className="space-y-4">
                 {/* Hearings */}
                 {juneDays.find(d => d.dateStr === selectedDate)?.hearings.map((hearing) => (
-                  <div key={hearing.id} className="bg-red-950/80 border border-red-800 p-4 rounded-xl flex flex-col gap-3">
+                  <div key={hearing.id} className="bg-[#4c0519] border-2 border-[#b91c1c] p-4 rounded-xl flex flex-col gap-3 shadow-lg">
                     <div className="flex justify-between items-start">
                       <div className="space-y-2 text-right">
                         <div className="flex items-center gap-2">
-                          <span className="text-xs bg-red-800 text-white px-2 py-0.5 rounded font-black">جلسة قضائية</span>
-                          <h4 className="text-xs font-black text-slate-100">{hearing.caseName}</h4>
+                          <span className="text-[10px] bg-[#991B1B] text-white px-2 py-0.5 rounded font-black border border-red-500/30" style={{ textShadow: 'none' }}>جلسة قضائية</span>
+                          <h4 className="text-xs font-black" style={{ color: '#FFFFFF', textShadow: 'none' }}>{hearing.caseName}</h4>
                         </div>
-                        <div className="text-sm text-slate-200 space-y-1">
-                          <div>🏛️ المحكمة: <strong className="text-white">{hearing.courtName}</strong></div>
-                          {hearing.judgeName && <div>⚖️ القاضي: <span className="text-white">{hearing.judgeName}</span></div>}
-                          {hearing.notes && <div className="text-slate-200 font-sans italic bg-slate-900/60 p-2 rounded mt-1.5 border border-slate-800/60">{hearing.notes}</div>}
+                        <div className="text-sm font-black space-y-1">
+                          <div style={{ color: '#FFFFFF', textShadow: 'none' }}>🏛️ المحكمة: <strong style={{ color: '#FACC15', textShadow: 'none' }} className="font-black">{hearing.courtName}</strong></div>
+                          {hearing.judgeName && <div style={{ color: '#FFFFFF', textShadow: 'none' }}>⚖️ القاضي: <span style={{ color: '#FACC15', textShadow: 'none' }} className="font-black">{hearing.judgeName}</span></div>}
+                          {hearing.notes && <div className="font-black font-sans italic p-2 rounded mt-1.5 border border-[#dc2626]/30 bg-black/40" style={{ color: '#FFFFFF', textShadow: 'none' }}>{hearing.notes}</div>}
                         </div>
                       </div>
                       <div className="text-left font-mono text-xs">
-                        <div className="text-white flex items-center justify-end gap-1 font-bold">
-                          <Clock className="w-3.5 h-3.5" />
+                        <div className="flex items-center justify-end gap-1 font-black" style={{ color: '#FFFFFF', textShadow: 'none' }}>
+                          <Clock className="w-3.5 h-3.5" style={{ color: '#FACC15' }} />
                           <span>{hearing.time}</span>
                         </div>
-                        <div className="text-xs text-slate-300 mt-1">القضية: #{hearing.caseNumber}</div>
+                        <div className="text-xs font-black mt-1" style={{ color: '#FACC15', textShadow: 'none' }}>القضية: #{hearing.caseNumber}</div>
                       </div>
                     </div>
 
@@ -589,15 +589,15 @@ export default function CalendarModule({ cases, hearings, tasks, invoices = [], 
 
                 {/* Tasks */}
                 {juneDays.find(d => d.dateStr === selectedDate)?.tasks.map((task) => (
-                  <div key={task.id} className="bg-blue-950/85 border border-blue-800 p-4 rounded-xl flex justify-between items-center">
+                  <div key={task.id} className="bg-[#1e293b] border-2 border-[#475569] p-4 rounded-xl flex justify-between items-center shadow-lg">
                     <div className="space-y-1 text-right">
-                      <span className="text-xs bg-blue-800 text-white border border-blue-700 px-2 py-0.5 rounded font-bold">مهمة إدارية</span>
-                      <h4 className="text-xs font-black text-slate-100">{task.title}</h4>
-                      <p className="text-sm text-slate-200 leading-relaxed font-sans">{task.description}</p>
+                      <span className="text-[10px] bg-[#1E40AF] text-[#FFFFFF] border border-blue-500 px-2 py-0.5 rounded font-black" style={{ textShadow: 'none' }}>مهمة إدارية</span>
+                      <h4 className="text-xs font-black" style={{ color: '#FFFFFF', textShadow: 'none' }}>{task.title}</h4>
+                      <p className="text-sm font-black leading-relaxed font-sans" style={{ color: '#FFFFFF', textShadow: 'none' }}>{task.description}</p>
                     </div>
-                    <div className="text-left text-xs text-slate-200">
-                      <div>المسؤول: {task.assignedTo}</div>
-                      <div className={`text-xs font-bold mt-1 text-yellow-400`}>الأولوية: {task.priority}</div>
+                    <div className="text-left text-xs font-black" style={{ color: '#FFFFFF', textShadow: 'none' }}>
+                      <div style={{ textShadow: 'none', color: '#FFFFFF' }}>المسؤول: <span style={{ color: '#FACC15' }}>{task.assignedTo}</span></div>
+                      <div className="text-xs font-black mt-1" style={{ textShadow: 'none', color: '#FACC15' }}>الأولوية: {task.priority}</div>
                     </div>
                   </div>
                 ))}
@@ -638,10 +638,10 @@ export default function CalendarModule({ cases, hearings, tasks, invoices = [], 
                     >
                       <div className="relative">
                         <MapPin className={`w-8 h-8 transition-transform ${
-                          isActive ? 'text-white scale-125 drop-shadow-[0_0_10px_rgba(212,175,55,0.6)]' : 'text-white'
+                          isActive ? 'text-white scale-125 shadow-lg' : 'text-white'
                         }`} />
                         <span className={`absolute -top-6 right-1/2 translate-x-1/2 text-xs font-bold py-0.5 px-2 rounded-lg border shadow-lg whitespace-nowrap block ${
-                          isActive ? 'bg-primary text-slate-950 border-yellow-400 font-extrabold' : 'bg-slate-950 text-slate-200 border-slate-800'
+                          isActive ? 'bg-primary text-slate-950 border-yellow-400 font-extrabold' : 'bg-slate-950 text-white font-bold border-slate-800'
                         }`}>
                           {crt.city} ({crt.trialsCount})
                         </span>
@@ -674,26 +674,26 @@ export default function CalendarModule({ cases, hearings, tasks, invoices = [], 
                   return (
                     <div className="bg-slate-900 border border-slate-800 p-4 rounded-xl space-y-3 text-right">
                       <div>
-                        <span className="text-xs text-yellow-500 font-bold font-sans uppercase block">فرع المحكمة بمسار العملاء</span>
+                        <span className="text-xs text-yellow-400 font-black font-bold font-sans uppercase block">فرع المحكمة بمسار العملاء</span>
                         <h4 className="text-xs font-black text-white mt-1">{data.name}</h4>
-                        <span className="text-xs font-sans text-slate-300 block mt-0.5">{data.fullName}</span>
+                        <span className="text-xs font-sans text-white font-bold block mt-0.5">{data.fullName}</span>
                       </div>
 
-                      <div className="space-y-1 text-xs text-slate-200 border-t border-slate-800 pt-2 font-sans">
+                      <div className="space-y-1 text-xs text-white font-bold border-t border-slate-800 pt-2 font-sans">
                         <div>📅 إجمالي الجلسات النشطة: <span className="text-white font-bold">{data.trialsCount}</span></div>
-                        <div>⏰ ساعات العمل الرسمية: <span className="text-slate-300 text-xs">{data.workingHours}</span></div>
+                        <div>⏰ ساعات العمل الرسمية: <span className="text-white font-bold text-xs">{data.workingHours}</span></div>
                       </div>
 
                       <div className="border-t border-slate-800 pt-2.5">
                         <span className="text-xs text-slate-100 font-bold block mb-1">القضايا المتصلة بهذا الفرع:</span>
                         {data.casesLinked.length === 0 ? (
-                          <span className="text-xs text-slate-400 block">لا توجد قضايا نشطة مسجلة</span>
+                          <span className="text-xs text-slate-200 font-bold block">لا توجد قضايا نشطة مسجلة</span>
                         ) : (
                           <div className="space-y-1.5">
                             {data.casesLinked.map(cl => (
-                              <div key={cl.id} className="text-xs text-slate-200 bg-[#040d1f] p-1.5 rounded border border-slate-850 flex items-center justify-between">
+                              <div key={cl.id} className="text-xs text-white font-bold bg-[#040d1f] p-1.5 rounded border border-slate-850 flex items-center justify-between">
                                 <span className="font-bold truncate max-w-[110px]">{cl.clientName}</span>
-                                <span className="text-slate-300 font-bold font-sans">#{cl.caseNumber}</span>
+                                <span className="text-white font-bold font-bold font-sans">#{cl.caseNumber}</span>
                               </div>
                             ))}
                           </div>
@@ -711,7 +711,7 @@ export default function CalendarModule({ cases, hearings, tasks, invoices = [], 
                     </div>
                   );
                 })() : (
-                  <div className="h-full flex items-center justify-center text-center p-6 text-xs text-slate-300 bg-slate-900 border border-slate-800 rounded-xl">
+                  <div className="h-full flex items-center justify-center text-center p-6 text-xs text-white font-bold bg-slate-900 border border-slate-800 rounded-xl">
                     انقر فوق أحد فروع المحاكم على الخريطة لعرض التفاصيل القضائية المغطاة.
                   </div>
                 )}
@@ -727,47 +727,48 @@ export default function CalendarModule({ cases, hearings, tasks, invoices = [], 
         <div className="lg:col-span-4 space-y-6">
           
       {/* 24 hour critical warnings panel */}
-          <div className="bg-[#07132c] border-2 border-orange-500/50 rounded-3xl p-6 space-y-4 shadow-[0_0_30px_rgba(249,115,22,0.15)][0_0_50px_rgba(255,255,255,0.2)] transition-all duration-500 relative overflow-hidden group">
+          <div className="bg-[#07132c] border-2 border-orange-500/50 rounded-3xl p-6 space-y-4 shadow-[0_0_30px_rgba(249,115,22,0.15)] transition-all duration-500 relative overflow-hidden group">
             <div className="absolute inset-0 bg-orange-500/5 opacity-0 transition-opacity pointer-events-none"></div>
             <div className="flex items-center gap-2 text-white font-bold relative z-10">
-              <AlertTriangle className="w-5 h-5 text-orange-400 drop-shadow-[0_0_8px_rgba(251,146,60,0.8)] animate-pulse" />
-              <h2 className="text-xs font-black drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]">تذكيرات ذكية (أقل من 24 ساعة)</h2>
+              <AlertTriangle className="w-5 h-5 text-orange-400 animate-pulse" />
+              <h2 className="text-xs font-black text-[#FFFFFF]" style={{ textShadow: 'none', color: '#FFFFFF' }}>تذكيرات ذكية (أقل من 24 ساعة)</h2>
             </div>
             
-            <p className="text-xs text-orange-100/90 leading-relaxed drop-shadow-[0_0_5px_rgba(253,224,71,0.4)] relative z-10 font-bold">
+            <p className="text-xs text-[#FFFFFF] leading-relaxed relative z-10 font-bold" style={{ textShadow: 'none', color: '#FFFFFF' }}>
               جلسات حرجة تتطلب التحضير النهائي ورفع المذكرات الجوابية.
             </p>
 
             {upcoming24hHearings.length === 0 ? (
-              <div className="bg-emerald-950/80 border border-emerald-800 p-3.5 rounded-xl text-center text-xs text-emerald-300 space-y-1 relative z-10">
-                <CheckCircle className="w-5 h-5 mx-auto text-emerald-400 drop-shadow-[0_0_8px_rgba(52,211,153,0.8)]" />
-                <p className="font-bold drop-shadow-[0_0_5px_rgba(52,211,153,0.5)] text-white">لا توجد جلسات حرجة حالياً!</p>
+              <div className="bg-emerald-900 border border-emerald-500/50 p-3.5 rounded-xl text-center text-xs space-y-1 relative z-10">
+                <CheckCircle className="w-5 h-5 mx-auto text-emerald-300" />
+                <p className="font-black text-[#FFFFFF] text-xs" style={{ textShadow: 'none', color: '#FFFFFF' }}>لا توجد جلسات حرجة حالياً!</p>
               </div>
             ) : (
               <div className="space-y-4 relative z-10">
                 {upcoming24hHearings.map(h => (
-                  <div key={h.id} className="bg-orange-950/40 border border-orange-700/60 p-4 rounded-2xl space-y-3 text-right w-full">
+                  <div key={h.id} className="bg-orange-950/60 border border-orange-500 p-4 rounded-2xl space-y-3 text-right w-full">
                     <div className="flex items-center justify-between">
-                      <span className="text-[10px] bg-orange-600 text-white font-black px-2 py-0.5 rounded shadow-lg">موعد وشيك 🔥</span>
-                      <span className="text-[10px] text-orange-100 font-mono font-black">{h.date}</span>
+                      <span className="text-[10px] bg-orange-600 text-white font-black px-2 py-0.5 rounded shadow-lg" style={{ textShadow: 'none' }}>موعد وشيك 🔥</span>
+                      <span className="text-[10px] text-[#FACC15] font-mono font-black" style={{ textShadow: 'none', color: '#FACC15' }}>{h.date}</span>
                     </div>
                     <div>
-                      <div className="text-[11px] font-black text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]">{h.caseName}</div>
-                      <p className="text-[10px] text-orange-100/80 font-bold mt-1">🏛️ {h.courtName}</p>
+                      <div className="text-[11px] font-black text-[#FFFFFF]" style={{ textShadow: 'none', color: '#FFFFFF' }}>{h.caseName}</div>
+                      <p className="text-[10px] text-[#FACC15] font-bold mt-1" style={{ textShadow: 'none', color: '#FACC15' }}>🏛️ {h.courtName}</p>
                     </div>
                     
                     <div className="pt-2 border-t border-orange-500/20 flex flex-col gap-2">
-                       <span className="text-[10px] text-orange-200 font-black">تحديث الحالة مباشرة:</span>
+                       <span className="text-[10px] text-[#FFFFFF] font-black" style={{ textShadow: 'none', color: '#FFFFFF' }}>تحديث الحالة مباشرة:</span>
                        <div className="flex gap-1.5 overflow-x-auto pb-1 scrollbar-none">
                           {['جاهزية تامة', 'قيد التحضير', 'طلب تأجيل'].map(status => (
                             <button 
                               key={status}
                               onClick={() => updateHearingStatus(h.id, status)}
-                              className={`px-2 py-1 rounded-lg text-[9px] font-black whitespace-nowrap transition-all ${
+                              className={`px-2 py-1 rounded-lg text-[11px] font-black whitespace-nowrap transition-all ${
                                 h.hearingStatus === status 
                                   ? 'bg-orange-500 text-slate-950 shadow-inner' 
-                                  : 'bg-slate-900 text-orange-300 border border-orange-500/30'
+                                  : 'bg-slate-900 text-[#FACC15] border border-orange-500/30'
                               }`}
+                              style={{ textShadow: 'none' }}
                             >
                               {status}
                             </button>
@@ -781,14 +782,14 @@ export default function CalendarModule({ cases, hearings, tasks, invoices = [], 
           </div>
 
           {/* Sync authorization options */}
-          <div className="bg-gradient-to-br from-[#1E3A8A] via-[#0c1020] to-[#9A7D2C] border-2 border-[#9A7D2C] rounded-3xl p-6 space-y-4 text-white shadow-xl[0_0_50px_rgba(255,255,255,0.2)] transition-all duration-500 relative overflow-hidden group">
+          <div className="bg-gradient-to-br from-[#1E3A8A] via-[#0c1020] to-[#9A7D2C] border-2 border-[#9A7D2C] rounded-3xl p-6 space-y-4 text-white shadow-xl transition-all duration-500 relative overflow-hidden group">
             <div className="absolute inset-0 bg-yellow-500/10 opacity-0 transition-opacity pointer-events-none"></div>
             <div className="flex items-center gap-2 relative z-10">
-              <Sparkles className="w-5 h-5 text-yellow-300 drop-shadow-[0_0_8px_rgba(253,224,71,0.8)]" />
-              <h2 className="text-xs font-black text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]">مزامنة التقويم السحابي للأعمال</h2>
+              <Sparkles className="w-5 h-5 text-yellow-300" />
+              <h2 className="text-xs font-black text-[#FFFFFF]">مزامنة التقويم السحابي للأعمال</h2>
             </div>
             
-            <p className="text-xs text-yellow-100 leading-relaxed font-bold drop-shadow-[0_0_5px_rgba(253,224,71,0.4)] relative z-10">
+            <p className="text-xs text-[#FFFFFF] leading-relaxed font-bold relative z-10">
               قم بربط أجندتك الأسبوعية ببرامج الإنتاجية لمزامنة مهامك وجلسات التقاضي تلقائياً مع خوادم مايكروسوفت وجوجل.
             </p>
 
@@ -798,8 +799,8 @@ export default function CalendarModule({ cases, hearings, tasks, invoices = [], 
                 <div className="flex items-center gap-2 text-right">
                   <span className="text-sm">🌐</span>
                   <div>
-                    <span className="text-xs font-bold text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.8)] block">Google Calendar</span>
-                    <span className="text-[11px] text-yellow-100/70 block">مزامنة تلقائية للجلسات والمهام</span>
+                    <span className="text-xs font-bold text-[#FFFFFF] block">Google Calendar</span>
+                    <span className="text-[11px] text-[#FFFFFF]/70 block">مزامنة تلقائية للجلسات والمهام</span>
                   </div>
                 </div>
                 <label className="relative inline-flex items-center cursor-pointer">
@@ -821,8 +822,8 @@ export default function CalendarModule({ cases, hearings, tasks, invoices = [], 
                 <div className="flex items-center gap-2 text-right">
                   <span className="text-sm">📧</span>
                   <div>
-                    <span className="text-xs font-bold text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.8)] block">Outlook Calendar</span>
-                    <span className="text-[11px] text-yellow-100/70 block">التنسيقات المبرمة مع مكاتب مايكروسوفت</span>
+                    <span className="text-xs font-bold text-[#FFFFFF] block">Outlook Calendar</span>
+                    <span className="text-[11px] text-[#FFFFFF]/70 block">التنسيقات المبرمة مع مكاتب مايكروسوفت</span>
                   </div>
                 </div>
                 <label className="relative inline-flex items-center cursor-pointer">
@@ -843,7 +844,7 @@ export default function CalendarModule({ cases, hearings, tasks, invoices = [], 
             <button
               onClick={handleSyncNow}
               disabled={isSyncing}
-              className="w-full bg-[#0c1a35][#122b57] text-white border border-yellow-500 py-2 px-4 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2"
+              className="w-full bg-[#0c1a35] text-white border border-yellow-500 py-2 px-4 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2"
             >
               <RefreshCw className={`w-4 h-4 ${isSyncing ? 'animate-spin' : ''}`} />
               <span>{isSyncing ? 'جاري الاتصال والرفع...' : 'البدء بالمزامنة السحابية الفورية ☁️'}</span>
@@ -864,11 +865,11 @@ export default function CalendarModule({ cases, hearings, tasks, invoices = [], 
           <div className="bg-slate-50 border-2 border-slate-200 rounded-2xl p-6 space-y-6 text-slate-900 shadow-2xl relative overflow-hidden">
             <div className="absolute top-0 left-0 w-1 h-full bg-amber-500"></div>
             <div className="flex items-center gap-3 border-b border-slate-200 pb-4">
-              <Sparkles className="w-5 h-5 text-amber-600 animate-pulse" />
+              <Sparkles className="w-5 h-5 text-amber-400 font-black animate-pulse" />
               <h2 className="text-sm font-black text-slate-900 uppercase tracking-tight">إضافة التزام قضائي وفحص التعارض الفوري</h2>
             </div>
             
-            <p className="text-xs text-slate-600 leading-relaxed mb-2 font-bold">
+            <p className="text-xs text-slate-200 font-bold leading-relaxed mb-2 font-bold">
               قم بإدخال تفاصيل الجلسة القضائية أو المهمة الإدارية لتحليل ملاءمة الأوقات وتفادي الغياب أو التداخل بالدائرة.
             </p>
 
@@ -881,7 +882,7 @@ export default function CalendarModule({ cases, hearings, tasks, invoices = [], 
                   className={`py-2 rounded-lg text-xs font-black transition-all ${
                     newCommType === "hearing" 
                       ? "bg-amber-500 text-white shadow-md scale-100" 
-                      : "text-slate-600 hover:bg-slate-200"
+                      : "text-slate-200 font-bold hover:bg-slate-200"
                   } `}
                 >
                   ⚖️ جلسة قضائية
@@ -892,7 +893,7 @@ export default function CalendarModule({ cases, hearings, tasks, invoices = [], 
                   className={`py-2 rounded-lg text-xs font-black transition-all ${
                     newCommType === "obligation" 
                       ? "bg-amber-500 text-white shadow-md scale-100" 
-                      : "text-slate-600 hover:bg-slate-200"
+                      : "text-slate-200 font-bold hover:bg-slate-200"
                   } `}
                 >
                   📌 التزام / مهمة
@@ -1012,9 +1013,9 @@ export default function CalendarModule({ cases, hearings, tasks, invoices = [], 
             </form>
           </div>
 
-          <div className="bg-gradient-to-r from-[#9A7D2C] to-[#1E3A8A] border-2 border-[#9A7D2C] rounded-2xl p-5 space-y-3 text-white shadow-lg">
-            <h3 className="text-xs text-yellow-300 font-extrabold">💡 دليل الاستخدام الذكي للأجندة</h3>
-            <p className="text-xs text-white leading-relaxed font-sans text-justify font-bold">
+          <div className="bg-gradient-to-r from-[#9B7C1E] to-[#1B365D] border-2 border-yellow-500/50 rounded-2xl p-5 space-y-3 shadow-lg">
+            <h3 className="text-sm font-black flex items-center gap-1" style={{ color: '#FACC15', textShadow: 'none' }}>🛡️ دليل الاستخدام الذكي للأجندة</h3>
+            <p className="text-xs leading-relaxed font-sans text-justify font-extrabold" style={{ color: '#FFFFFF', textShadow: 'none' }}>
               تُنظم هذه الأجندة الجلسات بشكل ثنائي (Bi-directional)، حيث يتلقى النظام سجلات ناجز عبر كود ويب هوك، ويقوم بجدولتها محلياً لتفادي غرامات تخلّف حضور الجلسات وتأخير ميعاد الدفعات القانونية.
             </p>
           </div>

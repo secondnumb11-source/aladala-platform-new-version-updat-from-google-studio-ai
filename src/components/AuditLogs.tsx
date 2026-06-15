@@ -158,14 +158,14 @@ export default function AuditLogs() {
               <span className="text-[10px] bg-yellow-400/20 text-yellow-300 font-extrabold px-3 py-1 rounded-full border border-yellow-400/30 uppercase tracking-widest">
                 صلاحية المدير العام
               </span>
-              <span className="text-[10px] bg-slate-800 text-slate-300 font-bold px-3 py-1 rounded-full border border-slate-700">
+              <span className="text-[10px] bg-slate-800 text-white font-bold font-bold px-3 py-1 rounded-full border border-slate-700">
                 حوكمة تشغيلية أمنية
               </span>
             </div>
             <h1 className="text-2xl md:text-3.5xl font-black text-white tracking-tight leading-tight animate-fade-in">
               سجل التدقيق والمراقبة الأمنية (System Logs & Audit)
             </h1>
-            <p className="text-slate-300 max-w-2xl text-xs md:text-sm font-medium leading-relaxed">
+            <p className="text-white font-bold max-w-2xl text-xs md:text-sm font-medium leading-relaxed">
               مرصد الحماية وتتبع سجل النظام وحركته التشغيلية. يعكس السجل بصورة فورية وتلقائية كافة العمليات المطبقة والنفاذ لبوابة الموظفين والعملاء.
             </p>
           </div>
@@ -188,23 +188,23 @@ export default function AuditLogs() {
         <div className="bg-white border border-slate-200/80 p-6 rounded-2xl relative overflow-hidden shadow-xs hover:border-slate-300 transition-all flex flex-col justify-between">
           <div className="flex justify-between items-start mb-4">
             <div className="space-y-1">
-              <span className="text-[10px] text-slate-500 font-black uppercase tracking-wider block">إجمالي طلبات النظام</span>
-              <h4 className="text-xs text-slate-400 font-bold">API Transactions Logs</h4>
+              <span className="text-[10px] text-slate-700 font-black uppercase tracking-wider block">إجمالي طلبات النظام</span>
+              <h4 className="text-xs text-slate-200 font-bold font-bold">API Transactions Logs</h4>
             </div>
             <div className="p-2.5 bg-slate-50 border border-slate-100 text-slate-800 rounded-xl">
-              <Terminal className="w-5 h-5 text-slate-600" />
+              <Terminal className="w-5 h-5 text-slate-200 font-bold" />
             </div>
           </div>
           <div className="text-3xl font-black text-slate-900 font-mono tracking-tight">{logs.length}</div>
-          <p className="text-[10px] text-slate-500 font-bold mt-2 pt-2 border-t border-slate-100">كامل المدخلات ومحاولات التحصيل المرصودة</p>
+          <p className="text-[10px] text-slate-700 font-bold mt-2 pt-2 border-t border-slate-100">كامل المدخلات ومحاولات التحصيل المرصودة</p>
         </div>
 
         {/* Card 2 */}
         <div className="bg-white border border-slate-200/80 p-6 rounded-2xl relative overflow-hidden shadow-xs hover:border-slate-300 transition-all flex flex-col justify-between">
           <div className="flex justify-between items-start mb-4">
             <div className="space-y-1">
-              <span className="text-[10px] text-slate-500 font-black uppercase tracking-wider block">التعديل ومنشئ السجلات</span>
-              <h4 className="text-xs text-slate-400 font-bold">Control & Modifications</h4>
+              <span className="text-[10px] text-slate-700 font-black uppercase tracking-wider block">التعديل ومنشئ السجلات</span>
+              <h4 className="text-xs text-slate-200 font-bold font-bold">Control & Modifications</h4>
             </div>
             <div className="p-2.5 bg-emerald-50 border border-emerald-100 text-emerald-800 rounded-xl">
               <Activity className="w-5 h-5 text-emerald-600" />
@@ -213,22 +213,22 @@ export default function AuditLogs() {
           <div className="text-3xl font-black text-emerald-600 font-mono tracking-tight">
             {logs.filter(l => l.is_modification).length}
           </div>
-          <p className="text-[10px] text-slate-500 font-bold mt-2 pt-2 border-t border-slate-100 font-sans">عمليات الإضافة، تعديل أو حذف السجلات</p>
+          <p className="text-[10px] text-slate-700 font-bold mt-2 pt-2 border-t border-slate-100 font-sans">عمليات الإضافة، تعديل أو حذف السجلات</p>
         </div>
 
         {/* Card 3 */}
         <div className="bg-white border border-slate-200/80 p-6 rounded-2xl relative overflow-hidden shadow-xs hover:border-slate-300 transition-all flex flex-col justify-between">
           <div className="flex justify-between items-start mb-4">
             <div className="space-y-1">
-              <span className="text-[10px] text-slate-500 font-black uppercase tracking-wider block">أمان وسلامة الإخطارات</span>
-              <h4 className="text-xs text-slate-400 font-bold">Security Authenticity</h4>
+              <span className="text-[10px] text-slate-700 font-black uppercase tracking-wider block">أمان وسلامة الإخطارات</span>
+              <h4 className="text-xs text-slate-200 font-bold font-bold">Security Authenticity</h4>
             </div>
             <div className="p-2.5 bg-blue-50 border border-blue-100 text-blue-900 rounded-xl">
               <Lock className="w-5 h-5 text-blue-600" />
             </div>
           </div>
           <div className="text-3xl font-black text-blue-900 font-mono tracking-tight">100%</div>
-          <p className="text-[10px] text-slate-500 font-bold mt-2 pt-2 border-t border-slate-100">برشام تشفير الجلسات والإخطار التلقائي</p>
+          <p className="text-[10px] text-slate-700 font-bold mt-2 pt-2 border-t border-slate-100">برشام تشفير الجلسات والإخطار التلقائي</p>
         </div>
 
         {/* Card 4 - Backup Action integrated perfectly */}
@@ -236,8 +236,8 @@ export default function AuditLogs() {
           <div>
             <div className="flex justify-between items-start mb-4">
               <div className="space-y-1">
-                <span className="text-[10px] text-slate-500 font-black uppercase tracking-wider block">نسخ احتياطي فوري</span>
-                <h4 className="text-xs text-slate-400 font-bold">Encrypted Backup Cloud</h4>
+                <span className="text-[10px] text-slate-700 font-black uppercase tracking-wider block">نسخ احتياطي فوري</span>
+                <h4 className="text-xs text-slate-200 font-bold font-bold">Encrypted Backup Cloud</h4>
               </div>
               <div className="p-2.5 bg-purple-50 border border-purple-100 text-purple-900 rounded-xl">
                 <Database className="w-5 h-5 text-purple-600" />
@@ -246,7 +246,7 @@ export default function AuditLogs() {
             <div className="text-xl font-black text-slate-900 font-mono">
               {backups.length > 0 ? backups[0].databaseSize : 'قيد الانتظار'}
             </div>
-            <p className="text-[10px] text-slate-500 font-bold truncate mt-1">آخر تجميد سحابي: {backups.length > 0 ? new Date(backups[0].timestamp).toLocaleDateString('ar-SA') : 'معلق'}</p>
+            <p className="text-[10px] text-slate-700 font-bold truncate mt-1">آخر تجميد سحابي: {backups.length > 0 ? new Date(backups[0].timestamp).toLocaleDateString('ar-SA') : 'معلق'}</p>
           </div>
           
           <button
@@ -269,7 +269,7 @@ export default function AuditLogs() {
             </div>
             <div>
               <h2 className="text-lg font-black text-slate-900">سجل عمليات جدولة النسخ الاحتياطي السحابي</h2>
-              <p className="text-xs text-slate-500 font-bold mt-0.5">تفاصيل ومطابقة الكتل السحابية المؤرشفة تلقائياً (Automated backups)</p>
+              <p className="text-xs text-slate-700 font-bold mt-0.5">تفاصيل ومطابقة الكتل السحابية المؤرشفة تلقائياً (Automated backups)</p>
             </div>
           </div>
           <span className="text-[10px] text-blue-800 bg-blue-100/50 border border-blue-200/50 px-4 py-1.5 font-black rounded-full">
@@ -278,7 +278,7 @@ export default function AuditLogs() {
         </div>
         
         {backups.length === 0 ? (
-          <div className="text-center py-10 text-xs font-bold text-slate-400 bg-slate-50 rounded-2xl border border-slate-100">
+          <div className="text-center py-10 text-xs font-bold text-slate-200 font-bold bg-slate-50 rounded-2xl border border-slate-100">
             لا تتوفر أي سجلات للنسخ الاحتياطي حالياً.
           </div>
         ) : (
@@ -286,29 +286,29 @@ export default function AuditLogs() {
             {backups.slice(0, 3).map((bk, idx) => (
               <div key={bk.id || idx} className="bg-slate-50 border border-slate-200 p-5 rounded-2xl space-y-3.5 hover:border-slate-300 transition-all flex flex-col justify-between">
                 <div className="flex justify-between items-center">
-                  <span className="text-[9px] bg-emerald-50 border border-emerald-250/50 text-emerald-800 font-black px-2.5 py-1 rounded-full uppercase tracking-wider">
+                  <span className="text-[11px] bg-emerald-50 border border-emerald-250/50 text-emerald-800 font-black px-2.5 py-1 rounded-full uppercase tracking-wider">
                     اكتمل بنجاح
                   </span>
-                  <span className="text-[10px] text-slate-500 font-mono font-black flex items-center gap-1">
-                    <Clock className="w-3 h-3 text-slate-400" />
+                  <span className="text-[10px] text-slate-700 font-mono font-black flex items-center gap-1">
+                    <Clock className="w-3 h-3 text-slate-200 font-bold" />
                     {new Date(bk.timestamp).toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' })}
                   </span>
                 </div>
                 <div>
-                  <span className="text-[9px] text-slate-400 block font-bold uppercase tracking-wider mb-0.5">رمز الكتلة السحابية الآمنة</span>
+                  <span className="text-[11px] text-slate-200 font-bold block font-bold uppercase tracking-wider mb-0.5">رمز الكتلة السحابية الآمنة</span>
                   <strong className="text-slate-900 font-mono text-xs font-black block truncate">{bk.id}</strong>
                 </div>
                 <div className="grid grid-cols-2 gap-4 text-xs pt-3 border-t border-slate-100">
                   <div>
-                    <span className="text-[9px] text-slate-400 block font-bold uppercase tracking-wider mb-0.5">حجم البيانات</span>
+                    <span className="text-[11px] text-slate-200 font-bold block font-bold uppercase tracking-wider mb-0.5">حجم البيانات</span>
                     <strong className="text-slate-900 font-black">{bk.databaseSize}</strong>
                   </div>
                   <div>
-                    <span className="text-[9px] text-slate-400 block font-bold uppercase tracking-wider mb-0.5">جداول مفحوصة</span>
+                    <span className="text-[11px] text-slate-200 font-bold block font-bold uppercase tracking-wider mb-0.5">جداول مفحوصة</span>
                     <strong className="text-slate-900 font-black">{bk.tablesCount} جدول</strong>
                   </div>
                 </div>
-                <div className="text-[10px] text-slate-600 pt-3 flex justify-between items-center bg-slate-200/40 p-3 rounded-xl">
+                <div className="text-[10px] text-slate-200 font-bold pt-3 flex justify-between items-center bg-slate-200/40 p-3 rounded-xl">
                   <span>المستودع: <span className="font-extrabold text-slate-900">{bk.destination}</span></span>
                   <span>المنفذ: <span className="font-extrabold text-slate-900">{bk.triggeredBy}</span></span>
                 </div>
@@ -353,13 +353,13 @@ export default function AuditLogs() {
           </div>
 
           <div className="relative w-full md:w-80 group">
-            <Search className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-slate-900 transition-colors" />
+            <Search className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-200 font-bold group-focus-within:text-slate-900 transition-colors" />
             <input
               type="text"
               placeholder="البحث العميق في سجلات الجلسات..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-white text-slate-900 text-xs pr-11 pl-4 py-3.5 rounded-xl border border-slate-200 focus:border-slate-800 transition-all font-bold placeholder:text-slate-400 outline-none"
+              className="w-full bg-white text-slate-900 text-xs pr-11 pl-4 py-3.5 rounded-xl border border-slate-200 focus:border-slate-800 transition-all font-bold placeholder:text-slate-200 font-bold outline-none"
             />
           </div>
         </div>
@@ -368,14 +368,14 @@ export default function AuditLogs() {
         {loading ? (
           <div className="p-20 text-center space-y-4">
             <RefreshCw className="w-10 h-10 text-slate-900 animate-spin mx-auto" />
-            <div className="text-xs text-slate-500 font-black tracking-widest uppercase">جاري استيراد وتحديث منصة الحوكمة...</div>
+            <div className="text-xs text-slate-700 font-black tracking-widest uppercase">جاري استيراد وتحديث منصة الحوكمة...</div>
           </div>
         ) : filteredLogs.length === 0 ? (
           <div className="p-20 text-center space-y-5">
-            <div className="w-16 h-16 bg-slate-50 border border-slate-100 rounded-2xl flex items-center justify-center mx-auto text-slate-400">
-              <ShieldAlert className="w-8 h-8 text-slate-400" />
+            <div className="w-16 h-16 bg-slate-50 border border-slate-100 rounded-2xl flex items-center justify-center mx-auto text-slate-200 font-bold">
+              <ShieldAlert className="w-8 h-8 text-slate-200 font-bold" />
             </div>
-            <div className="text-xs font-black text-slate-500">لا توجد أي سجلات أمنية مطابقة لمعايير التصفية الحالية.</div>
+            <div className="text-xs font-black text-slate-700">لا توجد أي سجلات أمنية مطابقة لمعايير التصفية الحالية.</div>
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -407,7 +407,7 @@ export default function AuditLogs() {
                             {log.method}
                           </span>
                         </td>
-                        <td className="py-4 px-6 text-slate-500 text-xs font-mono whitespace-nowrap">
+                        <td className="py-4 px-6 text-slate-700 text-xs font-mono whitespace-nowrap">
                           {new Date(log.timestamp).toLocaleTimeString('ar-SA')}
                         </td>
                         <td className="py-4 px-6 font-mono text-slate-700 text-xs truncate max-w-[240px]">
@@ -423,7 +423,7 @@ export default function AuditLogs() {
                               {isExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
                             </button>
                           ) : (
-                            <span className="text-slate-400 text-[10px] uppercase tracking-widest pl-4">بدون محتوى</span>
+                            <span className="text-slate-200 font-bold text-[10px] uppercase tracking-widest pl-4">بدون محتوى</span>
                           )}
                         </td>
                       </tr>
@@ -434,7 +434,7 @@ export default function AuditLogs() {
                                   <div className="bg-slate-950 border border-slate-800 rounded-2xl p-6 shadow-md relative overflow-hidden">
                                      <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/5 rounded-bl-full pointer-events-none" />
                                      <div className="relative z-10 flex justify-between items-center mb-4">
-                                       <span className="text-[10px] font-mono font-bold text-slate-500 tracking-wider flex items-center gap-1">
+                                       <span className="text-[10px] font-mono font-bold text-slate-700 tracking-wider flex items-center gap-1">
                                          <Terminal className="w-3.5 h-3.5 text-emerald-400" /> SYSTEM_METADATA_SNAPSHOT
                                        </span>
                                        <span className="w-2 h-2 rounded-full bg-blue-500" />
@@ -456,7 +456,7 @@ export default function AuditLogs() {
         )}
 
         {/* Table footer info */}
-        <div className="p-6 bg-slate-50 flex flex-col sm:flex-row items-center justify-between text-[10px] font-black tracking-widest border-t border-slate-200 text-slate-500 gap-3">
+        <div className="p-6 bg-slate-50 flex flex-col sm:flex-row items-center justify-between text-[10px] font-black tracking-widest border-t border-slate-200 text-slate-700 gap-3">
           <span>{new Date().toISOString().split('T')[0]} - المراقبة التقنية نشطة ويتم تدوين العمليات فورياً لمطابقة المعايير العامة</span>
           <span className="font-mono text-slate-700 uppercase bg-slate-200/60 px-3 py-1.5 rounded-md">SYS_LOGS: {logs.length} SECURE RECORDS</span>
         </div>

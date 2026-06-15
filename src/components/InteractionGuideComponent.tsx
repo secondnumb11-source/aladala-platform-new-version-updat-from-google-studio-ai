@@ -70,7 +70,7 @@ export default function InteractionGuideComponent({ onResetLayout }: Interaction
                 {steps[step].icon}
               </div>
               <h3 className="text-lg font-black text-slate-900">{steps[step].title}</h3>
-              <p className="text-xs text-slate-500 font-bold leading-relaxed">{steps[step].description}</p>
+              <p className="text-xs text-slate-700 font-bold leading-relaxed">{steps[step].description}</p>
             </motion.div>
           </AnimatePresence>
 

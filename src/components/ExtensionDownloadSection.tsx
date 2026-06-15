@@ -739,7 +739,7 @@ setInterval(() => {
         </div>
         <button
           onClick={handleCopyKey}
-          className="bg-[#07132c] border border-[#ca8a04]/45 text-slate-200 text-xs px-4 py-2.5 rounded-lg flex items-center gap-2 transition-all cursor-pointer font-bold justify-center w-full md:w-auto active:scale-95"
+          className="bg-[#07132c] border border-[#ca8a04]/45 text-white font-bold text-xs px-4 py-2.5 rounded-lg flex items-center gap-2 transition-all cursor-pointer font-bold justify-center w-full md:w-auto active:scale-95"
         >
           <ClipboardCheck className="w-4 h-4 text-[#ca8a04]" />
           <span>{copied ? "تم النسخ بنجاح!" : "نسخ رمز الربط"}</span>
@@ -814,7 +814,7 @@ setInterval(() => {
                       <span className="text-slate-900">بصمة التحقق الرقمي الخاصة بـ Najiz Scraper (SHA-256):</span>
                       <span className="text-[10px] text-emerald-400 bg-emerald-500 px-1.5 py-0.5 rounded font-bold">حزمة مطابقة ومعتمدة</span>
                     </div>
-                    <div className="bg-sky-50 p-2 rounded text-slate-900 font-mono text-[9px] break-all border border-slate-800 leading-normal select-all">
+                    <div className="bg-sky-50 p-2 rounded text-slate-900 font-mono text-[11px] break-all border border-slate-800 leading-normal select-all">
                       {checksum}
                     </div>
                   </div>
@@ -915,7 +915,7 @@ setInterval(() => {
               <div className="space-y-1">
                 <div className="flex items-center gap-2">
                   <FileCode className="w-4 h-4 text-amber-500" />
-                  <span className="text-sm font-mono font-bold text-slate-200">{selectedFile}</span>
+                  <span className="text-sm font-mono font-bold text-white font-bold">{selectedFile}</span>
                 </div>
                 <span className="text-sm text-slate-900  block">
                   {extensionFiles.find(e => e.name === selectedFile)?.desc}
@@ -927,7 +927,7 @@ setInterval(() => {
                 <button
                   onClick={() => handleCopyFileContent(selectedFile)}
                   disabled={selectedFile === "icon.png"}
-                  className="bg-sky-50 border border-slate-700 text-slate-200 text-sm font-bold px-3 py-2 rounded-md flex items-center justify-center gap-1.5 transition-all cursor-pointer w-full sm:w-auto disabled:opacity-50"
+                  className="bg-sky-50 border border-slate-700 text-white font-bold text-sm font-bold px-3 py-2 rounded-md flex items-center justify-center gap-1.5 transition-all cursor-pointer w-full sm:w-auto disabled:opacity-50"
                   title="نسخ محتوى هذا الملف النصي بالكامل"
                 >
                   {copiedFile ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
@@ -946,7 +946,7 @@ setInterval(() => {
             </div>
 
             {/* Code editor preview box */}
-            <div className="bg-[#071d37]/45 border border-slate-800 rounded-lg p-4 font-mono text-sm text-slate-200 overflow-x-auto overflow-y-auto max-h-72 h-72 relative shadow-inner">
+            <div className="bg-[#071d37]/45 border border-slate-800 rounded-lg p-4 font-mono text-sm text-white font-bold overflow-x-auto overflow-y-auto max-h-72 h-72 relative shadow-inner">
               {selectedFile === "icon.png" ? (
                 <div className="flex flex-col items-center justify-center h-full space-y-4">
                   <div className="w-16 h-16 bg-[#07132c] border-2 border-amber-500 rounded-lg flex items-center justify-center text-4xl shadow-gold shadow">
@@ -1027,7 +1027,7 @@ setInterval(() => {
               <div className="bg-sky-50 border border-slate-800 rounded-xl p-4 flex flex-col space-y-2">
                 <div className="flex items-center gap-2">
                   <span className="w-6 h-6 rounded-full bg-amber-500 text-amber-500 font-extrabold flex items-center justify-center text-xs">1</span>
-                  <h4 className="text-xs font-bold text-slate-200">التحميل لمكان معروف</h4>
+                  <h4 className="text-xs font-bold text-white font-bold">التحميل لمكان معروف</h4>
                 </div>
                 <p className="text-[11px] text-[#cbd5e1] leading-relaxed">
                   احفظ ملف الـ <code className="text-amber-500 font-bold">.zip</code> الذي تم التحقق منه مسبقاً في مجلد ثابت على جهازك مثل <strong>سطح المكتب (Desktop)</strong> أو مجلد <strong>المستندات (Documents)</strong>.
@@ -1038,7 +1038,7 @@ setInterval(() => {
                 <div className="absolute top-0 left-0 bg-amber-500 text-amber-500 text-[10px] px-2 py-0.5 rounded-br font-black uppercase">خطوة حاسمة</div>
                 <div className="flex items-center gap-2">
                   <span className="w-6 h-6 rounded-full bg-amber-500 text-amber-500 font-extrabold flex items-center justify-center text-xs">2</span>
-                  <h4 className="text-xs font-bold text-slate-200">الاستخراج (نقرة يمين)</h4>
+                  <h4 className="text-xs font-bold text-white font-bold">الاستخراج (نقرة يمين)</h4>
                 </div>
                 <p className="text-[11px] text-[#cbd5e1] leading-relaxed">
                   انقر بزر الماوس الأيمن على الملف المضغوط واختر <strong>"استخراج الكل..." (Extract All...)</strong>، تأكد من تعليم خيار "عرض الملفات المستخرجة عند الاكتمال".
@@ -1048,7 +1048,7 @@ setInterval(() => {
               <div className="bg-sky-50 border border-slate-800 rounded-xl p-4 flex flex-col space-y-2">
                 <div className="flex items-center gap-2">
                   <span className="w-6 h-6 rounded-full bg-amber-500 text-amber-500 font-extrabold flex items-center justify-center text-xs">3</span>
-                  <h4 className="text-xs font-bold text-slate-200">التحقق من الهيكلية</h4>
+                  <h4 className="text-xs font-bold text-white font-bold">التحقق من الهيكلية</h4>
                 </div>
                 <p className="text-[11px] text-[#cbd5e1] leading-relaxed">
                   افتح المجلد المستخرج الجديد باسم <strong className="text-slate-100 font-mono">AlAdalah-Najiz-Sync-Extension</strong>، وتأكد أنك ترى أمامك ملف <code className="text-slate-900 font-mono">manifest.json</code> مباشرة.
@@ -1072,7 +1072,7 @@ setInterval(() => {
               <div className="bg-sky-50 border border-slate-800 rounded-xl p-4 flex flex-col space-y-2">
                 <div className="flex items-center gap-2">
                   <span className="w-6 h-6 rounded-full bg-amber-500 text-amber-500 font-extrabold flex items-center justify-center text-xs">1</span>
-                  <h4 className="text-xs font-bold text-slate-200">حفظ الملف في المجلد الآمن</h4>
+                  <h4 className="text-xs font-bold text-white font-bold">حفظ الملف في المجلد الآمن</h4>
                 </div>
                 <p className="text-[11px] text-[#cbd5e1] leading-relaxed">
                   قم بتحميل الملف وحفظه داخل قرصك الصلب الأساسي. ينصح بتجنب مجلدات نظام Mac السحابية المشتركة مثل iCloud Drive أثناء تثبيت الإضافات لتفادي بطء التحديث.
@@ -1083,7 +1083,7 @@ setInterval(() => {
                 <div className="absolute top-0 left-0 bg-amber-500 text-amber-500 text-[10px] px-2 py-0.5 rounded-br font-black">أداة Finder الرسمية</div>
                 <div className="flex items-center gap-2">
                   <span className="w-6 h-6 rounded-full bg-amber-500 text-amber-500 font-extrabold flex items-center justify-center text-xs">2</span>
-                  <h4 className="text-xs font-bold text-slate-200">النقر المزدوج البسيط</h4>
+                  <h4 className="text-xs font-bold text-white font-bold">النقر المزدوج البسيط</h4>
                 </div>
                 <p className="text-[11px] text-[#cbd5e1] leading-relaxed">
                   انقر نقراً مزدوجاً بالـ Mac على ملف الـ ZIP. ستقوم أداة <strong>Archive Utility</strong> فوراً بإنشاء مجلد فك ضغط متطابق ومستقر وسليم %100 تلقائياً.
@@ -1093,7 +1093,7 @@ setInterval(() => {
               <div className="bg-sky-50 border border-slate-800 rounded-xl p-4 flex flex-col space-y-2">
                 <div className="flex items-center gap-2">
                   <span className="w-6 h-6 rounded-full bg-amber-500 text-amber-500 font-extrabold flex items-center justify-center text-xs">3</span>
-                  <h4 className="text-xs font-bold text-slate-200">التحقق من المحتويات</h4>
+                  <h4 className="text-xs font-bold text-white font-bold">التحقق من المحتويات</h4>
                 </div>
                 <p className="text-[11px] text-[#cbd5e1] leading-relaxed">
                   تحقق من وجود المجلد المفرد، وافتحه للتأكد من وجود الملفات البرمجية السبعة وخصوصاً ملف <code className="text-slate-900 font-mono">manifest.json</code> في الواجهة.
@@ -1115,7 +1115,7 @@ setInterval(() => {
           
           <div className="bg-[#0f172a]/70 border border-slate-800 rounded-xl p-4 flex flex-col space-y-2">
             <span className="w-8 h-8 rounded-full bg-amber-500 border border-amber-500 text-amber-500 font-black flex items-center justify-center text-xs">1</span>
-            <h4 className="text-xs font-bold text-slate-200">فك ضغط الإضافة</h4>
+            <h4 className="text-xs font-bold text-white font-bold">فك ضغط الإضافة</h4>
             <p className="text-[10.5px] text-slate-900  leading-relaxed">
               استخرج الأرشيف المضغوط الذي تم التحقق مسبقاً من سلامة الـ Checksum الخاص به للحصول على المجلد النهائي غير المعبأ.
             </p>
@@ -1123,7 +1123,7 @@ setInterval(() => {
 
           <div className="bg-[#0f172a]/70 border border-slate-800 rounded-xl p-4 flex flex-col space-y-2">
             <span className="w-8 h-8 rounded-full bg-amber-500 border border-amber-500 text-amber-500 font-black flex items-center justify-center text-xs">2</span>
-            <h4 className="text-xs font-bold text-slate-200">تفعيل وضع المطور</h4>
+            <h4 className="text-xs font-bold text-white font-bold">تفعيل وضع المطور</h4>
             <p className="text-[10.5px] text-slate-900  leading-relaxed">
               اذهب إلى صفحة الإضافات في متصفحك عبر كتابة الرابط التالي: <span className="text-[#ca8a04] font-mono select-all font-bold block bg-sky-50 px-1 py-1 rounded text-center mt-1">chrome://extensions</span> وقم بتفعيل <strong>وضع المطور (Developer Mode)</strong> من أعلى اليسار.
             </p>
@@ -1131,7 +1131,7 @@ setInterval(() => {
 
           <div className="bg-[#0f172a]/70 border border-slate-800 rounded-xl p-4 flex flex-col space-y-2">
             <span className="w-8 h-8 rounded-full bg-amber-500 border border-amber-500 text-amber-500 font-black flex items-center justify-center text-xs">3</span>
-            <h4 className="text-xs font-bold text-slate-200">تحميل حزمة مفرودة</h4>
+            <h4 className="text-xs font-bold text-white font-bold">تحميل حزمة مفرودة</h4>
             <p className="text-[10.5px] text-slate-900  leading-relaxed">
               اضغط على زر <strong>"تحميل حزمة مفرودة" (Load Unpacked)</strong> الذي سيظهر في الشريط العلوي الأيمن للإقرار ببدء تثبيت الحزمة الفردية.
             </p>
@@ -1139,9 +1139,9 @@ setInterval(() => {
 
           <div className="bg-[#0f172a]/70 border border-slate-800 rounded-xl p-4 flex flex-col space-y-2">
             <span className="w-8 h-8 rounded-full bg-amber-500 border border-amber-500 text-amber-500 font-black flex items-center justify-center text-xs">4</span>
-            <h4 className="text-xs font-bold text-slate-200">اختيار المجلد والبدء</h4>
+            <h4 className="text-xs font-bold text-white font-bold">اختيار المجلد والبدء</h4>
             <p className="text-[10.5px] text-slate-900  leading-relaxed">
-              اختر المجلد المستخرج <strong className="text-slate-200 font-mono">AlAdalah-Najiz-Sync-Extension</strong>. ستظهر أداة "العدالة" فوراً لترافقك في تصفح ومزامنة ناجز بذكاء الـ AI!
+              اختر المجلد المستخرج <strong className="text-white font-bold font-mono">AlAdalah-Najiz-Sync-Extension</strong>. ستظهر أداة "العدالة" فوراً لترافقك في تصفح ومزامنة ناجز بذكاء الـ AI!
             </p>
           </div>
 

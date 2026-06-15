@@ -112,7 +112,7 @@ export default function AIContractAuditTool() {
   const getSeverityColor = (severity: Finding['severity']) => {
     switch (severity) {
       case 'high': return 'text-rose-500 bg-rose-50 border-rose-200';
-      case 'medium': return 'text-amber-600 bg-amber-50 border-amber-200';
+      case 'medium': return 'text-amber-400 font-black bg-amber-50 border-amber-200';
       case 'low': return 'text-sky-600 bg-sky-50 border-sky-200';
     }
   };
@@ -125,14 +125,14 @@ export default function AIContractAuditTool() {
         <div className="bg-slate-900 border border-slate-800 p-1.5 rounded-2xl flex items-center gap-1 shadow-2xl">
           <button 
             onClick={() => setActiveTab('drafting')}
-            className={`px-8 py-3 rounded-xl text-xs font-black transition-all flex items-center gap-2 ${activeTab === 'drafting' ? 'bg-amber-500 text-slate-950 shadow-[0_0_15px_rgba(251,191,36,0.4)]' : 'text-slate-400'}`}
+            className={`px-8 py-3 rounded-xl text-xs font-black transition-all flex items-center gap-2 ${activeTab === 'drafting' ? 'bg-amber-500 text-slate-950 shadow-[0_0_15px_rgba(251,191,36,0.4)]' : 'text-slate-200 font-bold'}`}
           >
             <PenTool className="w-4 h-4" />
             صياغة العقود الذكية
           </button>
           <button 
             onClick={() => setActiveTab('audit')}
-            className={`px-8 py-3 rounded-xl text-xs font-black transition-all flex items-center gap-2 ${activeTab === 'audit' ? 'bg-indigo-500 text-white shadow-[0_0_15px_rgba(99,102,241,0.4)]' : 'text-slate-400'}`}
+            className={`px-8 py-3 rounded-xl text-xs font-black transition-all flex items-center gap-2 ${activeTab === 'audit' ? 'bg-indigo-500 text-white shadow-[0_0_15px_rgba(99,102,241,0.4)]' : 'text-slate-200 font-bold'}`}
           >
             <FileCheck className="w-4 h-4" />
             مدقق العقود (المسح الضوئي)
@@ -150,7 +150,7 @@ export default function AIContractAuditTool() {
                 </div>
                 <div>
                   <h2 className="text-lg font-black text-slate-900">محرك صياغة العقود القانونية</h2>
-                  <p className="text-[11px] text-slate-500 font-bold mt-1">توليد وصياغة جميع أنواع العقود بأسلوب رصين ومطابق للأنظمة السعودية.</p>
+                  <p className="text-[11px] text-slate-700 font-bold mt-1">توليد وصياغة جميع أنواع العقود بأسلوب رصين ومطابق للأنظمة السعودية.</p>
                 </div>
               </div>
 
@@ -172,7 +172,7 @@ export default function AIContractAuditTool() {
                 <div className="space-y-2">
                   <label className="text-[11px] font-black text-slate-900 block flex justify-between items-center">
                     <span>2. إدخال المعطيات والوقائع وشروط الأطراف:</span>
-                    <span className="text-amber-500 bg-amber-50 px-2 py-0.5 rounded text-[9px] border border-amber-200">صياغة سياقية مدعومة بالأنظمة المحدثة</span>
+                    <span className="text-amber-500 bg-amber-50 px-2 py-0.5 rounded text-[11px] border border-amber-200">صياغة سياقية مدعومة بالأنظمة المحدثة</span>
                   </label>
                   <textarea 
                     value={contractFacts}
@@ -227,9 +227,9 @@ export default function AIContractAuditTool() {
                   <button key={i} className="w-full text-right bg-white p-4 rounded-2xl border border-slate-100 shadow-sm transition-all group">
                     <div className="flex justify-between items-start mb-1">
                       <h4 className="text-xs font-black text-slate-900 transition-colors">{tpl.title}</h4>
-                      <span className="text-[9px] bg-slate-100 text-slate-500 px-2 py-0.5 rounded font-black">{tpl.type}</span>
+                      <span className="text-[11px] bg-slate-100 text-slate-700 px-2 py-0.5 rounded font-black">{tpl.type}</span>
                     </div>
-                    <p className="text-[10px] text-slate-400 font-bold">{tpl.desc}</p>
+                    <p className="text-[10px] text-slate-200 font-bold font-bold">{tpl.desc}</p>
                   </button>
                 ))}
               </div>
@@ -255,17 +255,17 @@ export default function AIContractAuditTool() {
                       <span className="w-2 h-2 bg-amber-500 rounded-full animate-bounce delay-300"></span>
                     </div>
                   </div>
-                  <p className="text-xs text-slate-400 font-bold max-w-sm leading-relaxed text-center">
+                  <p className="text-xs text-slate-200 font-bold font-bold max-w-sm leading-relaxed text-center">
                     نقوم الآن باستخراج النصوص باستخدام OCR ومطابقتها مع مكتبة الأنظمة السعودية (نظام العمل، نظام التأمينات الاجتماعية).
                   </p>
                 </div>
               ) : (
                 <>
                   <div className="p-6 bg-white rounded-full shadow-xl mb-6 transition-transform">
-                    <Upload className="w-10 h-10 text-slate-400 transition-colors" />
+                    <Upload className="w-10 h-10 text-slate-200 font-bold transition-colors" />
                   </div>
                   <h3 className="text-lg font-black text-slate-900 mb-2">اسحب عقد العمل هنا (PDF/Image)</h3>
-                  <p className="text-xs text-slate-400 font-bold text-center max-w-xs leading-relaxed">
+                  <p className="text-xs text-slate-200 font-bold font-bold text-center max-w-xs leading-relaxed">
                     سأقوم بمسح الوثيقة ضوئياً والبحث عن البنود التعسفية أو المخالفة للنظام فوراً.
                   </p>
                   <input 
@@ -339,7 +339,7 @@ export default function AIContractAuditTool() {
                     </div>
                     <div>
                       <h4 className="text-white font-black text-sm mb-2">مؤشر الامتثال النظامي</h4>
-                      <p className="text-slate-400 text-[10px] font-bold leading-relaxed">{auditResult.summary}</p>
+                      <p className="text-slate-200 font-bold text-[10px] font-bold leading-relaxed">{auditResult.summary}</p>
                     </div>
                     <button className="w-full bg-white text-slate-950 py-3 rounded-2xl text-xs font-black shadow-lg transition-all">تحميل تقرير التوافق (PDF)</button>
                   </div>

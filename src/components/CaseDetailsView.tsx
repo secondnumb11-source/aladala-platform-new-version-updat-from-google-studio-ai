@@ -350,7 +350,7 @@ export default function CaseDetailsView({
                        </div>
                        <div>
                          <h4 className="text-xs font-black text-slate-800">تحليل الذكاء الاصطناعي (Gemini AI)</h4>
-                         <p className="text-[10px] text-slate-500 font-bold">الحصول على موجز قانوني مركز لنقاط القضية</p>
+                         <p className="text-[10px] text-slate-700 font-bold">الحصول على موجز قانوني مركز لنقاط القضية</p>
                        </div>
                     </div>
                     {(!aiSummary && !isSummarizing) && (
@@ -428,18 +428,18 @@ export default function CaseDetailsView({
                 <div className="mt-4 p-4 area-subtle border border-dashed border-accent/20 rounded-xl space-y-3">
                   <h4 className="text-xs font-extrabold text-accent flex items-center gap-2">
                     <span>⚙️ ربط الحقول التقنية بقاعدة البيانات (table: cases)</span>
-                    <span className="px-1.5 py-0.5 bg-emerald-500 text-emerald-400 text-[8px] rounded border border-emerald-500 font-sans tracking-wide">
+                    <span className="px-1.5 py-0.5 bg-emerald-500 text-emerald-400 text-[10px] rounded border border-emerald-500 font-sans tracking-wide">
                       متزامن مع PostgreSQL
                     </span>
                   </h4>
                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 text-xs font-semibold">
                     <div className="space-y-1">
                       <span className="text-slate-900 block">معرف الجدول (uuid / primary key):</span>
-                      <code className="text-indigo-450  font-mono text-[10px] block truncate" title={item.id}>{item.id}</code>
+                      <code className="text-indigo-400  font-mono text-[10px] block truncate" title={item.id}>{item.id}</code>
                     </div>
                     <div className="space-y-1">
                       <span className="text-slate-900 block">رقم الدعوى بنظام المحكمة (court_case_number):</span>
-                      <code className="text-slate-450 font-mono text-[11px] block">{item.caseNumber || "441029384"}</code>
+                      <code className="text-slate-100 font-bold font-mono text-[11px] block">{item.caseNumber || "441029384"}</code>
                     </div>
                     <div className="space-y-1">
                       <span className="text-slate-900 block">معرف قضية ناجز (najiz_case_id):</span>
@@ -619,7 +619,7 @@ export default function CaseDetailsView({
                     {isNajizConnected ? (
                       <span className="text-xs bg-emerald-50 text-emerald-600 font-black px-2.5 py-1 rounded-full border border-emerald-200 shadow-sm animate-pulse">● متصل بناجز (API نشط)</span>
                     ) : (
-                      <span className="text-xs bg-slate-100 text-slate-500 font-black px-2.5 py-1 rounded-full border border-slate-200">● استخدام محلي (غير متصل بناجز)</span>
+                      <span className="text-xs bg-slate-100 text-slate-700 font-black px-2.5 py-1 rounded-full border border-slate-200">● استخدام محلي (غير متصل بناجز)</span>
                     )}
                   </div>
 
@@ -672,7 +672,7 @@ export default function CaseDetailsView({
                               </div>
                               <div className="bg-warning-bg/10 border border-warning/20 p-2 rounded-xl text-center">
                                 <span className="text-xs text-slate-900  block font-black">الحجز المالي النشط 🏛️</span>
-                                <strong className="text-sm font-mono font-black text-amber-600 block mt-0.5">{reservedNum.toLocaleString()} ر.س</strong>
+                                <strong className="text-sm font-mono font-black text-amber-400 font-black block mt-0.5">{reservedNum.toLocaleString()} ر.س</strong>
                                 <span className="text-xs text-amber-500 font-bold font-sans">({reservedPercent}%)</span>
                               </div>
                               <div className="bg-error-bg/10 border border-[#f43f5e]/20 p-2 rounded-xl text-center">
@@ -768,7 +768,7 @@ export default function CaseDetailsView({
                                 <div className="bg-[#030a1c] border border-slate-800 p-2.5 rounded-xl text-right font-sans relative">
                                   <div className="flex items-center justify-between">
                                     <span className="text-xs text-primary font-black">4. الصرف النهائي</span>
-                                    <span className={isFinished ? "text-emerald-400 text-xs font-bold" : "text-slate-450 text-xs font-bold"}>
+                                    <span className={isFinished ? "text-emerald-400 text-xs font-bold" : "text-slate-100 font-bold text-xs font-bold"}>
                                       {isFinished ? "✓ مكتمل" : "⏳ قيد الانتظار"}
                                     </span>
                                   </div>
@@ -851,11 +851,11 @@ export default function CaseDetailsView({
                               className="w-4 h-4 text-accent accent-accent cursor-pointer rounded border-slate-300 focus:ring-accent ml-2"
                             />
                             <div className="w-full">
-                              <div className={`text-xs font-bold leading-tight ${tk.status === "completed" ? "line-through text-slate-500 opacity-60" : "text-main"}`}>{tk.title}</div>
+                              <div className={`text-xs font-bold leading-tight ${tk.status === "completed" ? "line-through text-slate-700 opacity-60" : "text-main"}`}>{tk.title}</div>
                               <div className="flex items-center justify-between w-full mt-1.5">
                                 <span className={`text-[10px] font-black px-2 py-0.5 rounded-md border ${
                                   tk.priority === 'high' ? 'bg-rose-50 text-rose-600 border-rose-200' :
-                                  tk.priority === 'medium' ? 'bg-amber-50 text-amber-600 border-amber-200' : 'bg-emerald-50 text-emerald-600 border-emerald-200'
+                                  tk.priority === 'medium' ? 'bg-amber-50 text-amber-400 font-black border-amber-200' : 'bg-emerald-50 text-emerald-600 border-emerald-200'
                                 }`}>
                                   {tk.priority === 'high' ? 'أولوية قصوى' : tk.priority === 'medium' ? 'أولوية متوسطة' : 'عادية'}
                                 </span>
@@ -866,7 +866,7 @@ export default function CaseDetailsView({
                           
                           <button
                             onClick={() => onDeleteTask(item.id, tk.id)}
-                            className="text-slate-400 opacity-0 mr-4 p-1.5 rounded-md transition-all cursor-pointer"
+                            className="text-slate-200 font-bold opacity-0 mr-4 p-1.5 rounded-md transition-all cursor-pointer"
                             title="حذف المهمة"
                           >
                             <Trash2 className="w-4 h-4" />
@@ -1441,7 +1441,7 @@ export function HearingTimer({ hearing, caseId, onAddNote }: { hearing: Hearing;
       <div className="flex justify-between items-center">
         <span className="text-[10px] font-black text-slate-800 uppercase tracking-wider">ساعة رصد مدة الجلسات والمرافعات المشفرة ⏱️</span>
         {isLogged && (
-          <span className="bg-emerald-50 text-emerald-800 border border-emerald-200 text-[9px] font-black px-2 py-0.5 rounded-full">
+          <span className="bg-emerald-50 text-emerald-800 border border-emerald-200 text-[11px] font-black px-2 py-0.5 rounded-full">
             ✓ تم تدوين المدة بملف القضية
           </span>
         )}
@@ -1460,7 +1460,7 @@ export function HearingTimer({ hearing, caseId, onAddNote }: { hearing: Hearing;
             onClick={handleStartPause}
             className={`px-2.5 py-1.5 rounded-lg transition-all border font-bold text-[10px] cursor-pointer ${
               isRunning 
-                ? "bg-amber-50 text-amber-700 border-amber-200" 
+                ? "bg-amber-50 text-amber-400 font-black border-amber-200" 
                 : "bg-indigo-50 text-indigo-700 border-indigo-200"
             }`}
           >

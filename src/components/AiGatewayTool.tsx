@@ -63,7 +63,7 @@ export default function AiGatewayTool() {
             </div>
             <h2 className="text-2xl font-display font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-yellow-400 to-amber-500 drop-shadow-[0_0_12px_rgba(251,191,36,0.65)]">بوابة الذكاء الاصطناعي (AI Gateway)</h2>
           </div>
-          <p className="text-slate-300 max-w-2xl leading-relaxed text-sm font-medium">
+          <p className="text-white font-bold max-w-2xl leading-relaxed text-sm font-medium">
             نشر وإدارة نماذج الذكاء الاصطناعي عبر ngrok. تحكم كامل في المسارات، موازنة الأحمال، 
             والوصول الموحد لمزودي الخدمة مثل OpenAI و Anthropic و Google دون الحاجة لحسابات متعددة.
           </p>
@@ -100,7 +100,7 @@ export default function AiGatewayTool() {
                   className={`flex items-center gap-2 px-6 py-4 text-xs font-extrabold transition-all border-b-2 ${
                     activeTab === tab.id 
                       ? 'border-indigo-600 text-indigo-600 bg-white' 
-                      : 'border-transparent text-slate-400'
+                      : 'border-transparent text-slate-200 font-bold'
                   }`}
                 >
                   {tab.icon}
@@ -114,9 +114,9 @@ export default function AiGatewayTool() {
                 <form onSubmit={handleTest} className="space-y-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-2">
-                      <label className="text-[10px] text-slate-400 font-black uppercase tracking-widest block pr-1">رابط الحافة (Edge URL):</label>
+                      <label className="text-[10px] text-slate-200 font-bold font-black uppercase tracking-widest block pr-1">رابط الحافة (Edge URL):</label>
                       <div className="relative">
-                        <Globe className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                        <Globe className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-200 font-bold" />
                         <input 
                           type="text" 
                           value={baseURL}
@@ -127,9 +127,9 @@ export default function AiGatewayTool() {
                       </div>
                     </div>
                     <div className="space-y-2">
-                      <label className="text-[10px] text-slate-400 font-black uppercase tracking-widest block pr-1">مفتاح الوصول (Gateway Key):</label>
+                      <label className="text-[10px] text-slate-200 font-bold font-black uppercase tracking-widest block pr-1">مفتاح الوصول (Gateway Key):</label>
                       <div className="relative">
-                        <Lock className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                        <Lock className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-200 font-bold" />
                         <input 
                           type="password" 
                           value={apiKey}
@@ -142,7 +142,7 @@ export default function AiGatewayTool() {
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-[10px] text-slate-400 font-black uppercase tracking-widest block pr-1">الاستعلام الموجه (Query):</label>
+                    <label className="text-[10px] text-slate-200 font-bold font-black uppercase tracking-widest block pr-1">الاستعلام الموجه (Query):</label>
                     <textarea 
                       rows={5}
                       value={query}
@@ -171,8 +171,8 @@ export default function AiGatewayTool() {
                       className="p-6 bg-slate-900 border border-slate-800 rounded-3xl text-left font-sans"
                     >
                       <div className="flex items-center justify-between mb-4 border-b border-slate-800 pb-3">
-                        <span className="text-[9px] text-indigo-400 font-black uppercase tracking-widest">Gateway Response</span>
-                        <div className="flex gap-1.5 font-mono text-[9px] text-slate-500">
+                        <span className="text-[11px] text-indigo-400 font-black uppercase tracking-widest">Gateway Response</span>
+                        <div className="flex gap-1.5 font-mono text-[11px] text-slate-700">
                           <span>HTTP 200 OK</span>
                           <span className="text-slate-700">|</span>
                           <span>latency: 482ms</span>
@@ -188,10 +188,10 @@ export default function AiGatewayTool() {
                 <div className="space-y-4">
                   <div className="p-4 bg-slate-900 rounded-xl font-mono text-[10px] text-emerald-400 space-y-2 overflow-x-auto">
                     <div>[2026-06-08 01:33:42] INF - Ingress established at endpoint: your-ai-gateway.ngrok.app</div>
-                    <div className="text-slate-500">[2026-06-08 01:33:45] DBG - Received request POST /v1/chat/completions from 82.164.21.9</div>
+                    <div className="text-slate-700">[2026-06-08 01:33:45] DBG - Received request POST /v1/chat/completions from 82.164.21.9</div>
                     <div className="text-indigo-400">[2026-06-08 01:33:46] INF - Routing to provider 'OpenAI' (Region: us-east-1)</div>
                     <div>[2026-06-08 01:33:47] INF - Successful response delivered (1240 tokens)</div>
-                    <div className="text-slate-500">[2026-06-08 01:33:51] DBG - Metric update: Gateway throughput increased by 4%</div>
+                    <div className="text-slate-700">[2026-06-08 01:33:51] DBG - Metric update: Gateway throughput increased by 4%</div>
                   </div>
                   <div className="p-4 border border-indigo-100 bg-indigo-50/30 rounded-2xl">
                     <p className="text-[11px] text-indigo-800 font-medium leading-relaxed">
@@ -211,17 +211,17 @@ export default function AiGatewayTool() {
                              <div className="w-8 h-8 rounded-lg bg-white border border-slate-200 flex items-center justify-center text-xs">1</div>
                              <span className="text-xs font-bold text-slate-700">OpenAI (gpt-4o)</span>
                           </div>
-                          <span className="text-[9px] bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full font-black uppercase">Primary</span>
+                          <span className="text-[11px] bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full font-black uppercase">Primary</span>
                        </div>
                        <div className="flex items-center justify-center -my-1">
-                          <Terminal className="w-3 h-3 text-slate-300" />
+                          <Terminal className="w-3 h-3 text-white font-bold" />
                        </div>
                        <div className="flex items-center justify-between p-3 bg-slate-50 rounded-xl border border-slate-100">
-                          <div className="flex items-center gap-3 text-slate-400">
+                          <div className="flex items-center gap-3 text-slate-200 font-bold">
                              <div className="w-8 h-8 rounded-lg bg-white border border-slate-200 flex items-center justify-center text-xs">2</div>
                              <span className="text-xs font-bold">Anthropic (claude-3-5-sonnet)</span>
                           </div>
-                          <span className="text-[9px] bg-slate-200 text-slate-500 px-2 py-0.5 rounded-full font-black uppercase">Backup</span>
+                          <span className="text-[11px] bg-slate-200 text-slate-700 px-2 py-0.5 rounded-full font-black uppercase">Backup</span>
                        </div>
                     </div>
                   </div>
@@ -248,10 +248,10 @@ export default function AiGatewayTool() {
                 {[
                    { label: 'إجمالي الطلبات', value: '1,248', icon: <Activity className="w-3.5 h-3.5" />, color: 'text-indigo-600' },
                    { label: 'نسبة النجاح', value: '99.8%', icon: <ShieldCheck className="w-3.5 h-3.5" />, color: 'text-emerald-600' },
-                   { label: 'مزود الخدمة النشط', value: 'Auto-Routing', icon: <ShuffleIcon />, color: 'text-amber-600' }
+                   { label: 'مزود الخدمة النشط', value: 'Auto-Routing', icon: <ShuffleIcon />, color: 'text-amber-400 font-black' }
                 ].map((stat, i) => (
                    <div key={i} className="flex items-center justify-between">
-                      <div className="flex items-center gap-2 text-slate-400">
+                      <div className="flex items-center gap-2 text-slate-200 font-bold">
                          {stat.icon}
                          <span className="text-[11px] font-bold">{stat.label}</span>
                       </div>

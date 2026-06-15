@@ -126,10 +126,10 @@ export default function TimelineD3({ hearings, tasks }: TimelineD3Props) {
           .classed('hidden', false)
           .html(`
             <div class="space-y-1">
-              <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">${d.type === 'hearing' ? 'جلسة' : 'موعد نهائي'}</p>
-              <p class="text-xs font-black text-slate-900">${d.title}</p>
-              <p class="text-[10px] font-bold text-slate-500">${d.date.toLocaleDateString('ar-SA')}</p>
-              <p class="text-[10px] font-mono text-amber-600 font-bold">#${d.caseNumber}</p>
+              <p class="text-[10px] font-black text-[#826217] uppercase tracking-widest">${d.type === 'hearing' ? 'جلسة' : 'موعد نهائي'}</p>
+              <p class="text-xs font-black text-[#0B2545]">${d.title}</p>
+              <p class="text-[10px] font-bold text-slate-800">${d.date.toLocaleDateString('ar-SA')}</p>
+              <p class="text-[10px] font-mono text-[#826217] font-black">#${d.caseNumber}</p>
             </div>
           `);
       })
@@ -143,7 +143,7 @@ export default function TimelineD3({ hearings, tasks }: TimelineD3Props) {
       .data(events)
       .enter()
       .append('text')
-      .attr('class', 'event-label text-[10px] font-black fill-slate-400 font-sans pointer-events-none')
+      .attr('class', 'event-label text-[10px] font-black fill-[#0B2545] font-sans pointer-events-none')
       .attr('x', d => x(d.date))
       .attr('y', (height - margin.top - margin.bottom) / 2 - 14)
       .attr('text-anchor', 'middle')
@@ -160,28 +160,29 @@ export default function TimelineD3({ hearings, tasks }: TimelineD3Props) {
   };
 
   return (
-    <div className="bg-white border border-slate-200 rounded-[2rem] p-5 shadow-sm space-y-4 relative group" ref={containerRef}>
+    <div className="bg-white border-4 border-[#D4AF37] rounded-[2rem] p-5 shadow-sm space-y-4 relative group" ref={containerRef}>
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div className="flex items-center gap-3">
-          <div className="p-2 bg-blue-500/10 text-blue-600 rounded-xl">
-            <Maximize2 className="w-5 h-5" />
+          <div className="p-2 bg-blue-500/10 text-[#0B2545] rounded-xl">
+            <Maximize2 className="w-5 h-5" style={{ color: '#0B2545' }} />
           </div>
           <div>
-            <h3 className="font-black text-slate-900 text-sm tracking-tight">التسلسل الزمني الإستراتيجي</h3>
-            <p className="text-slate-400 text-[10px] font-bold">مخطط تفاعلي لرصد المواعيد القضائية والجلسات.</p>
+            <h3 className="font-black text-slate-900 text-sm tracking-tight" style={{ color: '#0B2545', textShadow: 'none' }}>التسلسل الزمني الإستراتيجي</h3>
+            <p className="font-bold text-[10px]" style={{ color: '#826217', textShadow: 'none' }}>مخطط تفاعلي لرصد المواعيد القضائية والجلسات.</p>
           </div>
         </div>
 
         <div className="flex gap-2">
            <button 
              onClick={handleResetZoom}
-             className="p-2 bg-slate-50 border border-slate-200 text-slate-600 rounded-lg transition-all font-black text-[9px] flex items-center gap-1.5"
+             className="p-2 bg-slate-50 border border-slate-200 rounded-lg transition-all font-black text-[11px] flex items-center gap-1.5 hover:bg-slate-100"
+             style={{ color: '#0B2545', borderColor: '#0B254530' }}
              title="إعادة ضبط العرض"
            >
-             <RotateCcw className="w-3 h-3" />
+             <RotateCcw className="w-3 h-3 text-[#0B2545]" />
              إعادة الضبط
            </button>
-           <div className="flex items-center gap-1 bg-slate-50 px-2 py-1 rounded-xl border border-slate-200 text-[9px] font-black text-slate-400">
+           <div className="flex items-center gap-1 bg-slate-50 px-2 py-1 rounded-xl border border-slate-200 text-[11px] font-black" style={{ color: '#0B2545' }}>
              <div className="w-1.5 h-1.5 rounded-full bg-amber-500"></div> جلسات
              <div className="w-1.5 h-1.5 rounded-full bg-blue-500 ml-1.5"></div> مهام
            </div>
@@ -199,10 +200,10 @@ export default function TimelineD3({ hearings, tasks }: TimelineD3Props) {
         {/* Zoom Controls Overlay */}
         <div className="absolute bottom-4 right-4 flex flex-col gap-2 opacity-0 transition-opacity">
            <button className="p-2 bg-white border border-slate-200 rounded-lg shadow-md transition-colors">
-              <ZoomIn className="w-4 h-4 text-slate-600" />
+              <ZoomIn className="w-4 h-4 text-slate-200 font-bold" />
            </button>
            <button className="p-2 bg-white border border-slate-200 rounded-lg shadow-md transition-colors">
-              <ZoomOut className="w-4 h-4 text-slate-600" />
+              <ZoomOut className="w-4 h-4 text-slate-200 font-bold" />
            </button>
         </div>
       </div>

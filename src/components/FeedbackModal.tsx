@@ -88,7 +88,7 @@ export default function FeedbackModal({ isOpen, onClose, selectedRole }: Feedbac
         {!isSuccess && (
           <button 
             onClick={onClose}
-            className="absolute top-8 left-8 p-3 rounded-2xl bg-slate-50 text-slate-600 transition-all border border-slate-200 shadow-sm"
+            className="absolute top-8 left-8 p-3 rounded-2xl bg-slate-50 text-slate-200 font-bold transition-all border border-slate-200 shadow-sm"
           >
             <X className="w-5 h-5" />
           </button>
@@ -106,11 +106,11 @@ export default function FeedbackModal({ isOpen, onClose, selectedRole }: Feedbac
             </motion.div>
             <div className="space-y-2">
               <h3 className="text-2xl font-display font-black text-slate-950">تم حفظ تقييمك وحفظه بنجاح! 💾</h3>
-              <p className="text-sm text-slate-600 font-bold max-w-md">
+              <p className="text-sm text-slate-200 font-bold font-bold max-w-md">
                 تم مزامنة تقييم المساعد القضائي الذكي مع خوادم الترافع السحابية وحفظها في قاعدة بيانات المنصة. شكراً لك على دورك الفعّال!
               </p>
             </div>
-            <div className="text-xs text-slate-400 font-mono">
+            <div className="text-xs text-slate-200 font-bold font-mono">
               Database Sync ID: SA-FBK-{Date.now().toString().slice(-6)}
             </div>
           </div>
@@ -151,7 +151,7 @@ export default function FeedbackModal({ isOpen, onClose, selectedRole }: Feedbac
                         className={`w-9 h-9 transition-all ${
                           isActive 
                             ? 'fill-amber-400 text-amber-400 drop-shadow-[0_0_8px_rgba(245,158,11,0.4)]' 
-                            : 'text-slate-200'
+                            : 'text-white font-bold'
                         }`} 
                       />
                     </button>
@@ -170,7 +170,7 @@ export default function FeedbackModal({ isOpen, onClose, selectedRole }: Feedbac
                 value={feedbackText}
                 onChange={(e) => setFeedbackText(e.target.value)}
                 placeholder="يرجى كتابة أي ملاحظات دقيقة حول جودة وصحة الصياغة، أو أي ميزات إضافية ترجو توافرها بالمساعد الذكي للعدالة..."
-                className="w-full bg-slate-50 border border-slate-200 text-xs font-bold text-slate-900 p-4 rounded-xl outline-none focus:border-primary focus:bg-white transition-all min-h-[100px] leading-relaxed resize-none placeholder:text-slate-400"
+                className="w-full bg-slate-50 border border-slate-200 text-xs font-bold text-slate-900 p-4 rounded-xl outline-none focus:border-primary focus:bg-white transition-all min-h-[100px] leading-relaxed resize-none placeholder:text-slate-200 font-bold"
               />
             </div>
 
@@ -186,7 +186,7 @@ export default function FeedbackModal({ isOpen, onClose, selectedRole }: Feedbac
               <button
                 type="button"
                 onClick={onClose}
-                className="w-full bg-white border border-slate-200 text-slate-600 font-black py-3 rounded-2xl text-xs transition-all cursor-pointer"
+                className="w-full bg-white border border-slate-200 text-slate-200 font-bold font-black py-3 rounded-2xl text-xs transition-all cursor-pointer"
               >
                 تخطي ومتابعة العمل باللوحة
               </button>

@@ -50,8 +50,8 @@ export default function AIDraftingTool({ onDraftGenerated, cases = [] }: AIDraft
     const isDark = darkKeywords.some(keyword => bgClass.includes(keyword));
     return {
       headingClass: isDark ? 'text-white font-sans font-black' : 'text-slate-900 font-sans font-black',
-      textClass: isDark ? 'text-slate-300 font-sans font-medium' : 'text-slate-600 font-sans font-medium',
-      metricClass: isDark ? 'text-amber-400 font-mono font-black' : 'text-amber-600 font-mono font-black',
+      textClass: isDark ? 'text-white font-bold font-sans font-medium' : 'text-slate-200 font-bold font-sans font-medium',
+      metricClass: isDark ? 'text-amber-400 font-mono font-black' : 'text-amber-400 font-black font-mono font-black',
       badgeClass: isDark ? 'bg-white/10 text-white font-black' : 'bg-slate-100 text-slate-800 font-black',
       borderClass: isDark ? 'border-slate-800' : 'border-slate-200'
     };
@@ -135,7 +135,7 @@ export default function AIDraftingTool({ onDraftGenerated, cases = [] }: AIDraft
       <div className="bg-slate-50 border border-slate-200/60 p-8 rounded-[2.5rem] space-y-6">
         <div>
           <h3 className="text-base font-black text-slate-900">البطاقات الذكية لتبديل وتحليل المقروئية والسطوع (Readability Control)</h3>
-          <p className="text-[11px] text-slate-500 font-bold mt-1">انقر على أي كارت بالأسفل لتبديل خلفيته مجهرياً بين السطوع والعتام. سيقوم الكود والذكاء الاصطناعي بتحليل لومينانس الخلفية الجديدة وتكييف ألوان النصوص ومؤامتها تلقائياً لضمان منتهى الوضوح البصري الملاءم.</p>
+          <p className="text-[11px] text-slate-700 font-bold mt-1">انقر على أي كارت بالأسفل لتبديل خلفيته مجهرياً بين السطوع والعتام. سيقوم الكود والذكاء الاصطناعي بتحليل لومينانس الخلفية الجديدة وتكييف ألوان النصوص ومؤامتها تلقائياً لضمان منتهى الوضوح البصري الملاءم.</p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -157,10 +157,10 @@ export default function AIDraftingTool({ onDraftGenerated, cases = [] }: AIDraft
               >
                 <div>
                   <div className="flex justify-between items-center mb-3">
-                    <span className={`text-[9px] px-2.5 py-0.5 rounded-full font-sans ${colors.badgeClass}`}>
+                    <span className={`text-[11px] px-2.5 py-0.5 rounded-full font-sans ${colors.badgeClass}`}>
                       {item.badge}
                     </span>
-                    <span className="text-[9px] text-slate-400 font-bold flex items-center gap-1">
+                    <span className="text-[11px] text-slate-200 font-bold font-bold flex items-center gap-1">
                       <Sun className="w-3 h-3 text-amber-500 animate-spin" />
                       تبديل السطوع
                     </span>
@@ -169,7 +169,7 @@ export default function AIDraftingTool({ onDraftGenerated, cases = [] }: AIDraft
                   <p className={`${colors.textClass} text-[11px] leading-relaxed`}>{item.description}</p>
                 </div>
                 <div className="flex justify-between items-center mt-3 pt-3 border-t border-slate-50/10">
-                  <span className="text-[9px] font-bold text-slate-400">تحليل فوري دقيق</span>
+                  <span className="text-[11px] font-bold text-slate-200 font-bold">تحليل فوري دقيق</span>
                   <span className={`${colors.headingClass} text-[10px] uppercase font-black`}>متكامل 100%</span>
                 </div>
               </motion.div>
@@ -187,12 +187,12 @@ export default function AIDraftingTool({ onDraftGenerated, cases = [] }: AIDraft
               <Sparkles className="w-6 h-6 text-amber-500" />
               صياغة المستندات بذكاء اصطناعي
             </h3>
-            <p className="text-slate-400 text-xs mt-2 font-bold relative z-10">توليد مسودات قانونية ممتثلة للأنظمة السعودية في ثوانٍ.</p>
+            <p className="text-slate-200 font-bold text-xs mt-2 font-bold relative z-10">توليد مسودات قانونية ممتثلة للأنظمة السعودية في ثوانٍ.</p>
           </div>
 
           <div className="bg-white border border-slate-200 p-6 rounded-3xl shadow-lg space-y-5">
             <div>
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 block">تحميل تفاصيل قضية مسجلة</label>
+              <label className="text-[10px] font-black text-slate-200 font-bold uppercase tracking-widest mb-3 block">تحميل تفاصيل قضية مسجلة</label>
               <select
                 value={selectedCaseId}
                 onChange={(e) => handleLoadCase(e.target.value)}
@@ -204,7 +204,7 @@ export default function AIDraftingTool({ onDraftGenerated, cases = [] }: AIDraft
                 ))}
               </select>
 
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 block">نوع المستند المطلوب صياغته</label>
+              <label className="text-[10px] font-black text-slate-200 font-bold uppercase tracking-widest mb-3 block">نوع المستند المطلوب صياغته</label>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
                 {[
                   { id: 'pleading', label: 'صحيفة دعوى', icon: <FileText className="w-4 h-4" /> },
@@ -219,7 +219,7 @@ export default function AIDraftingTool({ onDraftGenerated, cases = [] }: AIDraft
                     className={`flex items-center gap-2 p-3 rounded-xl text-[10px] font-black transition-all border ${
                       draftType === type.id 
                         ? 'bg-slate-900 text-white border-amber-500 shadow-lg' 
-                        : 'bg-slate-50 text-slate-600 border-slate-100'
+                        : 'bg-slate-50 text-slate-200 font-bold border-slate-100'
                     }`}
                   >
                     {type.icon}
@@ -230,7 +230,7 @@ export default function AIDraftingTool({ onDraftGenerated, cases = [] }: AIDraft
             </div>
 
             <div>
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 block">الوقائع والبيانات الجوهرية</label>
+              <label className="text-[10px] font-black text-slate-200 font-bold uppercase tracking-widest mb-3 block">الوقائع والبيانات الجوهرية</label>
               <textarea 
                 rows={8}
                 value={facts}
@@ -272,7 +272,7 @@ export default function AIDraftingTool({ onDraftGenerated, cases = [] }: AIDraft
                 <div className="flex gap-2">
                   <button 
                     onClick={handleCopy}
-                    className="flex items-center gap-2 bg-white border border-slate-200 text-slate-600 px-3 py-1.5 rounded-lg text-[10px] font-black transition-all"
+                    className="flex items-center gap-2 bg-white border border-slate-200 text-slate-200 font-bold px-3 py-1.5 rounded-lg text-[10px] font-black transition-all"
                   >
                     {copied ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />}
                     {copied ? 'تم النسخ' : 'نسخ النص'}
@@ -292,7 +292,7 @@ export default function AIDraftingTool({ onDraftGenerated, cases = [] }: AIDraft
                 </div>
               ) : (
                 <div className="h-full flex flex-col items-center justify-center text-center opacity-40">
-                  <FileText className="w-16 h-16 text-slate-300 mb-4" />
+                  <FileText className="w-16 h-16 text-white font-bold mb-4" />
                   <p className="text-sm font-bold">بانتظار المدخلات لبدء الصياغة...</p>
                 </div>
               )}

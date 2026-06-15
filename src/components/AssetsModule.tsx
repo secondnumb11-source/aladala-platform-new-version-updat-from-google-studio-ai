@@ -223,9 +223,9 @@ export default function AssetsModule({
         <div className="absolute top-0 left-0 w-32 h-[120px] bg-sky-200/50 blur-3xl rounded-full"></div>
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 relative z-10">
           <div>
-            <span className="text-xs text-amber-700 font-bold">💎 منظومة تتبع ثروات وأصول العملاء عالية القيمة</span>
+            <span className="text-xs text-amber-400 font-black font-bold">💎 منظومة تتبع ثروات وأصول العملاء عالية القيمة</span>
             <h1 className="text-xl md:text-2xl font-bold text-slate-900 mt-1">واجهة حصر الأصول وعقد الامتلاك القضائي لمنصة العدالة</h1>
-            <p className="text-xs text-slate-600 mt-1">
+            <p className="text-xs text-slate-200 font-bold mt-1">
               أداة متكاملة وذكية لحيازة الأصول العقارية والأوراق المالية وضمانات الاستحواذ المرتبطة مباشرة بنص ومسار قضايا المحاكم.
             </p>
           </div>
@@ -244,8 +244,8 @@ export default function AssetsModule({
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           <div className="bg-sky-50 border border-slate-200 p-4.5 rounded-3xl text-right shadow-sm">
             <span className="text-xs text-slate-800 font-bold block">إجمالي القيمة التقديرية للأصول</span>
-            <strong className="text-xl md:text-2xl font-mono font-black text-amber-700 block mt-1">{formattedTotalValue}</strong>
-            <span className="text-xs text-slate-500 block mt-0.5">موزعة على الأرصدة الاستثمارية والعقارية</span>
+            <strong className="text-xl md:text-2xl font-mono font-black text-amber-400 font-black block mt-1">{formattedTotalValue}</strong>
+            <span className="text-xs text-slate-700 block mt-0.5">موزعة على الأرصدة الاستثمارية والعقارية</span>
           </div>
 
           <div className="bg-sky-50 border border-slate-200 p-4.5 rounded-3xl text-right shadow-sm">
@@ -257,13 +257,13 @@ export default function AssetsModule({
           <div className="bg-sky-50 border border-slate-200 p-4.5 rounded-3xl text-right shadow-sm">
             <span className="text-xs text-slate-800 font-bold block">أعلى الأصول ميزانيةً</span>
             <strong className="text-lg md:text-xl font-black text-slate-950 truncate block mt-1">مصنع البوليمر بالجبيل</strong>
-            <span className="text-xs text-slate-500 block mt-0.5">بقيمة 24.5 مليون ريال سعودي</span>
+            <span className="text-xs text-slate-700 block mt-0.5">بقيمة 24.5 مليون ريال سعودي</span>
           </div>
 
           <div className="bg-sky-50 border border-slate-200 p-4.5 rounded-3xl text-right shadow-sm">
             <span className="text-xs text-slate-800 font-bold block">نسبة تغطية الضمانات الشرعية</span>
             <strong className="text-xl md:text-2xl font-mono font-black text-emerald-700 block mt-1">94.2%</strong>
-            <span className="text-xs text-slate-500 block mt-0.5">ضد مخاطر الحجوزات الصادرة</span>
+            <span className="text-xs text-slate-700 block mt-0.5">ضد مخاطر الحجوزات الصادرة</span>
           </div>
         </div>
 
@@ -327,7 +327,7 @@ export default function AssetsModule({
             );
           })()}
           
-          <p className="text-xs text-slate-600 leading-relaxed font-sans mt-2 text-right">
+          <p className="text-xs text-slate-200 font-bold leading-relaxed font-sans mt-2 text-right">
             * مخطط الخريطة الحرارية أعلاه يحلل توزع المخاطر وقيمة الأصول حسب مناطق المملكة العربية السعودية.
           </p>
         </div>
@@ -352,7 +352,7 @@ export default function AssetsModule({
                   <span className="text-sm">⚠️</span>
                   <div>
                     <h4 className="text-sm font-black text-rose-955 line-clamp-1" title={al.name}>{al.name}</h4>
-                    <span className="text-xs text-slate-600">للمنصة العدالة لتمكين الحيازة: {al.clientName}</span>
+                    <span className="text-xs text-slate-200 font-bold">للمنصة العدالة لتمكين الحيازة: {al.clientName}</span>
                   </div>
                 </div>
 
@@ -372,7 +372,7 @@ export default function AssetsModule({
               const diffDays = (expTime - nowTime) / (1000 * 3600 * 24);
               return diffDays > 0 && diffDays <= 45;
             }).length === 0 && (
-              <div className="text-center text-slate-500 text-xs py-4 bg-sky-50 rounded-xl border border-slate-200">
+              <div className="text-center text-slate-700 text-xs py-4 bg-sky-50 rounded-xl border border-slate-200">
                 لا توجد أصول تقترب من انتهاء الصلاحية حالياً.
               </div>
             )}
@@ -386,7 +386,7 @@ export default function AssetsModule({
         
         {/* Search Input */}
         <div className="relative w-full md:flex-1">
-          <Search className="absolute right-3.5 top-3 text-slate-400 w-4 h-4" />
+          <Search className="absolute right-3.5 top-3 text-slate-200 font-bold w-4 h-4" />
           <input 
             type="text"
             placeholder="ابحث باسم الأصل المسجل، اسم العميل، أو قضية الارتباط..."
@@ -453,7 +453,7 @@ export default function AssetsModule({
                 </div>
                 <div>
                   <span className="text-slate-700 text-[9.5px] block font-bold">القيمة التقديرية (SAR):</span>
-                  <span className="text-amber-700 font-extrabold mt-1 block">{(asset.value).toLocaleString()} ر.س</span>
+                  <span className="text-amber-400 font-black font-extrabold mt-1 block">{(asset.value).toLocaleString()} ر.س</span>
                 </div>
               </div>
 
@@ -490,7 +490,7 @@ export default function AssetsModule({
             </div>
 
             <div className="border-t border-slate-200 pt-3 mt-4 flex items-center justify-between text-xs">
-              <span className="text-[9.5px] text-slate-500">حصر وتثبيت قانوني مادة 18</span>
+              <span className="text-[9.5px] text-slate-700">حصر وتثبيت قانوني مادة 18</span>
               <button 
                 onClick={() => handleDeleteAsset(asset.id)}
                 className="text-rose-600 font-bold flex items-center gap-1 cursor-pointer transition-colors"
@@ -515,7 +515,7 @@ export default function AssetsModule({
               </h2>
               <button 
                 onClick={() => setIsCreateOpen(false)}
-                className="text-slate-500 text-xl font-bold font-sans"
+                className="text-slate-700 text-xl font-bold font-sans"
               >
                 إغلاق ×
               </button>

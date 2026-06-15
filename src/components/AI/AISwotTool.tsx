@@ -89,7 +89,7 @@ export default function AISwotTool() {
               <Scale className="w-6 h-6 text-indigo-400" />
               محلل الموقف النظامي (SWOT)
             </h3>
-            <p className="text-slate-400 text-[10px] mt-2 font-bold leading-relaxed relative z-10">
+            <p className="text-slate-200 font-bold text-[10px] mt-2 font-bold leading-relaxed relative z-10">
               أدخل نص صحيفة الدعوى أو الدفاع لاستخراج مصفوفة المخاطر والفرص فوراً.
             </p>
           </div>
@@ -135,7 +135,7 @@ export default function AISwotTool() {
             <div className="flex-1 p-8 overflow-y-auto">
               {!swotResult && !isLoading ? (
                 <div className="h-full flex flex-col items-center justify-center text-center opacity-30 py-20">
-                  <Search className="w-16 h-16 text-slate-300 mb-4" />
+                  <Search className="w-16 h-16 text-white font-bold mb-4" />
                   <p className="text-sm font-bold">يرجى إدخال النص لبدء المعالجة العميقة...</p>
                 </div>
               ) : swotResult ? (
@@ -191,7 +191,7 @@ export default function AISwotTool() {
 
                     {/* Threats */}
                     <div className="bg-amber-50/50 border border-amber-100 p-6 rounded-3xl space-y-4 md:col-span-2">
-                      <div className="flex items-center gap-3 text-amber-700 font-black text-xs">
+                      <div className="flex items-center gap-3 text-amber-400 font-black font-black text-xs">
                         <ShieldAlert className="w-5 h-5" />
                         التهديدات (Threats)
                       </div>
@@ -215,7 +215,7 @@ export default function AISwotTool() {
                         <div className="grid grid-cols-1 gap-3">
                           {swotResult.suggestedDefenses.map((d: string, i: number) => (
                             <div key={i} className="text-[11px] font-black text-indigo-900 leading-relaxed bg-white p-4 rounded-2xl border border-indigo-200 flex items-start gap-3 shadow-ghost">
-                              <span className="mt-1 flex items-center justify-center w-5 h-5 bg-indigo-600 text-white rounded-full text-[9px] shrink-0 font-mono">
+                              <span className="mt-1 flex items-center justify-center w-5 h-5 bg-indigo-600 text-white rounded-full text-[11px] shrink-0 font-mono">
                                 {i + 1}
                               </span>
                               {d}
@@ -240,14 +240,14 @@ export default function AISwotTool() {
               ) : (
                 <div className="flex flex-col items-center justify-center h-full py-20 space-y-4">
                   <RefreshCw className="w-10 h-10 text-indigo-500 animate-spin" />
-                  <p className="text-sm font-bold text-slate-400">جاري تحليل المواد النظامية السعودية ذات الصلة...</p>
+                  <p className="text-sm font-bold text-slate-200 font-bold">جاري تحليل المواد النظامية السعودية ذات الصلة...</p>
                 </div>
               )}
             </div>
 
             <div className="p-4 bg-slate-50 border-t border-slate-100 flex items-center justify-center gap-2">
               <AlertTriangle className="w-4 h-4 text-amber-500" />
-              <span className="text-[9px] font-black text-slate-500 uppercase tracking-tight">إخلاء مسؤولية: التحليل استرشادي لدعم القرار القانوني البشري فقط.</span>
+              <span className="text-[11px] font-black text-slate-700 uppercase tracking-tight">إخلاء مسؤولية: التحليل استرشادي لدعم القرار القانوني البشري فقط.</span>
             </div>
           </div>
         </div>

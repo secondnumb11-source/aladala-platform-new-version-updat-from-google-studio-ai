@@ -525,7 +525,7 @@ setInterval(injectAlAdalahBtn, 3000);`;
             <span className="p-2 bg-slate-900 text-amber-400 rounded-2xl text-xl">🛡️</span>
             <span>بوابة وتكامل ناجز الرقمية والمحاكي التفاعلي</span>
           </h1>
-          <p className="text-xs text-slate-500 font-bold max-w-xl">
+          <p className="text-xs text-slate-700 font-bold max-w-xl">
             نظام موحد ومصمم طبقاً لضوابط الأمن القضائي السعودي لسحب القضايا والصكوك والوكالات تلقائياً ومحاكاتها وبثها بالذكاء الاصطناعي.
           </p>
         </div>
@@ -551,7 +551,7 @@ setInterval(injectAlAdalahBtn, 3000);`;
           className={`px-4 py-2.5 rounded-xl text-xs font-black transition-all flex items-center gap-1.5 cursor-pointer ${
             activeSubTab === 'simulator' 
               ? 'bg-[#0B1E36] text-amber-400 shadow-sm' 
-              : 'text-slate-600'
+              : 'text-slate-200 font-bold'
           }`}
         >
           <Gavel className="w-4 h-4" />
@@ -563,7 +563,7 @@ setInterval(injectAlAdalahBtn, 3000);`;
           className={`px-4 py-2.5 rounded-xl text-xs font-black transition-all flex items-center gap-1.5 cursor-pointer ${
             activeSubTab === 'ai-paste' 
               ? 'bg-[#0B1E36] text-amber-400 shadow-sm' 
-              : 'text-slate-600'
+              : 'text-slate-200 font-bold'
           }`}
         >
           <Cpu className="w-4 h-4" />
@@ -575,7 +575,7 @@ setInterval(injectAlAdalahBtn, 3000);`;
           className={`px-4 py-2.5 rounded-xl text-xs font-black transition-all flex items-center gap-1.5 cursor-pointer ${
             activeSubTab === 'extension-settings' 
               ? 'bg-[#0B1E36] text-amber-400 shadow-sm' 
-              : 'text-slate-600'
+              : 'text-slate-200 font-bold'
           }`}
         >
           <Code className="w-4 h-4" />
@@ -647,7 +647,7 @@ setInterval(injectAlAdalahBtn, 3000);`;
                   <div className="flex items-center gap-2.5 bg-[#050e1b] p-2 rounded-xl border border-[#f1c40f]/10">
                     <div className="text-right">
                       <span className="text-[11px] font-black text-yellow-300 block"> {currentUser?.name || "المحامي المستشار المرخص"}</span>
-                      <span className="text-[9px] text-white block">رقم رخصة المحاماة: Verified 1447-91</span>
+                      <span className="text-[11px] text-white block">رقم رخصة المحاماة: Verified 1447-91</span>
                     </div>
                     <div className="w-8 h-8 rounded-xl bg-slate-800 flex items-center justify-center text-yellow-400 font-black text-xs border border-yellow-400/50">
                       ⚖️
@@ -661,7 +661,7 @@ setInterval(injectAlAdalahBtn, 3000);`;
                     <button 
                       onClick={() => setActivePortalTab('cases')}
                       className={`py-2 px-4 text-xs font-black border-b-2 transition-all cursor-pointer whitespace-nowrap ${
-                        activePortalTab === 'cases' ? 'border-yellow-400 text-yellow-300' : 'border-transparent text-white/70'
+                        activePortalTab === 'cases' ? 'border-yellow-400 text-yellow-300' : 'border-transparent text-white font-bold'
                       }`}
                     >
                       صحائف الدعاوى المقيدة ({mockNajizCases.length})
@@ -669,7 +669,7 @@ setInterval(injectAlAdalahBtn, 3000);`;
                     <button 
                       onClick={() => setActivePortalTab('poas')}
                       className={`py-2 px-4 text-xs font-black border-b-2 transition-all cursor-pointer whitespace-nowrap ${
-                        activePortalTab === 'poas' ? 'border-yellow-400 text-yellow-300' : 'border-transparent text-white/70'
+                        activePortalTab === 'poas' ? 'border-yellow-400 text-yellow-300' : 'border-transparent text-white font-bold'
                       }`}
                     >
                       كشوف الوكالات العدلية ({mockNajizPoas.length})
@@ -677,7 +677,7 @@ setInterval(injectAlAdalahBtn, 3000);`;
                     <button 
                       onClick={() => setActivePortalTab('execution')}
                       className={`py-2 px-4 text-xs font-black border-b-2 transition-all cursor-pointer whitespace-nowrap ${
-                        activePortalTab === 'execution' ? 'border-yellow-400 text-yellow-300' : 'border-transparent text-white/70'
+                        activePortalTab === 'execution' ? 'border-yellow-400 text-yellow-300' : 'border-transparent text-white font-bold'
                       }`}
                     >
                       طلبات التنفيذ والاستحقاقات الملكية ({mockNajizExecutions.length})
@@ -742,7 +742,7 @@ setInterval(injectAlAdalahBtn, 3000);`;
                         </div>
                         <div className="text-left shrink-0">
                           <div className="text-base font-black text-yellow-400 font-mono">{exec.amount}</div>
-                          <span className="text-[9px] text-white block mt-2">محضر مالي نشط</span>
+                          <span className="text-[11px] text-white block mt-2">محضر مالي نشط</span>
                         </div>
                       </div>
                     ))}
@@ -793,7 +793,7 @@ setInterval(injectAlAdalahBtn, 3000);`;
               {/* Console log outputs */}
               <div className="bg-[#050e1b] rounded-2xl p-4 h-64 font-mono text-[11px] text-yellow-300 overflow-y-auto space-y-2 text-right shadow-inner" dir="rtl">
                 {simulationLogs.length === 0 ? (
-                  <div className="text-slate-400 text-center flex flex-col justify-center items-center h-full space-y-2">
+                  <div className="text-slate-200 font-bold text-center flex flex-col justify-center items-center h-full space-y-2">
                     <Shield className="w-7 h-7 text-yellow-400" />
                     <span className="font-bold text-xs text-white">بانتظار النقر على "دفع وتحديث قضايا ناجز فوراً" أو "مزامنة الأداة الآن" لبث سجل المحاكاة والتحقق المترتب لقاعدة البيانات.</span>
                   </div>
@@ -836,18 +836,18 @@ setInterval(injectAlAdalahBtn, 3000);`;
 
             <div className="space-y-3 max-h-56 overflow-y-auto pr-1">
               {dbSyncLogs.length === 0 ? (
-                <div className="text-white/60 text-center text-xs py-6 font-bold">لا توجد قيود بالخادم حالياً. يرجى بدء المزامنة لبناء السجلات الموثقة.</div>
+                <div className="text-white font-bold text-center text-xs py-6 font-bold">لا توجد قيود بالخادم حالياً. يرجى بدء المزامنة لبناء السجلات الموثقة.</div>
               ) : (
                 dbSyncLogs.map((log, idx) => (
                   <div key={log.id || idx} className="bg-[#050e1b] border border-[#f1c40f]/10 p-4 rounded-xl space-y-2 text-xs">
                     <div className="flex justify-between items-center flex-wrap gap-2 text-[10px]">
                       <span className="text-yellow-400 font-bold">توقيت البث: <span className="font-mono text-white">{log.timestamp || log.time}</span></span>
-                      <span className={`px-2 py-0.5 rounded font-black ${log.status === 'success' || log.type === 'success' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-rose-500/10 text-rose-400'}`}>
+                      <span className={`px-2 py-0.5 rounded font-black ${log.status === 'success' || log.type === 'success' ? 'bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-bold' : 'bg-rose-500/10 border border-rose-500/30 text-rose-400 font-bold'}`}>
                         {log.status === 'success' || log.type === 'success' ? 'عملية بث ناجحة ✓' : 'فشلت'}
                       </span>
                     </div>
                     <p className="text-white font-mono break-words leading-relaxed">{log.logs || log.message}</p>
-                    <div className="flex justify-between items-center text-[10px] text-white/70 pt-2 border-t border-slate-900 border-dashed">
+                    <div className="flex justify-between items-center text-[10px] text-white font-bold pt-2 border-t border-slate-900 border-dashed">
                       <span>المرجع: <strong className="text-yellow-300">{log.apiKeyUsed || 'الربط التلقائي'}</strong></span>
                       <span>المصدر: {log.source || 'ملحق الكروم'}</span>
                     </div>

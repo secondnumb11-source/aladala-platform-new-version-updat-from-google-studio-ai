@@ -182,7 +182,7 @@ export default function AgenciesModule({ clients, onUpdateState }: AgenciesModul
   const getUrgencyBadge = (days: number) => {
     if (days <= 0) return <span className="bg-rose-100 text-rose-700 border border-rose-200 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1.5"><ShieldAlert className="w-3.5 h-3.5" />منتهية الصلاحية</span>;
     if (days <= 30) return <span className="bg-rose-50 text-rose-600 border border-rose-200 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1.5 animate-pulse"><Clock className="w-3.5 h-3.5" />ينتهي قريباً جداً ({days} يوم)</span>;
-    if (days <= 60) return <span className="bg-amber-50 text-amber-600 border border-amber-200 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1.5"><Clock className="w-3.5 h-3.5" />متبقي {days} يوم</span>;
+    if (days <= 60) return <span className="bg-amber-50 text-amber-400 font-black border border-amber-200 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1.5"><Clock className="w-3.5 h-3.5" />متبقي {days} يوم</span>;
     return <span className="bg-emerald-50 text-emerald-700 border border-emerald-200 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1.5"><ShieldCheck className="w-3.5 h-3.5" />صالحة ({days} يوم متبقي)</span>;
   };
 
@@ -228,7 +228,7 @@ export default function AgenciesModule({ clients, onUpdateState }: AgenciesModul
           </div>
           <div>
             <h1 className="text-2xl lg:text-3xl font-black text-slate-900 tracking-tight">إدارة الوكالات القضائية</h1>
-            <p className="text-sm text-slate-500 font-semibold mt-1">تتبع التوكيلات وسريانها والمزامنة الحية مع أداة كشط البيانات من (ناجز)</p>
+            <p className="text-sm text-slate-700 font-semibold mt-1">تتبع التوكيلات وسريانها والمزامنة الحية مع أداة كشط البيانات من (ناجز)</p>
           </div>
         </div>
 
@@ -260,11 +260,11 @@ export default function AgenciesModule({ clients, onUpdateState }: AgenciesModul
         {[
           { label: 'إجمالي الوكالات', val: agencies.length, color: 'text-indigo-600', bg: 'bg-indigo-50 border-indigo-100' },
           { label: 'الوكالات السارية', val: agencies.filter(a => getRemainingDays(a.expiryDate) > 0).length, color: 'text-emerald-600', bg: 'bg-emerald-50 border-emerald-100' },
-          { label: 'مهددة بالانتهاء بالانتهاء', val: expiringSoonCount, color: 'text-amber-600', bg: 'bg-amber-50 border-amber-100' },
+          { label: 'مهددة بالانتهاء بالانتهاء', val: expiringSoonCount, color: 'text-amber-400 font-black', bg: 'bg-amber-50 border-amber-100' },
           { label: 'الوكالات المنتهية', val: agencies.filter(a => getRemainingDays(a.expiryDate) <= 0).length, color: 'text-rose-600', bg: 'bg-rose-50 border-rose-100' }
         ].map((stat, i) => (
           <div key={i} className={`${stat.bg} border p-6 rounded-2xl space-y-2`}>
-            <p className="text-xs font-bold text-slate-500">{stat.label}</p>
+            <p className="text-xs font-bold text-slate-700">{stat.label}</p>
             <p className={`text-3xl font-black font-mono ${stat.color}`}>{stat.val}</p>
           </div>
         ))}
@@ -273,7 +273,7 @@ export default function AgenciesModule({ clients, onUpdateState }: AgenciesModul
       {/* Filter and Search */}
       <div className="bg-white border border-slate-200 rounded-2xl p-4 flex flex-col md:flex-row gap-4 items-center justify-between shadow-sm">
         <div className="relative w-full md:w-96">
-          <Search className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+          <Search className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-200 font-bold" />
           <input 
             type="text" placeholder="البحث برقم الوكالة، الموكل..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full pl-4 pr-11 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
@@ -287,7 +287,7 @@ export default function AgenciesModule({ clients, onUpdateState }: AgenciesModul
             { id: 'expired', label: 'المنتهية' }
           ].map(tab => (
             <button key={tab.id} onClick={() => setStatusFilter(tab.id as any)}
-              className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${statusFilter === tab.id ? 'bg-slate-900 text-white shadow-md' : 'bg-slate-50 text-slate-600 hover:bg-slate-100'}`}>
+              className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${statusFilter === tab.id ? 'bg-slate-900 text-white shadow-md' : 'bg-slate-50 text-slate-200 font-bold hover:bg-slate-100'}`}>
               {tab.label}
             </button>
           ))}
@@ -312,7 +312,7 @@ export default function AgenciesModule({ clients, onUpdateState }: AgenciesModul
                 <div className="space-y-4">
                   <div className="flex items-start justify-between">
                     <div className="space-y-1.5">
-                       <span className="text-xs font-mono font-bold bg-slate-100 text-slate-600 px-2 py-0.5 rounded border border-slate-200">
+                       <span className="text-xs font-mono font-bold bg-slate-100 text-slate-200 font-bold px-2 py-0.5 rounded border border-slate-200">
                          رقم: {poa.poaNumber}
                        </span>
                        {poa.isNajizSync && (
@@ -321,7 +321,7 @@ export default function AgenciesModule({ clients, onUpdateState }: AgenciesModul
                          </span>
                        )}
                     </div>
-                    <button onClick={(e) => handleDeleteAgency(poa.id!, e)} className="p-1.5 hover:bg-rose-50 text-slate-400 hover:text-rose-500 rounded-lg transition-colors">
+                    <button onClick={(e) => handleDeleteAgency(poa.id!, e)} className="p-1.5 hover:bg-rose-50 text-slate-200 font-bold hover:text-rose-500 rounded-lg transition-colors">
                       <Trash2 className="w-4 h-4" />
                     </button>
                   </div>
@@ -333,14 +333,14 @@ export default function AgenciesModule({ clients, onUpdateState }: AgenciesModul
                     </div>
                   </div>
 
-                  <p className="text-xs text-slate-500 font-medium line-clamp-2 bg-slate-50 p-2.5 rounded-lg border border-slate-100/50">
+                  <p className="text-xs text-slate-700 font-medium line-clamp-2 bg-slate-50 p-2.5 rounded-lg border border-slate-100/50">
                     {poa.scope || 'لم يتم تخصيص نطاق. الوكالة عامة.'}
                   </p>
                 </div>
 
                 <div className="pt-4 border-t border-slate-100 flex items-center justify-between mt-4">
                   <div className="space-y-0.5">
-                    <p className="text-[10px] text-slate-400 font-bold">الانتهاء</p>
+                    <p className="text-[10px] text-slate-200 font-bold font-bold">الانتهاء</p>
                     <p className={`text-xs font-mono font-black ${isFinished ? 'text-rose-600' : 'text-slate-700'}`}>{poa.expiryDate}</p>
                   </div>
                   <div>{getUrgencyBadge(daysRemaining)}</div>
@@ -352,10 +352,10 @@ export default function AgenciesModule({ clients, onUpdateState }: AgenciesModul
       ) : (
         <div className="bg-white border border-slate-200 p-16 rounded-[2rem] text-center space-y-4 max-w-xl mx-auto shadow-sm">
           <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto border border-slate-100">
-            <FileKey className="w-8 h-8 text-slate-400" />
+            <FileKey className="w-8 h-8 text-slate-200 font-bold" />
           </div>
           <h3 className="text-lg font-black text-slate-900">سجل الوكالات فارغ</h3>
-          <p className="text-sm text-slate-500 font-medium">لم يتم العثور على وكالات تطابق تصفيتك، قم بـ "سحب بيانات الوكالات" مباشرة من مسار ناجز أو أضفها يدوياً.</p>
+          <p className="text-sm text-slate-700 font-medium">لم يتم العثور على وكالات تطابق تصفيتك، قم بـ "سحب بيانات الوكالات" مباشرة من مسار ناجز أو أضفها يدوياً.</p>
         </div>
       )}
 
@@ -373,7 +373,7 @@ export default function AgenciesModule({ clients, onUpdateState }: AgenciesModul
                     <span className="text-indigo-600 font-bold text-xs">تفاصيل الوكالة القضائية</span>
                   </div>
                 </div>
-                <button onClick={() => setSelectedAgency(null)} className="p-2 hover:bg-slate-200 bg-slate-100 rounded-full text-slate-500 transition-colors">
+                <button onClick={() => setSelectedAgency(null)} className="p-2 hover:bg-slate-200 bg-slate-100 rounded-full text-slate-700 transition-colors">
                   <X className="w-5 h-5" />
                 </button>
               </div>
@@ -397,12 +397,12 @@ export default function AgenciesModule({ clients, onUpdateState }: AgenciesModul
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl text-center shadow-sm">
-                    <span className="text-xs text-slate-500 font-bold block mb-1">تاريخ إنشائها / الصدور</span>
+                    <span className="text-xs text-slate-700 font-bold block mb-1">تاريخ إنشائها / الصدور</span>
                     <span className="text-lg font-black font-mono text-slate-900 block">{selectedAgency.issueDate}</span>
                   </div>
                   <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl text-center shadow-sm relative overflow-hidden">
                     <div className={`absolute top-0 w-full h-1 left-0 ${getRemainingDays(selectedAgency.expiryDate) <= 0 ? 'bg-rose-500' : 'bg-slate-300'}`}></div>
-                    <span className="text-xs text-slate-500 font-bold block mb-1">تاريخ انتهائها نظامياً</span>
+                    <span className="text-xs text-slate-700 font-bold block mb-1">تاريخ انتهائها نظامياً</span>
                     <span className="text-lg font-black font-mono text-slate-900 block">{selectedAgency.expiryDate}</span>
                   </div>
                 </div>
@@ -426,21 +426,21 @@ export default function AgenciesModule({ clients, onUpdateState }: AgenciesModul
                             </div>
                             <div>
                               <p className="text-sm font-black text-slate-800">{part.name}</p>
-                              {part.identity && <p className="text-xs font-mono font-bold text-slate-500 mt-1">هوية: {part.identity}</p>}
+                              {part.identity && <p className="text-xs font-mono font-bold text-slate-700 mt-1">هوية: {part.identity}</p>}
                             </div>
                           </div>
-                          <span className="text-xs font-bold text-slate-600 px-3 py-1 rounded-full bg-slate-100 border border-slate-200">{part.role}</span>
+                          <span className="text-xs font-bold text-slate-200 font-bold px-3 py-1 rounded-full bg-slate-100 border border-slate-200">{part.role}</span>
                         </div>
                       ))}
                     </div>
                   ) : (
                     <div className="grid grid-cols-2 gap-4">
                       <div className="p-3 bg-white border border-slate-200 rounded-xl">
-                        <span className="text-[10px] text-slate-500 font-bold block mb-1">الموكل</span>
+                        <span className="text-[10px] text-slate-700 font-bold block mb-1">الموكل</span>
                         <span className="text-sm font-black text-slate-900">{selectedAgency.clientName}</span>
                       </div>
                       <div className="p-3 bg-white border border-slate-200 rounded-xl">
-                        <span className="text-[10px] text-slate-500 font-bold block mb-1">الوكيل</span>
+                        <span className="text-[10px] text-slate-700 font-bold block mb-1">الوكيل</span>
                         <span className="text-sm font-black text-slate-900">{selectedAgency.lawyerName}</span>
                       </div>
                     </div>
@@ -490,7 +490,7 @@ export default function AgenciesModule({ clients, onUpdateState }: AgenciesModul
                     <FileSpreadsheet className="w-6 h-6 text-indigo-600" /> إضافة توثيق وكالة للعميل
                   </h2>
                 </div>
-                <button onClick={() => setShowAddModal(false)} className="p-2 hover:bg-slate-200 rounded-full bg-slate-100 text-slate-500">
+                <button onClick={() => setShowAddModal(false)} className="p-2 hover:bg-slate-200 rounded-full bg-slate-100 text-slate-700">
                   <X className="w-5 h-5" />
                 </button>
               </div>
@@ -565,7 +565,7 @@ export default function AgenciesModule({ clients, onUpdateState }: AgenciesModul
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-xs text-slate-700 font-bold flex justify-between"><span>البنود والصلاحيات</span><span className="text-slate-400 font-medium">(كل بند في سطر)</span></label>
+                  <label className="text-xs text-slate-700 font-bold flex justify-between"><span>البنود والصلاحيات</span><span className="text-slate-200 font-bold font-medium">(كل بند في سطر)</span></label>
                   <textarea rows={3} placeholder="المراجعة في الإدارات الحكومية&#10;حق الإقرار والصلح" value={clausesText} onChange={(e) => setClausesText(e.target.value)}
                     className="w-full px-4 py-3 bg-white border border-slate-300 rounded-xl text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-900 shadow-sm" />
                 </div>

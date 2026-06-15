@@ -433,7 +433,7 @@ export default function EmployeesData({ tasks }: { cases: Case[], tasks: Task[],
                 <h1 className="text-3xl font-black text-slate-900 leading-tight mb-1">
                   {selectedConfigEmployee ? 'تعديل بيانات الموظف' : 'إضافة موظف جديد'}
                 </h1>
-                <p className="text-slate-500 font-bold text-sm">أدخل البيانات بنظام الموارد البشرية المركزي</p>
+                <p className="text-slate-700 font-bold text-sm">أدخل البيانات بنظام الموارد البشرية المركزي</p>
               </div>
             </div>
             
@@ -459,7 +459,7 @@ export default function EmployeesData({ tasks }: { cases: Case[], tasks: Task[],
                 </div>
                 <div>
                   <h3 className="text-lg font-black text-slate-900">البيانات الشخصية والوظيفية</h3>
-                  <p className="text-[11px] text-slate-500 font-bold">المعلومات المرجعية للهوية والوظيفة</p>
+                  <p className="text-[11px] text-slate-700 font-bold">المعلومات المرجعية للهوية والوظيفة</p>
                 </div>
               </div>
               
@@ -546,7 +546,7 @@ export default function EmployeesData({ tasks }: { cases: Case[], tasks: Task[],
                 </div>
                 <div>
                   <h3 className="text-lg font-black text-slate-900">بيانات الاتصال والتواصل</h3>
-                  <p className="text-[11px] text-slate-500 font-bold">تأمين قنوات التواصل الرسمية للموظف</p>
+                  <p className="text-[11px] text-slate-700 font-bold">تأمين قنوات التواصل الرسمية للموظف</p>
                 </div>
               </div>
               
@@ -606,7 +606,7 @@ export default function EmployeesData({ tasks }: { cases: Case[], tasks: Task[],
                 </div>
                 <div>
                   <h3 className="text-lg font-black text-slate-900">سجل التوظيف والخدمة</h3>
-                  <p className="text-[11px] text-slate-500 font-bold">توثيق تواريخ المباشرة وفترات العمل</p>
+                  <p className="text-[11px] text-slate-700 font-bold">توثيق تواريخ المباشرة وفترات العمل</p>
                 </div>
               </div>
               
@@ -669,7 +669,7 @@ export default function EmployeesData({ tasks }: { cases: Case[], tasks: Task[],
              </div>
              <div>
                <h1 className="text-3xl font-black text-slate-900 tracking-tight leading-tight">قاعدة بيانات الموظفين</h1>
-               <p className="text-slate-500 font-bold text-sm mt-1">البوابة المركزية لإدارة الكادر الوظيفي وموازنة الصلاحيات والوصول الرقمي</p>
+               <p className="text-slate-700 font-bold text-sm mt-1">البوابة المركزية لإدارة الكادر الوظيفي وموازنة الصلاحيات والوصول الرقمي</p>
              </div>
           </div>
         </div>
@@ -713,7 +713,7 @@ export default function EmployeesData({ tasks }: { cases: Case[], tasks: Task[],
           </div>
           <div className="space-y-1">
             <h3 className="text-base font-black text-slate-900">⚠️ تنبيه إداري نشط: وثائق رسمية تقترب من الانتهاء خلال 30 يوماً!</h3>
-            <p className="text-xs text-slate-600 font-bold">يقوم النظام تلقائياً بتذكير المدير والإدارة القانونية بالمكتب قبل 30 يوماً لبدء إجراءات تجديد هويات الموظفين المذكورين أدناه لتلافي غرامات النظام ودعم الاستقرار الوظيفي:</p>
+            <p className="text-xs text-slate-200 font-bold font-bold">يقوم النظام تلقائياً بتذكير المدير والإدارة القانونية بالمكتب قبل 30 يوماً لبدء إجراءات تجديد هويات الموظفين المذكورين أدناه لتلافي غرامات النظام ودعم الاستقرار الوظيفي:</p>
             
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mt-4 pt-4 border-t border-slate-200">
               {expiringEmployeesList.map((emp: any) => (
@@ -733,10 +733,10 @@ export default function EmployeesData({ tasks }: { cases: Case[], tasks: Task[],
       {/* Control Utility Toolbar */}
       <div className="mt-8 bg-white border border-slate-200 p-6 rounded-[2rem] shadow-sm flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4">
         <div className="relative flex-1 group">
-          <Search className="absolute right-5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within:text-blue-600 transition-colors" />
+          <Search className="absolute right-5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-200 font-bold group-focus-within:text-blue-600 transition-colors" />
           <input 
             placeholder="البحث عن موظف (بالاسم، المسمى الوظيفي، رقم الهوية)..."
-            className="w-full bg-slate-50 border border-slate-200 rounded-2xl pr-12 pl-6 py-4 text-sm font-bold outline-none focus:bg-white focus:border-blue-500 transition-all text-slate-900 placeholder:text-slate-400"
+            className="w-full bg-slate-50 border border-slate-200 rounded-2xl pr-12 pl-6 py-4 text-sm font-bold outline-none focus:bg-white focus:border-blue-500 transition-all text-slate-900 placeholder:text-slate-200 font-bold"
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
           />
@@ -781,12 +781,12 @@ export default function EmployeesData({ tasks }: { cases: Case[], tasks: Task[],
         <motion.div 
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="mt-10 py-32 bg-white border border-slate-200 rounded-[2.5rem] flex flex-col items-center justify-center gap-6 text-slate-300 shadow-sm"
+          className="mt-10 py-32 bg-white border border-slate-200 rounded-[2.5rem] flex flex-col items-center justify-center gap-6 text-white font-bold shadow-sm"
         >
           <Users className="w-20 h-20 opacity-10" />
           <div className="text-center">
             <p className="font-black text-xl text-slate-900">لا توجد سجلات مطابقة</p>
-            <p className="font-bold text-slate-400 text-sm mt-2">ابدأ بإثراء سجلات مكتبك بإضافة موظف جديد</p>
+            <p className="font-bold text-slate-200 font-bold text-sm mt-2">ابدأ بإثراء سجلات مكتبك بإضافة موظف جديد</p>
           </div>
           <button 
             onClick={() => setView('form')}
@@ -831,19 +831,19 @@ export default function EmployeesData({ tasks }: { cases: Case[], tasks: Task[],
                     <div className="h-4 w-[1px] bg-slate-700 mx-1" />
                     <button 
                       onClick={() => handleResizeCard(emp.id, 'small')} 
-                      className={`px-2.5 py-1 text-[10px] font-black rounded-lg transition-colors ${(!cardSizes[emp.id] || cardSizes[emp.id] === 'small') ? 'bg-amber-500 text-slate-900' : 'bg-slate-800 text-slate-300'}`}
+                      className={`px-2.5 py-1 text-[10px] font-black rounded-lg transition-colors ${(!cardSizes[emp.id] || cardSizes[emp.id] === 'small') ? 'bg-amber-500 text-slate-900' : 'bg-slate-800 text-white font-bold'}`}
                     >
                       صغير
                     </button>
                     <button 
                       onClick={() => handleResizeCard(emp.id, 'medium')} 
-                      className={`px-2.5 py-1 text-[10px] font-black rounded-lg transition-colors ${(cardSizes[emp.id] === 'medium') ? 'bg-amber-500 text-slate-900' : 'bg-slate-800 text-slate-300'}`}
+                      className={`px-2.5 py-1 text-[10px] font-black rounded-lg transition-colors ${(cardSizes[emp.id] === 'medium') ? 'bg-amber-500 text-slate-900' : 'bg-slate-800 text-white font-bold'}`}
                     >
                       متوسط
                     </button>
                     <button 
                       onClick={() => handleResizeCard(emp.id, 'large')} 
-                      className={`px-2.5 py-1 text-[10px] font-black rounded-lg transition-colors ${(cardSizes[emp.id] === 'large') ? 'bg-amber-500 text-slate-900' : 'bg-slate-800 text-slate-300'}`}
+                      className={`px-2.5 py-1 text-[10px] font-black rounded-lg transition-colors ${(cardSizes[emp.id] === 'large') ? 'bg-amber-500 text-slate-900' : 'bg-slate-800 text-white font-bold'}`}
                     >
                       عريض
                     </button>
@@ -862,13 +862,13 @@ export default function EmployeesData({ tasks }: { cases: Case[], tasks: Task[],
                     <div>
                       <h3 className="font-black text-lg text-slate-900 tracking-tight">{emp.name}</h3>
                       <div className="flex items-center gap-2 mt-1">
-                        <Briefcase className="w-3.5 h-3.5 text-slate-500" />
-                        <p className="text-slate-500 font-bold text-[11px] uppercase">{emp.jobTitle}</p>
+                        <Briefcase className="w-3.5 h-3.5 text-slate-700" />
+                        <p className="text-slate-700 font-bold text-[11px] uppercase">{emp.jobTitle}</p>
                       </div>
                     </div>
                   </div>
                   <div className={`px-4 py-2 rounded-xl text-[10px] font-black tracking-wide shadow-sm flex items-center justify-center shrink-0 ${
-                    emp.status === 'نشط' ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'
+                    emp.status === 'نشط' ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-400 font-black'
                   }`}>
                     {emp.status}
                   </div>
@@ -882,7 +882,7 @@ export default function EmployeesData({ tasks }: { cases: Case[], tasks: Task[],
                     return mostUrgentTask ? (
                       <div className="col-span-2 space-y-2 mb-2 p-3 bg-slate-50 rounded-2xl border border-slate-100">
                          <div className="flex items-center justify-between">
-                            <span className="text-[9px] font-black text-slate-400">أكثر مهمة إلحاحاً:</span>
+                            <span className="text-[11px] font-black text-slate-200 font-bold">أكثر مهمة إلحاحاً:</span>
                             <TaskCountdown dueDate={mostUrgentTask.dueDate || ''} status={mostUrgentTask.status} />
                          </div>
                          <p className="text-[11px] font-black text-slate-700 truncate">{mostUrgentTask.title}</p>
@@ -890,14 +890,14 @@ export default function EmployeesData({ tasks }: { cases: Case[], tasks: Task[],
                     ) : null;
                   })()}
                   <div className="space-y-1.5 flex flex-col">
-                    <div className="flex items-center gap-1.5 text-[10px] font-black text-slate-400">
+                    <div className="flex items-center gap-1.5 text-[10px] font-black text-slate-200 font-bold">
                       <CheckCircle2 className="w-3.5 h-3.5" />
                       رقم الهوية
                     </div>
                     <p className="text-slate-900 font-mono font-black text-sm">{emp.nationalId || '---'}</p>
                   </div>
                   <div className="space-y-1.5 flex flex-col">
-                    <div className="flex items-center gap-1.5 text-[10px] font-black text-slate-400">
+                    <div className="flex items-center gap-1.5 text-[10px] font-black text-slate-200 font-bold">
                       <CalendarDays className="w-3.5 h-3.5" />
                       انتهاء الوثيقة
                     </div>
@@ -915,39 +915,39 @@ export default function EmployeesData({ tasks }: { cases: Case[], tasks: Task[],
                         })()}
                       </div>
                     ) : (
-                      <p className="text-slate-400 font-bold text-sm">غير محدد</p>
+                      <p className="text-slate-200 font-bold font-bold text-sm">غير محدد</p>
                     )}
                   </div>
                   <div className="space-y-1.5 flex flex-col">
-                    <div className="flex items-center gap-1.5 text-[10px] font-black text-slate-400">
+                    <div className="flex items-center gap-1.5 text-[10px] font-black text-slate-200 font-bold">
                       <Building2 className="w-3.5 h-3.5" />
                       الجنسية
                     </div>
                     <p className="text-slate-900 font-black text-sm">{emp.nationality || '---'}</p>
                   </div>
                   <div className="space-y-1.5 flex flex-col">
-                    <div className="flex items-center gap-1.5 text-[10px] font-black text-slate-400">
+                    <div className="flex items-center gap-1.5 text-[10px] font-black text-slate-200 font-bold">
                       <Calendar className="w-3.5 h-3.5" />
                       بدء العمل
                     </div>
                     <p className="text-slate-900 font-mono font-black text-sm">{emp.startDate || '---'}</p>
                   </div>
                   <div className="space-y-1.5 flex flex-col overflow-hidden">
-                    <div className="flex items-center gap-1.5 text-[10px] font-black text-slate-400">
+                    <div className="flex items-center gap-1.5 text-[10px] font-black text-slate-200 font-bold">
                       <GraduationCap className="w-3.5 h-3.5" />
                       المؤهل
                     </div>
                     <p className="text-slate-900 font-black text-sm truncate">{emp.qualification || '---'}</p>
                   </div>
                   <div className="space-y-1.5 flex flex-col">
-                    <div className="flex items-center gap-1.5 text-[10px] font-black text-slate-400">
+                    <div className="flex items-center gap-1.5 text-[10px] font-black text-slate-200 font-bold">
                       <AtSign className="w-3.5 h-3.5" />
                       تواصل
                     </div>
                     <p className="text-slate-900 font-mono font-black text-[13px] truncate">{emp.phone || emp.email || '---'}</p>
                   </div>
                   <div className="space-y-1.5 flex flex-col">
-                    <div className="flex items-center gap-1.5 text-[10px] font-black text-slate-400">
+                    <div className="flex items-center gap-1.5 text-[10px] font-black text-slate-200 font-bold">
                       <Users className="w-3.5 h-3.5" />
                       المدير المباشر
                     </div>
@@ -1010,7 +1010,7 @@ export default function EmployeesData({ tasks }: { cases: Case[], tasks: Task[],
                        `);
                        win.document.close();
                     }}
-                    className="w-10 h-10 bg-white border border-slate-200 text-slate-600 rounded-xl flex items-center justify-center hover:bg-slate-50 transition-all shadow-sm"
+                    className="w-10 h-10 bg-white border border-slate-200 text-slate-200 font-bold rounded-xl flex items-center justify-center hover:bg-slate-50 transition-all shadow-sm"
                     title="مسير الراتب"
                   >
                     <FileText className="w-4 h-4" />
@@ -1033,11 +1033,11 @@ export default function EmployeesData({ tasks }: { cases: Case[], tasks: Task[],
             <div className="flex items-start justify-between pb-6 border-b border-slate-100">
               <div className="space-y-1 text-right">
                 <h3 className="text-xl font-black text-slate-900">📊 منشئ تقارير الأداء والأجور الشهري</h3>
-                <p className="text-xs text-slate-400 font-bold">تصدير الفواتير ومستندات الأداء لأعضاء المكتب والمحامين بصيغ ورقية أو رقمية</p>
+                <p className="text-xs text-slate-200 font-bold font-bold">تصدير الفواتير ومستندات الأداء لأعضاء المكتب والمحامين بصيغ ورقية أو رقمية</p>
               </div>
               <button 
                 onClick={() => setShowReportWizard(false)} 
-                className="p-3 bg-slate-50 hover:bg-slate-100 rounded-xl text-slate-400 hover:text-slate-800 transition-colors cursor-pointer"
+                className="p-3 bg-slate-50 hover:bg-slate-100 rounded-xl text-slate-200 font-bold hover:text-slate-800 transition-colors cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -1045,7 +1045,7 @@ export default function EmployeesData({ tasks }: { cases: Case[], tasks: Task[],
 
             <div className="my-6 grid grid-cols-1 md:grid-cols-2 gap-6 bg-slate-50 p-6 rounded-2xl border border-slate-100">
               <div className="space-y-1.5 text-right">
-                <label className="text-xs font-black text-slate-600 block">حدد شهر التصدير</label>
+                <label className="text-xs font-black text-slate-200 font-bold block">حدد شهر التصدير</label>
                 <input 
                   type="month"
                   value={reportMonth}
@@ -1088,7 +1088,7 @@ export default function EmployeesData({ tasks }: { cases: Case[], tasks: Task[],
                     {reportData.map(row => (
                       <tr key={row.id} className="hover:bg-slate-50/50">
                         <td className="p-4 font-extrabold text-[#0f172a]">{row.name}</td>
-                        <td className="p-4 font-bold text-slate-500">{row.jobTitle}</td>
+                        <td className="p-4 font-bold text-slate-700">{row.jobTitle}</td>
                         <td className="p-4 text-center font-black text-emerald-600 font-mono">{row.completedTasks} مهمة مكتملة</td>
                         <td className="p-4">
                           <input 

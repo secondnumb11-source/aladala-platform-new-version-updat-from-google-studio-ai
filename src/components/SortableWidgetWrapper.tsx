@@ -34,9 +34,9 @@ export const SortableWidgetWrapper = React.memo(function SortableWidgetWrapper({
     <div ref={setNodeRef} style={style} className={`${className} relative`}>
        {isCustomizing && onResize && (
          <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 z-50 flex items-center gap-1 bg-white p-1 rounded-xl shadow-[0_5px_15px_rgba(0,0,0,0.1)] border border-slate-200" dir="rtl">
-           <button onClick={(e) => { e.stopPropagation(); onResize(id, 'qr'); }} className={`px-2 py-1 text-[10px] font-black rounded-lg transition-all ${widgetSize === 'qr' ? 'bg-amber-100 text-amber-700' : 'bg-slate-50 text-slate-500 hover:bg-slate-100'}`}>صغير</button>
-           <button onClick={(e) => { e.stopPropagation(); onResize(id, 'half'); }} className={`px-2 py-1 text-[10px] font-black rounded-lg transition-all ${widgetSize === 'half' ? 'bg-amber-100 text-amber-700' : 'bg-slate-50 text-slate-500 hover:bg-slate-100'}`}>متوسط</button>
-           <button onClick={(e) => { e.stopPropagation(); onResize(id, 'full'); }} className={`px-2 py-1 text-[10px] font-black rounded-lg transition-all ${widgetSize === 'full' ? 'bg-amber-100 text-amber-700' : 'bg-slate-50 text-slate-500 hover:bg-slate-100'}`}>عريض</button>
+           <button onClick={(e) => { e.stopPropagation(); onResize(id, 'qr'); }} className={`px-2 py-1 text-[10px] font-black rounded-lg transition-all ${widgetSize === 'qr' ? 'bg-amber-100 text-amber-400 font-black' : 'bg-slate-50 text-slate-700 hover:bg-slate-100'}`}>صغير</button>
+           <button onClick={(e) => { e.stopPropagation(); onResize(id, 'half'); }} className={`px-2 py-1 text-[10px] font-black rounded-lg transition-all ${widgetSize === 'half' ? 'bg-amber-100 text-amber-400 font-black' : 'bg-slate-50 text-slate-700 hover:bg-slate-100'}`}>متوسط</button>
+           <button onClick={(e) => { e.stopPropagation(); onResize(id, 'full'); }} className={`px-2 py-1 text-[10px] font-black rounded-lg transition-all ${widgetSize === 'full' ? 'bg-amber-100 text-amber-400 font-black' : 'bg-slate-50 text-slate-700 hover:bg-slate-100'}`}>عريض</button>
          </div>
        )}
        <div {...(isCustomizing ? attributes : {})} {...(isCustomizing ? listeners : {})} className="w-full h-full relative cursor-auto">

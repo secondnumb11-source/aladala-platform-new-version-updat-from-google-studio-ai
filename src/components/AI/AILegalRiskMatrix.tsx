@@ -80,7 +80,7 @@ export default function AILegalRiskMatrix({ cases }: AILegalRiskMatrixProps) {
 
   if (!cases || cases.length === 0) {
     return (
-      <div className="p-12 text-center text-slate-500 font-bold border-2 border-dashed border-slate-200 rounded-3xl" dir="rtl">
+      <div className="p-12 text-center text-slate-700 font-bold border-2 border-dashed border-slate-200 rounded-3xl" dir="rtl">
         لا توجد قضايا حالية لتحليل مخاطرها.
       </div>
     );
@@ -98,7 +98,7 @@ export default function AILegalRiskMatrix({ cases }: AILegalRiskMatrixProps) {
             <h2 className="text-2xl font-black flex items-center gap-3 text-amber-500">
                <ShieldAlert className="w-6 h-6" /> لوحة تحليل المخاطر القانونية (Legal Risk Matrix)
             </h2>
-            <p className="text-slate-400 text-sm font-bold">نموذج AI تنبؤي يقوم بتحليل "نقاط الضعف" بمواجهة "السوابق القضائية" المستخرجة من المرصد.</p>
+            <p className="text-slate-200 font-bold text-sm font-bold">نموذج AI تنبؤي يقوم بتحليل "نقاط الضعف" بمواجهة "السوابق القضائية" المستخرجة من المرصد.</p>
           </div>
           
           <select 
@@ -117,7 +117,7 @@ export default function AILegalRiskMatrix({ cases }: AILegalRiskMatrixProps) {
         {/* Win Probability Circular Display */}
         <div className="lg:col-span-4 bg-white border border-slate-200 p-8 rounded-[2.5rem] shadow-xl flex flex-col items-center justify-center space-y-6">
           <div className="text-center">
-            <h3 className="text-slate-400 text-[10px] font-black uppercase tracking-[0.2em] mb-2">احتمالية النجاح التقريبية</h3>
+            <h3 className="text-slate-200 font-bold text-[10px] font-black uppercase tracking-[0.2em] mb-2">احتمالية النجاح التقريبية</h3>
             <p className="text-slate-900 text-xs font-black">Win Probability Index</p>
           </div>
 
@@ -131,7 +131,7 @@ export default function AILegalRiskMatrix({ cases }: AILegalRiskMatrixProps) {
                   className="flex flex-col items-center justify-center space-y-3"
                 >
                   <RefreshCw className="w-10 h-10 text-amber-500 animate-spin" />
-                  <span className="text-[10px] font-black text-slate-400 animate-pulse">جاري التحليل...</span>
+                  <span className="text-[10px] font-black text-slate-200 font-bold animate-pulse">جاري التحليل...</span>
                 </motion.div>
               ) : (
                 <motion.div
@@ -153,7 +153,7 @@ export default function AILegalRiskMatrix({ cases }: AILegalRiskMatrixProps) {
                   </svg>
                   <div className="absolute inset-0 flex flex-col items-center justify-center">
                     <span className={`text-5xl font-black tracking-tighter ${getStatusColor(winProbability)}`}>{winProbability}%</span>
-                    <span className="text-[9px] font-bold text-slate-400 mt-1 uppercase">Confidence Level</span>
+                    <span className="text-[11px] font-bold text-slate-200 font-bold mt-1 uppercase">Confidence Level</span>
                   </div>
                 </motion.div>
               )}
@@ -161,7 +161,7 @@ export default function AILegalRiskMatrix({ cases }: AILegalRiskMatrixProps) {
           </div>
 
           <div className="w-full space-y-3">
-             <div className="flex justify-between items-center text-[11px] font-bold text-slate-500 bg-slate-50 p-4 rounded-2xl border border-slate-100">
+             <div className="flex justify-between items-center text-[11px] font-bold text-slate-700 bg-slate-50 p-4 rounded-2xl border border-slate-100">
                 <span>الحالة المكتشفة:</span>
                 <span className={`font-black ${getStatusColor(winProbability)} px-3 py-1 rounded-lg bg-white shadow-sm border border-slate-100`}>
                   {winProbability > 70 ? 'موقف قانوني قوي' : winProbability > 40 ? 'موقف قانوني متوسط' : 'موقف محفوف بالمخاطر'}
@@ -180,10 +180,10 @@ export default function AILegalRiskMatrix({ cases }: AILegalRiskMatrixProps) {
                   </div>
                   <div>
                     <h3 className="text-sm font-black text-slate-900">عوامل تحليل الخطر والارتباط بالسوابق</h3>
-                    <p className="text-[10px] text-slate-400 font-bold">مقارنة نقاط ضعف العميل بـ Judicial Observatory</p>
+                    <p className="text-[10px] text-slate-200 font-bold font-bold">مقارنة نقاط ضعف العميل بـ Judicial Observatory</p>
                   </div>
                 </div>
-                <div className="bg-amber-500 text-slate-950 px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest flex items-center gap-2">
+                <div className="bg-amber-500 text-slate-950 px-3 py-1.5 rounded-lg text-[11px] font-black uppercase tracking-widest flex items-center gap-2">
                    <Target className="w-3 h-3" /> محرك نشط
                 </div>
              </div>
@@ -203,12 +203,12 @@ export default function AILegalRiskMatrix({ cases }: AILegalRiskMatrixProps) {
                    >
                      <div className="flex items-center justify-between">
                        <div className="flex items-center gap-2">
-                         {factor.impact === 'positive' ? <TrendingUp className="w-4 h-4 text-emerald-500" /> : factor.impact === 'negative' ? <TrendingDown className="w-4 h-4 text-rose-500" /> : <Info className="w-4 h-4 text-slate-400" />}
+                         {factor.impact === 'positive' ? <TrendingUp className="w-4 h-4 text-emerald-500" /> : factor.impact === 'negative' ? <TrendingDown className="w-4 h-4 text-rose-500" /> : <Info className="w-4 h-4 text-slate-200 font-bold" />}
                          <span className="text-[11px] font-black text-slate-800">{factor.label}</span>
                        </div>
                        <span className="text-[10px] font-black text-slate-900 bg-white px-2 py-1 rounded-lg border border-slate-200">{factor.weight}%</span>
                      </div>
-                     <p className="text-[10px] text-slate-500 font-bold leading-relaxed">{factor.description}</p>
+                     <p className="text-[10px] text-slate-700 font-bold leading-relaxed">{factor.description}</p>
                    </motion.div>
                  ))
                )}
@@ -219,7 +219,7 @@ export default function AILegalRiskMatrix({ cases }: AILegalRiskMatrixProps) {
                   <Gavel className="w-4 h-4 text-amber-500" />
                   تصحيح الموقف القانوني الموصى به
                 </button>
-                <button className="flex items-center gap-2 border border-slate-300 text-slate-600 px-6 py-3 rounded-2xl text-[11px] font-black transition-all">
+                <button className="flex items-center gap-2 border border-slate-300 text-slate-200 font-bold px-6 py-3 rounded-2xl text-[11px] font-black transition-all">
                   عرض السوابق المشابهة بالكامل
                 </button>
              </div>

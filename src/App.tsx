@@ -12,6 +12,7 @@ import Dashboard from '@/components/Dashboard';
 import MainLandingPage from '@/components/MainLandingPage';
 import NotificationsBell from '@/components/NotificationsBell';
 import GlobalNotesWidget from '@/components/GlobalNotesWidget';
+import DateConverterWidget from '@/components/DateConverterWidget';
 import AiDrafting from '@/components/AiDrafting';
 import NajizSyncBackendService from './components/NajizSyncBackendService';
 
@@ -1480,7 +1481,7 @@ function AppContent() {
                     className={`flex items-center gap-1 px-1.5 py-1 rounded-md text-[10px] font-black transition-all cursor-pointer ${
                       getGlobalDisplayMode() === 'light'
                         ? 'bg-amber-100 text-amber-900 border border-amber-305/40'
-                        : 'text-slate-500'
+                        : 'text-slate-700'
                     }`}
                   >
                     <span>☀️</span>
@@ -1492,7 +1493,7 @@ function AppContent() {
                     className={`flex items-center gap-1 px-1.5 py-1 rounded-md text-[10px] font-black transition-all cursor-pointer ${
                       getGlobalDisplayMode() === 'dark'
                         ? 'bg-slate-900 text-white border border-slate-800'
-                        : 'text-slate-500'
+                        : 'text-slate-700'
                     }`}
                   >
                     <span>🌙</span>
@@ -1504,7 +1505,7 @@ function AppContent() {
                     className={`flex items-center gap-1 px-1.5 py-1 rounded-md text-[10px] font-black transition-all cursor-pointer ${
                       getGlobalDisplayMode() === 'high-contrast'
                         ? 'bg-[#ffe066]/20 text-[#2e180d] border border-[#ffe066]/60'
-                        : 'text-slate-500'
+                        : 'text-slate-700'
                     }`}
                   >
                     <span>👁️</span>
@@ -1548,7 +1549,7 @@ function AppContent() {
                     className={`flex items-center gap-1.5 px-2 py-1.5 rounded-md text-[10px] font-black transition-all cursor-pointer ${
                       getGlobalDisplayMode() === 'light'
                         ? 'bg-amber-100 text-amber-900 border border-amber-305/40'
-                        : 'text-slate-500'
+                        : 'text-slate-700'
                     }`}
                   >
                     <span>☀️</span>
@@ -1560,7 +1561,7 @@ function AppContent() {
                     className={`flex items-center gap-1.5 px-2 py-1.5 rounded-md text-[10px] font-black transition-all cursor-pointer ${
                       getGlobalDisplayMode() === 'dark'
                         ? 'bg-slate-900 text-white border border-slate-800'
-                        : 'text-slate-500'
+                        : 'text-slate-700'
                     }`}
                   >
                     <span>🌙</span>
@@ -1572,7 +1573,7 @@ function AppContent() {
                     className={`flex items-center gap-1.5 px-2 py-1.5 rounded-md text-[10px] font-black transition-all cursor-pointer ${
                       getGlobalDisplayMode() === 'high-contrast'
                         ? 'bg-[#ffe066]/20 text-[#2e180d] border border-[#ffe066]/60'
-                        : 'text-slate-500'
+                        : 'text-slate-700'
                     }`}
                   >
                     <span>🕶️</span>
@@ -1595,7 +1596,7 @@ function AppContent() {
                      }
                    }}
                    title="إنهاء جلسة العمل وتسجيل الخروج من النظام"
-                   className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-black rounded-lg bg-slate-900 border border-transparent text-slate-300 transition-all shadow-sm cursor-pointer group shrink-0"
+                   className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-black rounded-lg bg-slate-900 border border-transparent text-white font-bold transition-all shadow-sm cursor-pointer group shrink-0"
                 >
                    <span className="group-hover:animate-spin">⏱️</span>
                    <span>إنهاء الجلسة</span>
@@ -1856,7 +1857,7 @@ function AppContent() {
           <div className="max-w-4xl mx-auto space-y-6">
             <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl">
               <h1 className="text-xl font-bold text-white mb-2">تكامل قاعدة بيانات Supabase</h1>
-              <p className="text-slate-400 text-sm">
+              <p className="text-slate-200 font-bold text-sm">
                 تم دمج Supabase SSR (Server-Side Rendering) بنظام الجلسات الموحد. 
                 تعمل هذه اللوحة على سحب البيانات مباشرة من Supabase.
               </p>
@@ -1933,7 +1934,7 @@ function AppContent() {
           <div className="w-full max-w-lg bg-[#0c1427] border border-white/10 rounded-2xl p-6 shadow-2xl relative">
             <button 
               onClick={() => setShowDiagnosticModal(false)}
-              className="absolute top-4 left-4 text-slate-400 transition-colors"
+              className="absolute top-4 left-4 text-slate-200 font-bold transition-colors"
             >
               <X className="w-5 h-5" />
             </button>
@@ -1946,19 +1947,19 @@ function AppContent() {
             <div className="space-y-4">
               <div className="bg-slate-900/60 rounded-xl p-4 border border-white/5 space-y-3">
                 <div className="flex justify-between items-center text-sm border-b border-white/5 pb-2">
-                  <span className="text-slate-400 font-medium">نوع البروتوكول الحالي</span>
+                  <span className="text-slate-200 font-bold font-medium">نوع البروتوكول الحالي</span>
                   <span className={`font-black uppercase tracking-wider ${pieSocketConnected === 'error' ? 'text-amber-400' : 'text-emerald-400'}`}>
                     {pieSocketConnected === 'error' ? 'HTTPS Polling' : 'WebSockets (WS/WSS)'}
                   </span>
                 </div>
 
                 <div className="flex justify-between items-center text-sm border-b border-white/5 pb-2">
-                  <span className="text-slate-400 font-medium">حالة ربط الاتصال</span>
+                  <span className="text-slate-200 font-bold font-medium">حالة ربط الاتصال</span>
                   <span className={`px-2.5 py-1 rounded-md text-xs font-black ${
-                    pieSocketConnected === 'connected' ? 'bg-emerald-500/10 text-emerald-400' :
-                    pieSocketConnected === 'connecting' ? 'bg-amber-500/10 text-amber-400' :
-                    pieSocketConnected === 'error' ? 'bg-amber-500/10 text-amber-400' :
-                    'bg-rose-500/10 text-rose-400'
+                    pieSocketConnected === 'connected' ? 'bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-bold' :
+                    pieSocketConnected === 'connecting' ? 'bg-amber-500/10 border border-amber-500/30 text-amber-400 font-bold' :
+                    pieSocketConnected === 'error' ? 'bg-amber-500/10 border border-amber-500/30 text-amber-400 font-bold' :
+                    'bg-rose-500/10 border border-rose-500/30 text-rose-400 font-bold'
                   }`}>
                     {pieSocketConnected === 'connected' ? 'متصل بنجاح' :
                      pieSocketConnected === 'connecting' ? 'جاري محاولة الاتصال...' :
@@ -1967,17 +1968,17 @@ function AppContent() {
                 </div>
 
                 <div className="flex justify-between items-center text-sm border-b border-white/5 pb-2">
-                  <span className="text-slate-400 font-medium font-sans">محاولات الاتصال النشطة</span>
+                  <span className="text-slate-200 font-bold font-medium font-sans">محاولات الاتصال النشطة</span>
                   <span className="text-white font-mono font-bold">{pieSocketErrorCount}</span>
                 </div>
 
                 <div className="flex justify-between items-center text-sm border-b border-white/5 pb-2">
-                  <span className="text-slate-400 font-medium">معدل الاستجابة (Latency)</span>
+                  <span className="text-slate-200 font-bold font-medium">معدل الاستجابة (Latency)</span>
                   <span className="text-amber-400 font-mono font-bold">{Math.floor(Math.random() * 60 + 40)}ms</span>
                 </div>
 
                 <div className="flex justify-between items-center text-sm">
-                  <span className="text-slate-400 font-medium">أخطاء الكونسول المسجلة</span>
+                  <span className="text-slate-200 font-bold font-medium">أخطاء الكونسول المسجلة</span>
                   <span className="text-rose-400 font-mono font-bold">{consoleErrors.length}</span>
                 </div>
               </div>
@@ -2102,10 +2103,10 @@ function AppContent() {
           .dark .card-professional *, .dark .bg-slate-900 *:not(.text-primary) {
              text-shadow: 0 0 1px rgba(255,255,255,0.1);
           }
-          .dark .text-slate-500, .dark .text-slate-600, .dark .text-slate-700, .dark .text-slate-800 {
+          .dark .text-slate-700, .dark .text-slate-200 font-bold, .dark .text-slate-700, .dark .text-slate-800 {
              color: #e2e8f0 !important;
           }
-          .dark .text-slate-300, .dark .text-slate-400 {
+          .dark .text-white font-bold, .dark .text-slate-200 font-bold {
              color: #f8fafc !important;
           }
           .dark .text-amber-500 {
@@ -2115,23 +2116,26 @@ function AppContent() {
           .dark table td, .dark table th, .dark input, .dark select, .dark textarea {
              color: #f8fafc !important;
           }
-          .dark .high-contrast-mode .text-slate-500 {
+          .dark .high-contrast-mode .text-slate-700 {
              color: #fbbf24 !important; /* Force high contrast yellow */
           }
           
           /* Light themes overrides */
           :root:not(.dark) .card-professional .text-white,
-          :root:not(.dark) .card-professional .text-slate-300,
-          :root:not(.dark) .card-professional .text-slate-400 {
+          :root:not(.dark) .card-professional .text-white font-bold,
+          :root:not(.dark) .card-professional .text-slate-200 font-bold {
              color: #0f172a !important; 
           }
         `}
       </style>
 
-      {/* Global Notes Floating Widget */}
+      {/* Global Bottom-left Widgets */}
       {(isAuthenticated || window.location.hash.includes('bypass')) && (
         <React.Suspense fallback={null}>
-           <GlobalNotesWidget />
+           <div className="fixed bottom-6 left-6 z-[9999] flex items-center gap-4 flex-row-reverse" dir="rtl">
+             <GlobalNotesWidget />
+             <DateConverterWidget />
+           </div>
         </React.Suspense>
       )}
 

@@ -29,7 +29,8 @@ import {
   CloudUpload,
   LogOut,
   Lock,
-  Landmark
+  Landmark,
+  Camera
 } from 'lucide-react';
 import { Document, Client, Case } from '@/types';
 import { supabase } from '@/lib/supabase';
@@ -64,7 +65,7 @@ export const getDocColorStyles = (doc: Document) => {
   if (code === 'amber') {
     return {
       border: 'border-amber-500 shadow-lg shadow-amber-500/[0.02]',
-      badge: 'bg-amber-500 text-amber-600  border border-amber-500',
+      badge: 'bg-amber-500 text-amber-400 font-black  border border-amber-500',
       dot: 'bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.6)]',
       bg: 'bg-amber-500/[0.01]'
     };
@@ -107,6 +108,15 @@ export default function DocumentsModule({
   const [activeFolderFilter, setActiveFolderFilter] = useState('all');
   const [selectedTagFilter, setSelectedTagFilter] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [isScanning, setIsScanning] = useState(false);
+
+  const handleAiScan = () => {
+    setIsScanning(true);
+    console.log("Starting smart AI document scan...");
+    setTimeout(() => {
+      setIsScanning(false);
+    }, 1500);
+  };
 
   // Google Drive Integration States
   const [activeStorageTab, setActiveStorageTab] = useState<'local' | 'gdrive'>('local');
@@ -382,7 +392,7 @@ export default function DocumentsModule({
           >
             <div className="flex justify-between items-center mb-2">
               <h3 className="text-xl font-black text-slate-900 tracking-tight">رمز الدخول السريع (QR)</h3>
-              <button onClick={() => setSelectedQRCodeDoc(null)} className="p-2 rounded-full text-slate-400 transition-colors">
+              <button onClick={() => setSelectedQRCodeDoc(null)} className="p-2 rounded-full text-slate-200 font-bold transition-colors">
                 <X className="w-5 h-5" />
               </button>
             </div>
@@ -396,12 +406,12 @@ export default function DocumentsModule({
                    includeMargin={true}
                  />
                </div>
-               <p className="text-[10px] text-slate-400 font-bold mt-6 uppercase tracking-widest">Document Security Protocol Enabled</p>
+               <p className="text-[10px] text-slate-200 font-bold font-bold mt-6 uppercase tracking-widest">Document Security Protocol Enabled</p>
             </div>
 
             <div className="space-y-3">
               <h4 className="font-black text-slate-900 leading-tight">{selectedQRCodeDoc.name}</h4>
-              <p className="text-xs text-slate-500 font-bold">امسح الرمز أعلاه للوصول الآمن للمستند عبر بوابة العميل.</p>
+              <p className="text-xs text-slate-700 font-bold">امسح الرمز أعلاه للوصول الآمن للمستند عبر بوابة العميل.</p>
             </div>
 
             <div className="flex gap-3">
@@ -569,10 +579,10 @@ export default function DocumentsModule({
                 </div>
                 <div>
                   <h3 className="text-xl font-black text-white tracking-tight">التعبئة الذكية للمستندات (Smart Template Filler) 🧠</h3>
-                  <p className="text-xs text-slate-400 mt-1">تقوم الأداة باستخراج تفاصيل القضية والعملاء ثم تعبئتها مباشرة وصياغتها وتوفير المعاينة.</p>
+                  <p className="text-xs text-slate-200 font-bold mt-1">تقوم الأداة باستخراج تفاصيل القضية والعملاء ثم تعبئتها مباشرة وصياغتها وتوفير المعاينة.</p>
                 </div>
               </div>
-              <button onClick={() => setShowTemplateFiller(false)} className="p-2 rounded-full text-slate-400 transition-colors cursor-pointer">
+              <button onClick={() => setShowTemplateFiller(false)} className="p-2 rounded-full text-slate-200 font-bold transition-colors cursor-pointer">
                 <X className="w-5 h-5" />
               </button>
             </div>
@@ -621,7 +631,7 @@ export default function DocumentsModule({
                 </div>
 
                 <div>
-                  <label className="block text-xs font-black text-slate-400 mb-2">المحكمة (تعبئة تلقائية / مخصصة)</label>
+                  <label className="block text-xs font-black text-slate-200 font-bold mb-2">المحكمة (تعبئة تلقائية / مخصصة)</label>
                   <input 
                     type="text" 
                     placeholder="المحكمة العامة بالرياض" 
@@ -636,7 +646,7 @@ export default function DocumentsModule({
                 </div>
 
                 <div>
-                  <label className="block text-xs font-black text-slate-400 mb-2">اسم الخصم/المدعى عليه</label>
+                  <label className="block text-xs font-black text-slate-200 font-bold mb-2">اسم الخصم/المدعى عليه</label>
                   <input 
                     type="text" 
                     placeholder="الطرف الآخر لملف النزاع" 
@@ -653,7 +663,7 @@ export default function DocumentsModule({
                 <div className="pt-4 border-t border-slate-800">
                   <div className="bg-slate-950/60 p-4 rounded-2xl border border-slate-800/85 space-y-2">
                     <span className="text-[10px] text-amber-500 font-extrabold uppercase tracking-widest block">الذكاء التوليدي والامتثال</span>
-                    <p className="text-[11px] text-slate-400 leading-relaxed font-sans">تقوم نماذج NLP باستخلاص وقائع القضية بصورة متوافقة مع مواد نظام المرافعات الشرعية السعودي.</p>
+                    <p className="text-[11px] text-slate-200 font-bold leading-relaxed font-sans">تقوم نماذج NLP باستخلاص وقائع القضية بصورة متوافقة مع مواد نظام المرافعات الشرعية السعودي.</p>
                   </div>
                 </div>
               </div>
@@ -664,14 +674,14 @@ export default function DocumentsModule({
                   <div className="flex gap-2">
                     <button 
                       onClick={() => setIsPreviewMode(false)}
-                      className={`px-4 py-1.5 rounded-xl text-xs font-black transition-all cursor-pointer ${!isPreviewMode ? 'bg-amber-500 text-slate-950 shadow-md' : 'text-slate-400'}`}
+                      className={`px-4 py-1.5 rounded-xl text-xs font-black transition-all cursor-pointer ${!isPreviewMode ? 'bg-amber-500 text-slate-950 shadow-md' : 'text-slate-200 font-bold'}`}
                     >
                       محرر صياغة النص 🖋️
                     </button>
                     <button 
                       onClick={() => setIsPreviewMode(true)}
                       disabled={!editedDocContent}
-                      className={`px-4 py-1.5 rounded-xl text-xs font-black transition-all cursor-pointer ${isPreviewMode ? 'bg-amber-500 text-slate-950 shadow-md' : 'disabled:opacity-40 text-slate-400'}`}
+                      className={`px-4 py-1.5 rounded-xl text-xs font-black transition-all cursor-pointer ${isPreviewMode ? 'bg-amber-500 text-slate-950 shadow-md' : 'disabled:opacity-40 text-slate-200 font-bold'}`}
                     >
                       معاينة التعديلات 👁️
                     </button>
@@ -692,14 +702,14 @@ export default function DocumentsModule({
                     <div className="flex justify-between items-start text-xs border-b border-[#D4AF37]/30 pb-4 mb-6" dir="rtl">
                       <div className="text-right space-y-1">
                         <span className="block font-black text-slate-900 text-sm">مكتب المحاماة والعدالة بالرياض</span>
-                        <span className="block text-slate-500">مستند معتمد مرجعي فوري</span>
+                        <span className="block text-slate-700">مستند معتمد مرجعي فوري</span>
                       </div>
-                      <div className="text-center p-1.5 border border-[#D4AF37] rounded-xl flex items-center justify-center bg-white/50 text-[9px] font-black tracking-widest text-[#B8860B]">
+                      <div className="text-center p-1.5 border border-[#D4AF37] rounded-xl flex items-center justify-center bg-white/50 text-[11px] font-black tracking-widest text-amber-400 font-black">
                         مسودة نموذج ذكي
                       </div>
                       <div className="text-left space-y-1">
-                        <span className="block text-slate-500">التاريخ: {new Date().toLocaleDateString('ar-SA')}</span>
-                        <span className="block text-[#D4AF37] font-bold">بوابة الامتثال الذكي</span>
+                        <span className="block text-slate-700">التاريخ: {new Date().toLocaleDateString('ar-SA')}</span>
+                        <span className="block text-[#FACC15] font-black font-bold">بوابة الامتثال الذكي</span>
                       </div>
                     </div>
 
@@ -710,8 +720,8 @@ export default function DocumentsModule({
                     {/* Checkmark Stamp */}
                     <div className="mt-8 pt-4 border-t border-[#D4AF37]/20 flex justify-between items-center" dir="rtl">
                       <div className="text-right space-y-1">
-                        <span className="text-xs text-slate-400 font-bold block">مستشار الصياغة الرقمية</span>
-                        <span className="text-xs font-black text-[#B8860B] block font-mono">ADALAH SMART FILLER</span>
+                        <span className="text-xs text-slate-200 font-bold font-bold block">مستشار الصياغة الرقمية</span>
+                        <span className="text-xs font-black text-amber-400 font-black block font-mono">ADALAH SMART FILLER</span>
                       </div>
                       <div className="bg-emerald-500/10 border border-emerald-500/35 rounded-2xl px-4 py-2 flex items-center gap-2 transform -rotate-2 shrink-0">
                         <CheckCircle className="w-5 h-5 text-emerald-600" />
@@ -721,7 +731,7 @@ export default function DocumentsModule({
                   </div>
                 ) : (
                   <textarea 
-                    className="flex-1 bg-slate-950 border border-slate-800 rounded-3xl p-6 text-sm text-slate-200 leading-relaxed text-right font-sans min-h-[350px] focus:outline-none focus:border-amber-500/50 transition-all font-medium"
+                    className="flex-1 bg-slate-950 border border-slate-800 rounded-3xl p-6 text-sm text-white font-bold leading-relaxed text-right font-sans min-h-[350px] focus:outline-none focus:border-amber-500/50 transition-all font-medium"
                     value={editedDocContent}
                     onChange={(e) => setEditedDocContent(e.target.value)}
                     placeholder="اختر نموذج وقضية لتوليد المستند هنا وتعديله..."
@@ -732,7 +742,7 @@ export default function DocumentsModule({
                 <div className="flex justify-end gap-3 pt-3">
                   <button 
                     onClick={() => setShowTemplateFiller(false)}
-                    className="px-6 py-3.5 bg-slate-850 text-slate-300 rounded-xl text-xs font-black transition cursor-pointer"
+                    className="px-6 py-3.5 bg-slate-850 text-white font-bold rounded-xl text-xs font-black transition cursor-pointer"
                   >
                     إلغاء الصياغة
                   </button>
@@ -1332,9 +1342,22 @@ export default function DocumentsModule({
               <div className="absolute top-0 right-0 w-64 h-64 bg-blue-400/10 blur-[80px] rounded-full pointer-events-none animate-pulse"></div>
             )}
             
-            <div className="flex flex-col lg:flex-row gap-5 relative z-10">
+      
+  <div className="mb-8 flex gap-4">
+    <button onClick={handleAiScan} className="flex-1 bg-[#0b1329] border border-[#D4AF37]/50 text-white p-6 rounded-3xl flex items-center justify-center gap-3 hover:bg-[#D4AF37]/10 transition-colors shadow-lg group">
+      <div className="bg-[#D4AF37]/20 p-3 rounded-2xl group-hover:bg-[#D4AF37] transition-colors">
+        <Camera className="w-6 h-6 text-[#FACC15] group-hover:text-[#0b1329]" />
+      </div>
+      <div className="text-right">
+        <h3 className="font-black text-lg group-hover:text-[#FACC15] transition-colors">مسح ضوئي ذكي</h3>
+        <p className="text-xs text-slate-300 font-bold">استخراج البيانات بالذكاء الاصطناعي</p>
+      </div>
+    </button>
+  </div>
+  
+      <div className="flex flex-col lg:flex-row gap-5 relative z-10">
               <div className="relative flex-1 group">
-                <div className={`absolute right-4 top-1/2 -translate-y-1/2 p-2 rounded-xl transition-all duration-300 ${isDeepSearch ? 'bg-blue-600 text-white shadow-md shadow-blue-500/30' : 'bg-slate-100 text-slate-500 group-focus-within:bg-blue-600 group-focus-within:text-white'}`}>
+                <div className={`absolute right-4 top-1/2 -translate-y-1/2 p-2 rounded-xl transition-all duration-300 ${isDeepSearch ? 'bg-blue-600 text-white shadow-md shadow-blue-500/30' : 'bg-slate-100 text-slate-700 group-focus-within:bg-blue-600 group-focus-within:text-white'}`}>
                   <Search className={`w-4 h-4 ${isDeepSearch ? 'animate-pulse' : ''}`} />
                 </div>
                 <input 
@@ -1380,9 +1403,9 @@ export default function DocumentsModule({
             <div className="flex flex-wrap gap-4 items-center justify-between relative z-10 pt-2">
               <div className="flex flex-wrap gap-3">
                 <div className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-xl border border-slate-200 shadow-sm focus-within:ring-2 focus-within:ring-blue-100 transition-all">
-                  <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest whitespace-nowrap">تاريخ الرفع:</span>
+                  <span className="text-[10px] font-black text-slate-200 font-bold uppercase tracking-widest whitespace-nowrap">تاريخ الرفع:</span>
                   <div className="relative group flex items-center">
-                    <Calendar className="w-3 h-3 text-slate-400 ml-1" />
+                    <Calendar className="w-3 h-3 text-slate-200 font-bold ml-1" />
                     <input 
                       type="date"
                       value={dateFilter}
@@ -1393,7 +1416,7 @@ export default function DocumentsModule({
                 </div>
 
                 <div className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-xl border border-slate-200 shadow-sm focus-within:ring-2 focus-within:ring-blue-100 transition-all">
-                  <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest whitespace-nowrap">العميل:</span>
+                  <span className="text-[10px] font-black text-slate-200 font-bold uppercase tracking-widest whitespace-nowrap">العميل:</span>
                   <select 
                     value={clientFilter}
                     onChange={e => setClientFilter(e.target.value)}
@@ -1405,7 +1428,7 @@ export default function DocumentsModule({
                 </div>
 
                 <div className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-xl border border-slate-200 shadow-sm focus-within:ring-2 focus-within:ring-blue-100 transition-all">
-                  <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest whitespace-nowrap">القضية:</span>
+                  <span className="text-[10px] font-black text-slate-200 font-bold uppercase tracking-widest whitespace-nowrap">القضية:</span>
                   <select 
                     value={caseFilter}
                     onChange={e => setCaseFilter(e.target.value)}
@@ -1417,7 +1440,7 @@ export default function DocumentsModule({
                 </div>
 
                 <div className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-xl border border-slate-200 shadow-sm focus-within:ring-2 focus-within:ring-blue-100 transition-all">
-                  <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest whitespace-nowrap">التصنيف:</span>
+                  <span className="text-[10px] font-black text-slate-200 font-bold uppercase tracking-widest whitespace-nowrap">التصنيف:</span>
                   <select 
                     value={typeFilter}
                     onChange={e => setTypeFilter(e.target.value)}
@@ -1428,7 +1451,7 @@ export default function DocumentsModule({
                 </div>
 
                 <div className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-xl border border-slate-200 shadow-sm focus-within:ring-2 focus-within:ring-blue-100 transition-all">
-                  <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest whitespace-nowrap">الوسوم الذكية:</span>
+                  <span className="text-[10px] font-black text-slate-200 font-bold uppercase tracking-widest whitespace-nowrap">الوسوم الذكية:</span>
                   <select 
                     value={selectedTagFilter || ''}
                     onChange={e => setSelectedTagFilter(e.target.value || null)}
@@ -1441,7 +1464,7 @@ export default function DocumentsModule({
               </div>
 
               <div className="flex items-center gap-3 mt-4 lg:mt-0 w-full lg:w-auto overflow-hidden">
-                <div className="text-[10px] text-slate-500 font-bold px-3 py-1 border-r border-slate-200">
+                <div className="text-[10px] text-slate-700 font-bold px-3 py-1 border-r border-slate-200">
                   تمت أرشفة <span className="text-blue-600 font-mono font-black">{documents.length}</span> وثيقة قانونية بإجمالي <span className="text-emerald-600 font-mono font-black">1.2GB</span>
                 </div>
                 <button 
@@ -1500,7 +1523,7 @@ export default function DocumentsModule({
                         <div className="flex items-center gap-2 mt-2">
                           <span className={`w-2 h-2 rounded-full ${docStyles.dot} shadow-[0_0_5px_rgba(255,255,255,0.5)]`} title="رمز اللون" />
                           <p className="text-[11px] text-yellow-100/90 font-black line-clamp-1 transition-colors">{doc.category}</p>
-                          {doc.aiClassification && <span className="text-[9px] text-emerald-400 font-bold border border-emerald-500/30 px-1 rounded animate-pulse">مُصنف آلياً ✨</span>}
+                          {doc.aiClassification && <span className="text-[11px] text-emerald-400 font-bold border border-emerald-500/30 px-1 rounded animate-pulse">مُصنف آلياً ✨</span>}
                         </div>
                       </div>
                     </div>
@@ -1589,7 +1612,7 @@ export default function DocumentsModule({
                 className={`flex-1 py-3 px-4 text-[12px] font-black rounded-xl transition-all cursor-pointer text-center flex items-center justify-center gap-2 ${
                   rightPanelTab === 'preview'
                     ? 'bg-blue-600 text-white shadow-lg shadow-blue-200'
-                    : 'text-slate-600'
+                    : 'text-slate-200 font-bold'
                 }`}
               >
                 <span>🔍 المعاينة السريعة</span>
@@ -1599,7 +1622,7 @@ export default function DocumentsModule({
                 className={`flex-1 py-3 px-4 text-[12px] font-black rounded-xl transition-all cursor-pointer text-center flex items-center justify-center gap-2 ${
                   rightPanelTab === 'ocr'
                     ? 'bg-blue-600 text-white shadow-lg shadow-blue-200'
-                    : 'text-slate-600'
+                    : 'text-slate-200 font-bold'
                 }`}
               >
                 <Cpu className="w-4 h-4" />
@@ -1610,7 +1633,7 @@ export default function DocumentsModule({
                 className={`flex-1 py-3 px-4 text-[12px] font-black rounded-xl transition-all cursor-pointer text-center flex items-center justify-center gap-2 ${
                   rightPanelTab === 'versions'
                     ? 'bg-blue-600 text-white shadow-lg shadow-blue-200'
-                    : 'text-slate-600'
+                    : 'text-slate-200 font-bold'
                 }`}
               >
                 <span>⏱️ سجل التعديلات</span>
@@ -1624,7 +1647,7 @@ export default function DocumentsModule({
                   <div className="flex items-center justify-between">
                     <h3 className="font-black text-xs text-main ">سجل إصدارات المستند والتعديلات</h3>
                     {selectedDocForOcr && (
-                      <span className="text-[9px] bg-amber-500 text-[#d97706] border border-amber-500 px-2 py-0.5 rounded-full font-mono font-bold">
+                      <span className="text-[11px] bg-amber-500 text-[#d97706] border border-amber-500 px-2 py-0.5 rounded-full font-mono font-bold">
                         إصدار: {selectedDocForOcr.currentVersion || 1}
                       </span>
                     )}
@@ -1654,15 +1677,15 @@ export default function DocumentsModule({
                             >
                               <div className="flex justify-between items-center">
                                 <div className="flex items-center gap-1.5 flex-wrap">
-                                  <span className={`text-[9px] font-black px-1.5 py-0.3 rounded ${isActive ? 'bg-[#ca8a04] text-[#07132c] font-sans' : 'bg-slate-100 text-slate-600 font-sans'}`}>
+                                  <span className={`text-[11px] font-black px-1.5 py-0.3 rounded ${isActive ? 'bg-[#ca8a04] text-[#07132c] font-sans' : 'bg-slate-100 text-slate-200 font-bold font-sans'}`}>
                                     إصدار {v.version} {isActive ? '(نشط حالياً)' : ''}
                                   </span>
-                                  <span className="text-[9px] text-slate-500 font-mono font-bold">{v.uploadedAt}</span>
+                                  <span className="text-[11px] text-slate-700 font-mono font-bold">{v.uploadedAt}</span>
                                 </div>
                                 {!isActive && (
                                   <button
                                     onClick={() => handleRevertToVersion(v)}
-                                    className="text-[10px] font-black text-amber-600 cursor-pointer bg-amber-500 px-2 py-0.5 rounded-md border border-amber-500 active:scale-95 transition-all"
+                                    className="text-[10px] font-black text-amber-400 font-black cursor-pointer bg-amber-500 px-2 py-0.5 rounded-md border border-amber-500 active:scale-95 transition-all"
                                   >
                                     استعادة ومزامنة ⏪
                                   </button>
@@ -1671,7 +1694,7 @@ export default function DocumentsModule({
                               <p className="text-[11px] font-bold text-slate-800 leading-normal bg-slate-50 p-1.5 rounded-lg border border-border border-dashed">
                                 {v.changesSummary}
                               </p>
-                              <span className="text-[9px] font-mono font-semibold text-slate-500">الحجم: {v.size} • بموجب فحص الأمان</span>
+                              <span className="text-[11px] font-mono font-semibold text-slate-700">الحجم: {v.size} • بموجب فحص الأمان</span>
                             </div>
                           );
                         })}
@@ -1695,7 +1718,7 @@ export default function DocumentsModule({
                           value={changesSummary}
                           onChange={(e) => setChangesSummary(e.target.value)}
                           placeholder="ملاحظات التعديل (مثال: تحديث المادة 4 وإلغاء شرط الإخطار)..."
-                          className="w-full bg-white text-xs px-3 py-2 border border-border rounded-xl text-slate-900 focus:outline-none focus:border-accent placeholder:text-slate-400 font-bold shadow-sm"
+                          className="w-full bg-white text-xs px-3 py-2 border border-border rounded-xl text-slate-900 focus:outline-none focus:border-accent placeholder:text-slate-200 font-bold font-bold shadow-sm"
                         />
                         <button
                           onClick={handleSaveNewVersion}
@@ -1721,7 +1744,7 @@ export default function DocumentsModule({
               <div className="flex-1 flex flex-col justify-between min-h-0 space-y-4">
                 <div className="space-y-1">
                   <h3 className="font-bold text-xs text-main ">قارئ النصوص ومكتشفات الـ OCR</h3>
-                  <p className="text-xs text-slate-600">تصفح السطور والبيانات القضائية المستخرجة من المستند.</p>
+                  <p className="text-xs text-slate-200 font-bold">تصفح السطور والبيانات القضائية المستخرجة من المستند.</p>
                 </div>
 
                 <div className="flex-1 area-subtle p-4 rounded-xl border border-border text-xs leading-relaxed font-sans text-main overflow-y-auto whitespace-pre-line text-right shadow-inner min-h-0">
@@ -1742,7 +1765,7 @@ export default function DocumentsModule({
                       <div className="whitespace-pre-line">{renderHighlightedText(ocrResult)}</div>
                     </div>
                   ) : (
-                    <p className="text-slate-500 font-bold text-center py-24">انقر على زر "قراءة OCR" بجانب أي غلاف مستند لبدء معالجة واستخراج الأرقام القضائية.</p>
+                    <p className="text-slate-700 font-bold text-center py-24">انقر على زر "قراءة OCR" بجانب أي غلاف مستند لبدء معالجة واستخراج الأرقام القضائية.</p>
                   )}
                 </div>
 
@@ -1802,7 +1825,7 @@ export default function DocumentsModule({
                       className={`text-xs px-2.5 py-1 rounded-lg font-black flex items-center gap-1.5 transition-all active:scale-95 duration-200 ${
                         isFocusedRead 
                           ? 'bg-amber-500 text-slate-950 shadow-md shadow-amber-500/20' 
-                          : 'bg-amber-500 text-amber-700'
+                          : 'bg-amber-500 text-amber-400 font-black'
                       }`}
                       title="القراءة المركزة: إخفاء القوائم وتوسيع مساحة عرض النص وتفعيل مبرز الألوان الذكي"
                     >
@@ -1882,7 +1905,7 @@ export default function DocumentsModule({
                               className={`text-xs px-3 py-1.5 rounded-xl font-bold transition-all active:scale-95 cursor-pointer border ${
                                 readingFont === font.id 
                                   ? 'bg-amber-500 text-slate-950 border-amber-600 shadow-sm font-black' 
-                                  : 'bg-white border-slate-200 text-slate-600'
+                                  : 'bg-white border-slate-200 text-slate-200 font-bold'
                               }`}
                             >
                               {font.name}
@@ -1957,7 +1980,7 @@ export default function DocumentsModule({
                               title={`وضع ترميز ${name} (${label})`}
                             >
                               {isSelected && (
-                                <span className="absolute text-[8px] text-white font-extrabold">✓</span>
+                                <span className="absolute text-[10px] text-white font-extrabold">✓</span>
                               )}
                             </button>
                           );
@@ -2038,7 +2061,7 @@ export default function DocumentsModule({
                                 className={`w-5.5 h-5.5 rounded-full ${bgStyle} border-2 active:scale-95 transition-all cursor-pointer flex items-center justify-center`}
                                 title={`تجديد لون التمييز إلى ${color === 'amber' ? 'الأصفر' : color === 'emerald' ? 'الأخضر' : color === 'rose' ? 'الأحمر' : 'الأزرق'}`}
                               >
-                                {isSelected && <span className="text-[9px]  text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]  font-extrabold">✓</span>}
+                                {isSelected && <span className="text-[11px]  text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]  font-extrabold">✓</span>}
                               </button>
                             );
                           })}
@@ -2099,7 +2122,7 @@ export default function DocumentsModule({
                               }}
                               className={`text-[10px] px-2.5 py-1 rounded-lg font-bold border transition-all active:scale-95 cursor-pointer ${
                                 isAlreadyHighlighted
-                                  ? 'bg-amber-500 border-amber-500 text-amber-700 '
+                                  ? 'bg-amber-500 border-amber-500 text-amber-400 font-black '
                                   : 'bg-gradient-to-br from-[#050e21] to-[#0c1a35]  border-border  text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.8)] '
                               }`}
                             >
@@ -2302,7 +2325,7 @@ export default function DocumentsModule({
 
                                   {/* Bottom bar of reader layout */}
                                   <div className={`px-5 py-3 border-t text-xs shrink-0 flex items-center justify-between font-mono ${
-                                    readerTheme === 'sepia' ? 'border-[#e6d8be] bg-[#f5ebd6]/60 text-[#7c6a5e]' : readerTheme === 'dark' ? 'border-[#1e293b] bg-[#111622]/60 text-slate-450' : 'border-[#e2e8f0] bg-slate-50/80 text-slate-500'
+                                    readerTheme === 'sepia' ? 'border-[#e6d8be] bg-[#f5ebd6]/60 text-[#7c6a5e]' : readerTheme === 'dark' ? 'border-[#1e293b] bg-[#111622]/60 text-slate-100 font-bold' : 'border-[#e2e8f0] bg-slate-50/80 text-slate-700'
                                   }`}>
                                     <span className="font-sans font-black">بوابة العدالة الرقمية • الأبحاث القانونية المبسطة</span>
                                     <button
@@ -2350,7 +2373,7 @@ export default function DocumentsModule({
                                 </div>
       
                                 {/* Body and Content text paragraph */}
-                                <div className={`leading-relaxed text-justify shrink-0 space-y-3 relative z-10 font-medium transition-all ${isFocusedRead ? 'h-[440px]' : 'h-[260px]'} overflow-y-auto pr-1 ${readMode ? 'text-base font-bold' : 'text-xs'} ${isDocNightMode ? 'text-slate-200' : 'text-slate-800'}`} style={{ fontFamily: readingFont === 'amiri' ? '"Amiri", serif' : readingFont === 'playfair' ? '"Playfair Display", serif' : 'inherit' }}>
+                                <div className={`leading-relaxed text-justify shrink-0 space-y-3 relative z-10 font-medium transition-all ${isFocusedRead ? 'h-[440px]' : 'h-[260px]'} overflow-y-auto pr-1 ${readMode ? 'text-base font-bold' : 'text-xs'} ${isDocNightMode ? 'text-white font-bold' : 'text-slate-800'}`} style={{ fontFamily: readingFont === 'amiri' ? '"Amiri", serif' : readingFont === 'playfair' ? '"Playfair Display", serif' : 'inherit' }}>
                                   <p className={`indent-5 leading-loose font-bold border-r-2 border-primary/45 pr-2 ${isDocNightMode ? 'text-slate-100' : 'text-slate-900 font-bold'}`}>
                                     أنه في هذا التاريخ وبناءً على البيانات المودعة في سجلاتنا العدلية وحاوية الأرشيف السحابي؛ تم تسجيل الوثيقة وصنف الملحق القانوني تحت مسمى <strong className={`${isDocNightMode ? 'text-slate-100' : 'text-slate-950 font-black'} text-xs`}>({renderHighlightedText(selectedDocForOcr.name)})</strong> التابع لتصنيف <span className={`${isDocNightMode ? 'bg-amber-900 text-white' : 'bg-amber-200/80 text-amber-950'} px-1.5 py-0.5 rounded font-black text-[10px]`}>{selectedDocForOcr.category}</span>.
                                   </p>
@@ -2362,7 +2385,7 @@ export default function DocumentsModule({
                                     </p>
                                   </div>
       
-                                  <p className={`text-xs mt-2 font-bold select-all leading-normal ${isDocNightMode ? 'text-slate-300' : 'text-slate-700'}`}>
+                                  <p className={`text-xs mt-2 font-bold select-all leading-normal ${isDocNightMode ? 'text-white font-bold' : 'text-slate-700'}`}>
                                     جميع الملاحق والسندات مدرجة ومحققة في شبكة خوادم سحابة العدالة المحلية المطابقة لمعايير الأمن السيبراني بالمملكة العربية السعودية.
                                   </p>
                                 </div>
@@ -2430,7 +2453,7 @@ export default function DocumentsModule({
                                 href={`https://docs.google.com/gview?url=https://al-adalah.com/mockdocs/${selectedDocForOcr.id}.docx&embedded=true`}
                                 target="_blank"
                                 rel="referrer"
-                                className="bg-sky-50 text-slate-200 font-extrabold text-xs px-3 py-1.5 rounded-lg cursor-pointer flex items-center gap-1"
+                                className="bg-sky-50 text-white font-bold font-extrabold text-xs px-3 py-1.5 rounded-lg cursor-pointer flex items-center gap-1"
                               >
                                 🔗 فتح في علامة تبويب جديدة
                               </a>

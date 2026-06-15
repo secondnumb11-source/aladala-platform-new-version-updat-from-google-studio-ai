@@ -28,6 +28,13 @@
   --lift-y: 0px;
   --rotate-x: 0deg;
   --rotate-y: 0deg;
+  
+  /* Accessible Text Color Tokens */
+  --color-text-primary: #ffffff;
+  --color-text-secondary: #facc15;
+  --color-text-muted: #cbd5e1;
+  --color-text-on-dark: #ffffff;
+  --color-text-on-light: #0b1329;
 }
 
 /* Accessible Text Semantic Tokens */
@@ -1654,65 +1661,76 @@ body.focus-mode-active main {
 /* --- GLOBAL HOVER ANIMATION & MOVEMENT INHIBITOR ENGINE --- */
 /* Disables all hover scale, lift, translation, parallax offsets, and kinetic movements on all cards, boxes, and slots system-wide */
 .card-professional,
+.card-professional:hover,
 .card-professional-case,
+.card-professional-case:hover,
 .card-professional-item,
+.card-professional-item:hover,
 .inner-card-box,
+.inner-card-box:hover,
 .glass-panel,
+.glass-panel:hover,
 .bento-card,
+.bento-card:hover,
+.relative.group:hover,
+.group\/card:hover,
+[class*="group"]:hover,
 [class*="card"],
-[class*="widget"] {
-  transition: background-color 0.25s ease, border-color 0.25s ease, color 0.25s ease !important;
-}
-
-.card-professional:not(:hover),
-.card-professional-case:not(:hover),
-.card-professional-item:not(:hover),
-.inner-card-box:not(:hover),
-.glass-panel:not(:hover),
-.bento-card:not(:hover),
-.relative.group:not(:hover),
-.group\/card:not(:hover),
-[class*="group"]:not(:hover),
-[class*="card"]:not(:hover),
-[class*="widget"]:not(:hover) {
+[class*="card"]:hover,
+[class*="widget"],
+[class*="widget"]:hover {
   transform: none !important;
   scale: 1 !important;
   translate: 0px 0px !important;
-  transition: none !important;
+  transition: background-color 0.25s ease, border-color 0.25s ease, color 0.25s ease !important;
   box-shadow: 0 4px 6px -1px var(--shadow-color, rgba(0, 0, 0, 0.12)), 0 2px 4px -1px var(--shadow-color, rgba(0, 0, 0, 0.06)) !important;
 }
 
 /* Maintain identical shadow and position for gold-bordered and custom cases on hover */
-.card-professional-gold-bordered:not(:hover) {
+.card-professional-gold-bordered:hover {
   transform: none !important;
   scale: 1 !important;
   box-shadow: none !important;
 }
 
 /* Disable any children transformations such as SVG scales or icons rotations inside hovered cards */
-.card-professional:not(:hover) *,
-.card-professional-case:not(:hover) *,
-.card-professional-item:not(:hover) *,
-[class*="card"]:not(:hover) *,
-[class*="widget"]:not(:hover) *,
-.bento-card:not(:hover) * {
+.card-professional *,
+.card-professional:hover *,
+.card-professional-case *,
+.card-professional-case:hover *,
+.card-professional-item *,
+.card-professional-item:hover *,
+[class*="card"] *,
+[class*="card"]:hover *,
+[class*="widget"] *,
+[class*="widget"]:hover *,
+.bento-card *,
+.bento-card:hover * {
   transform: none !important;
   scale: 1 !important;
 }
 
 /* Maintain static state or hide hover-only pseudo-effects */
-.card-professional:not(:hover)::before,
-.card-professional-gold-bordered:not(:hover)::before,
-[class*="card-professional"]:not(:hover)::before,
-.card-professional-case:not(:hover)::before {
+.card-professional::before,
+.card-professional:hover::before,
+.card-professional-gold-bordered::before,
+.card-professional-gold-bordered:hover::before,
+[class*="card-professional"]::before,
+[class*="card-professional"]:hover::before,
+.card-professional-case::before,
+.card-professional-case:hover::before {
   animation: none !important;
   opacity: 0.15 !important;
 }
 
-.card-professional:not(:hover)::after,
-.card-professional-gold-bordered:not(:hover)::after,
-[class*="card-professional"]:not(:hover)::after,
-.card-professional-case:not(:hover)::after {
+.card-professional::after,
+.card-professional:hover::after,
+.card-professional-gold-bordered::after,
+.card-professional-gold-bordered:hover::after,
+[class*="card-professional"]::after,
+[class*="card-professional"]:hover::after,
+.card-professional-case::after,
+.card-professional-case:hover::after {
   animation: none !important;
   opacity: 0 !important;
   transform: none !important;
@@ -1720,11 +1738,14 @@ body.focus-mode-active main {
 
 /* Ensure no visual hover flicker, bounce or lifting for specific custom widgets */
 .no-hover-parallax,
-.no-hover-parallax *:not(:hover),
-.parallax-container:not(:hover),
-.parallax-container *:not(:hover),
-.interactive-card:not(:hover),
-.interactive-card *:not(:hover) {
+.no-hover-parallax *,
+.no-hover-parallax:hover *,
+.parallax-container,
+.parallax-container *,
+.parallax-container:hover *,
+.interactive-card,
+.interactive-card *,
+.interactive-card:hover * {
   transform: none !important;
   transition: none !important;
 }
@@ -2113,3 +2134,132 @@ body.focus-mode-active main {
 
 
 
+
+/* Force remove over effects on sidebar as requested */
+.login-sidebar-panel *, .login-sidebar-panel button, .login-sidebar-panel .group\/nav-item * {
+  box-shadow: none !important;
+  transform: none !important;
+  transition: none !important;
+}
+.login-sidebar-panel .group\/nav-item button:hover {
+  background-color: transparent !important;
+}
+
+/* ACCESSIBILITY & CONTRAST FIXES - PER USER REQUEST */
+:root {
+  --color-text-primary: #ffffff;
+  --color-text-secondary: #facc15;
+  --color-text-muted: #cbd5e1;
+  --color-text-on-dark: #ffffff;
+  --color-text-on-light: #0b1329;
+}
+
+/* Sidebar Hover Fixes */
+.group\/nav-item *, .group\/nav-item *:hover {
+  box-shadow: none !important;
+  transform: none !important;
+  transition: none !important;
+}
+
+/* Soft texts inside light backgrounds should be darkened for accessibility */
+/* We target specifically text colors that are too light to read on white/light backgrounds */
+.bg-white .text-white:not([class*="bg-"]),
+.bg-white .text-slate-50:not([class*="bg-"]),
+.bg-white .text-slate-100:not([class*="bg-"]),
+.bg-white .text-slate-200:not([class*="bg-"]),
+.bg-white .text-slate-300:not([class*="bg-"]),
+.bg-white .text-slate-400:not([class*="bg-"]),
+.bg-slate-50 .text-white:not([class*="bg-"]),
+.bg-slate-50 .text-slate-50:not([class*="bg-"]),
+.bg-slate-50 .text-slate-100:not([class*="bg-"]),
+.bg-slate-50 .text-slate-200:not([class*="bg-"]),
+.bg-slate-50 .text-slate-300:not([class*="bg-"]),
+.bg-slate-50 .text-slate-400:not([class*="bg-"]),
+.card-professional.bg-slate-50:not(:has([class*="bg-"])) > * {
+  --tw-text-opacity: 1;
+  color: var(--color-text-on-light) !important;
+}
+
+/* Hard dark texts inside dark backgrounds should be brightened for accessibility */
+.bg-\[\#050e21\] .text-slate-900:not([class*="bg-"]),
+.bg-\[\#050e21\] .text-slate-800:not([class*="bg-"]),
+.bg-\[\#050e21\] .text-slate-700:not([class*="bg-"]),
+.bg-\[\#050e21\] .text-slate-600:not([class*="bg-"]),
+.bg-\[\#0b1329\] .text-slate-900:not([class*="bg-"]),
+.bg-\[\#0b1329\] .text-slate-800:not([class*="bg-"]),
+.bg-slate-900 .text-slate-900:not([class*="bg-"]),
+.bg-slate-900 .text-slate-800:not([class*="bg-"]) {
+  --tw-text-opacity: 1;
+  color: var(--color-text-on-dark) !important;
+}
+
+/* Ensure deep nested cards with background overrides don't get touched by parent classes */
+.bg-\[\#050e21\] [class*="text-"],
+.bg-\[\#0c1a35\] [class*="text-"],
+.bg-slate-900 [class*="text-"],
+[class*="bg-gradient-to-br from-[#050e21]"] [class*="text-"] {
+  text-shadow: 0 0 2px rgba(0,0,0,0.8);
+}
+
+
+select {
+  color: var(--color-text-on-light) !important;
+  font-weight: 900 !important;
+}
+
+option {
+  background-color: #ffffff;
+  color: var(--color-text-on-light) !important;
+  font-weight: 900 !important;
+}
+
+.bg-white select, .bg-slate-50 select {
+  color: var(--color-text-on-light) !important;
+}
+
+/* Enhancing dark backgrounds text */
+.card-professional.bg-\[\#050e21\] h1, .card-professional.bg-\[\#050e21\] h2, .card-professional.bg-\[\#050e21\] h3, .card-professional.bg-\[\#050e21\] h4, .card-professional.bg-\[\#050e21\] p, .card-professional.bg-\[\#050e21\] span,
+.card-professional.bg-\[\#0c1a35\] h1, .card-professional.bg-\[\#0c1a35\] h2, .card-professional.bg-\[\#0c1a35\] h3, .card-professional.bg-\[\#0c1a35\] h4, .card-professional.bg-\[\#0c1a35\] p, .card-professional.bg-\[\#0c1a35\] span,
+.card-professional.bg-slate-900 h1, .card-professional.bg-slate-900 h2, .card-professional.bg-slate-900 h3, .card-professional.bg-slate-900 h4, .card-professional.bg-slate-900 p, .card-professional.bg-slate-900 span {
+  text-shadow: 0 0 2px rgba(0,0,0,0.8);
+  color: var(--color-text-on-dark) !important;
+}
+
+.font-black {
+  font-weight: 900 !important;
+}
+
+
+
+/* Suppress Vite Error Overlay natively */
+vite-error-overlay {
+  display: none !important;
+}
+
+/* Intelligent WCAG Variables using color-mix for automatic contrast adjustment */
+:root {
+  --theme-text-primary: color-mix(in srgb, #ffffff 85%, var(--bg-main, #000));
+  --theme-text-secondary: color-mix(in srgb, #facc15 90%, var(--bg-main, #000));
+  --theme-text-muted: color-mix(in srgb, #9ca3af 70%, var(--bg-main, #000));
+}
+html:not(.dark) {
+  --theme-text-primary: color-mix(in srgb, #0b1329 95%, #fff);
+  --theme-text-secondary: color-mix(in srgb, #b8860b 90%, #fff);
+  --theme-text-muted: color-mix(in srgb, #4b5563 80%, #fff);
+}
+
+.text-light-theme-optimized {
+  color: #020617 !important;
+  font-weight: 800 !important;
+}
+.text-dark-theme-optimized {
+  color: #ffffff !important;
+  font-weight: 800 !important;
+}
+
+
+@keyframes scan {
+  0% { transform: translateY(0); }
+  50% { transform: translateY(290px); }
+  100% { transform: translateY(0); }
+}

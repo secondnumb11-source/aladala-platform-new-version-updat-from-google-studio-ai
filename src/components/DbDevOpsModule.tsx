@@ -361,13 +361,13 @@ ON CONFLICT DO NOTHING;`;
               بيئة التشغيل وقواعد البيانات
             </span>
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-            <span className="text-[10px] font-black text-slate-400">DevOps Workspace</span>
+            <span className="text-[10px] font-black text-slate-200 font-bold">DevOps Workspace</span>
           </div>
           <h1 className="text-2xl md:text-3xl font-extrabold text-white tracking-tight flex items-center gap-3">
             <Layers className="w-8 h-8 text-orange-400" />
             منظومة PostgreSQL + Docker + CloudBeaver
           </h1>
-          <p className="text-slate-400 text-sm max-w-3xl font-medium leading-relaxed">
+          <p className="text-slate-200 font-bold text-sm max-w-3xl font-medium leading-relaxed">
             المركز الإداري لتهيئة قنوات الربط، وإدارة قاعدة البيانات العلائقية المعتمدة، وإنشاء سيناريوهات النشر وتوليد ملفات الحاويات لدمج منصة العدالة مع أداة الإدارة السحابية CloudBeaver.
           </p>
         </div>
@@ -378,14 +378,14 @@ ON CONFLICT DO NOTHING;`;
             <Activity className="w-6 h-6 animate-pulse" />
           </div>
           <div className="space-y-1">
-            <div className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">الحالة العامة للمحاكي</div>
+            <div className="text-[10px] text-slate-200 font-bold font-bold uppercase tracking-wider">الحالة العامة للمحاكي</div>
             <div className="text-xs font-bold text-white flex items-center gap-1.5">
               <span>Postgres Core Engine:</span>
-              <span className={`px-1.5 py-0.5 rounded text-[10px] ${containerStates.postgres === 'running' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-rose-500/10 text-rose-400'}`}>
+              <span className={`px-1.5 py-0.5 rounded text-[10px] ${containerStates.postgres === 'running' ? 'bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-bold' : 'bg-rose-500/10 border border-rose-500/30 text-rose-400 font-bold'}`}>
                 {containerStates.postgres === 'running' ? 'نشط 🟢' : 'متوقف 🔴'}
               </span>
             </div>
-            <div className="text-[9px] text-slate-500 font-sans">Active Sandbox: Al-Adalah Relational Model</div>
+            <div className="text-[11px] text-slate-700 font-sans">Active Sandbox: Al-Adalah Relational Model</div>
           </div>
         </div>
       </div>
@@ -397,7 +397,7 @@ ON CONFLICT DO NOTHING;`;
           className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all duration-300 flex items-center gap-2 ${
             activeSubTab === 'compose_gen'
               ? 'bg-gradient-to-l from-orange-600 to-amber-600 text-white shadow-md'
-              : 'text-slate-300'
+              : 'text-white font-bold'
           }`}
         >
           <Settings className="w-4 h-4" />
@@ -409,7 +409,7 @@ ON CONFLICT DO NOTHING;`;
           className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all duration-300 flex items-center gap-2 relative ${
             activeSubTab === 'container_sim'
               ? 'bg-gradient-to-l from-orange-600 to-amber-600 text-white shadow-md'
-              : 'text-slate-300'
+              : 'text-white font-bold'
           }`}
         >
           <Cpu className="w-4 h-4" />
@@ -422,7 +422,7 @@ ON CONFLICT DO NOTHING;`;
           className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all duration-300 flex items-center gap-2 ${
             activeSubTab === 'connection_tester'
               ? 'bg-gradient-to-l from-orange-600 to-amber-600 text-white shadow-md'
-              : 'text-slate-300'
+              : 'text-white font-bold'
           }`}
         >
           <ShieldAlert className="w-4 h-4" />
@@ -434,7 +434,7 @@ ON CONFLICT DO NOTHING;`;
           className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all duration-300 flex items-center gap-2 ${
             activeSubTab === 'sql_console'
               ? 'bg-gradient-to-l from-orange-600 to-amber-600 text-white shadow-md'
-              : 'text-slate-300'
+              : 'text-white font-bold'
           }`}
         >
           <Database className="w-4 h-4" />
@@ -446,7 +446,7 @@ ON CONFLICT DO NOTHING;`;
           className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all duration-300 flex items-center gap-2 ${
             activeSubTab === 'cloudbeaver_guide'
               ? 'bg-gradient-to-l from-orange-600 to-amber-600 text-white shadow-md'
-              : 'text-slate-300'
+              : 'text-white font-bold'
           }`}
         >
           <BookOpen className="w-4 h-4" />
@@ -471,13 +471,13 @@ ON CONFLICT DO NOTHING;`;
               <div className="bg-slate-900/60 border border-slate-800/80 p-6 rounded-2xl space-y-6">
                 <div>
                   <h3 className="text-base font-bold text-white mb-1">تخصيص متغيرات Docker البيئية</h3>
-                  <p className="text-slate-400 text-xs">قم بتهيئة معاملات الحاويات والشبكة لتوليد ملفات تشغيل مطابقة لمعايير الأمن.</p>
+                  <p className="text-slate-200 font-bold text-xs">قم بتهيئة معاملات الحاويات والشبكة لتوليد ملفات تشغيل مطابقة لمعايير الأمن.</p>
                 </div>
 
                 <div className="space-y-4">
                   {/* Database User */}
                   <div className="space-y-1">
-                    <label className="text-[11px] text-slate-300 font-bold">اسم مستخدم قاعدة البيانات</label>
+                    <label className="text-[11px] text-white font-bold font-bold">اسم مستخدم قاعدة البيانات</label>
                     <input 
                       type="text" 
                       value={dbUser} 
@@ -489,7 +489,7 @@ ON CONFLICT DO NOTHING;`;
                   {/* Database Password */}
                   <div className="space-y-1">
                     <div className="flex items-center justify-between">
-                      <label className="text-[11px] text-slate-300 font-bold">كلمة المرور المشفرة</label>
+                      <label className="text-[11px] text-white font-bold font-bold">كلمة المرور المشفرة</label>
                       <span className="text-[10px] text-orange-400 font-sans flex items-center gap-1">
                         <Lock className="w-3 h-3" /> Secure Stack
                       </span>
@@ -504,7 +504,7 @@ ON CONFLICT DO NOTHING;`;
 
                   {/* Database Name */}
                   <div className="space-y-1">
-                    <label className="text-[11px] text-slate-300 font-bold">اسم قاعدة البيانات الافتراضية</label>
+                    <label className="text-[11px] text-white font-bold font-bold">اسم قاعدة البيانات الافتراضية</label>
                     <input 
                       type="text" 
                       value={dbName} 
@@ -516,7 +516,7 @@ ON CONFLICT DO NOTHING;`;
                   {/* Ports Grid */}
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-1">
-                      <label className="text-[11px] text-slate-300 font-bold">منفذ PostgreSQL</label>
+                      <label className="text-[11px] text-white font-bold font-bold">منفذ PostgreSQL</label>
                       <input 
                         type="text" 
                         value={dbPort} 
@@ -525,7 +525,7 @@ ON CONFLICT DO NOTHING;`;
                       />
                     </div>
                     <div className="space-y-1">
-                      <label className="text-[11px] text-slate-300 font-bold">منفذ CloudBeaver UI</label>
+                      <label className="text-[11px] text-white font-bold font-bold">منفذ CloudBeaver UI</label>
                       <input 
                         type="text" 
                         value={cbPort} 
@@ -537,7 +537,7 @@ ON CONFLICT DO NOTHING;`;
 
                   {/* Docker Volume Name */}
                   <div className="space-y-1">
-                    <label className="text-[11px] text-slate-300 font-bold">اسم وحدة تخزين Docker (Persistent Volume)</label>
+                    <label className="text-[11px] text-white font-bold font-bold">اسم وحدة تخزين Docker (Persistent Volume)</label>
                     <input 
                       type="text" 
                       value={dockerVolume} 
@@ -555,7 +555,7 @@ ON CONFLICT DO NOTHING;`;
                 </div>
                 <div className="space-y-1">
                   <h4 className="text-xs font-bold text-amber-400">توصية أمن الشبكات الموحدة</h4>
-                  <p className="text-slate-400 text-[11px] leading-relaxed">
+                  <p className="text-slate-200 font-bold text-[11px] leading-relaxed">
                     منفذ <b>5432</b> يستخدم محلياً. عند الرفع للإنتاج، ننصح بحجب المنفذ الخارجي لـ PostgreSQL وفك الارتباط بالتفويض المباشر، وتفعيل مستكشف <b>CloudBeaver</b> محمي برمز مستخدم وسري خلف جدار النفاذ الآمن (VPN).
                   </p>
                 </div>
@@ -571,11 +571,11 @@ ON CONFLICT DO NOTHING;`;
                     <span className="w-2.5 h-2.5 rounded-full bg-rose-500"></span>
                     <span className="w-2.5 h-2.5 rounded-full bg-yellow-500"></span>
                     <span className="w-2.5 h-2.5 rounded-full bg-green-500"></span>
-                    <span className="text-xs text-slate-300 font-bold font-mono mr-2">docker-compose.yml</span>
+                    <span className="text-xs text-white font-bold font-bold font-mono mr-2">docker-compose.yml</span>
                   </div>
                   <button
                     onClick={() => handleCopy(dockerComposeYaml, 'compose')}
-                    className="px-3 py-1.5 bg-slate-800 text-slate-300 rounded-lg text-[10px] font-bold transition flex items-center gap-1.5"
+                    className="px-3 py-1.5 bg-slate-800 text-white font-bold rounded-lg text-[10px] font-bold transition flex items-center gap-1.5"
                   >
                     {copiedText === 'compose' ? (
                       <>
@@ -588,7 +588,7 @@ ON CONFLICT DO NOTHING;`;
                     )}
                   </button>
                 </div>
-                <div className="p-4 bg-slate-950 font-mono text-[11px] leading-relaxed text-slate-300 overflow-x-auto h-96 select-text text-left dark-scrollbar" style={{ direction: 'ltr' }}>
+                <div className="p-4 bg-slate-950 font-mono text-[11px] leading-relaxed text-white font-bold overflow-x-auto h-96 select-text text-left dark-scrollbar" style={{ direction: 'ltr' }}>
                   <pre>{dockerComposeYaml}</pre>
                 </div>
               </div>
@@ -598,7 +598,7 @@ ON CONFLICT DO NOTHING;`;
                 {/* Dotenv block */}
                 <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden">
                   <div className="px-4 py-2.5 bg-slate-800/30 border-b border-slate-800 flex items-center justify-between">
-                    <span className="text-[10px] font-bold text-slate-300 font-mono">.env</span>
+                    <span className="text-[10px] font-bold text-white font-bold font-mono">.env</span>
                     <button
                       onClick={() => handleCopy(dotEnvFile, 'dotenv')}
                       className="text-[10px] text-orange-400 flex items-center gap-1"
@@ -606,7 +606,7 @@ ON CONFLICT DO NOTHING;`;
                       {copiedText === 'dotenv' ? 'تم النسخ!' : 'نسخ المتغيرات'}
                     </button>
                   </div>
-                  <div className="p-3 bg-slate-950 font-mono text-[10px] leading-relaxed text-slate-400 overflow-x-auto h-40 select-text text-left" style={{ direction: 'ltr' }}>
+                  <div className="p-3 bg-slate-950 font-mono text-[10px] leading-relaxed text-slate-200 font-bold overflow-x-auto h-40 select-text text-left" style={{ direction: 'ltr' }}>
                     <pre>{dotEnvFile}</pre>
                   </div>
                 </div>
@@ -614,7 +614,7 @@ ON CONFLICT DO NOTHING;`;
                 {/* DB Init Script */}
                 <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden">
                   <div className="px-4 py-2.5 bg-slate-800/30 border-b border-slate-800 flex items-center justify-between">
-                    <span className="text-[10px] font-bold text-slate-300 font-mono">init-schema.sql</span>
+                    <span className="text-[10px] font-bold text-white font-bold font-mono">init-schema.sql</span>
                     <button
                       onClick={() => handleCopy(initSqlSchema, 'initsql')}
                       className="text-[10px] text-orange-400 flex items-center gap-1"
@@ -622,7 +622,7 @@ ON CONFLICT DO NOTHING;`;
                       {copiedText === 'initsql' ? 'تم النسخ!' : 'نسخ الاسكيمو'}
                     </button>
                   </div>
-                  <div className="p-3 bg-slate-950 font-mono text-[10px] leading-relaxed text-slate-400 overflow-x-auto h-40 select-text text-left" style={{ direction: 'ltr' }}>
+                  <div className="p-3 bg-slate-950 font-mono text-[10px] leading-relaxed text-slate-200 font-bold overflow-x-auto h-40 select-text text-left" style={{ direction: 'ltr' }}>
                     <pre>{initSqlSchema}</pre>
                   </div>
                 </div>
@@ -632,7 +632,7 @@ ON CONFLICT DO NOTHING;`;
               <div className="bg-slate-900 p-5 rounded-2xl border border-slate-800 flex flex-col md:flex-row items-center justify-between gap-4">
                 <div className="space-y-1">
                   <h4 className="text-xs font-bold text-white">كيف تبدأ التشغيل الفعلي بالحاويات؟</h4>
-                  <p className="text-slate-400 text-xs">انسخ الملفات الثلاثة أعلاه في نفس المجلد ثم شغل منفذ القيادة بالمرتبة التالية:</p>
+                  <p className="text-slate-200 font-bold text-xs">انسخ الملفات الثلاثة أعلاه في نفس المجلد ثم شغل منفذ القيادة بالمرتبة التالية:</p>
                 </div>
                 <div className="bg-slate-950 p-2.5 px-4 rounded-xl text-xs font-mono text-orange-400 border border-slate-800 font-bold select-all flex items-center gap-2">
                   <span>docker-compose up -d</span>
@@ -659,24 +659,24 @@ ON CONFLICT DO NOTHING;`;
                 <div className="space-y-4">
                   <div className="flex items-start justify-between">
                     <div className="space-y-1">
-                      <div className="text-[10px] text-slate-400 font-bold">CONTAINER: aladalah-postgres-db</div>
+                      <div className="text-[10px] text-slate-200 font-bold font-bold">CONTAINER: aladalah-postgres-db</div>
                       <h3 className="text-base font-bold text-white flex items-center gap-1.5">
                         <Database className="w-5 h-5 text-blue-400" />
                         محرك قاعدة البيانات
                       </h3>
                     </div>
-                    <span className={`px-2 py-0.5 text-[9px] font-black rounded-lg ${
+                    <span className={`px-2 py-0.5 text-[11px] font-black rounded-lg ${
                       containerStates.postgres === 'running' 
-                        ? 'bg-emerald-500/10 text-emerald-400' 
+                        ? 'bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-bold' 
                         : containerStates.postgres === 'stopped'
-                        ? 'bg-rose-500/10 text-rose-450'
+                        ? 'bg-rose-500/10 border border-rose-500/30 text-rose-400 font-bold'
                         : 'bg-yellow-500/10 text-yellow-550 animate-pulse'
                     }`}>
                       {containerStates.postgres === 'running' ? 'Active ●' : containerStates.postgres === 'stopped' ? 'Stopped' : 'Transitioning...'}
                     </span>
                   </div>
 
-                  <div className="space-y-2 text-xs text-slate-400 leading-relaxed bg-slate-950 p-3 rounded-xl border border-slate-800/60 font-mono text-left" style={{ direction: 'ltr' }}>
+                  <div className="space-y-2 text-xs text-slate-200 font-bold leading-relaxed bg-slate-950 p-3 rounded-xl border border-slate-800/60 font-mono text-left" style={{ direction: 'ltr' }}>
                     <div className="truncate">Image: postgres:16-alpine</div>
                     <div>Port: {dbPort} {"➔"} 5432</div>
                     <div className="truncate">Vol: {dockerVolume}</div>
@@ -710,24 +710,24 @@ ON CONFLICT DO NOTHING;`;
                 <div className="space-y-4">
                   <div className="flex items-start justify-between">
                     <div className="space-y-1">
-                      <div className="text-[10px] text-slate-400 font-bold">CONTAINER: aladalah-cloudbeaver</div>
+                      <div className="text-[10px] text-slate-200 font-bold font-bold">CONTAINER: aladalah-cloudbeaver</div>
                       <h3 className="text-base font-bold text-white flex items-center gap-1.5">
                         <Layers className="w-5 h-5 text-orange-400" />
                         واجهة الإدارة والبيانات
                       </h3>
                     </div>
-                    <span className={`px-2 py-0.5 text-[9px] font-black rounded-lg ${
+                    <span className={`px-2 py-0.5 text-[11px] font-black rounded-lg ${
                       containerStates.cloudbeaver === 'running' 
-                        ? 'bg-emerald-500/10 text-emerald-400' 
+                        ? 'bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-bold' 
                         : containerStates.cloudbeaver === 'stopped'
-                        ? 'bg-rose-500/10 text-rose-450'
+                        ? 'bg-rose-500/10 border border-rose-500/30 text-rose-400 font-bold'
                         : 'bg-yellow-500/10 text-yellow-550 animate-pulse'
                     }`}>
                       {containerStates.cloudbeaver === 'running' ? 'Active ●' : containerStates.cloudbeaver === 'stopped' ? 'Stopped' : 'Transitioning...'}
                     </span>
                   </div>
 
-                  <div className="space-y-2 text-xs text-slate-400 leading-relaxed bg-slate-950 p-3 rounded-xl border border-slate-800/60 font-mono text-left" style={{ direction: 'ltr' }}>
+                  <div className="space-y-2 text-xs text-slate-200 font-bold leading-relaxed bg-slate-950 p-3 rounded-xl border border-slate-800/60 font-mono text-left" style={{ direction: 'ltr' }}>
                     <div className="truncate">Image: cloudbeaver:latest</div>
                     <div>Port: {cbPort} {"➔"} 8978</div>
                     <div className="truncate">Network: aladalah-network</div>
@@ -761,27 +761,27 @@ ON CONFLICT DO NOTHING;`;
                 <div className="space-y-4">
                   <div className="flex items-start justify-between">
                     <div className="space-y-1">
-                      <div className="text-[10px] text-slate-400 font-bold">CONTAINER: aladalah-web-platform</div>
+                      <div className="text-[10px] text-slate-200 font-bold font-bold">CONTAINER: aladalah-web-platform</div>
                       <h3 className="text-base font-bold text-white flex items-center gap-1.5">
                         <Server className="w-5 h-5 text-emerald-400" />
                         منصة التطبيق والويب
                       </h3>
                     </div>
-                    <span className={`px-2 py-0.5 text-[9px] font-black rounded-lg ${
+                    <span className={`px-2 py-0.5 text-[11px] font-black rounded-lg ${
                       containerStates.webPlatform === 'running' 
-                        ? 'bg-emerald-500/10 text-emerald-400' 
+                        ? 'bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-bold' 
                         : containerStates.webPlatform === 'stopped'
-                        ? 'bg-rose-500/10 text-rose-450'
+                        ? 'bg-rose-500/10 border border-rose-500/30 text-rose-400 font-bold'
                         : 'bg-yellow-500/10 text-yellow-550 animate-pulse'
                     }`}>
                       {containerStates.webPlatform === 'running' ? 'Active ●' : containerStates.webPlatform === 'stopped' ? 'Stopped' : 'Transitioning...'}
                     </span>
                   </div>
 
-                  <div className="space-y-2 text-xs text-slate-400 leading-relaxed bg-slate-950 p-3 rounded-xl border border-slate-800/60 font-mono text-left" style={{ direction: 'ltr' }}>
+                  <div className="space-y-2 text-xs text-slate-200 font-bold leading-relaxed bg-slate-950 p-3 rounded-xl border border-slate-800/60 font-mono text-left" style={{ direction: 'ltr' }}>
                     <div className="truncate">Context: Dockerfile build</div>
                     <div>Port: 3000 {"➔"} 3000</div>
-                    <div className="truncate text-yellow-450">Driver: Node/Express v4</div>
+                    <div className="truncate text-yellow-400">Driver: Node/Express v4</div>
                   </div>
                 </div>
 
@@ -818,7 +818,7 @@ ON CONFLICT DO NOTHING;`;
                   onClick={() => {
                     setLiveLogs([`[${new Date().toLocaleTimeString('ar-SA')}] [system] Terminal logs cleared.`]);
                   }}
-                  className="px-2.5 py-1 text-[10px] text-slate-400 rounded transition font-bold"
+                  className="px-2.5 py-1 text-[10px] text-slate-200 font-bold rounded transition font-bold"
                 >
                   مسح السجل
                 </button>
@@ -826,7 +826,7 @@ ON CONFLICT DO NOTHING;`;
               
               <div className="p-5 bg-slate-950 font-mono text-xs text-emerald-400 h-64 overflow-y-auto leading-relaxed select-text space-y-1.5 text-left" style={{ direction: 'ltr' }}>
                 {liveLogs.map((log, index) => {
-                  let colorClass = 'text-slate-300';
+                  let colorClass = 'text-white font-bold';
                   if (log.includes('ready to accept') || log.includes('successfully') || log.includes('Active')) {
                     colorClass = 'text-emerald-400';
                   } else if (log.includes('WARNING') || log.includes('closed') || log.includes('shut down') || log.includes('stop')) {
@@ -842,7 +842,7 @@ ON CONFLICT DO NOTHING;`;
                 })}
                 <div ref={logsEndRef} />
               </div>
-              <div className="px-5 py-3.5 bg-slate-900 border-t border-slate-800/60 flex items-center justify-between text-[11px] text-slate-400">
+              <div className="px-5 py-3.5 bg-slate-900 border-t border-slate-800/60 flex items-center justify-between text-[11px] text-slate-200 font-bold">
                 <span>تحديث تلقائي للمنصة كلما طرأت تغييرات بالمنظومة القضائية.</span>
                 <span className="font-mono">Logs: {liveLogs.length} entries</span>
               </div>
@@ -864,24 +864,24 @@ ON CONFLICT DO NOTHING;`;
               <div className="bg-slate-900 p-6 rounded-2xl border border-slate-800 space-y-5">
                 <div>
                   <h3 className="text-base font-bold text-white mb-1">بيانات خادم PostgreSQL المستهدف</h3>
-                  <p className="text-slate-405 text-xs text-slate-400 leading-relaxed">
+                  <p className="text-slate-405 text-xs text-slate-200 font-bold leading-relaxed">
                     اختبر إمكانية اتصال الخادم السحابي أو الحزمة الخاصة بك بـ Postgres مباشرة. يدعم الاتصال برمز مخصص للتجربة السريعة.
                   </p>
                 </div>
 
                 {/* Connection switch */}
                 <div className="flex items-center justify-between bg-slate-950 p-2.5 rounded-xl border border-slate-800/80">
-                  <span className="text-xs font-bold text-slate-300">طريقة الاتصال</span>
+                  <span className="text-xs font-bold text-white font-bold">طريقة الاتصال</span>
                   <div className="flex gap-2">
                     <button
                       onClick={() => setUseConnString(false)}
-                      className={`px-3 py-1.5 rounded-lg text-[10px] font-bold transition-all ${!useConnString ? 'bg-orange-500 text-white' : 'text-slate-400'}`}
+                      className={`px-3 py-1.5 rounded-lg text-[10px] font-bold transition-all ${!useConnString ? 'bg-orange-500 text-white' : 'text-slate-200 font-bold'}`}
                     >
                       تفصيل المعاملات
                     </button>
                     <button
                       onClick={() => setUseConnString(true)}
-                      className={`px-3 py-1.5 rounded-lg text-[10px] font-bold transition-all ${useConnString ? 'bg-orange-500 text-white' : 'text-slate-400'}`}
+                      className={`px-3 py-1.5 rounded-lg text-[10px] font-bold transition-all ${useConnString ? 'bg-orange-500 text-white' : 'text-slate-200 font-bold'}`}
                     >
                       رابط اتصال URL
                     </button>
@@ -893,7 +893,7 @@ ON CONFLICT DO NOTHING;`;
                     {/* Host & Port */}
                     <div className="grid grid-cols-3 gap-4">
                       <div className="col-span-2 space-y-1">
-                        <label className="text-[10px] font-bold text-slate-400">عنوان الخادم (Host)</label>
+                        <label className="text-[10px] font-bold text-slate-200 font-bold">عنوان الخادم (Host)</label>
                         <input
                           type="text"
                           value={testHost}
@@ -903,7 +903,7 @@ ON CONFLICT DO NOTHING;`;
                         />
                       </div>
                       <div className="space-y-1">
-                        <label className="text-[10px] font-bold text-slate-400">المنفذ</label>
+                        <label className="text-[10px] font-bold text-slate-200 font-bold">المنفذ</label>
                         <input
                           type="text"
                           value={testPort}
@@ -915,7 +915,7 @@ ON CONFLICT DO NOTHING;`;
 
                     {/* Username */}
                     <div className="space-y-1">
-                      <label className="text-[10px] font-bold text-slate-400">اسم المستخدم (User)</label>
+                      <label className="text-[10px] font-bold text-slate-200 font-bold">اسم المستخدم (User)</label>
                       <input
                         type="text"
                         value={testUser}
@@ -926,7 +926,7 @@ ON CONFLICT DO NOTHING;`;
 
                     {/* Password */}
                     <div className="space-y-1">
-                      <label className="text-[10px] font-bold text-slate-400">كلمة المرور</label>
+                      <label className="text-[10px] font-bold text-slate-200 font-bold">كلمة المرور</label>
                       <input
                         type="password"
                         value={testPass}
@@ -938,7 +938,7 @@ ON CONFLICT DO NOTHING;`;
 
                     {/* DB Name */}
                     <div className="space-y-1">
-                      <label className="text-[10px] font-bold text-slate-400">قاعدة البيانات المفضلة</label>
+                      <label className="text-[10px] font-bold text-slate-200 font-bold">قاعدة البيانات المفضلة</label>
                       <input
                         type="text"
                         value={testDb}
@@ -949,7 +949,7 @@ ON CONFLICT DO NOTHING;`;
                   </div>
                 ) : (
                   <div className="space-y-2">
-                    <label className="text-[10px] font-bold text-slate-400">سلسلة الاتصال الكاملة (POSTGRES_URL)</label>
+                    <label className="text-[10px] font-bold text-slate-200 font-bold">سلسلة الاتصال الكاملة (POSTGRES_URL)</label>
                     <textarea
                       value={connString}
                       onChange={(e) => setConnString(e.target.value)}
@@ -985,14 +985,14 @@ ON CONFLICT DO NOTHING;`;
                 <div className="space-y-6">
                   <div>
                     <h3 className="text-base font-bold text-white mb-1">نتائج الفحص والتشخيص الفني</h3>
-                    <p className="text-slate-400 text-xs text-slate-400">مخرجات الاتصال بالوقت الحقيقي مع تشخيص لمسببات الأخطاء والاحترازات الوقائية.</p>
+                    <p className="text-slate-200 font-bold text-xs text-slate-200 font-bold">مخرجات الاتصال بالوقت الحقيقي مع تشخيص لمسببات الأخطاء والاحترازات الوقائية.</p>
                   </div>
 
                   {connectionResult.status === null ? (
                     <div className="bg-slate-950/40 border border-slate-800 p-8 rounded-2xl flex flex-col items-center justify-center text-center space-y-3 py-16">
-                      <Database className="w-12 h-12 text-slate-600 animate-pulse" />
-                      <div className="text-slate-400 text-xs font-bold">بانتظار تهيئة واختبار المعاملات أعلاه...</div>
-                      <p className="text-slate-500 text-[11px] max-w-sm">
+                      <Database className="w-12 h-12 text-slate-200 font-bold animate-pulse" />
+                      <div className="text-slate-200 font-bold text-xs font-bold">بانتظار تهيئة واختبار المعاملات أعلاه...</div>
+                      <p className="text-slate-700 text-[11px] max-w-sm">
                         سيقوم المضيف بمحاولة فتح مأخذ اتصال TCP آمن وفحص صلاحيات الهوية وبث الرد السريع.
                       </p>
                     </div>
@@ -1003,25 +1003,25 @@ ON CONFLICT DO NOTHING;`;
                         <CheckCircle className="w-6 h-6 text-emerald-400 shrink-0" />
                         <div>
                           <h4 className="text-sm font-bold text-emerald-400">عملية الاتصال تمت بنجاح!</h4>
-                          <p className="text-xs text-slate-300 mt-1 leading-relaxed">{connectionResult.message}</p>
+                          <p className="text-xs text-white font-bold mt-1 leading-relaxed">{connectionResult.message}</p>
                         </div>
                       </div>
 
                       {/* Diagnostic details */}
                       <div className="bg-slate-950 p-5 rounded-xl border border-slate-800/80 space-y-3 font-sans">
-                        <div className="text-xs text-slate-400 font-bold border-b border-slate-800/80 pb-2">تفاصيل نظام PostgreSQL المتصل:</div>
+                        <div className="text-xs text-slate-200 font-bold font-bold border-b border-slate-800/80 pb-2">تفاصيل نظام PostgreSQL المتصل:</div>
                         
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
                           <div>
-                            <span className="text-slate-500">اسم قاعدة البيانات المتصل بها:</span>
+                            <span className="text-slate-700">اسم قاعدة البيانات المتصل بها:</span>
                             <div className="font-bold text-white mt-1 font-mono">{connectionResult.database || 'aladalah_prod'}</div>
                           </div>
                           <div>
-                            <span className="text-slate-500">توقيت مجمع الخادم المضيف:</span>
+                            <span className="text-slate-700">توقيت مجمع الخادم المضيف:</span>
                             <div className="font-bold text-white mt-1 font-mono">{connectionResult.serverTime || new Date().toISOString()}</div>
                           </div>
                           <div className="md:col-span-2">
-                            <span className="text-slate-500">إصدار PostgreSQL:</span>
+                            <span className="text-slate-700">إصدار PostgreSQL:</span>
                             <div className="font-bold text-emerald-400 mt-1 font-mono leading-relaxed bg-slate-900 p-2.5 rounded border border-slate-800/80 text-[10px] select-all">
                               {connectionResult.version}
                             </div>
@@ -1035,8 +1035,8 @@ ON CONFLICT DO NOTHING;`;
                       <div className="bg-rose-500/10 border border-rose-500/20 p-5 rounded-xl flex items-start gap-3">
                         <AlertCircle className="w-6 h-6 text-rose-400 shrink-0" />
                         <div>
-                          <h4 className="text-sm font-bold text-rose-450 text-rose-400">فشل في تأسيس الاتصال الفعلي</h4>
-                          <p className="text-xs text-slate-300 mt-1 leading-relaxed">{connectionResult.message}</p>
+                          <h4 className="text-sm font-bold text-rose-400 text-rose-400">فشل في تأسيس الاتصال الفعلي</h4>
+                          <p className="text-xs text-white font-bold mt-1 leading-relaxed">{connectionResult.message}</p>
                         </div>
                       </div>
 
@@ -1046,12 +1046,12 @@ ON CONFLICT DO NOTHING;`;
                           <ShieldAlert className="w-4 h-4" />
                           <span>توصيات الفحص الاستباقي للخلل (DevOps Hint):</span>
                         </div>
-                        <p className="text-xs text-slate-400 leading-relaxed">
+                        <p className="text-xs text-slate-200 font-bold leading-relaxed">
                           {connectionResult.hint || 'الرابط الافتراضي مغلق أو المنفذ مشغول. إذا كنت تشغل بيئة Docker محلياً، تأكد من تشغيل الحاوية باستخدام الأمر "docker ps".'}
                         </p>
                         
                         <div className="mt-4 pt-3 border-t border-slate-800/80">
-                          <span className="text-[10px] text-slate-500">بديل محلي سريع:</span>
+                          <span className="text-[10px] text-slate-700">بديل محلي سريع:</span>
                           <p className="text-[10px] text-orange-400 mt-1 leading-relaxed">
                             تعمل منصة الاستعلامات بسلاسة وبشكل ذكي ومستقر عبر سحب البيانات النشطة في المنصة تلقائياً فور غياب المتغير POSTGRES_URL.
                           </p>
@@ -1061,7 +1061,7 @@ ON CONFLICT DO NOTHING;`;
                   )}
                 </div>
 
-                <div className="text-[10px] text-slate-550 border-t border-slate-800/60 pt-4 text-slate-500 leading-normal">
+                <div className="text-[10px] text-slate-550 border-t border-slate-800/60 pt-4 text-slate-700 leading-normal">
                   ملاحظة: المتصفح لا يستطيع فتح اتصالات TCP مباشرة نظراً للقيود الأمنية، لذا يمر طلبك بقنوات المعالجة الخلفية الآمنة لـ Al-Adalah API للتنفيذ بكفاءة.
                 </div>
               </div>
@@ -1113,18 +1113,18 @@ ON CONFLICT DO NOTHING;`;
                     value={sqlQuery}
                     onChange={(e) => setSqlQuery(e.target.value)}
                     rows={6}
-                    className="w-full bg-slate-950 p-5 font-mono text-sm leading-relaxed text-slate-350 text-slate-200 outline-none select-text text-left border-b border-slate-800 font-bold focus:bg-slate-950/80 transition-all"
+                    className="w-full bg-slate-950 p-5 font-mono text-sm leading-relaxed text-slate-350 text-white font-bold outline-none select-text text-left border-b border-slate-800 font-bold focus:bg-slate-950/80 transition-all"
                     style={{ direction: 'ltr' }}
                     placeholder="SELECT * FROM cases LIMIT 10;"
                   />
-                  <div className="absolute bottom-3 left-4 text-[9px] text-slate-500 font-mono select-none">
+                  <div className="absolute bottom-3 left-4 text-[11px] text-slate-700 font-mono select-none">
                     Ctrl + Enter executes
                   </div>
                 </div>
 
                 {/* Predefined templates block */}
                 <div className="p-4 bg-slate-900/50 border-t border-slate-800/40">
-                  <span className="text-[10px] text-slate-400 font-black tracking-wide uppercase mb-2 block">الحزم الاستعلامية الجاهزة (SQL Quick Presets)</span>
+                  <span className="text-[10px] text-slate-200 font-bold font-black tracking-wide uppercase mb-2 block">الحزم الاستعلامية الجاهزة (SQL Quick Presets)</span>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     {SQL_PRESETS.map((preset, index) => (
                       <button
@@ -1134,9 +1134,9 @@ ON CONFLICT DO NOTHING;`;
                       >
                         <div className="font-bold text-white transition-colors flex items-center justify-between w-full">
                           <span>{preset.title}</span>
-                          <ChevronRight className="w-3.5 h-3.5 text-slate-500 transform -rotate-180" />
+                          <ChevronRight className="w-3.5 h-3.5 text-slate-700 transform -rotate-180" />
                         </div>
-                        <div className="text-[10px] text-slate-400 font-mono mt-1 text-left w-full truncate" style={{ direction: 'ltr' }}>
+                        <div className="text-[10px] text-slate-200 font-bold font-mono mt-1 text-left w-full truncate" style={{ direction: 'ltr' }}>
                           {preset.sql}
                         </div>
                       </button>
@@ -1158,20 +1158,20 @@ ON CONFLICT DO NOTHING;`;
 
                 <div className="p-1 max-h-[420px] overflow-auto select-text dark-scrollbar">
                   {!queryResult ? (
-                    <div className="p-12 flex flex-col items-center justify-center text-center space-y-2 text-slate-500 py-16">
-                      <TerminalIcon className="w-10 h-10 animate-pulse text-slate-600" />
-                      <div className="text-slate-400 text-xs font-bold">بانتظار تنفيذ استعلام SQL...</div>
-                      <p className="text-slate-500 text-[10px] max-w-sm">
+                    <div className="p-12 flex flex-col items-center justify-center text-center space-y-2 text-slate-700 py-16">
+                      <TerminalIcon className="w-10 h-10 animate-pulse text-slate-200 font-bold" />
+                      <div className="text-slate-200 font-bold text-xs font-bold">بانتظار تنفيذ استعلام SQL...</div>
+                      <p className="text-slate-700 text-[10px] max-w-sm">
                         اكتب استعلامك بالأعلى أو اضغط على أحد الضوابط السريعة المجهزة ليقوم النظام بتعديل التقرير وقراءة الجداول المحدثة فوراً.
                       </p>
                     </div>
                   ) : queryResult.status === 'query_error' ? (
                     <div className="p-6 bg-slate-950 space-y-3">
                       <div className="bg-rose-500/15 border border-rose-500/20 p-4 rounded-xl flex items-start gap-3">
-                        <AlertCircle className="w-5.5 h-5.5 text-rose-450 text-rose-400 shrink-0" />
+                        <AlertCircle className="w-5.5 h-5.5 text-rose-400 text-rose-400 shrink-0" />
                         <div>
                           <h4 className="text-xs font-bold text-rose-400">خطأ في بناء الجملة أو تنفيذ الطلب:</h4>
-                          <p className="text-[11px] text-slate-355 text-slate-300 font-mono mt-1 leading-relaxed text-left" style={{ direction: 'ltr' }}>{queryResult.message}</p>
+                          <p className="text-[11px] text-slate-355 text-white font-bold font-mono mt-1 leading-relaxed text-left" style={{ direction: 'ltr' }}>{queryResult.message}</p>
                         </div>
                       </div>
                     </div>
@@ -1188,7 +1188,7 @@ ON CONFLICT DO NOTHING;`;
                       <div className="overflow-x-auto">
                         <table className="w-full text-right border-collapse text-xs">
                           <thead>
-                            <tr className="bg-slate-950 border-b border-slate-800 text-slate-400 font-black">
+                            <tr className="bg-slate-950 border-b border-slate-800 text-slate-200 font-bold font-black">
                               {queryResult.fields && queryResult.fields.map((field) => (
                                 <th key={field} className="px-4 py-3 font-mono text-right">{field}</th>
                               ))}
@@ -1199,15 +1199,15 @@ ON CONFLICT DO NOTHING;`;
                               queryResult.rows.map((row, index) => (
                                 <tr key={index} className="border-b border-slate-800/60 transition duration-150">
                                   {queryResult.fields && queryResult.fields.map((field) => (
-                                    <td key={field} className="px-4 py-3 text-slate-300 font-mono select-all">
-                                      {row[field] !== null && row[field] !== undefined ? String(row[field]) : <span className="text-slate-600">null</span>}
+                                    <td key={field} className="px-4 py-3 text-white font-bold font-mono select-all">
+                                      {row[field] !== null && row[field] !== undefined ? String(row[field]) : <span className="text-slate-200 font-bold">null</span>}
                                     </td>
                                   ))}
                                 </tr>
                               ))
                             ) : (
                               <tr>
-                                <td colSpan={queryResult.fields ? queryResult.fields.length : 1} className="text-center py-8 text-slate-500 font-bold">
+                                <td colSpan={queryResult.fields ? queryResult.fields.length : 1} className="text-center py-8 text-slate-700 font-bold">
                                   الاستعلام نجح دون إرجاع أي صفوف.
                                 </td>
                               </tr>
@@ -1225,8 +1225,8 @@ ON CONFLICT DO NOTHING;`;
             <div className="lg:col-span-3 space-y-6">
               <div className="bg-slate-900 border border-slate-800 p-5 rounded-2xl space-y-4 shadow-md">
                 <div>
-                  <h3 className="text-xs font-black text-slate-300 uppercase tracking-widest mb-1">مستكشف الفهارس والجداول</h3>
-                  <p className="text-[10px] text-slate-405 text-slate-400">مخطط الشجرة التفاعلي لقاعدة بيانات Al-Adalah</p>
+                  <h3 className="text-xs font-black text-white font-bold uppercase tracking-widest mb-1">مستكشف الفهارس والجداول</h3>
+                  <p className="text-[10px] text-slate-405 text-slate-200 font-bold">مخطط الشجرة التفاعلي لقاعدة بيانات Al-Adalah</p>
                 </div>
 
                 <div className="space-y-3.5 font-sans">
@@ -1237,14 +1237,14 @@ ON CONFLICT DO NOTHING;`;
                         <Database className="w-3.5 h-3.5 text-blue-400" />
                         <span>cases (قضايا)</span>
                       </span>
-                      <span className="text-[9px] text-slate-500 uppercase font-bold font-sans">Relational</span>
+                      <span className="text-[11px] text-slate-700 uppercase font-bold font-sans">Relational</span>
                     </div>
-                    <div className="pl-3.5 border-r border-slate-800/80 pr-2 space-y-1 font-mono text-[10px] text-slate-400">
-                      <div>id <span className="text-slate-600 text-[9px]">SERIAL PK</span></div>
-                      <div>title <span className="text-slate-650 text-[9px] text-slate-600">VARCHAR</span></div>
-                      <div>case_number <span className="text-slate-600 text-[9px]">VARCHAR</span></div>
-                      <div>status <span className="text-slate-600 text-[9px]">VARCHAR</span></div>
-                      <div>court <span className="text-slate-600 text-[9px]">VARCHAR</span></div>
+                    <div className="pl-3.5 border-r border-slate-800/80 pr-2 space-y-1 font-mono text-[10px] text-slate-200 font-bold">
+                      <div>id <span className="text-slate-200 font-bold text-[11px]">SERIAL PK</span></div>
+                      <div>title <span className="text-slate-650 text-[11px] text-slate-200 font-bold">VARCHAR</span></div>
+                      <div>case_number <span className="text-slate-200 font-bold text-[11px]">VARCHAR</span></div>
+                      <div>status <span className="text-slate-200 font-bold text-[11px]">VARCHAR</span></div>
+                      <div>court <span className="text-slate-200 font-bold text-[11px]">VARCHAR</span></div>
                     </div>
                   </div>
 
@@ -1255,14 +1255,14 @@ ON CONFLICT DO NOTHING;`;
                         <Database className="w-3.5 h-3.5 text-orange-400" />
                         <span>clients (عملاء)</span>
                       </span>
-                      <span className="text-[9px] text-slate-500 uppercase font-bold font-sans">Relational</span>
+                      <span className="text-[11px] text-slate-700 uppercase font-bold font-sans">Relational</span>
                     </div>
-                    <div className="pl-3.5 border-r border-slate-800/80 pr-2 space-y-1 font-mono text-[10px] text-slate-400">
-                      <div>id <span className="text-slate-600 text-[9px]">SERIAL PK</span></div>
-                      <div>name <span className="text-slate-600 text-[9px]">VARCHAR</span></div>
-                      <div>phone <span className="text-slate-600 text-[9px]">VARCHAR</span></div>
-                      <div>email <span className="text-slate-600 text-[9px]">VARCHAR</span></div>
-                      <div>type <span className="text-slate-600 text-[9px]">VARCHAR</span></div>
+                    <div className="pl-3.5 border-r border-slate-800/80 pr-2 space-y-1 font-mono text-[10px] text-slate-200 font-bold">
+                      <div>id <span className="text-slate-200 font-bold text-[11px]">SERIAL PK</span></div>
+                      <div>name <span className="text-slate-200 font-bold text-[11px]">VARCHAR</span></div>
+                      <div>phone <span className="text-slate-200 font-bold text-[11px]">VARCHAR</span></div>
+                      <div>email <span className="text-slate-200 font-bold text-[11px]">VARCHAR</span></div>
+                      <div>type <span className="text-slate-200 font-bold text-[11px]">VARCHAR</span></div>
                     </div>
                   </div>
 
@@ -1273,19 +1273,19 @@ ON CONFLICT DO NOTHING;`;
                         <Database className="w-3.5 h-3.5 text-emerald-400" />
                         <span>tasks (مهام)</span>
                       </span>
-                      <span className="text-[9px] text-slate-500 uppercase font-bold">Relational</span>
+                      <span className="text-[11px] text-slate-700 uppercase font-bold">Relational</span>
                     </div>
-                    <div className="pl-3.5 border-r border-slate-800/80 pr-2 space-y-1 font-mono text-[10px] text-slate-400">
-                      <div>id <span className="text-slate-600 text-[9px]">SERIAL PK</span></div>
-                      <div>title <span className="text-slate-600 text-[9px]">VARCHAR</span></div>
-                      <div>priority <span className="text-slate-600 text-[9px]">VARCHAR</span></div>
-                      <div>status <span className="text-slate-600 text-[9px]">VARCHAR</span></div>
-                      <div>due_date <span className="text-slate-600 text-[9px]">DATE</span></div>
+                    <div className="pl-3.5 border-r border-slate-800/80 pr-2 space-y-1 font-mono text-[10px] text-slate-200 font-bold">
+                      <div>id <span className="text-slate-200 font-bold text-[11px]">SERIAL PK</span></div>
+                      <div>title <span className="text-slate-200 font-bold text-[11px]">VARCHAR</span></div>
+                      <div>priority <span className="text-slate-200 font-bold text-[11px]">VARCHAR</span></div>
+                      <div>status <span className="text-slate-200 font-bold text-[11px]">VARCHAR</span></div>
+                      <div>due_date <span className="text-slate-200 font-bold text-[11px]">DATE</span></div>
                     </div>
                   </div>
                 </div>
 
-                <div className="bg-slate-950/60 p-3 rounded-xl border border-slate-800/80 text-[10px] text-slate-400 leading-relaxed font-medium">
+                <div className="bg-slate-950/60 p-3 rounded-xl border border-slate-800/80 text-[10px] text-slate-200 font-bold leading-relaxed font-medium">
                   💡 تتيح لك شجرة الاسكيما استعراض الجداول وبناء جمل استعلامية مطابقة لأسماء الأعمدة المجهزة بنطاقات المنصة.
                 </div>
               </div>
@@ -1308,7 +1308,7 @@ ON CONFLICT DO NOTHING;`;
                 <span className="w-7 h-7 rounded-lg bg-orange-500/10 border border-orange-500/20 text-orange-400 flex items-center justify-center text-xs font-black">1</span>
                 الدخول لواجهة CloudBeaver الرسومية
               </h3>
-              <p className="text-slate-400 text-xs leading-relaxed leading-relaxed">
+              <p className="text-slate-200 font-bold text-xs leading-relaxed leading-relaxed">
                 بعد تشغيل حاويات Docker بنجاح، ستكون واجهة <b>CloudBeaver</b> الرسومية متاحة على متصفحك عبر تشغيل المنفذ المخصص بالأمر التالي:
               </p>
               
@@ -1318,7 +1318,7 @@ ON CONFLICT DO NOTHING;`;
                   href={`http://localhost:${cbPort}`}
                   target="_blank"
                   rel="noreferrer"
-                  className="px-4 py-2 bg-orange-500/10 border border-orange-500/20 text-orange-450 text-[10px] font-sans font-bold rounded-lg transition-all flex items-center gap-1.5"
+                  className="px-4 py-2 bg-orange-500/10 border border-orange-500/20 text-orange-400 text-[10px] font-sans font-bold rounded-lg transition-all flex items-center gap-1.5"
                 >
                   <ExternalLink className="w-3.5 h-3.5" /> فتح واجهة الإدارة
                 </a>
@@ -1334,9 +1334,9 @@ ON CONFLICT DO NOTHING;`;
                 {/* Step Card 1 */}
                 <div className="bg-slate-900 border border-slate-800 p-5 rounded-2xl space-y-3 relative overflow-hidden flex flex-col justify-between">
                   <div className="space-y-3">
-                    <span className="text-[10px] px-2 py-0.5 bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded font-black max-w-max block">الخطوة الأولى</span>
+                    <span className="text-[10px] px-2 py-0.5 bg-blue-500/10 border border-blue-500/30 text-blue-400 font-bold border border-blue-500/20 rounded font-black max-w-max block">الخطوة الأولى</span>
                     <h4 className="text-xs font-bold text-white">اختيار برنامج تشغيل البيانات</h4>
-                    <p className="text-slate-400 text-[11px] leading-relaxed">
+                    <p className="text-slate-200 font-bold text-[11px] leading-relaxed">
                       في لوحة التحكم الرئيسية لـ CloudBeaver، اضغط على زر <b>"Create Connection"</b> ثم اختر أيقونة <b>PostgreSQL</b> من قائمة برامج التشغيل المدعومة.
                     </p>
                   </div>
@@ -1348,7 +1348,7 @@ ON CONFLICT DO NOTHING;`;
                   <div className="space-y-3">
                     <span className="text-[10px] px-2 py-0.5 bg-orange-500/10 text-orange-400 border border-orange-500/20 rounded font-black max-w-max block">الخطوة الثانية</span>
                     <h4 className="text-xs font-bold text-white">إدخال إعدادات الاتصال الآمن</h4>
-                    <p className="text-slate-400 text-[11px] leading-relaxed font-sans">
+                    <p className="text-slate-200 font-bold text-[11px] leading-relaxed font-sans">
                       أدخل الإعدادات التالية بدقة:
                       <br />• <b>Host:</b> aladalah-postgres-db (اسم الخدمة في شبكة الحاوية)
                       <br />• <b>Database:</b> {dbName}
@@ -1361,9 +1361,9 @@ ON CONFLICT DO NOTHING;`;
                 {/* Step Card 3 */}
                 <div className="bg-slate-900 border border-slate-800 p-5 rounded-2xl space-y-3 relative overflow-hidden flex flex-col justify-between">
                   <div className="space-y-3">
-                    <span className="text-[10px] px-2 py-0.5 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded font-black max-w-max block">الخطوة الثالثة</span>
+                    <span className="text-[10px] px-2 py-0.5 bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-bold border border-emerald-500/20 rounded font-black max-w-max block">الخطوة الثالثة</span>
                     <h4 className="text-xs font-bold text-white">إدخال بيانات المستخدم والربط</h4>
-                    <p className="text-slate-400 text-[11px] leading-relaxed font-sans">
+                    <p className="text-slate-200 font-bold text-[11px] leading-relaxed font-sans">
                       أدخل تفاصيل الهوية لتوزيع الصلاحيات:
                       <br />• <b>Username:</b> {dbUser}
                       <br />• <b>Password:</b> {dbPassword}
@@ -1380,7 +1380,7 @@ ON CONFLICT DO NOTHING;`;
                 <Layers className="w-5 h-5 text-orange-400 animate-pulse" />
                 مزايا استخدام CloudBeaver لمكاتب المحاماة
               </h4>
-              <p className="text-slate-400 text-xs leading-relaxed">
+              <p className="text-slate-200 font-bold text-xs leading-relaxed">
                 تعد واجهة <b>CloudBeaver</b> واحدة من أقوى برمجيات استعراض قواعد البيانات لكونها خفيفة الوزن ومبنية على متصفح الويب. تتيح للمستشارين القانونيين وفريق DevOps مراجعة المخططات البيانية (Database ER Diagrams) وإدارة الأرشفة والتقارير المالية دون كتابة أوامر معقدة، وتعمل خلف جدران حماية معيارية لتأمين سرية عقود الموكلين وقضاياهم.
               </p>
             </div>

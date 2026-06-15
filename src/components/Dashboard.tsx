@@ -110,7 +110,7 @@ const GaugeMeter = React.memo(({ percentage, color = '#b8860b', label }: { perce
         </svg>
         <div className="absolute text-center">
           <span className="text-xl font-mono font-black text-slate-900 tracking-tighter">{percentage}%</span>
-          <span className="text-[10px] text-slate-400 block font-black uppercase tracking-wider mt-0.5">منجز اليوم</span>
+          <span className="text-[10px] text-slate-200 font-bold block font-black uppercase tracking-wider mt-0.5">منجز اليوم</span>
         </div>
       </div>
       <div className="text-center">
@@ -121,16 +121,15 @@ const GaugeMeter = React.memo(({ percentage, color = '#b8860b', label }: { perce
 });
 
 export const SummaryWidget = ({ icon, title, description, badgeValue, children }: { icon: React.ReactNode, title: string, description: string, badgeValue?: string | number, children: React.ReactNode }) => (
-  <div className="bg-slate-900 border border-[#D4AF37]/30 rounded-3xl p-6 shadow-xl border-[#D4AF37]/60 flex flex-col h-full card-professional relative overflow-hidden">
-    <div className="absolute inset-0 bg-gradient-to-br from-[#D4AF37]/10 to-transparent opacity-0 pointer-events-none"></div>
+  <div className="bg-[#0b1329] border-2 border-[#D4AF37]/50 rounded-3xl p-6 flex flex-col h-full overflow-hidden relative">
     <div className="flex items-center justify-between mb-4 relative z-10">
       <div className="flex items-center gap-3">
-        <div className="p-3 bg-gradient-to-br from-[#D4AF37] to-[#FACC15] text-slate-900 rounded-2xl shadow-lg ring-2 ring-[#D4AF37]/30">
+        <div className="p-3 bg-gradient-to-br from-[#D4AF37] to-[#FACC15] text-white rounded-2xl shadow-lg ring-2 ring-[#D4AF37]/30">
           {icon}
         </div>
         <div>
-          <h4 className="font-black text-white text-base tracking-tight">{title}</h4>
-          <p className="text-[11px] text-slate-300 font-semibold mt-0.5">{description}</p>
+          <h4 className="font-black text-[#FFFFFF] text-base tracking-tight">{title}</h4>
+          <p className="text-[11px] text-[#FACC15] font-bold mt-0.5">{description}</p>
         </div>
       </div>
       {badgeValue !== undefined && (
@@ -139,7 +138,7 @@ export const SummaryWidget = ({ icon, title, description, badgeValue, children }
         </span>
       )}
     </div>
-    <div className="flex-1 bg-slate-950/50 rounded-2xl p-4 border border-white/5 relative z-10">
+    <div className="flex-1 bg-[#090f20] rounded-2xl p-4 border border-[#D4AF37]/20 relative z-10 text-[#FFFFFF] font-bold">
       {children}
     </div>
   </div>
@@ -195,8 +194,8 @@ const DashboardClock = ({ style = 'digital', color = '#D4AF37' }: { style?: stri
   if (style === 'minimal') {
     return (
       <div className="flex flex-col items-end">
-        <span className="text-2xl font-black tracking-tighter text-[#D4AF37]">{timeString}</span>
-        <span className="text-[11px] font-bold text-slate-400">{dateString}</span>
+        <span className="text-2xl font-black tracking-tighter text-[#FACC15] font-black">{timeString}</span>
+        <span className="text-[11px] font-bold text-slate-200 font-bold">{dateString}</span>
       </div>
     );
   }
@@ -220,8 +219,8 @@ const DashboardClock = ({ style = 'digital', color = '#D4AF37' }: { style?: stri
   return (
     <div className="p-4 bg-gradient-to-br from-slate-900 to-slate-800 rounded-3xl border border-[#D4AF37]/30 shadow-2xl flex flex-col items-center justify-center min-w-[180px]">
       <div className="flex items-center gap-2 mb-1">
-        <ClockIcon className="w-3.5 h-3.5 text-[#D4AF37]" />
-        <span className="text-[10px] font-black text-[#D4AF37] uppercase tracking-widest">الوقت الحالي</span>
+        <ClockIcon className="w-3.5 h-3.5 text-[#FACC15] font-black" />
+        <span className="text-[10px] font-black text-[#FACC15] font-black uppercase tracking-widest">الوقت الحالي</span>
       </div>
       <span className="text-3xl font-black text-white tabular-nums tracking-tighter">{timeString}</span>
       <div className="mt-2 text-[11px] font-bold text-white bg-white/10 py-1 px-3 rounded-full">{dateString}</div>
@@ -246,38 +245,53 @@ const EnhancedSortableWidgetWrapper = ({ id, children, className, isCustomizing,
     opacity: isDragging ? 0.3 : 1,
   };
 
+  const getArabicSizeName = (size: string) => {
+    if (size === 'qr') return 'صغير';
+    if (size === 'half') return 'متوسط';
+    if (size === 'full') return 'كبير';
+    return size;
+  };
+
   return (
     <div 
       ref={setNodeRef} 
       style={style} 
-      className={`${className} transition-all duration-300 relative ${isCustomizing ? 'ring-[3px] ring-dashed ring-amber-500/50 rounded-[2.5rem] p-2' : ''}`}
+      className={`${className} transition-all duration-300 relative ${isCustomizing ? 'ring-2 ring-amber-400 rounded-[2.5rem] p-1.5 bg-[#0b1329]' : ''}`}
     >
       {isCustomizing && (
-        <div className="absolute -top-4 right-8 z-50 flex gap-2 w-max">
+        <div className="absolute inset-0 bg-[#0b1329]/90 backdrop-blur-md z-50 rounded-[2.5rem] flex flex-col items-center justify-center gap-6 border-2 border-[#D4AF37] shadow-[0_0_30px_rgba(212,175,55,0.3)] transition-all duration-300">
+          
           <button 
             {...attributes} 
             {...listeners}
-            className="p-2 bg-slate-900 text-white rounded-xl shadow-lg cursor-grab active:cursor-grabbing hover:bg-amber-500 transition-colors"
+            className="p-5 bg-yellow-400 text-[#0b1329] rounded-2xl shadow-[0_0_20px_rgba(250,204,21,0.5)] cursor-grab active:cursor-grabbing hover:bg-white hover:scale-110 transition-all flex items-center justify-center gap-3 w-56"
           >
-            <GripVertical size={16} />
+            <GripVertical size={24} />
+            <span className="font-black text-[15px]">سحب لتحريك الكارت</span>
           </button>
           
-          <div className="flex bg-slate-900/90 backdrop-blur-md rounded-xl p-1 border border-white/10 shadow-lg">
-            {['qr', 'half', 'full'].map(size => (
-              <button
-                key={size}
-                onClick={() => onResize(id, size)}
-                className={`px-2 py-1 rounded-lg text-[10px] font-black uppercase transition-all ${
-                  widgetSize === size ? 'bg-amber-500 text-slate-900' : 'text-slate-400 hover:text-white'
-                }`}
-              >
-                {size}
-              </button>
-            ))}
+          <div className="flex flex-col items-center gap-3">
+             <span className="text-white font-black text-xs uppercase tracking-widest bg-[#0b1329] px-4 py-1.5 rounded-full border border-yellow-400/50 shadow-[0_0_10px_rgba(250,204,21,0.2)]">اختر حجم الكارت المطلوب</span>
+             <div className="flex bg-[#0b1329] rounded-xl p-1.5 border border-[#D4AF37]/50 shadow-xl gap-1">
+               {['qr', 'half', 'full'].map(size => (
+                 <button
+                   key={size}
+                   onClick={() => onResize(id, size)}
+                   className={`px-6 py-2.5 rounded-lg text-sm font-black transition-all ${
+                     widgetSize === size 
+                       ? 'bg-yellow-400 text-[#0b1329] shadow-[0_0_15px_rgba(250,204,21,0.5)]' 
+                       : 'text-white hover:text-yellow-400 hover:bg-white/5 border border-transparent hover:border-yellow-400/30'
+                   }`}
+                 >
+                   {getArabicSizeName(size)}
+                 </button>
+               ))}
+             </div>
           </div>
+          
         </div>
       )}
-      <div className={`h-full rounded-[2.5rem] shadow-[0_10px_30px_rgba(0,0,0,0.05)] overflow-hidden transition-all duration-500 ${isDragging ? 'scale-95 shadow-2xl' : ''}`}>
+      <div className={`h-full rounded-[2.5rem] border-4 border-[#D4AF37] shadow-[0_10px_30px_rgba(0,0,0,0.05)] overflow-hidden transition-all duration-500 ${isDragging ? 'scale-95 shadow-2xl ring-4 ring-amber-400' : ''}`}>
         {children}
       </div>
     </div>
@@ -533,6 +547,22 @@ const Dashboard = function Dashboard({
   }, [selectedRole]);
 
   // --- Partner Analytics Real Data Derived from state ---
+  
+  const caseStatusDistributionDataData = React.useMemo(() => {
+    let open = 0, closed = 0, reviewing = 0;
+    cases.forEach(c => {
+      const s = String(c.status).toLowerCase();
+      if (s.includes('مغلق') || s.includes('منتهي') || s.includes('closed')) closed++;
+      else if (s.includes('مراجعة') || s.includes('تدقيق') || s.includes('review')) reviewing++;
+      else open++;
+    });
+    return [
+      { name: 'مفتوحة', value: open, color: '#10b981' },
+      { name: 'مغلقة', value: closed, color: '#f43f5e' },
+      { name: 'قيد المراجعة', value: reviewing, color: '#fbbf24' }
+    ];
+  }, [cases]);
+  
   const typeDistributionData = React.useMemo(() => {
     const categories: Record<string, { count: number; revenue: number }> = {
       'commercial': { count: 0, revenue: 0 },
@@ -624,25 +654,25 @@ const Dashboard = function Dashboard({
   }, []);
 
   const partnerAnalyticsWidgetMarkup = (
-    <div className="bg-white border border-slate-200 rounded-[2rem] p-5 shadow-sm space-y-4">
+    <div className="bg-white border border-slate-200 rounded-[2rem] p-5 shadow-sm space-y-4 hover:-translate-y-2 hover:shadow-[0_20px_35px_rgba(212,175,55,0.15)] hover:scale-[1.01] active:scale-[0.99] transition-all duration-300 ease-in-out">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b pb-4 border-slate-100 gap-4">
         <div className="flex items-center gap-3">
-          <div className="p-2 bg-slate-900 text-white rounded-xl">
-            <Crown className="w-5 h-5 text-amber-500" />
+          <div className="p-2 bg-[#0B2545]/10 text-[#0B2545] rounded-xl">
+            <Crown className="w-5 h-5 text-[#8A6201]" style={{ color: '#8A6201' }} />
           </div>
           <div>
-            <h3 className="font-black text-slate-900 text-sm">تحليلات الشريك وتدقيق الأداء</h3>
-            <p className="text-slate-400 text-[10px] font-bold mt-0.5">مؤشرات حية لإنتاجية المكتب ومعدلات النجاح القضائي.</p>
+            <h3 className="font-extrabold text-[#0B2545] text-sm" style={{ color: '#0B2545', textShadow: 'none' }}>تحليلات الشريك وتدقيق الأداء</h3>
+            <p className="text-[#8A6201] font-bold text-[11px] mt-0.5" style={{ color: '#8A6201', textShadow: 'none' }}>مؤشرات حية لإنتاجية المكتب ومعدلات النجاح القضائي.</p>
           </div>
         </div>
         <div className="flex gap-2 justify-end">
-          <div className="bg-emerald-50 border border-emerald-100 px-3 py-1.5 rounded-xl text-center">
-            <span className="block text-[8px] font-black text-emerald-600 uppercase tracking-widest">نسبة النجاح</span>
-            <strong className="text-sm font-black text-emerald-700">{caseSuccessPercentage}%</strong>
+          <div className="bg-[#0B2545]/5 border border-[#0B2545]/20 px-3 py-1.5 rounded-xl text-center">
+            <span className="block text-[10px] font-extrabold text-[#0B2545] uppercase tracking-widest" style={{ textShadow: 'none' }}>نسبة النجاح</span>
+            <strong className="text-sm font-extrabold text-[#D90429]">{caseSuccessPercentage}%</strong>
           </div>
-          <div className="bg-amber-50 border border-amber-100 px-3 py-1.5 rounded-xl text-center">
-            <span className="block text-[8px] font-black text-amber-600 uppercase tracking-widest">مؤشر الإنتاجية</span>
-            <strong className="text-sm font-black text-amber-700">94%</strong>
+          <div className="bg-[#8A6201]/5 border border-[#8A6201]/20 px-3 py-1.5 rounded-xl text-center">
+            <span className="block text-[10px] font-extrabold text-[#8A6201] uppercase tracking-widest" style={{ textShadow: 'none' }}>مؤشر الإنتاجية</span>
+            <strong className="text-sm font-extrabold text-[#0B2545]">94%</strong>
           </div>
         </div>
       </div>
@@ -650,14 +680,17 @@ const Dashboard = function Dashboard({
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Cases Distribution */}
         <div className="space-y-2">
-          <h4 className="font-black text-xs text-slate-900 border-r-4 border-amber-500 pr-2">توزيع المحفظة والأثر المالي</h4>
+          <h4 className="font-extrabold text-xs text-[#0B2545] border-r-4 border-[#8A6201] pr-2">توزيع المحفظة والأثر المالي</h4>
           <div className="h-44 bg-slate-50/50 rounded-2xl p-2 border border-slate-100" style={{ minWidth: 0 }}>
             {isDataLoading ? <DashboardCardSkeleton /> : (
               <div style={{ width: '100%', height: '100%', minWidth: 0 }}>
                 <ResponsiveContainer width="100%" height="100%" key={themeTick}>
                   <PieChart>
                     <Pie data={typeDistributionData} cx="50%" cy="50%" innerRadius={40} outerRadius={55} paddingAngle={6} dataKey="value">
-                      {typeDistributionData.map((entry, index) => <Cell key={`cell-${index}`} fill={isHighContrast ? '#fbbf24' : entry.color} stroke="none" />)}
+                      {typeDistributionData.map((entry, index) => {
+                        const customColors = ['#0B2545', '#8A6201', '#D90429', '#1E3A8A', '#B45309'];
+                        return <Cell key={`cell-${index}`} fill={isHighContrast ? '#fbbf24' : customColors[index % customColors.length]} stroke="none" />;
+                      })}
                     </Pie>
                     <RechartsTooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 5px 15px rgba(0,0,0,0.1)', textAlign: 'right', fontSize: '9px' }} />
                     <Legend verticalAlign="bottom" height={24} iconType="circle" wrapperStyle={{ fontSize: '9px', fontWeight: '900' }}/>
@@ -670,7 +703,7 @@ const Dashboard = function Dashboard({
 
         {/* Revenue Impact by Type */}
         <div className="space-y-2">
-          <h4 className="font-black text-xs text-slate-900 border-r-4 border-indigo-500 pr-2">تأثير نوع القضية على الدخل</h4>
+          <h4 className="font-extrabold text-xs text-[#0B2545] border-r-4 border-[#8A6201] pr-2">تأثير نوع القضية على الدخل</h4>
           <div className="h-44 bg-slate-50/50 rounded-2xl p-2 border border-slate-100" style={{ minWidth: 0 }}>
             {isDataLoading ? <DashboardCardSkeleton /> : (
               <div style={{ width: '100%', height: '100%', minWidth: 0 }}>
@@ -680,7 +713,7 @@ const Dashboard = function Dashboard({
                     <XAxis dataKey="name" tick={{ fontSize: 8, fill: isHighContrast ? '#f8fafc' : '#64748b', fontWeight: '900' }} axisLine={false} tickLine={false} />
                     <YAxis tick={{ fontSize: 8, fill: isHighContrast ? '#f8fafc' : '#64748b' }} axisLine={false} tickLine={false} />
                     <RechartsTooltip cursor={{ fill: isHighContrast ? '#334155' : '#f1f5f9' }} contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 5px 15px rgba(0,0,0,0.1)', textAlign: 'right', backgroundColor: isHighContrast ? '#0f172a' : '#fff', color: isHighContrast ? '#fff' : '#000', fontSize: '9px' }} formatter={(val: number) => val.toLocaleString() + ' ر.س'} />
-                    <Bar dataKey="revenue" name="متوسط الدخل المتوقع" fill={isHighContrast ? '#fbbf24' : '#6366f1'} radius={[3, 3, 0, 0]} />
+                    <Bar dataKey="revenue" name="متوسط الدخل المتوقع" fill={isHighContrast ? '#fbbf24' : '#0B2545'} radius={[3, 3, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
@@ -690,7 +723,7 @@ const Dashboard = function Dashboard({
 
         {/* Financial Flow */}
         <div className="space-y-2">
-          <h4 className="font-black text-xs text-slate-900 border-r-4 border-emerald-500 pr-2">التدفقات المالية (ZATCA)</h4>
+          <h4 className="font-extrabold text-xs text-[#0B2545] border-r-4 border-[#D90429] pr-2">التدفقات المالية (ZATCA)</h4>
           <div className="h-44 bg-slate-50/50 rounded-2xl p-2 border border-slate-100" style={{ minWidth: 0 }}>
             {isDataLoading ? <DashboardCardSkeleton /> : (
               <div style={{ width: '100%', height: '100%', minWidth: 0 }}>
@@ -698,15 +731,15 @@ const Dashboard = function Dashboard({
                   <AreaChart data={financialData} margin={{ top: 10, right: 10, left: -25, bottom: 0 }}>
                     <defs>
                       <linearGradient id="colorActual" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor={isHighContrast ? '#fbbf24' : '#b8860b'} stopOpacity={0.3}/>
-                        <stop offset="95%" stopColor={isHighContrast ? '#fbbf24' : '#b8860b'} stopOpacity={0}/>
+                        <stop offset="5%" stopColor={isHighContrast ? '#fbbf24' : '#8A6201'} stopOpacity={0.35}/>
+                        <stop offset="95%" stopColor={isHighContrast ? '#fbbf24' : '#8A6201'} stopOpacity={0}/>
                       </linearGradient>
                     </defs>
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={isHighContrast ? '#64748b' : '#e2e8f0'} />
                     <XAxis dataKey="month" tick={{ fontSize: 8, fill: isHighContrast ? '#f8fafc' : '#64748b', fontWeight: '900' }} axisLine={false} tickLine={false} />
                     <YAxis tick={{ fontSize: 8, fill: isHighContrast ? '#f8fafc' : '#64748b' }} axisLine={false} tickLine={false} />
                     <RechartsTooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 5px 15px rgba(0,0,0,0.1)', textAlign: 'right', backgroundColor: isHighContrast ? '#0f172a' : '#fff', color: isHighContrast ? '#fff' : '#000', fontSize: '9px' }} formatter={(val: number) => val.toLocaleString() + ' ر.س'} />
-                    <Area type="monotone" dataKey="actual" name="المحصل" stroke={isHighContrast ? '#fbbf24' : '#b8860b'} fillOpacity={1} fill="url(#colorActual)" strokeWidth={2} />
+                    <Area type="monotone" dataKey="actual" name="المحصل" stroke={isHighContrast ? '#fbbf24' : '#8A6201'} fillOpacity={1} fill="url(#colorActual)" strokeWidth={2} />
                   </AreaChart>
                 </ResponsiveContainer>
               </div>
@@ -805,6 +838,7 @@ const Dashboard = function Dashboard({
       { id: 'legalRiskMatrix', visible: true, order: 18, size: 'half' },
       { id: 'summaryCalendar', visible: true, order: 19, size: 'half' },
       { id: 'partnerAnalytics', visible: true, order: 20, size: 'half' },
+      { id: 'casesStatusDist', visible: true, order: 20.5, size: 'half' },
       { id: 'efficiency', visible: true, order: 21, size: 'half' },
       { id: 'agenda', visible: true, order: 22, size: 'full' },
     ];
@@ -973,7 +1007,7 @@ const Dashboard = function Dashboard({
               </p>
             </div>
           </div>
-          <ChevronLeft className="w-5 h-5 text-white/50" />
+          <ChevronLeft className="w-5 h-5 text-white font-bold" />
         </div>
       )}
       
@@ -984,7 +1018,7 @@ const Dashboard = function Dashboard({
         <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-blue-500/10 rounded-full blur-[100px] pointer-events-none"></div>
         
         <div className="relative z-10 space-y-4 text-center lg:text-right w-full lg:w-auto">
-            <span className="inline-flex items-center gap-2 bg-amber-500/10 border border-amber-500/20 px-4 py-2 rounded-2xl text-[#D4AF37] text-xs font-black uppercase tracking-widest">
+            <span className="inline-flex items-center gap-2 bg-amber-500/10 border border-amber-500/20 px-4 py-2 rounded-2xl text-[#FACC15] font-black text-xs font-black uppercase tracking-widest">
               <Sparkles size={14} className="animate-pulse" />
               <span>أهلاً بك في منصة العدالة الذكية</span>
             </span>
@@ -1032,7 +1066,7 @@ const Dashboard = function Dashboard({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.2 }}
-            className="text-slate-300 font-semibold leading-relaxed max-w-xl"
+            className="text-white font-bold font-semibold leading-relaxed max-w-xl"
           >
             لديك اليوم <span className="text-white underline decoration-amber-500 decoration-2 underline-offset-4">{tasks.filter(t => t.status !== 'done').length} مهام</span> معلقة و <span className="text-white underline decoration-blue-500 decoration-2 underline-offset-4">{hearings.filter(h => h.status === 'upcoming').length} جلسات</span> قادمة. نتمنى لك يوماً مثمراً!
           </motion.p>
@@ -1086,10 +1120,10 @@ const Dashboard = function Dashboard({
                   </div>
                   <div>
                     <h2 className="text-2xl font-black text-white">مكتبة الكروت الذكية</h2>
-                    <p className="text-slate-300 font-semibold text-sm mt-1">اختر الكروت التي ترغب في ظهورها في لوحة التحكم الرئيسية.</p>
+                    <p className="text-white font-bold font-semibold text-sm mt-1">اختر الكروت التي ترغب في ظهورها في لوحة التحكم الرئيسية.</p>
                   </div>
                 </div>
-                <button onClick={() => setIsLibraryOpen(false)} className="p-2 hover:bg-white/10 rounded-full transition-colors text-slate-500">
+                <button onClick={() => setIsLibraryOpen(false)} className="p-2 hover:bg-white/10 rounded-full transition-colors text-slate-700">
                   <X size={24} />
                 </button>
               </div>
@@ -1104,10 +1138,10 @@ const Dashboard = function Dashboard({
                       className={`flex items-center gap-4 p-5 rounded-[2rem] border transition-all text-right relative group ${
                         isVisible 
                           ? 'bg-amber-500/10 border-amber-500/40 text-white ring-2 ring-amber-500/20' 
-                          : 'bg-slate-800/80 border-white/10 text-slate-300 hover:border-white/20 hover:text-white'
+                          : 'bg-slate-800/80 border-white/10 text-white font-bold hover:border-white/20 hover:text-white'
                       }`}
                     >
-                      <div className={`p-4 rounded-2xl transition-colors ${isVisible ? 'bg-amber-500 text-slate-900' : 'bg-slate-700 text-slate-200'}`}>
+                      <div className={`p-4 rounded-2xl transition-colors ${isVisible ? 'bg-amber-500 text-slate-900' : 'bg-slate-700 text-white font-bold'}`}>
                         {w.icon}
                       </div>
                       <div className="flex flex-col flex-1">
@@ -1149,14 +1183,14 @@ const Dashboard = function Dashboard({
             </div>
             <div className="space-y-1">
               <h3 className="text-base font-black text-slate-900">🔔 تنبيه إداري ذكي: وثائق الكادر الوظيفي توشك على الانتهاء!</h3>
-              <p className="text-xs text-slate-600 font-bold">يرجى من الإدارة أو الشريك القيادي مخاطبة الموظفين المعنيين ببدء إجراءات التجديد فوراً لتجنب غرامات النظام عِبر بوابة قوى ومقيم.</p>
+              <p className="text-xs text-slate-200 font-bold font-bold">يرجى من الإدارة أو الشريك القيادي مخاطبة الموظفين المعنيين ببدء إجراءات التجديد فوراً لتجنب غرامات النظام عِبر بوابة قوى ومقيم.</p>
               
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2 mt-4 pt-4 border-t border-slate-200">
                 {expiringEmployees.map((emp: any) => (
                   <div key={emp.id} className="flex items-center gap-2 text-xs">
                     <span className="w-2 h-2 rounded-full bg-rose-500 shrink-0" />
                     <span className="font-extrabold text-slate-800">{emp.name}</span>
-                    <span className="text-slate-500 font-bold">({emp.docType})</span>
+                    <span className="text-slate-700 font-bold">({emp.docType})</span>
                     <span className="text-rose-600 font-extrabold">ينتهي خلال {emp.daysLeft} يوماً</span>
                   </div>
                 ))}
@@ -1197,11 +1231,11 @@ const Dashboard = function Dashboard({
                       </div>
                       <div>
                         <span className="font-extrabold text-slate-800 text-xs block">رقم: {poa.poaNumber}</span>
-                        <span className="text-[10px] text-slate-500 font-bold block">{poa.clientName}</span>
+                        <span className="text-[10px] text-slate-700 font-bold block">{poa.clientName}</span>
                       </div>
                     </div>
                     <div className="flex flex-col items-end gap-1">
-                      <span className="text-[9px] text-rose-400 font-black uppercase mb-1">العد التنازلي للانتهاء</span>
+                      <span className="text-[11px] text-rose-400 font-black uppercase mb-1">العد التنازلي للانتهاء</span>
                       <CountdownTimer targetDate={poa.expiryDate} />
                     </div>
                   </div>
@@ -1252,18 +1286,21 @@ const Dashboard = function Dashboard({
                 
                 const kpi = getKpiData();
 
+                // Assign different crisp high contrast values: Dark Blue for cases, Bright Red for clients
+                const numColor = widget.id === 'kpiCases' ? '#0B2545' : '#D90429';
+
                 return wrapWidget(
-                  <div className="bg-slate-50 border border-slate-200 rounded-[2.5rem] p-8 shadow-sm h-full flex flex-col justify-between transition-all duration-300">
+                  <div className="bg-white border border-slate-200 rounded-[2.5rem] p-8 shadow-sm h-full flex flex-col justify-between hover:-translate-y-2 hover:shadow-[0_20px_35px_rgba(212,175,55,0.15)] hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 ease-in-out">
                     <div className="flex items-center justify-between mb-4">
-                      <div className="p-4 bg-white border border-slate-200 text-slate-800 rounded-[1.25rem] shadow-sm">
+                      <div className="p-4 bg-slate-50 border border-slate-100 rounded-[1.25rem] shadow-sm" style={{ color: '#0B2545' }}>
                         {kpi.icon}
                       </div>
-                      <div className="text-4xl font-black text-slate-900 drop-shadow-sm tabular-nums tracking-tighter">
+                      <div className="text-4xl font-extrabold tabular-nums tracking-tighter" style={{ color: numColor, textShadow: 'none' }}>
                         {kpi.value}
                       </div>
                     </div>
                     <div>
-                      <h3 className="text-slate-700 font-bold text-sm tracking-wide">{kpi.label}</h3>
+                      <h3 className="font-extrabold text-sm tracking-wide" style={{ color: '#0B2545', textShadow: 'none' }}>{kpi.label}</h3>
                     </div>
                   </div>
                 );
@@ -1276,10 +1313,10 @@ const Dashboard = function Dashboard({
                 case 'summaryPlatform':
                   return wrapWidget(
                     <SummaryWidget icon={<ShieldCheck className="w-5 h-5" />} title="مميزات المنصة" description="نظام متكامل وحماية سحابية 24/7">
-                      <ul className="space-y-4 text-xs font-bold text-slate-300">
-                        <li className="flex items-center gap-3"><CheckCircle2 size={18} className="text-amber-500" /> إدارة قضايا متكاملة</li>
-                        <li className="flex items-center gap-3"><CheckCircle2 size={18} className="text-amber-500" /> أدوات ذكاء اصطناعي</li>
-                        <li className="flex items-center gap-3"><CheckCircle2 size={18} className="text-amber-500" /> ربط مباشر مع ناجز</li>
+                      <ul className="space-y-4 text-xs font-bold text-[#FFFFFF]">
+                        <li className="flex items-center gap-3"><CheckCircle2 size={18} className="text-[#FACC15]" /> إدارة قضايا متكاملة</li>
+                        <li className="flex items-center gap-3"><CheckCircle2 size={18} className="text-[#FACC15]" /> أدوات ذكاء اصطناعي</li>
+                        <li className="flex items-center gap-3"><CheckCircle2 size={18} className="text-[#FACC15]" /> ربط مباشر مع ناجز</li>
                       </ul>
                     </SummaryWidget>
                   );
@@ -1290,7 +1327,7 @@ const Dashboard = function Dashboard({
                 case 'summaryAI':
                   return wrapWidget(
                     <SummaryWidget icon={<Cpu className="w-5 h-5" />} title="تحليلات الذكاء الاصطناعي" description="المحلل القانوني الذكي">
-                      <p className="text-[10px] text-slate-400 font-bold">بوابة التحليل القانوني المتطورة</p>
+                      <p className="text-[11px] text-slate-600 font-semibold">بوابة التحليل القانوني المتطورة</p>
                     </SummaryWidget>
                   );
 
@@ -1324,7 +1361,7 @@ const Dashboard = function Dashboard({
                 const card = { label: 'الفواتير المعلقة', value: invoices.filter(i => i.status === 'pending').length, max: 50, icon: <DollarSign />, color: 'bg-amber-500', sparklineData: [{x: 'W1', y: 5}, {x: 'W2', y: 8}, {x: 'W3', y: 12}, {x: 'W4', y: invoices.filter(i => i.status === 'pending').length}] };
                 return (
                   <EnhancedSortableWidgetWrapper widgetColor={widget.color} onChangeColor={handleUpdateWidgetColor} className={getWidgetClassName(widget.size)} key="kpiInvoices" id="kpiInvoices" isCustomizing={isCustomizing} widgetSize={widget.size} onResize={handleUpdateWidgetSize}>
-                    <div className={`bg-slate-50 border border-slate-200 rounded-[2.5rem] p-8 shadow-sm h-full flex flex-col justify-between transition-all duration-300 relative overflow-hidden cursor-pointer ${isCustomizing ? 'opacity-80 ring-2 ring-dashed ring-amber-400' : ''}`}>
+                    <div className={`bg-white border border-slate-200 rounded-[2.5rem] p-8 shadow-sm h-full flex flex-col justify-between hover:-translate-y-2 hover:shadow-[0_20px_35px_rgba(212,175,55,0.15)] hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 ease-in-out relative overflow-hidden cursor-pointer ${isCustomizing ? 'opacity-80 ring-2 ring-dashed ring-amber-400' : ''}`}>
                       {isCustomizing && (
                         <div className="absolute inset-0 bg-amber-500/5 z-50 flex items-center justify-center">
                           <GripVertical className="w-8 h-8 text-amber-500 animate-pulse" />
@@ -1333,12 +1370,12 @@ const Dashboard = function Dashboard({
                       
                       <div className="relative z-10 flex flex-col justify-between h-full">
                         <div className="flex items-center justify-between mb-4">
-                          <div className={`p-4 bg-white border border-slate-200 text-slate-800 rounded-[1.25rem] shadow-sm`}>{card.icon}</div>
-                          <span className="text-4xl font-black text-slate-900 drop-shadow-sm tabular-nums tracking-tighter">{card.value}</span>
+                          <div className={`p-4 bg-slate-50 border border-slate-100 text-slate-800 rounded-[1.25rem] shadow-sm`} style={{ color: '#0B2545' }}>{card.icon}</div>
+                          <span className="text-4xl font-extrabold tabular-nums tracking-tighter" style={{ color: '#0B2545', textShadow: 'none' }}>{card.value}</span>
                         </div>
                         <div className="flex items-center justify-between mt-auto mb-2 relative z-10">
-                          <h3 className="text-slate-700 font-bold text-sm tracking-wide">{card.label}</h3>
-                          <span className="text-[10px] font-black text-emerald-600 bg-emerald-100 px-2 py-1 rounded-lg">
+                          <h3 className="font-extrabold text-sm tracking-wide" style={{ color: '#0B2545', textShadow: 'none' }}>{card.label}</h3>
+                          <span className="text-[10px] font-bold text-[#D90429] bg-[#D90429]/10 px-2 py-1 rounded-lg border border-[#D90429]/25">
                             {Math.round((card.value / (card.max || 1)) * 100)}% مستهدف
                           </span>
                         </div>
@@ -1350,11 +1387,11 @@ const Dashboard = function Dashboard({
                             <AreaChart data={card.sparklineData} margin={{ top: 10, right: 0, left: 0, bottom: 0 }}>
                               <defs>
                                 <linearGradient id={`color-stats-${widget.id}`} x1="0" y1="0" x2="0" y2="1">
-                                  <stop offset="5%" stopColor="#f59e0b" stopOpacity={0.3} />
-                                  <stop offset="95%" stopColor="#f59e0b" stopOpacity={0} />
+                                  <stop offset="5%" stopColor="#8A6201" stopOpacity={0.3} />
+                                  <stop offset="95%" stopColor="#8A6201" stopOpacity={0} />
                                 </linearGradient>
                               </defs>
-                              <Area type="monotone" dataKey="y" stroke="#f59e0b" strokeWidth={3} fillOpacity={1} fill={`url(#color-stats-${widget.id})`} />
+                              <Area type="monotone" dataKey="y" stroke="#8A6201" strokeWidth={3} fillOpacity={1} fill={`url(#color-stats-${widget.id})`} />
                             </AreaChart>
                           </ResponsiveContainer>
                         </div>
@@ -1367,7 +1404,7 @@ const Dashboard = function Dashboard({
                 const card = { label: 'المهام المنجزة', value: tasks.filter(t => t.status === 'done').length, max: 300, icon: <CheckSquare />, color: 'bg-emerald-500', sparklineData: [{x: 'W1', y: 40}, {x: 'W2', y: 65}, {x: 'W3', y: 80}, {x: 'W4', y: tasks.filter(t => t.status === 'done').length}] };
                 return (
                   <EnhancedSortableWidgetWrapper widgetColor={widget.color} onChangeColor={handleUpdateWidgetColor} className={getWidgetClassName(widget.size)} key="kpiTasks" id="kpiTasks" isCustomizing={isCustomizing} widgetSize={widget.size} onResize={handleUpdateWidgetSize}>
-                    <div className={`bg-slate-50 border border-slate-200 rounded-[2.5rem] p-8 shadow-sm h-full flex flex-col justify-between transition-all duration-300 relative overflow-hidden cursor-pointer ${isCustomizing ? 'opacity-80 ring-2 ring-dashed ring-amber-400' : ''}`}>
+                    <div className={`bg-white border border-slate-200 rounded-[2.5rem] p-8 shadow-sm h-full flex flex-col justify-between hover:-translate-y-2 hover:shadow-[0_20px_35px_rgba(212,175,55,0.15)] hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 ease-in-out relative overflow-hidden cursor-pointer ${isCustomizing ? 'opacity-80 ring-2 ring-dashed ring-amber-400' : ''}`}>
                       {isCustomizing && (
                         <div className="absolute inset-0 bg-amber-500/5 z-50 flex items-center justify-center">
                           <GripVertical className="w-8 h-8 text-amber-500 animate-pulse" />
@@ -1376,12 +1413,12 @@ const Dashboard = function Dashboard({
                       
                       <div className="relative z-10 flex flex-col justify-between h-full">
                         <div className="flex items-center justify-between mb-4">
-                          <div className={`p-4 bg-white border border-slate-200 text-slate-800 rounded-[1.25rem] shadow-sm`}>{card.icon}</div>
-                          <span className="text-4xl font-black text-slate-900 drop-shadow-sm tabular-nums tracking-tighter">{card.value}</span>
+                          <div className={`p-4 bg-slate-50 border border-slate-100 text-slate-800 rounded-[1.25rem] shadow-sm`} style={{ color: '#0B2545' }}>{card.icon}</div>
+                          <span className="text-4xl font-extrabold tabular-nums tracking-tighter" style={{ color: '#0B2545', textShadow: 'none' }}>{card.value}</span>
                         </div>
                         <div className="flex items-center justify-between mt-auto mb-2 relative z-10">
-                          <h3 className="text-slate-700 font-bold text-sm tracking-wide">{card.label}</h3>
-                          <span className="text-[10px] font-black text-emerald-600 bg-emerald-100 px-2 py-1 rounded-lg">
+                          <h3 className="font-extrabold text-sm tracking-wide" style={{ color: '#0B2545', textShadow: 'none' }}>{card.label}</h3>
+                          <span className="text-[10px] font-bold text-[#D90429] bg-[#D90429]/10 px-2 py-1 rounded-lg border border-[#D90429]/25">
                             {Math.round((card.value / (card.max || 1)) * 100)}% مستهدف
                           </span>
                         </div>
@@ -1393,11 +1430,11 @@ const Dashboard = function Dashboard({
                             <AreaChart data={card.sparklineData} margin={{ top: 10, right: 0, left: 0, bottom: 0 }}>
                               <defs>
                                 <linearGradient id={`color-stats-${widget.id}`} x1="0" y1="0" x2="0" y2="1">
-                                  <stop offset="5%" stopColor="#10b981" stopOpacity={0.3} />
-                                  <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
+                                  <stop offset="5%" stopColor="#8A6201" stopOpacity={0.3} />
+                                  <stop offset="95%" stopColor="#8A6201" stopOpacity={0} />
                                 </linearGradient>
                               </defs>
-                              <Area type="monotone" dataKey="y" stroke="#10b981" strokeWidth={3} fillOpacity={1} fill={`url(#color-stats-${widget.id})`} />
+                              <Area type="monotone" dataKey="y" stroke="#8A6201" strokeWidth={3} fillOpacity={1} fill={`url(#color-stats-${widget.id})`} />
                             </AreaChart>
                           </ResponsiveContainer>
                         </div>
@@ -1416,11 +1453,11 @@ const Dashboard = function Dashboard({
                       </div>
                     )}
                     <SummaryWidget icon={<ShieldCheck className="w-5 h-5" />} title="مميزات المنصة" description="نظام متكامل وحماية سحابية 24/7">
-                    <ul className="space-y-2 text-xs font-bold text-slate-300">
-                      <li className="flex items-center gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-[#D4AF37]" /> إدارة قضايا متكاملة وأرشفة إلكترونية</li>
-                      <li className="flex items-center gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-[#D4AF37]" /> أدوات ذكاء اصطناعي متطورة (توليد مذكرات، تحليل عقود)</li>
-                      <li className="flex items-center gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-[#D4AF37]" /> ربط مباشر وذكي مع نظام ناجز</li>
-                      <li className="flex items-center gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-[#D4AF37]" /> فواتير ضريبية معتمدة ومتوافقة مع ZATCA</li>
+                    <ul className="space-y-2 text-xs font-bold text-[#FFFFFF]">
+                      <li className="flex items-center gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-[#FACC15]" /> إدارة قضايا متكاملة وأرشفة إلكترونية</li>
+                      <li className="flex items-center gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-[#FACC15]" /> أدوات ذكاء اصطناعي متطورة (توليد مذكرات، تحليل عقود)</li>
+                      <li className="flex items-center gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-[#FACC15]" /> ربط مباشر وذكي مع نظام ناجز</li>
+                      <li className="flex items-center gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-[#FACC15]" /> فواتير ضريبية معتمدة ومتوافقة مع ZATCA</li>
                     </ul>
                   </SummaryWidget>
                   </div>
@@ -1469,29 +1506,29 @@ const Dashboard = function Dashboard({
                       
                       <SummaryWidget icon={<Scale className="w-5 h-5 text-amber-500 mt-1" />} title="الإحصائيات الحية للقضايا" description="توزيع ونسب القضايا والقرارات" badgeValue={filteredCasesList.length}>
                         <div className="flex items-center justify-between gap-1 mt-1 mb-2 bg-slate-900/60 p-1 rounded-xl border border-slate-700/80">
-                          <span className="text-[10px] text-slate-300 font-bold px-1">التصفية:</span>
+                          <span className="text-[10px] text-white font-bold font-bold px-1">التصفية:</span>
                           <div className="flex gap-1">
                             <button
                               onClick={() => setCasesTimeFilter('all')}
-                              className={`text-[9px] px-1.5 py-0.5 rounded-lg font-bold transition-all shrink-0 ${casesTimeFilter === 'all' ? 'bg-amber-500 text-slate-900 shadow-md' : 'text-slate-300'}`}
+                              className={`text-[11px] px-1.5 py-0.5 rounded-lg font-bold transition-all shrink-0 ${casesTimeFilter === 'all' ? 'bg-amber-500 text-slate-900 shadow-md' : 'text-white font-bold'}`}
                             >
                               الكل
                             </button>
                             <button
                               onClick={() => setCasesTimeFilter('month')}
-                              className={`text-[9px] px-1.5 py-0.5 rounded-lg font-bold transition-all shrink-0 ${casesTimeFilter === 'month' ? 'bg-amber-500 text-slate-900 shadow-md' : 'text-slate-300'}`}
+                              className={`text-[11px] px-1.5 py-0.5 rounded-lg font-bold transition-all shrink-0 ${casesTimeFilter === 'month' ? 'bg-amber-500 text-slate-900 shadow-md' : 'text-white font-bold'}`}
                             >
                               الشهر
                             </button>
                             <button
                               onClick={() => setCasesTimeFilter('3months')}
-                              className={`text-[9px] px-1.5 py-0.5 rounded-lg font-bold transition-all shrink-0 ${casesTimeFilter === '3months' ? 'bg-amber-500 text-slate-900 shadow-md' : 'text-slate-300'}`}
+                              className={`text-[11px] px-1.5 py-0.5 rounded-lg font-bold transition-all shrink-0 ${casesTimeFilter === '3months' ? 'bg-amber-500 text-slate-900 shadow-md' : 'text-white font-bold'}`}
                             >
                               3 أسهر
                             </button>
                             <button
                               onClick={() => setCasesTimeFilter('year')}
-                              className={`text-[9px] px-1.5 py-0.5 rounded-lg font-bold transition-all shrink-0 ${casesTimeFilter === 'year' ? 'bg-amber-500 text-slate-900 shadow-md' : 'text-slate-300'}`}
+                              className={`text-[11px] px-1.5 py-0.5 rounded-lg font-bold transition-all shrink-0 ${casesTimeFilter === 'year' ? 'bg-amber-500 text-slate-900 shadow-md' : 'text-white font-bold'}`}
                             >
                               عام
                             </button>
@@ -1521,7 +1558,7 @@ const Dashboard = function Dashboard({
                             </PieChart>
                           </ResponsiveContainer>
                           <div className="absolute flex flex-col items-center justify-center pointer-events-none">
-                            <span className="text-slate-400 text-[8px] leading-none mb-0.5 font-bold">الإجمالي</span>
+                            <span className="text-slate-200 font-bold text-[10px] leading-none mb-0.5 font-bold">الإجمالي</span>
                             <span className="text-slate-100 font-sans font-black text-xs">{filteredCasesList.length}</span>
                           </div>
                         </div>
@@ -1529,15 +1566,15 @@ const Dashboard = function Dashboard({
                         <div className="grid grid-cols-3 gap-2 mt-1 pt-2 border-t border-slate-700/80">
                           <div className="bg-emerald-500/10 border border-emerald-500/20 p-1.5 rounded-xl text-center">
                             <span className="block text-emerald-400 font-sans font-black text-sm leading-none mb-1">{activeCount}</span>
-                            <span className="text-[9px] font-bold text-emerald-300">قيد التداول</span>
+                            <span className="text-[11px] font-bold text-emerald-300">قيد التداول</span>
                           </div>
                           <div className="bg-amber-500/10 border border-amber-500/20 p-1.5 rounded-xl text-center">
                             <span className="block text-amber-400 font-sans font-black text-sm leading-none mb-1">{reservedCount}</span>
-                            <span className="text-[9px] font-bold text-amber-300">محجوزة</span>
+                            <span className="text-[11px] font-bold text-amber-300">محجوزة</span>
                           </div>
                           <div className="bg-slate-700/50 border border-slate-600/50 p-1.5 rounded-xl text-center font-sans">
-                            <span className="block text-slate-200 font-sans font-black text-sm leading-none mb-1">{closedCount}</span>
-                            <span className="text-[9px] font-bold text-slate-300">منتهية</span>
+                            <span className="block text-white font-bold font-sans font-black text-sm leading-none mb-1">{closedCount}</span>
+                            <span className="text-[11px] font-bold text-white font-bold">منتهية</span>
                           </div>
                         </div>
 
@@ -1569,18 +1606,18 @@ const Dashboard = function Dashboard({
                     <SummaryWidget icon={<Activity className="w-5 h-5" />} title="مؤشرات أداء الموظفين" description="متوسط الإنتاجية الفعلي">
                      <div className="space-y-2 mt-1">
                        <div className="flex justify-between items-center text-xs">
-                         <span className="text-slate-300 font-bold">نسبة إنجاز المهام</span>
-                         <span className="text-emerald-400 font-black">94%</span>
+                         <span className="text-[#FFFFFF] font-bold">نسبة إنجاز المهام</span>
+                         <span className="text-[#4ade80] font-black">94%</span>
                        </div>
-                       <div className="w-full bg-slate-800 rounded-full h-1.5"><div className="bg-emerald-500 h-1.5 rounded-full" style={{ width: '94%' }}></div></div>
+                       <div className="w-full bg-[#FFFFFF]/20 rounded-full h-1.5"><div className="bg-[#4ade80] h-1.5 rounded-full" style={{ width: '94%' }}></div></div>
                        <div className="flex justify-between items-center text-xs mt-2">
-                         <span className="text-slate-300 font-bold">كفاءة إدارة الوقت</span>
-                         <span className="text-[#D4AF37] font-black">88%</span>
+                         <span className="text-[#FFFFFF] font-bold">كفاءة إدارة الوقت</span>
+                         <span className="text-[#FACC15] font-black">88%</span>
                        </div>
-                       <div className="w-full bg-slate-800 rounded-full h-1.5"><div className="bg-[#D4AF37] h-1.5 rounded-full" style={{ width: '88%' }}></div></div>
+                       <div className="w-full bg-[#FFFFFF]/20 rounded-full h-1.5"><div className="bg-[#FACC15] h-1.5 rounded-full" style={{ width: '88%' }}></div></div>
                        
-                       <div className="mt-3 pt-3 border-t border-slate-700/80">
-                         <span className="text-[10px] font-bold tracking-wider text-slate-300 block mb-1.5">أداء الـ 7 أيام الماضية (الإنجاز للقضايا vs الوقت)</span>
+                       <div className="mt-3 pt-3 border-t border-[#FFFFFF]/20">
+                         <span className="text-[10px] font-bold tracking-wider text-[#FFFFFF] block mb-1.5">أداء الـ 7 أيام الماضية (الإنجاز للقضايا vs الوقت)</span>
                          <div className="h-24 w-full">
                            <ResponsiveContainer width="100%" height="100%" key={themeTick}>
                              <AreaChart data={miniPerformanceData} margin={{ top: 2, right: 2, left: 2, bottom: 2 }}>
@@ -1635,20 +1672,20 @@ const Dashboard = function Dashboard({
                     <SummaryWidget icon={<Cpu className="w-5 h-5" />} title="استخدامات الذكاء الاصطناعي" description="تحليلات المحلل الذكي">
                       <div className="grid grid-cols-2 gap-2 mt-2 h-full">
                         <div className="flex flex-col items-center justify-center p-2 bg-slate-800/80 rounded-xl border border-slate-700">
-                          <Cpu className="w-4 h-4 text-[#D4AF37] mb-1" />
-                          <span className="text-[10px] font-semibold text-slate-300 text-center">توليد وصياغة لوائح</span>
+                          <Cpu className="w-4 h-4 text-[#FACC15] font-black mb-1" />
+                          <span className="text-[10px] font-semibold text-white font-bold text-center">توليد وصياغة لوائح</span>
                         </div>
                         <div className="flex flex-col items-center justify-center p-2 bg-slate-800/80 rounded-xl border border-slate-700">
                           <Search className="w-4 h-4 text-blue-400 mb-1" />
-                          <span className="text-[10px] font-semibold text-slate-300 text-center">بحث بالمكتبة الرقمية</span>
+                          <span className="text-[10px] font-semibold text-white font-bold text-center">بحث بالمكتبة الرقمية</span>
                         </div>
                         <div className="flex flex-col items-center justify-center p-2 bg-slate-800/80 rounded-xl border border-slate-700">
                           <AlertTriangle className="w-4 h-4 text-rose-400 mb-1" />
-                          <span className="text-[10px] font-semibold text-slate-300 text-center">تحليل مخاطر SWOT</span>
+                          <span className="text-[10px] font-semibold text-white font-bold text-center">تحليل مخاطر SWOT</span>
                         </div>
                         <div className="flex flex-col items-center justify-center p-2 bg-slate-800/80 rounded-xl border border-slate-700">
                           <Zap className="w-4 h-4 text-emerald-400 mb-1" />
-                           <span className="text-[10px] font-semibold text-slate-300 text-center">استخراج الثغرات</span>
+                           <span className="text-[10px] font-semibold text-white font-bold text-center">استخراج الثغرات</span>
                         </div>
                       </div>
                    </SummaryWidget>
@@ -1667,17 +1704,17 @@ const Dashboard = function Dashboard({
                       <div className="space-y-3 mt-1">
                         <div className="flex items-center gap-3">
                            <div className="w-8 h-8 rounded-lg bg-indigo-500/20 flex flex-col items-center justify-center text-indigo-400">
-                             <span className="text-[8px] leading-none uppercase">جلسات</span>
+                             <span className="text-[10px] leading-none uppercase">جلسات</span>
                              <span className="font-black leading-none mt-1">{hearings.filter(h => h.date >= new Date().toISOString().split('T')[0]).length || 0}</span>
                            </div>
-                           <div className="text-xs font-bold text-slate-300">جلسات قادمة خلال الأسبوع الجاري</div>
+                           <div className="text-xs font-bold text-white font-bold">جلسات قادمة خلال الأسبوع الجاري</div>
                         </div>
                         <div className="flex items-center gap-3">
                            <div className="w-8 h-8 rounded-lg bg-emerald-500/20 flex flex-col items-center justify-center text-emerald-400">
-                             <span className="text-[8px] leading-none uppercase">مهام</span>
+                             <span className="text-[10px] leading-none uppercase">مهام</span>
                              <span className="font-black leading-none mt-1">{tasks.filter(t => t.status !== 'done' && t.status !== 'completed').length || 0}</span>
                            </div>
-                           <div className="text-xs font-bold text-slate-300">مهام نشطة قيد التنفيذ</div>
+                           <div className="text-xs font-bold text-white font-bold">مهام نشطة قيد التنفيذ</div>
                         </div>
                       </div>
                     </SummaryWidget>
@@ -1705,7 +1742,7 @@ const Dashboard = function Dashboard({
 
                            if (criticalCases.length === 0) {
                              return (
-                               <div className="text-center py-4 text-xs text-slate-400 font-bold">
+                               <div className="text-center py-4 text-xs text-slate-200 font-bold font-bold">
                                  ✅ لا توجد قضايا بمهل حرجة حالياً.
                                </div>
                              );
@@ -1726,7 +1763,7 @@ const Dashboard = function Dashboard({
                              return (
                                <div key={c.id || index} className="bg-slate-900 p-3 rounded-xl border border-slate-800 space-y-1.5 shadow-sm text-right">
                                  <div className="flex items-center justify-between text-[10px]">
-                                   <span className={`font-black uppercase tracking-wider ${isOverdue ? 'text-rose-450 animate-pulse' : 'text-[#fbbf24]'}`}>
+                                   <span className={`font-black uppercase tracking-wider ${isOverdue ? 'text-rose-400 animate-pulse' : 'text-[#fbbf24]'}`}>
                                      {isOverdue ? `منتهية منذ ${Math.abs(diffDays)} يوم!` : `تبقّى ${diffDays} يوم`}
                                    </span>
                                    <span className="text-white font-mono font-bold">رقم {c.caseNumber || 'غير محدد'}</span>
@@ -1746,7 +1783,7 @@ const Dashboard = function Dashboard({
                                <span className="text-white font-mono font-bold">رقم {c.caseNumber}</span>
                              </div>
                              <h5 className="text-[10px] font-bold text-[#fbbf24] line-clamp-1">{c.caseName}</h5>
-                             <p className="text-[9px] text-white font-bold leading-relaxed">
+                             <p className="text-[11px] text-white font-bold leading-relaxed">
                                صدر حكم ابتدائي، تنتهي مهلة الاستئناف النظامية (30 يوماماً) بتاريخ: 2026-06-15
                              </p>
                            </div>
@@ -1758,7 +1795,7 @@ const Dashboard = function Dashboard({
                                <span className="text-white font-mono font-bold">رقم 5683921</span>
                              </div>
                              <h5 className="text-[10px] font-bold text-[#fbbf24] line-clamp-1">دعوى إثبات شراكة تجارية</h5>
-                             <p className="text-[9px] text-white font-bold leading-relaxed">
+                             <p className="text-[11px] text-white font-bold leading-relaxed">
                                صدر حكم ابتدائي، تنتهي مهلة الاستئناف النظامية (30 يوماً) بنهاية الأسبوع الجاري.
                              </p>
                            </div>
@@ -1779,12 +1816,12 @@ const Dashboard = function Dashboard({
                     <SummaryWidget icon={<FileText className="w-5 h-5" />} title="الفواتير الذكية ZATCA" description="الفواتير ومدقق العقود AI" badgeValue={invoices.length}>
                       <div className="space-y-3 mt-1">
                         <div className="flex justify-between items-center text-xs border-b border-white/5 pb-2">
-                           <span className="flex items-center gap-1.5 text-slate-300 font-bold"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" /> فواتير معتمدة</span>
+                           <span className="flex items-center gap-1.5 text-white font-bold font-bold"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" /> فواتير معتمدة</span>
                            <span className="font-black text-emerald-400">{invoices.filter(i => i.status === 'paid').length}</span>
                         </div>
                         <div className="flex justify-between items-center text-xs">
-                           <span className="flex items-center gap-1.5 text-slate-300 font-bold"><Briefcase className="w-3.5 h-3.5 text-[#D4AF37]" /> صياغة عقود (AI)</span>
-                           <span className="font-black text-[#D4AF37]">مفعل</span>
+                           <span className="flex items-center gap-1.5 text-white font-bold font-bold"><Briefcase className="w-3.5 h-3.5 text-[#FACC15] font-black" /> صياغة عقود (AI)</span>
+                           <span className="font-black text-[#FACC15] font-black">مفعل</span>
                         </div>
                       </div>
                     </SummaryWidget>
@@ -1856,20 +1893,20 @@ const Dashboard = function Dashboard({
                            <div key={i} className="p-4 bg-slate-50 border border-slate-100 rounded-2xl flex items-center gap-4">
                               <div className="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-xl flex flex-col items-center justify-center shrink-0">
                                 <span className="text-[10px] font-black">{new Date(h.date).getDate()}</span>
-                                <span className="text-[8px] font-bold">{new Date(h.date).toLocaleDateString('ar-SA', { month: 'short' })}</span>
+                                <span className="text-[10px] font-bold">{new Date(h.date).toLocaleDateString('ar-SA', { month: 'short' })}</span>
                               </div>
                               <div className="flex-1 min-w-0">
                                 <h4 className="text-xs font-black text-slate-800 line-clamp-1">{h.caseName}</h4>
-                                <p className="text-[10px] text-slate-500 font-bold truncate mt-1">قضية رقم: {relatedCase?.caseNumber || h.caseNumber || 'غير محدد'}</p>
+                                <p className="text-[10px] text-slate-700 font-bold truncate mt-1">قضية رقم: {relatedCase?.caseNumber || h.caseNumber || 'غير محدد'}</p>
                               </div>
-                              <div className="text-[10px] font-black text-slate-400 shrink-0">
+                              <div className="text-[10px] font-black text-slate-200 font-bold shrink-0">
                                 {h.time}
                               </div>
                            </div>
                          );
                       })}
                       {hearings.filter(h => h.date >= new Date().toISOString().split('T')[0]).length === 0 && (
-                         <div className="p-6 text-center text-slate-500 font-bold text-xs bg-slate-50 rounded-2xl border border-slate-100">لا توجد جلسات قادمة مجدولة</div>
+                         <div className="p-6 text-center text-slate-700 font-bold text-xs bg-slate-50 rounded-2xl border border-slate-100">لا توجد جلسات قادمة مجدولة</div>
                       )}
                     </div>
                   </div>
@@ -1901,13 +1938,13 @@ const Dashboard = function Dashboard({
                       <div className="flex items-center gap-2 bg-slate-100 p-1.5 rounded-2xl">
                          <button 
                            onClick={() => setPerformancePeriod('monthly')}
-                           className={`px-4 py-1.5 text-[10px] font-black rounded-xl transition-all duration-300 ${performancePeriod === 'monthly' ? 'bg-white text-slate-900 shadow-md' : 'text-slate-500'}`}
+                           className={`px-4 py-1.5 text-[10px] font-black rounded-xl transition-all duration-300 ${performancePeriod === 'monthly' ? 'bg-white text-slate-900 shadow-md' : 'text-slate-700'}`}
                          >
                            شهري
                          </button>
                          <button 
                            onClick={() => setPerformancePeriod('yearly')}
-                           className={`px-4 py-1.5 text-[10px] font-black rounded-xl transition-all duration-300 ${performancePeriod === 'yearly' ? 'bg-white text-slate-900 shadow-md' : 'text-slate-500'}`}
+                           className={`px-4 py-1.5 text-[10px] font-black rounded-xl transition-all duration-300 ${performancePeriod === 'yearly' ? 'bg-white text-slate-900 shadow-md' : 'text-slate-700'}`}
                          >
                            سنوي
                          </button>
@@ -1918,19 +1955,19 @@ const Dashboard = function Dashboard({
                     <div className="flex flex-wrap items-center gap-2 border-b pb-4 border-slate-100" dir="rtl">
                       <button
                         onClick={() => setPerformanceTab('overview')}
-                        className={`px-4 py-2 text-xs font-black rounded-xl transition-all ${performanceTab === 'overview' ? 'bg-slate-900 text-white border border-slate-800 shadow-sm' : 'text-slate-500 bg-slate-50'}`}
+                        className={`px-4 py-2 text-xs font-black rounded-xl transition-all ${performanceTab === 'overview' ? 'bg-slate-900 text-white border border-slate-800 shadow-sm' : 'text-slate-700 bg-slate-50'}`}
                       >
                         إنتاجية ومؤشرات الأداء 📊
                       </button>
                       <button
                         onClick={() => setPerformanceTab('trends')}
-                        className={`px-4 py-2 text-xs font-black rounded-xl transition-all ${performanceTab === 'trends' ? 'bg-slate-900 text-white border border-slate-800 shadow-sm' : 'text-slate-500 bg-slate-50'}`}
+                        className={`px-4 py-2 text-xs font-black rounded-xl transition-all ${performanceTab === 'trends' ? 'bg-slate-900 text-white border border-slate-800 shadow-sm' : 'text-slate-700 bg-slate-50'}`}
                       >
                         منحنى تطور القضايا (12 شهراً) 📈
                       </button>
                       <button
                         onClick={() => setPerformanceTab('comparison')}
-                        className={`px-4 py-2 text-xs font-black rounded-xl transition-all ${performanceTab === 'comparison' ? 'bg-slate-900 text-white border border-slate-800 shadow-sm' : 'text-slate-500 bg-slate-50'}`}
+                        className={`px-4 py-2 text-xs font-black rounded-xl transition-all ${performanceTab === 'comparison' ? 'bg-slate-900 text-white border border-slate-800 shadow-sm' : 'text-slate-700 bg-slate-50'}`}
                       >
                         مقارنة السوق (المرصد القضائي 🇸🇦)
                       </button>
@@ -1942,7 +1979,7 @@ const Dashboard = function Dashboard({
                          <div className="space-y-4 text-right">
                             <div className="flex justify-between items-end">
                                <div>
-                                  <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">نسبة ربح القضايا ({performancePeriod === 'monthly' ? 'شهرياً' : 'سنوياً'})</span>
+                                  <span className="text-[10px] font-black text-slate-200 font-bold uppercase tracking-widest block mb-1">نسبة ربح القضايا ({performancePeriod === 'monthly' ? 'شهرياً' : 'سنوياً'})</span>
                                   <span className="text-4xl font-black text-slate-900">{performancePeriod === 'monthly' ? winLossRatio.ratio : Math.min(100, winLossRatio.ratio + 5)}%</span>
                                </div>
                                <div className="h-16 w-16">
@@ -1958,13 +1995,13 @@ const Dashboard = function Dashboard({
                             </div>
                             <div className="flex gap-2 justify-end">
                                <span className="text-[10px] font-black text-emerald-600 bg-emerald-50 px-2 py-1 rounded-lg">+{winLossRatio.won} قضايا رابحة</span>
-                               <span className="text-[10px] font-black text-slate-400 bg-slate-100 px-2 py-1 rounded-lg">اكتمل {winLossRatio.total} ملف</span>
+                               <span className="text-[10px] font-black text-slate-200 font-bold bg-slate-100 px-2 py-1 rounded-lg">اكتمل {winLossRatio.total} ملف</span>
                             </div>
                          </div>
                          
                          <div className="space-y-4 border-r pr-8 border-slate-100 text-right">
                             <div>
-                               <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-3">متوسط مدة الإنجاز (يوم)</span>
+                               <span className="text-[10px] font-black text-slate-200 font-bold uppercase tracking-widest block mb-3">متوسط مدة الإنجاز (يوم)</span>
                                <div className="space-y-3">
                                   <div>
                                      <div className="flex justify-between text-[11px] mb-1.5 font-black">
@@ -1977,8 +2014,8 @@ const Dashboard = function Dashboard({
                                   </div>
                                   <div>
                                      <div className="flex justify-between text-[11px] mb-1.5 font-black">
-                                        <span className="text-slate-400">متوسط السوابق القضائية بالسعودية</span>
-                                        <span className="text-slate-500 font-bold font-mono">180 يوم</span>
+                                        <span className="text-slate-200 font-bold">متوسط السوابق القضائية بالسعودية</span>
+                                        <span className="text-slate-700 font-bold font-mono">180 يوم</span>
                                      </div>
                                      <div className="h-1.5 bg-slate-50 rounded-full overflow-hidden">
                                         <div className="h-full bg-slate-300 rounded-full" style={{ width: '65%' }}></div>
@@ -2049,11 +2086,11 @@ const Dashboard = function Dashboard({
                     {performanceTab === 'comparison' && (
                       <div className="space-y-5 mt-4" dir="rtl">
                         <div className="bg-amber-500/5 border border-amber-500/10 p-4 rounded-2xl text-right">
-                          <p className="text-xs font-black text-[#B8860B] flex items-center gap-1.5 mb-1.5">
+                          <p className="text-xs font-black text-amber-400 font-black flex items-center gap-1.5 mb-1.5">
                             <Sparkles className="w-4 h-4 text-amber-500 animate-pulse" />
                             بيانات وإحصاءات المرصد القضائي السعودي (JudicialObservatory)
                           </p>
-                          <p className="text-[11px] text-slate-500 leading-relaxed font-sans font-bold">
+                          <p className="text-[11px] text-slate-700 leading-relaxed font-sans font-bold">
                             توضح الإحصاءات التالية الكفاءة والأداء التشغيلي والعدلي الفعلي لمكتب أحمد البقمي للمحاماة، مقارنةً بالتصنيفات ومتوسط أداء الشركات القانونية الأخرى المسجلة في وزارة العدل بالمملكة العربية السعودية لعام 2026.
                           </p>
                         </div>
@@ -2069,7 +2106,7 @@ const Dashboard = function Dashboard({
                               <div className="h-full bg-emerald-500 rounded-r" style={{ width: '84%' }} title="المكتب"></div>
                               <div className="h-full bg-slate-300 rounded-l" style={{ width: '16%' }} title="باقي السوق"></div>
                             </div>
-                            <p className="text-[9px] text-[#B8860B] font-black">تفوق المكتب بنسبة 16% من متوسط السوق بفضل صياغات وعقود NLP الذكية.</p>
+                            <p className="text-[11px] text-amber-400 font-black font-black">تفوق المكتب بنسبة 16% من متوسط السوق بفضل صياغات وعقود NLP الذكية.</p>
                           </div>
 
                           {/* Item 2 */}
@@ -2082,7 +2119,7 @@ const Dashboard = function Dashboard({
                               <div className="h-full bg-orange-500 rounded-r" style={{ width: '61%' }} title="المكتب"></div>
                               <div className="h-full bg-slate-300 rounded-l" style={{ width: '39%' }} title="باقي السوق"></div>
                             </div>
-                            <p className="text-[9px] text-[#B8860B] font-black">التحضير المسبق ومسودات الآلات يختصران 70 يوماً من متوسط الفترات المقررة.</p>
+                            <p className="text-[11px] text-amber-400 font-black font-black">التحضير المسبق ومسودات الآلات يختصران 70 يوماً من متوسط الفترات المقررة.</p>
                           </div>
 
                           {/* Item 3 */}
@@ -2095,7 +2132,7 @@ const Dashboard = function Dashboard({
                               <div className="h-full bg-indigo-500 rounded-r" style={{ width: '92%' }} title="المكتب"></div>
                               <div className="h-full bg-slate-300 rounded-l" style={{ width: '8%' }} title="باقي السوق"></div>
                             </div>
-                            <p className="text-[9px] text-[#B8860B] font-black">تواصل لحظي وتفاعلي عبر بوابة العملاء المشتركة والتبليغات الفورية.</p>
+                            <p className="text-[11px] text-amber-400 font-black font-black">تواصل لحظي وتفاعلي عبر بوابة العملاء المشتركة والتبليغات الفورية.</p>
                           </div>
 
                           {/* Item 4 */}
@@ -2108,7 +2145,7 @@ const Dashboard = function Dashboard({
                               <div className="h-full bg-pink-500 rounded-r" style={{ width: '98%' }} title="المكتب"></div>
                               <div className="h-full bg-slate-300 rounded-l" style={{ width: '2%' }} title="باقي السوق"></div>
                             </div>
-                            <p className="text-[9px] text-[#B8860B] font-black">حضور وعمل والتزام كامل تزامناً مع تبليغات وتذكيرات ناجز الفورية.</p>
+                            <p className="text-[11px] text-amber-400 font-black font-black">حضور وعمل والتزام كامل تزامناً مع تبليغات وتذكيرات ناجز الفورية.</p>
                           </div>
                         </div>
                       </div>
@@ -2182,7 +2219,7 @@ const Dashboard = function Dashboard({
                         <span>مؤشر أداء الموظفين التفصيلي (ديناميكي)</span>
                       </h3>
                       {calculatedEmps.length === 0 ? (
-                        <div className="text-center p-8 text-slate-500 text-sm font-bold bg-slate-50 rounded-xl">لا تتوفر مهام مسندة لحساب الأداء</div>
+                        <div className="text-center p-8 text-slate-700 text-sm font-bold bg-slate-50 rounded-xl">لا تتوفر مهام مسندة لحساب الأداء</div>
                       ) : (
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                         {/* Employees List */}
@@ -2198,7 +2235,7 @@ const Dashboard = function Dashboard({
                                 <div className="w-full bg-slate-100 rounded-full h-1.5">
                                   <div className={emp.color + " h-1.5 rounded-full transition-all duration-1000"} style={{ width: emp.kpi + "%" }}></div>
                                 </div>
-                                <div className="flex justify-between items-center text-[9px] text-slate-400 font-bold mt-1">
+                                <div className="flex justify-between items-center text-[11px] text-slate-200 font-bold font-bold mt-1">
                                   <span className="flex items-center gap-1">تم الإنجاز: {emp.tasksComplete} / {emp.totalTasks}</span>
                                   <span className="flex items-center gap-1 text-rose-500">متأخرة: {emp.delayed}</span>
                                 </div>
@@ -2226,6 +2263,26 @@ const Dashboard = function Dashboard({
 
               if (widget.id === 'stats') return null;
               if (widget.id === 'timelineD3') return null;
+              
+              if (widget.id === 'casesStatusDist') return (
+                <EnhancedSortableWidgetWrapper widgetColor={widget.color} onChangeColor={handleUpdateWidgetColor} className={getWidgetClassName(widget.size)} key="casesStatusDist" id="casesStatusDist" isCustomizing={isCustomizing} widgetSize={widget.size} onResize={handleUpdateWidgetSize}>
+                  <div className={"bg-[#0b1329] border border-[#D4AF37]/30 rounded-[2.5rem] p-6 shadow-2xl h-full flex flex-col relative " + (isCustomizing ? 'ring-2 ring-amber-400 opacity-80' : '')}>
+                    <h3 className="font-black text-[#FFFFFF] text-lg mb-4 flex items-center gap-2">توزيع حالات القضايا</h3>
+                    <div className="flex-1 min-h-[200px]">
+                      <ResponsiveContainer width="100%" height="100%">
+                         <PieChart>
+                           <Pie data={caseStatusDistributionDataData} cx="50%" cy="50%" innerRadius={60} outerRadius={80} paddingAngle={5} dataKey="value">
+                              {caseStatusDistributionDataData.map((e, index) => <Cell key={"cell-"+index} fill={e.color} stroke="none" />)}
+                           </Pie>
+                           <RechartsTooltip contentStyle={{ backgroundColor: '#090f20', borderRadius: '12px', border: '1px solid #D4AF37', color: '#fff' }} itemStyle={{ color: '#fff', fontWeight: 'bold' }} />
+                           <Legend verticalAlign="bottom" height={36} wrapperStyle={{ color: '#fff', fontWeight: 'bold', paddingTop: '10px' }}/>
+                         </PieChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </div>
+                </EnhancedSortableWidgetWrapper>
+              );
+
               if (widget.id === 'partnerAnalytics') return (
                 <EnhancedSortableWidgetWrapper widgetColor={widget.color} onChangeColor={handleUpdateWidgetColor} className={getWidgetClassName(widget.size)} key="partnerAnalytics" id="partnerAnalytics" isCustomizing={isCustomizing} widgetSize={widget.size} onResize={handleUpdateWidgetSize}>
                   <div className={`h-full relative ${isCustomizing ? 'opacity-80 ring-2 ring-dashed ring-amber-400 rounded-[2.5rem]' : ''}`}>
@@ -2254,14 +2311,14 @@ const Dashboard = function Dashboard({
                         </div>
                         <div>
                           <h3 className="font-black text-slate-900 text-sm">تقييم كفاءة العمليات القانونية</h3>
-                          <p className="text-[9px] text-slate-400 font-bold">تحليل المدد الفعلية مقابل المخطط لها بالمراحل القضائية.</p>
+                          <p className="text-[11px] text-slate-600 font-semibold">تحليل المدد الفعلية مقابل المخطط لها بالمراحل القضائية.</p>
                         </div>
                       </div>
                       <div className="flex gap-2">
-                        <span className="flex items-center gap-1 text-[8px] font-black text-slate-500">
+                        <span className="flex items-center gap-1 text-[10px] font-black text-slate-700">
                           <span className="w-1.5 h-1.5 rounded-full bg-[#10b981]"></span> المخطط
                         </span>
-                        <span className="flex items-center gap-1 text-[8px] font-black text-slate-500">
+                        <span className="flex items-center gap-1 text-[10px] font-black text-slate-700">
                           <span className="w-1.5 h-1.5 rounded-full bg-[#ef4444]"></span> الفعلي
                         </span>
                       </div>
@@ -2287,7 +2344,7 @@ const Dashboard = function Dashboard({
                     <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
                       {efficiencyData.map((d, i) => (
                         <div key={i} className="p-2 bg-slate-50 rounded-xl border border-slate-100 text-center">
-                          <span className="text-[8px] font-black text-slate-400 block mb-0.5 truncate">{d.phase}</span>
+                          <span className="text-[10px] font-black text-slate-200 font-bold block mb-0.5 truncate">{d.phase}</span>
                           <div className={`text-xs font-black ${d.efficiency >= 100 ? 'text-emerald-500' : 'text-rose-500'}`}>
                             {d.efficiency}%
                           </div>
@@ -2396,7 +2453,7 @@ const Dashboard = function Dashboard({
                         ))}
                         {tasks.filter(t => t.dueDate && new Date(t.dueDate) < new Date() && t.status !== 'done').length === 0 && (
                           <div className="h-full flex items-center justify-center">
-                            <p className="text-center text-xs font-bold text-slate-500 py-8 bg-slate-50 rounded-2xl border border-slate-100 border-dashed w-full">المهام مكتملة، عمل ممتاز ✅</p>
+                            <p className="text-center text-xs font-bold text-slate-700 py-8 bg-slate-50 rounded-2xl border border-slate-100 border-dashed w-full">المهام مكتملة، عمل ممتاز ✅</p>
                           </div>
                         )}
                       </div>

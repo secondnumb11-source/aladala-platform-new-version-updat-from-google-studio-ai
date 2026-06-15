@@ -363,11 +363,11 @@ export default function ClientPortal({
             <div className="bg-white border border-slate-305 rounded-3xl p-6 shadow-md space-y-6">
               <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-slate-205 pb-4">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-amber-500/10 text-amber-600 rounded-xl">
+                  <div className="p-2 bg-amber-500/10 border border-amber-500/30 text-amber-400 font-bold font-black rounded-xl">
                     <Lock className="w-5 h-5" />
                   </div>
                   <div>
-                    <span className="text-[10px] text-amber-700 bg-amber-550/10 px-2 py-0.5 rounded font-bold">بوابة النفاذ والأمن الموحد للعملاء 🔐</span>
+                    <span className="text-[10px] text-amber-400 font-black bg-amber-550/10 px-2 py-0.5 rounded font-bold">بوابة النفاذ والأمن الموحد للعملاء 🔐</span>
                     <h2 className="text-base font-black text-slate-900 mt-1">تهيئة صلاحيات وربط قضايا العملاء وبث بيانات الدخول الآمنة</h2>
                   </div>
                 </div>
@@ -679,7 +679,7 @@ export default function ClientPortal({
                         onChange={(e) => setNewClientName(e.target.value)}
                         placeholder="مثال: صالح بن محمد الودعاني"
                         required
-                        className="w-full bg-white border border-slate-300 px-4 py-3 rounded-xl text-xs font-semibold text-slate-900 outline-none focus:border-primary transition-all placeholder:text-slate-400"
+                        className="w-full bg-white border border-slate-300 px-4 py-3 rounded-xl text-xs font-semibold text-slate-900 outline-none focus:border-primary transition-all placeholder:text-slate-200 font-bold"
                       />
                     </div>
 
@@ -691,7 +691,7 @@ export default function ClientPortal({
                         onChange={(e) => setNewClientNationalId(e.target.value)}
                         placeholder="مثال: 1029384756"
                         required
-                        className="w-full bg-white border border-slate-300 px-4 py-3 rounded-xl text-xs font-semibold text-slate-900 outline-none focus:border-primary transition-all placeholder:text-slate-400"
+                        className="w-full bg-white border border-slate-300 px-4 py-3 rounded-xl text-xs font-semibold text-slate-900 outline-none focus:border-primary transition-all placeholder:text-slate-200 font-bold"
                       />
                     </div>
 
@@ -703,7 +703,7 @@ export default function ClientPortal({
                         onChange={(e) => setNewClientPhone(e.target.value)}
                         placeholder="+966500000000"
                         required
-                        className="w-full bg-white border border-slate-300 px-4 py-3 rounded-xl text-xs font-semibold text-slate-900 outline-none focus:border-primary transition-all placeholder:text-slate-400 font-sans"
+                        className="w-full bg-white border border-slate-300 px-4 py-3 rounded-xl text-xs font-semibold text-slate-900 outline-none focus:border-primary transition-all placeholder:text-slate-200 font-bold font-sans"
                       />
                     </div>
 
@@ -714,7 +714,7 @@ export default function ClientPortal({
                         value={newClientEmail}
                         onChange={(e) => setNewClientEmail(e.target.value)}
                         placeholder="client@mail.com"
-                        className="w-full bg-white border border-slate-300 px-4 py-3 rounded-xl text-xs font-semibold text-slate-900 outline-none focus:border-primary transition-all placeholder:text-slate-400 font-sans"
+                        className="w-full bg-white border border-slate-300 px-4 py-3 rounded-xl text-xs font-semibold text-slate-900 outline-none focus:border-primary transition-all placeholder:text-slate-200 font-bold font-sans"
                       />
                     </div>
                   </div>

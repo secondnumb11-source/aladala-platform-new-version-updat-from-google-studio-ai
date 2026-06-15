@@ -105,7 +105,7 @@ export default function TeamMembers({ customRoles }: TeamMembersProps = {}) {
 
       {showAddForm && (
         <form onSubmit={handleAddMember} className="bg-[#0b1e33] border border-[#c5a880]/30 rounded-xl p-5 space-y-4 text-xs text-right">
-          <h3 className="text-slate-200 font-bold border-b border-[#c5a880]/15 pb-2 text-sm">إدراج عضو أو مرافع للفريق</h3>
+          <h3 className="text-white font-bold font-bold border-b border-[#c5a880]/15 pb-2 text-sm">إدراج عضو أو مرافع للفريق</h3>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 font-sans">
             <div className="space-y-1.5">

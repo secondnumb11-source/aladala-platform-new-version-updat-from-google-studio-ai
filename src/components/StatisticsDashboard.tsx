@@ -45,23 +45,23 @@ export default function StatisticsDashboard({ cases }: StatisticsDashboardProps)
   return (
     <div id="statistics-dashboard" className="bg-slate-950 border border-[#D4AF37]/30 rounded-[24px] p-6 shadow-xl space-y-6">
       <div className="flex justify-between items-center">
-        <h3 className="text-sm font-black text-[#D4AF37] mb-4 flex items-center gap-2">
+        <h3 className="text-sm font-black text-[#FACC15] font-black mb-4 flex items-center gap-2">
           <TrendingUp className="w-5 h-5" />
           إحصائيات الإنجاز والإنتاجية
         </h3>
-        <button onClick={exportToPDF} className="p-2 text-[#D4AF37] rounded-full">
+        <button onClick={exportToPDF} className="p-2 text-[#FACC15] font-black rounded-full">
             <FileDown className="w-5 h-5" />
         </button>
       </div>
       
       <div className="grid grid-cols-2 gap-4">
         <div className="bg-slate-900 p-4 rounded-xl border border-slate-700">
-            <p className="text-[10px] text-slate-400">إجمالي القضايا</p>
+            <p className="text-[10px] text-slate-200 font-bold">إجمالي القضايا</p>
             <p className="text-xl font-black text-white">{totalCases}</p>
         </div>
         <div className="bg-slate-900 p-4 rounded-xl border border-slate-700">
-            <p className="text-[10px] text-slate-400">معدل الإنجاز</p>
-            <p className="text-xl font-black text-[#D4AF37]">{completionRate}%</p>
+            <p className="text-[10px] text-slate-200 font-bold">معدل الإنجاز</p>
+            <p className="text-xl font-black text-[#FACC15] font-black">{completionRate}%</p>
         </div>
       </div>
 

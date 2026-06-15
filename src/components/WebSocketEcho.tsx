@@ -71,7 +71,7 @@ export default function WebSocketEcho() {
         <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-50">WebSocket Echo Test</h3>
       </div>
       <div className="p-6">
-        <div className="mb-4 text-sm text-slate-700 dark:text-slate-300">
+        <div className="mb-4 text-sm text-slate-700 dark:text-white font-bold">
           Status: <span className={isConnected ? "text-green-500 font-bold" : "text-red-500 font-bold ml-1"}>{isConnected ? 'Connected' : 'Disconnected'}</span>
         </div>
         <div className="bg-slate-900 text-green-400 p-4 rounded-md h-64 overflow-y-auto font-mono text-sm leading-relaxed">

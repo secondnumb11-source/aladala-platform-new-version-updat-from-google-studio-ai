@@ -115,7 +115,7 @@ export default function AiDrafting() {
         {/* Input parameters panel */}
         {!isFocusMode && (
           <div className="bg-[#0b1e33] border border-[#c5a880]/20 rounded-xl p-5 space-y-5 lg:col-span-5 text-xs">
-            <h3 className="text-slate-200 font-bold border-b border-[#c5a880]/10 pb-2">تفاصيل الصياغة والمدخلات</h3>
+            <h3 className="text-white font-bold font-bold border-b border-[#c5a880]/10 pb-2">تفاصيل الصياغة والمدخلات</h3>
             
             <div className="space-y-1.5">
               <label className="block text-slate-900">نوع الصك / اللائحة المراد تشكيلها:</label>
@@ -227,7 +227,7 @@ export default function AiDrafting() {
             <div className="flex justify-between items-center border-b border-[#c5a880]/15 pb-2">
               <div className="flex items-center gap-2">
                 <Scale className="w-5 h-5 text-[#c5a880]" />
-                <strong className="text-slate-200 text-sm">المخرجات والنص القانوني المصوغ</strong>
+                <strong className="text-white font-bold text-sm">المخرجات والنص القانوني المصوغ</strong>
               </div>
               
               <div className="flex items-center gap-2">
@@ -237,7 +237,7 @@ export default function AiDrafting() {
                     className={`px-3 py-1.5 rounded text-xs transition-all cursor-pointer flex items-center gap-1.5 border ${
                       isFocusMode 
                         ? "bg-amber-500 text-slate-950 border-amber-400 font-bold" 
-                        : "bg-[#11243f] border-[#c5a880]/30 text-slate-300[#c5a880]/10"
+                        : "bg-[#11243f] border-[#c5a880]/30 text-white font-bold[#c5a880]/10"
                     }`}
                     title="تفعيل وضع القراءة والتركيز والتحكم في الخط واللون"
                   >
@@ -263,23 +263,23 @@ export default function AiDrafting() {
               <div className="flex flex-wrap items-center justify-between gap-3 bg-slate-900/60 p-3 rounded-xl border border-slate-800 mb-2">
                 {/* Font Families */}
                 <div className="flex items-center gap-2 text-xs">
-                  <span className="text-slate-400">الخط المفضل:</span>
+                  <span className="text-slate-200 font-bold">الخط المفضل:</span>
                   <div className="flex gap-1.5">
                     <button 
                       onClick={() => setReadingFont("amiri")}
-                      className={`px-2.5 py-1 rounded-md font-bold transition-all ${readingFont === "amiri" ? "bg-amber-500 text-slate-950" : "bg-slate-800 text-slate-300"}`}
+                      className={`px-2.5 py-1 rounded-md font-bold transition-all ${readingFont === "amiri" ? "bg-amber-500 text-slate-950" : "bg-slate-800 text-white font-bold"}`}
                     >
                       خط أميري (شرعي)
                     </button>
                     <button 
                       onClick={() => setReadingFont("playfair")}
-                      className={`px-2.5 py-1 rounded-md font-bold transition-all ${readingFont === "playfair" ? "bg-amber-500 text-slate-950" : "bg-slate-800 text-slate-300"}`}
+                      className={`px-2.5 py-1 rounded-md font-bold transition-all ${readingFont === "playfair" ? "bg-amber-500 text-slate-950" : "bg-slate-800 text-white font-bold"}`}
                     >
                       ميريفاذر (سيريف)
                     </button>
                     <button 
                       onClick={() => setReadingFont("sans")}
-                      className={`px-2.5 py-1 rounded-md font-bold transition-all ${readingFont === "sans" ? "bg-amber-500 text-slate-950" : "bg-slate-800 text-slate-300"}`}
+                      className={`px-2.5 py-1 rounded-md font-bold transition-all ${readingFont === "sans" ? "bg-amber-500 text-slate-950" : "bg-slate-800 text-white font-bold"}`}
                     >
                       خط عادي
                     </button>
@@ -288,29 +288,29 @@ export default function AiDrafting() {
 
                 {/* Sizing Controls */}
                 <div className="flex items-center gap-2 text-xs">
-                  <span className="text-slate-400">حجم الخط:</span>
+                  <span className="text-slate-200 font-bold">حجم الخط:</span>
                   <div className="flex gap-1">
                     <button 
                       onClick={() => setReadingFontSize("sm")}
-                      className={`w-7 h-7 rounded-md flex items-center justify-center transition-all ${readingFontSize === "sm" ? "bg-amber-500 text-slate-950 font-bold" : "bg-slate-800 text-slate-300"}`}
+                      className={`w-7 h-7 rounded-md flex items-center justify-center transition-all ${readingFontSize === "sm" ? "bg-amber-500 text-slate-950 font-bold" : "bg-slate-800 text-white font-bold"}`}
                     >
                       A
                     </button>
                     <button 
                       onClick={() => setReadingFontSize("md")}
-                      className={`w-7 h-7 rounded-md flex items-center justify-center text-sm transition-all ${readingFontSize === "md" ? "bg-amber-500 text-slate-950 font-bold" : "bg-slate-800 text-slate-300"}`}
+                      className={`w-7 h-7 rounded-md flex items-center justify-center text-sm transition-all ${readingFontSize === "md" ? "bg-amber-500 text-slate-950 font-bold" : "bg-slate-800 text-white font-bold"}`}
                     >
                       A
                     </button>
                     <button 
                       onClick={() => setReadingFontSize("lg")}
-                      className={`w-7 h-7 rounded-md flex items-center justify-center text-base transition-all ${readingFontSize === "lg" ? "bg-amber-500 text-slate-950 font-bold" : "bg-slate-800 text-slate-300"}`}
+                      className={`w-7 h-7 rounded-md flex items-center justify-center text-base transition-all ${readingFontSize === "lg" ? "bg-amber-500 text-slate-950 font-bold" : "bg-slate-800 text-white font-bold"}`}
                     >
                       A
                     </button>
                     <button 
                       onClick={() => setReadingFontSize("xl")}
-                      className={`w-7 h-7 rounded-md flex items-center justify-center text-lg transition-all ${readingFontSize === "xl" ? "bg-amber-500 text-slate-950 font-bold" : "bg-slate-800 text-slate-300"}`}
+                      className={`w-7 h-7 rounded-md flex items-center justify-center text-lg transition-all ${readingFontSize === "xl" ? "bg-amber-500 text-slate-950 font-bold" : "bg-slate-800 text-white font-bold"}`}
                     >
                       A+
                     </button>
@@ -319,23 +319,23 @@ export default function AiDrafting() {
 
                 {/* Themes */}
                 <div className="flex items-center gap-2 text-xs">
-                  <span className="text-slate-400">سمة الصفحة:</span>
+                  <span className="text-slate-200 font-bold">سمة الصفحة:</span>
                   <div className="flex gap-1.5">
                     <button 
                       onClick={() => setReadingTheme("cream")}
-                      className={`px-2.5 py-1 rounded-md transition-all border font-bold ${readingTheme === "cream" ? "bg-[#fdfaf2] text-[#2b2211] border-amber-500" : "bg-slate-800 text-slate-300 border-slate-700"}`}
+                      className={`px-2.5 py-1 rounded-md transition-all border font-bold ${readingTheme === "cream" ? "bg-[#fdfaf2] text-[#2b2211] border-amber-500" : "bg-slate-800 text-white font-bold border-slate-700"}`}
                     >
                       دقيق حليبي
                     </button>
                     <button 
                       onClick={() => setReadingTheme("paper")}
-                      className={`px-2.5 py-1 rounded-md transition-all border font-bold ${readingTheme === "paper" ? "bg-[#fafafa] text-[#171717] border-amber-500" : "bg-slate-800 text-slate-300 border-slate-700"}`}
+                      className={`px-2.5 py-1 rounded-md transition-all border font-bold ${readingTheme === "paper" ? "bg-[#fafafa] text-[#171717] border-amber-500" : "bg-slate-800 text-white font-bold border-slate-700"}`}
                     >
                       ورق طبيعي
                     </button>
                     <button 
                       onClick={() => setReadingTheme("dark-onyx")}
-                      className={`px-2.5 py-1 rounded-md transition-all border font-bold ${readingTheme === "dark-onyx" ? "bg-[#0b1329] text-[#f8fafc] border-amber-500" : "bg-slate-800 text-slate-300 border-slate-700"}`}
+                      className={`px-2.5 py-1 rounded-md transition-all border font-bold ${readingTheme === "dark-onyx" ? "bg-[#0b1329] text-[#f8fafc] border-amber-500" : "bg-slate-800 text-white font-bold border-slate-700"}`}
                     >
                       سماء الليل
                     </button>

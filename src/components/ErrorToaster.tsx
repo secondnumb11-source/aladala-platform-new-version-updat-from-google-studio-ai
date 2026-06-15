@@ -51,11 +51,11 @@ export const ErrorToaster = () => {
             </div>
             <div className="flex-1">
               <h4 className="text-sm font-bold text-white mb-1">تنبيه بالنظام</h4>
-              <p className="text-xs text-slate-400 font-medium line-clamp-2">{error.message}</p>
+              <p className="text-xs text-slate-200 font-bold font-medium line-clamp-2">{error.message}</p>
             </div>
             <button 
               onClick={() => setErrors(prev => prev.filter(e => e !== error))}
-              className="text-slate-500 hover:text-white transition-colors"
+              className="text-slate-700 hover:text-white transition-colors"
             >
               <X className="w-4 h-4" />
             </button>

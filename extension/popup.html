@@ -1,1 +1,73 @@
-<!DOCTYPE html><html dir="rtl"><head><meta charset="utf-8"><title>إعدادات المزامنة</title><style>body { background:#0c2461; color:#fff; font-family:system-ui; width:340px; padding:0; margin:0; } .header { background:#091e52; padding:15px 20px; border-bottom:1px solid rgba(212,175,55,0.3); display:flex; justify-content:space-between; align-items:center; } .header h2 { color:#D4AF37; font-weight:900; margin:0; font-size:16px; } .tabs { display:flex; border-bottom:1px solid rgba(255,255,255,0.1); background:#0a1b45; } .tab { flex:1; text-align:center; padding:12px; cursor:pointer; font-size:13px; font-weight:bold; color:rgba(255,255,255,0.6); } .tab.active { color:#D4AF37; border-bottom:2px solid #D4AF37; background:rgba(212,175,55,0.05); } .content { padding:20px; display:none; } .content.active { display:block; } label { display:block; font-size:12px; font-weight:bold; margin-top:15px; margin-bottom:5px; color:#D4AF37; } input { width:100%; padding:10px; background:rgba(0,0,0,0.2); border:1px solid rgba(255,255,255,0.1); color:#fff; border-radius:8px; box-sizing:border-box; } button.primary { width:100%; margin-top:20px; background:#D4AF37; color:#0c2461; border:none; padding:12px; font-weight:900; border-radius:8px; cursor:pointer; } </style></head><body><div class="header"><h2>منصة العدالة</h2><div style="background:rgba(74,222,128,0.1);color:#4ade80;padding:4px 8px;border-radius:4px;font-size:10px;font-weight:bold;">● نشط</div></div><div class="tabs"><div class="tab active" data-target="main">الرئيسية</div><div class="tab" data-target="settings">إعدادات الربط</div></div><div id="main" class="content active"><div style="text-align:center;margin-bottom:20px;"><div style="font-size:40px;margin-bottom:10px;">⚖️</div><h3 style="margin:0 0 5px 0;color:#fff;">المزامنة جاهزة</h3><p style="margin:0;font-size:11px;color:#cbd5e1;">الذكاء الاصطناعي مهيأ ويراقب البيانات المدخلة.</p></div><div style="font-size:11px;margin-top:15px;background:rgba(255,255,255,0.05);padding:12px;border-radius:8px;color:#e2e8f0;line-height:1.6;">الأداة تعمل بالخلفية بدون تدخل. سيظهر زر المزامنة الذكية في أسفل الشاشة لنقل قضاياك وجلساتك مباشرة لملفك.</div></div><div id="settings" class="content"><p style="font-size:11px;color:#cbd5e1;margin-top:0;">الربط المباشر يعمل تلقائياً، استخدم هذه الإعدادات فقط لتغيير مسار التوجيه لقواعد بياناتك الخاصة.</p><label>رابط الاستقبال (Webhook/API URL)</label><input type="text" id="apiUrl" placeholder="https://api.yourdomain.com/v1/sync" /><label>مفتاح الربط السري (API Key)</label><input type="password" id="apiKey" placeholder="sk_live_..." /><button class="primary" id="saveBtn">حفظ البيانات والتأمين</button></div><script src="popup.js"></script></body></html>
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <title>Najiz Sync</title>
+  <style>
+    body {
+      width: 300px;
+      padding: 16px;
+      font-family: Arial, sans-serif;
+      background-color: #0b1329;
+      color: #FFFFFF;
+      margin: 0;
+    }
+    h2 {
+      color: #FACC15;
+      font-size: 16px;
+      margin-top: 0;
+      border-bottom: 1px solid #D4AF37;
+      padding-bottom: 8px;
+    }
+    .btn {
+      background-color: #D4AF37;
+      color: #0b1329;
+      border: none;
+      padding: 10px;
+      width: 100%;
+      border-radius: 8px;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+    .btn:hover {
+      background-color: #FACC15;
+    }
+    .status {
+      margin-top: 12px;
+      font-size: 12px;
+      color: #FFFFFF;
+    }
+    label {
+      color: #FACC15;
+      font-size: 12px;
+      font-weight: bold;
+      display: block;
+      margin-top: 10px;
+    }
+    input {
+      width: 100%;
+      box-sizing: border-box;
+      background-color: #090f20;
+      border: 1px solid #D4AF37;
+      color: #FFFFFF;
+      padding: 8px;
+      border-radius: 6px;
+      margin-top: 4px;
+    }
+  </style>
+</head>
+<body>
+  <h2>مزامنة بيانات ناجز</h2>
+  
+  <label>API URL</label>
+  <input type="text" id="apiUrl" placeholder="رابط الواجهة البرمجية">
+  
+  <label>API Key</label>
+  <input type="password" id="apiKey" placeholder="مفتاح الوصول">
+  
+  <button class="btn" id="syncBtn">مزامنة الآن</button>
+  <div class="status" id="statusMessage"></div>
+  <script src="popup.js"></script>
+</body>
+</html>

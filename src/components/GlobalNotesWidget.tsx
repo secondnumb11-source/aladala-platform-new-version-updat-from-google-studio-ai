@@ -84,7 +84,7 @@ export default function GlobalNotesWidget() {
   const activeTheme = isDarkMode ? COLORS.find(c => c.id === 'dark')! : selectedColor;
 
   return (
-    <div className="fixed bottom-6 left-6 z-[9999]" dir="rtl">
+    <div className="relative z-[9999]" dir="rtl">
       <AnimatePresence>
         {isOpen && (
           <motion.div
@@ -154,7 +154,7 @@ export default function GlobalNotesWidget() {
                         }}
                       >
                         <p className="text-xs font-bold line-clamp-2">{note.text || 'ملاحظة فارغة...'}</p>
-                        <span className="text-[9px] opacity-60 mt-1 block">{note.date}</span>
+                        <span className="text-[11px] opacity-60 mt-1 block">{note.date}</span>
                       </div>
                       <button 
                         onClick={(e) => { e.stopPropagation(); handleDelete(note.id); }}
@@ -210,7 +210,7 @@ export default function GlobalNotesWidget() {
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 overflow-hidden bg-[#1E293B] border border-[#D4AF37]/50 rounded-full shadow-[0_4px_20px_rgba(212,175,55,0.3)] text-[#D4AF37] transition-all z-50 group px-4 py-3 cursor-pointer"
+        className="flex items-center gap-2 overflow-hidden bg-[#1E293B] border border-[#D4AF37]/50 rounded-full shadow-[0_4px_20px_rgba(212,175,55,0.3)] text-[#FACC15] font-black transition-all z-50 group px-4 py-3 cursor-pointer"
         title="مذكراتي"
       >
         <div className="w-6 h-6 rounded-full bg-gradient-to-r from-[#D4AF37] to-[#FACC15] flex items-center justify-center text-slate-900 shrink-0">

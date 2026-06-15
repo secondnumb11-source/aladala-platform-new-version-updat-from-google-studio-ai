@@ -18,6 +18,7 @@ export default function NajizExtensionHub({ currentUser, onUpdateState }: NajizE
   const [downloading, setDownloading] = useState(false);
   const [copiedKey, setCopiedKey] = useState('');
   const [showSettings, setShowSettings] = useState(false);
+  const [settingsTab, setSettingsTab] = useState<'general' | 'advanced'>('general');
   const [activeTab, setActiveTab] = useState<'instructions' | 'features'>('instructions');
 
   const handleDownload = async () => {
@@ -95,13 +96,17 @@ export default function NajizExtensionHub({ currentUser, onUpdateState }: NajizE
                <button class="ad-btn primary" id="btn-sync-all" style="margin-bottom:10px;">سحب ومزامنة جميع البيانات</button>
                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
                   <button class="ad-btn" id="btn-sync-cases">مزامنة بيانات القضايا</button>
-                  <button class="ad-btn" id="btn-sync-clients">مزامنة بيانات العملاء وأطراف القضايا</button>
+                  <button class="ad-btn" id="btn-sync-clients">مزامنة العملاء</button>
+                  <button class="ad-btn" id="btn-sync-parties">مزامنة أطراف القضايا</button>
                   <button class="ad-btn" id="btn-sync-hearings">مزامنة مواعيد الجلسات</button>
+                  <button class="ad-btn" id="btn-sync-minutes">مزامنة محاضر الجلسات</button>
                   <button class="ad-btn" id="btn-sync-executions">مزامنة طلبات التنفيذ</button>
-                  <button class="ad-btn" id="btn-sync-requests">مزامنة الطلبات علي القضايا</button>
-                  <button class="ad-btn" id="btn-sync-minutes">مزامنة محاضر ضبط الجلسات</button>
+                  <button class="ad-btn" id="btn-sync-requests">مزامنة الطلبات</button>
                   <button class="ad-btn" id="btn-sync-agencies">مزامنة الوكالات</button>
-                  <button class="ad-btn" id="btn-sync-others">مزامنة البيانات الأخرى</button>
+                  <button class="ad-btn" id="btn-sync-notifications">مزامنة الإشعارات</button>
+                  <button class="ad-btn" id="btn-sync-documents">مزامنة المستندات</button>
+                  <button class="ad-btn" id="btn-sync-appointments">مزامنة المواعيد</button>
+                  <button class="ad-btn" id="btn-sync-tasks">مزامنة المهام</button>
                </div>
                <div style="margin-top:10px; font-size:10px; color:#94a3b8; text-align:center;">
                   يعمل المدقق الآلي (AI) على تحليل وترتيب البيانات في أقسام النظام تلقائياً.
@@ -122,19 +127,11 @@ export default function NajizExtensionHub({ currentUser, onUpdateState }: NajizE
              w.style.display = w.style.display === 'none' ? 'block' : 'none';
           });
 
-          document.getElementById('btn-sync-all').addEventListener('click', () => handleSync('all'));
-          document.getElementById('btn-sync-cases').addEventListener('click', () => handleSync('cases'));
-          document.getElementById('btn-sync-clients').addEventListener('click', () => handleSync('clients'));
-          document.getElementById('btn-sync-hearings').addEventListener('click', () => handleSync('hearings'));
-          document.getElementById('btn-sync-executions').addEventListener('click', () => handleSync('executions'));
-          document.getElementById('btn-sync-requests').addEventListener('click', () => handleSync('requests'));
-          document.getElementById('btn-sync-minutes').addEventListener('click', () => handleSync('minutes'));
-          document.getElementById('btn-sync-agencies').addEventListener('click', () => handleSync('agencies'));
-          document.getElementById('btn-sync-others').addEventListener('click', () => handleSync('others'));
-        }
-
-        function extractMockData() {ncies').addEventListener('click', () => handleSync('agencies'));
-          document.getElementById('btn-sync-others').addEventListener('click', () => handleSync('others'));
+          const buttons = ['all', 'cases', 'clients', 'parties', 'hearings', 'minutes', 'executions', 'requests', 'agencies', 'notifications', 'documents', 'appointments', 'tasks'];
+          buttons.forEach(id => {
+             const btn = document.getElementById('btn-sync-' + id);
+             if (btn) btn.addEventListener('click', () => handleSync(id));
+          });
         }
 
         function extractMockData() {
@@ -226,23 +223,24 @@ export default function NajizExtensionHub({ currentUser, onUpdateState }: NajizE
          <meta charset="utf-8">
          <title>إعدادات المزامنة</title>
          <style>
-            body { background: #0c2461; color: #ffffff; font-family: system-ui, sans-serif; width: 340px; padding: 0; margin: 0; overflow-x: hidden; }
-            .header { background: #091e52; padding: 15px 20px; border-bottom: 1px solid rgba(212,175,55,0.3); display: flex; justify-content: space-between; align-items: center; }
-            .header h2 { color: #D4AF37; font-weight: 900; margin: 0; font-size: 16px; }
-            .tabs { display: flex; border-bottom: 1px solid rgba(255,255,255,0.1); background: #0a1b45; }
-            .tab { flex: 1; text-align: center; padding: 12px; cursor: pointer; font-size: 13px; font-weight: bold; color: rgba(255,255,255,0.6); transition: all 0.2s; }
-            .tab.active { color: #D4AF37; border-bottom: 2px solid #D4AF37; background: rgba(212,175,55,0.05); }
+            body { background: #0b1329; color: #FFFFFF; font-family: system-ui, sans-serif; width: 340px; padding: 0; margin: 0; overflow-x: hidden; }
+            .header { background: #090f20; padding: 15px 20px; border-bottom: 1px solid rgba(212,175,55,0.3); display: flex; justify-content: space-between; align-items: center; }
+            .header h2 { color: #FACC15; font-weight: 900; margin: 0; font-size: 16px; }
+            .tabs { display: flex; border-bottom: 1px solid rgba(255,255,255,0.1); background: #0a1024; }
+            .tab { flex: 1; text-align: center; padding: 12px; cursor: pointer; font-size: 13px; font-weight: bold; color: #FFFFFF; opacity: 0.8; transition: all 0.2s; }
+            .tab.active { color: #FACC15; opacity: 1; border-bottom: 2px solid #FACC15; background: rgba(212,175,55,0.05); }
             .content { padding: 20px; display: none; }
             .content.active { display: block; }
 
-            label { display: block; font-size: 12px; font-weight: bold; margin-top: 15px; margin-bottom: 5px; color: #D4AF37; }
-            input { width: 100%; padding: 10px; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); color: #fff; border-radius: 8px; box-sizing: border-box; }
-            input:focus { outline: none; border-color: #D4AF37; background: rgba(0,0,0,0.4); }
+            label { display: block; font-size: 12px; font-weight: bold; margin-top: 15px; margin-bottom: 5px; color: #FACC15; }
+            input { width: 100%; padding: 10px; background: rgba(0,0,0,0.2); border: 1px solid #FFFFFF; color: #FFFFFF; border-radius: 8px; box-sizing: border-box; }
+            input::placeholder { color: #FFFFFF; opacity: 0.6; }
+            input:focus { outline: none; border-color: #FACC15; background: rgba(0,0,0,0.4); }
             
-            button.primary { width: 100%; margin-top: 20px; background: #D4AF37; color: #0c2461; border: none; padding: 12px; font-weight: 900; border-radius: 8px; cursor: pointer; transition: 0.2s;}
-            button.primary:hover { background: #e5c358; transform: translateY(-1px); }
+            button.primary { width: 100%; margin-top: 20px; background: #D4AF37; color: #0b1329; border: none; padding: 12px; font-weight: 900; border-radius: 8px; cursor: pointer; transition: 0.2s;}
+            button.primary:hover { background: #FACC15; transform: translateY(-1px); }
             
-            .info { font-size: 11px; margin-top: 15px; background: rgba(255,255,255,0.05); padding: 12px; border-radius: 8px; color: #e2e8f0; line-height: 1.6; border: 1px solid rgba(255,255,255,0.05); }
+            .info { font-size: 11px; margin-top: 15px; background: rgba(255,255,255,0.05); padding: 12px; border-radius: 8px; color: #FFFFFF; line-height: 1.6; border: 1px solid rgba(255,255,255,0.05); }
             .status-badge { display: inline-flex; align-items: center; gap: 5px; background: rgba(74, 222, 128, 0.1); color: #4ade80; padding: 4px 8px; border-radius: 4px; font-size: 10px; font-weight: bold; }
             .dot { width: 6px; height: 6px; background: #4ade80; border-radius: 50%; box-shadow: 0 0 5px #4ade80; }
          </style>
@@ -255,14 +253,14 @@ export default function NajizExtensionHub({ currentUser, onUpdateState }: NajizE
          
          <div class="tabs">
             <div class="tab active" data-target="main">الرئيسية</div>
-            <div class="tab" data-target="settings">إعدادات الربط</div>
+            <div class="tab" data-target="settings">إعدادات المتقدمة</div>
          </div>
 
          <div id="main" class="content active">
             <div style="text-align: center; margin-bottom: 20px;">
                <div style="font-size: 40px; margin-bottom: 10px;">⚖️</div>
-               <h3 style="margin: 0 0 5px 0; color: #fff;">المزامنة جاهزة</h3>
-               <p style="margin: 0; font-size: 11px; color: #cbd5e1;">الذكاء الاصطناعي مهيأ ويراقب البيانات المدخلة.</p>
+               <h3 style="margin: 0 0 5px 0; color: #FACC15;">المزامنة جاهزة</h3>
+               <p style="margin: 0; font-size: 11px; color: #FFFFFF;">الذكاء الاصطناعي مهيأ ويراقب البيانات المدخلة.</p>
             </div>
             
             <div class="info">
@@ -271,7 +269,7 @@ export default function NajizExtensionHub({ currentUser, onUpdateState }: NajizE
          </div>
 
          <div id="settings" class="content">
-            <p style="font-size:11px; color:#cbd5e1; margin-top:0;">الربط المباشر يعمل تلقائياً، استخدم هذه الإعدادات فقط لتغيير مسار التوجيه لقواعد بياناتك الخاصة.</p>
+            <p style="font-size:11px; color:#FFFFFF; margin-top:0;">الربط المباشر يعمل تلقائياً، استخدم هذه الإعدادات فقط لتغيير مسار التوجيه لقواعد بياناتك الخاصة.</p>
             
             <label>رابط الاستقبال (Webhook/API URL)</label>
             <input type="text" id="apiUrl" placeholder="https://api.yourdomain.com/v1/sync" />
@@ -350,14 +348,20 @@ export default function NajizExtensionHub({ currentUser, onUpdateState }: NajizE
     setTimeout(() => setCopiedKey(''), 2000);
   };
 
-  const currentApiUrl = `https://${window.location.hostname}/api/v1/najiz-sync`;
-  const currentApiKey = currentUser?.najizApiKey || `sk_live_${currentUser?.id || 'emp_0'}_${Date.now().toString().slice(0, 5)}`;
+  const [customApiUrl, setCustomApiUrl] = useState(() => localStorage.getItem('najizCustomApiUrl') || `https://${window.location.hostname}/api/v1/najiz-sync`);
+  const [customApiKey, setCustomApiKey] = useState(() => localStorage.getItem('najizCustomApiKey') || currentUser?.najizApiKey || `sk_live_${currentUser?.id || 'emp_0'}_${Date.now().toString().slice(0, 5)}`);
+
+  const saveSettings = () => {
+    localStorage.setItem('najizCustomApiUrl', customApiUrl);
+    localStorage.setItem('najizCustomApiKey', customApiKey);
+    setShowSettings(false);
+  };
 
   return (
     <div className="p-8 max-w-7xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 min-h-screen" dir="rtl">
       
       {/* Hero Header - Dark Blue & Gold */}
-      <div className="bg-[#0c2461] rounded-[3rem] p-12 text-white shadow-[0_20px_50px_rgba(12,36,97,0.4)] relative overflow-hidden border border-[#D4AF37]/30">
+      <div className="bg-[#0b1329] rounded-[3rem] p-12 text-white shadow-[0_20px_50px_rgba(12,36,97,0.4)] relative overflow-hidden border border-[#D4AF37]/30">
         <div className="absolute top-0 left-0 w-full h-full bg-[linear-gradient(45deg,#0c2461_25%,#0b1e4f_50%,#0c2461_75%)] opacity-50" />
         <div className="absolute -top-24 -right-24 w-96 h-96 bg-[#D4AF37]/10 blur-[100px] rounded-full" />
         
@@ -365,10 +369,10 @@ export default function NajizExtensionHub({ currentUser, onUpdateState }: NajizE
           <div className="max-w-3xl">
             <div className="flex flex-wrap items-center gap-4 mb-6">
               <div className="bg-[#D4AF37] p-3 rounded-2xl shadow-lg shadow-[#D4AF37]/20">
-                <Bot className="w-8 h-8 text-[#0c2461]" />
+                <Bot className="w-8 h-8 text-white" />
               </div>
               <h1 className="text-4xl md:text-5xl font-black text-white hover:text-yellow-400 transition-colors cursor-default">
-                أداة المزامنة الذكية <span className="text-[#D4AF37]">Al-Adalah</span>
+                أداة المزامنة الذكية <span className="text-[#FACC15] font-black">Al-Adalah</span>
               </h1>
             </div>
             <p className="text-yellow-400/90 text-xl font-medium leading-relaxed mb-8">
@@ -379,7 +383,7 @@ export default function NajizExtensionHub({ currentUser, onUpdateState }: NajizE
               <button 
                 onClick={handleDownload}
                 disabled={downloading}
-                className="bg-[#D4AF37] hover:bg-[#e5c358] text-[#0c2461] font-black text-lg px-10 py-5 rounded-2xl shadow-[0_10px_30px_rgba(212,175,55,0.3)] transition-all flex items-center gap-3 active:scale-95 disabled:opacity-50"
+                className="bg-[#D4AF37] hover:bg-[#e5c358] text-white font-black text-lg px-10 py-5 rounded-2xl shadow-[0_10px_30px_rgba(212,175,55,0.3)] transition-all flex items-center gap-3 active:scale-95 disabled:opacity-50"
               >
                 {downloading ? (
                    <span className="flex items-center gap-2">جارِ تجميع الحزمة... ⏳</span>
@@ -393,18 +397,18 @@ export default function NajizExtensionHub({ currentUser, onUpdateState }: NajizE
               
               <button 
                 onClick={() => setShowSettings(true)}
-                className="bg-[#0c2461] hover:bg-slate-900 border-2 border-[#D4AF37] text-white font-black text-lg px-8 py-5 rounded-2xl shadow-xl transition-all flex items-center gap-3 active:scale-95"
+                className="bg-[#0b1329] hover:bg-slate-900 border-2 border-[#D4AF37] text-white font-black text-lg px-8 py-5 rounded-2xl shadow-xl transition-all flex items-center gap-3 active:scale-95"
               >
-                <Settings className="w-6 h-6 text-[#D4AF37]" />
+                <Settings className="w-6 h-6 text-[#FACC15] font-black" />
                 مفاتيح ربط API (إختياري)
               </button>
             </div>
           </div>
           
-          <div className="hidden lg:flex flex-col items-center gap-4 p-8 bg-[#0c2461]/60 backdrop-blur-xl border border-[#D4AF37]/50 rounded-[2.5rem] shadow-2xl skew-y-1">
+          <div className="hidden lg:flex flex-col items-center gap-4 p-8 bg-[#0b1329]/60 backdrop-blur-xl border border-[#D4AF37]/50 rounded-[2.5rem] shadow-2xl skew-y-1">
              <div className="flex items-center gap-3 mb-2">
                 <CheckCircle2 className="w-5 h-5 text-emerald-400" />
-                <span className="text-xs font-black uppercase tracking-widest text-[#D4AF37]">الربط التلقائي نشط</span>
+                <span className="text-xs font-black uppercase tracking-widest text-[#FACC15] font-black">الربط التلقائي نشط</span>
              </div>
              <div className="text-5xl font-black text-white">100%</div>
              <p className="text-[10px] font-bold text-yellow-400">دقة ترتيب وتوزيع الأقسام (AI Scraper)</p>
@@ -416,20 +420,20 @@ export default function NajizExtensionHub({ currentUser, onUpdateState }: NajizE
         
         {/* Sidebar Status & Quick Info */}
         <div className="lg:col-span-1 space-y-6">
-          <div className="bg-[#0c2461] border border-[#D4AF37]/30 rounded-[2.5rem] p-8 shadow-xl text-white">
+          <div className="bg-[#0b1329] border border-[#D4AF37]/30 rounded-[2.5rem] p-8 shadow-xl text-white">
             <h3 className="font-black text-white text-lg mb-6 flex items-center gap-3">
-              <ShieldCheck className="w-6 h-6 text-[#D4AF37]" />
+              <ShieldCheck className="w-6 h-6 text-[#FACC15] font-black" />
               الحالة الفنية
             </h3>
             
             <div className="space-y-6">
               <div className="flex items-center justify-between p-4 bg-emerald-900/30 rounded-2xl border border-emerald-500/30">
                 <span className="text-xs font-black text-emerald-400">بدون مفتاح (No-Key)</span>
-                <div className="bg-emerald-500 text-[#0c2461] text-[9px] px-2 py-1 rounded-full font-black animate-pulse">متصل</div>
+                <div className="bg-emerald-500 text-white text-[11px] px-2 py-1 rounded-full font-black animate-pulse">متصل</div>
               </div>
 
               <div className="pt-6 border-t border-[#D4AF37]/20">
-                <h4 className="text-[10px] font-black text-[#D4AF37] uppercase tracking-widest mb-4">التوزيع الذكي المدعوم</h4>
+                <h4 className="text-[10px] font-black text-[#FACC15] font-black uppercase tracking-widest mb-4">التوزيع الذكي المدعوم</h4>
                 <div className="space-y-3">
                    {[
                      { label: 'سجلات القضايا المفتوحة', icon: Briefcase, color: 'text-white' },
@@ -440,7 +444,7 @@ export default function NajizExtensionHub({ currentUser, onUpdateState }: NajizE
                    ].map((item, i) => (
                      <div key={i} className="flex items-center gap-3">
                        <div className="bg-[#D4AF37]/20 p-2 rounded-lg"><item.icon className={`w-4 h-4 ${item.color}`} /></div>
-                       <span className="text-xs font-bold text-slate-200">{item.label}</span>
+                       <span className="text-xs font-black text-[#FFFFFF]">{item.label}</span>
                      </div>
                    ))}
                 </div>
@@ -452,18 +456,18 @@ export default function NajizExtensionHub({ currentUser, onUpdateState }: NajizE
         {/* Main Content Areas */}
         <div className="lg:col-span-3 space-y-8">
           
-          <div className="bg-[#0c2461] border border-[#D4AF37]/30 rounded-[3rem] p-10 shadow-xl overflow-hidden text-white">
+          <div className="bg-[#0b1329] border border-[#D4AF37]/30 rounded-[3rem] p-10 shadow-xl overflow-hidden text-white">
             <div className="flex border-b border-[#D4AF37]/20 mb-8">
               <button 
                 onClick={() => setActiveTab('instructions')}
-                className={`pb-4 px-8 text-sm font-black transition-all relative ${activeTab === 'instructions' ? 'text-[#D4AF37]' : 'text-slate-200'}`}
+                className={`pb-4 px-8 text-sm font-black transition-all relative ${activeTab === 'instructions' ? 'text-[#FACC15] font-black' : 'text-[#FFFFFF]'}`}
               >
                 تنزيل وبدء العمل
                 {activeTab === 'instructions' && <motion.div layoutId="tab-underline-hub" className="absolute bottom-0 left-0 right-0 h-1 bg-[#D4AF37] rounded-full" />}
               </button>
               <button 
                 onClick={() => setActiveTab('features')}
-                className={`pb-4 px-8 text-sm font-black transition-all relative ${activeTab === 'features' ? 'text-[#D4AF37]' : 'text-slate-200'}`}
+                className={`pb-4 px-8 text-sm font-black transition-all relative ${activeTab === 'features' ? 'text-[#FACC15] font-black' : 'text-[#FFFFFF]'}`}
               >
                 قدرات المزامنة الشاملة
                 {activeTab === 'features' && <motion.div layoutId="tab-underline-hub" className="absolute bottom-0 left-0 right-0 h-1 bg-[#D4AF37] rounded-full" />}
@@ -474,31 +478,31 @@ export default function NajizExtensionHub({ currentUser, onUpdateState }: NajizE
               <div className="space-y-10 animate-in fade-in duration-500">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                    <div className="flex gap-6 bg-slate-900/50 p-5 rounded-3xl border border-white/5">
-                      <div className="w-12 h-12 rounded-2xl bg-[#D4AF37]/20 border border-[#D4AF37]/50 flex items-center justify-center shrink-0 font-black text-[#D4AF37] text-xl">1</div>
+                      <div className="w-12 h-12 rounded-2xl bg-[#D4AF37]/20 border border-[#D4AF37]/50 flex items-center justify-center shrink-0 font-black text-[#FACC15] font-black text-xl">1</div>
                       <div className="space-y-2">
                         <h4 className="font-black text-white text-lg">تحميل الأداة</h4>
-                        <p className="text-sm text-slate-200 leading-relaxed font-semibold">استخرج ملف ZIP الذي تم تحميله في مجلد معروف للبدء.</p>
+                        <p className="text-sm text-[#FFFFFF] leading-relaxed font-black">استخرج ملف ZIP الذي تم تحميله في مجلد معروف للبدء.</p>
                       </div>
                    </div>
                    <div className="flex gap-6 bg-slate-900/50 p-5 rounded-3xl border border-white/5">
-                      <div className="w-12 h-12 rounded-2xl bg-[#D4AF37]/20 border border-[#D4AF37]/50 flex items-center justify-center shrink-0 font-black text-[#D4AF37] text-xl">2</div>
+                      <div className="w-12 h-12 rounded-2xl bg-[#D4AF37]/20 border border-[#D4AF37]/50 flex items-center justify-center shrink-0 font-black text-[#FACC15] font-black text-xl">2</div>
                       <div className="space-y-2">
                         <h4 className="font-black text-white text-lg">تثبيت الإضافة للمتصفح</h4>
-                        <p className="text-sm text-slate-200 leading-relaxed font-semibold">في Chrome، افتح <code className="bg-slate-800 px-1 rounded text-[#D4AF37]">chrome://extensions</code>، فعل وضع المطور وارفع المجلد.</p>
+                        <p className="text-sm text-[#FFFFFF] leading-relaxed font-black">في Chrome، افتح <code className="bg-[#0b1329] px-1 rounded text-[#FACC15] font-black">chrome://extensions</code>، فعل وضع المطور وارفع المجلد.</p>
                       </div>
                    </div>
                    <div className="flex gap-6 bg-slate-900/50 p-5 rounded-3xl border border-white/5">
-                      <div className="w-12 h-12 rounded-2xl bg-[#D4AF37]/20 border border-[#D4AF37]/50 flex items-center justify-center shrink-0 font-black text-[#D4AF37] text-xl">3</div>
+                      <div className="w-12 h-12 rounded-2xl bg-[#D4AF37]/20 border border-[#D4AF37]/50 flex items-center justify-center shrink-0 font-black text-[#FACC15] font-black text-xl">3</div>
                       <div className="space-y-2">
                         <h4 className="font-black text-white text-lg">سحب تلقائي (No-Key)</h4>
-                        <p className="text-sm text-slate-200 leading-relaxed font-semibold">افتح منصة ناجز بتسجيل دخولك المعتاد. ستجد زر المزامنة متوفر في أسفل المتصفح وتعمل الأداة دون ربط API من خلال الجلسة الحالية.</p>
+                        <p className="text-sm text-[#FFFFFF] leading-relaxed font-black">افتح منصة ناجز بتسجيل دخولك المعتاد. ستجد زر المزامنة متوفر في أسفل المتصفح وتعمل الأداة دون ربط API من خلال الجلسة الحالية.</p>
                       </div>
                    </div>
                    <div className="flex gap-6 bg-slate-900/50 p-5 rounded-3xl border border-white/5">
-                      <div className="w-12 h-12 rounded-2xl bg-[#D4AF37]/20 border border-[#D4AF37]/50 flex items-center justify-center shrink-0 font-black text-[#D4AF37] text-xl">4</div>
+                      <div className="w-12 h-12 rounded-2xl bg-[#D4AF37]/20 border border-[#D4AF37]/50 flex items-center justify-center shrink-0 font-black text-[#FACC15] font-black text-xl">4</div>
                       <div className="space-y-2">
                         <h4 className="font-black text-white text-lg">التعرف بالذكاء الاصطناعي</h4>
-                        <p className="text-sm text-slate-200 leading-relaxed font-semibold">الأداة تصنف القضايا والجلسات والوكالات فورياً بالذكاء الاصطناعي وترفعها للأقسام الصحيحة في النظام.</p>
+                        <p className="text-sm text-[#FFFFFF] leading-relaxed font-black">الأداة تصنف القضايا والجلسات والوكالات فورياً بالذكاء الاصطناعي وترفعها للأقسام الصحيحة في النظام.</p>
                       </div>
                    </div>
                 </div>
@@ -517,9 +521,9 @@ export default function NajizExtensionHub({ currentUser, onUpdateState }: NajizE
                      { title: 'طلبات على القضايا', icon: BookOpen, desc: 'مزامنة المسار الإجرائي.' }
                    ].map((feat, i) => (
                      <div key={i} className="p-6 bg-slate-900/50 border border-white/5 rounded-3xl hover:border-[#D4AF37] transition-all group">
-                        <feat.icon className="w-8 h-8 text-[#D4AF37] mb-4 transition-transform group-hover:scale-110" />
+                        <feat.icon className="w-8 h-8 text-[#FACC15] font-black mb-4 transition-transform group-hover:scale-110" />
                         <h5 className="font-black text-white mb-2">{feat.title}</h5>
-                        <p className="text-[11px] text-slate-200 font-bold leading-relaxed">{feat.desc}</p>
+                        <p className="text-[11px] text-[#FFFFFF] font-black leading-relaxed">{feat.desc}</p>
                      </div>
                    ))}
                 </div>
@@ -532,68 +536,87 @@ export default function NajizExtensionHub({ currentUser, onUpdateState }: NajizE
       {/* Settings Modal - API Keys */}
       <AnimatePresence>
         {showSettings && (
-           <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 backdrop-blur-md bg-black/70">
+           <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 backdrop-blur-md bg-black/70 settings-container najiz-settings-panel">
               <motion.div 
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.95 }}
-                className="bg-[#0c2461] border-2 border-[#D4AF37] rounded-[3rem] w-full max-w-xl shadow-[0_20px_50px_rgba(0,0,0,0.8)] overflow-hidden text-white"
+                className="bg-[#0b1329] border-2 border-[#D4AF37] rounded-[3rem] w-full max-w-xl shadow-[0_20px_50px_rgba(0,0,0,0.8)] overflow-hidden text-[#FFFFFF]"
               >
-                 <div className="p-8 border-b border-white/10 flex justify-between items-center bg-[#091e52]">
+                 <div className="p-8 border-b border-[#D4AF37]/30 flex justify-between items-center bg-[#090f20]">
                     <div className="flex items-center gap-3">
-                       <div className="p-2 bg-[#D4AF37] rounded-xl text-[#0c2461]">
+                       <div className="p-2 bg-[#D4AF37] rounded-xl text-white">
                          <Settings className="w-5 h-5" />
                        </div>
-                       <h3 className="font-black text-white text-xl">إعدادات الربط بواسطة المفاتيح</h3>
+                       <h3 className="font-black text-[#FFFFFF] text-xl">إعدادات الربط بواسطة المفاتيح</h3>
                     </div>
-                    <button onClick={() => setShowSettings(false)} className="p-2 hover:bg-slate-800 rounded-full transition-colors text-slate-200">
+                    <button onClick={() => setShowSettings(false)} className="p-2 hover:bg-white/10 rounded-full transition-colors text-[#FFFFFF]">
                        <X className="w-6 h-6" />
                     </button>
                  </div>
                  
-                 <div className="p-10 space-y-8">
-                    <div className="bg-blue-900/40 p-5 rounded-2xl border border-blue-500/30">
-                       <h4 className="flex items-center gap-2 text-sm font-black text-blue-300 mb-2">
-                          <ShieldCheck className="w-4 h-4 text-[#D4AF37]" />
-                          الربط بالمفتاح الاختياري لكل موظف
+                 <div className="p-10 space-y-8 bg-[#0b1329] najiz-settings-panel settings-container">
+                    <div className="bg-[#D4AF37]/10 p-5 rounded-2xl border border-[#D4AF37]/30">
+                       <h4 className="flex items-center gap-2 text-sm font-black text-[#FACC15] mb-2">
+                          <ShieldCheck className="w-5 h-5 text-[#FACC15]" />
+                          الربط محمي وتلقائي
                        </h4>
-                       <p className="text-xs text-blue-100/80 font-bold leading-relaxed">
-                          الإضافة تعمل محلياً بشكل فوري. في حال استخدام منصات سحابية خارجية، يمكنك إدراج مفتاح API لضمان الإرسال الآمن عبر الشبكة.
+                       <p className="text-sm text-[#FFFFFF] font-bold leading-relaxed">
+                          بشكل افتراضي تعمل المزامنة عبر الاتصال الآمن مع المنصة بمجرد تسجيل الدخول في ناجز وتثبيت الإضافة. لا حاجة لأي إعدادات إضافية.
                        </p>
                     </div>
 
-                    <div className="space-y-6">
-                       <div className="space-y-2">
-                         <label className="text-xs font-black text-yellow-400">رابط الواجهة البرمجية (API Endpoint)</label>
-                         <div className="flex gap-2">
-                            <div className="flex-1 bg-slate-900 p-4 rounded-2xl font-mono text-xs text-white overflow-hidden text-ellipsis whitespace-nowrap border border-white/10" dir="ltr">
-                               {currentApiUrl}
-                            </div>
-                            <button onClick={() => copyToClipboard(currentApiUrl, 'url')} className="bg-slate-800 p-4 rounded-2xl text-white hover:bg-[#D4AF37] hover:text-[#0c2461] border border-white/10 transition-all">
-                               {copiedKey === 'url' ? <CheckCircle2 className="w-5 h-5" /> : <Copy className="w-5 h-5" />}
-                            </button>
+                    <details className="group bg-[#090f20] rounded-2xl border border-[#D4AF37]/30 overflow-hidden">
+                      <summary className="flex items-center justify-between p-5 cursor-pointer text-[#FACC15] font-black hover:bg-[#D4AF37]/10 transition-colors">
+                        <div className="flex items-center gap-2">
+                          <Settings className="w-5 h-5 text-[#FACC15]" />
+                          <span>Advanced Settings (إعدادات متقدمة)</span>
+                        </div>
+                        <span className="text-xs bg-[#FACC15] text-[#0b1329] px-2 py-1 rounded font-black group-open:hidden">إظهار</span>
+                        <span className="text-xs bg-[#FACC15] text-[#0b1329] px-2 py-1 rounded font-black hidden group-open:inline-block">إخفاء</span>
+                      </summary>
+                      
+                      <div className="p-6 space-y-6 border-t border-[#D4AF37]/30 bg-[#090f20]">
+                         <div className="space-y-3">
+                           <label className="text-sm font-black text-[#FACC15]">API URL (رابط الواجهة البرمجية)</label>
+                           <div className="flex gap-2">
+                              <input 
+                                type="text" 
+                                value={customApiUrl} 
+                                onChange={(e) => setCustomApiUrl(e.target.value)}
+                                className="flex-1 bg-[#0b1329] p-4 rounded-xl font-mono text-sm text-[#FFFFFF] focus:outline-none focus:ring-2 focus:ring-[#D4AF37] focus:border-transparent border border-[#FFFFFF]/20 transition-all placeholder-[#FFFFFF]/50" 
+                                dir="ltr" 
+                              />
+                              <button onClick={() => copyToClipboard(customApiUrl, 'url')} className="bg-[#0b1329] p-4 rounded-xl text-[#FFFFFF] hover:bg-[#D4AF37] hover:text-[#0b1329] border border-[#FFFFFF]/20 transition-all">
+                                 {copiedKey === 'url' ? <CheckCircle2 className="w-5 h-5" /> : <Copy className="w-5 h-5" />}
+                              </button>
+                           </div>
                          </div>
-                       </div>
 
-                       <div className="space-y-2">
-                         <label className="text-xs font-black text-yellow-400">مفتاح الوصول السري (API Key)</label>
-                         <div className="flex gap-2">
-                            <div className="flex-1 bg-slate-900 p-4 rounded-2xl font-mono text-xs text-white overflow-hidden text-ellipsis whitespace-nowrap border border-white/10" dir="ltr">
-                               {currentApiKey}
-                            </div>
-                            <button onClick={() => copyToClipboard(currentApiKey, 'key')} className="bg-slate-800 p-4 rounded-2xl text-white hover:bg-[#D4AF37] hover:text-[#0c2461] border border-white/10 transition-all">
-                               {copiedKey === 'key' ? <CheckCircle2 className="w-5 h-5" /> : <Copy className="w-5 h-5" />}
-                            </button>
+                         <div className="space-y-3">
+                           <label className="text-sm font-black text-[#FACC15]">API Key (مفتاح الوصول السري)</label>
+                           <div className="flex gap-2">
+                              <input 
+                                type="password" 
+                                value={customApiKey}
+                                onChange={(e) => setCustomApiKey(e.target.value)}
+                                className="flex-1 bg-[#0b1329] p-4 rounded-xl font-mono text-sm text-[#FFFFFF] focus:outline-none focus:ring-2 focus:ring-[#D4AF37] focus:border-transparent border border-[#FFFFFF]/20 transition-all placeholder-[#FFFFFF]/50" 
+                                dir="ltr" 
+                              />
+                              <button onClick={() => copyToClipboard(customApiKey, 'key')} className="bg-[#0b1329] p-4 rounded-xl text-[#FFFFFF] hover:bg-[#D4AF37] hover:text-[#0b1329] border border-[#FFFFFF]/20 transition-all">
+                                 {copiedKey === 'key' ? <CheckCircle2 className="w-5 h-5" /> : <Copy className="w-5 h-5" />}
+                              </button>
+                           </div>
                          </div>
-                       </div>
-                    </div>
+                      </div>
+                    </details>
                     
-                    <div className="pt-6 border-t border-white/10">
+                    <div className="pt-6 border-t border-[#D4AF37]/20">
                        <button 
-                         onClick={() => setShowSettings(false)}
-                         className="w-full bg-[#D4AF37] text-[#0c2461] hover:bg-[#e5c358] font-black py-4 rounded-2xl shadow-lg transition-all active:scale-95 text-sm"
+                         onClick={saveSettings}
+                         className="w-full bg-[#D4AF37] text-[#0b1329] hover:bg-[#FACC15] hover:text-[#0b1329] font-black py-4 rounded-2xl shadow-lg shadow-[#D4AF37]/20 transition-all active:scale-95 text-base"
                        >
-                          حفظ الإعدادات
+                          حفظ وتأمين الإعدادات
                        </button>
                     </div>
                  </div>

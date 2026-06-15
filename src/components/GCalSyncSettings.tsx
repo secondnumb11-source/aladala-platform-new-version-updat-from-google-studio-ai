@@ -36,7 +36,7 @@ export default function GCalSyncSettings() {
 
         {/* Integration Card (Dark Box: Gold & Light Blue Gradient) */}
         <div className="bg-gradient-to-br from-[#9A7D2C] via-[#1E3A8A] to-[#0284C7] border-2 border-[#9A7D2C] rounded-3xl p-8 relative overflow-hidden shadow-2xl text-white">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-yellow-450 blur-3xl rounded-full opacity-30"></div>
+          <div className="absolute top-0 right-0 w-32 h-32 bg-yellow-400 blur-3xl rounded-full opacity-30"></div>
           
           <div className="relative z-10 grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
             

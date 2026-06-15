@@ -240,19 +240,19 @@ export default function NajizSyncBackendService() {
                 </div>
                 <div>
                   <h2 className="text-xl font-black text-white">{showErrorScreen ? "فشل مزامنة ناجز" : "إعدادات المزامنة المتقدمة (ناجز)"}</h2>
-                  <p className="text-xs text-slate-500 font-bold mt-1 uppercase tracking-widest">NajizSync Backend Engine v2 / Polling Service</p>
+                  <p className="text-xs text-slate-700 font-bold mt-1 uppercase tracking-widest">NajizSync Backend Engine v2 / Polling Service</p>
                 </div>
               </div>
               <div className="flex gap-2">
                 {!showErrorScreen && (
                   <>
-                    <button onClick={() => setActiveTab('settings')} className={`px-4 py-2 rounded-xl text-xs font-black transition-all ${activeTab === 'settings' ? 'bg-amber-500 text-slate-900' : 'bg-slate-800 text-slate-300'}`}>الإعدادات</button>
-                    <button onClick={() => setActiveTab('monitoring')} className={`px-4 py-2 rounded-xl text-xs font-black transition-all ${activeTab === 'monitoring' ? 'bg-amber-500 text-slate-900' : 'bg-slate-800 text-slate-300'}`}>المراقبة والأداء</button>
+                    <button onClick={() => setActiveTab('settings')} className={`px-4 py-2 rounded-xl text-xs font-black transition-all ${activeTab === 'settings' ? 'bg-amber-500 text-slate-900' : 'bg-slate-800 text-white font-bold'}`}>الإعدادات</button>
+                    <button onClick={() => setActiveTab('monitoring')} className={`px-4 py-2 rounded-xl text-xs font-black transition-all ${activeTab === 'monitoring' ? 'bg-amber-500 text-slate-900' : 'bg-slate-800 text-white font-bold'}`}>المراقبة والأداء</button>
                   </>
                 )}
                 <button 
                   onClick={() => setShowSettings(false)}
-                  className="p-2 rounded-xl text-slate-400 transition-all flex items-center justify-center"
+                  className="p-2 rounded-xl text-slate-200 font-bold transition-all flex items-center justify-center"
                 >
                   <X className="w-6 h-6" />
                 </button>
@@ -268,10 +268,10 @@ export default function NajizSyncBackendService() {
                         <AlertTriangle className="w-10 h-10 text-rose-500" />
                       </div>
                       <h3 className="text-xl font-black text-white">توقف المزامنة التلقائية</h3>
-                      <p className="text-sm text-slate-400">فشل الاتصال لأكثر من 3 مرات. يرجى تحديد سبب الفشل وطلب إرسال إعادة ربط مخصصة.</p>
+                      <p className="text-sm text-slate-200 font-bold">فشل الاتصال لأكثر من 3 مرات. يرجى تحديد سبب الفشل وطلب إرسال إعادة ربط مخصصة.</p>
                       
                       <div className="text-right space-y-2 mt-4">
-                        <label className="text-xs font-bold text-slate-300">حدد سبب الفشل المتوقع:</label>
+                        <label className="text-xs font-bold text-white font-bold">حدد سبب الفشل المتوقع:</label>
                         <select 
                           value={manualReason}
                           onChange={(e) => setManualReason(e.target.value)}
@@ -307,16 +307,16 @@ export default function NajizSyncBackendService() {
                       </div>
                       <div>
                         <h3 className="text-2xl font-black text-white mb-2">تعذر الاتصال ببوابة ناجز</h3>
-                        <p className="text-slate-400 text-sm max-w-md mx-auto">
+                        <p className="text-slate-200 font-bold text-sm max-w-md mx-auto">
                           {errorDetails === 'timeout' ? 'استغرق الطلب وقتاً طويلاً (Timeout). قد يكون هناك ضغط على خوادم وزارة العدل.' :
                            errorDetails === 'unauthorized' ? 'فشل تفويض الدخول. يرجى مراجعة إعدادات المفاتيح وشهادات ZATCA.' :
                            'تعذر الوصول للخدمة (Service Unavailable). يرجى المحاولة لاحقاً.'}
                         </p>
                       </div>
                       <div className="bg-slate-950/40 border border-white/5 p-4 rounded-xl flex items-center gap-4">
-                         <span className="text-sm font-bold text-slate-300">تفعيل التنبيه الصوتي للأعطال</span>
+                         <span className="text-sm font-bold text-white font-bold">تفعيل التنبيه الصوتي للأعطال</span>
                          <button onClick={() => setAudioAlertEnabled(!audioAlertEnabled)} className={`w-12 h-6 rounded-full transition-colors relative ${audioAlertEnabled ? 'bg-amber-500' : 'bg-slate-700'}`}>
-                           <Volume2 className={`w-3 h-3 absolute top-1.5 ${audioAlertEnabled ? 'left-1.5 text-slate-900' : 'right-1.5 text-slate-400'}`} />
+                           <Volume2 className={`w-3 h-3 absolute top-1.5 ${audioAlertEnabled ? 'left-1.5 text-slate-900' : 'right-1.5 text-slate-200 font-bold'}`} />
                          </button>
                       </div>
                       <button onClick={handleManualManualRetry} className="bg-emerald-500 text-slate-950 px-8 py-3 rounded-2xl font-black flex items-center gap-2 transition-all">
@@ -335,7 +335,7 @@ export default function NajizSyncBackendService() {
                   <section className="bg-slate-950/40 rounded-3xl border border-white/5 p-6 space-y-4">
                     <div className="flex items-center justify-between">
                       <div className="space-y-1 text-right">
-                        <div className="text-[10px] text-slate-500 font-black uppercase">مزامنة تواصل وبث ناجز الكلية العدلية</div>
+                        <div className="text-[10px] text-slate-700 font-black uppercase">مزامنة تواصل وبث ناجز الكلية العدلية</div>
                         <h3 className="text-sm font-black text-white">التحكم في المزامنة وبث قضايا ناجز</h3>
                       </div>
                       <button 
@@ -375,7 +375,7 @@ export default function NajizSyncBackendService() {
                       className={`p-4 rounded-2xl border transition-all text-[11px] font-black ${
                         syncFrequency === freq.val 
                           ? 'bg-amber-500 text-slate-950 border-amber-500 shadow-xl shadow-amber-500/20' 
-                          : 'bg-slate-950/50 border-white/5 text-slate-400'
+                          : 'bg-slate-950/50 border-white/5 text-slate-200 font-bold'
                       }`}
                     >
                       {freq.label}
@@ -387,14 +387,14 @@ export default function NajizSyncBackendService() {
               {/* Status Section */}
               <section className="bg-slate-950/40 rounded-3xl border border-white/5 p-6 flex items-center justify-between">
                 <div className="space-y-1">
-                  <div className="text-[10px] text-slate-500 font-black uppercase">آخر حالة اتصال</div>
+                  <div className="text-[10px] text-slate-700 font-black uppercase">آخر حالة اتصال</div>
                   <div className="flex items-center gap-2">
                     <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(16,185,129,1)]"></div>
                     <span className="text-sm font-black text-emerald-400">نشط (خلف الرادار)</span>
                   </div>
                 </div>
                 <div className="text-left space-y-1">
-                  <div className="text-[10px] text-slate-500 font-black uppercase">توقيت الخادم المحلي</div>
+                  <div className="text-[10px] text-slate-700 font-black uppercase">توقيت الخادم المحلي</div>
                   <div className="text-sm font-mono text-white">2026-06-08 15:36:34</div>
                 </div>
               </section>
@@ -406,12 +406,12 @@ export default function NajizSyncBackendService() {
                     <Terminal className="w-4 h-4 text-amber-500" />
                     <h3 className="text-sm font-black">سجل العمليات التفصيلي (Polling Logs)</h3>
                   </div>
-                  <span className="text-[9px] bg-slate-800 text-slate-400 px-2 py-1 rounded-lg font-bold">آخر 50 عملية</span>
+                  <span className="text-[11px] bg-slate-800 text-slate-200 font-bold px-2 py-1 rounded-lg font-bold">آخر 50 عملية</span>
                 </div>
                 
                 <div className="space-y-2 max-h-[300px] overflow-y-auto pr-2 scrollbar-thin">
                   {syncLogs.length === 0 ? (
-                    <div className="text-center py-12 border-2 border-dashed border-white/5 rounded-3xl text-slate-600 text-xs font-bold">
+                    <div className="text-center py-12 border-2 border-dashed border-white/5 rounded-3xl text-slate-200 font-bold text-xs font-bold">
                       بانتظار بدء أول دورة مزامنة...
                     </div>
                   ) : (
@@ -424,9 +424,9 @@ export default function NajizSyncBackendService() {
                           <div>
                             <div className="text-[11px] font-black text-white">{log.message}</div>
                             <div className="flex items-center gap-3 mt-1">
-                              <span className="text-[9px] text-slate-500 font-mono">{new Date(log.timestamp).toLocaleTimeString('ar-SA')}</span>
+                              <span className="text-[11px] text-slate-700 font-mono">{new Date(log.timestamp).toLocaleTimeString('ar-SA')}</span>
                               {log.records !== undefined && (
-                                <span className="text-[9px] bg-amber-500/5 text-amber-500 px-1.5 py-0.5 rounded border border-amber-500/10 font-bold">
+                                <span className="text-[11px] bg-amber-500/5 text-amber-500 px-1.5 py-0.5 rounded border border-amber-500/10 font-bold">
                                   {log.records} سجلات
                                 </span>
                               )}
@@ -434,7 +434,7 @@ export default function NajizSyncBackendService() {
                           </div>
                         </div>
                         {log.duration && (
-                          <div className="text-[10px] font-mono text-slate-600 font-bold">{log.duration}ms</div>
+                          <div className="text-[10px] font-mono text-slate-200 font-bold font-bold">{log.duration}ms</div>
                         )}
                       </div>
                     ))
@@ -447,7 +447,7 @@ export default function NajizSyncBackendService() {
                   <div className="flex items-center justify-between">
                     <div>
                       <h3 className="text-lg font-black text-white">لوحة مراقبة الأداء (24 ساعة)</h3>
-                      <p className="text-xs text-slate-400 mt-1">تحليل دورات اتصال بوابة ناجز وقياس معدل الاستقرار</p>
+                      <p className="text-xs text-slate-200 font-bold mt-1">تحليل دورات اتصال بوابة ناجز وقياس معدل الاستقرار</p>
                     </div>
                     <button 
                       onClick={() => window.print()}
@@ -493,7 +493,7 @@ export default function NajizSyncBackendService() {
             <div className="p-8 border-t border-white/5 flex gap-4">
               <button 
                 onClick={() => setSyncLogs([])}
-                className="flex-1 py-4 rounded-2xl border border-white/5 text-slate-400 text-sm font-black transition-all"
+                className="flex-1 py-4 rounded-2xl border border-white/5 text-slate-200 font-bold text-sm font-black transition-all"
               >
                 مسح السجلات الحالية
               </button>

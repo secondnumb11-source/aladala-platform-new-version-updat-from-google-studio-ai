@@ -765,12 +765,12 @@ export default function Settings({
           {/* Office Identity & Logo Management Section - New Interface */}
           <div className="bg-white border border-slate-800 rounded-2xl p-6 space-y-6 shadow-sm" id="office-identity-settings">
             <div className="flex items-center gap-3 border-b border-slate-800 pb-4">
-              <div className="p-2.5 bg-amber-500/10 text-amber-600 border border-amber-500/20 rounded-xl">
+              <div className="p-2.5 bg-amber-500/10 border border-amber-500/30 text-amber-400 font-bold font-black border border-amber-500/20 rounded-xl">
                 <Building2 className="w-5 h-5" />
               </div>
               <div>
                 <h2 className="text-sm font-bold text-slate-900">الهوية المؤسسية وشعار المكتب</h2>
-                <p className="text-[11px] text-slate-500 mt-0.5">تخصيص شعار المكتب وبيانات الترويسة الموحدة لجميع الفواتير والتقارير والسندات الصادرة.</p>
+                <p className="text-[11px] text-slate-700 mt-0.5">تخصيص شعار المكتب وبيانات الترويسة الموحدة لجميع الفواتير والتقارير والسندات الصادرة.</p>
               </div>
             </div>
 
@@ -795,7 +795,7 @@ export default function Settings({
                       </button>
                     </div>
                   ) : (
-                    <div className="flex flex-col items-center text-slate-400">
+                    <div className="flex flex-col items-center text-slate-200 font-bold">
                       <Image className="w-10 h-10 mb-2 transition-transform" />
                       <span className="text-[10px] font-black">اسحب الشعار هنا أو انقر للإرفاق</span>
                     </div>
@@ -820,7 +820,7 @@ export default function Settings({
                     className="absolute inset-0 opacity-0 cursor-pointer"
                   />
                 </div>
-                <p className="text-[10px] text-slate-400 font-bold text-center">يدعم PNG, SVG, JPG. سيتم تحجيم الصورة وتحسين جودتها برمجياً لتناسب التقارير الرسمية.</p>
+                <p className="text-[10px] text-slate-200 font-bold font-bold text-center">يدعم PNG, SVG, JPG. سيتم تحجيم الصورة وتحسين جودتها برمجياً لتناسب التقارير الرسمية.</p>
               </div>
 
               <form onSubmit={handleSaveOfficeProfile} className="space-y-4">
@@ -864,7 +864,7 @@ export default function Settings({
           {/* Custom Theme Color & Gradient Config for Dark Cards & Backgrounds with Live Preview */}
           <div className="bg-white border border-slate-800 rounded-2xl p-6 space-y-4 shadow-sm" id="dark-gradient-picker-card">
             <div className="flex items-center gap-2.5 border-b border-slate-800 pb-3">
-              <span className="p-1.5 bg-yellow-500/10 text-yellow-600 border border-yellow-500/20 rounded-lg text-sm">🎨</span>
+              <span className="p-1.5 bg-yellow-500/10 text-yellow-400 font-black border border-yellow-500/20 rounded-lg text-sm">🎨</span>
               <div>
                 <h2 className="text-sm font-bold text-slate-900">مظاهر المربعات والخلفيات الداعمة لراحة العين</h2>
                 <p className="text-[11px] text-slate-900 mt-0.5">اختر تدرج الألوان المفضل للمربعات الداكنة والخلفيات لعرضها بمزيج مريح للرؤية والمعاينة الحية.</p>
@@ -989,10 +989,10 @@ export default function Settings({
           <div className="bg-white border border-slate-800 rounded-2xl p-6 space-y-4 shadow-sm" dir="rtl">
             <div className="flex items-center justify-between border-b border-slate-800 pb-3">
               <div className="flex items-center gap-2">
-                <span className="p-1.5 bg-amber-500/10 text-amber-600 border border-amber-500/20 rounded-lg text-sm font-sans font-black">👑</span>
+                <span className="p-1.5 bg-amber-500/10 border border-amber-500/30 text-amber-400 font-bold font-black border border-amber-500/20 rounded-lg text-sm font-sans font-black">👑</span>
                 <div>
                   <h2 className="text-sm font-bold text-slate-900">الوضع الذهبي الأنيق (Elegant Gold Mode)</h2>
-                  <p className="text-[11px] text-slate-500 mt-0.5">تخصيص جمالي يحول جميع أطراف الإطارات والظلال واللمسات التفاعلية بالمنصة لتدرجات ذهبية ناعمة ورائعة للمظهر الفخم.</p>
+                  <p className="text-[11px] text-slate-700 mt-0.5">تخصيص جمالي يحول جميع أطراف الإطارات والظلال واللمسات التفاعلية بالمنصة لتدرجات ذهبية ناعمة ورائعة للمظهر الفخم.</p>
                 </div>
               </div>
               <button
@@ -1009,10 +1009,10 @@ export default function Settings({
           <div className="bg-white border border-slate-800 rounded-2xl p-6 space-y-4 shadow-sm text-right" dir="rtl">
             <div className="flex items-center justify-between border-b border-slate-800 pb-3">
               <div className="flex items-center gap-2">
-                <span className="p-1.5 bg-amber-500/10 text-amber-600 border border-amber-500/20 rounded-lg text-sm font-sans font-black">🎛️</span>
+                <span className="p-1.5 bg-amber-500/10 border border-amber-500/30 text-amber-400 font-bold font-black border border-amber-500/20 rounded-lg text-sm font-sans font-black">🎛️</span>
                 <div>
                   <h2 className="text-sm font-bold text-slate-900">التحكم في الأبعاد والظلال المتقدمة (Advanced Customization)</h2>
-                  <p className="text-[11px] text-slate-500 mt-0.5">تعديل انحناء الحواف، شدة الظلال وعتمة الخلفيات لجميع الكروت ديناميكياً.</p>
+                  <p className="text-[11px] text-slate-700 mt-0.5">تعديل انحناء الحواف، شدة الظلال وعتمة الخلفيات لجميع الكروت ديناميكياً.</p>
                 </div>
               </div>
               <button
@@ -1040,7 +1040,7 @@ export default function Settings({
                     onChange={(e) => setCardRadius(`${e.target.value}px`)}
                     className="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-primary"
                   />
-                  <div className="flex justify-between text-[10px] text-slate-500 font-sans">
+                  <div className="flex justify-between text-[10px] text-slate-700 font-sans">
                     <span>حواف حادة (0px)</span>
                     <span>انحناء مائل مريح (20px)</span>
                     <span>انحناء دائري عريض (40px)</span>
@@ -1061,7 +1061,7 @@ export default function Settings({
                     onChange={(e) => setCardShadowIntensity(e.target.value)}
                     className="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-primary"
                   />
-                  <div className="flex justify-between text-[10px] text-slate-500 font-sans">
+                  <div className="flex justify-between text-[10px] text-slate-700 font-sans">
                     <span>مسطح بالكامل (0.0)</span>
                     <span>ظلال دافئة طبيعية (1.0)</span>
                     <span>تأثير عمق بؤري عارم (2.5)</span>
@@ -1082,7 +1082,7 @@ export default function Settings({
                     onChange={(e) => setCardBgOpacity(e.target.value)}
                     className="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-primary"
                   />
-                  <div className="flex justify-between text-[10px] text-slate-500 font-sans">
+                  <div className="flex justify-between text-[10px] text-slate-700 font-sans">
                     <span>زجاجي شفاف (10%)</span>
                     <span>خلفية صلبة داكنة (100%)</span>
                   </div>
@@ -1102,7 +1102,7 @@ export default function Settings({
                     onChange={(e) => setCardTransitionSpeed(e.target.value)}
                     className="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-primary"
                   />
-                  <div className="flex justify-between text-[10px] text-slate-500 font-sans">
+                  <div className="flex justify-between text-[10px] text-slate-700 font-sans">
                     <span>فوري شديد السرعة (0.1s)</span>
                     <span>انتقال ناعم متزن (0.4s)</span>
                     <span>سينمائي هادئ وعريض (1.5s)</span>
@@ -1132,7 +1132,7 @@ export default function Settings({
 
                 {/* Dynamically controlled card preview inside Settings */}
                 <div className="mt-6 p-5 border border-slate-200 rounded-xl bg-slate-50 relative overflow-hidden" dir="rtl">
-                  <span className="text-[11px] font-black text-amber-600 block mb-3">👁️ لوحة معاينة الحواف والظلال اللحظية (Card Geometry Live Preview):</span>
+                  <span className="text-[11px] font-black text-amber-400 font-black block mb-3">👁️ لوحة معاينة الحواف والظلال اللحظية (Card Geometry Live Preview):</span>
                   
                   <div 
                     className="p-5 border transition-all duration-300 relative bg-white"
@@ -1146,14 +1146,14 @@ export default function Settings({
                     }}
                   >
                     <div className="flex justify-between items-center mb-2">
-                      <span className="text-[10px] font-mono text-amber-600 font-bold bg-amber-500/10 px-2 py-0.5 rounded">بطاقة المعاينة القضائية</span>
+                      <span className="text-[10px] font-mono text-amber-400 font-black font-bold bg-amber-500/10 px-2 py-0.5 rounded">بطاقة المعاينة القضائية</span>
                       <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
                     </div>
                     <h5 className="text-sm font-black text-slate-900">محاكاة حية لتأثير الأبعاد والسمك</h5>
-                    <p className="text-xs text-slate-500 leading-relaxed mt-1">
+                    <p className="text-xs text-slate-700 leading-relaxed mt-1">
                       هذه البطاقة تعكس الإحساس العام لكافة كروت النظام عند تطبيق الزوايا والظلال الحالية.
                     </p>
-                    <div className="flex gap-4 mt-3 pt-3 border-t border-slate-100 text-[10px] text-slate-600 font-bold font-mono">
+                    <div className="flex gap-4 mt-3 pt-3 border-t border-slate-100 text-[10px] text-slate-200 font-bold font-bold font-mono">
                       <span>انحناء: {cardRadius}</span>
                       <span>ظلال: {cardShadowIntensity}x</span>
                       <span>شفافية: {Math.round(parseFloat(cardBgOpacity) * 100)}%</span>
@@ -1207,7 +1207,7 @@ export default function Settings({
                   >
                     <span className="text-base">{preset.icon}</span>
                     <span className="text-[10px] font-black leading-tight">{preset.name}</span>
-                    <span className="text-[8px] opacity-70 font-mono">S:{preset.sat} B:{preset.bright} C:{preset.cont}</span>
+                    <span className="text-[10px] opacity-70 font-mono">S:{preset.sat} B:{preset.bright} C:{preset.cont}</span>
                   </button>
                 ))}
               </div>
@@ -1218,7 +1218,7 @@ export default function Settings({
               <div className="flex justify-between items-center text-xs font-bold text-slate-950 border-b border-slate-800 pb-2">
                 <span>🎛️ لوحة المعايرة الحرة (Manual Calibration)</span>
                 {visionPreset === 'custom' ? (
-                  <span className="text-[10px] bg-amber-500/10 text-amber-700 border border-amber-500/20 px-2 py-0.5 rounded-lg">تعديل مخصص نشط (Custom Tuning Active)</span>
+                  <span className="text-[10px] bg-amber-500/10 border border-amber-500/30 text-amber-400 font-bold font-black border border-amber-500/20 px-2 py-0.5 rounded-lg">تعديل مخصص نشط (Custom Tuning Active)</span>
                 ) : (
                   <button
                     type="button"
@@ -1249,7 +1249,7 @@ export default function Settings({
                     }}
                     className="w-full accent-primary h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer"
                   />
-                  <div className="flex justify-between text-[8px] text-slate-900 font-bold">
+                  <div className="flex justify-between text-[10px] text-slate-900 font-bold">
                     <span>خافت (الأشعة الزرقاء)</span>
                     <span>ممتلئ / ساطع</span>
                   </div>
@@ -1273,7 +1273,7 @@ export default function Settings({
                     }}
                     className="w-full accent-primary h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer"
                   />
-                  <div className="flex justify-between text-[8px] text-slate-900 font-bold">
+                  <div className="flex justify-between text-[10px] text-slate-900 font-bold">
                     <span>مريح للغرف المعتمة</span>
                     <span>ساطع وقوي</span>
                   </div>
@@ -1297,7 +1297,7 @@ export default function Settings({
                     }}
                     className="w-full accent-primary h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer"
                   />
-                  <div className="flex justify-between text-[8px] text-slate-900 font-bold">
+                  <div className="flex justify-between text-[10px] text-slate-900 font-bold">
                     <span>ناعم ودافئ</span>
                     <span>محدد وحاد</span>
                   </div>
@@ -1311,7 +1311,7 @@ export default function Settings({
                 <span className="p-1.5 bg-indigo-500/10 text-indigo-600 border border-indigo-500/20 rounded-lg text-sm">🎨</span>
                 <div>
                   <h2 className="text-sm font-bold text-slate-900">مصمم الثيمات والتدرجات اللونية الخاص (Dynamic Gradient Stop)</h2>
-                  <p className="text-[11px] text-slate-500 mt-0.5">حدد تدرجاً مخصصاً وخلفية متباينة لإنشاء نمط تفاعلي يناسب علامتك القانونية.</p>
+                  <p className="text-[11px] text-slate-700 mt-0.5">حدد تدرجاً مخصصاً وخلفية متباينة لإنشاء نمط تفاعلي يناسب علامتك القانونية.</p>
                 </div>
               </div>
 
@@ -1393,7 +1393,7 @@ export default function Settings({
               <button
                 type="submit"
                 disabled={!themeName.trim()}
-                className={`w-full font-black py-3 rounded-xl text-xs flex items-center justify-center gap-2 shadow-md transition-all active:scale-[0.98] ${themeName.trim() ? 'bg-[#1e40af] text-white cursor-pointer' : 'bg-slate-200 text-slate-400 cursor-not-allowed'}`}
+                className={`w-full font-black py-3 rounded-xl text-xs flex items-center justify-center gap-2 shadow-md transition-all active:scale-[0.98] ${themeName.trim() ? 'bg-[#1e40af] text-white cursor-pointer' : 'bg-slate-200 text-slate-200 font-bold cursor-not-allowed'}`}
               >
                 <span>توليد وحفظ الثيم المخصص 🎨</span>
               </button>
@@ -1478,7 +1478,7 @@ export default function Settings({
               </div>
               <div>
                 <h2 className="text-sm font-bold text-slate-900">نظام الصلاحيات والرؤية المخصصة (Role-Based View)</h2>
-                <p className="text-[11px] text-slate-500 mt-1 leading-relaxed">
+                <p className="text-[11px] text-slate-700 mt-1 leading-relaxed">
                   التحكم في التبويبات المتاحة لكل مستشار أو دور وظيفي. التبويبات غير المحددة سيتم إخفاؤها برمجياً لضمان التركيز وحماية البيانات.
                 </p>
               </div>
@@ -1505,7 +1505,7 @@ export default function Settings({
                        };
 
                        return (
-                         <label key={tab} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border cursor-pointer transition-all ${isChecked ? 'bg-primary/10 border-primary text-primary font-black' : 'bg-white border-slate-200 text-slate-500'}`}>
+                         <label key={tab} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border cursor-pointer transition-all ${isChecked ? 'bg-primary/10 border-primary text-primary font-black' : 'bg-white border-slate-200 text-slate-700'}`}>
                            <input 
                              type="checkbox" 
                              className="hidden" 
@@ -1527,7 +1527,7 @@ export default function Settings({
                 </div>
               ))}
             </div>
-            <div className="text-[10px] font-bold text-slate-400 mt-2 text-left w-full relative z-10">* مدير المكتب له كافة الصلاحيات افتراضياً ولا تقيد بهذه التبويبات.</div>
+            <div className="text-[10px] font-bold text-slate-200 font-bold mt-2 text-left w-full relative z-10">* مدير المكتب له كافة الصلاحيات افتراضياً ولا تقيد بهذه التبويبات.</div>
           </div>
 
           {/* Form 1: Office Profile Details */}
@@ -1615,7 +1615,7 @@ export default function Settings({
                   onChange={(e) => setWhatsappTemplate(e.target.value)}
                   className="w-full bg-slate-50 text-slate-900 text-xs py-3 px-4 rounded-xl border border-slate-800 focus:outline-none focus:border-primary resize-none"
                 ></textarea>
-                <p className="text-[11px] text-slate-500 italic">يتم استبدال المتغيرات {`{DATE}`} و {`{TIME}`} آلياً عند إرسال الإشعار.</p>
+                <p className="text-[11px] text-slate-700 italic">يتم استبدال المتغيرات {`{DATE}`} و {`{TIME}`} آلياً عند إرسال الإشعار.</p>
               </div>
               <div className="flex justify-end pt-2">
                  <button
@@ -1891,7 +1891,7 @@ export default function Settings({
                   </span>
                 )}
                 {isSyncing && (
-                  <span className="text-amber-600 text-xs font-bold animate-pulse">
+                  <span className="text-amber-400 font-black text-xs font-bold animate-pulse">
                     🔄 جاري ترحيل وتأمين كامل بيانات Firebase القديمة إلى Supabase...
                   </span>
                 )}
@@ -2102,10 +2102,10 @@ export default function Settings({
             <div className="bg-slate-50 border border-slate-200 p-4 rounded-xl flex items-center justify-between gap-4 text-right">
               <div className="space-y-1">
                 <span className="text-xs font-bold text-slate-950 block">ميزة الفرز والإخفاء التلقائي الخفيف المبتكر:</span>
-                <span className="text-[11px] text-slate-600 leading-relaxed block">
+                <span className="text-[11px] text-slate-200 font-bold leading-relaxed block">
                   عند تفعيل هذا التفضيل، ستقوم لوحة التحكم بفلترة وإخفاء الوحدات الفارغة تلقائياً (مثل إخفاء تنبيهات المهل أو سجل العمليات في حال عدم وجود سجلات) بدلاً من عرض الصناديق الفارغة.
                 </span>
-                <span className="text-[10px] text-amber-600 block font-bold">💡 يحافظ على راحة العين ويمنع التشتيت البصري بالمنصة.</span>
+                <span className="text-[10px] text-amber-400 font-black block font-bold">💡 يحافظ على راحة العين ويمنع التشتيت البصري بالمنصة.</span>
               </div>
               <label className="relative inline-flex items-center cursor-pointer shrink-0">
                 <input 
@@ -2124,7 +2124,7 @@ export default function Settings({
                 <span className="text-xl">🎛️</span>
                 <div className="flex flex-col">
                   <span className="text-xs font-black text-amber-500">مخصص القاعات الذكي (Layout Manager)</span>
-                  <span className="text-[10px] text-slate-500">تحديد عدد الكروت الظاهرة وتخصيص مستويات خصوصية القاعات</span>
+                  <span className="text-[10px] text-slate-700">تحديد عدد الكروت الظاهرة وتخصيص مستويات خصوصية القاعات</span>
                 </div>
               </div>
               
@@ -2133,11 +2133,11 @@ export default function Settings({
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-3 rounded-lg border border-slate-100 shadow-sm">
                   <div className="space-y-0.5">
                     <span className="text-xs font-bold text-slate-900 block font-display">قاعة إدارة القضايا (Cases Hall)</span>
-                    <span className="text-[10px] text-slate-500 block">مرشحات عرض عدد الكروت النشطة</span>
+                    <span className="text-[10px] text-slate-700 block">مرشحات عرض عدد الكروت النشطة</span>
                   </div>
                   <div className="flex items-center gap-4">
                     <div className="flex items-center gap-2">
-                      <span className="text-[10px] font-bold text-slate-600">الكروت:</span>
+                      <span className="text-[10px] font-bold text-slate-200 font-bold">الكروت:</span>
                       <input 
                         type="range" 
                         min="1" 
@@ -2165,11 +2165,11 @@ export default function Settings({
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-3 rounded-lg border border-slate-100 shadow-sm">
                   <div className="space-y-0.5">
                     <span className="text-xs font-bold text-slate-900 block font-display">قاعة الحركة المالية (Finance Hall)</span>
-                    <span className="text-[10px] text-slate-500 block">الحد الأقصى لعرض سجل الفواتير والمستحقات</span>
+                    <span className="text-[10px] text-slate-700 block">الحد الأقصى لعرض سجل الفواتير والمستحقات</span>
                   </div>
                   <div className="flex items-center gap-4">
                     <div className="flex items-center gap-2">
-                      <span className="text-[10px] font-bold text-slate-600">السجلات:</span>
+                      <span className="text-[10px] font-bold text-slate-200 font-bold">السجلات:</span>
                       <input 
                         type="range" 
                         min="1" 
@@ -2197,11 +2197,11 @@ export default function Settings({
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-3 rounded-lg border border-slate-100 shadow-sm">
                   <div className="space-y-0.5">
                     <span className="text-xs font-bold text-slate-900 block font-display">قاعة الأجندة والمواعيد (Appointments Hall)</span>
-                    <span className="text-[10px] text-slate-500 block">المواعيد المعروضة بجدول الأجندة في لوحة التحكم</span>
+                    <span className="text-[10px] text-slate-700 block">المواعيد المعروضة بجدول الأجندة في لوحة التحكم</span>
                   </div>
                   <div className="flex items-center gap-4">
                     <div className="flex items-center gap-2">
-                      <span className="text-[10px] font-bold text-slate-600">المواعيد:</span>
+                      <span className="text-[10px] font-bold text-slate-200 font-bold">المواعيد:</span>
                       <input 
                         type="range" 
                         min="1" 
@@ -2230,7 +2230,7 @@ export default function Settings({
 
             <div className="space-y-4">
               <span className="text-xs font-black text-slate-950 block border-b border-dashed border-slate-200 pb-2">إعادة ترتيب وتخصيص كروت الويب في لوحة التحكم (مزامنة السحب والإفلات):</span>
-              <p className="text-[10px] text-slate-500 font-bold leading-relaxed">
+              <p className="text-[10px] text-slate-700 font-bold leading-relaxed">
                 رتب أولويات ترافعك وأدائك بسحب الكروت مباشرة من لوحة التحكم أو بالتحكم اليدوي هنا. استخدم في هذه القائمة المنظمة أزرار الصعود والهبوط لتنظيم التخطيط والتحكم بالظهور.
               </p>
               
@@ -2246,10 +2246,10 @@ export default function Settings({
                       />
                       <div className="min-w-0">
                         <span className="text-[11px] font-black text-slate-900 block flex items-center gap-1.5">
-                          <span className="inline-flex items-center justify-center w-5 h-5 bg-slate-200 rounded-md text-[10px] text-slate-600 font-mono">#{index + 1}</span>
+                          <span className="inline-flex items-center justify-center w-5 h-5 bg-slate-200 rounded-md text-[10px] text-slate-200 font-bold font-mono">#{index + 1}</span>
                           {w.name}
                         </span>
-                        <span className="text-[9px] text-slate-500 leading-normal line-clamp-1 font-bold">{w.desc}</span>
+                        <span className="text-[11px] text-slate-700 leading-normal line-clamp-1 font-bold">{w.desc}</span>
                       </div>
                     </div>
                     
@@ -2258,7 +2258,7 @@ export default function Settings({
                         type="button"
                         onClick={() => moveWidgetUp(index)}
                         disabled={index === 0}
-                        className="p-1.5 rounded-lg text-slate-500 disabled:opacity-30 transition-colors"
+                        className="p-1.5 rounded-lg text-slate-700 disabled:opacity-30 transition-colors"
                         title="تحريك لأعلى"
                       >
                         <ArrowUp className="w-3.5 h-3.5" />
@@ -2267,7 +2267,7 @@ export default function Settings({
                         type="button"
                         onClick={() => moveWidgetDown(index)}
                         disabled={index === widgetsList.length - 1}
-                        className="p-1.5 rounded-lg text-slate-500 disabled:opacity-30 transition-colors"
+                        className="p-1.5 rounded-lg text-slate-700 disabled:opacity-30 transition-colors"
                         title="تحريك لأسفل"
                       >
                         <ArrowDown className="w-3.5 h-3.5" />

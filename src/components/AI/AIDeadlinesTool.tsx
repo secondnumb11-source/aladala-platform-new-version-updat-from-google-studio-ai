@@ -33,11 +33,11 @@ export default function AIDeadlinesTool() {
             <CalendarRange className="w-8 h-8 text-amber-500" />
             حاسبة المهل والمدد النظامية
           </h2>
-          <p className="text-slate-400 text-sm mt-1 font-bold">حساب تلقائي لمدد الاستئناف والاعتراض وفق الأنظمة القضائية السعودية.</p>
+          <p className="text-slate-200 font-bold text-sm mt-1 font-bold">حساب تلقائي لمدد الاستئناف والاعتراض وفق الأنظمة القضائية السعودية.</p>
         </div>
         <div className="relative z-10 flex gap-2">
           <div className="bg-slate-800 px-6 py-3 rounded-2xl border border-slate-700 flex flex-col items-center min-w-[120px]">
-             <span className="text-[10px] text-slate-500 font-bold uppercase tracking-widest leading-none mb-1">المنطقة الزمنية</span>
+             <span className="text-[10px] text-slate-700 font-bold uppercase tracking-widest leading-none mb-1">المنطقة الزمنية</span>
              <span className="text-sm font-black text-white">توقيت مكة - KSA</span>
           </div>
         </div>
@@ -48,7 +48,7 @@ export default function AIDeadlinesTool() {
         <div className="lg:col-span-5 space-y-6">
           <div className="bg-white border border-slate-200 p-8 rounded-[2rem] shadow-lg space-y-8">
             <div className="space-y-4">
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block">نوع القيد/المهلة النظامية</label>
+              <label className="text-[10px] font-black text-slate-200 font-bold uppercase tracking-widest block">نوع القيد/المهلة النظامية</label>
               <div className="grid grid-cols-1 gap-3">
                 {[
                   { id: 'appeal', label: 'الاستئناف (30 يوماً)', desc: 'للمطالبة بالحقوق ومراجعة حكم أول درجة' },
@@ -64,12 +64,12 @@ export default function AIDeadlinesTool() {
                         : 'bg-slate-50 text-slate-900 border-slate-100'
                     }`}
                   >
-                    <div className={`p-3 rounded-xl ${type === t.id ? 'bg-amber-500 text-slate-950' : 'bg-white text-slate-400 border border-slate-200'}`}>
+                    <div className={`p-3 rounded-xl ${type === t.id ? 'bg-amber-500 text-slate-950' : 'bg-white text-slate-200 font-bold border border-slate-200'}`}>
                       <Timer className="w-5 h-5" />
                     </div>
                     <div>
                       <p className="text-xs font-black">{t.label}</p>
-                      <p className={`text-[10px] font-semibold ${type === t.id ? 'text-slate-400' : 'text-slate-400'}`}>{t.desc}</p>
+                      <p className={`text-[10px] font-semibold ${type === t.id ? 'text-slate-200 font-bold' : 'text-slate-200 font-bold'}`}>{t.desc}</p>
                     </div>
                   </button>
                 ))}
@@ -77,9 +77,9 @@ export default function AIDeadlinesTool() {
             </div>
 
             <div className="space-y-4">
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block">تاريخ صدور الحكم / القرار</label>
+              <label className="text-[10px] font-black text-slate-200 font-bold uppercase tracking-widest block">تاريخ صدور الحكم / القرار</label>
               <div className="relative">
-                <Calendar className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5" />
+                <Calendar className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-200 font-bold w-5 h-5" />
                 <input 
                   type="date"
                   value={judgmentDate}
@@ -112,18 +112,18 @@ export default function AIDeadlinesTool() {
               <h3 className={`text-4xl font-black ${isExpired ? 'text-rose-600' : 'text-slate-900'}`}>
                 {isExpired ? 'انتهت المهلة' : `متبقي ${daysRemaining} يوماً`}
               </h3>
-              <p className="text-slate-500 font-bold text-sm">
+              <p className="text-slate-700 font-bold text-sm">
                 الموعد النهائي: {format(deadlineDate, 'd MMMM yyyy (EEEE)', { locale: ar })}
               </p>
             </div>
 
             <div className="grid grid-cols-2 gap-4 w-full relative z-10">
               <div className="bg-slate-50 p-6 rounded-3xl border border-slate-100">
-                <p className="text-[10px] text-slate-400 font-black uppercase mb-2">تاريخ البداية</p>
+                <p className="text-[10px] text-slate-200 font-bold font-black uppercase mb-2">تاريخ البداية</p>
                 <p className="text-sm font-black text-slate-900">{format(new Date(judgmentDate), 'yyyy/MM/dd')}</p>
               </div>
               <div className="bg-slate-50 p-6 rounded-3xl border border-slate-100">
-                <p className="text-[10px] text-slate-400 font-black uppercase mb-2">المدة الاجمالية</p>
+                <p className="text-[10px] text-slate-200 font-bold font-black uppercase mb-2">المدة الاجمالية</p>
                 <p className="text-sm font-black text-slate-900">{deadlinesMap[type]} يوماً</p>
               </div>
             </div>
@@ -135,7 +135,7 @@ export default function AIDeadlinesTool() {
                 </div>
                 <div>
                   <h4 className="text-sm font-black text-slate-900">نصيحة المساعد القانوني:</h4>
-                  <p className="text-[10px] text-slate-500 font-bold mt-1 leading-relaxed">
+                  <p className="text-[10px] text-slate-700 font-bold mt-1 leading-relaxed">
                     تبقي وقت كافٍ لتجهيز {type === 'appeal' ? 'اللائحة الاعتراضية' : 'طلب التنفيذ'}. ننصح بالبدء في جرد الأسانيد ومراجعة الحكم قبل مرور 15 يوماً من الآن لتفادي الازدحام.
                   </p>
                 </div>
@@ -150,7 +150,7 @@ export default function AIDeadlinesTool() {
                </div>
                <div>
                   <h4 className="font-black text-white text-base">تقديم استئناف عبر ناجز</h4>
-                  <p className="text-slate-400 text-[10px] font-bold">انتقل مباشرة لبوابة الخدمات العدلية.</p>
+                  <p className="text-slate-200 font-bold text-[10px] font-bold">انتقل مباشرة لبوابة الخدمات العدلية.</p>
                </div>
             </div>
             <button className="bg-white text-slate-950 px-6 py-3 rounded-xl text-xs font-black shadow-lg transition-all">الذهاب لناجز ↗️</button>

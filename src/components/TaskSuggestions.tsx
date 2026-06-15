@@ -58,7 +58,7 @@ export const TaskSuggestions: React.FC<TaskSuggestionsProps> = ({ hearings, task
                 <span className="px-2 py-0.5 bg-amber-500/10 border border-amber-500/20 text-amber-400 text-[10px] font-black rounded-lg uppercase tracking-wider">اقتراح آلي</span>
                 <h4 className="text-xs font-black text-white leading-relaxed">{s.title}</h4>
               </div>
-              <div className="flex flex-wrap items-center gap-3 text-[10px] text-slate-400 font-bold">
+              <div className="flex flex-wrap items-center gap-3 text-[10px] text-slate-200 font-bold font-bold">
                 <div className="flex items-center gap-1.5">
                   <Calendar className="w-3 h-3 text-amber-500" />
                   <span>الموعد المقترح: {s.deadline}</span>

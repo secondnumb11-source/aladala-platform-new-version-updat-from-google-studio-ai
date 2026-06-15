@@ -301,10 +301,10 @@ export default function MainLandingPage({ onSignInSelect, onTrialSelect }: MainL
           <div className="flex items-center gap-4">
             
             <nav className="hidden lg:flex items-center gap-6 text-xs font-black text-slate-900">
-              <a href="#about-platform" className="hover:text-amber-600 transition-colors">{isEn ? "About Us" : "من نحن"}</a>
-              <a href="#features-tabs" className="hover:text-amber-600 transition-colors">{isEn ? "Interactive Features" : "تصفح الميزات بالتفصيل"}</a>
-              <a href="#roi-calculator" className="hover:text-amber-600 transition-colors">{isEn ? "Value Calculator" : "حاسبة الوفورات المالية"}</a>
-              <a href="#system-simulator" className="hover:text-amber-600 transition-colors">{isEn ? "Live Sandbox" : "محاكي المزامنة الرقمية"}</a>
+              <a href="#about-platform" className="hover:text-amber-400 font-black transition-colors">{isEn ? "About Us" : "من نحن"}</a>
+              <a href="#features-tabs" className="hover:text-amber-400 font-black transition-colors">{isEn ? "Interactive Features" : "تصفح الميزات بالتفصيل"}</a>
+              <a href="#roi-calculator" className="hover:text-amber-400 font-black transition-colors">{isEn ? "Value Calculator" : "حاسبة الوفورات المالية"}</a>
+              <a href="#system-simulator" className="hover:text-amber-400 font-black transition-colors">{isEn ? "Live Sandbox" : "محاكي المزامنة الرقمية"}</a>
             </nav>
 
             <span className="hidden lg:block h-6 w-px bg-slate-200"></span>
@@ -354,7 +354,7 @@ export default function MainLandingPage({ onSignInSelect, onTrialSelect }: MainL
             {/* Title, pitch and main trial incentive */}
             <div className="lg:col-span-7 space-y-8 text-right">
               
-              <div className="inline-flex items-center gap-2.5 px-4.5 py-2 rounded-full border border-amber-600/30 bg-amber-600/5 text-amber-600 text-sm font-black uppercase tracking-wide">
+              <div className="inline-flex items-center gap-2.5 px-4.5 py-2 rounded-full border border-amber-600/30 bg-amber-600/5 text-amber-400 font-black text-sm font-black uppercase tracking-wide">
                 <Trophy className="w-4 h-4 animate-bounce" />
                 <span>⭐ {isEn ? "The Supreme #1 Integrated Legal Workspace Platform in Saudi Arabia" : "المنظومة القانونية المتكاملة والذكاء القضائي الأعلى اعتماداً بالسعودية"}</span>
               </div>
@@ -370,7 +370,7 @@ export default function MainLandingPage({ onSignInSelect, onTrialSelect }: MainL
                   <>
                     <span className="text-[#020617]">العدالة الشاملة والمصممة</span>
                     <br />
-                    خصيصاً لتمكين <span className="text-amber-600 font-display">مكاتب المستشارين والمحاميين والمستشاريين القانونيين</span> بالمملكة
+                    خصيصاً لتمكين <span className="text-amber-400 font-black font-display">مكاتب المستشارين والمحاميين والمستشاريين القانونيين</span> بالمملكة
                   </>
                 )}
               </h2>
@@ -459,7 +459,7 @@ export default function MainLandingPage({ onSignInSelect, onTrialSelect }: MainL
                 {/* Quick Trust Numbers Grid */}
                 <div className="grid grid-cols-3 gap-2.5 text-center font-sans">
                   <div className="p-3 bg-slate-50  rounded-xl border border-slate-800  shadow-sm">
-                    <p className="text-xs text-amber-600 font-bold">{isEn ? "ZATCA Compliance" : "فوترة الزكاة"}</p>
+                    <p className="text-xs text-amber-400 font-black font-bold">{isEn ? "ZATCA Compliance" : "فوترة الزكاة"}</p>
                     <p className="text-sm font-black text-slate-900  mt-0.5">100%</p>
                   </div>
                   <div className="p-3 bg-slate-50  rounded-xl border border-slate-800  shadow-sm">
@@ -484,7 +484,7 @@ export default function MainLandingPage({ onSignInSelect, onTrialSelect }: MainL
       <section id="features-tabs" className="py-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-right font-sans relative z-10 transition-all">
         
         <div className="text-center mb-16 space-y-4">
-          <span className="text-sm font-black text-amber-600 bg-amber-600/15 px-4 py-1.5 rounded-full uppercase tracking-widest inline-block">
+          <span className="text-sm font-black text-amber-400 font-black bg-amber-600/15 px-4 py-1.5 rounded-full uppercase tracking-widest inline-block">
             🛠️ {isEn ? "THE POWER OF AL-ADALAH DIGITAL ARCHITECTURE" : "العرض التفصيلي الشامل لكافة خدمات وميزات العدالة لشركات ومكاتب المحاماة"}
           </span>
           <h2 className="text-3xl md:text-5xl font-black text-slate-950 tracking-tight animate-fade-in">
@@ -666,7 +666,7 @@ export default function MainLandingPage({ onSignInSelect, onTrialSelect }: MainL
                       }`}>
                         ✘ {isEn ? "Standard Competitor Systems" : "العيوب بالبرامج الأخرى"}
                       </span>
-                      <p className={`text-[13px] leading-relaxed font-bold ${activeTab === 'ai-drafting' ? 'text-rose-100/80' : 'text-slate-600'}`}>
+                      <p className={`text-[13px] leading-relaxed font-bold ${activeTab === 'ai-drafting' ? 'text-rose-100/80' : 'text-slate-200 font-bold'}`}>
                         {matchingF.advCompetitors}
                       </p>
                     </div>
@@ -699,7 +699,7 @@ export default function MainLandingPage({ onSignInSelect, onTrialSelect }: MainL
                     <span className="w-2.5 h-2.5 rounded-full bg-amber-400"></span>
                     <span className="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
                   </div>
-                  <span className="text-xs text-amber-600 font-mono tracking-widest uppercase font-black">
+                  <span className="text-xs text-amber-400 font-black font-mono tracking-widest uppercase font-black">
                     {matchingF.id.toUpperCase()}-STATION-SECURE
                   </span>
                 </div>
@@ -740,7 +740,7 @@ export default function MainLandingPage({ onSignInSelect, onTrialSelect }: MainL
                     </div>
 
                     <div className="p-2.5 bg-white border border-slate-200 rounded-xl flex justify-between items-center text-xs text-slate-900 font-bold shadow-sm">
-                      <span className="text-slate-600">{isEn ? "Carrier: Official WhatsApp API" : "الناقل: Twilio Official WhatsApp"}</span>
+                      <span className="text-slate-200 font-bold">{isEn ? "Carrier: Official WhatsApp API" : "الناقل: Twilio Official WhatsApp"}</span>
                       <span className="text-emerald-700 font-black">✓ {isEn ? "Delivered" : "تم التوصيل (تحقق آلي)"}</span>
                     </div>
                   </div>
@@ -770,12 +770,12 @@ export default function MainLandingPage({ onSignInSelect, onTrialSelect }: MainL
                     <p className="text-amber-900 font-black">📋 {isEn ? "Kanban Frame & Case Milestones:" : "لوحة التحكم وسير المهام (Kanban Frame):"}</p>
                     <div className="grid grid-cols-2 gap-2 text-[10px]">
                       <div className="p-2.5 bg-amber-50 border border-amber-200 rounded-xl shadow-sm">
-                        <span className="text-[9px] text-amber-850 block font-extrabold">⏳ {isEn ? "Working" : "قيد العمل"}</span>
+                        <span className="text-[11px] text-amber-850 block font-extrabold">⏳ {isEn ? "Working" : "قيد العمل"}</span>
                         <strong className="text-slate-950 block mt-1">{isEn ? "Reviewing EPC Contract" : "دراسة عقد المقاولة"}</strong>
                         <span className="text-slate-700 block mt-1">{isEn ? "Assigned: Eng. Saleh" : "مكلَّف: م. صالح"}</span>
                       </div>
                       <div className="p-2.5 bg-emerald-50 border-2 border-emerald-350 rounded-xl relative shadow-sm">
-                        <span className="text-[9px] text-emerald-800 block font-black">✓ {isEn ? "Completed" : "مكتملة"}</span>
+                        <span className="text-[11px] text-emerald-800 block font-black">✓ {isEn ? "Completed" : "مكتملة"}</span>
                         <strong className="text-slate-800 block mt-1 line-through">{isEn ? "Edit Appeal Memo" : "تعديل مذكرة الاستئناف"}</strong>
                         <span className="text-emerald-700 font-black block mt-1">✓ {isEn ? "Drag & Drop Done" : "سحب وإفلات ناجح ⚡"}</span>
                       </div>
@@ -843,7 +843,7 @@ export default function MainLandingPage({ onSignInSelect, onTrialSelect }: MainL
             
             {/* Value description of Ease of Use */}
             <div className="lg:col-span-6 space-y-6">
-              <span className="text-xs font-black text-amber-600 tracking-widest block uppercase">
+              <span className="text-xs font-black text-amber-400 font-black tracking-widest block uppercase">
                 🚀 {isEn ? "EASY TO USE & HIGHLY INTUITIVE USER EXPERIENCE" : "تجربة مستخدم سهلة، بساطة مطلقة، وتوفير هائل للموارد"}
               </span>
               <h3 className="text-3xl md:text-5xl font-black text-[#0c2461] leading-tight">
@@ -858,7 +858,7 @@ export default function MainLandingPage({ onSignInSelect, onTrialSelect }: MainL
 
               {/* SAVINGS CALCULATOR METRICS */}
               <div className="p-6 bg-white  rounded-3xl border border-slate-800  shadow-lg space-y-5">
-                <span className="text-sm font-black text-amber-600 bg-amber-600/10 px-3 py-1 rounded-full uppercase">
+                <span className="text-sm font-black text-amber-400 font-black bg-amber-600/10 px-3 py-1 rounded-full uppercase">
                   📊 {isEn ? "Interactive ROI Savings Calculator" : "حاسبة تقدير الوفورات الشهرية والمالية مع منصة العدالة"}
                 </span>
 
@@ -922,7 +922,7 @@ export default function MainLandingPage({ onSignInSelect, onTrialSelect }: MainL
                   </div>
                   <div className="p-4 bg-white border border-slate-200 rounded-2xl shadow-sm">
                     <span className="text-xs text-slate-800 font-bold block">{isEn ? "Equivalent Business Value" : "القيمة المقابلة المحققة للمكتب:"}</span>
-                    <span className="text-3xl font-black text-amber-700 block mt-1 font-sans">{calculatedSavesSAR.toLocaleString()} {isEn ? "SAR" : "ر.س"}</span>
+                    <span className="text-3xl font-black text-amber-400 font-black block mt-1 font-sans">{calculatedSavesSAR.toLocaleString()} {isEn ? "SAR" : "ر.س"}</span>
                   </div>
                 </div>
               </div>
@@ -1066,7 +1066,7 @@ export default function MainLandingPage({ onSignInSelect, onTrialSelect }: MainL
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
             
             <div className="lg:col-span-8 space-y-5">
-              <span className="text-xs font-black text-amber-600 tracking-widest block uppercase">
+              <span className="text-xs font-black text-amber-400 font-black tracking-widest block uppercase">
                 🇸🇦 {isEn ? "SAUDI VISION 2030 DIGITAL JUSTICE" : "السيادة الرقمية وتثبيت الخصوصية التامة للمستندات القضائية"}
               </span>
               <h3 className="text-2xl md:text-4xl font-black text-[#0c2461] leading-tight">
@@ -1089,11 +1089,11 @@ export default function MainLandingPage({ onSignInSelect, onTrialSelect }: MainL
 
             <div className="lg:col-span-4 grid grid-cols-2 gap-4">
               <div className="bg-white  border border-slate-800  p-6 rounded-2xl text-center shadow-md">
-                <p className="text-2xl sm:text-3xl font-black text-amber-600 font-sans">100%</p>
+                <p className="text-2xl sm:text-3xl font-black text-amber-400 font-black font-sans">100%</p>
                 <p className="text-xs text-slate-900  font-bold mt-1">{isEn ? "Saudi Sovereignty" : "سيادة رقمية وطنية"}</p>
               </div>
               <div className="bg-white  border border-slate-800  p-6 rounded-2xl text-center shadow-md">
-                <p className="text-2xl sm:text-3xl font-black text-amber-600 font-sans">AES-256</p>
+                <p className="text-2xl sm:text-3xl font-black text-amber-400 font-black font-sans">AES-256</p>
                 <p className="text-xs text-slate-900  font-bold mt-1">{isEn ? "Vault Encryption" : "تشفيرات بنكية متينة"}</p>
               </div>
               <div className="bg-white  border border-slate-800  p-6 rounded-2xl text-center shadow">
@@ -1122,7 +1122,7 @@ export default function MainLandingPage({ onSignInSelect, onTrialSelect }: MainL
           <h2 className="text-3xl md:text-5xl font-black text-white leading-tight font-display">
             {isEn ? "Experience the Future of Legal Workspace Today" : "حوِّل تجربة مستشاري مكتبك لقمة السهولة والكفاءة"}
           </h2>
-          <p className={`text-sm md:text-lg font-black leading-relaxed max-w-3xl mx-auto ${!isEn ? 'text-[#b8860b]' : 'text-slate-200'}`}>
+          <p className={`text-sm md:text-lg font-black leading-relaxed max-w-3xl mx-auto ${!isEn ? 'text-[#b8860b]' : 'text-white font-bold'}`}>
             {isEn 
               ? "Join hundreds of practicing legal groups in Riyadh, Jeddah, Khobar, and across Saudi Arabia who took supreme digital control. Onboard the unconstrained FREE Trial Version immediately." 
               : "لا حاجة لتقديم أية بيانات بنكية أو الدخول في تعقيد مع مئات الموظفين والمستشارين. انضم إلى مكاتب النخبة في الرياض وجدة وكافة أنحاء المملكة التي حققت السيطرة الكاملة على قضاياها مع منصة العدالة."
@@ -1224,7 +1224,7 @@ export default function MainLandingPage({ onSignInSelect, onTrialSelect }: MainL
             
             <div className="md:col-span-5 space-y-4">
               <div className="flex items-center gap-2 justify-start">
-                <div className="w-8 h-8 bg-amber-600/10 rounded-lg flex items-center justify-center text-amber-600">
+                <div className="w-8 h-8 bg-amber-600/10 rounded-lg flex items-center justify-center text-amber-400 font-black">
                   <Scale className="w-4 h-4" />
                 </div>
                 <span className="font-extrabold text-lg text-[#0c2461]">{isEn ? "Al-Adalah Platform" : "منصة العدالة لإدارة مكاتب المحاماة"}</span>
@@ -1258,7 +1258,7 @@ export default function MainLandingPage({ onSignInSelect, onTrialSelect }: MainL
 
               <div className="space-y-3">
                 <h5 className="text-xs text-[#0c2461]">{isEn ? "Trial & Assist" : "أرقام الدعم"}</h5>
-                <p className="text-xs text-amber-600 font-mono">support@al-adalah.sa</p>
+                <p className="text-xs text-amber-400 font-black font-mono">support@al-adalah.sa</p>
                 <p className="text-xs text-slate-900  font-sans">{isEn ? "Dedicated assist team 24/7" : "فريق فني ومساندة متخصص ٢٤ ساعة بالرياض"}</p>
               </div>
             </div>

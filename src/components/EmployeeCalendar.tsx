@@ -14,7 +14,7 @@ export default function EmployeeCalendar({ tasks }: EmployeeCalendarProps) {
 
   return (
     <div className="bg-slate-950 border border-[#D4AF37]/30 rounded-[24px] p-6 shadow-xl">
-      <h3 className="text-sm font-black text-[#D4AF37] mb-4 flex items-center gap-2">
+      <h3 className="text-sm font-black text-[#FACC15] font-black mb-4 flex items-center gap-2">
         <CalendarIcon className="w-5 h-5" />
         تقويم المواعيد القريبة
       </h3>
@@ -24,8 +24,8 @@ export default function EmployeeCalendar({ tasks }: EmployeeCalendarProps) {
           return (
             <div key={task.id} className={`p-3 rounded-xl border ${isNear ? 'bg-amber-500/10 border-amber-500' : 'bg-slate-900 border-slate-700'}`}>
               <div className="flex justify-between items-center">
-                <span className={`text-xs font-bold ${isNear ? 'text-amber-400' : 'text-slate-200'}`}>{task.title}</span>
-                <span className="text-[10px] text-slate-400">{new Date(task.dueDate).toLocaleDateString()}</span>
+                <span className={`text-xs font-bold ${isNear ? 'text-amber-400' : 'text-white font-bold'}`}>{task.title}</span>
+                <span className="text-[10px] text-slate-200 font-bold">{new Date(task.dueDate).toLocaleDateString()}</span>
               </div>
             </div>
           );

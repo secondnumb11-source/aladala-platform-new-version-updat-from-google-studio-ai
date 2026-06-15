@@ -289,13 +289,13 @@ export default function JudicialObservatory() {
           <h1 className="text-2xl md:text-3xl font-black font-display tracking-tight text-white leading-tight">
             فهرس الأنظمه AI
           </h1>
-          <p className="text-slate-200 text-xs md:text-sm font-bold leading-relaxed">
+          <p className="text-white font-bold text-xs md:text-sm font-bold leading-relaxed">
             المرجع الموحد للبحث الفوري في نصوص نظام المعاملات المدنية، نظام الشركات الجديد، نظام العمل، مع تقنيات الفهرسة الذكية والتحليل القانوني الفوري المبني على صكوك وقواعد التشريع السعودي.
           </p>
         </div>
         <div className="z-10 bg-slate-900/40 p-5 rounded-2xl border border-white/10 text-center shrink-0 min-w-[190px]">
           <div className="text-3xl font-black text-amber-400 font-mono">15,000+</div>
-          <div className="text-[11px] text-slate-300 font-bold mt-1">مادة قانونية وقاعدة قضائية مفهرسة ومشفّرة</div>
+          <div className="text-[11px] text-white font-bold font-bold mt-1">مادة قانونية وقاعدة قضائية مفهرسة ومشفّرة</div>
         </div>
       </div>
 
@@ -340,13 +340,13 @@ export default function JudicialObservatory() {
                       <span className={`text-xs font-black ${isSelected ? 'text-emerald-800' : 'text-slate-950'}`}>
                         {sys.name}
                       </span>
-                      <span className="text-[9px] bg-slate-100 border border-slate-300 text-slate-950 px-2 py-0.5 rounded-full font-bold">
+                      <span className="text-[11px] bg-slate-100 border border-slate-300 text-slate-950 px-2 py-0.5 rounded-full font-bold">
                         {sys.articleCount} مادة
                       </span>
                     </div>
                     <div className="flex justify-between items-center w-full mt-0.5 text-[10px] text-slate-900 font-bold">
                       <span>الصدور: {sys.hijriDate}</span>
-                      <span className="text-emerald-600 font-bold text-[9px]">{sys.category}</span>
+                      <span className="text-emerald-600 font-bold text-[11px]">{sys.category}</span>
                     </div>
                   </button>
                 );
@@ -363,7 +363,7 @@ export default function JudicialObservatory() {
           {/* Quick legal checklist card */}
           <div className="bg-amber-500/[0.03] border border-amber-300 rounded-2xl p-6 shadow-sm space-y-3.5">
             <h4 className="text-xs font-black text-amber-900 flex items-center gap-1.5">
-              <Scale className="w-4 h-4 text-amber-600" />
+              <Scale className="w-4 h-4 text-amber-400 font-black" />
               تنبيهات الامتثال القضائي في المملكة
             </h4>
             <ul className="space-y-2.5 text-[11px] text-slate-950 font-bold leading-relaxed">
@@ -431,7 +431,7 @@ export default function JudicialObservatory() {
                     </p>
                     <div className="flex flex-wrap gap-1.5 pt-1">
                       {art.keywords.map((kw, idx) => (
-                        <span key={idx} className="text-[9px] bg-white border border-slate-300 text-slate-950 px-2 py-0.5 rounded-full font-bold">
+                        <span key={idx} className="text-[11px] bg-white border border-slate-300 text-slate-950 px-2 py-0.5 rounded-full font-bold">
                           #{kw}
                         </span>
                       ))}
@@ -520,10 +520,10 @@ export default function JudicialObservatory() {
                     </div>
                     <div>
                       <h4 className="text-xs font-black text-slate-950">رأي المستشار القانوني لمرصد الأنظمة</h4>
-                      <span className="text-[9px] text-emerald-700 font-bold">بموجب محرك الذكاء الاصطناعي السيادي</span>
+                      <span className="text-[11px] text-emerald-700 font-bold">بموجب محرك الذكاء الاصطناعي السيادي</span>
                     </div>
                   </div>
-                  <span className="text-[9px] bg-emerald-700 text-white font-black px-2.5 py-1 rounded-full uppercase tracking-wider">
+                  <span className="text-[11px] bg-emerald-700 text-white font-black px-2.5 py-1 rounded-full uppercase tracking-wider">
                     {isLoadingAi ? "جاري التوليد والتحليل..." : "التطبيق النظامي المفسر ✓"}
                   </span>
                 </div>

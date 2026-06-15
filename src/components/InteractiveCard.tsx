@@ -143,7 +143,7 @@ export const InteractiveCard: React.FC<InteractiveCardProps> = ({
         hasGoldBorder ? 'card-professional-gold-bordered' : ''
       } transition-[border-image,border-color,background-color] duration-300 relative select-none cursor-default ${className}`}
     >
-      <span className="hidden text-amber-400 text-yellow-500 text-amber-500 font-sans" style={{ color: accentColor }} />
+      <span className="hidden text-amber-400 text-yellow-400 font-black text-amber-500 font-sans" style={{ color: accentColor }} />
       <div className="relative z-10 w-full h-full" style={{ color: 'inherit' }}>
         {children}
       </div>

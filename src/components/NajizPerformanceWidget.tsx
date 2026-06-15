@@ -30,7 +30,7 @@ export default function NajizPerformanceWidget() {
   return (
     <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 text-white" dir="rtl">
       <div className="flex justify-between items-center mb-4 border-b border-slate-800 pb-3">
-        <h3 className="font-bold text-sm text-slate-200 flex items-center gap-2">
+        <h3 className="font-bold text-sm text-white font-bold flex items-center gap-2">
           <Activity className="w-5 h-5 text-emerald-500" />
           الحالة المباشرة لبوابة ناجز
         </h3>
@@ -41,7 +41,7 @@ export default function NajizPerformanceWidget() {
       
       <div className="grid grid-cols-2 gap-4">
         <div className="bg-[#0b1e33] p-3 rounded-xl border border-slate-800/50">
-          <div className="flex items-center gap-2 text-slate-400 mb-1">
+          <div className="flex items-center gap-2 text-slate-200 font-bold mb-1">
             <CheckCircle2 className="w-4 h-4" />
             <span className="text-[10px] font-bold">العمليات الناجحة</span>
           </div>
@@ -49,7 +49,7 @@ export default function NajizPerformanceWidget() {
         </div>
 
         <div className="bg-[#0b1e33] p-3 rounded-xl border border-slate-800/50">
-          <div className="flex items-center gap-2 text-slate-400 mb-1">
+          <div className="flex items-center gap-2 text-slate-200 font-bold mb-1">
             <Clock className="w-4 h-4" />
             <span className="text-[10px] font-bold">زمن الاستجابة</span>
           </div>

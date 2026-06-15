@@ -1,19 +1,21 @@
 {
   "manifest_version": 3,
-  "name": "الربط الذكي مع منصة العدالة",
-  "version": "1.0.0",
-  "description": "مزامنة تلقائية ذكية لبيانات القضايا والجلسات بدون مفاتيح API خارجية.",
-  "permissions": ["activeTab", "scripting", "storage", "alarms"],
-  "host_permissions": ["*://*.najiz.sa/*", "*://*.moj.gov.sa/*", "*://*/*"],
-  "action": { "default_popup": "popup.html", "default_title": "الربط الذكي" },
-  "content_scripts": [{
-    "matches": ["*://*.najiz.sa/*", "*://*.moj.gov.sa/*"],
-    "js": ["content.js"],
-    "css": ["content.css"],
-    "run_at": "document_idle"
-  }],
-  "background": {
-    "service_worker": "background.js",
-    "type": "module"
-  }
+  "name": "Najiz Sync Auto",
+  "version": "1.0",
+  "description": "Auto sync data from najiz.sa into Adalah platform",
+  "permissions": ["activeTab", "scripting", "storage"],
+  "host_permissions": [
+    "*://*.najiz.sa/*",
+    "*://*.run.app/*",
+    "http://localhost:*/*"
+  ],
+  "action": {
+    "default_popup": "popup.html"
+  },
+  "content_scripts": [
+    {
+      "matches": ["*://*.najiz.sa/*"],
+      "js": ["aiClassifier.js", "content.js"]
+    }
+  ]
 }

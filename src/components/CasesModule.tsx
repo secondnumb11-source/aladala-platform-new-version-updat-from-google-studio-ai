@@ -144,7 +144,7 @@ interface CaseClassificationTagsProps {
 
 export const CaseClassificationTags: React.FC<CaseClassificationTagsProps> = ({ category, status, isHighContrast }) => {
   let categoryLabel = 'استشارات عامة';
-  let categoryColor = 'bg-slate-100 border-slate-900 text-slate-950 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-200';
+  let categoryColor = 'bg-slate-100 border-slate-900 text-slate-950 dark:bg-slate-800 dark:border-slate-700 dark:text-white font-bold';
   
   if (category === 'commercial') {
     categoryLabel = 'تجاري';
@@ -157,7 +157,7 @@ export const CaseClassificationTags: React.FC<CaseClassificationTagsProps> = ({ 
     categoryColor = 'bg-sky-100 border-sky-400 text-sky-950';
   } else if (category === 'criminal') {
     categoryLabel = 'جنائي';
-    categoryColor = 'bg-rose-100 border-rose-450 text-rose-950';
+    categoryColor = 'bg-rose-100 border-rose-400 text-rose-950';
   } else if (category === 'personal_status') {
     categoryLabel = 'أحوال شخصية';
     categoryColor = 'bg-violet-100 border-violet-400 text-violet-950';
@@ -271,7 +271,7 @@ export default React.memo(function CasesModule({
     switch (status) {
       case 'under_study':
         arabicStatusName = 'قيد الدراسة 🖋️';
-        statusColorClass = 'text-slate-400 border-slate-500/20 bg-slate-600/5';
+        statusColorClass = 'text-white font-black font-bold border-slate-500/20 bg-slate-600/5';
         IconComponent = FileText;
         break;
       case 'under_review':
@@ -281,7 +281,7 @@ export default React.memo(function CasesModule({
         break;
       case 'struck_off':
         arabicStatusName = 'شطبت 🗑️';
-        statusColorClass = 'text-gray-400 border-gray-500/20 bg-gray-500/5';
+        statusColorClass = 'text-gray-100 font-bold border-gray-500/20 bg-gray-500/5';
         IconComponent = Trash2;
         break;
       case 'appeal':
@@ -311,7 +311,7 @@ export default React.memo(function CasesModule({
         break;
       case 'closed':
         arabicStatusName = 'ملف مقفل منتهي 🔒';
-        statusColorClass = 'text-slate-400 border-slate-500/20 bg-slate-500/5';
+        statusColorClass = 'text-white font-black font-bold border-slate-500/20 bg-slate-500/5';
         IconComponent = Archive;
         break;
       case 'active':
@@ -325,7 +325,7 @@ export default React.memo(function CasesModule({
         IconComponent = FileText;
     }
 
-    let categoryBadgeColor = 'bg-slate-900 border-slate-800 text-slate-400';
+    let categoryBadgeColor = 'bg-slate-900 border-slate-800 text-white font-black font-bold';
     let hoverBorderAccent = 'group-hover/card:border-[#facc15]/50 duration-500';
     let gradientBg = 'from-[#facc15]/5 to-transparent';
     let sidebarColor = 'bg-[#facc15]'; // Default sidebar color
@@ -341,11 +341,11 @@ export default React.memo(function CasesModule({
 
     if (category === 'commercial') {
       CategoryIcon = Building2;
-      categoryBadgeColor = 'bg-amber-500/10 text-amber-400 border-amber-500/20';
+      categoryBadgeColor = 'bg-amber-500/10 border border-amber-500/30 text-amber-400 font-bold border-amber-500/20';
       gradientBg = 'from-amber-600/10 via-transparent to-transparent';
     } else if (category === 'criminal') {
       CategoryIcon = ShieldAlert;
-      categoryBadgeColor = 'bg-rose-500/10 text-rose-400 border-rose-500/20';
+      categoryBadgeColor = 'bg-rose-500/10 border border-rose-500/30 text-rose-400 font-bold border-rose-500/20';
       gradientBg = 'from-rose-600/10 via-transparent to-transparent';
     } else if (category === 'labor') {
       CategoryIcon = Users;
@@ -469,7 +469,7 @@ export default React.memo(function CasesModule({
         title: 'أرشفة الملف وإغلاق القضية نهائياً 🔒',
         desc: 'اكتملت جميع الدفعات وتحديثات بوابة ناجز وتصفية الحسابات والاتعاب بنجاح تام والمباشرة بإقفال وسجل الأثر المالي.',
         badge: 'الأرشفة والإنهاء',
-        color: 'border-slate-500/30 text-slate-400 bg-slate-500/10'
+        color: 'border-slate-500/30 text-white font-black font-bold bg-slate-500/10'
       });
     }
 
@@ -556,12 +556,12 @@ export default React.memo(function CasesModule({
                 </div>
                 <div>
                   <h2 className="text-xl font-black text-slate-900 tracking-tight">الأرشيف السحابي والأرشفة الإلكترونية</h2>
-                  <p className="text-xs text-slate-500 font-bold mt-1">إدارة مركزية لكافة المذكرات، اللوائح، والأحكام القضائية الصادرة.</p>
+                  <p className="text-xs text-slate-700 font-bold mt-1">إدارة مركزية لكافة المذكرات، اللوائح، والأحكام القضائية الصادرة.</p>
                 </div>
               </div>
               <button 
                 onClick={() => setIsArchiveModalOpen(false)}
-                className="p-3 text-slate-400 rounded-full transition-colors"
+                className="p-3 text-white font-black font-bold rounded-full transition-colors"
               >
                 <X className="w-6 h-6" />
               </button>
@@ -570,7 +570,7 @@ export default React.memo(function CasesModule({
             {/* Search & Filters */}
             <div className="p-6 bg-white border-b border-slate-100 grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="relative md:col-span-2">
-                <Search className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <Search className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white font-black font-bold" />
                 <input 
                   type="text" 
                   placeholder="البحث في الأرشيف (برقم القضية، اسم الموكل، أو مسمى المستند)..."
@@ -596,9 +596,9 @@ export default React.memo(function CasesModule({
               {filteredArchiveDocuments.length === 0 ? (
                 <div className="flex flex-col items-center justify-center h-64 text-center">
                   <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mb-4">
-                    <Search className="w-8 h-8 text-slate-300" />
+                    <Search className="w-8 h-8 text-white font-bold" />
                   </div>
-                  <p className="text-slate-500 font-bold">لا توجد نتائج مطابقة لبحثك في الأرشيف.</p>
+                  <p className="text-slate-700 font-bold">لا توجد نتائج مطابقة لبحثك في الأرشيف.</p>
                 </div>
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -614,7 +614,7 @@ export default React.memo(function CasesModule({
                         }`}>
                           <FileText className="w-6 h-6" />
                         </div>
-                        <button className="p-2 text-slate-300 transition-colors">
+                        <button className="p-2 text-white font-bold transition-colors">
                           <Download className="w-5 h-5" />
                         </button>
                       </div>
@@ -622,14 +622,14 @@ export default React.memo(function CasesModule({
                       <div className="space-y-2 relative z-10">
                         <h4 className="font-black text-slate-900 text-sm line-clamp-2 leading-relaxed">{doc.name}</h4>
                         <div className="flex flex-wrap gap-2 pt-2">
-                          <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-slate-100 text-slate-500 border border-slate-200">
+                          <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-200">
                             {doc.size}
                           </span>
-                          <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-amber-50 text-amber-600 border border-amber-100">
+                          <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-amber-50 text-amber-400 font-black border border-amber-100">
                             #{doc.caseNumber}
                           </span>
                         </div>
-                        <p className="text-[10px] text-slate-400 font-bold mt-2 truncate">القضية: {doc.caseName}</p>
+                        <p className="text-[10px] text-white font-black font-bold font-bold mt-2 truncate">القضية: {doc.caseName}</p>
                       </div>
                     </div>
                   ))}
@@ -639,7 +639,7 @@ export default React.memo(function CasesModule({
 
             {/* Footer */}
             <div className="p-6 bg-slate-50/50 border-t border-slate-100 flex items-center justify-between">
-              <span className="text-xs text-slate-500 font-bold">إجمالي المستندات المكتشفة: {filteredArchiveDocuments.length} مستند</span>
+              <span className="text-xs text-slate-700 font-bold">إجمالي المستندات المكتشفة: {filteredArchiveDocuments.length} مستند</span>
               <button 
                 className="bg-slate-900 text-white px-6 py-3 rounded-2xl text-xs font-black transition-opacity flex items-center gap-2"
                 onClick={() => window.print()}
@@ -1056,23 +1056,23 @@ export default React.memo(function CasesModule({
     return (
       <div className="space-y-4 mb-8">
         {/* Customized User Control Bar to change sizes, positions, themes and shapes dynamically */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 p-3 bg-[#050e21]/90 rounded-2xl border border-slate-800 text-xs text-slate-200 shadow-xl relative z-25">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 p-3 bg-[#050e21]/90 rounded-2xl border border-slate-800 text-xs text-white font-bold shadow-xl relative z-25">
           <div className="flex flex-wrap items-center gap-3 lg:col-span-2">
             <div className="flex items-center gap-1.5">
               <span className="font-sans font-black text-white text-[10px]">مظهر ولون البيانات:</span>
               <div className="flex gap-1 bg-black/40 p-0.5 rounded border border-slate-750">
-                <button type="button" onClick={() => setChartColorTheme('gold')} className={`px-2 py-0.5 rounded text-[9.5px] font-black cursor-pointer transition-all ${chartColorTheme === 'gold' ? 'bg-[#ffff00] text-slate-950' : 'text-slate-300'}`}>ذهبي</button>
-                <button type="button" onClick={() => setChartColorTheme('cyber')} className={`px-2 py-0.5 rounded text-[9.5px] font-black cursor-pointer transition-all ${chartColorTheme === 'cyber' ? 'bg-cyan-500 text-slate-950' : 'text-slate-300'}`}>نيون</button>
-                <button type="button" onClick={() => setChartColorTheme('emerald')} className={`px-2 py-0.5 rounded text-[9.5px] font-black cursor-pointer transition-all ${chartColorTheme === 'emerald' ? 'bg-emerald-500 text-slate-950' : 'text-slate-300'}`}>زمردي</button>
+                <button type="button" onClick={() => setChartColorTheme('gold')} className={`px-2 py-0.5 rounded text-[9.5px] font-black cursor-pointer transition-all ${chartColorTheme === 'gold' ? 'bg-[#ffff00] text-slate-950' : 'text-white font-bold'}`}>ذهبي</button>
+                <button type="button" onClick={() => setChartColorTheme('cyber')} className={`px-2 py-0.5 rounded text-[9.5px] font-black cursor-pointer transition-all ${chartColorTheme === 'cyber' ? 'bg-cyan-500 text-slate-950' : 'text-white font-bold'}`}>نيون</button>
+                <button type="button" onClick={() => setChartColorTheme('emerald')} className={`px-2 py-0.5 rounded text-[9.5px] font-black cursor-pointer transition-all ${chartColorTheme === 'emerald' ? 'bg-emerald-500 text-slate-950' : 'text-white font-bold'}`}>زمردي</button>
               </div>
             </div>
 
             <div className="flex items-center gap-1.5">
               <span className="font-sans font-black text-white text-[10px]">شكل المخطط:</span>
               <div className="flex gap-1 bg-black/40 p-0.5 rounded border border-slate-750">
-                <button type="button" onClick={() => setChartVizType('bar')} className={`px-2 py-0.5 rounded text-[9.5px] font-black cursor-pointer transition-all ${chartVizType === 'bar' ? 'bg-indigo-600 text-white' : 'text-slate-300'}`}>شريطي</button>
-                <button type="button" onClick={() => setChartVizType('area')} className={`px-2 py-0.5 rounded text-[9.5px] font-black cursor-pointer transition-all ${chartVizType === 'area' ? 'bg-purple-600 text-white' : 'text-slate-300'}`}>مساحي</button>
-                <button type="button" onClick={() => setChartVizType('line')} className={`px-2 py-0.5 rounded text-[9.5px] font-black cursor-pointer transition-all ${chartVizType === 'line' ? 'bg-rose-600 text-white' : 'text-slate-300'}`}>خطي</button>
+                <button type="button" onClick={() => setChartVizType('bar')} className={`px-2 py-0.5 rounded text-[9.5px] font-black cursor-pointer transition-all ${chartVizType === 'bar' ? 'bg-indigo-600 text-white' : 'text-white font-bold'}`}>شريطي</button>
+                <button type="button" onClick={() => setChartVizType('area')} className={`px-2 py-0.5 rounded text-[9.5px] font-black cursor-pointer transition-all ${chartVizType === 'area' ? 'bg-purple-600 text-white' : 'text-white font-bold'}`}>مساحي</button>
+                <button type="button" onClick={() => setChartVizType('line')} className={`px-2 py-0.5 rounded text-[9.5px] font-black cursor-pointer transition-all ${chartVizType === 'line' ? 'bg-rose-600 text-white' : 'text-white font-bold'}`}>خطي</button>
               </div>
             </div>
           </div>
@@ -1090,9 +1090,9 @@ export default React.memo(function CasesModule({
             <div className="flex items-center gap-1.5">
               <span className="font-sans font-black text-white text-[10px]">حجم الكارت:</span>
               <div className="flex gap-1 bg-black/40 p-0.5 rounded border border-slate-750">
-                <button type="button" onClick={() => setChartSize('tiny')} className={`px-1.5 py-0.5 rounded text-[9.5px] font-black cursor-pointer transition-all ${chartSize === 'tiny' ? 'bg-slate-700 text-white' : 'text-slate-400'}`}>صغير جداً</button>
-                <button type="button" onClick={() => setChartSize('shrunk')} className={`px-1.5 py-0.5 rounded text-[9.5px] font-black cursor-pointer transition-all ${chartSize === 'shrunk' ? 'bg-slate-700 text-white' : 'text-slate-400'}`}>صغير</button>
-                <button type="button" onClick={() => setChartSize('regular')} className={`px-1.5 py-0.5 rounded text-[9.5px] font-black cursor-pointer transition-all ${chartSize === 'regular' ? 'bg-slate-700 text-white' : 'text-slate-400'}`}>افتراضي</button>
+                <button type="button" onClick={() => setChartSize('tiny')} className={`px-1.5 py-0.5 rounded text-[9.5px] font-black cursor-pointer transition-all ${chartSize === 'tiny' ? 'bg-slate-700 text-white' : 'text-white font-black font-bold'}`}>صغير جداً</button>
+                <button type="button" onClick={() => setChartSize('shrunk')} className={`px-1.5 py-0.5 rounded text-[9.5px] font-black cursor-pointer transition-all ${chartSize === 'shrunk' ? 'bg-slate-700 text-white' : 'text-white font-black font-bold'}`}>صغير</button>
+                <button type="button" onClick={() => setChartSize('regular')} className={`px-1.5 py-0.5 rounded text-[9.5px] font-black cursor-pointer transition-all ${chartSize === 'regular' ? 'bg-slate-700 text-white' : 'text-white font-black font-bold'}`}>افتراضي</button>
               </div>
             </div>
 
@@ -1831,7 +1831,7 @@ export default React.memo(function CasesModule({
               <span>المرحلة الحالية: {stages[currentIdx]?.label || 'قيد المراجعة'}</span>
               <span className="text-yellow-300 font-black">{Math.round(progress)}%</span>
             </div>
-            <div className="h-3 w-full bg-slate-800/50 rounded-full overflow-hidden border border-slate-700/30 transition-all shadow-inner">
+            <div className="h-3 w-full bg-slate-900 border border-slate-700 rounded-full overflow-hidden border border-slate-700/30 transition-all shadow-inner">
               <motion.div 
                 initial={{ width: 0 }}
                 animate={{ width: `${progress}%` }}
@@ -1846,7 +1846,7 @@ export default React.memo(function CasesModule({
         <div className="bg-[#050e21] p-8 rounded-[2.5rem] border border-slate-800 shadow-2xl mb-10 relative z-20 space-y-6">
           <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
             <div className="flex-1 min-w-[320px] relative w-full">
-              <Search className="absolute right-5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
+              <Search className="absolute right-5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-700" />
               <input 
                 type="text" 
                 placeholder="البحث في القضايا، الموكلين، أو أرقام الصكوك..." 
@@ -1858,7 +1858,7 @@ export default React.memo(function CasesModule({
 
             <div className="flex gap-4 w-full md:w-auto">
               <div className="relative">
-                <span className="absolute -top-2 right-4 bg-[#050e21] px-2 text-[8px] font-black text-amber-500/80 uppercase">آخر جلسة</span>
+                <span className="absolute -top-2 right-4 bg-[#050e21] px-2 text-[10px] font-black text-amber-500/80 uppercase">آخر جلسة</span>
                 <input 
                   type="date"
                   value={lastSessionFilter}
@@ -1867,7 +1867,7 @@ export default React.memo(function CasesModule({
                 />
               </div>
               <div className="relative">
-                <span className="absolute -top-2 right-4 bg-[#050e21] px-2 text-[8px] font-black text-indigo-500/80 uppercase">الموعد القادم</span>
+                <span className="absolute -top-2 right-4 bg-[#050e21] px-2 text-[10px] font-black text-indigo-500/80 uppercase">الموعد القادم</span>
                 <input 
                   type="date"
                   value={nextAppointmentFilter}
@@ -1881,26 +1881,26 @@ export default React.memo(function CasesModule({
               <div className="flex bg-slate-900 border border-slate-800 p-1 rounded-2xl">
                 <button 
                   onClick={() => setViewMode('grid')}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-xl text-[10px] font-black uppercase transition-all ${viewMode === 'grid' ? 'bg-amber-600 text-white shadow-lg' : 'text-slate-500'}`}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-xl text-[10px] font-black uppercase transition-all ${viewMode === 'grid' ? 'bg-amber-600 text-white shadow-lg' : 'text-slate-700'}`}
                 >
                   <Layers className="w-4 h-4" />
                   <span>عرض المربعات</span>
                 </button>
                 <button 
                   onClick={() => setViewMode('table')}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-xl text-[10px] font-black uppercase transition-all ${viewMode === 'table' ? 'bg-amber-600 text-white shadow-lg' : 'text-slate-500'}`}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-xl text-[10px] font-black uppercase transition-all ${viewMode === 'table' ? 'bg-amber-600 text-white shadow-lg' : 'text-slate-700'}`}
                 >
                   <FileText className="w-4 h-4" />
                   <span>عرض القائمة</span>
                 </button>
               </div>
               <div className="bg-slate-900 border border-slate-800 px-5 py-3 rounded-2xl flex items-center gap-3">
-                <span className="text-[10px] text-slate-500 font-black uppercase tracking-widest">إجمالي القضايا:</span>
+                <span className="text-[10px] text-slate-700 font-black uppercase tracking-widest">إجمالي القضايا:</span>
                 <span className="text-lg font-mono text-amber-500 font-black leading-none">{cases.length}</span>
               </div>
               <button 
                 onClick={() => setIsGraphsOpen(!isGraphsOpen)}
-                className="p-3.5 bg-slate-900 border border-slate-800 rounded-2xl text-slate-400 transition-all cursor-pointer"
+                className="p-3.5 bg-slate-900 border border-slate-800 rounded-2xl text-white font-black font-bold transition-all cursor-pointer"
               >
                 <TrendingUp className="w-5 h-5" />
               </button>
@@ -1926,12 +1926,12 @@ export default React.memo(function CasesModule({
                   className={`flex items-center gap-3 px-5 py-3 rounded-2xl text-xs font-black transition-all border shrink-0 relative group ${
                     isActive 
                       ? 'bg-amber-600 text-white border-amber-500 shadow-xl shadow-amber-600/20' 
-                      : 'bg-[#0c1a35] text-slate-400 border-slate-800[#0e2145]'
+                      : 'bg-[#0c1a35] text-white font-black font-bold border-slate-800[#0e2145]'
                   }`}
                 >
                   <Icon className={`w-4 h-4 ${isActive ? 'text-white' : 'text-amber-500'}`} />
                   <span>{cat.label}</span>
-                  <span className={`text-[10px] px-2 py-0.5 rounded-lg font-mono ${isActive ? 'bg-white/20' : 'bg-slate-800 text-slate-500'}`}>
+                  <span className={`text-[10px] px-2 py-0.5 rounded-lg font-mono ${isActive ? 'bg-white/20' : 'bg-slate-800 text-slate-700'}`}>
                     {count}
                   </span>
                 </button>
@@ -1944,12 +1944,12 @@ export default React.memo(function CasesModule({
             <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
               <div className="flex items-center gap-2">
                 <span className="text-[10px] text-amber-500 font-black uppercase tracking-widest bg-amber-500/10 px-2 py-1 rounded">وسوم المستندات الذكية</span>
-                <p className="text-[11px] text-slate-400 font-bold">فلترة سريعة للقضايا بواسطة وسوم المستندات التلقائية المكتشفة بالذكاء الاصطناعي (AI):</p>
+                <p className="text-[11px] text-white font-black font-bold font-bold">فلترة سريعة للقضايا بواسطة وسوم المستندات التلقائية المكتشفة بالذكاء الاصطناعي (AI):</p>
               </div>
               {selectedDocTag !== 'all' && (
                 <button 
                   onClick={() => setSelectedDocTag('all')}
-                  className="text-[10px] text-rose-450 font-extrabold flex items-center gap-1 transition-all cursor-pointer"
+                  className="text-[10px] text-rose-400 font-extrabold flex items-center gap-1 transition-all cursor-pointer"
                 >
                   <X className="w-3 h-3" />
                   إلغاء التصفية بالوسم
@@ -1980,7 +1980,7 @@ export default React.memo(function CasesModule({
                     className={`px-3 py-2 rounded-xl text-[10px] font-black border transition-all cursor-pointer flex items-center gap-1.5 whitespace-nowrap ${
                       isActive
                         ? 'bg-amber-600/25 text-amber-400 border-amber-500/60 shadow-lg shadow-amber-500/5'
-                        : 'bg-[#0c1a35] text-slate-400 border-slate-800/80'
+                        : 'bg-[#0c1a35] text-white font-black font-bold border-slate-800/80'
                     }`}
                   >
                     <span>{tagItem.label}</span>
@@ -2036,14 +2036,14 @@ export default React.memo(function CasesModule({
                     </button>
                     <button
                       onClick={() => setIsGraphsOpen(!isGraphsOpen)}
-                      className="bg-[#050e21] text-slate-300 font-black py-3.5 px-5 rounded-2xl text-[11px] flex items-center justify-center gap-3 border border-slate-700 transition-all w-full md:w-auto shadow-md cursor-pointer"
+                      className="bg-[#050e21] text-white font-bold font-black py-3.5 px-5 rounded-2xl text-[11px] flex items-center justify-center gap-3 border border-slate-700 transition-all w-full md:w-auto shadow-md cursor-pointer"
                     >
                       {isGraphsOpen ? <TrendingDown className="w-4 h-4" /> : <TrendingUp className="w-4 h-4 text-amber-400" />}
                       <span>{isGraphsOpen ? 'إخفاء الإحصائيات' : 'عرض الإحصائيات'}</span>
                     </button>
                     <button
                       onClick={() => setIsFocusMode(!isFocusMode)}
-                      className={`bg-[#050e21] text-slate-300 font-black py-3.5 px-5 rounded-2xl text-[11px] flex items-center justify-center gap-3 border transition-all w-full md:w-auto shadow-md cursor-pointer ${isFocusMode ? 'border-emerald-500 text-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.3)]' : 'border-slate-700'}`}
+                      className={`bg-[#050e21] text-white font-bold font-black py-3.5 px-5 rounded-2xl text-[11px] flex items-center justify-center gap-3 border transition-all w-full md:w-auto shadow-md cursor-pointer ${isFocusMode ? 'border-emerald-500 text-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.3)]' : 'border-slate-700'}`}
                     >
                       {isFocusMode ? <Maximize2 className="w-4 h-4" /> : <Minimize2 className="w-4 h-4 text-emerald-500" />}
                       <span>{isFocusMode ? 'إيقاف وضع التركيز' : 'وضع التركيز (Focus Mode)'}</span>
@@ -2097,7 +2097,7 @@ export default React.memo(function CasesModule({
                   </button>
                   <button 
                     onClick={archivedNotice.onClose}
-                    className="p-2.5 text-slate-500 transition-colors"
+                    className="p-2.5 text-slate-700 transition-colors"
                   >
                     <X className="w-5 h-5" />
                   </button>
@@ -2256,85 +2256,84 @@ export default React.memo(function CasesModule({
             <div className="lg:col-span-8 space-y-8">
               
               {/* Electronic Archiving Section (Professional & Elegant) */}
-              <div className="card-professional bg-[#050e21] border-2 border-slate-800 rounded-[2.5rem] p-8 space-y-6 shadow-2xl relative overflow-hidden group">
+              <div className="card-professional bg-[#050e21] border-2 border-slate-705 rounded-[2.5rem] p-8 space-y-6 shadow-2xl relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 blur-[100px] pointer-events-none"></div>
                 <div className="flex items-center justify-between border-b border-slate-800 pb-5">
                   <div className="flex items-center gap-4">
-                    <div className="p-3 bg-primary/10 text-primary rounded-2xl border border-primary/20">
+                    <div className="p-3 bg-primary/10 text-[#FACC15] rounded-2xl border border-primary/20">
                       <Archive className="w-6 h-6" />
                     </div>
                     <div>
-                      <h3 className="font-display font-black text-xl text-white tracking-tight uppercase">الأرشفة الإلكترونية المنظمة</h3>
-                      <p className="text-xs text-slate-400 font-black uppercase tracking-widest mt-1">Structured Electronic Legal Archive</p>
+                      <h3 className="font-display font-black text-xl text-[#FACC15] tracking-tight uppercase" style={{ textShadow: 'none' }}>الأرشفة الإلكترونية المنظمة</h3>
+                      <p className="text-xs text-[#FFFFFF] font-black uppercase tracking-widest mt-1" style={{ textShadow: 'none' }}>Structured Electronic Legal Archive</p>
                     </div>
                   </div>
-                  <button className="bg-primary/10 text-primary px-4 py-2 rounded-xl text-[10px] font-black border border-primary/20 transition-all">
+                  <button className="bg-primary/10 text-[#FACC15] px-4 py-2 rounded-xl text-[10px] font-black border border-primary/20">
                     + إيداع مستند جديد
                   </button>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {[
-                    { id: 'pleadings', label: 'اللوائح الجوابية والاعتبارية', icon: FileText, count: 3, color: 'text-amber-500' },
-                    { id: 'documents', label: 'المستندات الثبوتية والأسانيد', icon: Paperclip, count: 8, color: 'text-blue-500' },
-                    { id: 'judgments', label: 'الأحكام والصكوك القضائية', icon: Gavel, count: 1, color: 'text-emerald-500' },
-                    { id: 'execution', label: 'قرارات التنفيذ (مادة ٣٤/٤٦)', icon: Zap, count: 2, color: 'text-orange-500' },
+                    { id: 'pleadings', label: 'اللوائح الجوابية والاعتبارية', icon: FileText, count: 3, color: 'text-amber-400' },
+                    { id: 'documents', label: 'المستندات الثبوتية والأسانيد', icon: Paperclip, count: 8, color: 'text-blue-400' },
+                    { id: 'judgments', label: 'الأحكام والصكوك القضائية', icon: Gavel, count: 1, color: 'text-emerald-400' },
+                    { id: 'execution', label: 'قرارات التنفيذ (مادة ٣٤/٤٦)', icon: Zap, count: 2, color: 'text-orange-400' },
                   ].map((cat) => (
-                    <div key={cat.id} className="p-5 bg-[#0c1a35] border border-slate-800 rounded-2xl transition-all group/arch shadow-sm">
+                    <div key={cat.id} className="p-5 bg-[#0c1a35] border-2 border-slate-700 rounded-2xl shadow-sm">
                       <div className="flex items-center justify-between mb-3">
                         <div className={`p-2 rounded-lg bg-slate-900 border border-slate-800 ${cat.color}`}>
                           <cat.icon className="w-5 h-5" />
                         </div>
-                        <span className="text-[10px] font-black text-slate-500 uppercase">{cat.count} ملفات</span>
+                        <span className="text-[11px] font-black text-[#FACC15] uppercase" style={{ textShadow: 'none' }}>{cat.count} ملفات</span>
                       </div>
-                      <h4 className="text-sm font-black text-white group-hover/arch:text-primary transition-colors">{cat.label}</h4>
-                      <div className="mt-4 flex items-center justify-between text-[10px] font-bold text-slate-500 border-t border-slate-800 pt-3">
-                        <span>آخر تحديث: قبل يومين</span>
-                        <ArrowUpRight className="w-3 h-3 opacity-0 group-hover/arch:opacity-100 transition-all translate-y-1 group-hover/arch:translate-y-0 text-primary" />
+                      <h4 className="text-sm font-black text-[#FFFFFF]" style={{ textShadow: 'none' }}>{cat.label}</h4>
+                      <div className="mt-4 flex items-center justify-between text-[10px] font-black text-[#FFFFFF]/80 border-t border-slate-800 pt-3">
+                        <span style={{ textShadow: 'none' }}>آخر تحديث: قبل يومين</span>
                       </div>
                     </div>
                   ))}
                 </div>
               </div>
               <div className="card-professional border-2 bg-[#050e21] border-slate-800 p-8 space-y-6 shadow-md">
-                <div className="flex items-center gap-4 border-b border-slate-800  pb-6">
-                  <div className="p-3.5 bg-primary/10 text-primary rounded-2xl border border-primary/20">
+                <div className="flex items-center gap-4 border-b border-slate-800 pb-6">
+                  <div className="p-3.5 bg-primary/10 text-[#FACC15] rounded-2xl border border-primary/20">
                     <FileText className="w-6 h-6" />
                   </div>
                   <div>
-                    <h3 className="font-display font-black text-xl text-slate-950 tracking-tight uppercase">مذكرات الدعوى والصكوك الثبوتية</h3>
-                    <p className="text-xs  text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]  font-black uppercase tracking-widest mt-1">Foundational Legal Memoranda & Deeds</p>
+                    <h3 className="font-display font-black text-xl text-[#FACC15] tracking-tight uppercase" style={{ textShadow: 'none' }}>مذكرات الدعوى والصكوك الثبوتية</h3>
+                    <p className="text-xs text-[#FFFFFF] font-black uppercase tracking-widest mt-1" style={{ textShadow: 'none' }}>Foundational Legal Memoranda & Deeds</p>
                   </div>
                 </div>
                 
-                <div className="bg-[#0c1a35]  p-8 rounded-[2rem] border border-slate-800 ">
-                  <p className="text-sm md:text-base  text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]   leading-loose font-bold text-justify">
+                <div className="bg-[#0c1a35] p-8 rounded-[2rem] border-2 border-slate-700">
+                  <p className="text-sm md:text-base text-[#FFFFFF] leading-loose font-black text-justify" style={{ textShadow: 'none' }}>
                     {selectedCase.details}
                   </p>
                 </div>
 
-                <div className="bg-primary/5 p-6 rounded-2xl border border-primary/10 flex flex-col md:flex-row gap-6">
+                <div className="bg-primary/5 p-6 rounded-2xl border-2 border-slate-700 flex flex-col md:flex-row gap-6">
                   <div className="flex flex-col gap-1 min-w-[140px]">
-                    <span className="text-xs text-primary font-black uppercase tracking-[0.2em] mb-1">ملخص النزاع السريع:</span>
-                    <div className="w-10 h-1 bg-primary/40 rounded-full"></div>
+                    <span className="text-xs text-[#FACC15] font-black uppercase tracking-[0.2em] mb-1" style={{ textShadow: 'none' }}>ملخص النزاع السريع:</span>
+                    <div className="w-10 h-1 bg-amber-500 rounded-full"></div>
                   </div>
-                  <p className="text-xs  text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]  font-bold leading-relaxed">{selectedCase.summary}</p>
+                  <p className="text-xs text-[#FFFFFF] font-black leading-relaxed" style={{ textShadow: 'none' }}>{selectedCase.summary}</p>
                 </div>
               </div>
 
               {/* AI Assistant Output Box */}
               {(isAiLoading || aiAnalysis) && (
-                <div className="card-professional border-2 bg-[#0c1a35] border-primary/40 shadow-xl relative overflow-hidden group no-hover-parallax">
+                <div className="card-professional border-2 bg-[#0c1a35] border-primary/40 shadow-xl relative overflow-hidden">
                   <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 blur-3xl rounded-full"></div>
                   
                   <div className="flex items-center justify-between border-b border-primary/10 pb-6 relative z-10">
                     <div className="flex items-center gap-4">
                       <div className="p-3.5 bg-primary/10 text-primary rounded-2xl border border-primary/20">
-                        <Cpu className="w-6 h-6 animate-pulse" />
+                        <Cpu className="w-6 h-6" />
                       </div>
                       <div>
-                        <h4 className="font-display font-black text-[#ffff00] text-lg tracking-tight drop-shadow-[0_0_8px_rgba(255,255,0,0.8)]">الدراسة اللغوية والتقنية (موكل AI)</h4>
-                        <p className="text-xs text-[#ffffff] font-black uppercase tracking-widest mt-1 drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]">Deep Inference Sovereign Model</p>
+                        <h4 className="font-display font-black text-[#FACC15] text-lg tracking-tight" style={{ textShadow: 'none' }}>الدراسة اللغوية والتقنية (موكل AI)</h4>
+                        <p className="text-xs text-[#FFFFFF] font-black uppercase tracking-widest mt-1" style={{ textShadow: 'none' }}>Deep Inference Sovereign Model</p>
                       </div>
                     </div>
                     <span className="text-xs bg-primary text-white px-3 py-1.5 rounded-lg font-black uppercase tracking-widest shadow-lg">V5.0 LEGAL CORE</span>
@@ -2348,15 +2347,15 @@ export default React.memo(function CasesModule({
                           <Cpu className="w-6 h-6 text-primary" />
                         </div>
                       </div>
-                      <p className="text-xs text-[#ffffff] drop-shadow-[0_0_8px_rgba(255,255,255,0.8)] font-black tracking-widest animate-pulse">جاري استنباط الأسانيد وفحص اللوائح التنفيذية...</p>
+                      <p className="text-xs text-[#FFFFFF] font-black tracking-widest" style={{ textShadow: 'none' }}>جاري استنباط الأسانيد وفحص اللوائح التنفيذية...</p>
                     </div>
                   ) : (
-                    <div className="bg-[#050e21] p-8 rounded-3xl border border-slate-800 text-sm text-[#ffffff] space-y-6 leading-loose font-black text-justify relative z-10">
+                    <div className="bg-[#050e21] p-8 rounded-3xl border-2 border-slate-700 text-sm text-[#FFFFFF] space-y-6 leading-loose font-black text-justify relative z-10">
                       <div className="flex items-center gap-3 mb-2">
-                        <div className="w-2 h-2 bg-[#ffff00] rounded-full shadow-[0_0_10px_#ffff00]"></div>
-                        <span className="text-xs text-[#ffff00] uppercase font-black tracking-widest">توجيه فني مخصص للمرافع الشرعي</span>
+                        <div className="w-2 h-2 bg-[#FACC15] rounded-full"></div>
+                        <span className="text-xs text-[#FACC15] uppercase font-black tracking-widest" style={{ textShadow: 'none' }}>توجيه فني مخصص للمرافع الشرعي</span>
                       </div>
-                      <div className="text-[#ffffff] drop-shadow-[0_0_8px_rgba(255,255,255,0.5)]">
+                      <div className="text-[#FFFFFF] font-black" style={{ textShadow: 'none' }}>
                         {aiAnalysis}
                       </div>
                     </div>
@@ -2364,26 +2363,26 @@ export default React.memo(function CasesModule({
                 </div>
               )}
 
-              <div className="card-professional border-2 bg-[#050e21] border-slate-800 p-8 space-y-8 no-hover-parallax">
-                <h3 className="font-display font-black text-lg text-[#ffffff] drop-shadow-[0_0_8px_rgba(255,255,255,0.8)] border-b border-slate-800 pb-5 tracking-tight uppercase">أطراف النزاع والعملاء المعنيين</h3>
+              <div className="card-professional border-2 bg-[#050e21] border-slate-800 p-8 space-y-8">
+                <h3 className="font-display font-black text-lg text-[#FFFFFF] border-b border-slate-800 pb-5 tracking-tight uppercase" style={{ textShadow: 'none' }}>أطراف النزاع والعملاء المعنيين</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="p-8 bg-[#0c1a35]  rounded-3xl border border-slate-800  space-y-4 transition-all group">
-                    <div className="w-12 h-12 bg-primary/10 text-primary rounded-2xl flex items-center justify-center transition-all">
+                  <div className="p-8 bg-[#0c1a35] rounded-3xl border-2 border-slate-700 space-y-4">
+                    <div className="w-12 h-12 bg-primary/10 text-[#FACC15] rounded-2xl flex items-center justify-center">
                       <Users className="w-6 h-6" />
                     </div>
                     <div>
-                      <span className="text-xs text-primary font-black uppercase tracking-widest block mb-1">العميل المدعي (نظامي)</span>
-                      <p className="font-black text-base  text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]  ">{selectedCase.clientName}</p>
+                      <span className="text-xs text-[#FACC15] font-black uppercase tracking-widest block mb-1" style={{ textShadow: 'none' }}>العميل المدعي (نظامي)</span>
+                      <p className="font-black text-base text-[#FFFFFF]" style={{ textShadow: 'none' }}>{selectedCase.clientName}</p>
                     </div>
                   </div>
 
-                  <div className="p-8 bg-[#0c1a35]  rounded-3xl border border-slate-800  space-y-4 transition-all group">
-                    <div className="w-12 h-12 bg-rose-500 text-rose-500 rounded-2xl flex items-center justify-center transition-all">
+                  <div className="p-8 bg-[#0c1a35] rounded-3xl border-2 border-slate-700 space-y-4">
+                    <div className="w-12 h-12 bg-rose-500/10 text-rose-400 rounded-2xl flex items-center justify-center">
                       <ShieldAlert className="w-6 h-6" />
                     </div>
                     <div>
-                      <span className="text-xs text-rose-500 font-black uppercase tracking-widest block mb-1">الخصم المدعى عليه</span>
-                      <p className="font-black text-base  text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]  ">{selectedCase.opponentName}</p>
+                      <span className="text-xs text-rose-400 font-black uppercase tracking-widest block mb-1" style={{ textShadow: 'none' }}>الخصم المدعى عليه</span>
+                      <p className="font-black text-base text-[#FFFFFF]" style={{ textShadow: 'none' }}>{selectedCase.opponentName}</p>
                     </div>
                   </div>
                 </div>
@@ -2395,25 +2394,25 @@ export default React.memo(function CasesModule({
             <div className="lg:col-span-4 space-y-8">
 
         {/* DYNAMIC TRANSLATION & SUMMARIZER ENGINE CARD (GEMINI API) */}
-        <div className="card-professional border-2 border-amber-500/20 bg-[#050e21] p-6 space-y-6 shadow-xl rounded-2xl text-right transition-all">
+        <div className="card-professional border-2 border-amber-500/20 bg-[#050e21] p-6 space-y-6 shadow-xl rounded-2xl text-right">
           <div className="flex items-center gap-3 border-b border-slate-800 pb-4">
-            <div className="p-2 bg-amber-500/10 text-amber-500 rounded-xl border border-amber-500/20 shrink-0">
-              <Sparkles className="w-5 h-5 animate-pulse text-amber-400" />
+            <div className="p-2 bg-amber-500/10 text-[#FACC15] rounded-xl border border-amber-500/20 shrink-0">
+              <Sparkles className="w-5 h-5 text-[#FACC15]" />
             </div>
             <div>
-              <h3 className="font-display font-black text-xs text-yellow-500 uppercase tracking-wider">موجّز المستندات والجلسات المتقدم (Gemini RAG) 🧠</h3>
-              <p className="text-[10px] text-slate-300 font-bold block mt-0.5">صياغة ملخصات ذكية بنقاط مركزة لمطابقة الدفوع </p>
+              <h3 className="font-display font-black text-xs text-[#FACC15] uppercase tracking-wider" style={{ textShadow: 'none' }}>موجّز المستندات والجلسات المتقدم (Gemini RAG) 🧠</h3>
+              <p className="text-[10px] text-[#FFFFFF] font-black block mt-0.5" style={{ textShadow: 'none' }}>صياغة ملخصات ذكية بنقاط مركزة لمطابقة الدفوع </p>
             </div>
           </div>
 
           <div className="space-y-4">
             {caseDocumentMemo ? (
               <div className="space-y-3">
-                <div className="text-[10px] font-black text-amber-450 uppercase tracking-widest bg-amber-500/10 px-2.5 py-1.5 rounded-lg inline-flex items-center gap-1.5">
+                <div className="text-[10px] font-black text-[#FACC15] uppercase tracking-widest bg-amber-500/10 px-2.5 py-1.5 rounded-lg inline-flex items-center gap-1.5">
                   <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
-                  <span>الموجز القانوني النشط للجلسة</span>
+                  <span style={{ textShadow: 'none' }}>الموجز القانوني النشط للجلسة</span>
                 </div>
-                <div className="bg-[#0c1a35] p-4 rounded-xl border border-slate-800 text-[11.5px] text-white/90 leading-relaxed max-h-[250px] overflow-y-auto whitespace-pre-line font-sans scrollbar-thin">
+                <div className="bg-[#0c1a35] p-4 rounded-xl border-2 border-slate-700 text-[11.5px] text-[#FFFFFF] leading-relaxed max-h-[250px] overflow-y-auto whitespace-pre-line font-sans scrollbar-thin">
                   {caseDocumentMemo}
                 </div>
                 <div className="flex gap-2">
@@ -2425,7 +2424,7 @@ export default React.memo(function CasesModule({
                         localStorage.removeItem(`adalah-case-summary-${selectedCase.id}`);
                       }
                     }}
-                    className="w-full bg-rose-950/40 border border-rose-500/30 text-rose-300 text-[10px] font-black py-2 rounded-xl transition-all cursor-pointer text-center"
+                    className="w-full bg-rose-950/40 border border-rose-500/30 text-rose-300 text-[10px] font-black py-2 rounded-xl text-center"
                   >
                      تحديث / مسح الموجز 🗑️
                   </button>
@@ -2433,7 +2432,7 @@ export default React.memo(function CasesModule({
               </div>
             ) : (
               <div className="space-y-3">
-                <p className="text-[11px] text-slate-400 font-bold leading-relaxed">
+                <p className="text-[11px] text-[#FFFFFF] font-black leading-relaxed" style={{ textShadow: 'none' }}>
                   ألصق هنا محضر مرافعة طويل، أو نص المذكرة، أو وثائق القضية لاستخراج ملخص قانوني فوري في نقاط مبيّنة للأسانيد والتوجيه الفني المقترح:
                 </p>
                 <textarea
@@ -2441,7 +2440,7 @@ export default React.memo(function CasesModule({
                   value={caseDocumentText}
                   onChange={(e) => setCaseDocumentText(e.target.value)}
                   placeholder="ألصق نصوص المرافعة أو عقود الخصوم هنا..."
-                  className="w-full bg-[#0c1a35] border border-slate-800 p-3 rounded-xl text-xs font-semibold text-white/95 outline-none focus:border-amber-500/50 transition-all font-sans"
+                  className="w-full bg-[#0c1a35] border-2 border-slate-700 p-3 rounded-xl text-xs font-semibold text-[#FFFFFF] outline-none focus:border-amber-500/50 transition-all font-sans"
                 />
                 
                 {caseSummarizeError && (
@@ -2454,10 +2453,10 @@ export default React.memo(function CasesModule({
                   disabled={isCaseSummarizing || !caseDocumentText.trim()}
                   className={`w-full font-black py-3 rounded-xl text-xs flex items-center justify-center gap-2 shadow-lg transition-all ${
                     isCaseSummarizing 
-                      ? 'bg-slate-800 text-slate-500 cursor-wait'
+                      ? 'bg-slate-800 text-slate-700 cursor-wait'
                       : !caseDocumentText.trim()
-                        ? 'bg-slate-900 border border-slate-800 text-slate-600 cursor-not-allowed'
-                        : 'bg-gradient-to-r from-amber-600 to-amber-700 text-white shadow-amber-500/10 cursor-pointer'
+                        ? 'bg-slate-900 border border-slate-800 text-white font-black font-bold cursor-not-allowed'
+                        : 'bg-[#FACC15] text-slate-950 font-extrabold cursor-pointer'
                   }`}
                 >
                   {isCaseSummarizing ? (
@@ -2467,7 +2466,7 @@ export default React.memo(function CasesModule({
                     </>
                   ) : (
                     <>
-                      <Sparkles className="w-4 h-4 text-white" />
+                      <Sparkles className="w-4 h-4 text-slate-950" />
                       <span>تلخيص وتدقيق المستند بـ Gemini 🧠</span>
                     </>
                   )}
@@ -2482,177 +2481,180 @@ export default React.memo(function CasesModule({
         <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 blur-3xl rounded-full pointer-events-none"></div>
 
         <div className="flex items-center gap-3 border-b border-slate-800 pb-4">
-          <div className="p-2 bg-primary/10 text-primary rounded-xl border border-primary/20 shrink-0">
-            <Zap className="w-5 h-5 animate-pulse" />
+          <div className="p-2 bg-primary/10 text-[#FACC15] rounded-xl border border-primary/20 shrink-0">
+            <Zap className="w-5 h-5 text-[#FACC15]" />
           </div>
           <div>
-            <h3 className="font-display font-black text-xs text-slate-950 uppercase tracking-wider">بروتوكول الإشعارات التلقائية (نظام موكل)</h3>
-            <p className="text-xs  text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]  font-black">بث وتوجيه التنبيهات مع تغيرات ملف المرافعة الشرعية</p>
+            <h3 className="font-display font-black text-xs text-[#FACC15] uppercase tracking-wider" style={{ textShadow: 'none' }}>بروتوكول الإشعارات التلقائية (نظام موكل)</h3>
+            <p className="text-xs text-[#FFFFFF] font-black" style={{ textShadow: 'none' }}>بث وتوجيه التنبيهات مع تغيرات ملف المرافعة الشرعية</p>
           </div>
         </div>
 
         {/* Toggle switch for automated WhatsApp alerts */}
         <div className="bg-[#0c1a35] p-4 rounded-2xl border border-slate-800 flex justify-between items-center">
           <div className="space-y-0.5">
-            <span className="text-xs text-slate-950 font-black block">إرسال تلقائي للموكل</span>
-            <span className="text-xs  text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]  font-bold block">إرسال رسائل واتساب عبر Twilio فوراً</span>
+            <span className="text-xs text-[#FFFFFF] font-black block" style={{ textShadow: 'none' }}>إرسال تلقائي للموكل</span>
+            <span className="text-xs text-[#FACC15] font-black block" style={{ textShadow: 'none' }}>إرسال رسائل واتساب عبر Twilio فوراً</span>
           </div>
 
-                  <button
-                    type="button"
-                    onClick={() => {
-                      const currentVal = (selectedCase as any).whatsappNotificationsEnabled !== false;
-                      const updatedCaseField = {
-                        ...selectedCase,
-                        whatsappNotificationsEnabled: !currentVal
-                      };
-                      onUpdateState('cases', updatedCaseField);
-                      onSelectCase(updatedCaseField);
-                    }}
-                    className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
-                      (selectedCase as any).whatsappNotificationsEnabled !== false ? 'bg-emerald-500' : 'bg-slate-700'
-                    }`}
-                  >
-                    <span
-                      className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-[#050e21] shadow ring-0 transition duration-200 ease-in-out ${
-                        (selectedCase as any).whatsappNotificationsEnabled !== false ? '-translate-x-5' : 'translate-x-0'
-                      }`}
-                    />
-                  </button>
-                </div>
+          <button
+            type="button"
+            onClick={() => {
+              const currentVal = (selectedCase as any).whatsappNotificationsEnabled !== false;
+              const updatedCaseField = {
+                ...selectedCase,
+                whatsappNotificationsEnabled: !currentVal
+              };
+              onUpdateState('cases', updatedCaseField);
+              onSelectCase(updatedCaseField);
+            }}
+            className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+              (selectedCase as any).whatsappNotificationsEnabled !== false ? 'bg-emerald-500' : 'bg-slate-700'
+            }`}
+          >
+            <span
+              className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-[#050e21] shadow ring-0 transition duration-200 ease-in-out ${
+                (selectedCase as any).whatsappNotificationsEnabled !== false ? '-translate-x-5' : 'translate-x-0'
+              }`}
+            />
+          </button>
+        </div>
 
-                {/* Case status transition trigger buttons */}
-                <div className="space-y-3">
-                  <span className="text-xs  text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]  uppercase tracking-widest font-black block">تحديث حالة الدعوى الفوري وتحفيز البث:</span>
-                  
-                  <div className="grid grid-cols-1 gap-2">
-                    {/* Active Status Button */}
-                    <button
-                      type="button"
-                      onClick={() => handleStatusTransition(selectedCase, 'active')}
-                      className={`w-full py-2.5 px-4 rounded-xl text-[10.5px] font-black transition-all flex items-center justify-between border cursor-pointer ${
-                        selectedCase.status === 'active'
-                          ? 'bg-blue-500 text-blue-600 border-blue-500 font-black'
-                          : 'bg-sky-100  text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]  border-slate-800'
-                      } `}
-                    >
-                      <span className="flex items-center gap-2">
-                        <span className={`w-1.5 h-1.5 rounded-full ${selectedCase.status === 'active' ? 'bg-blue-400 animate-ping' : 'bg-blue-600'}`} />
-                        <span>نشطة وقائمة (Active File)</span>
-                      </span>
-                      {selectedCase.status === 'active' && <Check className="w-3.5 h-3.5" />}
-                    </button>
+        {/* Case status transition trigger buttons */}
+        <div className="space-y-3">
+          <span className="text-xs text-[#FFFFFF] uppercase tracking-widest font-black block" style={{ textShadow: 'none' }}>تحديث حالة الدعوى الفوري وتحفيز البث:</span>
+          
+          <div className="grid grid-cols-1 gap-2">
+            {/* Active Status Button */}
+            <button
+              type="button"
+              onClick={() => handleStatusTransition(selectedCase, 'active')}
+              className={`w-full py-2.5 px-4 rounded-xl text-[10.5px] font-black flex items-center justify-between border-2 cursor-pointer ${
+                selectedCase.status === 'active'
+                  ? 'bg-blue-600/30 text-[#FACC15] border-blue-500'
+                  : 'bg-[#0c1a35] text-[#FFFFFF] border-slate-700'
+              } `}
+              style={{ textShadow: 'none' }}
+            >
+              <span className="flex items-center gap-2">
+                <span className={`w-1.5 h-1.5 rounded-full ${selectedCase.status === 'active' ? 'bg-blue-400 animate-ping' : 'bg-blue-600'}`} />
+                <span>نشطة وقائمة (Active File)</span>
+              </span>
+              {selectedCase.status === 'active' && <Check className="w-3.5 h-3.5" />}
+            </button>
 
-                    {/* Judgment Issued Button */}
-                    <button
-                      type="button"
-                      onClick={() => handleStatusTransition(selectedCase, 'judgment_issued')}
-                      className={`w-full py-2.5 px-4 rounded-xl text-[10.5px] font-black transition-all flex items-center justify-between border cursor-pointer shadow-sm ${
-                        selectedCase.status === 'judgment_issued'
-                          ? 'bg-primary text-white border-primary shadow-lg ring-2 ring-primary/20'
-                          : 'bg-[#050e21]  text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]  border-slate-800'
-                      } `}
-                    >
-                      <span className="flex items-center gap-2">
-                        <span className={`w-1.5 h-1.5 rounded-full ${selectedCase.status === 'judgment_issued' ? 'bg-[#050e21] animate-pulse' : 'bg-primary'}`} />
-                        <span>📜 حكم قضائي صادر (Notify client)</span>
-                      </span>
-                      {selectedCase.status === 'judgment_issued' && <Check className="w-3.5 h-3.5" />}
-                    </button>
+            {/* Judgment Issued Button */}
+            <button
+              type="button"
+              onClick={() => handleStatusTransition(selectedCase, 'judgment_issued')}
+              className={`w-full py-2.5 px-4 rounded-xl text-[10.5px] font-black flex items-center justify-between border-2 cursor-pointer shadow-sm ${
+                selectedCase.status === 'judgment_issued'
+                  ? 'bg-amber-500/30 text-[#FACC15] border-amber-500'
+                  : 'bg-[#0c1a35] text-[#FFFFFF] border-slate-700'
+              } `}
+              style={{ textShadow: 'none' }}
+            >
+              <span className="flex items-center gap-2">
+                <span className={`w-1.5 h-1.5 rounded-full ${selectedCase.status === 'judgment_issued' ? 'bg-[#FACC15]' : 'bg-[#FFFFFF]'}`} />
+                <span>📜 حكم قضائي صادر (Notify client)</span>
+              </span>
+              {selectedCase.status === 'judgment_issued' && <Check className="w-3.5 h-3.5" />}
+            </button>
 
-                    {/* Closed Status Button */}
-                    <button
-                      type="button"
-                      onClick={() => handleStatusTransition(selectedCase, 'closed')}
-                      className={`w-full py-2.5 px-4 rounded-xl text-[10.5px] font-black transition-all flex items-center justify-between border cursor-pointer shadow-sm ${
-                        selectedCase.status === 'closed'
-                          ? 'bg-rose-700 text-white border-rose-800 shadow-lg ring-2 ring-rose-500/20'
-                          : 'bg-[#050e21]  text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]  border-slate-800'
-                      } `}
-                    >
-                      <span className="flex items-center gap-2">
-                        <span className={`w-1.5 h-1.5 rounded-full ${selectedCase.status === 'closed' ? 'bg-[#050e21] animate-pulse' : 'bg-rose-500'}`} />
-                        <span>🔒 إغلاق وتصفية الملف (Notify client)</span>
-                      </span>
-                      {selectedCase.status === 'closed' && <Check className="w-3.5 h-3.5" />}
-                    </button>
+            {/* Closed Status Button */}
+            <button
+              type="button"
+              onClick={() => handleStatusTransition(selectedCase, 'closed')}
+              className={`w-full py-2.5 px-4 rounded-xl text-[10.5px] font-black flex items-center justify-between border-2 cursor-pointer shadow-sm ${
+                selectedCase.status === 'closed'
+                  ? 'bg-rose-950/40 text-[#FACC15] border-rose-500'
+                  : 'bg-[#0c1a35] text-[#FFFFFF] border-slate-700'
+              } `}
+              style={{ textShadow: 'none' }}
+            >
+              <span className="flex items-center gap-2">
+                <span className={`w-1.5 h-1.5 rounded-full ${selectedCase.status === 'closed' ? 'bg-rose-400' : 'bg-[#FFFFFF]'}`} />
+                <span>🔒 إغلاق وتصفية الملف (Notify client)</span>
+              </span>
+              {selectedCase.status === 'closed' && <Check className="w-3.5 h-3.5" />}
+            </button>
+          </div>
+        </div>
+
+        {/* Real-time preview indicator */}
+        {((selectedCase as any).whatsappNotificationsEnabled !== false) && (
+          <div className="bg-[#0c1a35] p-4 rounded-2xl border-2 border-slate-700 space-y-3 shadow-inner">
+            <span className="text-[11px] text-[#FACC15] font-black inline-block" style={{ textShadow: 'none' }}>💬 معاينة رسالة العميل الفورية:</span>
+            <p className="text-xs text-[#FFFFFF] leading-relaxed font-black bg-[#050e21] p-3 rounded-xl border-2 border-slate-700 relative" style={{ textShadow: 'none' }}>
+              {selectedCase.status === 'closed' ? (
+                `إشعار عدلي تلقائي من مكتب المستشارين والمحاميين والمستشاريين القانونيين (العدالة) ⚖️: عميلنا المحترم ${selectedCase.clientName}، نحيط سعادتكم علماً بصدور قرار إغلاق ملف الدعوى رقم ${selectedCase.caseNumber} وتصفية الحسابات بنجاح.`
+              ) : selectedCase.status === 'judgment_issued' ? (
+                `إشعار عدلي عاجل من مكتب المستشارين والمحاميين والمستشاريين القانونيين (العدالة) ⚖️: عميلنا المحترم ${selectedCase.clientName}، نود إعلامكم بصدور حكم قضائي رسمي لصالح دعواكم المقيدة برقم ${selectedCase.caseNumber}.`
+              ) : (
+                `(سيتم تلقائياً تفعيل وإرسال التنبيه الفوري بهاتف ${clients.find(cl => cl.id === selectedCase.clientId || cl.name === selectedCase.clientName)?.phone || '+966...'} بمجرد تعديل الحالة إلى 'مغلقة' أو 'حكم قضائي صادر')`
+              )}
+            </p>
+          </div>
+        )}
+
+        {/* Delivery Logs Stream */}
+        <div className="space-y-3">
+          <span className="text-xs text-[#FFFFFF] font-black uppercase tracking-wider block" style={{ textShadow: 'none' }}>سجل البث لقنوات الواتساب (TWILIO DELIVERY HISTORY)</span>
+          
+          <div className="space-y-2.5 max-h-[140px] overflow-y-auto pr-1">
+            {whatsAppLogs.filter(log => log.caseNumber === selectedCase.caseNumber).length === 0 ? (
+              <p className="text-xs text-[#FFFFFF] text-center py-4 font-black border-2 border-dashed border-slate-700 rounded-xl bg-[#0c1a35]" style={{ textShadow: 'none' }}>لا توجد سجلات تسليم سابقة لهذه الدعوى.</p>
+            ) : (
+              whatsAppLogs.filter(log => log.caseNumber === selectedCase.caseNumber).map((log) => (
+                <div key={log.id} className="bg-[#050e21] p-3 rounded-xl border-2 border-slate-700 space-y-1.5 text-[9.5px] shadow-sm">
+                  <div className="flex justify-between items-center">
+                    <span className={`font-black ${log.status === 'success' ? 'text-emerald-400' : 'text-rose-400'}`}>
+                      {log.type}
+                    </span>
+                    <span className="text-[#FFFFFF] font-mono font-black" style={{ textShadow: 'none' }}>{log.timestamp}</span>
+                  </div>
+                  <p className="text-[#FFFFFF] font-black" style={{ textShadow: 'none' }}>{log.message}</p>
+                  <div className="text-[10px] text-[#FFFFFF] flex justify-between font-mono font-black border-t border-slate-800 pt-1.5" style={{ textShadow: 'none' }}>
+                    <span>الهاتف: {log.phone}</span>
+                    <span className="text-[#FACC15]">الناقل: Twilio Live Gateway</span>
                   </div>
                 </div>
+              ))
+            )}
+          </div>
+        </div>
+      </div>
 
-                {/* Real-time preview indicator */}
-                {((selectedCase as any).whatsappNotificationsEnabled !== false) && (
-                  <div className="bg-[#0c1a35] p-4 rounded-2xl border border-slate-800 space-y-3 shadow-inner">
-                    <span className="text-[10px] bg-primary/10 text-primary px-2 py-1 rounded-md border border-primary/20 font-black inline-block">💬 معاينة رسالة العميل الفورية:</span>
-                    <p className="text-xs  text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]  leading-relaxed font-bold bg-[#050e21] p-3 rounded-xl border border-slate-800 relative">
-                      {selectedCase.status === 'closed' ? (
-                        `إشعار عدلي تلقائي من مكتب المستشارين والمحاميين والمستشاريين القانونيين (العدالة) ⚖️: عميلنا المحترم ${selectedCase.clientName}، نحيط سعادتكم علماً بصدور قرار إغلاق ملف الدعوى رقم ${selectedCase.caseNumber} وتصفية الحسابات بنجاح.`
-                      ) : selectedCase.status === 'judgment_issued' ? (
-                        `إشعار عدلي عاجل من مكتب المستشارين والمحاميين والمستشاريين القانونيين (العدالة) ⚖️: عميلنا المحترم ${selectedCase.clientName}، نود إعلامكم بصدور حكم قضائي رسمي لصالح دعواكم المقيدة برقم ${selectedCase.caseNumber}.`
-                      ) : (
-                        `(سيتم تلقائياً تفعيل وإرسال التنبيه الفوري بهاتف ${clients.find(cl => cl.id === selectedCase.clientId || cl.name === selectedCase.clientName)?.phone || '+966...'} بمجرد تعديل الحالة إلى 'مغلقة' أو 'حكم قضائي صادر')`
-                      )}
-                    </p>
-                  </div>
-                )}
-
-                {/* Delivery Logs Stream */}
-                <div className="space-y-3">
-                  <span className="text-xs  text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]  font-bold uppercase tracking-wider block">سجل البث لقنوات الواتساب (Twilio Delivery History)</span>
-                  
-                  <div className="space-y-2.5 max-h-[140px] overflow-y-auto pr-1">
-                    {whatsAppLogs.filter(log => log.caseNumber === selectedCase.caseNumber).length === 0 ? (
-                      <p className="text-xs  text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]  text-center py-4 font-bold border border-dashed border-slate-800 rounded-xl bg-[#0c1a35]">لا توجد سجلات تسليم سابقة لهذه الدعوى.</p>
-                    ) : (
-                      whatsAppLogs.filter(log => log.caseNumber === selectedCase.caseNumber).map((log) => (
-                        <div key={log.id} className="bg-[#050e21] p-3 rounded-xl border border-slate-800 space-y-1.5 text-[9.5px] shadow-sm">
-                          <div className="flex justify-between items-center">
-                            <span className={`font-black ${log.status === 'success' ? 'text-emerald-800' : 'text-rose-800'}`}>
-                              {log.type}
-                            </span>
-                            <span className=" text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]  font-mono font-bold">{log.timestamp}</span>
-                          </div>
-                          <p className=" text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]  font-bold">{log.message}</p>
-                          <div className="text-[8.5px]  text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]  flex justify-between font-mono font-black border-t border-slate-800 pt-1.5">
-                            <span>الهاتف: {log.phone}</span>
-                            <span>الناقل: Twilio Live Gateway</span>
-                          </div>
-                        </div>
-                      ))
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              <div className="card-professional border-2 bg-[#050e21] border-slate-800 p-8 space-y-8 shadow-[0_20px_40px_rgba(0,0,0,0.05)]">
-                <div className="flex items-center gap-3 border-b border-slate-800  pb-5">
-                  <div className="p-2.5 bg-emerald-500 text-emerald-500 rounded-xl">
+              <div className="card-professional border-2 bg-[#050e21] border-slate-700 p-8 space-y-8 shadow-[0_20px_40px_rgba(0,0,0,0.05)]">
+                <div className="flex items-center gap-3 border-b border-slate-800 pb-5">
+                  <div className="p-2.5 bg-emerald-500/10 text-emerald-400 rounded-xl">
                     <Clock className="w-5 h-5" />
                   </div>
-                  <h3 className="font-display font-black text-sm  text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]   uppercase tracking-widest">توقيتات العدالة والآجال</h3>
+                  <h3 className="font-display font-black text-sm text-[#FACC15] uppercase tracking-widest" style={{ textShadow: 'none' }}>توقيتات العدالة والآجال</h3>
                 </div>
                 
                 <div className="space-y-6">
-                  <div className="flex justify-between items-end group cursor-help">
-                    <span className="text-xs  text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]   font-black uppercase tracking-widest">الجلسة القادمة</span>
+                  <div className="flex justify-between items-end cursor-help">
+                    <span className="text-xs text-[#FFFFFF] font-black uppercase tracking-widest" style={{ textShadow: 'none' }}>الجلسة القادمة</span>
                     <div className="flex flex-col items-end">
-                      <span className="font-black  text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]   text-base font-mono tracking-tighter">{selectedCase.nextSessionDate}</span>
-                      <span className="text-xs text-primary font-black uppercase">{selectedCase.nextSessionTime}</span>
+                      <span className="font-black text-[#FFFFFF] text-base font-mono tracking-tighter" style={{ textShadow: 'none' }}>{selectedCase.nextSessionDate}</span>
+                      <span className="text-xs text-[#FACC15] font-black uppercase" style={{ textShadow: 'none' }}>{selectedCase.nextSessionTime}</span>
                     </div>
                   </div>
 
                   {/* Interactive Courtroom Stopwatch Timer */}
-                  <div className="mt-4 p-4 rounded-2xl bg-[#0c1a35] border border-slate-200 text-right font-sans space-y-3" dir="rtl">
-                    <div className="flex justify-between items-center animate-fade-in font-sans">
-                      <span className="text-[10px] font-black  text-yellow-200 drop-shadow-[0_0_8px_rgba(251,191,36,0.8)] ">عداد جلسات المحكمة الفعلي ⏱️</span>
+                  <div className="mt-4 p-4 rounded-2xl bg-[#0c1a35] border-2 border-slate-700 text-right font-sans space-y-3" dir="rtl">
+                    <div className="flex justify-between items-center font-sans">
+                      <span className="text-[10px] font-black text-[#FACC15]" style={{ textShadow: 'none' }}>عداد جلسات المحكمة الفعلي ⏱️</span>
                       {casesModuleTimerLogged && (
-                        <span className="bg-emerald-50 text-emerald-800 text-[9px] font-black px-2 py-0.5 rounded-full border border-emerald-200">
+                        <span className="bg-emerald-950/40 text-emerald-400 text-[11px] font-black px-2 py-0.5 rounded-full border border-emerald-500">
                           ✓ تم الحفظ بالملف الكلي
                         </span>
                       )}
                     </div>
 
-                    <div className="flex flex-col sm:flex-row items-center justify-between gap-3 bg-[#050e21] px-3 py-2.5 rounded-xl border border-slate-200 shadow-sm">
-                      <div className="text-xs font-mono font-black text-emerald-500 tracking-widest bg-slate-900 px-3 py-1.5 rounded-lg border border-slate-850 min-w-[85px] text-center direction-ltr">
+                    <div className="flex flex-col sm:flex-row items-center justify-between gap-3 bg-[#050e21] px-3 py-2.5 rounded-xl border-2 border-slate-700 shadow-sm">
+                      <div className="text-xs font-mono font-black text-emerald-400 tracking-widest bg-slate-900 px-3 py-1.5 rounded-lg border border-slate-850 min-w-[85px] text-center direction-ltr">
                         {(() => {
                           const hrs = Math.floor(casesModuleTimerSeconds / 3600);
                           const mins = Math.floor((casesModuleTimerSeconds % 3600) / 60);
@@ -2665,11 +2667,12 @@ export default React.memo(function CasesModule({
                         <button
                           type="button"
                           onClick={() => setCasesModuleTimerIsRunning(!casesModuleTimerIsRunning)}
-                          className={`px-2 py-1 rounded-lg text-[9px] font-black transition-all border cursor-pointer ${
+                          className={`px-2 py-1 rounded-lg text-[11px] font-black border cursor-pointer ${
                             casesModuleTimerIsRunning 
-                              ? "bg-amber-50 text-amber-705 border-amber-200" 
-                              : "bg-indigo-50 text-indigo-705 border-indigo-200"
+                              ? "bg-amber-500 text-slate-950 border-amber-500 font-extrabold" 
+                              : "bg-[#0c1a35] text-[#FFFFFF] border-slate-700 font-semibold"
                           }`}
+                          style={{ textShadow: 'none' }}
                         >
                           {casesModuleTimerIsRunning ? "إيقاف مؤقت" : "بدء الجلسة"}
                         </button>
@@ -2681,7 +2684,8 @@ export default React.memo(function CasesModule({
                             setCasesModuleTimerSeconds(0);
                             setCasesModuleTimerLogged(false);
                           }}
-                          className="px-2 py-1 rounded-lg bg-[#0c1a35]  text-yellow-200 drop-shadow-[0_0_8px_rgba(251,191,36,0.8)]  border border-slate-200 transition-all font-black text-[9px] cursor-pointer"
+                          className="px-2 py-1 rounded-lg bg-[#0c1a35] text-[#FFFFFF] border border-slate-700 font-black text-[11px] cursor-pointer"
+                          style={{ textShadow: 'none' }}
                         >
                           تصفير
                         </button>
@@ -2716,11 +2720,12 @@ export default React.memo(function CasesModule({
                             setCasesModuleTimerLogged(true);
                             setCasesModuleTimerIsRunning(false);
                           }}
-                          className={`px-2 py-1 rounded-lg text-[9px] font-black transition-all border ${
+                          className={`px-3 py-1.5 rounded-lg text-xs font-black border cursor-pointer ${
                             casesModuleTimerSeconds === 0
-                              ? "bg-[#0c1a35] text-slate-350 border-slate-100 cursor-not-allowed"
-                              : "bg-emerald-50 text-emerald-805 border-emerald-200 cursor-pointer"
+                              ? "bg-slate-850 text-slate-500 border-slate-800 cursor-not-allowed"
+                              : "bg-emerald-500/10 text-emerald-400 border-emerald-500/30 font-bold"
                           }`}
+                          style={{ textShadow: 'none' }}
                         >
                           توثيق بالدعوى ⚖️
                         </button>
@@ -2728,23 +2733,22 @@ export default React.memo(function CasesModule({
                     </div>
                   </div>
 
-                  <div className="flex justify-between items-center group">
-                    <span className="text-xs  text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]   font-black uppercase tracking-widest">الخطوة الإجرائية</span>
-                    <span className="text-xs text-white font-black bg-indigo-500 px-4 py-1.5 rounded-full shadow-lg shadow-indigo-500/20">إيداع اللائحة</span>
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs text-[#FFFFFF] font-black uppercase tracking-widest" style={{ textShadow: 'none' }}>الخطوة الإجرائية</span>
+                    <span className="text-xs text-white font-black bg-indigo-500 px-4 py-1.5 rounded-full" style={{ textShadow: 'none' }}>إيداع اللائحة</span>
                   </div>
 
-                  <div className="flex justify-between items-center group">
-                    <span className="text-xs  text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]   font-black uppercase tracking-widest">معدل الإنجاز</span>
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs text-[#FFFFFF] font-black uppercase tracking-widest" style={{ textShadow: 'none' }}>معدل الإنجاز</span>
                     <div className="flex items-center gap-3">
-                       <span className="text-xs text-emerald-500 font-black font-mono">68%</span>
-                       <div className="w-20 bg-slate-100  h-1.5 rounded-full overflow-hidden">
-                         <div className="bg-emerald-500 h-full w-[68%]"></div>
+                       <span className="text-xs text-emerald-400 font-black font-mono" style={{ textShadow: 'none' }}>68%</span>
+                       <div className="w-20 bg-[#0c1a35] h-1.5 rounded-full overflow-hidden border border-slate-800">
+                         <div className="bg-emerald-450 h-full w-[68%]"></div>
                        </div>
                     </div>
                   </div>
                 </div>
               </div>
-
 
                       {/* AI CONTRACT VISUALIZER TRIGGER - Facilitating client explanation */}
                       <button
@@ -2761,7 +2765,7 @@ export default React.memo(function CasesModule({
                             window.dispatchEvent(new CustomEvent('adalah-ai-visualize-request', { detail: caseData }));
                           }, 100);
                         }}
-                        className="w-full flex items-center justify-center gap-2 py-4 px-6 bg-amber-500/10 border border-amber-500/30 text-amber-500 rounded-2xl font-black text-xs transition-all active:scale-95 group shadow-lg shadow-amber-500/5 mb-4"
+                        className="w-full flex items-center justify-center gap-2 py-4 px-6 bg-amber-500/10 border border-amber-500/30 text-amber-500 rounded-2xl font-black text-xs mb-4"
                       >
                         <Sparkles className="w-4 h-4" />
                         <span>توليد مسودة تصور بصري لعقد القضية (شرح للعملاء بـ AI) 🖼️</span>
@@ -2770,48 +2774,50 @@ export default React.memo(function CasesModule({
                       <button
                         type="button"
                         onClick={() => setIsUploadOpen(true)}
-                        className="w-full bg-primary text-white text-sm py-4 px-6 rounded-2xl font-black transition-all active:scale-95 flex items-center justify-center gap-3 shadow-lg shadow-primary/20 group relative z-10"
+                        className="w-full bg-primary text-white text-sm py-4 px-6 rounded-2xl font-black flex items-center justify-center gap-3 shadow-lg shadow-primary/20 relative z-10"
                       >
-                        <Plus className="w-4 h-4 transition-transform" />
+                        <Plus className="w-4 h-4" />
                         <span>أرشفة وثيقة ممسوحة ضوئياً</span>
                       </button>
 
                     {/* Add expenses on case form */}
-                    <div className="card-professional border-2 bg-[#050e21] border-slate-800 p-8 space-y-8 shadow-md">
-                      <div className="flex flex-col gap-1.5 border-b border-slate-800  pb-5">
-                        <h3 className="font-display font-black text-sm  text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]   uppercase tracking-widest">القيود المالية للملف</h3>
-                        <p className="text-xs  text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]   font-bold leading-relaxed">تسجيل تكاليف النشر، الإعلانات، أو اتعاب الخبراء.</p>
+                    <div className="card-professional border-2 bg-[#050e21] border-slate-700 p-8 space-y-8 shadow-md">
+                      <div className="flex flex-col gap-1.5 border-b border-slate-800 pb-5">
+                        <h3 className="font-display font-black text-sm text-[#FACC15] uppercase tracking-widest" style={{ textShadow: 'none' }}>القيود المالية للملف</h3>
+                        <p className="text-xs text-[#FFFFFF] font-black leading-relaxed" style={{ textShadow: 'none' }}>تسجيل تكاليف النشر، الإعلانات، أو اتعاب الخبراء.</p>
                       </div>
 
                       <form onSubmit={(e) => handleAddExpense(e, selectedCase)} className="space-y-6">
                         <div className="space-y-3">
-                          <label className="text-xs  text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]   font-black uppercase tracking-[0.2em] block">بيان المصروف والرسوم</label>
+                          <label className="text-xs text-[#FFFFFF] font-black uppercase tracking-[0.2em] block" style={{ textShadow: 'none' }}>بيان المصروف والرسوم</label>
                           <input 
                             type="text"
                             placeholder="مثال: رسوم نشر إعلان مادة ٣٤"
                             value={expDesc}
                             onChange={(e) => setExpDesc(e.target.value)}
-                            className="w-full bg-[#0c1a35]  border border-slate-800  rounded-2xl py-4 px-6 text-sm font-black  text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]   focus:outline-none focus:border-primary transition-all font-sans"
+                            className="w-full bg-[#0c1a35] border-2 border-slate-700 rounded-2xl py-4 px-6 text-sm font-black text-[#FFFFFF] focus:outline-none focus:border-amber-500 font-sans"
+                            style={{ textShadow: 'none' }}
                           />
                         </div>
 
                         <div className="space-y-3">
-                          <label className="text-xs  text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]   font-black uppercase tracking-[0.2em] block">المبلغ المقيد (ر.س)</label>
+                          <label className="text-xs text-[#FFFFFF] font-black uppercase tracking-[0.2em] block" style={{ textShadow: 'none' }}>المبلغ المقيد (ر.س)</label>
                           <div className="relative">
                             <input 
                               type="number"
                               placeholder="0.00"
                               value={expAmt}
                               onChange={(e) => setExpAmt(e.target.value)}
-                              className="w-full bg-[#0c1a35]  border border-slate-800  rounded-2xl py-4 pr-14 pl-6 text-xl font-black  text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]   focus:outline-none focus:border-primary transition-all font-mono text-right shadow-inner"
+                              className="w-full bg-[#0c1a35] border-2 border-slate-700 rounded-2xl py-4 pr-14 pl-6 text-xl font-black text-[#FFFFFF] focus:outline-none focus:border-amber-500 font-mono text-right shadow-inner"
+                              style={{ textShadow: 'none' }}
                             />
-                            <span className="absolute right-6 top-1/2 -translate-y-1/2 text-xs  text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]   font-black tracking-widest">SAR</span>
+                            <span className="absolute right-6 top-1/2 -translate-y-1/2 text-xs text-[#FACC15] font-black tracking-widest" style={{ textShadow: 'none' }}>SAR</span>
                           </div>
                         </div>
 
                         <button 
                           type="submit"
-                          className="w-full bg-indigo-600 text-white font-black text-xs py-5 rounded-2xl transition-all shadow-xl shadow-indigo-500/20 active:scale-95 border border-indigo-500"
+                          className="w-full bg-indigo-650 text-white font-black text-xs py-5 rounded-2xl border-2 border-indigo-500 cursor-pointer"
                         >
                           اعتماد القيد المالي للمصروفات +
                         </button>
@@ -2872,7 +2878,7 @@ export default React.memo(function CasesModule({
                   </div>
                   <div className="flex items-center justify-between">
                      <p className="text-xs text-emerald-600 font-black uppercase tracking-widest flex items-center gap-2">Legal Outcome: Positive</p>
-                     <span className="text-xs text-slate-600 font-mono font-black">45.8%</span>
+                     <span className="text-xs text-white font-black font-bold font-mono font-black">45.8%</span>
                   </div>
                 </div>
              </motion.div>
@@ -2881,8 +2887,8 @@ export default React.memo(function CasesModule({
                 <div className="absolute -top-12 -right-12 w-48 h-48 bg-amber-500/10 blur-3xl rounded-full transition-all duration-1000"></div>
                 <div className="relative flex flex-col gap-8">
                   <div className="flex items-center justify-between">
-                     <div className="w-16 h-16 bg-amber-100 rounded-[1.5rem] flex items-center justify-center text-amber-600 border border-amber-200 shadow-inner transition-transform">
-                       <div className="flex items-center justify-center font-black text-amber-700 text-2xl tracking-tighter w-8 h-8">ر.س</div>
+                     <div className="w-16 h-16 bg-amber-100 rounded-[1.5rem] flex items-center justify-center text-amber-400 font-black border border-amber-200 shadow-inner transition-transform">
+                       <div className="flex items-center justify-center font-black text-amber-400 font-black text-2xl tracking-tighter w-8 h-8">ر.س</div>
                      </div>
                      <div className="text-right">
                         <h4 className="text-xs font-black text-slate-900 uppercase tracking-[0.2em] mb-2 px-1 border-r-2 border-amber-600">حصيلة التنفيذ</h4>
@@ -2893,8 +2899,8 @@ export default React.memo(function CasesModule({
                     <motion.div initial={{ width: 0 }} animate={{ width: '85%' }} transition={{ duration: 1.5, ease: "easeOut", delay: 0.7 }} className="bg-amber-600 h-full shadow-[0_0_20px_rgba(217,119,6,0.3)]" />
                   </div>
                   <div className="flex items-center justify-between">
-                     <p className="text-xs text-amber-600 font-black uppercase tracking-widest flex items-center gap-2">Recovery: Phase 5 Optimized</p>
-                     <span className="text-xs text-slate-600 font-mono font-black">85.0%</span>
+                     <p className="text-xs text-amber-400 font-black font-black uppercase tracking-widest flex items-center gap-2">Recovery: Phase 5 Optimized</p>
+                     <span className="text-xs text-white font-black font-bold font-mono font-black">85.0%</span>
                   </div>
                 </div>
              </motion.div>
@@ -2989,7 +2995,7 @@ export default React.memo(function CasesModule({
 
           {/* Filtering Tags for classifications */}
           <div className="flex flex-wrap items-center gap-3 mb-6 w-full text-right animate-in fade-in slide-in-from-top-4 duration-500" dir="rtl">
-            <span className="text-[11px] font-black text-slate-500 ml-2">تصفية القضايا حسب النوع:</span>
+            <span className="text-[11px] font-black text-slate-700 ml-2">تصفية القضايا حسب النوع:</span>
             {[
               { key: 'civil', label: 'شرعية' },
               { key: 'commercial', label: 'تجارية' },
@@ -3005,7 +3011,7 @@ export default React.memo(function CasesModule({
                   className={`px-5 py-2.5 rounded-full text-xs font-black transition-all cursor-pointer shadow-sm border ${
                     isActive 
                       ? 'bg-amber-500 border-amber-500 text-slate-900 shadow-amber-500/20' 
-                      : 'bg-[#050e21] border-slate-700 text-slate-300 hover:border-slate-500'
+                      : 'bg-[#050e21] border-slate-700 text-white font-bold hover:border-slate-500'
                   }`}
                 >
                   {item.label}
@@ -3016,8 +3022,8 @@ export default React.memo(function CasesModule({
 
           <div className="flex flex-col md:flex-row items-center justify-between gap-6 mb-8 bg-[#050e21] p-6 rounded-[2rem] border border-slate-800/85">
             <div className="text-right">
-              <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-1">نتائج الفرز والبحث</h3>
-              <p className="text-xs text-slate-500">تم العثور على {filteredCases.length} قضية نشطة ومؤرشفة.</p>
+              <h3 className="text-xs font-black text-white font-black font-bold uppercase tracking-widest mb-1">نتائج الفرز والبحث</h3>
+              <p className="text-xs text-slate-700">تم العثور على {filteredCases.length} قضية نشطة ومؤرشفة.</p>
             </div>
             
             <div className="flex items-center gap-3">
@@ -3061,7 +3067,7 @@ export default React.memo(function CasesModule({
           {filteredCases.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-24 bg-[#050e21] border-2 border-dashed border-slate-800 rounded-[2.5rem] space-y-4">
               <span className="text-5xl opacity-40">📂</span>
-              <p className="text-slate-400 font-black text-xs uppercase tracking-widest">لا توجد ملفات قضايا تتطابق مع المرشحات الحالية</p>
+              <p className="text-white font-black font-bold font-black text-xs uppercase tracking-widest">لا توجد ملفات قضايا تتطابق مع المرشحات الحالية</p>
             </div>
           ) : viewMode === 'table' ? (
             <div className={`overflow-hidden shadow-2xl transition-all duration-300 border rounded-[2.5rem] w-full ${
@@ -3070,13 +3076,13 @@ export default React.memo(function CasesModule({
                 : 'bg-[#050e21] border-slate-700/50 shadow-black/80'
             }`}>
               <div className={`flex items-center text-right border-b ${isHighContrast ? 'bg-slate-200 border-slate-900' : 'bg-slate-900/80 border-slate-800'}`} dir="rtl">
-                <div className={`flex-[1] px-4 py-4 text-[11px] font-black uppercase tracking-[0.2em] ${isHighContrast ? 'text-slate-900' : 'text-slate-200'} drop-shadow-sm`}>رقم الدعوى</div>
-                <div className={`flex-[2] px-4 py-4 text-[11px] font-black uppercase tracking-[0.2em] ${isHighContrast ? 'text-slate-900' : 'text-slate-200'} drop-shadow-sm`}>اسم الدعوى</div>
-                <div className={`flex-[1.5] px-4 py-4 text-[11px] font-black uppercase tracking-[0.2em] ${isHighContrast ? 'text-slate-900' : 'text-slate-200'} drop-shadow-sm`}>العميل</div>
-                <div className={`flex-[1] px-4 py-4 text-[11px] font-black uppercase tracking-[0.2em] ${isHighContrast ? 'text-slate-900' : 'text-slate-200'} drop-shadow-sm`}>التصنيف</div>
-                <div className={`flex-[1] px-4 py-4 text-[11px] font-black uppercase tracking-[0.2em] ${isHighContrast ? 'text-slate-900' : 'text-slate-200'} drop-shadow-sm`}>الحالة</div>
-                <div className={`flex-[1] px-4 py-4 text-[11px] font-black uppercase tracking-[0.2em] ${isHighContrast ? 'text-slate-900' : 'text-slate-200'} drop-shadow-sm`}>تحليل AI</div>
-                <div className={`flex-[1] px-4 py-4 text-[11px] font-black uppercase tracking-[0.2em] ${isHighContrast ? 'text-slate-900' : 'text-slate-200'} drop-shadow-sm`}>الجلسة القادمة</div>
+                <div className={`flex-[1] px-4 py-4 text-[11px] font-black uppercase tracking-[0.2em] ${isHighContrast ? 'text-slate-900' : 'text-white font-bold'} drop-shadow-sm`}>رقم الدعوى</div>
+                <div className={`flex-[2] px-4 py-4 text-[11px] font-black uppercase tracking-[0.2em] ${isHighContrast ? 'text-slate-900' : 'text-white font-bold'} drop-shadow-sm`}>اسم الدعوى</div>
+                <div className={`flex-[1.5] px-4 py-4 text-[11px] font-black uppercase tracking-[0.2em] ${isHighContrast ? 'text-slate-900' : 'text-white font-bold'} drop-shadow-sm`}>العميل</div>
+                <div className={`flex-[1] px-4 py-4 text-[11px] font-black uppercase tracking-[0.2em] ${isHighContrast ? 'text-slate-900' : 'text-white font-bold'} drop-shadow-sm`}>التصنيف</div>
+                <div className={`flex-[1] px-4 py-4 text-[11px] font-black uppercase tracking-[0.2em] ${isHighContrast ? 'text-slate-900' : 'text-white font-bold'} drop-shadow-sm`}>الحالة</div>
+                <div className={`flex-[1] px-4 py-4 text-[11px] font-black uppercase tracking-[0.2em] ${isHighContrast ? 'text-slate-900' : 'text-white font-bold'} drop-shadow-sm`}>تحليل AI</div>
+                <div className={`flex-[1] px-4 py-4 text-[11px] font-black uppercase tracking-[0.2em] ${isHighContrast ? 'text-slate-900' : 'text-white font-bold'} drop-shadow-sm`}>الجلسة القادمة</div>
                 <div className="flex-[0.5] px-4 py-4"></div>
               </div>
               <List
@@ -3107,7 +3113,7 @@ export default React.memo(function CasesModule({
                           <span className="truncate">{c.caseName}</span>
                           {isCaseOverdue(c) && (
                             <span className="shrink-0 w-2 h-2 rounded-full bg-rose-500 animate-pulse relative group" title="تجاوزت المهلة النظامية">
-                              <span className="absolute -top-8 right-0 bg-rose-900 text-white text-[8px] px-2 py-1 rounded opacity-0 transition-opacity whitespace-nowrap z-[60]">تجاوزت المهلة النظامية</span>
+                              <span className="absolute -top-8 right-0 bg-rose-900 text-white text-[10px] px-2 py-1 rounded opacity-0 transition-opacity whitespace-nowrap z-[60]">تجاوزت المهلة النظامية</span>
                             </span>
                           )}
                         </div>
@@ -3115,17 +3121,17 @@ export default React.memo(function CasesModule({
                       </div>
                       <div className={`flex-[1.5] px-4 py-3 text-[11px] font-black tracking-tight truncate ${isHighContrast ? 'text-slate-800' : 'text-indigo-300'} transition-colors`}>{c.clientName}</div>
                       <div className="flex-[1] px-4 py-3">
-                        <span className={`text-[9px] font-black px-2.5 py-1.5 rounded-xl border-2 transition-all inline-flex items-center gap-1 shrink-0 ${
+                        <span className={`text-[11px] font-black px-2.5 py-1.5 rounded-xl border-2 transition-all inline-flex items-center gap-1 shrink-0 ${
                           isHighContrast 
                             ? 'bg-slate-100 border-slate-900 text-slate-950 shadow-sm' 
-                            : 'bg-slate-900 border-slate-700 text-slate-300'
+                            : 'bg-slate-900 border-slate-700 text-white font-bold'
                         }`}>
                           <CategoryIcon className="w-3 h-3" />
                           <span className="truncate">{arabicCategoryName}</span>
                         </span>
                       </div>
                       <div className="flex-[1] px-4 py-3">
-                        <span className={`text-[9px] font-black px-2 py-1.5 rounded-xl border-2 transition-all shrink-0 ${
+                        <span className={`text-[11px] font-black px-2 py-1.5 rounded-xl border-2 transition-all shrink-0 ${
                           isHighContrast 
                             ? 'bg-slate-950 text-white border-slate-950 shadow-md' 
                             : `${statusColorClass.replace('bg-opacity-10', 'bg-opacity-30')} text-white border-white/10`
@@ -3136,7 +3142,7 @@ export default React.memo(function CasesModule({
                       <div className="flex-[1] px-4 py-3">
                         <div className="flex flex-wrap gap-1 max-w-full overflow-hidden">
                           {cTags.slice(0, 2).map((tag, tIdx) => (
-                            <span key={tIdx} className={`text-[8px] truncate font-black px-1.5 py-0.5 border-2 rounded-md transition-all ${
+                            <span key={tIdx} className={`text-[10px] truncate font-black px-1.5 py-0.5 border-2 rounded-md transition-all ${
                               isHighContrast 
                                 ? 'bg-slate-200 border-slate-900 text-slate-950' 
                                 : 'bg-amber-500/10 border-amber-500/30 text-amber-300'
@@ -3148,7 +3154,7 @@ export default React.memo(function CasesModule({
                       </div>
                       <div className={`flex-[1] px-4 py-3 text-[10px] font-black font-mono tracking-widest truncate ${isHighContrast ? 'text-emerald-900' : 'text-emerald-400'} transition-colors`}>{c.nextSessionDate || '---'}</div>
                       <div className="flex-[0.5] px-4 py-3 text-right">
-                        <ChevronLeft className={`w-4 h-4 transition-all rotate-180 inline-block drop-shadow-sm ${isHighContrast ? 'text-slate-400' : 'text-slate-500'}`} />
+                        <ChevronLeft className={`w-4 h-4 transition-all rotate-180 inline-block drop-shadow-sm ${isHighContrast ? 'text-white font-black font-bold' : 'text-slate-700'}`} />
                       </div>
                     </div>
                   );
@@ -3273,7 +3279,7 @@ export default React.memo(function CasesModule({
                             </div>
                             <div className="flex items-center gap-1.5">
                               <span className={`text-sm font-black font-mono ${isHighContrast ? 'text-slate-950' : 'text-white'}`}>{calculateDaysLeft(c.judgment_date)}</span>
-                              <span className={`text-[10px] font-bold ${isHighContrast ? 'text-slate-700' : 'text-slate-400'}`}>أيـام متبقية</span>
+                              <span className={`text-[10px] font-bold ${isHighContrast ? 'text-slate-700' : 'text-white font-black font-bold'}`}>أيـام متبقية</span>
                             </div>
                           </div>
                         )}
@@ -3284,8 +3290,8 @@ export default React.memo(function CasesModule({
                            {/* Row 1: Client/Plaintiff */}
                            <div className="relative z-10 flex justify-between items-center px-1 py-0.5">
                               <div className="flex items-center gap-2">
-                                 <Users className={`w-3.5 h-3.5 opacity-80 ${isHighContrast ? 'text-slate-600' : ''}`} />
-                                 <span className={`text-xs font-bold tracking-wide font-sans ${isHighContrast ? 'text-slate-600' : ''}`}>العميل / المدعي</span>
+                                 <Users className={`w-3.5 h-3.5 opacity-80 ${isHighContrast ? 'text-white font-black font-bold' : ''}`} />
+                                 <span className={`text-xs font-bold tracking-wide font-sans ${isHighContrast ? 'text-white font-black font-bold' : ''}`}>العميل / المدعي</span>
                               </div>
                               <span className={`client-name-custom ${isHighContrast ? '!text-slate-900' : ''}`}>{c.clientName}</span>
                            </div>
@@ -3293,8 +3299,8 @@ export default React.memo(function CasesModule({
                            {/* Row 2: Lawsuit Number */}
                            <div className={`relative z-10 flex justify-between items-center border-t pt-2.5 px-1 ${isHighContrast ? 'border-slate-100' : 'border-slate-900/10'}`}>
                               <div className="flex items-center gap-2">
-                                 <FileText className={`w-3.5 h-3.5 opacity-80 ${isHighContrast ? 'text-slate-600' : ''}`} />
-                                 <span className={`text-xs font-bold tracking-wide font-sans ${isHighContrast ? 'text-slate-600' : ''}`}>رقم الدعوى</span>
+                                 <FileText className={`w-3.5 h-3.5 opacity-80 ${isHighContrast ? 'text-white font-black font-bold' : ''}`} />
+                                 <span className={`text-xs font-bold tracking-wide font-sans ${isHighContrast ? 'text-white font-black font-bold' : ''}`}>رقم الدعوى</span>
                               </div>
                               <span className={`case-number-custom ${isHighContrast ? '!text-amber-800' : ''}`}>#{c.caseNumber}</span>
                            </div>
@@ -3302,8 +3308,8 @@ export default React.memo(function CasesModule({
                            {/* Row 3: Next Session Date */}
                            <div className={`relative z-10 flex justify-between items-center border-t pt-2.5 px-1 ${isHighContrast ? 'border-slate-100' : 'border-slate-900/10'}`}>
                               <div className="flex items-center gap-1.5">
-                                 <Calendar className={`w-3.5 h-3.5 opacity-85 ${isHighContrast ? 'text-slate-900' : 'text-amber-600/80'}`} />
-                                 <span className={`next-session-label-custom whitespace-nowrap ${isHighContrast ? '!text-slate-600' : ''}`}>الموعد القادم</span>
+                                 <Calendar className={`w-3.5 h-3.5 opacity-85 ${isHighContrast ? 'text-slate-900' : 'text-amber-400 font-black/80'}`} />
+                                 <span className={`next-session-label-custom whitespace-nowrap ${isHighContrast ? '!text-white font-black font-bold' : ''}`}>الموعد القادم</span>
                               </div>
                               <div className={`flex items-center gap-1 font-mono px-2 py-0.5 rounded border scale-95 shrink-0 shadow-sm ${
                                 isHighContrast 
@@ -3336,12 +3342,12 @@ export default React.memo(function CasesModule({
                              if (hist.length > 0) {
                                return (
                                  <div className="mt-3 mb-3 p-3 bg-slate-100/5 dark:bg-slate-900/40 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm relative z-10 font-sans">
-                                   <div className="text-[10px] font-black text-slate-500 mb-2 flex items-center gap-1.5 border-b border-slate-200 dark:border-slate-800 pb-1.5"><Clock className="w-3 h-3"/> سجل تغييرات مصغر</div>
+                                   <div className="text-[10px] font-black text-slate-700 mb-2 flex items-center gap-1.5 border-b border-slate-200 dark:border-slate-800 pb-1.5"><Clock className="w-3 h-3"/> سجل تغييرات مصغر</div>
                                    <div className="space-y-2">
                                      {hist.map((h: any, hIdx: number) => (
                                        <div key={hIdx} className="flex justify-between items-center text-[10px] gap-2">
-                                         <span className={`truncate font-bold ${isHighContrast ? 'text-slate-800' : 'text-slate-300'}`}>{h.title || h.notes || 'تحديث حالة القضية'}</span>
-                                         <span className="text-slate-400 font-mono font-bold shrink-0">{h.date}</span>
+                                         <span className={`truncate font-bold ${isHighContrast ? 'text-slate-800' : 'text-white font-bold'}`}>{h.title || h.notes || 'تحديث حالة القضية'}</span>
+                                         <span className="text-white font-black font-bold font-mono font-bold shrink-0">{h.date}</span>
                                        </div>
                                      ))}
                                    </div>
@@ -3361,14 +3367,14 @@ export default React.memo(function CasesModule({
                             className="case-summary-island mt-4"
                           >
                              <div className="flex justify-between items-center mb-2 border-b border-white/5 pb-2">
-                                <span className="text-[9px] text-[#fbbf24] font-black uppercase tracking-tighter">ملخص الدعوى للمراجعة السريعة</span>
-                                <FileText className="w-3 h-3 text-slate-500" />
+                                <span className="text-[11px] text-[#fbbf24] font-black uppercase tracking-tighter">ملخص الدعوى للمراجعة السريعة</span>
+                                <FileText className="w-3 h-3 text-slate-700" />
                              </div>
                              <p className="text-right leading-relaxed font-sans opacity-95">
                                {c.summary || 'لا يوجد ملخص متوفر حالياً لهذه الدعوى.'}
                              </p>
                              {c.details && (
-                               <p className="text-[10px] text-slate-400 mt-2 italic font-sans border-t border-white/5 pt-2">
+                               <p className="text-[10px] text-white font-black font-bold mt-2 italic font-sans border-t border-white/5 pt-2">
                                  بينات تكميلية: {c.details}
                                </p>
                              )}
@@ -3575,11 +3581,11 @@ export default React.memo(function CasesModule({
                   <legend className="text-xs font-black text-amber-500 px-3 py-1 bg-[#050e21] border border-slate-800 rounded-lg">بيانات الأطراف</legend>
                   
                   <div className="flex gap-4 mb-2">
-                    <label className="flex items-center gap-2 text-xs font-black text-slate-300 cursor-pointer">
+                    <label className="flex items-center gap-2 text-xs font-black text-white font-bold cursor-pointer">
                       <input type="radio" name="clientType" value="individual" checked={newClientType === 'individual'} onChange={() => setNewClientType('individual')} className="accent-amber-500" />
                       فرد
                     </label>
-                    <label className="flex items-center gap-2 text-xs font-black text-slate-300 cursor-pointer">
+                    <label className="flex items-center gap-2 text-xs font-black text-white font-bold cursor-pointer">
                       <input type="radio" name="clientType" value="company" checked={newClientType === 'company'} onChange={() => setNewClientType('company')} className="accent-amber-500" />
                       شركة تجارية
                     </label>
@@ -3672,7 +3678,7 @@ export default React.memo(function CasesModule({
 
               <div className="flex gap-4 pt-6 mt-4 border-t border-slate-800 w-full justify-end">
                 <button type="button" onClick={() => setIsCreateOpen(false)}
-                  className="bg-[#0c1a35] text-slate-300 font-black py-3 px-8 rounded-xl text-xs uppercase transition-all border border-slate-700 cursor-pointer"
+                  className="bg-[#0c1a35] text-white font-bold font-black py-3 px-8 rounded-xl text-xs uppercase transition-all border border-slate-700 cursor-pointer"
                 >إلغاء</button>
                 <button type="submit"
                   className="bg-amber-400 text-blue-950 font-black py-3 px-12 rounded-xl text-xs uppercase transition-all shadow-[0_0_15px_rgba(251,191,36,0.3)][0_0_25px_rgba(251,191,36,0.5)] border border-amber-500 cursor-pointer"
@@ -3860,7 +3866,7 @@ export default React.memo(function CasesModule({
                     </div>
                     <button 
                       onClick={() => setActivityLogCaseId(null)}
-                      className="p-1.5 rounded-lg text-slate-400 transition-colors cursor-pointer"
+                      className="p-1.5 rounded-lg text-white font-black font-bold transition-colors cursor-pointer"
                     >
                       <X className="w-5 h-5" />
                     </button>
@@ -3870,9 +3876,9 @@ export default React.memo(function CasesModule({
                     <div className="bg-slate-950/70 p-5 rounded-2xl border border-slate-800 space-y-2 text-right">
                       <span className="text-[10px] text-amber-500 font-extrabold uppercase tracking-widest block">الدعوى المستهدفة</span>
                       <h4 className="text-sm font-black text-white leading-snug">{activeC.caseName}</h4>
-                      <div className="flex justify-between items-center text-xs text-slate-400 pt-3 border-t border-slate-800/65">
-                        <span>العميل: <strong className="text-slate-200">{activeC.clientName}</strong></span>
-                        <span>رقم القضية: <strong className="text-slate-200 font-mono">#{activeC.caseNumber}</strong></span>
+                      <div className="flex justify-between items-center text-xs text-white font-black font-bold pt-3 border-t border-slate-800/65">
+                        <span>العميل: <strong className="text-white font-bold">{activeC.clientName}</strong></span>
+                        <span>رقم القضية: <strong className="text-white font-bold font-mono">#{activeC.caseNumber}</strong></span>
                       </div>
                     </div>
 
@@ -3884,7 +3890,7 @@ export default React.memo(function CasesModule({
                           
                           <div className="space-y-2">
                             <div className="flex flex-wrap items-center justify-between gap-2.5">
-                              <span className="text-[10px] font-mono bg-slate-950 text-slate-300 border border-slate-850 px-2 py-0.5 rounded-md font-bold direction-ltr">
+                              <span className="text-[10px] font-mono bg-slate-950 text-white font-bold border border-slate-850 px-2 py-0.5 rounded-md font-bold direction-ltr">
                                 {t.date} • {t.time}
                               </span>
                               <span className={`text-[9.5px] font-black px-2 py-0.5 rounded bg-amber-500/10 text-amber-500 border border-amber-500/20`}>
@@ -3892,7 +3898,7 @@ export default React.memo(function CasesModule({
                               </span>
                             </div>
                             <h5 className="text-xs font-black text-white">{t.title}</h5>
-                            <p className="text-[11px] text-slate-300 leading-relaxed font-bold">{t.desc}</p>
+                            <p className="text-[11px] text-white font-bold leading-relaxed font-bold">{t.desc}</p>
                           </div>
                         </div>
                       ))}
@@ -3935,17 +3941,17 @@ export default React.memo(function CasesModule({
                   <Printer className="w-5 h-5 text-emerald-600" />
                   <h3 className="font-black text-slate-900 text-lg">تقرير حالة القضية</h3>
                 </div>
-                <button onClick={() => setReportModalCase(null)} className="p-2 text-slate-400 hover:text-slate-600 cursor-pointer transition-colors">
+                <button onClick={() => setReportModalCase(null)} className="p-2 text-white font-black font-bold hover:text-white font-black font-bold cursor-pointer transition-colors">
                   <X className="w-5 h-5" />
                 </button>
               </div>
               <div className="p-8 space-y-6">
                 <div className="bg-slate-50 p-6 flex flex-col items-center justify-center border-2 border-dashed border-slate-200 rounded-2xl mb-6">
                    <div className="w-12 h-12 bg-white rounded-xl shadow-sm border border-slate-100 flex items-center justify-center mb-3">
-                     <FileText className="w-6 h-6 text-slate-400" />
+                     <FileText className="w-6 h-6 text-white font-black font-bold" />
                    </div>
                    <h4 className="text-sm font-black text-slate-800">توليد تقرير وملخص للقضية</h4>
-                   <p className="text-xs text-center text-slate-500 font-bold mt-2">
+                   <p className="text-xs text-center text-slate-700 font-bold mt-2">
                       تم تجهيز ملخص جاهز للطباعة يحتوي على رقم القضية واسم الموكل وتاريخ الجلسة القادمة.
                    </p>
                 </div>

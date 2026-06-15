@@ -36,10 +36,10 @@ const TabButton: React.FC<TabProps> = ({ active, onClick, icon: Icon, title }) =
     className={`flex items-center gap-2.5 px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200 border cursor-pointer ${
       active 
         ? 'bg-slate-900 border-amber-500/50 text-amber-500 font-bold shadow-lg shadow-amber-500/5' 
-        : 'bg-slate-950/60 border-slate-900 text-slate-400'
+        : 'bg-slate-950/60 border-slate-900 text-slate-200 font-bold'
     }`}
   >
-    <Icon className={`w-4 h-4 ${active ? 'text-amber-500' : 'text-slate-400'}`} />
+    <Icon className={`w-4 h-4 ${active ? 'text-amber-500' : 'text-slate-200 font-bold'}`} />
     <span>{title}</span>
   </button>
 );
@@ -427,7 +427,7 @@ export default function ElasticsearchModule() {
             <span className="bg-amber-500/10 text-amber-500 text-xs px-2.5 py-0.5 rounded-full font-bold border border-amber-500/20">منظومة الربط السحابي</span>
             <h1 className="text-xl font-bold text-white">مركز توجيه ومعالجة ومزامنة البيانات (Elasticsearch UI)</h1>
           </div>
-          <p className="text-slate-400 text-xs">
+          <p className="text-slate-200 font-bold text-xs">
             قم بإعداد محركات البحث الفوقية، كتابة الفهارس والمخططات، وإنشاء مستودعات المتجهات (Vector Store) لاستخلاص صكوك الدعاوى والتحليلات القضائية بكفاءة متناهية.
           </p>
         </div>
@@ -435,8 +435,8 @@ export default function ElasticsearchModule() {
         {/* State Node Status Badge */}
         <div className="flex items-center gap-3 bg-slate-950 p-3 rounded-xl border border-slate-900 justify-end">
           <div className="text-left">
-            <div className="text-[10px] text-slate-500 font-mono">NODE_CLUSTER</div>
-            <div className="text-xs text-slate-300 font-semibold font-mono">
+            <div className="text-[10px] text-slate-700 font-mono">NODE_CLUSTER</div>
+            <div className="text-xs text-white font-bold font-semibold font-mono">
               {clusterInfo ? `${clusterInfo.cluster_name}` : 'غير متصل'}
             </div>
           </div>
@@ -449,7 +449,7 @@ export default function ElasticsearchModule() {
         {/* Navigation Sidebar & Console Log */}
         <div className="lg:col-span-1 space-y-4">
           <div className="bg-slate-950 p-4 rounded-xl border border-slate-900 flex flex-col gap-2">
-            <span className="text-xs text-slate-500 font-bold px-1 mb-1">دليل معالجات بوابات البحث</span>
+            <span className="text-xs text-slate-700 font-bold px-1 mb-1">دليل معالجات بوابات البحث</span>
             <TabButton 
               active={activeTab === 'connection'} 
               onClick={() => setActiveTab('connection')} 
@@ -493,11 +493,11 @@ export default function ElasticsearchModule() {
             <div className="bg-slate-900/60 px-4 py-2 border-b border-slate-900 flex items-center justify-between">
               <button 
                 onClick={() => setTerminalLogs([{ type: 'system', text: 'تمت تصفية سجل الطرفية.', timestamp: new Date().toLocaleTimeString() }])}
-                className="text-[10px] text-slate-500 transition-colors cursor-pointer"
+                className="text-[10px] text-slate-700 transition-colors cursor-pointer"
               >
                 مسح الطرفية
               </button>
-              <span className="text-[11px] font-mono text-slate-400 flex items-center gap-1.5">
+              <span className="text-[11px] font-mono text-slate-200 font-bold flex items-center gap-1.5">
                 <Terminal className="w-3.5 h-3.5 text-amber-500" />
                 سجل الأوامر والطلب المباشر
               </span>
@@ -506,12 +506,12 @@ export default function ElasticsearchModule() {
             <div className="p-3 font-mono text-[10px] space-y-2 overflow-y-auto flex-1 text-left select-text scrollbar-thin scrollbar-thumb-slate-850">
               {terminalLogs.map((log, idx) => (
                 <div key={idx} className="leading-relaxed border-b border-slate-900/20 pb-1 flex flex-col">
-                  <div className="flex justify-between text-slate-600 mb-0.5">
+                  <div className="flex justify-between text-slate-200 font-bold mb-0.5">
                     <span>{log.timestamp}</span>
                     <span className={`font-semibold ${
                       log.type === 'error' ? 'text-rose-500' :
                       log.type === 'success' ? 'text-emerald-500' :
-                      log.type === 'outgoing' ? 'text-blue-400' : 'text-slate-500'
+                      log.type === 'outgoing' ? 'text-blue-400' : 'text-slate-700'
                     }`}>
                       {log.type.toUpperCase()}
                     </span>
@@ -519,7 +519,7 @@ export default function ElasticsearchModule() {
                   <p className={`whitespace-pre-wrap break-all ${
                     log.type === 'error' ? 'text-rose-400' :
                     log.type === 'success' ? 'text-emerald-400 font-semibold' :
-                    log.type === 'outgoing' ? 'text-blue-300' : 'text-slate-400'
+                    log.type === 'outgoing' ? 'text-blue-300' : 'text-slate-200 font-bold'
                   }`}>
                     {log.text}
                   </p>
@@ -544,7 +544,7 @@ export default function ElasticsearchModule() {
                   <span>بوابة تهيئة والتحقق من حساب السحابة</span>
                   <Network className="w-5 h-5 text-amber-500" />
                 </h2>
-                <p className="text-slate-400 text-xs">
+                <p className="text-slate-200 font-bold text-xs">
                   أدخل بيانات وصول كتلة خوادم البحث المعتمدة في موجه خدماتك أو استخدم عينات الإعداد المحفوظة.
                 </p>
               </div>
@@ -552,7 +552,7 @@ export default function ElasticsearchModule() {
               {/* Step 1 in Playbook: Tell us what you are building */}
               <div className="bg-slate-950 p-5 rounded-xl border border-slate-900 space-y-4">
                 <span className="text-xs font-semibold text-amber-400/90 bg-amber-400/5 border border-amber-400/20 px-2.5 py-1 rounded-md">الخطوة الأولى في الدليل: كشف النيّة ونوع الاستخدام</span>
-                <p className="text-slate-300 text-xs leading-relaxed">
+                <p className="text-white font-bold text-xs leading-relaxed">
                   ما الذي تسعى لبنائه في محرك البحث؟ اختيارك يوجه نظام التحليل لضبط فهارس ومرادفات الأنظمة تلقائياً.
                 </p>
                 
@@ -570,10 +570,10 @@ export default function ElasticsearchModule() {
                           : 'bg-slate-900/40 border-slate-800'
                       }`}
                     >
-                      <span className={`text-xs font-bold mb-1 ${selectedUseName === uc.id ? 'text-amber-400' : 'text-slate-200'}`}>
+                      <span className={`text-xs font-bold mb-1 ${selectedUseName === uc.id ? 'text-amber-400' : 'text-white font-bold'}`}>
                         {uc.name}
                       </span>
-                      <span className="text-[11px] text-slate-400 leading-normal">{uc.desc}</span>
+                      <span className="text-[11px] text-slate-200 font-bold leading-normal">{uc.desc}</span>
                     </div>
                   ))}
                 </div>
@@ -587,7 +587,7 @@ export default function ElasticsearchModule() {
                       onChange={(e) => setHasPeopleSearching(e.target.checked)}
                       className="rounded border-slate-800 text-amber-500 focus:ring-amber-500 bg-slate-950 p-2"
                     />
-                    <label htmlFor="people-searching" className="text-xs text-slate-300 cursor-pointer select-none">
+                    <label htmlFor="people-searching" className="text-xs text-white font-bold cursor-pointer select-none">
                       هل يبحث البشريون مباشرة (تتطلب معالجة الأخطاء الإملائية والترشيح التلقائي)؟
                     </label>
                   </div>
@@ -600,7 +600,7 @@ export default function ElasticsearchModule() {
                       onChange={(e) => setMultiTenant(e.target.checked)}
                       className="rounded border-slate-800 text-amber-500 focus:ring-amber-500 bg-slate-950 p-2"
                     />
-                    <label htmlFor="multi-tenant" className="text-xs text-slate-300 cursor-pointer select-none">
+                    <label htmlFor="multi-tenant" className="text-xs text-white font-bold cursor-pointer select-none">
                       هل لكل مستخدم صلاحية وصول مخصصة (تتطلب تفعيل فصل الصلاحيات على مستوى المستند)؟
                     </label>
                   </div>
@@ -611,7 +611,7 @@ export default function ElasticsearchModule() {
               <div className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-1.5 text-right">
-                    <label className="text-xs text-slate-400 font-semibold">رابط خادم Elasticsearch</label>
+                    <label className="text-xs text-slate-200 font-bold font-semibold">رابط خادم Elasticsearch</label>
                     <input
                       type="text"
                       dir="ltr"
@@ -622,13 +622,13 @@ export default function ElasticsearchModule() {
                   </div>
 
                   <div className="space-y-1.5 text-right">
-                    <label className="text-xs text-slate-400 font-semibold">مفتاح بروتوكول واجهة التطبيق (API Key)</label>
+                    <label className="text-xs text-slate-200 font-bold font-semibold">مفتاح بروتوكول واجهة التطبيق (API Key)</label>
                     <input
                       type="password"
                       dir="ltr"
                       value={apiKey}
                       onChange={(e) => setApiKey(e.target.value)}
-                      className="w-full text-xs font-mono bg-slate-950 text-slate-300 p-3 rounded-lg border border-slate-800 focus:outline-none focus:border-amber-500/50"
+                      className="w-full text-xs font-mono bg-slate-950 text-white font-bold p-3 rounded-lg border border-slate-800 focus:outline-none focus:border-amber-500/50"
                     />
                   </div>
                 </div>
@@ -637,7 +637,7 @@ export default function ElasticsearchModule() {
                   <button
                     onClick={() => testConnection()}
                     disabled={isConnecting}
-                    className="bg-amber-500 disabled:bg-slate-800 disabled:text-slate-500 text-slate-950 px-5 py-2.5 rounded-lg text-xs font-bold transition-all duration-150 flex items-center gap-2 cursor-pointer shadow-lg shadow-amber-500/10"
+                    className="bg-amber-500 disabled:bg-slate-800 disabled:text-slate-700 text-slate-950 px-5 py-2.5 rounded-lg text-xs font-bold transition-all duration-150 flex items-center gap-2 cursor-pointer shadow-lg shadow-amber-500/10"
                   >
                     {isConnecting ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Network className="w-3.5 h-3.5" />}
                     <span>اختبار الاتصال وجلب الحالة</span>
@@ -655,20 +655,20 @@ export default function ElasticsearchModule() {
                   
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-xs pt-2">
                     <div className="bg-slate-950 p-3 rounded-lg border border-slate-900">
-                      <span className="text-slate-500 block mb-0.5">حالة المرونة</span>
+                      <span className="text-slate-700 block mb-0.5">حالة المرونة</span>
                       <span className="text-emerald-400 font-bold uppercase">{clusterInfo.health_status}</span>
                     </div>
                     <div className="bg-slate-950 p-3 rounded-lg border border-slate-900">
-                      <span className="text-slate-500 block mb-0.5">إصدار Elasticsearch</span>
-                      <span className="text-slate-200 font-mono font-bold">{clusterInfo.version}</span>
+                      <span className="text-slate-700 block mb-0.5">إصدار Elasticsearch</span>
+                      <span className="text-white font-bold font-mono font-bold">{clusterInfo.version}</span>
                     </div>
                     <div className="bg-slate-950 p-3 rounded-lg border border-slate-900">
-                      <span className="text-slate-500 block mb-0.5">عدد العقد المشغلة</span>
-                      <span className="text-slate-200 font-bold">{clusterInfo.number_of_nodes} OS Nodes</span>
+                      <span className="text-slate-700 block mb-0.5">عدد العقد المشغلة</span>
+                      <span className="text-white font-bold font-bold">{clusterInfo.number_of_nodes} OS Nodes</span>
                     </div>
                     <div className="bg-slate-950 p-3 rounded-lg border border-slate-900">
-                      <span className="text-slate-500 block mb-0.5">الشرائح الفعالة</span>
-                      <span className="text-slate-200 font-bold">{clusterInfo.active_shards} Shards</span>
+                      <span className="text-slate-700 block mb-0.5">الشرائح الفعالة</span>
+                      <span className="text-white font-bold font-bold">{clusterInfo.active_shards} Shards</span>
                     </div>
                   </div>
                 </div>
@@ -683,7 +683,7 @@ export default function ElasticsearchModule() {
                   </p>
                 </div>
               ) : (
-                <div className="p-4 bg-slate-950/40 text-center rounded-xl border border-slate-900 text-xs text-slate-500">
+                <div className="p-4 bg-slate-950/40 text-center rounded-xl border border-slate-900 text-xs text-slate-700">
                   انقر على زر الاختبار لتوليد قنوات الاتصال بالكتلة المخصصة وجلب الإحصاءات الحيوية.
                 </div>
               )}
@@ -702,14 +702,14 @@ export default function ElasticsearchModule() {
                   <span>بناء الفهارس ومخطط البيانات (Mapping Walkthrough)</span>
                   <Layers className="w-5 h-5 text-amber-500" />
                 </h2>
-                <p className="text-slate-400 text-xs">
+                <p className="text-slate-200 font-bold text-xs">
                   مرحلة تصميم شكل المخطط. تذكر: تغيير أنواع الحقول لاحقاً يتطلب عملية إعادة فهرسة مكلِفة.
                 </p>
               </div>
 
               <div className="bg-slate-950 p-4 rounded-xl border border-slate-900">
                 <span className="text-xs font-semibold text-sky-400 bg-sky-400/5 px-2.5 py-1 rounded-md mb-2 inline-block">توصيات البناء المطور</span>
-                <p className="text-slate-300 text-xs leading-relaxed">
+                <p className="text-white font-bold text-xs leading-relaxed">
                   نوصي بشدة باستخدام مخطط مُعطى بـ <strong>اسم إصدار فريد</strong> (مثل <code className="font-mono text-yellow-400">najiz_lawsuits_v1</code>) ثم ربطه عبر <strong>اسم مستعار (Alias)</strong> (مثل <code className="font-mono text-yellow-400">najiz_lawsuits</code>). 
                   يتيح هذا النمط تغيير بنية المخطط في الخلفية دون أي فترات توقف للإنتاج وتحديث المستندات بشكل انسيابي.
                 </p>
@@ -717,7 +717,7 @@ export default function ElasticsearchModule() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-1.5 text-right">
-                  <label className="text-xs text-slate-400 font-semibold flex items-center gap-1 justify-end">
+                  <label className="text-xs text-slate-200 font-bold font-semibold flex items-center gap-1 justify-end">
                     <span>اسم فهرس الإصدار (v1, v2...)</span>
                     <span className="text-rose-500">*</span>
                   </label>
@@ -731,7 +731,7 @@ export default function ElasticsearchModule() {
                 </div>
 
                 <div className="space-y-1.5 text-right">
-                  <label className="text-xs text-slate-400 font-semibold">اسم المقصد المستعار (Alias)</label>
+                  <label className="text-xs text-slate-200 font-bold font-semibold">اسم المقصد المستعار (Alias)</label>
                   <input
                     type="text"
                     value={aliasName}
@@ -752,7 +752,7 @@ export default function ElasticsearchModule() {
                     <Plus className="w-3.5 h-3.5" />
                     <span>إضافة حقل جديد</span>
                   </button>
-                  <span className="text-xs text-slate-400 font-bold">الحقول والخصائص الفنية للمستند</span>
+                  <span className="text-xs text-slate-200 font-bold font-bold">الحقول والخصائص الفنية للمستند</span>
                 </div>
 
                 <div className="space-y-2 max-h-[350px] overflow-y-auto pr-1">
@@ -761,7 +761,7 @@ export default function ElasticsearchModule() {
                       
                       <button 
                         onClick={() => handleRemoveField(idx)}
-                        className="text-slate-500 transition-colors cursor-pointer p-1"
+                        className="text-slate-700 transition-colors cursor-pointer p-1"
                         title="حذف هذا الحقل"
                       >
                         <Trash className="w-3.5 h-3.5" />
@@ -772,14 +772,14 @@ export default function ElasticsearchModule() {
                         placeholder="وصف الحقل والمقصد منه"
                         value={field.description}
                         onChange={(e) => handleUpdateField(idx, 'description', e.target.value)}
-                        className="text-[11px] bg-slate-900 border border-slate-800 p-2 rounded text-slate-300 flex-1 text-right"
+                        className="text-[11px] bg-slate-900 border border-slate-800 p-2 rounded text-white font-bold flex-1 text-right"
                       />
 
                       <div className="w-full md:w-32">
                         <select
                           value={field.type}
                           onChange={(e) => handleUpdateField(idx, 'type', e.target.value)}
-                          className="w-full text-xs bg-slate-900 border border-slate-850 p-2 rounded text-slate-200"
+                          className="w-full text-xs bg-slate-900 border border-slate-850 p-2 rounded text-white font-bold"
                         >
                           <option value="keyword">keyword (محدد)</option>
                           <option value="text">text (نص وبحث)</option>
@@ -822,7 +822,7 @@ export default function ElasticsearchModule() {
                     <span>تم حفظ هيكل الفهرس بنجاح</span>
                     <CheckCircle className="w-4 h-4 text-emerald-400" />
                   </div>
-                  <pre className="text-[10px] text-slate-300 font-mono bg-slate-950 p-3 rounded overflow-x-auto text-left leading-relaxed">
+                  <pre className="text-[10px] text-white font-bold font-mono bg-slate-950 p-3 rounded overflow-x-auto text-left leading-relaxed">
                     {JSON.stringify(indexCreateResult, null, 2)}
                   </pre>
                 </div>
@@ -842,15 +842,15 @@ export default function ElasticsearchModule() {
                   <span>أداة فهرسة وتحميل العينات (Ingestion Engine)</span>
                   <Download className="w-5 h-5 text-amber-500" />
                 </h2>
-                <p className="text-slate-400 text-xs">
+                <p className="text-slate-200 font-bold text-xs">
                   قم بتحميل عينات من القضايا والدعاوى القضائية الموثوقة بصيغة مستندات واختبار تواصلها المباشر.
                 </p>
               </div>
 
               <div className="space-y-4">
                 <div className="flex justify-between items-center">
-                  <span className="text-xs text-slate-400">تحتوي عينات المنظومة على قضايا تجارية، عمالية، أحوال شخصية وإدارية عربية ممتازة.</span>
-                  <span className="text-xs font-bold text-slate-200">مراجعة صكوك العينات قبل الدفع بالنظام</span>
+                  <span className="text-xs text-slate-200 font-bold">تحتوي عينات المنظومة على قضايا تجارية، عمالية، أحوال شخصية وإدارية عربية ممتازة.</span>
+                  <span className="text-xs font-bold text-white font-bold">مراجعة صكوك العينات قبل الدفع بالنظام</span>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -859,12 +859,12 @@ export default function ElasticsearchModule() {
                       <div>
                         <div className="flex items-center justify-between mb-1">
                           <span className="bg-amber-500/10 text-amber-500 text-[10px] px-2 py-0.5 rounded border border-amber-500/20">{doc.court_type}</span>
-                          <span className="text-[11px] font-mono text-slate-500">{doc.id}</span>
+                          <span className="text-[11px] font-mono text-slate-700">{doc.id}</span>
                         </div>
-                        <h4 className="text-xs font-bold text-slate-200 mb-1.5 leading-relaxed">{doc.title}</h4>
-                        <p className="text-[11px] text-slate-400 leading-relaxed line-clamp-3 mb-2">{doc.details}</p>
+                        <h4 className="text-xs font-bold text-white font-bold mb-1.5 leading-relaxed">{doc.title}</h4>
+                        <p className="text-[11px] text-slate-200 font-bold leading-relaxed line-clamp-3 mb-2">{doc.details}</p>
                       </div>
-                      <div className="border-t border-slate-900 pt-2 flex justify-between text-[10px] text-slate-500">
+                      <div className="border-t border-slate-900 pt-2 flex justify-between text-[10px] text-slate-700">
                         <span>الحالة: {doc.status}</span>
                         <span>الخصم: {doc.defendant}</span>
                       </div>
@@ -890,7 +890,7 @@ export default function ElasticsearchModule() {
                     <span>اكتملت المزامنة وحقن البيانات المجمعة</span>
                     <CheckCircle className="w-4 h-4 text-emerald-400" />
                   </div>
-                  <pre className="text-[10px] text-slate-300 font-mono bg-slate-950 p-3 rounded overflow-x-auto text-left leading-relaxed">
+                  <pre className="text-[10px] text-white font-bold font-mono bg-slate-950 p-3 rounded overflow-x-auto text-left leading-relaxed">
                     {JSON.stringify(ingestResult, null, 2)}
                   </pre>
                 </div>
@@ -910,14 +910,14 @@ export default function ElasticsearchModule() {
                   <span>محلل المرادفات اللغوية والتفسير القضائي (Synonyms Engine)</span>
                   <Sparkles className="w-5 h-5 text-amber-500" />
                 </h2>
-                <p className="text-slate-400 text-xs">
+                <p className="text-slate-200 font-bold text-xs">
                   استخدم محركات تحليل المرادفات (Synonyms API) للتواصل والمطابقة، مثل الكشف عن أن كلمة "شكوى" تماثل "دعوى قضائية".
                 </p>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-1.5 text-right">
-                  <label className="text-xs text-slate-400 font-semibold">مجموعة المرادفات المعرّفة (Synonym Set ID)</label>
+                  <label className="text-xs text-slate-200 font-bold font-semibold">مجموعة المرادفات المعرّفة (Synonym Set ID)</label>
                   <input
                     type="text"
                     value={synsetId}
@@ -928,7 +928,7 @@ export default function ElasticsearchModule() {
                 </div>
 
                 <div className="space-y-1.5 text-right">
-                  <label className="text-xs text-slate-400 font-semibold">رقم معيار القاعدة (Rule ID)</label>
+                  <label className="text-xs text-slate-200 font-bold font-semibold">رقم معيار القاعدة (Rule ID)</label>
                   <input
                     type="text"
                     value={synonymRuleId}
@@ -940,7 +940,7 @@ export default function ElasticsearchModule() {
               </div>
 
               <div className="space-y-1.5 text-right">
-                <label className="text-xs text-slate-400 font-semibold">قيم وتطابقات السلسلة (قاعدة Solr الشائعة)</label>
+                <label className="text-xs text-slate-200 font-bold font-semibold">قيم وتطابقات السلسلة (قاعدة Solr الشائعة)</label>
                 <textarea
                   rows={3}
                   value={synonymValue}
@@ -966,7 +966,7 @@ export default function ElasticsearchModule() {
                     <span>قنوات تفعيل المرادفات القضائية جاهزة</span>
                     <CheckCircle className="w-4 h-4 text-emerald-400" />
                   </div>
-                  <pre className="text-[10px] text-slate-300 font-mono bg-slate-950 p-3 rounded overflow-x-auto text-left leading-relaxed">
+                  <pre className="text-[10px] text-white font-bold font-mono bg-slate-950 p-3 rounded overflow-x-auto text-left leading-relaxed">
                     {JSON.stringify(synonymsResult, null, 2)}
                   </pre>
                 </div>
@@ -986,7 +986,7 @@ export default function ElasticsearchModule() {
                   <button 
                     onClick={() => setShowCustomDsl(!showCustomDsl)}
                     className={`px-3 py-1.5 rounded text-[11px] font-semibold transition-all duration-150 cursor-pointer ${
-                      showCustomDsl ? 'bg-amber-500 text-slate-950' : 'text-slate-400'
+                      showCustomDsl ? 'bg-amber-500 text-slate-950' : 'text-slate-200 font-bold'
                     }`}
                   >
                     نمط محرر الاستعلام (Raw DSL Editor)
@@ -994,7 +994,7 @@ export default function ElasticsearchModule() {
                   <button 
                     onClick={() => setShowCustomDsl(false)}
                     className={`px-3 py-1.5 rounded text-[11px] font-semibold transition-all duration-150 cursor-pointer ${
-                      !showCustomDsl ? 'bg-amber-500 text-slate-950' : 'text-slate-400'
+                      !showCustomDsl ? 'bg-amber-500 text-slate-950' : 'text-slate-200 font-bold'
                     }`}
                   >
                     الاستعلام التلقائي السريع
@@ -1006,7 +1006,7 @@ export default function ElasticsearchModule() {
                     <span>مختبر البحث والاستعلامات المتقدمة (Elasticsearch Search Lab)</span>
                     <Search className="w-5 h-5 text-amber-500" />
                   </h2>
-                  <p className="text-slate-400 text-xs">
+                  <p className="text-slate-200 font-bold text-xs">
                     قم بتنفيذ طلبات بحث واسترجاع حقيقية من كتلة خوادم السحابة لمراجعة قوة التحليل والمطابقة الموزونة.
                   </p>
                 </div>
@@ -1016,11 +1016,11 @@ export default function ElasticsearchModule() {
               <div className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div className="space-y-1 text-right">
-                    <label className="text-xs text-slate-400 font-semibold">استراتيجية خوارزمية البحث</label>
+                    <label className="text-xs text-slate-200 font-bold font-semibold">استراتيجية خوارزمية البحث</label>
                     <select
                       value={searchStrategy}
                       onChange={(e) => setSearchStrategy(e.target.value as any)}
-                      className="w-full text-xs bg-slate-950 border border-slate-850 p-3.5 rounded-lg text-slate-200"
+                      className="w-full text-xs bg-slate-950 border border-slate-850 p-3.5 rounded-lg text-white font-bold"
                     >
                       <option value="keyword">البحث النصي التقريبي مع إصلاح الأخطاء (BM25 + Fuzzy)</option>
                       <option value="semantic">البحث اللغوي الموجه بمعاني الجمل الصرفية (Semantic)</option>
@@ -1029,7 +1029,7 @@ export default function ElasticsearchModule() {
                   </div>
 
                   <div className="space-y-1 text-right md:col-span-2">
-                    <label className="text-xs text-slate-400 font-semibold">المدخل المراد البحث عنه (Query Text)</label>
+                    <label className="text-xs text-slate-200 font-bold font-semibold">المدخل المراد البحث عنه (Query Text)</label>
                     <div className="flex gap-2">
                       <input
                         type="text"
@@ -1041,7 +1041,7 @@ export default function ElasticsearchModule() {
                       <button
                         onClick={handlePerformSearch}
                         disabled={isSearching}
-                        className="bg-amber-500 disabled:bg-slate-800 disabled:text-slate-500 text-slate-950 px-6 py-3 rounded-lg text-xs font-bold transition-all duration-150 flex items-center justify-center gap-1.5 cursor-pointer shadow-lg shadow-amber-500/10"
+                        className="bg-amber-500 disabled:bg-slate-800 disabled:text-slate-700 text-slate-950 px-6 py-3 rounded-lg text-xs font-bold transition-all duration-150 flex items-center justify-center gap-1.5 cursor-pointer shadow-lg shadow-amber-500/10"
                       >
                         {isSearching ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
                         <span>ابحث</span>
@@ -1069,10 +1069,10 @@ export default function ElasticsearchModule() {
               {searchResults ? (
                 <div className="space-y-4 pt-2">
                   <div className="flex items-center justify-between bg-slate-950 p-3 rounded-lg border border-slate-900 text-xs">
-                    <div className="text-slate-400">
+                    <div className="text-slate-200 font-bold">
                       زمن جلب الاستجابة: <span className="font-mono text-emerald-400 font-bold">{searchResults.took}ms</span>
                     </div>
-                    <div className="text-slate-400 text-right">
+                    <div className="text-slate-200 font-bold text-right">
                       مطابقات صالحة: <span className="font-mono text-emerald-400 font-bold">{searchResults.hits?.total?.value || 0}</span> مستند صك
                     </div>
                   </div>
@@ -1084,16 +1084,16 @@ export default function ElasticsearchModule() {
                           <div className="flex items-center justify-between pb-2 border-b border-slate-900">
                             <div className="flex items-center gap-2">
                               <span className="bg-amber-500/10 text-amber-500/90 text-[10px] px-2 py-0.5 rounded font-mono font-bold">score: {hit._score}</span>
-                              <span className="bg-slate-900/80 text-slate-400 text-[10px] px-2 py-0.5 rounded">محكمة {hit._source.court_type}</span>
+                              <span className="bg-slate-900/80 text-slate-200 font-bold text-[10px] px-2 py-0.5 rounded">محكمة {hit._source.court_type}</span>
                             </div>
                             <h4 className="text-sm font-bold text-slate-100">{hit._source.title}</h4>
                           </div>
 
-                          <p className="text-xs text-slate-300 leading-relaxed max-w-none">
+                          <p className="text-xs text-white font-bold leading-relaxed max-w-none">
                             {hit._source.details}
                           </p>
 
-                          <div className="flex justify-between items-center text-[10px] text-slate-500 pt-1">
+                          <div className="flex justify-between items-center text-[10px] text-slate-700 pt-1">
                             <div className="flex gap-4">
                               <span>الخصم: {hit._source.defendant}</span>
                               <span>الطرف المدعي: {hit._source.plaintiff}</span>
@@ -1103,14 +1103,14 @@ export default function ElasticsearchModule() {
                         </div>
                       ))
                     ) : (
-                      <div className="p-10 bg-slate-950 text-center rounded-xl border border-slate-900 text-xs text-slate-400">
+                      <div className="p-10 bg-slate-950 text-center rounded-xl border border-slate-900 text-xs text-slate-200 font-bold">
                         لم يتم العثور على أي نتائج مطابقة لكلمة البحث الحالية. جرب تحميل عينات المزامنة من التبويب المخصص ثم البحث مرة أخرى!
                       </div>
                     )}
                   </div>
                 </div>
               ) : (
-                <div className="p-12 bg-slate-950 text-center rounded-2xl border border-slate-900 text-xs text-slate-500">
+                <div className="p-12 bg-slate-950 text-center rounded-2xl border border-slate-900 text-xs text-slate-700">
                   اكتب عبارة البحث واضغط زر ابحث لاسترجاع صكوك الدعاوى والتحليلات القضائية الموثوقة فوراً.
                 </div>
               )}
@@ -1129,7 +1129,7 @@ export default function ElasticsearchModule() {
                   <span>أكواد الربط والتغذية لمهندسي البرمجيات (Code Generator)</span>
                   <Code className="w-5 h-5 text-amber-500" />
                 </h2>
-                <p className="text-slate-400 text-xs">
+                <p className="text-slate-200 font-bold text-xs">
                   أكواد برمجية جاهزة وموثقة بالكلية باللغة العربية تمكن فريق مهندسي مكتبكم من تشغيل فهارس Elasticsearch في تطبيقاتكم بشكل دائم.
                 </p>
               </div>
@@ -1137,7 +1137,7 @@ export default function ElasticsearchModule() {
               <div className="space-y-4">
                 <div className="bg-slate-950 p-4 rounded-xl border border-slate-900">
                   <span className="text-xs font-semibold text-emerald-400 bg-emerald-400/5 px-2.5 py-1 rounded-md mb-2 inline-block">حزمة Node.js / TypeScript الكاملة</span>
-                  <pre className="text-[10px] text-slate-300 font-mono overflow-x-auto text-left leading-relaxed select-all">
+                  <pre className="text-[10px] text-white font-bold font-mono overflow-x-auto text-left leading-relaxed select-all">
 {`import { Client } from '@elastic/elasticsearch';
 
 // 1. تهيئة وإعطاء عميل الاتصال
@@ -1183,7 +1183,7 @@ async function searchLawsuits(queryText: string) {
 
                 <div className="bg-slate-950 p-4 rounded-xl border border-slate-900">
                   <span className="text-xs font-semibold text-blue-400 bg-blue-400/5 px-2.5 py-1 rounded-md mb-2 inline-block">نمط استدعاء بايثون (Python Elasticsearch Client)</span>
-                  <pre className="text-[10px] text-slate-300 font-mono overflow-x-auto text-left leading-relaxed select-all">
+                  <pre className="text-[10px] text-white font-bold font-mono overflow-x-auto text-left leading-relaxed select-all">
 {`from elasticsearch import Elasticsearch
 
 # تهيئة الاتصال فائق الموثوقية

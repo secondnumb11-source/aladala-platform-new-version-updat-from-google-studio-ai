@@ -51,7 +51,7 @@ export default function DashboardStats({
               المكتب الموحد للعملاء والعملاء والمحاميين والمستشاريين القانونيين والاستشارات القانونية والشرعية
             </span>
             <h2 className="text-3xl font-display font-semibold text-white tracking-tight mt-2">{lawyerName}</h2>
-            <p className="text-slate-200 text-sm font-medium">رقم الترخيص المهني: <span className="text-indigo-400 font-mono font-bold tracking-widest">{licenseNumber}</span></p>
+            <p className="text-white font-bold text-sm font-medium">رقم الترخيص المهني: <span className="text-indigo-400 font-mono font-bold tracking-widest">{licenseNumber}</span></p>
           </div>
 
           <div className="flex items-center gap-4 bg-white/90 backdrop-blur-md border border-slate-200 px-5 py-4 rounded-2xl shadow-xl shadow-indigo-900/10">
@@ -118,7 +118,7 @@ export default function DashboardStats({
               <span className="text-slate-900  text-sm font-medium">الجلسات القضائية القادمة</span>
               <div className="text-4xl font-display font-semibold text-slate-900  tracking-tight">{upcomingHearings}</div>
             </div>
-            <div className="p-3 bg-amber-50 text-amber-600 rounded-xl transition-colors">
+            <div className="p-3 bg-amber-50 text-amber-400 font-black rounded-xl transition-colors">
               <Calendar className="w-6 h-6" />
             </div>
           </div>

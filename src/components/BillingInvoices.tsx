@@ -140,7 +140,7 @@ export default function BillingInvoices() {
 
       {showAddForm && (
         <form onSubmit={handleAddInvoice} className="bg-[#0b1e33] border border-[#c5a880]/30 rounded-xl p-5 space-y-4 text-xs text-right">
-          <h3 className="text-slate-200 font-bold border-b border-[#c5a880]/15 pb-2 text-sm">إصدار فاتورة أتعاب عدلية جديدة</h3>
+          <h3 className="text-white font-bold font-bold border-b border-[#c5a880]/15 pb-2 text-sm">إصدار فاتورة أتعاب عدلية جديدة</h3>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-1.5">
@@ -269,9 +269,9 @@ export default function BillingInvoices() {
                 {filteredInvoices.map(inv => (
                   <tr key={inv.id} className="border-b border-slate-800 transition-colors">
                     <td className="py-3 px-3 font-mono font-bold text-amber-400">{inv.invoiceNumber}</td>
-                    <td className="py-3 px-3 font-semibold text-slate-200">{inv.clientName}</td>
+                    <td className="py-3 px-3 font-semibold text-white font-bold">{inv.clientName}</td>
                     <td className="py-3 px-3 font-mono text-slate-900 ">{inv.caseNumber || "أتعاب عامة غير معلنة"}</td>
-                    <td className="py-3 px-3 font-mono text-slate-200">{(inv.amount || 0).toLocaleString()} ر.س</td>
+                    <td className="py-3 px-3 font-mono text-white font-bold">{(inv.amount || 0).toLocaleString()} ر.س</td>
                     <td className="py-3 px-3 font-mono text-slate-900 ">{(inv.vatAmount || 0).toLocaleString()} ر.س</td>
                     <td className="py-3 px-3 font-mono font-bold text-slate-100 bg-amber-500">{(inv.totalAmount || 0).toLocaleString()} ر.س</td>
                     <td className="py-3 px-3 text-center">

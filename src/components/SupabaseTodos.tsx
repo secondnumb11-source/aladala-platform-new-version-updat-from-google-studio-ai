@@ -35,7 +35,7 @@ export const SupabaseTodos: React.FC = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center p-8">
-        <Loader2 className="w-6 h-6 animate-spin text-slate-500" />
+        <Loader2 className="w-6 h-6 animate-spin text-slate-700" />
       </div>
     );
   }
@@ -57,7 +57,7 @@ export const SupabaseTodos: React.FC = () => {
       </div>
 
       {todos.length === 0 ? (
-        <p className="text-slate-500 italic text-sm py-4 border-2 border-dashed border-slate-200 rounded-xl text-center">
+        <p className="text-slate-700 italic text-sm py-4 border-2 border-dashed border-slate-200 rounded-xl text-center">
           No todos found. Add some in your Supabase dashboard!
         </p>
       ) : (
@@ -70,7 +70,7 @@ export const SupabaseTodos: React.FC = () => {
               className="p-3 bg-white border border-slate-200 rounded-lg shadow-sm flex items-center justify-between transition-colors"
             >
               <span className="text-slate-700 font-medium">{todo.name}</span>
-              <span className="text-[10px] text-slate-400 font-mono">ID: {todo.id.slice(0, 8)}</span>
+              <span className="text-[10px] text-slate-200 font-bold font-mono">ID: {todo.id.slice(0, 8)}</span>
             </motion.li>
           ))}
         </ul>

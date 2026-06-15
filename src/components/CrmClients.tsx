@@ -236,7 +236,7 @@ export default function CrmClients() {
 
       {showAddForm && (
         <form onSubmit={handleAddClient} className="bg-[#0b1e33] border border-[#c5a880]/30 rounded-xl p-5 space-y-4 text-xs">
-          <h3 className="text-slate-200 font-bold border-b border-[#c5a880]/15 pb-2 text-sm">إضافة ملف موكل جديد</h3>
+          <h3 className="text-white font-bold font-bold border-b border-[#c5a880]/15 pb-2 text-sm">إضافة ملف موكل جديد</h3>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="space-y-1.5">
@@ -390,7 +390,7 @@ export default function CrmClients() {
               className={`p-2 py-1.5 px-3.5 text-xs font-black flex items-center gap-1.5 rounded-lg transition-all cursor-pointer ${
                 viewMode === 'cards' 
                   ? 'bg-[#c5a880] text-[#061224] shadow-md' 
-                  : 'text-slate-400'
+                  : 'text-slate-200 font-bold'
               }`}
             >
               <Sparkles className="w-3.5 h-3.5" />
@@ -402,7 +402,7 @@ export default function CrmClients() {
               className={`p-2 py-1.5 px-3.5 text-xs font-black flex items-center gap-1.5 rounded-lg transition-all cursor-pointer ${
                 viewMode === 'table' 
                   ? 'bg-[#c5a880] text-[#061224] shadow-md' 
-                  : 'text-slate-400'
+                  : 'text-slate-200 font-bold'
               }`}
             >
               <Layout className="w-3.5 h-3.5" />
@@ -412,14 +412,14 @@ export default function CrmClients() {
         </div>
 
         {loading ? (
-          <div className="text-center py-10 text-xs text-slate-400">جاري تحميل وتزامن العملاء من الشبكة الموحدة...</div>
+          <div className="text-center py-10 text-xs text-slate-200 font-bold">جاري تحميل وتزامن العملاء من الشبكة الموحدة...</div>
         ) : filteredClients.length === 0 ? (
-          <div className="text-center py-10 text-xs text-slate-400">لم يتم العثور على أي موكل مدرج.</div>
+          <div className="text-center py-10 text-xs text-slate-200 font-bold">لم يتم العثور على أي موكل مدرج.</div>
         ) : viewMode === 'table' ? (
           <div className="overflow-x-auto border border-slate-800 rounded-xl">
             <table className="w-full text-right text-xs">
               <thead>
-                <tr className="border-b border-[#c5a880]/10 text-slate-400 font-bold bg-[#091526]">
+                <tr className="border-b border-[#c5a880]/10 text-slate-200 font-bold font-bold bg-[#091526]">
                   <th className="py-3 px-3">نوع الكيان</th>
                   <th className="py-3 px-3">اسم العميل</th>
                   <th className="py-3 px-3">السجل الموحد / الهوية</th>
@@ -431,10 +431,10 @@ export default function CrmClients() {
               </thead>
               <tbody>
                 {sortedAndFilteredClients.map(c => (
-                  <tr key={c.id} className="border-b border-slate-850[#0f2742] transition-colors text-slate-300">
+                  <tr key={c.id} className="border-b border-slate-850[#0f2742] transition-colors text-white font-bold">
                     <td className="py-3.5 px-3">
                       <span className={`text-[10px] px-2 py-0.5 rounded font-black ${
-                        c.clientType === "company" ? "bg-amber-500/10 text-amber-400" : "bg-[#c5a880]/10 text-[#c5a880]"
+                        c.clientType === "company" ? "bg-amber-500/10 border border-amber-500/30 text-amber-400 font-bold" : "bg-[#c5a880]/10 text-[#c5a880]"
                       }`}>
                         {c.clientType === "company" ? "منشأة تجارية" : c.clientType === "government" ? "حكومية" : "مواطن/فرد"}
                       </span>
@@ -448,7 +448,7 @@ export default function CrmClients() {
                           <Check className="w-3.5 h-3.5" /> مفعّل
                         </span>
                       ) : (
-                        <span className="text-slate-500">معطل</span>
+                        <span className="text-slate-700">معطل</span>
                       )}
                     </td>
                     <td className="py-3.5 px-3 font-mono">
@@ -611,7 +611,7 @@ function LegalTemplatesSection({ clients }: { clients: Client[] }) {
   };
 
   return (
-    <div className="bg-[#0b1e33] border border-[#c5a880]/20 rounded-xl p-5 space-y-5 text-xs text-slate-200">
+    <div className="bg-[#0b1e33] border border-[#c5a880]/20 rounded-xl p-5 space-y-5 text-xs text-white font-bold">
       <div className="border-b border-[#c5a880]/15 pb-3">
         <h3 className="text-sm font-bold text-[#c5a880] flex items-center gap-2">
           <MessageSquareCode className="w-4.5 h-4.5 text-amber-400" />
@@ -647,7 +647,7 @@ function LegalTemplatesSection({ clients }: { clients: Client[] }) {
                 <select
                   value={tplCategory}
                   onChange={e => setTplCategory(e.target.value as CrmTemplate["category"])}
-                  className="w-full bg-[#0b1e33] border border-slate-700 rounded p-2 text-slate-200 cursor-pointer"
+                  className="w-full bg-[#0b1e33] border border-slate-700 rounded p-2 text-white font-bold cursor-pointer"
                 >
                   <option value="تذكير بالجلسات">تذكير بالجلسات</option>
                   <option value="فواتير ومطالبات">فواتير ومطالبات</option>
@@ -753,7 +753,7 @@ function LegalTemplatesSection({ clients }: { clients: Client[] }) {
                 <select
                   value={selectedPreviewClientId}
                   onChange={e => setSelectedPreviewClientId(e.target.value)}
-                  className="bg-[#0b1e33] border border-[#c5a880]/30 text-slate-200 text-sm rounded p-1 w-full sm:w-44 focus:outline-none focus:border-[#c5a880]"
+                  className="bg-[#0b1e33] border border-[#c5a880]/30 text-white font-bold text-sm rounded p-1 w-full sm:w-44 focus:outline-none focus:border-[#c5a880]"
                 >
                   <option value="">-- العميل المفتوح تلقائياً --</option>
                   {clients.map(cli => (
@@ -773,7 +773,7 @@ function LegalTemplatesSection({ clients }: { clients: Client[] }) {
               </div>
 
               {/* Message preview body */}
-              <div className="text-sm leading-relaxed text-slate-200 bg-[#11243f]/60 p-3 rounded-lg border border-slate-800 break-words whitespace-pre-wrap">
+              <div className="text-sm leading-relaxed text-white font-bold bg-[#11243f]/60 p-3 rounded-lg border border-slate-800 break-words whitespace-pre-wrap">
                 {renderPreviewTranslation()}
               </div>
 
@@ -800,7 +800,7 @@ function LegalTemplatesSection({ clients }: { clients: Client[] }) {
                     className="bg-[#0b1e33] p-2.5 rounded-lg border border-slate-800 flex justify-between items-center cursor-pointer transition-colors text-right"
                   >
                     <div>
-                      <span className="font-bold text-slate-200 text-xs block">{tpl.name}</span>
+                      <span className="font-bold text-white font-bold text-xs block">{tpl.name}</span>
                       <span className="text-xs text-amber-400 bg-[#11243f] px-1.5 py-0.5 rounded font-mono inline-block mt-1">
                         {tpl.category}
                       </span>
@@ -854,8 +854,8 @@ function SortableClientCard({ client, size, onToggleSize }: SortableClientCardPr
       <InteractiveCard hasGoldBorder={true}>
         <div className="relative p-6 space-y-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2 cursor-grab active:cursor-grabbing text-slate-400" {...attributes} {...listeners}>
-              <GripVertical className="w-4 h-4 text-slate-500" />
+            <div className="flex items-center gap-2 cursor-grab active:cursor-grabbing text-slate-200 font-bold" {...attributes} {...listeners}>
+              <GripVertical className="w-4 h-4 text-slate-700" />
               <div className="p-2 bg-amber-500/10 text-amber-500 rounded-lg">
                 {client.clientType === 'company' ? <Building className="w-4 h-4" /> : <Users className="w-4 h-4" />}
               </div>
@@ -875,7 +875,7 @@ function SortableClientCard({ client, size, onToggleSize }: SortableClientCardPr
 
           <div>
             <span className={`text-[10px] px-2 py-0.5 rounded font-black uppercase tracking-wider ${
-              client.clientType === "company" ? "bg-amber-500/10 text-amber-400 border border-amber-500/20" : "bg-[#c5a880]/10 text-[#c5a880] border border-[#c5a880]/30"
+              client.clientType === "company" ? "bg-amber-500/10 border border-amber-500/30 text-amber-400 font-bold border border-amber-500/20" : "bg-[#c5a880]/10 text-[#c5a880] border border-[#c5a880]/30"
             }`}>
               {client.clientType === "company" ? "منشأة تجارية" : client.clientType === "government" ? "جهة حكومية" : "مواطن/فرد"}
             </span>
@@ -884,15 +884,15 @@ function SortableClientCard({ client, size, onToggleSize }: SortableClientCardPr
 
           <div className="space-y-2 text-xs pt-3 border-t border-slate-800/40">
             <div className="flex justify-between font-mono">
-              <span className="text-slate-400">الهوية الموحدة:</span>
+              <span className="text-slate-200 font-bold">الهوية الموحدة:</span>
               <span className="text-white font-bold">{client.nationalId}</span>
             </div>
             <div className="flex justify-between font-mono">
-              <span className="text-slate-400">رقم الهاتف:</span>
+              <span className="text-slate-200 font-bold">رقم الهاتف:</span>
               <span className="text-white font-bold">{client.phone || "غير محدد"}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-slate-400">الممثل / العنوان:</span>
+              <span className="text-slate-200 font-bold">الممثل / العنوان:</span>
               <span className="text-amber-300 truncate max-w-[140px]" title={client.representativeName || client.address}>
                 {client.representativeName ? `الوكيل: ${client.representativeName}` : client.address || "لا يوجد عنوان وطني"}
               </span>
@@ -900,13 +900,13 @@ function SortableClientCard({ client, size, onToggleSize }: SortableClientCardPr
           </div>
 
           <div className="flex justify-between items-center bg-slate-950/80 px-4 py-2.5 rounded-xl border border-slate-850 text-[10px]">
-            <span className="text-slate-400 font-bold">حالة إشعار الواتساب:</span>
+            <span className="text-slate-200 font-bold font-bold">حالة إشعار الواتساب:</span>
             {client.whatsappEnabled ? (
               <span className="text-emerald-400 font-extrabold flex items-center gap-1">
                 <Check className="w-3.5 h-3.5" /> مفعّل وتلقائي
               </span>
             ) : (
-              <span className="text-slate-400">معطل نظاماً</span>
+              <span className="text-slate-200 font-bold">معطل نظاماً</span>
             )}
           </div>
         </div>

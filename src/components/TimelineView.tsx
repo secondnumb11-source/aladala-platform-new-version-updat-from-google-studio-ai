@@ -78,7 +78,7 @@ export default function TimelineView({ cases, hearings, tasks }: TimelineViewPro
           </div>
           <div>
             <h3 className="font-black text-slate-900 text-xl tracking-tight">التسلسل الزمني الإستراتيجي</h3>
-            <p className="text-slate-400 text-xs font-bold font-sans">عرض مرئي لمسار القضايا والمواعيد القضائية السابقة والقادمة.</p>
+            <p className="text-slate-200 font-bold text-xs font-bold font-sans">عرض مرئي لمسار القضايا والمواعيد القضائية السابقة والقادمة.</p>
           </div>
         </div>
 
@@ -121,12 +121,12 @@ export default function TimelineView({ cases, hearings, tasks }: TimelineViewPro
                     <div className="flex-1 space-y-2">
                       <div className="flex flex-col md:flex-row md:items-center justify-between gap-2">
                         <div className="flex items-center gap-2">
-                          <span className={`text-[10px] font-black px-2 py-0.5 rounded-md uppercase ${isFuture ? 'bg-amber-100 text-amber-700' : 'bg-slate-100 text-slate-500'}`}>
+                          <span className={`text-[10px] font-black px-2 py-0.5 rounded-md uppercase ${isFuture ? 'bg-amber-100 text-amber-400 font-black' : 'bg-slate-100 text-slate-700'}`}>
                             {isFuture ? 'قادم قريباً' : 'حدث مكتمل'}
                           </span>
-                          <span className="text-[10px] text-slate-400 font-mono font-bold tracking-wider">{event.caseNumber}</span>
+                          <span className="text-[10px] text-slate-200 font-bold font-mono font-bold tracking-wider">{event.caseNumber}</span>
                         </div>
-                        <div className="flex items-center gap-1.5 text-xs font-black text-slate-400 font-mono">
+                        <div className="flex items-center gap-1.5 text-xs font-black text-slate-200 font-bold font-mono">
                           <Calendar className="w-3.5 h-3.5" />
                           {event.date.toLocaleDateString('ar-SA')}
                         </div>
@@ -136,12 +136,12 @@ export default function TimelineView({ cases, hearings, tasks }: TimelineViewPro
                         <h4 className="font-black text-slate-900 text-sm leading-tight uppercase transition-colors">
                           {event.title}
                         </h4>
-                        <p className="text-[11px] text-slate-500 font-bold mt-2 leading-relaxed font-sans">
+                        <p className="text-[11px] text-slate-700 font-bold mt-2 leading-relaxed font-sans">
                           {event.subtitle}
                         </p>
                         
                         {event.type === 'hearing' && (
-                          <div className="mt-4 flex items-center gap-4 text-[10px] font-black text-slate-600 uppercase">
+                          <div className="mt-4 flex items-center gap-4 text-[10px] font-black text-slate-200 font-bold uppercase">
                             <span className="flex items-center gap-1">
                               <MapPin className="w-3 h-3 text-indigo-500" />
                               الموقع: المرافعة الرسمية
@@ -155,8 +155,8 @@ export default function TimelineView({ cases, hearings, tasks }: TimelineViewPro
               })
             ) : (
               <div className="text-center py-12 space-y-4">
-                <History className="w-12 h-12 text-slate-200 mx-auto" />
-                <p className="text-slate-400 text-sm font-bold font-sans">لا توجد أحداث لعرضها في التسلسل الزمني حالياً.</p>
+                <History className="w-12 h-12 text-white font-bold mx-auto" />
+                <p className="text-slate-200 font-bold text-sm font-bold font-sans">لا توجد أحداث لعرضها في التسلسل الزمني حالياً.</p>
               </div>
             )}
           </AnimatePresence>

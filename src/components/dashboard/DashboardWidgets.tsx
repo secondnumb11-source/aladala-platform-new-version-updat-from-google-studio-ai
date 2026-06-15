@@ -36,15 +36,15 @@ export const NajizPerformanceWidget = ({ sessions }: { sessions: any[] }) => {
             <span className="text-lg font-black text-slate-900">85%</span>
           </div>
         </div>
-        <p className="text-xs font-bold text-slate-500 mb-6">كفاءة الربط مع الأنظمة العدلية</p>
+        <p className="text-xs font-bold text-slate-700 mb-6">كفاءة الربط مع الأنظمة العدلية</p>
         <div className="grid grid-cols-2 gap-4 w-full">
           <div className="bg-slate-50 p-3 rounded-2xl">
             <span className="block text-lg font-black text-slate-900">{sessions.length}</span>
-            <span className="text-[10px] font-bold text-slate-400">جلسة مجدولة</span>
+            <span className="text-[10px] font-bold text-slate-200 font-bold">جلسة مجدولة</span>
           </div>
           <div className="bg-slate-50 p-3 rounded-2xl">
             <span className="block text-lg font-black text-slate-900">12</span>
-            <span className="text-[10px] font-bold text-slate-400">طلب تنفيذ</span>
+            <span className="text-[10px] font-bold text-slate-200 font-bold">طلب تنفيذ</span>
           </div>
         </div>
       </div>
@@ -68,7 +68,7 @@ export const AgenciesAlertWidget = ({ agencies }: { agencies: any[] }) => {
         </h3>
         <div className="flex items-center gap-1 bg-amber-50 px-2 py-1 rounded-lg">
           <Sparkles size={12} className="text-amber-500 animate-pulse" />
-          <span className="text-[9px] font-black text-amber-700">تحديث ذكي</span>
+          <span className="text-[11px] font-black text-amber-400 font-black">تحديث ذكي</span>
         </div>
       </div>
       
@@ -82,18 +82,18 @@ export const AgenciesAlertWidget = ({ agencies }: { agencies: any[] }) => {
             <div key={agency.id} className={`p-4 rounded-2xl border transition-all hover:bg-white hover:shadow-lg group ${isUrgent ? 'bg-rose-50 border-rose-100 ring-1 ring-rose-200' : 'bg-slate-50 border-slate-100'}`}>
               <div className="flex justify-between items-start mb-2">
                 <span className="text-xs font-black text-slate-800 line-clamp-1 group-hover:text-[#c0a060] transition-colors">{agency.client}</span>
-                <span className={`text-[9px] font-black px-2 py-1 rounded-lg ${isUrgent ? 'bg-rose-500 text-white shadow-sm' : 'bg-slate-200 text-slate-500'}`}>
+                <span className={`text-[11px] font-black px-2 py-1 rounded-lg ${isUrgent ? 'bg-rose-500 text-white shadow-sm' : 'bg-slate-200 text-slate-700'}`}>
                   {isUrgent ? 'تنتهي قريباً' : 'سارية'}
                 </span>
               </div>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-1.5">
-                  <Clock size={12} className={isUrgent ? 'text-rose-500' : 'text-slate-400'} />
-                  <span className={`text-[10px] font-bold ${isUrgent ? 'text-rose-600 animate-pulse' : 'text-slate-500'}`}>
+                  <Clock size={12} className={isUrgent ? 'text-rose-500' : 'text-slate-200 font-bold'} />
+                  <span className={`text-[10px] font-bold ${isUrgent ? 'text-rose-600 animate-pulse' : 'text-slate-700'}`}>
                     {isUrgent ? `متبقي ${daysLeft} يوم!` : `متبقي ${daysLeft} يوم`}
                   </span>
                 </div>
-                <span className="text-[9px] font-mono font-bold text-slate-400">{expiryDate.toLocaleDateString('ar-SA')}</span>
+                <span className="text-[11px] font-mono font-bold text-slate-200 font-bold">{expiryDate.toLocaleDateString('ar-SA')}</span>
               </div>
             </div>
           );
@@ -138,7 +138,7 @@ export const OverdueTasksWidget = ({ tasks }: { tasks: any[] }) => {
             <div className="w-16 h-16 bg-emerald-50 text-emerald-500 rounded-full flex items-center justify-center mb-4">
               <CheckSquare size={32} />
             </div>
-            <p className="text-xs font-black text-slate-400">لا توجد مهام متأخرة حالياً</p>
+            <p className="text-xs font-black text-slate-200 font-bold">لا توجد مهام متأخرة حالياً</p>
           </div>
         )}
       </div>
@@ -152,19 +152,19 @@ export const DeadlinesWidget = ({ cases }: { cases: any[] }) => {
   return (
     <div className="bg-white border-amber-200 rounded-[2.5rem] p-8 shadow-sm h-full flex flex-col border-b-4 border-b-amber-500">
       <div className="flex items-center justify-between mb-6">
-        <h3 className="font-black text-amber-600 text-lg flex items-center gap-2">
+        <h3 className="font-black text-amber-400 font-black text-lg flex items-center gap-2">
           <Clock className="w-5 h-5" />
           مهل استحقاق عدلية
         </h3>
-        <span className="text-[10px] font-black text-amber-600 bg-amber-50 px-2.5 py-1 rounded-xl">حرجة</span>
+        <span className="text-[10px] font-black text-amber-400 font-black bg-amber-50 px-2.5 py-1 rounded-xl">حرجة</span>
       </div>
       <div className="space-y-4 flex-1">
         {critical.length > 0 ? (
           critical.slice(0, 3).map((c, i) => (
             <div key={i} className="p-4 bg-slate-50 border border-slate-100 rounded-2xl hover:bg-white hover:shadow-md transition-all">
               <div className="flex justify-between items-center mb-1.5">
-                <span className="text-[9px] font-black text-amber-600 bg-amber-50 px-2 py-0.5 rounded-lg animate-pulse">تنتهي قريباً</span>
-                <span className="text-[10px] font-mono text-slate-400 font-bold">#{c.caseNumber}</span>
+                <span className="text-[11px] font-black text-amber-400 font-black bg-amber-50 px-2 py-0.5 rounded-lg animate-pulse">تنتهي قريباً</span>
+                <span className="text-[10px] font-mono text-slate-200 font-bold font-bold">#{c.caseNumber}</span>
               </div>
               <h4 className="text-xs font-black text-slate-800 line-clamp-1">{c.caseName}</h4>
             </div>
@@ -198,13 +198,13 @@ export const UpcomingHearingsList = ({ hearings, cases }: { hearings: any[], cas
             <div key={i} className="p-4 bg-slate-50 border border-slate-100 rounded-2xl flex items-center gap-4 hover:bg-indigo-50 transition-colors cursor-pointer group">
               <div className="w-12 h-12 bg-white text-indigo-600 rounded-xl flex flex-col items-center justify-center shrink-0 shadow-sm group-hover:text-white group-hover:bg-indigo-500 transition-all">
                 <span className="text-[10px] font-black">{new Date(h.date).getDate()}</span>
-                <span className="text-[8px] font-bold">{new Date(h.date).toLocaleDateString('ar-SA', { month: 'short' })}</span>
+                <span className="text-[10px] font-bold">{new Date(h.date).toLocaleDateString('ar-SA', { month: 'short' })}</span>
               </div>
               <div className="flex-1 min-w-0 text-right">
                 <h4 className="text-xs font-black text-slate-800 line-clamp-1">{h.caseName}</h4>
                 <div className="flex items-center gap-2 mt-1">
-                  <Clock size={10} className="text-slate-400" />
-                  <span className="text-[10px] text-slate-500 font-bold">{h.time}</span>
+                  <Clock size={10} className="text-slate-200 font-bold" />
+                  <span className="text-[10px] text-slate-700 font-bold">{h.time}</span>
                 </div>
               </div>
             </div>
@@ -212,7 +212,7 @@ export const UpcomingHearingsList = ({ hearings, cases }: { hearings: any[], cas
         ) : (
           <div className="flex-1 flex flex-col items-center justify-center text-center py-8 opacity-40">
             <Calendar size={40} className="mb-4" />
-            <p className="text-xs font-black text-slate-400">لا توجد جلسات قادمة</p>
+            <p className="text-xs font-black text-slate-200 font-bold">لا توجد جلسات قادمة</p>
           </div>
         )}
       </div>
@@ -236,24 +236,25 @@ export const EmployeePerformanceKPI = ({ tasks }: { tasks: any[] }) => {
   })).sort((a, b) => b.completion - a.completion).slice(0, 5);
 
   return (
-    <div className="bg-white border border-slate-200 rounded-[2.5rem] p-8 shadow-sm h-full flex flex-col">
+    <div className="bg-white border border-slate-200 rounded-[2.5rem] p-8 shadow-sm h-full flex flex-col hover:-translate-y-2 hover:shadow-[0_20px_35px_rgba(212,175,55,0.15)] hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 ease-in-out">
       <div className="flex items-center justify-between mb-6">
-        <h3 className="font-black text-slate-900 text-lg flex items-center gap-2">
-          <Users className="w-5 h-5 text-emerald-500" />
+        <h3 className="font-extrabold text-[#0B2545] text-lg flex items-center gap-2" style={{ color: '#0B2545', textShadow: 'none' }}>
+          <Users className="w-5 h-5 text-[#8A6201]" style={{ color: '#8A6201' }} />
           تحليل أداء الفريق
         </h3>
-        <TrendingUp size={16} className="text-emerald-500" />
+        <TrendingUp size={16} className="text-[#D90429]" style={{ color: '#D90429' }} />
       </div>
       <div className="space-y-6 flex-1">
         {statsArray.map((emp, idx) => (
           <div key={idx} className="space-y-2.5">
             <div className="flex justify-between items-center text-xs font-black">
-              <span className="text-slate-800">{emp.name}</span>
-              <span className="text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-lg">{emp.completion}% كفاءة</span>
+              <span className="text-[#0B2545] font-extrabold" style={{ color: '#0B2545' }}>{emp.name}</span>
+              <span className="text-[#D90429] bg-[#D90429]/10 px-2.5 py-1 rounded-xl border border-[#D90429]/20 font-bold">{emp.completion}% كفاءة</span>
             </div>
             <div className="h-2 bg-slate-100 rounded-full overflow-hidden border border-slate-50">
               <motion.div 
-                className="h-full bg-emerald-500 rounded-full"
+                className="h-full rounded-full"
+                style={{ backgroundColor: '#8A6201' }}
                 initial={{ width: 0 }}
                 animate={{ width: `${emp.completion}%` }}
                 transition={{ duration: 1.2, delay: idx * 0.1, ease: "easeOut" }}

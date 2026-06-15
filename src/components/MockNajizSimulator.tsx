@@ -146,11 +146,11 @@ export default function MockNajizSimulator({
           <span className="w-3.5 h-3.5 rounded-full bg-amber-500 block"></span>
           <span className="w-3.5 h-3.5 rounded-full bg-emerald-500 block"></span>
         </div>
-        <div className="flex-1 max-w-xl mx-auto bg-midnight/50 rounded-lg px-4 py-1 text-xs font-mono text-slate-200  flex items-center justify-between">
+        <div className="flex-1 max-w-xl mx-auto bg-midnight/50 rounded-lg px-4 py-1 text-xs font-mono text-white font-bold  flex items-center justify-between">
           <span className="flex items-center gap-1.5 text-gold">
             <span className="text-emerald-500">🔒 https://</span><span>najiz.sa/applications/lawyers/portal</span>
           </span>
-          <span className="text-xs text-slate-300">منصة ناجز - وزارة العدل السعودية</span>
+          <span className="text-xs text-white font-bold">منصة ناجز - وزارة العدل السعودية</span>
         </div>
         <button 
           onClick={handlePerformScrape}
@@ -264,7 +264,7 @@ export default function MockNajizSimulator({
                     <div className="space-y-1">
                       <strong className="text-xs font-bold text-slate-900  block">طلب تنفيذ قضائي رقم: {exec.number}</strong>
                       <span className="text-xs text-slate-900  block">المحكمة: {exec.court}</span>
-                      <span className="text-xs text-amber-600 font-medium block">{exec.status}</span>
+                      <span className="text-xs text-amber-400 font-black font-medium block">{exec.status}</span>
                     </div>
                     <div className="text-left shrink-0">
                       <div className="text-sm font-bold font-mono text-emerald-700">{exec.amount}</div>

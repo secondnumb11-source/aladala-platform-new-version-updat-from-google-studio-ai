@@ -75,7 +75,7 @@ export default function AIAnalysisTool() {
               <Cpu className="w-6 h-6 text-amber-500" />
               المحلل القانوني الذكي
             </h3>
-            <p className="text-slate-400 text-xs mt-2 font-bold">تحليل عميق للدعاوى والعقود والأحكام باستخدام أقوى نماذج الذكاء الاصطناعي.</p>
+            <p className="text-slate-200 font-bold text-xs mt-2 font-bold">تحليل عميق للدعاوى والعقود والأحكام باستخدام أقوى نماذج الذكاء الاصطناعي.</p>
           </div>
 
           <div className="bg-white border border-slate-200 p-6 rounded-3xl shadow-lg space-y-6">
@@ -91,7 +91,7 @@ export default function AIAnalysisTool() {
                   className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-[10px] font-black transition-all ${
                     analysisType === t.id 
                       ? 'bg-slate-900 text-white shadow-md' 
-                      : 'text-slate-500'
+                      : 'text-slate-700'
                   }`}
                 >
                   {t.icon}
@@ -173,7 +173,7 @@ export default function AIAnalysisTool() {
                 </div>
               ) : (
                 <div className="h-full flex flex-col items-center justify-center text-center opacity-40">
-                  <Info className="w-16 h-16 text-slate-300 mb-4" />
+                  <Info className="w-16 h-16 text-white font-bold mb-4" />
                   <p className="text-sm font-bold">بانتظار التحليل لاستخراج الرؤى القانونية...</p>
                 </div>
               )}

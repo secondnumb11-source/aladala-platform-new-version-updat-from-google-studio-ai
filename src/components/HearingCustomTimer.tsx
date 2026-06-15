@@ -129,11 +129,11 @@ export default function HearingCustomTimer({
         </div>
         
         {syncSuccess ? (
-          <span className="text-[10px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded font-black">
+          <span className="text-[10px] bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-bold border border-emerald-500/20 px-2 py-0.5 rounded font-black">
             ✓ تم التزامن مع {syncedInvoiceNum}
           </span>
         ) : (
-          <span className="text-[10px] text-slate-400 font-mono">
+          <span className="text-[10px] text-slate-200 font-bold font-mono">
             مُسجّل الميقات المالي للدعوى
           </span>
         )}
@@ -148,7 +148,7 @@ export default function HearingCustomTimer({
           </div>
           
           <div className="text-right">
-            <span className="block text-[9px] text-slate-400 font-black">الرسوم المستحقة المقدرة:</span>
+            <span className="block text-[11px] text-slate-200 font-bold font-black">الرسوم المستحقة المقدرة:</span>
             <span className="text-xs font-mono font-black text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded inline-block mt-1">
               {calculateFees().toLocaleString()} ر.س
             </span>
@@ -162,7 +162,7 @@ export default function HearingCustomTimer({
             onClick={handleStartPause}
             className={`px-3 py-2 rounded-lg text-xs font-black flex items-center gap-1 transition-all shadow cursor-pointer ${
               isRunning
-                ? 'bg-rose-500/10 text-rose-400 border border-rose-500/30'
+                ? 'bg-rose-500/10 border border-rose-500/30 text-rose-400 font-bold border border-rose-500/30'
                 : 'bg-primary/20 text-amber-300 border border-primary/40'
             }`}
           >
@@ -173,7 +173,7 @@ export default function HearingCustomTimer({
           <button
             type="button"
             onClick={handleReset}
-            className="p-2 bg-slate-800 text-slate-300 rounded-lg border border-slate-700 transition-all cursor-pointer"
+            className="p-2 bg-slate-800 text-white font-bold rounded-lg border border-slate-700 transition-all cursor-pointer"
             title="إعادة التصفير"
           >
             <RotateCcw className="w-3.5 h-3.5" />
@@ -186,7 +186,7 @@ export default function HearingCustomTimer({
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {/* Rate input */}
           <div className="space-y-1">
-            <label className="text-[10px] text-slate-300 font-bold block">معدل الفوترة (السعر بالساعة):</label>
+            <label className="text-[10px] text-white font-bold font-bold block">معدل الفوترة (السعر بالساعة):</label>
             <div className="relative">
               <input
                 type="number"
@@ -194,13 +194,13 @@ export default function HearingCustomTimer({
                 onChange={(e) => setHourlyRate(Math.max(0, parseInt(e.target.value) || 0))}
                 className="w-full bg-slate-900 border border-slate-800 text-xs text-slate-100 py-1.5 pl-3 pr-8 rounded-lg outline-none font-mono font-bold focus:border-primary"
               />
-              <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[10px] text-slate-500">ر.س/ساعة</span>
+              <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[10px] text-slate-700">ر.س/ساعة</span>
             </div>
           </div>
 
           {/* Invoice target selection */}
           <div className="space-y-1">
-            <label className="text-[10px] text-slate-300 font-bold block">مزامنة القيمة المالية مع:</label>
+            <label className="text-[10px] text-white font-bold font-bold block">مزامنة القيمة المالية مع:</label>
             <select
               value={selectedInvoiceId}
               onChange={(e) => setSelectedInvoiceId(e.target.value)}
@@ -223,7 +223,7 @@ export default function HearingCustomTimer({
           disabled={seconds <= 0}
           className={`w-full py-2 px-3 rounded-xl font-black text-xs transition-all flex items-center justify-center gap-1.5 border shadow ${
             seconds <= 0
-              ? 'bg-slate-800 text-slate-500 border-slate-800 cursor-not-allowed'
+              ? 'bg-slate-800 text-slate-700 border-slate-800 cursor-not-allowed'
               : 'bg-[#ca8a04] text-slate-950 border-[#ca8a04] cursor-pointer'
           }`}
         >

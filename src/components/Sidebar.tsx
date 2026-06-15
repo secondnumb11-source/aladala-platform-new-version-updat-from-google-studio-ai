@@ -4,6 +4,7 @@
  */
 
 import React from 'react';
+import moment from 'moment-hijri';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   LayoutDashboard, 
@@ -134,6 +135,7 @@ export default function Sidebar({
   };
 
   const [showClockSettings, setShowClockSettings] = React.useState(false);
+
   const [time, setTime] = React.useState(new Date());
 
   React.useEffect(() => {
@@ -300,7 +302,7 @@ export default function Sidebar({
             <div className="relative z-10 flex flex-col gap-4">
               <div className="flex items-start justify-between">
                 <div className="flex items-center gap-4">
-                  <div className="relative w-14 h-14 bg-amber-500/20 border-2 border-primary rounded-2xl flex items-center justify-center text-amber-450 shadow-[0_0_25px_rgba(251,191,36,0.5)] shrink-0">
+                  <div className="relative w-14 h-14 bg-amber-500/20 border-2 border-primary rounded-2xl flex items-center justify-center text-amber-400 shadow-[0_0_25px_rgba(251,191,36,0.5)] shrink-0">
                     <Scale className="w-8 h-8 relative z-10 text-amber-400" />
                     <div className="absolute inset-0 bg-amber-500/10 blur-md rounded-2xl"></div>
                   </div>
@@ -361,7 +363,7 @@ export default function Sidebar({
                   <div className="relative">
                     <button 
                       onClick={() => setShowClockSettings(!showClockSettings)}
-                      className={`p-1.5 rounded-lg text-slate-500 transition-all ${showClockSettings ? 'bg-slate-800 text-amber-500 rotate-45' : ''}`}
+                      className={`p-1.5 rounded-lg text-slate-700 transition-all ${showClockSettings ? 'bg-slate-800 text-amber-500 rotate-45' : ''}`}
                       title="صلاحية النظام"
                       aria-label="Settings"
                     >
@@ -375,14 +377,14 @@ export default function Sidebar({
                         <div className="space-y-4 relative z-10">
                           {currentUser?.role !== 'client' && currentUser?.role !== 'employee' && (
                             <div className="pt-2 border-t border-slate-850">
-                              <span className="text-[10px] font-black text-slate-400 mb-1 block">صلاحية النظام</span>
+                              <span className="text-[10px] font-black text-white font-black mb-1 block">صلاحية النظام</span>
                               <select
                                 value={selectedRole}
                                 onChange={(e) => {
                                   onRoleChange(e.target.value);
                                   setMobileOpen(false);
                                 }}
-                                className="w-full bg-slate-900 text-[#D4AF37] text-[10px] py-1 px-2 rounded-xl border border-slate-800 focus:outline-none focus:border-amber-500 font-bold cursor-pointer"
+                                className="w-full bg-slate-900 text-[#FACC15] font-black text-[10px] py-1 px-2 rounded-xl border border-slate-800 focus:outline-none focus:border-amber-500 font-bold cursor-pointer"
                               >
                                 {roles.map(r => (
                                   <option key={r.id} value={r.id}>{r.name.replace('⚖️', '').replace('🎓', '').replace('👑', '').replace('📅', '').replace('💰', '').trim()}</option>
@@ -404,17 +406,17 @@ export default function Sidebar({
                 </div>
                 
                 {/* Time/Date & Converter */}
-                <div className="flex items-start justify-between gap-2 pt-1">
-                  <div className="flex flex-col items-start gap-0.5">
+                <div className="flex items-start justify-between gap-2 pt-1 w-full" dir="ltr">
+                  <div className="flex flex-col items-start gap-0.5 text-left">
                     <span 
-                      className="tabular-nums font-black font-mono text-xl leading-none" 
-                      style={{ color: '#39ff14', textShadow: '0 0 10px rgba(57,255,20,0.8)' }}
+                      className="tabular-nums font-black font-mono text-xl leading-none text-left" 
+                      style={{ color: '#39FF14', textShadow: '0 0 14px rgba(57,255,20,1.0), 0 0 4px rgba(57,255,20,0.8)' }}
                     >
                       {time.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })}
                     </span>
                     <span 
-                      className="text-[11px] font-black tabular-nums tracking-tight text-left"
-                      style={{ color: '#39ff14', textShadow: '0 0 5px rgba(57,255,20,0.5)' }}
+                      className="text-[11px] font-black tabular-nums tracking-tight text-left block"
+                      style={{ color: '#39FF14', textShadow: '0 0 8px rgba(57,255,20,0.8)' }}
                     >
                       {isHijri 
                         ? time.toLocaleDateString('ar-SA-u-ca-islamic-nu-latn', { year: 'numeric', month: 'short', day: 'numeric' })
@@ -423,49 +425,14 @@ export default function Sidebar({
                     </span>
                   </div>
                   
-                  <div className="flex flex-col gap-1 items-end">
+                  <div className="flex flex-col gap-1 items-end shrink-0">
                     <button 
                       onClick={toggleCalendar}
-                      className="text-[9px] bg-slate-800 text-[#39ff14] px-1.5 py-0.5 rounded border border-[#39ff14]/30 font-black hover:bg-slate-700 transition-colors"
+                      className="text-[11px] bg-slate-800 text-[#39FF14] px-1.5 py-0.5 rounded border border-[#39FF14]/30 font-black hover:bg-slate-700 transition-colors"
                       title="تبديل التاريخ"
                     >
                       {isHijri ? 'ميلادي' : 'هجري'}
                     </button>
-
-                    {/* Converter Trigger */}
-                    <button
-                      onClick={() => {
-                        if (dateInputRef.current) {
-                          dateInputRef.current.focus();
-                          try {
-                            dateInputRef.current.showPicker();
-                          } catch (e) {
-                            dateInputRef.current.click();
-                          }
-                        }
-                      }}
-                      className="bg-slate-800 border border-[#39ff14]/30 text-[#39ff14] rounded p-1 hover:bg-slate-700 transition-colors"
-                      title="فتح محول التاريخ"
-                    >
-                      <Calculator className="w-3.5 h-3.5" />
-                    </button>
-                    
-                    {/* Hidden Converter Input */}
-                    <input
-                      ref={dateInputRef}
-                      type="date"
-                      className="opacity-0 fixed top-0 right-0 w-1 h-1 pointer-events-none"
-                      onChange={(e) => {
-                        if (e.target.value) {
-                          const date = new Date(e.target.value);
-                          if (!isNaN(date.getTime())) {
-                            const gFull = date.toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' });
-                            const hFull = date.toLocaleDateString('ar-SA-u-ca-islamic-nu-latn', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' });
-                            alert(`نتائج المحول:\n\nالميلادي: ${gFull}\nالهجري: ${hFull}`);
-                          }
-                        }
-                      }}
-                    />
                   </div>
                 </div>
               </div>
@@ -536,7 +503,7 @@ export default function Sidebar({
                 <div key={cat.title} className="space-y-1 pt-1.5 border-t border-slate-900/40">
                   <div className="px-3 flex items-center gap-2 mb-2 group cursor-default">
                     <span className="w-1.5 h-3 bg-gradient-to-b from-sky-400 to-blue-600 rounded-full"></span>
-                    <h3 className="text-[10px] font-black text-slate-300 uppercase tracking-widest">{cat.title}</h3>
+                    <h3 className="text-[10px] font-black text-white font-black uppercase tracking-widest">{cat.title}</h3>
                   </div>
                   <div className="space-y-1">
                     {allowedItems.map((item) => {
@@ -545,7 +512,7 @@ export default function Sidebar({
                       const isItemExpanded = item.id === 'ai' ? aiExpanded : false;
 
                       return (
-                        <div key={item.id} className={`relative group/nav-item font-bold ${isActive ? 'active-nav-item' : ''}`}>
+                        <div key={item.id} className={`relative nav-item-no-group font-bold ${isActive ? 'active-nav-item' : ''}`}>
                           <button
                             onClick={(e) => {
                               if (item.children) {
@@ -570,20 +537,20 @@ export default function Sidebar({
                                 });
                               }
                             }}
-                            className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-[12px] relative overflow-hidden group select-none border ${
+                            className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-[12px] relative overflow-hidden select-none border ${
                               isActive 
-                                ? 'text-white font-extrabold border-[#B3933B] bg-amber-500/10' 
-                                : 'text-slate-300 border-transparent'
+                                ? 'text-white font-black border-amber-500 bg-amber-500/20' 
+                                : 'text-neutral-50 font-black border-transparent bg-transparent'
                             }`}
                           >
                             {/* Content */}
                             <div className="flex items-center gap-3 relative z-10 w-full overflow-hidden">
-                              <Icon className={`w-5 h-5 shrink-0 ${isActive ? 'text-white' : 'text-sky-400'}`} />
+                              <Icon className={`w-5 h-5 shrink-0 ${isActive ? 'text-white' : 'text-white'}`} />
                               <div className="text-right leading-relaxed flex items-center gap-x-1.5 truncate">
                                 {item.name.includes('AI') ? (
                                   <div className="flex items-center gap-1.5 min-w-0">
                                     <span className="truncate font-black text-[13px]">{item.name.replace('AI', '').trim()}</span>
-                                    <span className={`px-1.5 py-0.5 rounded-md border text-[10px] font-black uppercase tracking-wider shrink-0 ${isActive ? 'border-sky-400 bg-sky-400/20 text-sky-200' : 'border-sky-600 bg-sky-900/40 text-sky-400'}`}>AI</span>
+                                    <span className={`px-1.5 py-0.5 rounded-md border text-[10px] font-black uppercase tracking-wider shrink-0 ${isActive ? 'border-sky-400 bg-sky-400/20 text-white' : 'border-sky-600 bg-sky-900/40 text-white'}`}>AI</span>
                                   </div>
                                 ) : (
                                   <span className="truncate font-black text-[13px]">{item.name}</span>
@@ -592,12 +559,12 @@ export default function Sidebar({
                             </div>
                             <div className="flex items-center gap-2 relative z-10">
                               {item.isPremium && (
-                                <Crown className={`w-4 h-4 shrink-0 ${isActive ? 'text-white' : 'text-[#fcd34d]'}`} />
+                                <Crown className={`w-4 h-4 shrink-0 ${isActive ? 'text-white' : 'text-yellow-400'}`} />
                               )}
                               {item.children && (
                                 <div 
                                   id="sidebar-ai-assistant-arrow"
-                                  className="ml-2 select-none flex items-center justify-center shrink-0 text-slate-400"
+                                  className="ml-2 select-none flex items-center justify-center shrink-0 text-white font-black"
                                 >
                                   {isItemExpanded ? (
                                     <ChevronUp className="w-5 h-5" />
@@ -636,7 +603,7 @@ export default function Sidebar({
                                     </button>
                                     
                                     <div className="flex items-center gap-2 px-2 py-1.5 rounded-lg dark:bg-slate-900 bg-slate-100 border dark:border-white/5 border-slate-200">
-                                      <span className="text-[10px] font-black text-slate-400 select-none">زجاجي:</span>
+                                      <span className="text-[10px] font-black text-white font-black select-none">زجاجي:</span>
                                       <button 
                                         onClick={() => setAiBlurEnabled(!aiBlurEnabled)}
                                         className={`w-9 h-5 rounded-full relative transition-all duration-300 ${aiBlurEnabled ? 'bg-amber-500' : 'bg-slate-700'}`}
@@ -656,12 +623,12 @@ export default function Sidebar({
                                           placeholder="بحث في ذكاء المنصة..."
                                           value={aiSearchQuery}
                                           onChange={(e) => setAiSearchQuery(e.target.value)}
-                                          className="w-full bg-slate-900 border border-slate-800 focus:border-amber-500/50 rounded-xl py-2.5 pr-10 pl-3 text-[11px] text-white focus:outline-none transition-all font-black placeholder:text-slate-600"
+                                          className="w-full bg-slate-900 border border-slate-800 focus:border-amber-500/50 rounded-xl py-2.5 pr-10 pl-3 text-[11px] text-white focus:outline-none transition-all font-black placeholder:text-white font-black"
                                         />
                                         {aiSearchQuery && (
                                           <button 
                                             onClick={() => setAiSearchQuery('')}
-                                            className="absolute left-2 top-1/2 -translate-y-1/2 text-slate-500"
+                                            className="absolute left-2 top-1/2 -translate-y-1/2 text-slate-700"
                                           >
                                             <X className="w-3.5 h-3.5" />
                                           </button>
@@ -673,10 +640,10 @@ export default function Sidebar({
                                           <button
                                             key={size}
                                             onClick={() => setAiFontSize(size)}
-                                            className={`px-2.5 py-1.5 rounded-lg text-[9px] font-black transition-all ${
+                                            className={`px-2.5 py-1.5 rounded-lg text-[11px] font-black transition-all ${
                                               aiFontSize === size 
                                                 ? 'bg-amber-500 text-slate-950 shadow-lg' 
-                                                : 'text-slate-400'
+                                                : 'text-white font-black'
                                             }`}
                                           >
                                             {size === 'sm' ? 'صـغير' : size === 'md' ? 'وسط' : 'كبير'}
@@ -693,7 +660,7 @@ export default function Sidebar({
                                         <div className="w-1.5 h-1.5 bg-amber-400 rounded-full animate-pulse"></div>
                                         <h4 className="text-[10px] font-black text-amber-400 uppercase tracking-widest shadow-white/10 shadow-sm">آخر التحديثات القانونية المباشرة</h4>
                                       </div>
-                                      <button className="text-[9px] text-white/70 font-bold underline underline-offset-2">تحديث الآن</button>
+                                      <button className="text-[11px] text-white font-bold font-bold underline underline-offset-2">تحديث الآن</button>
                                     </div>
                                     <div className="space-y-2 max-h-[120px] overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-amber-500/30">
                                       {[
@@ -704,7 +671,7 @@ export default function Sidebar({
                                       ].map((upd, idx) => (
                                         <div key={idx} className="group/upd bg-white/5 p-2 rounded-lg border border-white/10 transition-all cursor-pointer">
                                           <div className="text-[11px] font-black text-white group-hover/upd:text-amber-400 line-clamp-1 leading-relaxed">{upd.t}</div>
-                                          <div className="text-[9px] text-amber-100/60 mt-0.5">{upd.d}</div>
+                                          <div className="text-[11px] text-amber-100/60 mt-0.5">{upd.d}</div>
                                         </div>
                                       ))}
                                     </div>
@@ -739,7 +706,7 @@ export default function Sidebar({
                                         <div className="flex flex-col items-start gap-0.5 text-right flex-1">
                                           <span className="font-semibold select-none leading-relaxed" style={{ color: '#fb923c' }}>{child.name}</span>
                                           {(aiFontSize === 'md' || aiFontSize === 'lg') && (
-                                            <span className="text-[9px] text-slate-500 font-bold group-hover/ai-child:text-amber-500/70 transition-colors line-clamp-1 opacity-0 group-hover/ai-child:opacity-100 transform -translate-y-1 group-hover/ai-child:translate-y-0 duration-300">
+                                            <span className="text-[11px] text-slate-700 font-bold group-hover/ai-child:text-amber-500/70 transition-colors line-clamp-1 opacity-0 group-hover/ai-child:opacity-100 transform -translate-y-1 group-hover/ai-child:translate-y-0 duration-300">
                                               {child.tooltip}
                                             </span>
                                           )}
@@ -811,8 +778,8 @@ export default function Sidebar({
                   <ShieldAlert className="w-3.5 h-3.5 text-emerald-500" />
                 </div>
                 <div className="flex flex-col justify-center">
-                  <span className="text-[9px] font-black text-slate-300 uppercase tracking-wider leading-none mb-1">تشفير مركزي معتمد</span>
-                  <span className="text-[8px] text-slate-500 font-bold leading-none">متوافق مع الأنظمة السعودية</span>
+                  <span className="text-[11px] font-black text-white font-black uppercase tracking-wider leading-none mb-1">تشفير مركزي معتمد</span>
+                  <span className="text-[10px] text-slate-700 font-bold leading-none">متوافق مع الأنظمة السعودية</span>
                 </div>
               </div>
             </div>
@@ -847,7 +814,7 @@ export default function Sidebar({
               className="flex flex-col items-center gap-0.5"
             >
               <Menu className="w-7 h-7" />
-              <span className="text-[8px] font-black uppercase leading-none">القائمة</span>
+              <span className="text-[10px] font-black uppercase leading-none">القائمة</span>
             </motion.div>
           )}
         </AnimatePresence>

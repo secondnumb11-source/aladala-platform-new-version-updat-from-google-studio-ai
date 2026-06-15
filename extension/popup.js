@@ -1,34 +1,33 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const tabs = document.querySelectorAll('.tab');
-    const contents = document.querySelectorAll('.content');
+  const syncBtn = document.getElementById('syncBtn');
+  const statusEl = document.getElementById('statusMessage');
+  
+  chrome.storage.local.get(['apiUrl', 'apiKey'], (result) => {
+    if (result.apiUrl) document.getElementById('apiUrl').value = result.apiUrl;
+    if (result.apiKey) document.getElementById('apiKey').value = result.apiKey;
+  });
+  
+  syncBtn.addEventListener('click', async () => {
+    const apiUrl = document.getElementById('apiUrl').value;
+    const apiKey = document.getElementById('apiKey').value;
     
-    tabs.forEach(tab => {
-       tab.addEventListener('click', () => {
-          tabs.forEach(t => t.classList.remove('active'));
-          contents.forEach(c => c.classList.remove('active'));
-          
-          tab.classList.add('active');
-          document.getElementById(tab.dataset.target).classList.add('active');
-       });
+    chrome.storage.local.set({ apiUrl, apiKey });
+    statusEl.textContent = 'جاري المزامنة...';
+    
+    let [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+    
+    chrome.scripting.executeScript({
+      target: { tabId: tab.id },
+      files: ['content.js']
+    }, () => {
+      chrome.tabs.sendMessage(tab.id, { action: 'syncData', apiUrl, apiKey }, (response) => {
+        if (response && response.success) {
+          statusEl.textContent = 'تمت المزامنة بنجاح.';
+        } else {
+          statusEl.textContent = 'خطأ في المزامنة.';
+          statusEl.style.color = '#ff4d4f';
+        }
+      });
     });
-
-    chrome.storage.local.get(['apiUrl', 'apiKey'], (data) => {
-       if(data.apiUrl) document.getElementById('apiUrl').value = data.apiUrl;
-       if(data.apiKey) document.getElementById('apiKey').value = data.apiKey;
-    });
-
-    document.getElementById('saveBtn').addEventListener('click', () => {
-       const apiUrl = document.getElementById('apiUrl').value;
-       const apiKey = document.getElementById('apiKey').value;
-       const btn = document.getElementById('saveBtn');
-       
-       btn.innerText = 'جاري الحفظ...';
-       
-       chrome.storage.local.set({ apiUrl, apiKey }, () => {
-          setTimeout(() => {
-             btn.innerText = 'تم الحفظ ✔️';
-             setTimeout(() => { btn.innerText = 'حفظ البيانات والتأمين'; }, 2000);
-          }, 500);
-       });
-    });
+  });
 });

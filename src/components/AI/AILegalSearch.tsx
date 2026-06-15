@@ -552,7 +552,7 @@ export default function AILegalSearch() {
             <Library className="w-8 h-8 text-amber-400 drop-shadow-[0_0_12px_rgba(245,158,11,0.5)]" />
             مكتبة الأنظمة والبحث الذكي وبناء المذكرات AI
           </h2>
-          <p className="text-slate-200 text-sm mt-1.5 font-bold">البحث الفوري الشامل، مرصد اللوائح والتعويضات، وبناء وصياغة اللوائح القانونية بتدقيق جيميناي.</p>
+          <p className="text-white font-bold text-sm mt-1.5 font-bold">البحث الفوري الشامل، مرصد اللوائح والتعويضات، وبناء وصياغة اللوائح القانونية بتدقيق جيميناي.</p>
         </div>
         
         {/* Top View Selector Buttons */}
@@ -560,21 +560,21 @@ export default function AILegalSearch() {
           <button 
             type="button"
             onClick={() => setActiveView('search')}
-            className={`px-5 py-3 rounded-xl text-xs font-black transition-all cursor-pointer ${activeView === 'search' ? 'bg-amber-400 text-slate-950 font-black shadow-lg scale-105' : 'text-slate-300'}`}
+            className={`px-5 py-3 rounded-xl text-xs font-black transition-all cursor-pointer ${activeView === 'search' ? 'bg-amber-400 text-slate-950 font-black shadow-lg scale-105' : 'text-white font-bold'}`}
           >
             البحث القانوني التفاعلي
           </button>
           <button 
             type="button"
             onClick={() => setActiveView('library')}
-            className={`px-5 py-3 rounded-xl text-xs font-black transition-all cursor-pointer ${activeView === 'library' ? 'bg-amber-400 text-slate-950 font-black shadow-lg scale-105' : 'text-slate-300'}`}
+            className={`px-5 py-3 rounded-xl text-xs font-black transition-all cursor-pointer ${activeView === 'library' ? 'bg-amber-400 text-slate-950 font-black shadow-lg scale-105' : 'text-white font-bold'}`}
           >
             مرصد ومكتبة الأنظمة 🇸🇦
           </button>
           <button 
             type="button"
             onClick={() => setActiveView('memos')}
-            className={`px-5 py-3 rounded-xl text-xs font-black transition-all cursor-pointer ${activeView === 'memos' ? 'bg-amber-400 text-slate-950 font-black shadow-lg scale-105' : 'text-slate-300'}`}
+            className={`px-5 py-3 rounded-xl text-xs font-black transition-all cursor-pointer ${activeView === 'memos' ? 'bg-amber-400 text-slate-950 font-black shadow-lg scale-105' : 'text-white font-bold'}`}
           >
             نماذج ومصحح المذكرات القانونية 📃
           </button>
@@ -589,7 +589,7 @@ export default function AILegalSearch() {
             <div className="bg-white border-2 border-slate-200/80 p-6 rounded-[2.5rem] shadow-xl">
               <label className="text-slate-900 font-extrabold text-sm mb-3 block">اسأل محاميك الرقمي بخصوص أي مسألة تشريعية سعودية:</label>
               <div className="relative group">
-                <Search className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-400 w-6 h-6 group-focus-within:text-amber-600 transition-colors" />
+                <Search className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-200 font-bold w-6 h-6 group-focus-within:text-amber-400 font-black transition-colors" />
                 <input 
                   type="text" 
                   placeholder="ابحث عن مسألة قانونية (مثلاً: ما هي شروط تصفية شركة مساهمة، أو الموعد النظامي للاستئناف...)"
@@ -624,7 +624,7 @@ export default function AILegalSearch() {
               >
                 <div className="p-8 bg-slate-50 border-b border-slate-200 flex justify-between items-center">
                   <div className="flex items-center gap-3">
-                    <Sparkles className="w-6 h-6 text-amber-600" />
+                    <Sparkles className="w-6 h-6 text-amber-400 font-black" />
                     <h3 className="font-black text-slate-900 text-lg">الرأي الاستشاري والبحث الموثق والمواد المستدلة</h3>
                   </div>
                   <div className="flex gap-2">
@@ -636,7 +636,7 @@ export default function AILegalSearch() {
                       }}
                       className="p-3 border border-slate-200 bg-white rounded-xl transition-colors flex items-center gap-1.5 text-xs font-bold text-slate-700 cursor-pointer"
                     >
-                      <Copy className="w-4 h-4 text-slate-500" />
+                      <Copy className="w-4 h-4 text-slate-700" />
                       <span>نسخ النص</span>
                     </button>
                   </div>
@@ -666,14 +666,14 @@ export default function AILegalSearch() {
                       </div>
                       <div className="text-right">
                         <p className="text-xs font-black text-slate-900">{s.title}</p>
-                        <p className="text-[10px] text-slate-500 font-bold">{s.category}</p>
+                        <p className="text-[10px] text-slate-700 font-bold">{s.category}</p>
                       </div>
                     </div>
-                    <ExternalLink className="w-4 h-4 text-slate-400 transition-colors" />
+                    <ExternalLink className="w-4 h-4 text-slate-200 font-bold transition-colors" />
                   </a>
                 )) : (
                   <div className="text-center py-8 opacity-60">
-                    <p className="text-xs text-slate-500 font-bold">تظهر الروابط وتوجيهات المحاكم فور بدء وعرض طلبك الذكي بالبحث في الأعلى.</p>
+                    <p className="text-xs text-slate-700 font-bold">تظهر الروابط وتوجيهات المحاكم فور بدء وعرض طلبك الذكي بالبحث في الأعلى.</p>
                   </div>
                 )}
               </div>
@@ -685,7 +685,7 @@ export default function AILegalSearch() {
                 <Sparkles className="w-4 h-4 text-amber-400 animate-pulse" />
                 التكامل الضريبي والامتثال القضائي
               </h4>
-              <p className="text-slate-300 text-[11px] font-bold leading-relaxed mb-6">تبث منصة العدالة تلقائياً مستندات المواد المذكورة وتوفر حفظ القضايا وتحليلها لمطابقتها مع متطلبات النيابة العامة ودوائر التنفيذ بالمملكة.</p>
+              <p className="text-white font-bold text-[11px] font-bold leading-relaxed mb-6">تبث منصة العدالة تلقائياً مستندات المواد المذكورة وتوفر حفظ القضايا وتحليلها لمطابقتها مع متطلبات النيابة العامة ودوائر التنفيذ بالمملكة.</p>
               <button 
                 type="button"
                 onClick={() => {
@@ -734,7 +734,7 @@ export default function AILegalSearch() {
                   onClick={() => setActiveView('search')}
                   className="flex items-center gap-2 bg-white text-slate-900 px-6 py-3 rounded-2xl text-xs font-black hover:bg-amber-400 transition-all shadow-xl active:scale-95 border-2 border-amber-400/50"
                 >
-                  <Sparkles className="w-4 h-4 text-amber-600" />
+                  <Sparkles className="w-4 h-4 text-amber-400 font-black" />
                   أداة تحليل البحث في القضايا والمواقف القانونية ⚖️
                 </button>
               </div>
@@ -779,7 +779,7 @@ export default function AILegalSearch() {
                 
                 // Dynamic Typography Contrast Theme variables to ensure extreme readability
                 const textTitleColor = isDark ? 'text-white' : 'text-slate-950';
-                const textDescColor = isDark ? 'text-slate-200/90' : 'text-slate-700';
+                const textDescColor = isDark ? 'text-white font-bold/90' : 'text-slate-700';
                 const metaColor = isDark ? 'text-amber-300' : 'text-emerald-750';
                 const folderBadgeClass = isDark ? 'bg-white/10 text-white border-white/20' : 'bg-slate-200/80 text-slate-950 border-slate-350';
                 
@@ -825,7 +825,7 @@ export default function AILegalSearch() {
                           <h4 className={`text-xs font-black tracking-tight leading-snug ${textTitleColor}`}>
                             {sys.name}
                           </h4>
-                          <h5 className={`text-[9px] font-bold mt-0.5 opacity-80 ${isDark ? 'text-slate-300' : 'text-slate-500'}`}>
+                          <h5 className={`text-[11px] font-bold mt-0.5 opacity-80 ${isDark ? 'text-white font-bold' : 'text-slate-700'}`}>
                             {sys.enName}
                           </h5>
                         </div>
@@ -837,7 +837,7 @@ export default function AILegalSearch() {
                         </p>
                         <div className="flex justify-between items-center text-[8.5px] mt-1.5 font-sans font-extrabold">
                           <span className={`${metaColor}`}>{sys.category}</span>
-                          <span className={isDark ? 'text-slate-300' : 'text-slate-600'}>{sys.hijriDate.split(' ')[0]}</span>
+                          <span className={isDark ? 'text-white font-bold' : 'text-slate-200 font-bold'}>{sys.hijriDate.split(' ')[0]}</span>
                         </div>
                       </div>
                     </div>
@@ -866,7 +866,7 @@ export default function AILegalSearch() {
                   البحث المصنف بالمرصد والأنظمة
                 </h3>
                 <div className="relative">
-                  <Search className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
+                  <Search className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-200 font-bold w-4 h-4" />
                   <input
                     type="text"
                     placeholder="ابحث بالاسم أو الفئة..."
@@ -897,13 +897,13 @@ export default function AILegalSearch() {
                           <span className={`text-xs font-black ${isSelected ? 'text-emerald-800' : 'text-slate-950'}`}>
                             {sys.name}
                           </span>
-                          <span className="text-[9px] bg-slate-100 border border-slate-200 text-slate-950 px-2.5 py-0.5 rounded-full font-black">
+                          <span className="text-[11px] bg-slate-100 border border-slate-200 text-slate-950 px-2.5 py-0.5 rounded-full font-black">
                             {sys.articleCount} مادة
                           </span>
                         </div>
-                        <div className="flex justify-between items-center w-full mt-0.5 text-[10px] text-slate-500 font-bold">
+                        <div className="flex justify-between items-center w-full mt-0.5 text-[10px] text-slate-700 font-bold">
                           <span>الصدور: {sys.hijriDate}</span>
-                          <span className="text-emerald-600 font-black text-[9px]">{sys.category}</span>
+                          <span className="text-emerald-600 font-black text-[11px]">{sys.category}</span>
                         </div>
                       </button>
                     );
@@ -914,7 +914,7 @@ export default function AILegalSearch() {
               {/* Compliance Alerts box */}
               <div className="bg-amber-500/[0.03] border-2 border-amber-400/70 p-6 rounded-[2rem] shadow-md space-y-4 text-right">
                 <h4 className="text-xs font-black text-amber-950 flex items-center gap-2 border-b border-amber-400/20 pb-2">
-                  <Scale className="w-4 h-4 text-amber-600" />
+                  <Scale className="w-4 h-4 text-amber-400 font-black" />
                   محدد مذكرات حوكمة المحاكم السعودية
                 </h4>
                 <ul className="space-y-3 text-[11px] text-slate-900 font-bold leading-relaxed">
@@ -942,16 +942,16 @@ export default function AILegalSearch() {
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-slate-100 pb-5">
                   <div>
                     <h2 className="text-xl font-black text-slate-900">{selectedSystem.name}</h2>
-                    <p className="text-xs font-bold text-slate-400 mt-1">{selectedSystem.enName} • صدر في {selectedSystem.hijriDate}</p>
+                    <p className="text-xs font-bold text-slate-200 font-bold mt-1">{selectedSystem.enName} • صدر في {selectedSystem.hijriDate}</p>
                   </div>
-                  <span className="text-xs bg-amber-50 text-amber-700 border border-amber-200 px-4 py-1.5 rounded-full font-black">
+                  <span className="text-xs bg-amber-50 text-amber-400 font-black border border-amber-200 px-4 py-1.5 rounded-full font-black">
                     {selectedSystem.category}
                   </span>
                 </div>
 
                 <div className="space-y-2">
                   <h4 className="font-black text-slate-900 text-xs uppercase tracking-wide">نبذة عن غايات النظام ولائحته:</h4>
-                  <p className="text-slate-600 text-xs font-bold leading-relaxed bg-slate-50 p-5 rounded-2xl border border-slate-100">
+                  <p className="text-slate-200 font-bold text-xs font-bold leading-relaxed bg-slate-50 p-5 rounded-2xl border border-slate-100">
                     {selectedSystem.description}
                   </p>
                 </div>
@@ -959,7 +959,7 @@ export default function AILegalSearch() {
                 {/* Interactive Specialized Law Analyzer / Chat */}
                 <div className="bg-slate-50 border-2 border-slate-200 rounded-3xl p-6 space-y-4">
                   <h4 className="text-xs font-black text-slate-900 flex items-center gap-2">
-                    <Sparkles className="w-4 h-4 text-amber-600" />
+                    <Sparkles className="w-4 h-4 text-amber-400 font-black" />
                     مستشار ومحلل مواد ({selectedSystem.name})
                   </h4>
                   <div className="flex gap-2">
@@ -1016,7 +1016,7 @@ export default function AILegalSearch() {
                         </p>
                         <div className="flex flex-wrap gap-1 bg-slate-50 p-2 rounded-xl">
                           {art.keywords.map((kw, idx) => (
-                            <span key={idx} className="text-[9px] font-black bg-white text-slate-650 border border-slate-200 px-2.5 py-0.5 rounded">
+                            <span key={idx} className="text-[11px] font-black bg-white text-slate-650 border border-slate-200 px-2.5 py-0.5 rounded">
                               #{kw}
                             </span>
                           ))}
@@ -1078,9 +1078,9 @@ export default function AILegalSearch() {
                             {memo.title}
                           </span>
                         </div>
-                        <div className="flex justify-between items-center w-full mt-2 text-[10px] text-slate-500 font-bold border-t border-slate-100/50 pt-2">
+                        <div className="flex justify-between items-center w-full mt-2 text-[10px] text-slate-700 font-bold border-t border-slate-100/50 pt-2">
                           <span>الفئة: {memo.category}</span>
-                          <span className="text-amber-700 bg-amber-50 px-2 py-0.5 rounded font-black">{memo.systemId === 'labor_law' ? 'نظام العمل' : memo.systemId === 'civil_transactions' ? 'المدني' : 'نظام الإثبات'}</span>
+                          <span className="text-amber-400 font-black bg-amber-50 px-2 py-0.5 rounded font-black">{memo.systemId === 'labor_law' ? 'نظام العمل' : memo.systemId === 'civil_transactions' ? 'المدني' : 'نظام الإثبات'}</span>
                         </div>
                       </button>
 
@@ -1091,7 +1091,7 @@ export default function AILegalSearch() {
                           e.stopPropagation();
                           handleDeleteMemo(memo.id);
                         }}
-                        className="absolute top-2 left-2 text-slate-300 p-1.5 rounded-lg transition-colors cursor-pointer"
+                        className="absolute top-2 left-2 text-white font-bold p-1.5 rounded-lg transition-colors cursor-pointer"
                         title="حذف هذه المذكرة"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
@@ -1137,7 +1137,7 @@ export default function AILegalSearch() {
                     className="p-3 border border-slate-200 transition-colors rounded-xl text-xs font-black text-slate-700 flex items-center gap-1 cursor-pointer"
                     title="مشاركة الصياغة مع الفريق"
                   >
-                    <Share2 className="w-4 h-4 text-slate-500" />
+                    <Share2 className="w-4 h-4 text-slate-700" />
                     <span>مشاركة</span>
                   </button>
                   <button 
@@ -1154,7 +1154,7 @@ export default function AILegalSearch() {
               {/* Editable Fields Grid */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
-                  <label className="text-[10px] font-black text-slate-500 block uppercase">عنوان المستند:</label>
+                  <label className="text-[10px] font-black text-slate-700 block uppercase">عنوان المستند:</label>
                   <input 
                     type="text"
                     value={editedMemoTitle}
@@ -1163,7 +1163,7 @@ export default function AILegalSearch() {
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-[10px] font-black text-slate-500 block uppercase">النظام المرتبط (الأثاث التشريعي):</label>
+                  <label className="text-[10px] font-black text-slate-700 block uppercase">النظام المرتبط (الأثاث التشريعي):</label>
                   <select 
                     value={editedMemoSystemId}
                     onChange={(e) => setEditedMemoSystemId(e.target.value)}
@@ -1178,7 +1178,7 @@ export default function AILegalSearch() {
 
               {/* Rich Textarea */}
               <div className="space-y-1.5">
-                <label className="text-[10px] font-black text-slate-500 block uppercase">نص المذكرة وصياغة الدفوع القضائية:</label>
+                <label className="text-[10px] font-black text-slate-700 block uppercase">نص المذكرة وصياغة الدفوع القضائية:</label>
                 <textarea 
                   value={editedMemoText}
                   onChange={(e) => setEditedMemoText(e.target.value)}
@@ -1189,7 +1189,7 @@ export default function AILegalSearch() {
 
               {/* Audit Trigger Box */}
               <div className="pt-4 border-t border-slate-100 flex flex-col sm:flex-row justify-between items-center gap-4">
-                <p className="text-[11px] text-slate-500 font-bold text-center sm:text-right max-w-md">قم بالتدقيق الفوري للبحث عن أي ثغرات أو تحسين البناء اللغوي وفق مواد النظام السارية.</p>
+                <p className="text-[11px] text-slate-700 font-bold text-center sm:text-right max-w-md">قم بالتدقيق الفوري للبحث عن أي ثغرات أو تحسين البناء اللغوي وفق مواد النظام السارية.</p>
                 <button
                   type="button"
                   onClick={handleAuditMemo}
@@ -1231,14 +1231,14 @@ export default function AILegalSearch() {
                     <button 
                       type="button"
                       onClick={() => setAuditResult(null)}
-                      className="p-1.5 rounded-full transition-colors text-slate-300 cursor-pointer"
+                      className="p-1.5 rounded-full transition-colors text-white font-bold cursor-pointer"
                       title="إغلاق التقرير"
                     >
                       <X className="w-4 h-4" />
                     </button>
                   </div>
 
-                  <div className="prose prose-invert max-w-none text-xs text-slate-200 leading-relaxed font-sans space-y-4 text-right relative z-10">
+                  <div className="prose prose-invert max-w-none text-xs text-white font-bold leading-relaxed font-sans space-y-4 text-right relative z-10">
                     <div className="markdown-body">
                       <Markdown>{auditResult}</Markdown>
                     </div>

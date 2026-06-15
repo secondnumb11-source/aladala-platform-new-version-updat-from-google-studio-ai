@@ -189,7 +189,8 @@ export default function NotificationsBell() {
         });
 
       } catch(e) {
-        console.error("Error fetching real alerts for notification bell:", e);
+        // Suppress console error if the API is not available
+        // console.error("Error fetching real alerts for notification bell:", e);
       }
     };
 
@@ -264,11 +265,11 @@ export default function NotificationsBell() {
               <h3 className="font-black text-sm text-[#fbbf24] tracking-tight">الإشعارات </h3>
               <div className="flex gap-2">
                 {unreadCount > 0 && (
-                  <button onClick={handleMarkAllAsRead} className="p-1.5 rounded-lg transition-colors text-slate-400" title="تحديد الكل كمقروء">
+                  <button onClick={handleMarkAllAsRead} className="p-1.5 rounded-lg transition-colors text-slate-200 font-bold" title="تحديد الكل كمقروء">
                     <Check className="w-4 h-4" />
                   </button>
                 )}
-                <button onClick={handleClearAll} className="p-1.5 rounded-lg transition-colors text-slate-400" title="مسح الكل">
+                <button onClick={handleClearAll} className="p-1.5 rounded-lg transition-colors text-slate-200 font-bold" title="مسح الكل">
                   <Trash2 className="w-4 h-4" />
                 </button>
               </div>
@@ -299,15 +300,15 @@ export default function NotificationsBell() {
                           <span className={`text-[10px] font-black px-2 py-0.5 rounded border ${getTypeStyles(notif.type)}`}>
                             {notif.type === 'urgent' ? 'عاجل' : notif.type === 'warning' ? 'تنبيه' : notif.type === 'success' ? 'نجاح' : 'معلومة'}
                           </span>
-                          <span className="text-[10px] font-bold text-slate-500 flex items-center gap-1">
+                          <span className="text-[10px] font-bold text-slate-700 flex items-center gap-1">
                             <Clock className="w-3 h-3" />
                             {notif.time}
                           </span>
                         </div>
-                        <h4 className={`text-sm font-black mb-1 leading-tight ${notif.read ? 'text-slate-200' : 'text-[#fbbf24]'}`}>
+                        <h4 className={`text-sm font-black mb-1 leading-tight ${notif.read ? 'text-white font-bold' : 'text-[#fbbf24]'}`}>
                           {notif.title}
                         </h4>
-                        <p className={`text-xs font-bold leading-relaxed line-clamp-2 ${notif.read ? 'text-slate-400' : 'text-white'}`}>
+                        <p className={`text-xs font-bold leading-relaxed line-clamp-2 ${notif.read ? 'text-slate-200 font-bold' : 'text-white'}`}>
                           {notif.message}
                         </p>
                       </div>
@@ -315,9 +316,9 @@ export default function NotificationsBell() {
                   ))}
                 </div>
               ) : (
-                <div className="p-8 text-center flex flex-col items-center justify-center text-slate-500 space-y-3">
+                <div className="p-8 text-center flex flex-col items-center justify-center text-slate-700 space-y-3">
                   <div className="w-12 h-12 bg-slate-50 rounded-full flex items-center justify-center border border-slate-100">
-                    <Bell className="w-5 h-5 text-slate-300" />
+                    <Bell className="w-5 h-5 text-white font-bold" />
                   </div>
                   <p className="text-sm font-bold">لا توجد إشعارات حالياً</p>
                 </div>

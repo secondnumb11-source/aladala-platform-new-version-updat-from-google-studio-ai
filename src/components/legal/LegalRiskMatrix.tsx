@@ -48,7 +48,7 @@ export default function LegalRiskMatrix({ cases, isHighContrast }: LegalRiskMatr
         </div>
         <div>
           <h4 className="font-black text-white text-base tracking-tight">مصفوفة المخاطر القانونية (AI)</h4>
-          <p className="text-[10px] text-slate-400 font-bold mt-0.5">تحليل احتمالية النجاح بناءً على بيانات المرصد القضائي.</p>
+          <p className="text-[10px] text-slate-200 font-bold font-bold mt-0.5">تحليل احتمالية النجاح بناءً على بيانات المرصد القضائي.</p>
         </div>
       </div>
 
@@ -62,8 +62,8 @@ export default function LegalRiskMatrix({ cases, isHighContrast }: LegalRiskMatr
             className="bg-slate-950/50 border border-white/5 rounded-2xl p-4 transition-all"
           >
             <div className="flex justify-between items-center mb-2">
-              <span className="text-[10px] font-black text-slate-300 truncate max-w-[150px]">{item.name}</span>
-              <span className="text-[9px] font-mono text-slate-500">#{item.number}</span>
+              <span className="text-[10px] font-black text-white font-bold truncate max-w-[150px]">{item.name}</span>
+              <span className="text-[11px] font-mono text-slate-700">#{item.number}</span>
             </div>
 
             <div className="flex items-center gap-4">
@@ -93,8 +93,8 @@ export default function LegalRiskMatrix({ cases, isHighContrast }: LegalRiskMatr
             </div>
             
             <div className="flex justify-between items-center mt-2">
-               <span className="text-[8px] font-bold text-slate-500 uppercase tracking-widest">احتمالية النجاح الاستراتيجية</span>
-               <span className="text-[8px] font-black text-slate-400">تحديث لحظي • المرصد</span>
+               <span className="text-[10px] font-bold text-slate-700 uppercase tracking-widest">احتمالية النجاح الاستراتيجية</span>
+               <span className="text-[10px] font-black text-slate-200 font-bold">تحديث لحظي • المرصد</span>
             </div>
           </motion.div>
         ))}
@@ -102,7 +102,7 @@ export default function LegalRiskMatrix({ cases, isHighContrast }: LegalRiskMatr
         {caseRisks.length === 0 && (
           <div className="py-10 text-center space-y-3">
              <HelpCircle className="w-8 h-8 text-slate-700 mx-auto" />
-             <p className="text-slate-500 text-xs font-bold">لا توجد بيانات كافية للتحليل حالياً</p>
+             <p className="text-slate-700 text-xs font-bold">لا توجد بيانات كافية للتحليل حالياً</p>
           </div>
         )}
       </div>

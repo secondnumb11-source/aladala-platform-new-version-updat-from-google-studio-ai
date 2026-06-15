@@ -73,7 +73,7 @@ function CustomMultiSelectDropdown({
 
   return (
     <div className="space-y-1.5 w-full relative" ref={dropdownRef}>
-      <label className="text-[11px] font-black text-slate-600 block pr-2 flex items-center gap-1.5">
+      <label className="text-[11px] font-black text-slate-200 font-bold block pr-2 flex items-center gap-1.5">
         <Icon className={`w-3.5 h-3.5 text-${themeColor}-600`} />
         {label}
       </label>
@@ -84,7 +84,7 @@ function CustomMultiSelectDropdown({
       >
         <div className="flex flex-wrap gap-1.5 max-w-[90%] overflow-hidden truncate">
           {selectedNames.length === 0 ? (
-            <span className="text-slate-400 font-bold">{placeholder}</span>
+            <span className="text-slate-200 font-bold font-bold">{placeholder}</span>
           ) : (
             selectedNames.map((name, i) => (
               <span key={i} className={`text-[10px] px-2.5 py-1 rounded-lg bg-${themeColor}-50 text-${themeColor}-700 border border-${themeColor}-100 font-black`}>
@@ -93,7 +93,7 @@ function CustomMultiSelectDropdown({
             ))
           )}
         </div>
-        <ChevronRight className={`w-4 h-4 text-slate-400 transform transition-transform ${isOpen ? 'rotate-90' : '-rotate-90'}`} />
+        <ChevronRight className={`w-4 h-4 text-slate-200 font-bold transform transition-transform ${isOpen ? 'rotate-90' : '-rotate-90'}`} />
       </div>
 
       <AnimatePresence>
@@ -105,7 +105,7 @@ function CustomMultiSelectDropdown({
             className="absolute z-50 w-full mt-2 bg-white border border-slate-200 rounded-2xl shadow-xl overflow-hidden max-h-72 flex flex-col"
           >
             <div className="p-3 bg-slate-50 border-b border-slate-100 flex items-center gap-2">
-              <Search className="w-4 h-4 text-slate-400 shrink-0" />
+              <Search className="w-4 h-4 text-slate-200 font-bold shrink-0" />
               <input 
                 type="text" 
                 value={search}
@@ -118,7 +118,7 @@ function CustomMultiSelectDropdown({
             
             <div className="flex-1 overflow-y-auto p-2 space-y-1 custom-scrollbar">
               {filteredItems.length === 0 ? (
-                <div className="py-6 text-center text-slate-400 font-bold text-xs">لا يوجد نتائج تطابق بحثك</div>
+                <div className="py-6 text-center text-slate-200 font-bold font-bold text-xs">لا يوجد نتائج تطابق بحثك</div>
               ) : (
                 filteredItems.map(item => {
                   const isChecked = selectedIds.includes(item.id);
@@ -132,12 +132,12 @@ function CustomMultiSelectDropdown({
                       className={`flex items-center justify-between p-3 rounded-xl cursor-pointer transition-all select-none ${
                         isChecked 
                           ? `bg-${themeColor}-50 text-${themeColor}-700 font-black` 
-                          : 'hover:bg-slate-50 text-slate-600'
+                          : 'hover:bg-slate-50 text-slate-200 font-bold'
                       }`}
                     >
                       <div className="min-w-0 pr-1 text-right">
                         <p className="text-xs font-black truncate">{item.name}</p>
-                        {item.info && <p className="text-[9px] font-bold text-slate-400">{item.info}</p>}
+                        {item.info && <p className="text-[11px] font-bold text-slate-200 font-bold">{item.info}</p>}
                       </div>
                       <div className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 ${
                         isChecked 
@@ -776,7 +776,7 @@ export default function EmployeePortal({
                   </div>
                   <div>
                     <h1 className="text-3xl font-black text-slate-900 leading-tight">إدارة تفويض وصلاحيات الكادر المهني</h1>
-                    <p className="text-slate-500 font-bold text-lg">تحكم كامل في بوابات الوصول المخصصة وتعيين المهام المركزية</p>
+                    <p className="text-slate-700 font-bold text-lg">تحكم كامل في بوابات الوصول المخصصة وتعيين المهام المركزية</p>
                   </div>
                 </div>
               </div>
@@ -817,33 +817,33 @@ export default function EmployeePortal({
                                <h4 className="font-black text-slate-900 text-lg mb-1 flex items-center flex-wrap gap-2">
                                  {e.name}
                                  {hasAccount ? (
-                                   <span className="text-[9px] font-black bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-full border border-emerald-200">الدخول مفعّل ✅</span>
+                                   <span className="text-[11px] font-black bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-full border border-emerald-200">الدخول مفعّل ✅</span>
                                  ) : (
-                                   <span className="text-[9px] font-black bg-amber-50 text-amber-700 px-2 py-0.5 rounded-full border border-amber-200">بانتظار التهيئة ⚠️</span>
+                                   <span className="text-[11px] font-black bg-amber-50 text-amber-400 font-black px-2 py-0.5 rounded-full border border-amber-200">بانتظار التهيئة ⚠️</span>
                                  )}
                                </h4>
-                               <p className="text-[10px] text-slate-400 font-bold">{e.jobTitle || 'محامي / مستشار بالتمرين'}</p>
+                               <p className="text-[10px] text-slate-200 font-bold font-bold">{e.jobTitle || 'محامي / مستشار بالتمرين'}</p>
                              </div>
-                             <div className={`w-10 h-10 rounded-full flex items-center justify-center border ${hasAccount ? 'bg-emerald-50 border-emerald-100 text-emerald-600' : 'bg-amber-50 border-amber-100 text-amber-600'}`}>
+                             <div className={`w-10 h-10 rounded-full flex items-center justify-center border ${hasAccount ? 'bg-emerald-50 border-emerald-100 text-emerald-600' : 'bg-amber-50 border-amber-100 text-amber-400 font-black'}`}>
                                <Users className="w-4 h-4" />
                              </div>
                           </div>
                           
                           <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100 space-y-2 mt-auto">
                             <div className="flex justify-between text-[10px] font-bold">
-                              <span className="text-slate-400">اسم المستخدم:</span>
+                              <span className="text-slate-200 font-bold">اسم المستخدم:</span>
                               {hasAccount ? (
                                 <span className="text-blue-600 font-mono text-left" dir="ltr">{e.username}</span>
                               ) : (
-                                <span className="text-amber-600 italic">مؤقت: emp_{e.id.toLowerCase()}</span>
+                                <span className="text-amber-400 font-black italic">مؤقت: emp_{e.id.toLowerCase()}</span>
                               )}
                             </div>
                             <div className="flex justify-between text-[10px] font-bold">
-                              <span className="text-slate-400">أقسام البوابة الفعّالة:</span>
+                              <span className="text-slate-200 font-bold">أقسام البوابة الفعّالة:</span>
                               <span className="text-emerald-600">{(e.sidebarConfig && e.sidebarConfig.length) || 0} أقسام مفوضة</span>
                             </div>
                             <div className="flex justify-between text-[10px] font-bold">
-                              <span className="text-slate-400">رقم الهاتف الجوال:</span>
+                              <span className="text-slate-200 font-bold">رقم الهاتف الجوال:</span>
                               <span className="text-slate-700 font-mono">{e.phone || '---'}</span>
                             </div>
                           </div>
@@ -869,7 +869,7 @@ export default function EmployeePortal({
                     </div>
                     <div>
                       <h3 className="text-2xl font-black text-slate-900">لا يوجد موظفين مسجلين في النظام</h3>
-                      <p className="text-slate-500 font-bold max-w-sm mt-2 mx-auto">عند إضافة كادر وظيفي جديد من شاشة "شؤون الموظفين"، سيتم عرضهم هنا تلقائياً لتهيئتهم وضبط بواباتهم الخاصة.</p>
+                      <p className="text-slate-700 font-bold max-w-sm mt-2 mx-auto">عند إضافة كادر وظيفي جديد من شاشة "شؤون الموظفين"، سيتم عرضهم هنا تلقائياً لتهيئتهم وضبط بواباتهم الخاصة.</p>
                     </div>
                   </div>
                 )}
@@ -896,13 +896,13 @@ export default function EmployeePortal({
                         </div>
                         <div>
                           <h3 className="text-lg font-black text-slate-900">إعداد المصادقة والدخول</h3>
-                          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">Authentication Engine</p>
+                          <p className="text-[10px] font-bold text-slate-200 font-bold uppercase tracking-widest mt-0.5">Authentication Engine</p>
                         </div>
                       </div>
                       
                       <div className="space-y-6">
                         <div className="space-y-2">
-                          <label className="text-[11px] font-black text-slate-500 block pr-2">اسم المستخدم الموحد</label>
+                          <label className="text-[11px] font-black text-slate-700 block pr-2">اسم المستخدم الموحد</label>
                           <input 
                             name="username" 
                             type="text"
@@ -913,7 +913,7 @@ export default function EmployeePortal({
                         </div>
                         
                         <div className="space-y-2 relative">
-                          <label className="text-[11px] font-black text-slate-500 block pr-2">كلمة المرور الأمنية</label>
+                          <label className="text-[11px] font-black text-slate-700 block pr-2">كلمة المرور الأمنية</label>
                           <div className="relative">
                             <input 
                               name="password" 
@@ -925,7 +925,7 @@ export default function EmployeePortal({
                             <button 
                               type="button" 
                               onClick={() => setShowPass(!showPass)}
-                              className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 p-2 hover:text-blue-600 transition-all"
+                              className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-200 font-bold p-2 hover:text-blue-600 transition-all"
                             >
                               {showPass ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                             </button>
@@ -933,7 +933,7 @@ export default function EmployeePortal({
                         </div>
 
                         <div className="space-y-2">
-                          <label className="text-[11px] font-black text-slate-500 block pr-2">الكود الوظيفي (ID)</label>
+                          <label className="text-[11px] font-black text-slate-700 block pr-2">الكود الوظيفي (ID)</label>
                           <input 
                             name="employeeCode" 
                             type="text"
@@ -943,7 +943,7 @@ export default function EmployeePortal({
                         </div>
 
                         <div className="space-y-2">
-                          <label className="text-[11px] font-black text-slate-500 block pr-2">المسمى الوظيفي</label>
+                          <label className="text-[11px] font-black text-slate-700 block pr-2">المسمى الوظيفي</label>
                           <input 
                             name="jobTitle" 
                             type="text"
@@ -953,7 +953,7 @@ export default function EmployeePortal({
                         </div>
 
                         <div className="space-y-2">
-                          <label className="text-[11px] font-black text-slate-500 block pr-2">فرع العمل الجغرافي</label>
+                          <label className="text-[11px] font-black text-slate-700 block pr-2">فرع العمل الجغرافي</label>
                           <input 
                             name="branch" 
                             type="text"
@@ -963,7 +963,7 @@ export default function EmployeePortal({
                         </div>
 
                         <div className="space-y-2">
-                          <label className="text-[11px] font-black text-slate-500 block pr-2">تاريخ المباشرة (بداية العمل)</label>
+                          <label className="text-[11px] font-black text-slate-700 block pr-2">تاريخ المباشرة (بداية العمل)</label>
                           <input 
                             name="startDate" 
                             type="date"
@@ -973,7 +973,7 @@ export default function EmployeePortal({
                         </div>
 
                         <div className="space-y-2">
-                          <label className="text-[11px] font-black text-slate-500 block pr-2">حالة الحساب</label>
+                          <label className="text-[11px] font-black text-slate-700 block pr-2">حالة الحساب</label>
                           <select 
                             name="status"
                             className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-6 py-4 text-xs font-black text-slate-900 focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-600/5 outline-none transition-all cursor-pointer appearance-none"
@@ -989,24 +989,24 @@ export default function EmployeePortal({
                     {/* Najiz custom key Card */}
                     <div className="bg-white border border-slate-200 rounded-[3rem] p-10 shadow-sm space-y-6">
                       <div className="flex items-center gap-4 border-b border-slate-100 pb-6">
-                         <div className="w-12 h-12 bg-amber-50 rounded-2xl flex items-center justify-center text-amber-600">
+                         <div className="w-12 h-12 bg-amber-50 rounded-2xl flex items-center justify-center text-amber-400 font-black">
                            <Database className="w-6 h-6" />
                          </div>
                          <div>
                            <h3 className="text-lg font-black text-slate-900 text-right">مفتاح وزارة العدل</h3>
-                           <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">Najiz API Integration</p>
+                           <p className="text-[10px] font-bold text-slate-200 font-bold uppercase tracking-widest mt-0.5">Najiz API Integration</p>
                          </div>
                       </div>
                       
                       <div className="space-y-4">
-                        <p className="text-[11px] font-bold text-slate-500 leading-relaxed text-right">
+                        <p className="text-[11px] font-bold text-slate-700 leading-relaxed text-right">
                           يتيح هذا الرمز سحب كافة التحديثات المباشرة من بوابة ناجز (القضايا، المواعيد، القرارات) وإسقاطها فوراً في ملف الموظف.
                         </p>
                         <input 
                           name="najizApiKey" 
                           type="text"
                           placeholder="مثال: NAJIZ_EMPLOYEE_KEY_SA..."
-                          className="w-full bg-slate-50 border border-slate-200 text-amber-600 font-mono text-xs rounded-2xl px-6 py-4 focus:bg-white focus:border-amber-500 outline-none transition-all text-left"
+                          className="w-full bg-slate-50 border border-slate-200 text-amber-400 font-black font-mono text-xs rounded-2xl px-6 py-4 focus:bg-white focus:border-amber-500 outline-none transition-all text-left"
                           defaultValue={selectedConfigEmployee.najizApiKey || ''}
                         />
                       </div>
@@ -1027,7 +1027,7 @@ export default function EmployeePortal({
                       </div>
                       
                       <div className="relative z-10 space-y-6 text-right">
-                        <p className="text-[11px] font-bold text-slate-500 leading-relaxed">
+                        <p className="text-[11px] font-bold text-slate-700 leading-relaxed">
                           يمكن للموظف الدخول للبوابة عن طريق الرابط التالي باستخدام بيانات الاعتماد التي قمت بتعيينها أعلاه:
                         </p>
                         <div className="bg-slate-50 p-5 rounded-2xl border border-slate-200 font-mono text-[10px] text-blue-600 break-all leading-relaxed ltr text-left">
@@ -1071,7 +1071,7 @@ export default function EmployeePortal({
                         </div>
                         <div className="text-right">
                           <h3 className="text-lg font-black text-slate-900">تفويض الصلاحيات والوصول للبيانات</h3>
-                          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">Permissions & Data Delegation</p>
+                          <p className="text-[10px] font-bold text-slate-200 font-bold uppercase tracking-widest mt-0.5">Permissions & Data Delegation</p>
                         </div>
                       </div>
 
@@ -1168,7 +1168,7 @@ export default function EmployeePortal({
                       <button 
                         type="button"
                         onClick={() => setSelectedConfigEmployee(null)}
-                        className="px-10 py-5 rounded-[2rem] bg-slate-100 hover:bg-slate-200 text-slate-600 font-black text-sm transition-all flex items-center gap-2"
+                        className="px-10 py-5 rounded-[2rem] bg-slate-100 hover:bg-slate-200 text-slate-200 font-bold font-black text-sm transition-all flex items-center gap-2"
                       >
                          <ChevronRight className="w-5 h-5 rotate-180" />
                          <span>رجوع للقائمة</span>
@@ -1226,13 +1226,13 @@ export default function EmployeePortal({
                 <Shield className="w-10 h-10" />
               </div>
               <h2 className="text-3xl font-black text-slate-900 leading-tight">بوابة الموظف الموحدة</h2>
-              <p className="text-slate-500 font-bold text-sm bg-slate-50 border border-slate-100 px-4 py-2 rounded-full inline-block mx-auto">مركز العمل القضائي المتكامل</p>
+              <p className="text-slate-700 font-bold text-sm bg-slate-50 border border-slate-100 px-4 py-2 rounded-full inline-block mx-auto">مركز العمل القضائي المتكامل</p>
             </div>
 
             <form onSubmit={handleLogin} className="space-y-8">
               <div className="space-y-6">
                 <div className="space-y-3">
-                  <label className="text-xs font-black text-slate-500 pr-2">اسم المستخدم</label>
+                  <label className="text-xs font-black text-slate-700 pr-2">اسم المستخدم</label>
                   <div className="relative">
                     <input 
                       type="text" 
@@ -1242,12 +1242,12 @@ export default function EmployeePortal({
                       className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-6 py-5 text-sm font-bold text-slate-900 focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-600/5 transition-all outline-none pl-12"
                       placeholder="أدخل اسم المستخدم..."
                     />
-                    <Users className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-300" />
+                    <Users className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-white font-bold" />
                   </div>
                 </div>
 
                 <div className="space-y-3 relative">
-                  <label className="text-xs font-black text-slate-500 pr-2">كلمة المرور والأمان</label>
+                  <label className="text-xs font-black text-slate-700 pr-2">كلمة المرور والأمان</label>
                   <div className="relative">
                     <input 
                       type={showPass ? 'text' : 'password'} 
@@ -1260,11 +1260,11 @@ export default function EmployeePortal({
                     <button 
                       type="button" 
                       onClick={() => setShowPass(!showPass)}
-                      className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-blue-600 transition-colors"
+                      className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-200 font-bold hover:text-blue-600 transition-colors"
                     >
                       {showPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </button>
-                    <Lock className="absolute right-5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-300 hidden" />
+                    <Lock className="absolute right-5 top-1/2 -translate-y-1/2 w-5 h-5 text-white font-bold hidden" />
                   </div>
                 </div>
               </div>
@@ -1289,7 +1289,7 @@ export default function EmployeePortal({
               </button>
 
               <div className="text-center pt-2">
-                <p className="text-[10px] text-slate-400 font-bold leading-relaxed">
+                <p className="text-[10px] text-slate-200 font-bold font-bold leading-relaxed">
                   نظام مشفر ومحمي. يرجى التواصل مع الإدارة الفنية لمكتب العدالة في حال واجهت صعوبات في الدخول.
                 </p>
               </div>
@@ -1449,16 +1449,16 @@ export default function EmployeePortal({
             <div className="text-center">
               <h2 className="text-lg font-black text-slate-900 tracking-tight">{loggedInEmployee.name}</h2>
               <div className="flex items-center justify-center gap-2 mt-1.5">
-                <span className="text-[10px] bg-slate-100 text-slate-600 px-2.5 py-1 rounded-full font-black border border-slate-200 uppercase">
+                <span className="text-[10px] bg-slate-100 text-slate-200 font-bold px-2.5 py-1 rounded-full font-black border border-slate-200 uppercase">
                   {loggedInEmployee.employeeCode || `EMP-${loggedInEmployee.id.slice(-4).toUpperCase()}`}
                 </span>
-                <span className="text-[11px] text-slate-500 font-bold">{loggedInEmployee.jobTitle}</span>
+                <span className="text-[11px] text-slate-700 font-bold">{loggedInEmployee.jobTitle}</span>
               </div>
             </div>
           </div>
 
           <nav className="space-y-1">
-            <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-3 mb-3 text-right">قائمة الوصول السريع</div>
+            <div className="text-[10px] font-black text-slate-200 font-bold uppercase tracking-widest px-3 mb-3 text-right">قائمة الوصول السريع</div>
             {[
               { id: 'dashboard', name: 'لوحة التحكم والمتابعة', icon: Layout },
               { id: 'cases', name: 'ملفات القضايا المسندة', icon: Briefcase },
@@ -1480,7 +1480,7 @@ export default function EmployeePortal({
                 className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-xl text-xs font-black transition-all ${
                   activePortalTab === item.id 
                     ? 'bg-[#0f172a] text-white shadow-md' 
-                    : 'text-slate-600 hover:bg-slate-50 hover:text-[#0f172a]'
+                    : 'text-slate-200 font-bold hover:bg-slate-50 hover:text-[#0f172a]'
                 }`}
               >
                 <item.icon className="w-4 h-4" />
@@ -1507,14 +1507,14 @@ export default function EmployeePortal({
             <div className="z-10 flex items-center gap-5">
               <div className="hidden md:flex flex-col gap-1 pr-6 border-r border-slate-200 py-1 text-right" dir="rtl">
                  <h1 className="text-2xl font-black text-slate-900 tracking-tight">أهلاً بك، الأستاذ {loggedInEmployee.name.split(' ')[0]} 👋</h1>
-                 <p className="text-slate-500 font-bold text-xs mt-0.5">مركز العمل القضائي المتكامل • بيئة سحابية آمنة</p>
+                 <p className="text-slate-700 font-bold text-xs mt-0.5">مركز العمل القضائي المتكامل • بيئة سحابية آمنة</p>
               </div>
             </div>
 
             <div className="z-10 flex items-center gap-3 md:gap-4">
               <div className="bg-[#F8FAFC] px-5 py-3 rounded-[1rem] border border-slate-100 flex items-center gap-4 shadow-sm">
                  <div className="text-right">
-                   <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest leading-none">رصيد الإجازات</p>
+                   <p className="text-[10px] font-black text-slate-700 uppercase tracking-widest leading-none">رصيد الإجازات</p>
                    <p className="text-lg font-black text-slate-900 mt-1 leading-none">{vacationBalance.remaining} يوماً</p>
                  </div>
                  <div className="w-10 h-10 bg-white rounded-[0.75rem] shadow-sm border border-slate-100 flex items-center justify-center text-[#0f172a]">
@@ -1547,12 +1547,12 @@ export default function EmployeePortal({
                   className={`p-3 rounded-xl border transition-all relative cursor-pointer shadow-sm ${
                     urgentTasks.length > 0 
                       ? 'bg-rose-50 text-rose-600 border-rose-200' 
-                      : 'bg-white text-slate-400 border-slate-200 hover:text-slate-600 hover:border-slate-300'
+                      : 'bg-white text-slate-200 font-bold border-slate-200 hover:text-slate-200 font-bold hover:border-slate-300'
                   }`}
                 >
                   <Bell className={`w-5 h-5 ${urgentTasks.length > 0 ? 'animate-bounce' : ''}`} />
                   {urgentTasks.length > 0 && (
-                    <span className="absolute -top-1.5 -right-1.5 bg-rose-600 text-white font-black text-[9px] w-5 h-5 rounded-full flex items-center justify-center shadow-md animate-pulse">
+                    <span className="absolute -top-1.5 -right-1.5 bg-rose-600 text-white font-black text-[11px] w-5 h-5 rounded-full flex items-center justify-center shadow-md animate-pulse">
                       {urgentTasks.length}
                     </span>
                   )}
@@ -1592,7 +1592,7 @@ export default function EmployeePortal({
                           <span>إجراء عاجل مطلوب: اقتراب الموعد النهائي ⚠️</span>
                           <span className="text-[10px] bg-rose-600 text-white px-2.5 py-1 rounded-full font-black animate-pulse">هام جداً</span>
                         </h4>
-                        <p className="text-xs text-slate-500 mt-1 font-bold leading-relaxed max-w-2xl">
+                        <p className="text-xs text-slate-700 mt-1 font-bold leading-relaxed max-w-2xl">
                           المهمة المسندة <span className="text-rose-600 font-black underline underline-offset-4 decoration-rose-200">"{task.title}"</span> على وشك انتهاء صلاحيتها. يرجى توثيق المنجز فوراً.
                         </p>
                       </div>
@@ -1606,7 +1606,7 @@ export default function EmployeePortal({
                       
                       <button 
                         onClick={() => setDismissedAlerts(prev => [...prev, task.id])}
-                        className="text-[11px] bg-slate-100 hover:bg-slate-200 text-slate-600 border border-slate-200 px-6 py-3 rounded-2xl font-black transition-all"
+                        className="text-[11px] bg-slate-100 hover:bg-slate-200 text-slate-200 font-bold border border-slate-200 px-6 py-3 rounded-2xl font-black transition-all"
                       >
                         تجاهل مؤقتاً
                       </button>
@@ -1640,11 +1640,11 @@ export default function EmployeePortal({
 
                   <div className="space-y-4 relative z-10 mt-8">
                      <div className="flex items-center justify-between text-xs p-4 bg-white/5 border border-white/5 rounded-2xl">
-                        <span className="font-bold text-slate-400">اسم المستخدم (بوابة)</span>
+                        <span className="font-bold text-slate-200 font-bold">اسم المستخدم (بوابة)</span>
                         <span className="font-mono text-white font-black">{loggedInEmployee?.username}</span>
                      </div>
                      <div className="flex items-center justify-between text-xs p-4 bg-white/5 border border-white/5 rounded-2xl">
-                        <span className="font-bold text-slate-400">كلمة المرور</span>
+                        <span className="font-bold text-slate-200 font-bold">كلمة المرور</span>
                         <span className="font-mono text-white font-black">••••••••</span>
                      </div>
                      <div className="flex items-center justify-between text-xs p-4 bg-blue-600/10 border border-blue-500/20 rounded-2xl">
@@ -1668,7 +1668,7 @@ export default function EmployeePortal({
                        <stat.icon className={`w-8 h-8 ${stat.color} mb-4 relative z-10 transition-transform `} />
                        <div className="relative z-10">
                           <div className={`text-4xl font-black ${stat.color} mb-1 tracking-tight`}>{stat.value}</div>
-                          <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">{stat.label}</span>
+                          <span className="text-[10px] font-black text-slate-700 uppercase tracking-widest">{stat.label}</span>
                        </div>
                     </div>
                   ))}
@@ -1679,7 +1679,7 @@ export default function EmployeePortal({
                            <Award className="w-5 h-5 text-indigo-500" />
                            نسبة الإنجاز ونجاح المهام
                         </h4>
-                        <p className="text-[10px] text-slate-400 font-bold">بناءً على المهام المنجزة مقارنة بالمهام الكلية المسندة لك.</p>
+                        <p className="text-[10px] text-slate-200 font-bold font-bold">بناءً على المهام المنجزة مقارنة بالمهام الكلية المسندة لك.</p>
                      </div>
                      <div className="flex items-center gap-4 w-1/2">
                         <div className="w-full h-3 bg-slate-100 rounded-full overflow-hidden flex-1 shadow-inner">
@@ -1704,7 +1704,7 @@ export default function EmployeePortal({
                     <Calendar className="w-5 h-5 text-indigo-600" />
                     التقويم القضائي الذكي والجدولة المدمجة
                   </h3>
-                  <p className="text-xs text-slate-400 font-bold">باقة ذكية تدمج جلسات المحاكم المسندة إليك مع الإجازات (المعتمدة والمعلقة) والمهام</p>
+                  <p className="text-xs text-slate-200 font-bold font-bold">باقة ذكية تدمج جلسات المحاكم المسندة إليك مع الإجازات (المعتمدة والمعلقة) والمهام</p>
                 </div>
                 
                 {/* Year/Month switcher */}
@@ -1790,7 +1790,7 @@ export default function EmployeePortal({
                       }`}
                     >
                       <div className="flex items-center justify-between">
-                        <span className={`text-[11px] font-black w-6 h-6 rounded-full flex items-center justify-center ${isTodayStr ? 'bg-indigo-600 text-white font-black' : 'text-slate-500'}`}>
+                        <span className={`text-[11px] font-black w-6 h-6 rounded-full flex items-center justify-center ${isTodayStr ? 'bg-indigo-600 text-white font-black' : 'text-slate-700'}`}>
                           {day}
                         </span>
                         
@@ -1806,17 +1806,17 @@ export default function EmployeePortal({
                       {/* Display text in cell if space permits */}
                       <div className="mt-2 space-y-1 overflow-hidden">
                         {dayHearings.map((h, hIdx) => (
-                          <div key={hIdx} className="bg-rose-50 border border-rose-100 text-rose-700 p-1 rounded-lg text-[9px] font-extrabold truncate" title={h.caseName}>
+                          <div key={hIdx} className="bg-rose-50 border border-rose-100 text-rose-700 p-1 rounded-lg text-[11px] font-extrabold truncate" title={h.caseName}>
                              ⚖️ {h.time} {h.caseName}
                           </div>
                         ))}
                         {dayLeaves.map((l, lIdx) => (
-                          <div key={lIdx} className={`p-1 rounded-lg text-[9px] font-extrabold truncate ${l.status === 'approved' ? 'bg-emerald-50 border border-emerald-100 text-emerald-700' : 'bg-amber-50 border border-amber-100 text-amber-700'}`}>
+                          <div key={lIdx} className={`p-1 rounded-lg text-[11px] font-extrabold truncate ${l.status === 'approved' ? 'bg-emerald-50 border border-emerald-100 text-emerald-700' : 'bg-amber-50 border border-amber-100 text-amber-400 font-black'}`}>
                             🌴 {l.status === 'approved' ? 'إجازة معتمدة' : 'إجازة معلقة'}
                           </div>
                         ))}
                         {dayTasks.map((t, tIdx) => (
-                          <div key={tIdx} className="bg-sky-50 border border-sky-100 text-sky-700 p-1 rounded-lg text-[9px] font-extrabold truncate" title={t.title}>
+                          <div key={tIdx} className="bg-sky-50 border border-sky-100 text-sky-700 p-1 rounded-lg text-[11px] font-extrabold truncate" title={t.title}>
                             📋 {t.title}
                           </div>
                         ))}
@@ -1826,8 +1826,8 @@ export default function EmployeePortal({
                       {selectedCalendarDate === dateStr && (
                         <div className="absolute top-[105%] right-0 left-0 bg-slate-900 text-white border border-slate-800 p-4 rounded-2xl shadow-2xl z-40 space-y-3 cursor-default" onClick={e => e.stopPropagation()}>
                           <div className="flex items-center justify-between border-b border-white/10 pb-2">
-                            <span className="text-xs font-black text-slate-300">أجندة يوم {day} ({dateStr})</span>
-                            <button onClick={() => setSelectedCalendarDate(null)} className="text-[9px] font-bold text-rose-400 hover:text-rose-300 cursor-pointer">إغلاق</button>
+                            <span className="text-xs font-black text-white font-bold">أجندة يوم {day} ({dateStr})</span>
+                            <button onClick={() => setSelectedCalendarDate(null)} className="text-[11px] font-bold text-rose-400 hover:text-rose-300 cursor-pointer">إغلاق</button>
                           </div>
                           
                           {dayHearings.length > 0 && (
@@ -1836,7 +1836,7 @@ export default function EmployeePortal({
                               {dayHearings.map((h, hIdx) => (
                                 <div key={hIdx} className="bg-white/5 border border-white/5 p-2 rounded-xl text-[10px]">
                                   <div className="font-extrabold text-white">{h.caseName}</div>
-                                  <div className="text-slate-400 text-[9px] mt-1 text-right">الساعة {h.time} | الدائرة {h.court || 'غير محدد'} | قضية رقم: {h.caseNumber}</div>
+                                  <div className="text-slate-200 font-bold text-[11px] mt-1 text-right">الساعة {h.time} | الدائرة {h.court || 'غير محدد'} | قضية رقم: {h.caseNumber}</div>
                                 </div>
                               ))}
                             </div>
@@ -1847,10 +1847,10 @@ export default function EmployeePortal({
                               <p className="text-[10px] font-black text-emerald-400 flex items-center gap-1">🌴 الإجازات والغياب الإداري:</p>
                               {dayLeaves.map((l, lIdx) => (
                                 <div key={lIdx} className="bg-white/5 border border-white/5 p-2 rounded-xl text-[10px] flex justify-between items-center bg-slate-800/20">
-                                  <span className="text-slate-300">
+                                  <span className="text-white font-bold">
                                     {l.type === 'vacation' ? 'إجازة اعتيادية' : l.type === 'sick' ? 'إجازة مرضية' : l.type === 'emergency' ? 'إجازة اضطرارية' : 'إجازة بدون راتب'} (من {l.startDate} إلى {l.endDate})
                                   </span>
-                                  <span className={`px-2 py-0.5 rounded text-[8px] font-black ${l.status === 'approved' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-amber-500/20 text-amber-300'}`}>
+                                  <span className={`px-2 py-0.5 rounded text-[10px] font-black ${l.status === 'approved' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-amber-500/20 text-amber-300'}`}>
                                     {l.status === 'approved' ? 'مقبولة ومعتمدة' : 'طلب معلق'}
                                   </span>
                                 </div>
@@ -1863,8 +1863,8 @@ export default function EmployeePortal({
                               <p className="text-[10px] font-black text-sky-400 flex items-center gap-1">📋 تسليمات المهام اليومية:</p>
                               {dayTasks.map((t, tIdx) => (
                                 <div key={tIdx} className="bg-white/5 border border-white/5 p-2 rounded-xl text-[10px]">
-                                  <div className="font-extrabold text-slate-200">{t.title}</div>
-                                  <div className="text-slate-400 text-[9px] mt-0.5">الحالة: {t.status === 'completed' ? 'مكتملة ✅' : 'قيد المتابعة ⏳'}</div>
+                                  <div className="font-extrabold text-white font-bold">{t.title}</div>
+                                  <div className="text-slate-200 font-bold text-[11px] mt-0.5">الحالة: {t.status === 'completed' ? 'مكتملة ✅' : 'قيد المتابعة ⏳'}</div>
                                 </div>
                               ))}
                             </div>
@@ -1879,7 +1879,7 @@ export default function EmployeePortal({
                   <div>
                     <div className="grid grid-cols-7 gap-3 mb-3 text-center">
                       {weekdayNames.map(name => (
-                        <div key={name} className="text-[10px] font-black text-slate-400 bg-slate-50 py-2.5 rounded-xl border border-slate-100">
+                        <div key={name} className="text-[10px] font-black text-slate-200 font-bold bg-slate-50 py-2.5 rounded-xl border border-slate-100">
                           {name}
                         </div>
                       ))}
@@ -1900,48 +1900,48 @@ export default function EmployeePortal({
               <div className="bg-white border border-slate-200 p-8 rounded-[3rem] hover:border-blue-300 transition-all group relative overflow-hidden shadow-sm">
                  <div className="absolute -top-12 -right-12 w-24 h-24 bg-blue-50 rounded-full blur-3xl opacity-50" />
                  <div className="flex items-center justify-between mb-6">
-                   <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">إجمالي ملفات القضايا</span>
+                   <span className="text-[10px] font-black text-slate-200 font-bold uppercase tracking-widest">إجمالي ملفات القضايا</span>
                    <Briefcase className="w-5 h-5 text-blue-600" />
                  </div>
                  <div className="flex items-baseline gap-2">
                    <h4 className="text-4xl font-black text-slate-900">{myCases.length}</h4>
-                   <span className="text-[10px] text-slate-500 font-bold">ملف نشط</span>
+                   <span className="text-[10px] text-slate-700 font-bold">ملف نشط</span>
                  </div>
               </div>
 
               <div className="bg-white border border-slate-200 p-8 rounded-[3rem] hover:border-emerald-300 transition-all group relative overflow-hidden shadow-sm">
                  <div className="absolute -top-12 -right-12 w-24 h-24 bg-emerald-50 rounded-full blur-3xl opacity-50" />
                  <div className="flex items-center justify-between mb-6">
-                   <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">إجمالي الموكلين</span>
+                   <span className="text-[10px] font-black text-slate-200 font-bold uppercase tracking-widest">إجمالي الموكلين</span>
                    <Users className="w-5 h-5 text-emerald-600" />
                  </div>
                  <div className="flex items-baseline gap-2">
                    <h4 className="text-4xl font-black text-slate-900">{myClients.length}</h4>
-                   <span className="text-[10px] text-slate-500 font-bold">موكل مسند</span>
+                   <span className="text-[10px] text-slate-700 font-bold">موكل مسند</span>
                  </div>
               </div>
 
               <div className="bg-white border border-slate-200 p-8 rounded-[3rem] hover:border-amber-300 transition-all group relative overflow-hidden shadow-sm">
                  <div className="absolute -top-12 -right-12 w-24 h-24 bg-amber-50 rounded-full blur-3xl opacity-50" />
                  <div className="flex items-center justify-between mb-6">
-                   <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">المهام العدلية العالقة</span>
-                   <CheckSquare className="w-5 h-5 text-amber-600" />
+                   <span className="text-[10px] font-black text-slate-200 font-bold uppercase tracking-widest">المهام العدلية العالقة</span>
+                   <CheckSquare className="w-5 h-5 text-amber-400 font-black" />
                  </div>
                  <div className="flex items-baseline gap-2">
                    <h4 className="text-4xl font-black text-slate-900">{myTasks.filter(t => t.status !== 'completed' && t.status !== 'done').length}</h4>
-                   <span className="text-[10px] text-slate-500 font-bold">مهمة جارية</span>
+                   <span className="text-[10px] text-slate-700 font-bold">مهمة جارية</span>
                  </div>
               </div>
 
               <div className="bg-white border border-slate-200 p-8 rounded-[3rem] hover:border-purple-300 transition-all group relative overflow-hidden shadow-sm">
                  <div className="absolute -top-12 -right-12 w-24 h-24 bg-purple-50 rounded-full blur-3xl opacity-50" />
                  <div className="flex items-center justify-between mb-6">
-                   <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">كفاءة الأداء التشغيلي</span>
+                   <span className="text-[10px] font-black text-slate-200 font-bold uppercase tracking-widest">كفاءة الأداء التشغيلي</span>
                    <Activity className="w-5 h-5 text-purple-600" />
                  </div>
                  <div className="flex items-baseline gap-2">
                    <h4 className="text-4xl font-black text-slate-900">{personalKPIs.caseCompletionRate}%</h4>
-                   <span className="text-[10px] text-slate-500 font-bold">تقدير ممتاز</span>
+                   <span className="text-[10px] text-slate-700 font-bold">تقدير ممتاز</span>
                  </div>
               </div>
             </div>
@@ -1956,7 +1956,7 @@ export default function EmployeePortal({
                       <Calendar className="w-6 h-6 text-blue-600" />
                       <span>خارطة المواعيد والتحاضر القضائي ⚖️</span>
                     </h3>
-                    <p className="text-[11px] text-slate-500 font-bold mt-1.5 uppercase tracking-wider">مزامنة فاعلة مع أرشيف ناجز الوطني</p>
+                    <p className="text-[11px] text-slate-700 font-bold mt-1.5 uppercase tracking-wider">مزامنة فاعلة مع أرشيف ناجز الوطني</p>
                   </div>
                   <div className="flex items-center gap-3 bg-slate-50 p-2 rounded-2xl border border-slate-200">
                     <button onClick={prevMonth} className="p-2 hover:bg-white rounded-xl transition-all shadow-sm"><ChevronRight className="w-4 h-4 rotate-180" /></button>
@@ -1969,7 +1969,7 @@ export default function EmployeePortal({
 
                 <div className="grid grid-cols-7 gap-4">
                   {DAYS_OF_WEEK_AR.map(day => (
-                    <span key={day} className="text-[10px] text-slate-400 font-black text-center uppercase tracking-tighter">{day}</span>
+                    <span key={day} className="text-[10px] text-slate-200 font-bold font-black text-center uppercase tracking-tighter">{day}</span>
                   ))}
                   {daysInGrid.map((dayNum, i) => {
                     if (dayNum === null) return <div key={`empty-${i}`} className="aspect-square" />;
@@ -1982,7 +1982,7 @@ export default function EmployeePortal({
                         onClick={() => setSelectedCalendarDateStr(dStr)}
                         className={`aspect-square rounded-[1.5rem] text-sm font-black flex flex-col items-center justify-center relative transition-all group ${
                           isSelected ? 'bg-blue-600 text-white shadow-xl shadow-blue-600/40 scale-105' : 
-                          hasSess ? 'bg-blue-50 border border-blue-200 text-blue-600 shadow-sm' : 'bg-slate-50 text-slate-400 hover:bg-slate-100 hover:text-slate-600 border border-transparent'
+                          hasSess ? 'bg-blue-50 border border-blue-200 text-blue-600 shadow-sm' : 'bg-slate-50 text-slate-200 font-bold hover:bg-slate-100 hover:text-slate-200 font-bold border border-transparent'
                         }`}
                       >
                         <span>{dayNum}</span>
@@ -1998,7 +1998,7 @@ export default function EmployeePortal({
                 <div className="absolute top-0 right-0 w-full h-[1px] bg-gradient-to-r from-blue-600/50 to-transparent" />
                 <h4 className="text-[11px] font-black text-blue-600 uppercase tracking-widest mb-6">أجندة اليوم المختار</h4>
                 {selectedDaySessions.length === 0 ? (
-                  <div className="flex-1 flex flex-col items-center justify-center text-slate-300 gap-4 opacity-60">
+                  <div className="flex-1 flex flex-col items-center justify-center text-white font-bold gap-4 opacity-60">
                     <Clock className="w-12 h-12" />
                     <p className="text-[10px] font-black">لا توجد جلسات مجدولة</p>
                   </div>
@@ -2007,16 +2007,16 @@ export default function EmployeePortal({
                     {selectedDaySessions.map(s => (
                       <div key={s.id} className="p-6 bg-slate-50 shadow-sm rounded-[2.5rem] space-y-4 border border-slate-100 group/item transition-all hover:border-blue-200">
                         <div className="flex items-center justify-between">
-                          <span className="bg-blue-100 text-blue-700 border border-blue-200 px-3 py-1 rounded-xl text-[9px] font-black">{s.sessionType}</span>
-                          <span className="text-[9px] text-slate-400 font-bold">{s.time}</span>
+                          <span className="bg-blue-100 text-blue-700 border border-blue-200 px-3 py-1 rounded-xl text-[11px] font-black">{s.sessionType}</span>
+                          <span className="text-[11px] text-slate-200 font-bold font-bold">{s.time}</span>
                         </div>
                         <h5 className="text-sm font-black text-slate-900 leading-snug">{s.caseName}</h5>
                         <div className="flex items-center gap-3 pt-4 border-t border-slate-200">
-                          <div className="w-8 h-8 bg-white border border-slate-200 rounded-lg flex items-center justify-center text-slate-600 shadow-sm">
+                          <div className="w-8 h-8 bg-white border border-slate-200 rounded-lg flex items-center justify-center text-slate-200 font-bold shadow-sm">
                             <MapPin className="w-4 h-4" />
                           </div>
                           <div className="text-right">
-                            <p className="text-[10px] text-slate-400 font-black">الموقع</p>
+                            <p className="text-[10px] text-slate-200 font-bold font-black">الموقع</p>
                             <p className="text-[10px] text-slate-900 font-bold">{s.courtName}</p>
                           </div>
                         </div>
@@ -2042,7 +2042,7 @@ export default function EmployeePortal({
                            <Coffee className="w-6 h-6 text-amber-500" />
                            <span>لوحة بيانات الإجازات</span>
                          </h3>
-                         <p className="text-[11px] text-slate-500 font-bold mt-1.5 uppercase tracking-wider">نظرة عامة على الرصيد المستحق والمستهلك</p>
+                         <p className="text-[11px] text-slate-700 font-bold mt-1.5 uppercase tracking-wider">نظرة عامة على الرصيد المستحق والمستهلك</p>
                        </div>
                        <button 
                          onClick={() => setShowLeaveForm(true)}
@@ -2054,8 +2054,8 @@ export default function EmployeePortal({
 
                     <div className="bg-slate-50 p-8 rounded-[2.5rem] border border-slate-100 flex flex-col gap-6">
                        <div className="flex justify-between items-end">
-                          <span className="text-4xl font-black text-amber-500">{vacationBalance.remaining} <span className="text-sm text-slate-500">يوماً</span></span>
-                          <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">إجمالي الرصيد السنوي: {vacationBalance.earned}</span>
+                          <span className="text-4xl font-black text-amber-500">{vacationBalance.remaining} <span className="text-sm text-slate-700">يوماً</span></span>
+                          <span className="text-[10px] font-black uppercase tracking-widest text-slate-200 font-bold">إجمالي الرصيد السنوي: {vacationBalance.earned}</span>
                        </div>
                        
                        <div className="relative w-full h-4 bg-slate-200 rounded-full overflow-hidden">
@@ -2066,7 +2066,7 @@ export default function EmployeePortal({
                           />
                        </div>
 
-                       <div className="flex justify-between text-xs font-bold text-slate-500">
+                       <div className="flex justify-between text-xs font-bold text-slate-700">
                           <span>طُلبت وعُلقت: {leaveRequests.filter(r => r.status === 'pending').length}</span>
                           <span>مُعتمدة (مستهلكة): {leaveRequests.filter(r => r.status === 'approved').length}</span>
                        </div>
@@ -2088,7 +2088,7 @@ export default function EmployeePortal({
                    </div>
                  </div>
                  <div className="grid grid-cols-7 gap-3 text-center">
-                    {DAYS_OF_WEEK_AR.map(d => <span key={d} className="text-[9px] font-black text-slate-400 p-2">{d}</span>)}
+                    {DAYS_OF_WEEK_AR.map(d => <span key={d} className="text-[11px] font-black text-slate-200 font-bold p-2">{d}</span>)}
                     {hrCalendarData.map((dNum, i) => {
                        if (!dNum) return <div key={i} />
                        const dStr = `${hrCalendarDate.getFullYear()}-${String(hrCalendarDate.getMonth() + 1).padStart(2, '0')}-${String(dNum).padStart(2, '0')}`;
@@ -2101,8 +2101,8 @@ export default function EmployeePortal({
                            title={dayLeaves.length > 0 ? `حالة الطلب: ${isApproved ? 'معتمد' : 'معلق'}` : undefined}
                            className={`aspect-square text-xs font-black flex items-center justify-center rounded-2xl border transition-all cursor-pointer ${
                              isApproved ? 'bg-emerald-50 text-emerald-600 border-emerald-200 shadow-sm' : 
-                             isPending ? 'bg-amber-50 text-amber-600 border-amber-200 shadow-sm' : 
-                             'bg-slate-50/50 text-slate-500 border-transparent hover:border-slate-200'
+                             isPending ? 'bg-amber-50 text-amber-400 font-black border-amber-200 shadow-sm' : 
+                             'bg-slate-50/50 text-slate-700 border-transparent hover:border-slate-200'
                            }`}
                          >
                            {dNum}
@@ -2126,7 +2126,7 @@ export default function EmployeePortal({
                 </div>
                 <div className="space-y-4 max-h-[400px] overflow-y-auto custom-scrollbar pr-2">
                   {myCases.length === 0 ? (
-                     <div className="py-20 text-center text-slate-400 text-xs font-bold">لا يوجد قضايا نشطة مسندة حالياً.</div>
+                     <div className="py-20 text-center text-slate-200 font-bold text-xs font-bold">لا يوجد قضايا نشطة مسندة حالياً.</div>
                   ) : (
                     myCases.slice(0, 5).map(c => (
                       <div key={c.id} className="p-6 bg-slate-50 border border-slate-100 rounded-[2.5rem] flex items-center justify-between hover:bg-white hover:border-blue-200 transition-all shadow-sm">
@@ -2137,7 +2137,7 @@ export default function EmployeePortal({
                           <div className="min-w-0 flex-1">
                             <h5 className="text-sm font-black text-slate-900 truncate">{c.caseName}</h5>
                             <div className="flex items-center gap-3 mt-1.5 overflow-hidden">
-                               <span className="text-[10px] font-black text-slate-400 font-mono tracking-tighter shrink-0">{c.caseNumber}</span>
+                               <span className="text-[10px] font-black text-slate-200 font-bold font-mono tracking-tighter shrink-0">{c.caseNumber}</span>
                                <span className="w-1 h-1 bg-slate-200 rounded-full shrink-0" />
                                <span className="text-[10px] font-black text-blue-600 truncate">{c.courtName}</span>
                             </div>
@@ -2145,7 +2145,7 @@ export default function EmployeePortal({
                         </div>
                         <button 
                           onClick={() => setActivePortalTab('cases')}
-                          className="w-10 h-10 bg-white border border-slate-200 text-slate-400 rounded-xl flex items-center justify-center hover:bg-blue-600 hover:text-white hover:border-blue-600 transition-all shrink-0 shadow-sm"
+                          className="w-10 h-10 bg-white border border-slate-200 text-slate-200 font-bold rounded-xl flex items-center justify-center hover:bg-blue-600 hover:text-white hover:border-blue-600 transition-all shrink-0 shadow-sm"
                         >
                           <ChevronRight className="w-5 h-5 rotate-180" />
                         </button>
@@ -2159,14 +2159,14 @@ export default function EmployeePortal({
               <div className="bg-white border border-slate-200 rounded-[3.5rem] p-10 space-y-8 shadow-sm">
                 <div className="flex items-center justify-between border-b border-slate-100 pb-6">
                   <h3 className="text-lg font-black text-slate-900 flex items-center gap-4">
-                    <CheckSquare className="w-6 h-6 text-amber-600" />
+                    <CheckSquare className="w-6 h-6 text-amber-400 font-black" />
                     <span>سجل المهام التشغيلية المجدولة</span>
                   </h3>
-                  <button onClick={() => setActivePortalTab('tasks')} className="text-[10px] font-black text-amber-600 hover:underline">إدارة المهام</button>
+                  <button onClick={() => setActivePortalTab('tasks')} className="text-[10px] font-black text-amber-400 font-black hover:underline">إدارة المهام</button>
                 </div>
                 <div className="space-y-4 max-h-[400px] overflow-y-auto custom-scrollbar pr-2">
                   {myTasks.length === 0 ? (
-                    <div className="py-20 text-center text-slate-400 text-xs font-bold">لا يوجد مهام مجدولة حالياً.</div>
+                    <div className="py-20 text-center text-slate-200 font-bold text-xs font-bold">لا يوجد مهام مجدولة حالياً.</div>
                   ) : (
                     myTasks.slice(0, 5).map(t => (
                       <div key={t.id} className="p-6 bg-slate-50 border border-slate-100 rounded-[2.5rem] space-y-4 hover:bg-white hover:border-amber-200 transition-all shadow-sm">
@@ -2180,13 +2180,13 @@ export default function EmployeePortal({
                                <TaskCountdown dueDate={t.dueDate} />
                             </div>
                           </div>
-                          <span className={`text-[9px] font-black px-3 py-1 rounded-full shrink-0 ${t.status === 'completed' || t.status === 'done' ? 'bg-emerald-100 text-emerald-700 border border-emerald-200' : 'bg-amber-100 text-amber-700 border border-amber-200'}`}>
+                          <span className={`text-[11px] font-black px-3 py-1 rounded-full shrink-0 ${t.status === 'completed' || t.status === 'done' ? 'bg-emerald-100 text-emerald-700 border border-emerald-200' : 'bg-amber-100 text-amber-400 font-black border border-amber-200'}`}>
                             {t.status === 'completed' || t.status === 'done' ? 'موثقة ومنجزة ✅' : 'جارية للمتابعة ⏳'}
                           </span>
                         </div>
                         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-4 border-t border-slate-200">
                           <div className="flex items-center gap-2">
-                            <span className="text-[10px] text-slate-400 font-black">المده المتبقية:</span>
+                            <span className="text-[10px] text-slate-200 font-bold font-black">المده المتبقية:</span>
                             <TaskCountdown dueDate={t.dueDate} />
                           </div>
                           <select 
@@ -2221,7 +2221,7 @@ export default function EmployeePortal({
               <div className="flex gap-3">
                  <div className="hidden sm:flex bg-blue-50 border border-blue-100 px-6 py-3 rounded-2xl items-center gap-4">
                     <div className="text-right">
-                       <span className="text-[9px] text-blue-400 font-black block uppercase">رصيد الإجازات المتبقي</span>
+                       <span className="text-[11px] text-blue-400 font-black block uppercase">رصيد الإجازات المتبقي</span>
                        <span className="text-lg font-black text-blue-900">18 / 30 يوم</span>
                     </div>
                     <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center text-blue-600 border border-blue-100 shadow-sm">
@@ -2250,7 +2250,7 @@ export default function EmployeePortal({
                           className="absolute top-0 right-0 h-full bg-gradient-to-l from-blue-600 to-indigo-400"
                         />
                      </div>
-                     <div className="flex justify-between mt-3 text-[10px] font-black text-slate-400 uppercase">
+                     <div className="flex justify-between mt-3 text-[10px] font-black text-slate-200 font-bold uppercase">
                         <span>تم استهلاك 12 يوماً</span>
                         <span>متبقي 18 يوماً</span>
                      </div>
@@ -2258,13 +2258,13 @@ export default function EmployeePortal({
                   <div className="flex-1 grid grid-cols-2 md:grid-cols-4 gap-4 w-full">
                      {[
                        { label: 'إجازات معتمدة', val: '3', color: 'text-emerald-600', bg: 'bg-emerald-50' },
-                       { label: 'طلبات معلقة', val: '1', color: 'text-amber-600', bg: 'bg-amber-50' },
+                       { label: 'طلبات معلقة', val: '1', color: 'text-amber-400 font-black', bg: 'bg-amber-50' },
                        { label: 'إجازات مرضية', val: '2', color: 'text-rose-600', bg: 'bg-rose-50' },
-                       { label: 'أيام الغياب', val: '0', color: 'text-slate-600', bg: 'bg-slate-50' }
+                       { label: 'أيام الغياب', val: '0', color: 'text-slate-200 font-bold', bg: 'bg-slate-50' }
                      ].map((stat, i) => (
                        <div key={i} className={`${stat.bg} p-6 rounded-3xl border border-white/50 text-center flex flex-col items-center justify-center`}>
                           <span className={`text-2xl font-black ${stat.color}`}>{stat.val}</span>
-                          <span className="text-[9px] font-black text-slate-500 mt-1 uppercase">{stat.label}</span>
+                          <span className="text-[11px] font-black text-slate-700 mt-1 uppercase">{stat.label}</span>
                        </div>
                      ))}
                   </div>
@@ -2280,7 +2280,7 @@ export default function EmployeePortal({
                 </h3>
                 <div className="flex-1 space-y-4">
                   {attendance.length === 0 ? (
-                    <div className="py-20 text-center text-slate-400 text-xs font-bold">لا يوجد سجلات حضور مسجلة لهذا الشهر.</div>
+                    <div className="py-20 text-center text-slate-200 font-bold text-xs font-bold">لا يوجد سجلات حضور مسجلة لهذا الشهر.</div>
                   ) : (
                     attendance.slice(0, 5).map(record => (
                       <div key={record.id} className="flex items-center justify-between p-4 bg-slate-50 border border-slate-100 rounded-2xl">
@@ -2290,7 +2290,7 @@ export default function EmployeePortal({
                           </div>
                           <div>
                             <p className="text-xs font-black text-slate-900">{record.date}</p>
-                            <p className="text-[10px] text-slate-500 font-bold">{record.method === 'qr' ? 'بصمة QR' : 'الموقع الموقع'}</p>
+                            <p className="text-[10px] text-slate-700 font-bold">{record.method === 'qr' ? 'بصمة QR' : 'الموقع الموقع'}</p>
                           </div>
                         </div>
                         <div className="text-left">
@@ -2310,14 +2310,14 @@ export default function EmployeePortal({
                       تقويم الإجازات
                     </h3>
                     <div className="flex gap-1">
-                       <button onClick={() => setHrCalendarDate(new Date(hrCalendarDate.getFullYear(), hrCalendarDate.getMonth() - 1, 1))} className="p-1 hover:bg-slate-100 rounded-lg text-slate-400"><ChevronRight className="w-4 h-4" /></button>
-                       <button onClick={() => setHrCalendarDate(new Date(hrCalendarDate.getFullYear(), hrCalendarDate.getMonth() + 1, 1))} className="p-1 hover:bg-slate-100 rounded-lg text-slate-400"><ChevronLeft className="w-4 h-4" /></button>
+                       <button onClick={() => setHrCalendarDate(new Date(hrCalendarDate.getFullYear(), hrCalendarDate.getMonth() - 1, 1))} className="p-1 hover:bg-slate-100 rounded-lg text-slate-200 font-bold"><ChevronRight className="w-4 h-4" /></button>
+                       <button onClick={() => setHrCalendarDate(new Date(hrCalendarDate.getFullYear(), hrCalendarDate.getMonth() + 1, 1))} className="p-1 hover:bg-slate-100 rounded-lg text-slate-200 font-bold"><ChevronLeft className="w-4 h-4" /></button>
                     </div>
                  </div>
                  
                  <div className="grid grid-cols-7 gap-1 mb-4 text-center">
                     {DAYS_OF_WEEK_AR.map(d => (
-                       <span key={d} className="text-[9px] font-black text-slate-400 uppercase">{d}</span>
+                       <span key={d} className="text-[11px] font-black text-slate-200 font-bold uppercase">{d}</span>
                     ))}
                  </div>
                  
@@ -2335,8 +2335,8 @@ export default function EmployeePortal({
                                hasLeave 
                                  ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/20' 
                                  : isPending 
-                                    ? 'bg-amber-100 text-amber-700 border border-amber-200' 
-                                    : 'hover:bg-slate-50 text-slate-400'
+                                    ? 'bg-amber-100 text-amber-400 font-black border border-amber-200' 
+                                    : 'hover:bg-slate-50 text-slate-200 font-bold'
                              }`}
                           >
                              {day}
@@ -2349,11 +2349,11 @@ export default function EmployeePortal({
                  <div className="mt-8 space-y-3">
                     <div className="flex items-center gap-2">
                        <div className="w-3 h-3 bg-emerald-600 rounded-full"></div>
-                       <span className="text-[10px] font-bold text-slate-500">إجازة معتمدة</span>
+                       <span className="text-[10px] font-bold text-slate-700">إجازة معتمدة</span>
                     </div>
                     <div className="flex items-center gap-2">
                        <div className="w-3 h-3 bg-amber-100 border border-amber-200 rounded-full"></div>
-                       <span className="text-[10px] font-bold text-slate-500">طلب قيد المراجعة</span>
+                       <span className="text-[10px] font-bold text-slate-700">طلب قيد المراجعة</span>
                     </div>
                  </div>
               </div>
@@ -2366,19 +2366,19 @@ export default function EmployeePortal({
                 </h3>
                 <div className="space-y-4 h-[400px] overflow-y-auto custom-scrollbar pr-1">
                   {leaveRequests.length === 0 ? (
-                    <div className="py-20 text-center text-slate-400 text-xs font-bold">لم تتقدم بأی طلبات إجازة حتى الآن.</div>
+                    <div className="py-20 text-center text-slate-200 font-bold text-xs font-bold">لم تتقدم بأی طلبات إجازة حتى الآن.</div>
                   ) : (
                     leaveRequests.map(req => (
                       <div key={req.id} className="p-5 bg-slate-50 border border-slate-100 rounded-2xl space-y-3">
                         <div className="flex justify-between items-center">
                            <h4 className="text-xs font-black text-slate-900">إجازة {req.type === 'vacation' ? 'اعتيادية' : 'مرضية'}</h4>
-                           <span className={`text-[8px] px-2 py-1 rounded-full font-black ${
-                             req.status === 'approved' ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' : 'bg-amber-50 text-amber-600 border border-amber-100'
+                           <span className={`text-[10px] px-2 py-1 rounded-full font-black ${
+                             req.status === 'approved' ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' : 'bg-amber-50 text-amber-400 font-black border border-amber-100'
                            }`}>
                              {req.status === 'approved' ? 'مقبولة' : 'معلقة'}
                            </span>
                         </div>
-                        <div className="flex justify-between text-[10px] font-bold text-slate-500">
+                        <div className="flex justify-between text-[10px] font-bold text-slate-700">
                            <span>{req.startDate}</span>
                            <span>إلى</span>
                            <span>{req.endDate}</span>
@@ -2403,7 +2403,7 @@ export default function EmployeePortal({
                        <Activity className="w-8 h-8 text-blue-600" />
                        مؤشر الأداء المهني (KPI)
                     </h2>
-                    <p className="text-slate-500 font-bold mt-2 text-sm">تحليلات الأداء الشهري بناءً على المهام، الدقة، والالتزام بالمواعيد.</p>
+                    <p className="text-slate-700 font-bold mt-2 text-sm">تحليلات الأداء الشهري بناءً على المهام، الدقة، والالتزام بالمواعيد.</p>
                   </div>
                   <div className="bg-blue-50 border border-blue-100 p-4 rounded-2xl text-center">
                     <span className="text-[10px] text-blue-600 font-black uppercase tracking-widest block mb-1">التقييم العام</span>
@@ -2480,7 +2480,7 @@ export default function EmployeePortal({
                 </div>
 
                 <div className="bg-slate-50 border border-slate-100 p-5 rounded-2xl">
-                  <p className="text-[10px] text-slate-500 font-black mb-3 leading-relaxed">
+                  <p className="text-[10px] text-slate-700 font-black mb-3 leading-relaxed">
                     يستخدم هذا الموديول "بوابة النفاذ الوطني" (IAM) بشكل آلي لسحب ملفات القضايا والقرارات لعام {new Date().getFullYear()}. تظهر النتائج في لوحة التحكم الرئيسية فور انتهاء السجل.
                   </p>
                   <button 
@@ -2504,15 +2504,15 @@ export default function EmployeePortal({
 
                 {/* Scraper Log execution displays */}
                 <div className="bg-white rounded-2xl p-6 border border-slate-200 space-y-4">
-                  <h4 className="text-[11px] font-black text-slate-400 uppercase tracking-wide">سجل معالجة خادم سحب البيانات:</h4>
-                  <div className="h-44 overflow-y-auto space-y-2 border border-slate-100 p-4 rounded-xl font-mono text-[9px] text-emerald-600 bg-slate-50 custom-scrollbar">
+                  <h4 className="text-[11px] font-black text-slate-200 font-bold uppercase tracking-wide">سجل معالجة خادم سحب البيانات:</h4>
+                  <div className="h-44 overflow-y-auto space-y-2 border border-slate-100 p-4 rounded-xl font-mono text-[11px] text-emerald-600 bg-slate-50 custom-scrollbar">
                     {najizSyncLog.length === 0 ? (
-                      <span className="text-slate-400 font-bold block text-center py-12">مستعد لبدء الربط التلقائي...</span>
+                      <span className="text-slate-200 font-bold font-bold block text-center py-12">مستعد لبدء الربط التلقائي...</span>
                     ) : (
                       najizSyncLog.map((log, i) => (
                         <div key={i} className="flex justify-between items-start gap-3">
                           <span className="text-right leading-normal font-bold">{log.msg}</span>
-                          <span className="text-slate-400 shrink-0 select-none">[{log.time}]</span>
+                          <span className="text-slate-200 font-bold shrink-0 select-none">[{log.time}]</span>
                         </div>
                       ))
                     )}
@@ -2532,7 +2532,7 @@ export default function EmployeePortal({
               </div>
               <div className="text-right">
                 <h3 className="text-xl font-black text-slate-900">مساعد المحاماة الذكي بـ Gemini</h3>
-                <p className="text-xs text-slate-500 font-bold mt-1">
+                <p className="text-xs text-slate-700 font-bold mt-1">
                   مستشارك السحابي لصياغة مذكرات الدفاع، العقود والمذكرات الجوابية، والبحث في الأنظمة القضائية واللوائح التنفيذية.
                 </p>
               </div>
@@ -2550,7 +2550,7 @@ export default function EmployeePortal({
                   className={`px-4 py-2 rounded-xl text-xs font-black transition-all ${
                     aiTab === tab.id 
                       ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20' 
-                      : 'text-slate-400 hover:text-blue-600 hover:bg-blue-50'
+                      : 'text-slate-200 font-bold hover:text-blue-600 hover:bg-blue-50'
                   }`}
                 >
                   {tab.label}
@@ -2618,7 +2618,7 @@ export default function EmployeePortal({
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {myCases.length === 0 ? (
-                  <div className="col-span-full py-20 bg-white rounded-[2.5rem] text-center border border-slate-200 text-slate-400 font-bold text-xs shadow-sm">
+                  <div className="col-span-full py-20 bg-white rounded-[2.5rem] text-center border border-slate-200 text-slate-200 font-bold font-bold text-xs shadow-sm">
                     لا توجد قضايا حالية مسندة إلى اسمك. يمكنك مزامنتها من ناجز أو طلب تعيينها من لوحة المدير.
                   </div>
                 ) : (
@@ -2630,18 +2630,18 @@ export default function EmployeePortal({
                       <div className="absolute top-0 right-0 w-1.5 h-full bg-blue-600/10" />
                       <div>
                         <div className="flex justify-between items-start mb-6">
-                          <span className="text-[10px] font-black text-slate-400 font-mono tracking-wide">{c.caseNumber}</span>
-                          <span className={`text-[9px] px-3 py-1 rounded-full font-black ${
+                          <span className="text-[10px] font-black text-slate-200 font-bold font-mono tracking-wide">{c.caseNumber}</span>
+                          <span className={`text-[11px] px-3 py-1 rounded-full font-black ${
                             c.status === 'active' || c.status === 'pending_session'
                               ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' 
-                              : 'bg-slate-50 text-slate-500 border border-slate-200'
+                              : 'bg-slate-50 text-slate-700 border border-slate-200'
                           }`}>
                             {c.status === 'active' ? 'قيد الترافع النشط' : c.status === 'pending_session' ? 'جلسة مقبلة جارية' : 'مغلق'}
                           </span>
                         </div>
                         
                         <h4 className="font-black text-lg text-slate-900 mb-4 leading-tight">{c.caseName}</h4>
-                        <div className="space-y-3 text-[11px] text-slate-500 font-bold mb-6 pr-1">
+                        <div className="space-y-3 text-[11px] text-slate-700 font-bold mb-6 pr-1">
                           <p className="flex items-center gap-2.5"><Users className="w-4 h-4 text-blue-600" /> الموكل/العميل: {c.clientName}</p>
                           <p className="flex items-center gap-2.5"><Globe className="w-4 h-4 text-emerald-600" /> المحكمة: {c.courtName || 'المحكمة العامة'}</p>
                           {c.nextSessionDate && (
@@ -2652,7 +2652,7 @@ export default function EmployeePortal({
                       
                       <div className="pt-5 border-t border-slate-100">
                         <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
-                          <p className="text-[10px] text-slate-400 font-black mb-1">ملخص الخصم:</p>
+                          <p className="text-[10px] text-slate-200 font-bold font-black mb-1">ملخص الخصم:</p>
                           <p className="text-xs font-black text-slate-900">{c.opponentName || 'غير مسجل'}</p>
                         </div>
                       </div>
@@ -2667,7 +2667,7 @@ export default function EmployeePortal({
         {activePortalTab === 'tasks' && (
           <div className="space-y-8">
             <h3 className="text-2xl font-black text-slate-900 flex items-center gap-3">
-              <div className="p-3 bg-amber-50 rounded-2xl text-amber-600 border border-amber-100">
+              <div className="p-3 bg-amber-50 rounded-2xl text-amber-400 font-black border border-amber-100">
                 <CheckSquare className="w-6 h-6" />
               </div>
               تتبع وتنفيذ المهام العدلية المسندة
@@ -2675,7 +2675,7 @@ export default function EmployeePortal({
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               {myTasks.length === 0 ? (
-                <div className="col-span-full py-20 bg-white rounded-[2.5rem] text-center border border-slate-200 text-slate-400 font-bold text-xs shadow-sm">
+                <div className="col-span-full py-20 bg-white rounded-[2.5rem] text-center border border-slate-200 text-slate-200 font-bold font-bold text-xs shadow-sm">
                   ليس لديك مهام جارية حالياً.
                 </div>
               ) : (
@@ -2687,20 +2687,20 @@ export default function EmployeePortal({
                       <span className={`text-[10px] px-3 py-1 rounded-full font-black ${
                         t.priority === 'high' 
                           ? 'bg-rose-50 text-rose-600 border border-rose-100' 
-                          : 'bg-slate-50 text-slate-500 border border-slate-200'
+                          : 'bg-slate-50 text-slate-700 border border-slate-200'
                       }`}>
                         {t.priority === 'high' ? 'عالية ومستعجلة' : 'اعتيادية'}
                       </span>
                     </div>
 
-                    <p className="text-xs text-slate-500 font-bold leading-relaxed">{t.description || 'لم تدرج تفاصيل إضافية مسبقاً.'}</p>
+                    <p className="text-xs text-slate-700 font-bold leading-relaxed">{t.description || 'لم تدرج تفاصيل إضافية مسبقاً.'}</p>
 
                     <div className="bg-slate-50 p-6 rounded-2xl border border-slate-100 space-y-4">
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                         <TaskCountdown dueDate={t.dueDate} />
                         
                         <div className="flex items-center gap-3">
-                          <span className="text-[10px] text-slate-400 font-black">الحالة:</span>
+                          <span className="text-[10px] text-slate-200 font-bold font-black">الحالة:</span>
                           <select 
                             value={t.status}
                             onChange={(e) => handleToggleTaskStatus(t.id, e.target.value)}
@@ -2733,7 +2733,7 @@ export default function EmployeePortal({
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {myClients.length === 0 ? (
-                <div className="col-span-full py-20 bg-white rounded-[2.5rem] text-center border border-slate-200 text-slate-400 font-bold text-xs shadow-sm">
+                <div className="col-span-full py-20 bg-white rounded-[2.5rem] text-center border border-slate-200 text-slate-200 font-bold font-bold text-xs shadow-sm">
                   لا يوجد موكلين مسندين حالياً.
                 </div>
               ) : (
@@ -2742,16 +2742,16 @@ export default function EmployeePortal({
                     <div className="absolute top-0 right-0 w-1.5 h-full bg-emerald-600/10" />
                     <div>
                       <h4 className="font-black text-lg text-slate-900 mb-2 leading-tight">{client.name}</h4>
-                      <p className="text-[10px] text-slate-400 font-black mb-6">الرقم الضريبي/الهوية: {client.nationalId || 'غير متوفر'}</p>
+                      <p className="text-[10px] text-slate-200 font-bold font-black mb-6">الرقم الضريبي/الهوية: {client.nationalId || 'غير متوفر'}</p>
                       
-                      <div className="space-y-3 text-[11px] text-slate-500 font-bold mb-6 pr-1">
+                      <div className="space-y-3 text-[11px] text-slate-700 font-bold mb-6 pr-1">
                         <p className="flex items-center gap-2.5"><Phone className="w-4 h-4 text-emerald-600" /> {client.phone}</p>
                         <p className="flex items-center gap-2.5"><Mail className="w-4 h-4 text-blue-600" /> {client.email}</p>
                         <p className="flex items-center gap-2.5"><Briefcase className="w-4 h-4 text-amber-500" /> نوع العميل: {client.isCompany ? 'شركة / مؤسسة' : 'فرد'}</p>
                       </div>
                     </div>
                     
-                    <button className="w-full py-3.5 bg-slate-50 hover:bg-emerald-50 text-slate-600 hover:text-emerald-700 rounded-2xl font-black text-xs transition-all border border-slate-100 hover:border-emerald-200">
+                    <button className="w-full py-3.5 bg-slate-50 hover:bg-emerald-50 text-slate-200 font-bold hover:text-emerald-700 rounded-2xl font-black text-xs transition-all border border-slate-100 hover:border-emerald-200">
                       استعراض ملف العميل الكامل
                     </button>
                   </div>
@@ -2766,7 +2766,7 @@ export default function EmployeePortal({
           <div className="max-w-5xl mx-auto space-y-10">
             <div className="text-center space-y-4">
               <h3 className="text-3xl font-black text-slate-900">مرصد الأنظمة والبحث القضائي الذكي 🔍</h3>
-              <p className="text-slate-500 font-bold max-w-2xl mx-auto">
+              <p className="text-slate-700 font-bold max-w-2xl mx-auto">
                 ابحث في كافة الأنظمة واللوائح والتعاميم الصادرة من وزارة العدل والمحاكم السعودية باستخدام تقنيات الذكاء الاصطناعي.
               </p>
             </div>
@@ -2783,14 +2783,14 @@ export default function EmployeePortal({
 
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 {['نظام العمل', 'نظام المرافعات', 'نظام الشركات', 'الأنظمة التجارية'].map(sys => (
-                  <button key={sys} className="px-6 py-4 bg-slate-50 hover:bg-blue-50 text-slate-600 hover:text-blue-600 rounded-2xl text-xs font-black border border-slate-100 hover:border-blue-200 transition-all">
+                  <button key={sys} className="px-6 py-4 bg-slate-50 hover:bg-blue-50 text-slate-200 font-bold hover:text-blue-600 rounded-2xl text-xs font-black border border-slate-100 hover:border-blue-200 transition-all">
                     {sys}
                   </button>
                 ))}
               </div>
             </div>
 
-            <div className="py-12 text-center text-slate-300 font-black opacity-60">
+            <div className="py-12 text-center text-white font-bold font-black opacity-60">
                <Globe className="w-20 h-20 mx-auto mb-6 animate-pulse" />
                <p>أدخل استعلامك للبحث في المراجعة القضائية الفورية</p>
             </div>
@@ -2807,14 +2807,14 @@ export default function EmployeePortal({
               أوليات ومستندات ملف القضية المجمعة
             </h3>
             
-            <p className="text-xs text-slate-500 font-bold leading-relaxed">
+            <p className="text-xs text-slate-700 font-bold leading-relaxed">
               قم بتحميل الأقراص الصكوك وتفويض التوكيل المرتبط بـ {loggedInEmployee.name}. الملفات ترفع تلقائياً على خزانة الحساب المدير للحفاظ على المزامنة.
             </p>
 
             <div className="dropzone border-2 border-dashed border-slate-200 bg-slate-50 hover:bg-white rounded-3xl p-12 text-center cursor-pointer transition-all hover:border-blue-400 flex flex-col items-center gap-4">
               <FileText className="w-12 h-12 text-blue-400 animate-bounce" />
               <span className="text-sm font-black text-slate-900">اسحب ملفات أو مذكرات للتوريد هنا</span>
-              <span className="text-[11px] text-slate-400 font-bold">صيغ مدعومة: PDF, DOC, PNG, JPEG حتى حجم 30 ميغابايت</span>
+              <span className="text-[11px] text-slate-200 font-bold font-bold">صيغ مدعومة: PDF, DOC, PNG, JPEG حتى حجم 30 ميغابايت</span>
             </div>
           </div>
         )}
@@ -2841,7 +2841,7 @@ export default function EmployeePortal({
                   <Coffee className="w-6 h-6 text-amber-500" />
                   تقديم طلب إجازة جديد
                 </h3>
-                <button onClick={() => setShowLeaveForm(false)} className="text-slate-400 hover:text-rose-600 transition-all">
+                <button onClick={() => setShowLeaveForm(false)} className="text-slate-200 font-bold hover:text-rose-600 transition-all">
                   <Trash2 className="w-6 h-6" />
                 </button>
               </div>
@@ -2849,7 +2849,7 @@ export default function EmployeePortal({
               <form onSubmit={handleApplyLeave} className="p-8 space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
-                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest block pr-2">نوع الإجازة</label>
+                    <label className="text-[10px] font-black text-slate-700 uppercase tracking-widest block pr-2">نوع الإجازة</label>
                     <select name="type" required className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3 text-slate-950 font-bold text-sm focus:border-blue-600 outline-none">
                       <option value="vacation">إجازة اعتيادية (رصيد سنوي)</option>
                       <option value="sick">إجازة مرضية (بتقرير طبي)</option>
@@ -2858,17 +2858,17 @@ export default function EmployeePortal({
                     </select>
                   </div>
                   <div className="space-y-2">
-                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest block pr-2">بداية الإجازة</label>
+                    <label className="text-[10px] font-black text-slate-700 uppercase tracking-widest block pr-2">بداية الإجازة</label>
                     <input type="date" name="startDate" required className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3 text-slate-950 font-bold text-sm outline-none" />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest block pr-2">نهاية الإجازة</label>
+                    <label className="text-[10px] font-black text-slate-700 uppercase tracking-widest block pr-2">نهاية الإجازة</label>
                     <input type="date" name="endDate" required className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3 text-slate-950 font-bold text-sm outline-none" />
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest block pr-2">سبب الطلب / ملاحظات إضافية</label>
+                  <label className="text-[10px] font-black text-slate-700 uppercase tracking-widest block pr-2">سبب الطلب / ملاحظات إضافية</label>
                   <textarea name="reason" rows={4} className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3 text-slate-950 font-bold text-sm outline-none resize-none" placeholder="اكتب تفاصيل الطلب هنا..."></textarea>
                 </div>
 
@@ -2876,7 +2876,7 @@ export default function EmployeePortal({
                   <button type="submit" className="flex-1 bg-blue-900 hover:bg-blue-800 text-white py-4 rounded-2xl font-black text-xs shadow-lg transition-all active:scale-95">
                     إرسال الطلب للمدير المباشر
                   </button>
-                  <button type="button" onClick={() => setShowLeaveForm(false)} className="px-8 bg-slate-100 hover:bg-slate-200 text-slate-600 py-4 rounded-2xl font-black text-xs transition-all">
+                  <button type="button" onClick={() => setShowLeaveForm(false)} className="px-8 bg-slate-100 hover:bg-slate-200 text-slate-200 font-bold py-4 rounded-2xl font-black text-xs transition-all">
                     إلغاء
                   </button>
                 </div>
@@ -2907,10 +2907,10 @@ export default function EmployeePortal({
                     <Loader2 className="w-10 h-10 animate-spin" />
                   </div>
                   <h3 className="text-xl font-black text-blue-950 mb-2">جاري تحديد الموقع</h3>
-                  <p className="text-sm font-bold text-slate-500 mb-8 max-w-[250px]">
+                  <p className="text-sm font-bold text-slate-700 mb-8 max-w-[250px]">
                     يرجى الانتظار بينما نقوم بالتحقق من إحداثياتك للمطابقة مع النطاق المسموح.
                   </p>
-                  <button onClick={() => { setGeoLocating(false); setShowCheckInModal(false); }} className="text-slate-400 font-bold hover:text-slate-600">
+                  <button onClick={() => { setGeoLocating(false); setShowCheckInModal(false); }} className="text-slate-200 font-bold font-bold hover:text-slate-200 font-bold">
                     إلغاء العملية
                   </button>
                 </>
@@ -2920,7 +2920,7 @@ export default function EmployeePortal({
                     <QrCode className="w-8 h-8" />
                   </div>
                   <h3 className="text-xl font-black text-blue-950 mb-2">رمز التوثيق الخاص بك</h3>
-                  <p className="text-xs font-bold text-slate-500 mb-6">
+                  <p className="text-xs font-bold text-slate-700 mb-6">
                     قم بمسح هذا الرمز باستخدام جهاز البصمة أو بوابة التحقق لإثبات حضورك.
                   </p>
                   <div className="p-4 bg-white border-2 border-slate-100 rounded-3xl mb-8">

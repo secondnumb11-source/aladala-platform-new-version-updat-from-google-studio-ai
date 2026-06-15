@@ -314,7 +314,7 @@ export default function SaudiServicesHub({
             className={`flex-1 py-3 text-center rounded-xl text-xs font-black transition-all cursor-pointer ${
               activeTab === "portals"
                 ? "bg-white text-slate-950 shadow-md transform scale-102"
-                : "text-slate-600"
+                : "text-slate-200 font-bold"
             }`}
           >
             🏛️ قاعة البوابات والمنصات (11 منشأة)
@@ -324,7 +324,7 @@ export default function SaudiServicesHub({
             className={`flex-1 py-3 text-center rounded-xl text-xs font-black transition-all cursor-pointer ${
               activeTab === "tools"
                 ? "bg-white text-slate-950 shadow-md transform scale-102"
-                : "text-slate-600"
+                : "text-slate-200 font-bold"
             }`}
           >
             🛠️ خدمات المساندة والتحققات الذكية
@@ -333,7 +333,7 @@ export default function SaudiServicesHub({
 
         {activeTab === "portals" && (
           <div className="relative max-w-xs w-full">
-            <Search className="w-4 h-4 text-slate-400 absolute right-3 top-1/2 -translate-y-1/2" />
+            <Search className="w-4 h-4 text-slate-200 font-bold absolute right-3 top-1/2 -translate-y-1/2" />
             <input
               type="text"
               placeholder="ابحث عن منصة حكومية..."
@@ -350,7 +350,7 @@ export default function SaudiServicesHub({
       {activeTab === "portals" && (
         <div className="space-y-6">
           <div className="bg-amber-500/5 border border-amber-600/10 rounded-2xl p-4 flex items-start gap-3">
-            <Globe className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+            <Globe className="w-5 h-5 text-amber-400 font-black shrink-0 mt-0.5" />
             <div className="space-y-1">
               <h4 className="text-xs font-black text-slate-950 underline decoration-amber-500/20">سجل توثيق البوابات السعودية للأمن والامتثال العالي</h4>
               <p className="text-[11px] text-slate-900 font-black leading-normal">
@@ -387,10 +387,10 @@ export default function SaudiServicesHub({
                     </div>
 
                     <div>
-                      <h3 className="text-xs font-black text-slate-950 group-hover/card:text-amber-600 transition-colors">
+                      <h3 className="text-xs font-black text-slate-950 group-hover/card:text-amber-400 font-black transition-colors">
                         {portal.name}
                       </h3>
-                      <span className="text-[9px] text-slate-400 font-bold font-mono tracking-wider">
+                      <span className="text-[11px] text-slate-200 font-bold font-bold font-mono tracking-wider">
                         {portal.domain}
                       </span>
                     </div>
@@ -406,7 +406,7 @@ export default function SaudiServicesHub({
                 <div className="border-t border-slate-100 mt-5 pt-4 flex items-center justify-between">
                   {portal.name === 'بوابة ناجز العدلية' ? (
                     isNajizConnected ? (
-                      <div className="flex items-center gap-1.5 text-[9px] font-sans font-extrabold text-emerald-600 bg-emerald-500/5 px-2.5 py-1 rounded-xl border border-emerald-500/10">
+                      <div className="flex items-center gap-1.5 text-[11px] font-sans font-extrabold text-emerald-600 bg-emerald-500/5 px-2.5 py-1 rounded-xl border border-emerald-500/10">
                         <span className="relative flex h-1.5 w-1.5">
                           <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                           <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500"></span>
@@ -414,13 +414,13 @@ export default function SaudiServicesHub({
                         ربط API متصل بنشاط
                       </div>
                     ) : (
-                      <div className="flex items-center gap-1.5 text-[9px] font-sans font-black text-slate-800 bg-slate-500/10 px-2.5 py-1 rounded-xl border border-slate-500/20 shadow-sm">
+                      <div className="flex items-center gap-1.5 text-[11px] font-sans font-black text-slate-800 bg-slate-500/10 px-2.5 py-1 rounded-xl border border-slate-500/20 shadow-sm">
                         <span className="w-1.5 h-1.5 rounded-full bg-slate-600"></span>
                         سجل محلي (غير مرتبط بناجز)
                       </div>
                     )
                   ) : (
-                    <div className="flex items-center gap-1.5 text-[9px] font-sans font-extrabold text-blue-600 bg-blue-500/5 px-2.5 py-1 rounded-xl border border-blue-500/10">
+                    <div className="flex items-center gap-1.5 text-[11px] font-sans font-extrabold text-blue-600 bg-blue-500/5 px-2.5 py-1 rounded-xl border border-blue-500/10">
                       <span className="w-1.5 h-1.5 rounded-full bg-blue-400"></span>
                       رابط خارجي معتمد
                     </div>
@@ -441,9 +441,9 @@ export default function SaudiServicesHub({
 
           {filteredPortals.length === 0 && (
             <div className="p-12 text-center bg-white border border-slate-200 rounded-3xl space-y-3">
-              <HelpCircle className="w-12 h-12 text-slate-400 mx-auto" />
+              <HelpCircle className="w-12 h-12 text-slate-200 font-bold mx-auto" />
               <h4 className="text-xs font-black text-slate-950">لم نعثر على المنصة الحكومية المطلوبة</h4>
-              <p className="text-slate-600 text-xs">يرجى التحقق من صياغة جملة البحث مسبقاً.</p>
+              <p className="text-slate-200 font-bold text-xs">يرجى التحقق من صياغة جملة البحث مسبقاً.</p>
             </div>
           )}
         </div>
@@ -456,7 +456,7 @@ export default function SaudiServicesHub({
           <div className="bg-slate-50 border border-slate-200/60 p-5 rounded-3xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div>
               <h4 className="text-xs font-black text-slate-900">محاكي السطوع التفاعلي وألوان التباين الذكية (Adaptive Contrast Emulator)</h4>
-              <p className="text-[10px] text-slate-500 font-bold mt-0.5">انقر على الزر لتبديل ألوان الخلفية لكروت الخدمات بالكامل. حيث ستقوم بطاقات motion.div بتحليل مستوى اللومينانس والمواءمة البصرية للنصوص لضمان أرقى معايير القراءة الاحترافية.</p>
+              <p className="text-[10px] text-slate-700 font-bold mt-0.5">انقر على الزر لتبديل ألوان الخلفية لكروت الخدمات بالكامل. حيث ستقوم بطاقات motion.div بتحليل مستوى اللومينانس والمواءمة البصرية للنصوص لضمان أرقى معايير القراءة الاحترافية.</p>
             </div>
             <button
               onClick={() => setIsDarkCards(!isDarkCards)}
@@ -478,7 +478,7 @@ export default function SaudiServicesHub({
               <h3 className="text-sm font-bold flex items-center gap-1.5 mt-1 border-r-4 border-amber-600 pr-2 text-slate-950">
                 الأدوات المعتمدة للتحقق والمساندة القضائية الذكية
               </h3>
-              <p className="text-slate-600 text-xs mt-1">
+              <p className="text-slate-200 font-bold text-xs mt-1">
                 مجموعة من الأدوات المتطورة لحساب المواريث الشرعية، تحديث الصكوك العقارية الرقمية، التحقق والاستعلام عن الحدود، ومتابعة سندات التنفيذ.
               </p>
             </div>
@@ -493,7 +493,7 @@ export default function SaudiServicesHub({
                 const requiresWhiteText = relativeLuminance < 0.5;
                 
                 const contrastTitleColor = requiresWhiteText ? "text-yellow-350 font-black drop-shadow-[0_1px_3px_rgba(0,0,0,0.5)]" : "text-slate-900 font-extrabold";
-                const contrastDescColor = requiresWhiteText ? "text-slate-100 font-medium opacity-90" : "text-slate-600 font-bold";
+                const contrastDescColor = requiresWhiteText ? "text-slate-100 font-medium opacity-90" : "text-slate-200 font-bold font-bold";
                 const cardDynamicStatus = `Luminance: ${relativeLuminance} | ${requiresWhiteText ? 'High contrast text adaptive' : 'Charcoal text adaptive'}`;
 
                 return (
@@ -511,7 +511,7 @@ export default function SaudiServicesHub({
                     <div className={`w-12 h-12 rounded-2xl border flex items-center justify-center shrink-0 transition-all ${
                       isDarkCards 
                         ? 'bg-slate-800 border-slate-705 text-amber-400' 
-                        : 'bg-slate-50 border-slate-200 text-amber-700'
+                        : 'bg-slate-50 border-slate-200 text-amber-400 font-black'
                     }`}>
                       <Icon className="w-5 h-5" />
                     </div>
@@ -528,13 +528,13 @@ export default function SaudiServicesHub({
                       <span className={`text-[11px] block line-clamp-2 leading-relaxed transition-all ${contrastDescColor}`}>
                         {s.description}
                       </span>
-                      <span className="text-[8px] font-mono opacity-40 block mt-0.5" dir="ltr">
+                      <span className="text-[10px] font-mono opacity-40 block mt-0.5" dir="ltr">
                         {cardDynamicStatus}
                       </span>
                     </motion.div>
 
                     <ChevronLeft className={`w-4 h-4 absolute left-4 top-1/2 -translate-y-1/2 transition-transform ${
-                      isDarkCards ? 'text-amber-400' : 'text-amber-600'
+                      isDarkCards ? 'text-amber-400' : 'text-amber-400 font-black'
                     }`} />
                   </motion.button>
                 );
@@ -590,11 +590,11 @@ export default function SaudiServicesHub({
                     </div>
                     <div className="grid grid-cols-2 gap-4 border-t border-slate-200 pt-3">
                       <div>
-                        <label className="block text-[10px] font-black text-slate-600">عدد الأبناء (ذكور):</label>
+                        <label className="block text-[10px] font-black text-slate-200 font-bold">عدد الأبناء (ذكور):</label>
                         <input type="number" value={sonsCount} onChange={e => setSonsCount(Number(e.target.value))} className="w-full rounded-xl p-2 font-mono font-black border bg-white border-slate-300 text-slate-950" />
                       </div>
                       <div>
-                        <label className="block text-[10px] font-black text-slate-600">عدد البنات (إناث):</label>
+                        <label className="block text-[10px] font-black text-slate-200 font-bold">عدد البنات (إناث):</label>
                         <input type="number" value={daughtersCount} onChange={e => setDaughtersCount(Number(e.target.value))} className="w-full rounded-xl p-2 font-mono font-black border bg-white border-slate-300 text-slate-950" />
                       </div>
                     </div>
@@ -604,8 +604,8 @@ export default function SaudiServicesHub({
                     <div className="p-4 rounded-2xl space-y-2 border bg-white border-amber-200">
                        {sharesResult.map((res: any, idx: number) => (
                           <div key={idx} className="flex justify-between border-b last:border-0 pb-2 border-slate-100 font-black text-slate-900">
-                            <span>{res.relation} <span className="text-[10px] font-normal text-slate-500">({res.fraction})</span></span>
-                            <span className="text-amber-600">{res.amount.toLocaleString()} ر.س</span>
+                            <span>{res.relation} <span className="text-[10px] font-normal text-slate-700">({res.fraction})</span></span>
+                            <span className="text-amber-400 font-black">{res.amount.toLocaleString()} ر.س</span>
                           </div>
                        ))}
                     </div>
@@ -636,7 +636,7 @@ export default function SaudiServicesHub({
                   {appealDrafted && (
                     <div className="space-y-3">
                       <textarea value={appealText} readOnly className="w-full h-48 border border-slate-300 bg-slate-50 rounded-2xl p-3 font-bold text-[11px] leading-relaxed text-slate-900" />
-                      <button onClick={() => alert("تم تحميل ملف المذكرة الشارحة بصيغة نصية بنجاح")} className="w-full border-2 py-2.5 rounded-xl font-black bg-white border-amber-600 text-amber-700 cursor-pointer flex items-center justify-center gap-2"><Download className="w-4 h-4"/> تحميل المذكرة الشارحة</button>
+                      <button onClick={() => alert("تم تحميل ملف المذكرة الشارحة بصيغة نصية بنجاح")} className="w-full border-2 py-2.5 rounded-xl font-black bg-white border-amber-600 text-amber-400 font-black cursor-pointer flex items-center justify-center gap-2"><Download className="w-4 h-4"/> تحميل المذكرة الشارحة</button>
                     </div>
                   )}
                 </div>
@@ -670,7 +670,7 @@ export default function SaudiServicesHub({
                     <div className="p-4 rounded-2xl space-y-2 font-black border bg-white border-amber-200 text-slate-900">
                       <div className="flex justify-between border-b pb-2 border-slate-100"><span>الحالة القانونية:</span><span className="text-emerald-600 font-bold">{residentResult.status}</span></div>
                       <div className="flex justify-between border-b pb-2 border-slate-100"><span>منفذ الدخول المصرح:</span><span>{residentResult.borderEntry}</span></div>
-                      <div className="flex justify-between pt-1"><span>سجل القيود الجنائية:</span><span className="text-amber-600">{residentResult.violations}</span></div>
+                      <div className="flex justify-between pt-1"><span>سجل القيود الجنائية:</span><span className="text-amber-400 font-black">{residentResult.violations}</span></div>
                     </div>
                   )}
                 </div>
@@ -685,10 +685,10 @@ export default function SaudiServicesHub({
                   </div>
                   {executionResult && (
                     <div className="p-4 rounded-2xl space-y-3 font-black border bg-white border-amber-200 text-slate-900">
-                      <div className="flex justify-between"><span>الحالة الحالية:</span><span className="text-amber-600 font-bold">{executionResult.status}</span></div>
+                      <div className="flex justify-between"><span>الحالة الحالية:</span><span className="text-amber-400 font-black font-bold">{executionResult.status}</span></div>
                       <div className="flex justify-between"><span>إجمالي المطالبة:</span><span className="text-emerald-600 font-bold">{executionResult.claimAmount}</span></div>
                       <div className="space-y-1.5 text-rose-600 text-[10px] font-bold border-t border-slate-100 pt-3">
-                        <span className="block text-slate-500 text-[9px] mb-1">الجزاءات والعقوبات المسجلة:</span>
+                        <span className="block text-slate-700 text-[11px] mb-1">الجزاءات والعقوبات المسجلة:</span>
                         {executionResult.sanctionsApplied.map((s: string, i: number) => <span key={i} className="block">• {s}</span>)}
                       </div>
                     </div>
@@ -699,7 +699,7 @@ export default function SaudiServicesHub({
               {/* Loader fallback for unmapped support tools */}
               {!["inheritance", "objection", "deed_digital", "resident_audit", "execution_query"].includes(activeService) && (
                 <div className="text-center py-10 space-y-4">
-                  <RefreshCw className="w-10 h-10 mx-auto animate-spin text-slate-400" />
+                  <RefreshCw className="w-10 h-10 mx-auto animate-spin text-slate-200 font-bold" />
                   <p className="font-bold text-slate-900">جاري تعبئة بيانات المستند الذكي وإرسال التقرير للتصدير...</p>
                 </div>
               )}
