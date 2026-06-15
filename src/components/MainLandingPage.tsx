@@ -278,20 +278,22 @@ export default function MainLandingPage({ onSignInSelect, onTrialSelect }: MainL
     >
       
       {/* Dynamic Header */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-slate-800 backdrop-blur-md h-20 transition-all">
+      <header className="fixed top-0 left-0 right-0 z-50 backdrop-blur-md h-20 transition-all border-b-2 border-amber-500/40 shadow-[0_4px_30px_rgba(212,175,55,0.25)]" style={{ background: 'linear-gradient(135deg, #0A1E3F 0%, #050E21 100%)' }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full flex items-center justify-between">
           
           {/* Brand Logo Identity */}
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 bg-gradient-to-tr from-[#0c2461] to-amber-500 p-0.5 rounded-2xl flex items-center justify-center shadow-[0_0_20px_rgba(184,134,11,0.25)]">
+            <div className="w-12 h-12 bg-gradient-to-tr from-[#050E21] to-[#D4AF37] p-0.5 rounded-2xl flex items-center justify-center border-2 border-[#D4AF37]/80 shadow-[0_0_15px_rgba(212,175,55,0.8)] animate-pulse">
               <img src="/logo.svg" alt="منصة العدالة" className="w-full h-full object-contain bg-[#020813] rounded-2xl" />
             </div>
             <div className="text-right">
               <h1 className="text-xl font-black tracking-tight flex items-center gap-1.5 font-display">
-                <span className="text-[#0c2461]">{isEn ? "Al-Adalah" : "منصة العدالة لأدارة مكاتب المحاماة"}</span>
-                <span className="text-xs bg-gradient-to-r from-amber-500 to-amber-500 text-slate-950 px-2 py-0.5 rounded-full font-mono font-black">PRO</span>
+                <span className="font-extrabold" style={{ color: '#D4AF37', textShadow: '0 0 15px rgba(212,175,55,1), 0 0 5px rgba(212,175,55,0.6)' }}>
+                  {isEn ? "Al-Adalah Platform" : "منصة العدالة لأدارة مكاتب المحاماة"}
+                </span>
+                <span className="text-xs bg-gradient-to-r from-amber-500 to-amber-500 text-slate-950 px-2 py-0.5 rounded-full font-mono font-black border border-[#D4AF37] shadow-[0_0_5px_rgba(212,175,55,0.5)]">PRO</span>
               </h1>
-              <p className="text-xs text-slate-900  font-black">
+              <p className="text-xs font-black animate-pulse" style={{ color: '#FFEA00', textShadow: '0 0 8px rgba(255,234,0,0.5)' }}>
                 {isEn ? "Saudi Judicial AI Ecosystem" : "أذكى منظومة لإدارة القضايا ومكاتب المحاماة بالمملكة"}
               </p>
             </div>
@@ -300,19 +302,19 @@ export default function MainLandingPage({ onSignInSelect, onTrialSelect }: MainL
           {/* Quick-Nav Links & Global Actions */}
           <div className="flex items-center gap-4">
             
-            <nav className="hidden lg:flex items-center gap-6 text-xs font-black text-slate-900">
-              <a href="#about-platform" className="hover:text-amber-400 font-black transition-colors">{isEn ? "About Us" : "من نحن"}</a>
-              <a href="#features-tabs" className="hover:text-amber-400 font-black transition-colors">{isEn ? "Interactive Features" : "تصفح الميزات بالتفصيل"}</a>
-              <a href="#roi-calculator" className="hover:text-amber-400 font-black transition-colors">{isEn ? "Value Calculator" : "حاسبة الوفورات المالية"}</a>
-              <a href="#system-simulator" className="hover:text-amber-400 font-black transition-colors">{isEn ? "Live Sandbox" : "محاكي المزامنة الرقمية"}</a>
+            <nav className="hidden lg:flex items-center gap-6 text-xs font-black text-white">
+              <a href="#about-platform" className="hover:text-[#FFEA00] font-black transition-all duration-300 transform hover:scale-105">{isEn ? "About Us" : "من نحن"}</a>
+              <a href="#features-tabs" className="hover:text-[#FFEA00] font-black transition-all duration-300 transform hover:scale-105">{isEn ? "Interactive Features" : "تصفح الميزات بالتفصيل"}</a>
+              <a href="#roi-calculator" className="hover:text-[#FFEA00] font-black transition-all duration-300 transform hover:scale-105">{isEn ? "Value Calculator" : "حاسبة الوفورات المالية"}</a>
+              <a href="#system-simulator" className="hover:text-[#FFEA00] font-black transition-all duration-300 transform hover:scale-105">{isEn ? "Live Sandbox" : "محاكي المزامنة الرقمية"}</a>
             </nav>
 
-            <span className="hidden lg:block h-6 w-px bg-slate-200"></span>
+            <span className="hidden lg:block h-6 w-px bg-amber-500/20"></span>
 
             {/* Language Toggle */}
             <button 
               onClick={() => setLang(prev => prev === 'ar' ? 'en' : 'ar')}
-              className="text-sm font-black px-3 py-1.5 rounded-xl border transition-all bg-white border-slate-800 text-slate-900"
+              className="text-sm font-black px-3 py-1.5 rounded-xl border transition-all bg-[#0B2545]/60 border-[#D4AF37]/50 text-white hover:text-[#FFEA00] hover:border-[#FFEA00] hover:bg-[#0B2545] cursor-pointer"
               id="lang-toggle-btn"
             >
               🌎 {isEn ? "العربية" : "English"}
@@ -321,16 +323,17 @@ export default function MainLandingPage({ onSignInSelect, onTrialSelect }: MainL
             {/* Sign-In Action */}
             <button 
               onClick={onSignInSelect}
-              className="hidden md:inline-block text-xs font-black px-4 py-2 rounded-xl text-[#0c2461] transition-opacity cursor-pointer"
+              className="hidden md:inline-block text-xs font-black px-4 py-2 rounded-xl text-white hover:text-[#FFEA00] transition-colors cursor-pointer"
               id="header-signin-btn"
+              style={{ textShadow: '0 0 8px rgba(255,255,255,0.3)' }}
             >
               {isEn ? "Portal Login" : "تسجيل دخول البوابة"}
             </button>
 
-            {/* Trial Version Quick Activation CTA */}
+            {/* Trial Version Royal Gold Activation CTA */}
             <button 
               onClick={onTrialSelect}
-              className="bg-gradient-to-r from-amber-400 via-amber-500 to-amber-600 text-slate-950 font-black text-xs px-5 py-2.5 rounded-xl shadow-lg transition-all active:scale-[0.98] cursor-pointer"
+              className="bg-gradient-to-r from-[#D4AF37] via-[#FFD700] to-[#AA7C11] text-[#050E21] hover:from-[#FFD700] hover:to-[#D4AF37] border-2 border-[#D4AF37]/80 font-extrabold text-xs px-6 py-2.5 rounded-xl shadow-[0_0_15px_rgba(212,175,55,0.65)] hover:shadow-[0_0_25px_rgba(212,175,55,0.9)] transition-all transform hover:scale-105 active:scale-[0.98] cursor-pointer"
               id="header-trial-btn"
             >
               {isEn ? "Try Free Trial Version ⚡" : "تفعيل النسخة التجريبية ⚡"}
@@ -354,8 +357,8 @@ export default function MainLandingPage({ onSignInSelect, onTrialSelect }: MainL
             {/* Title, pitch and main trial incentive */}
             <div className="lg:col-span-7 space-y-8 text-right">
               
-              <div className="inline-flex items-center gap-2.5 px-4.5 py-2 rounded-full border border-amber-600/30 bg-amber-600/5 text-amber-400 font-black text-sm font-black uppercase tracking-wide">
-                <Trophy className="w-4 h-4 animate-bounce" />
+              <div className="inline-flex items-center gap-2.5 px-4 py-2 rounded-full border border-[#D4AF37] bg-[#D4AF37]/15 text-[#FFEA00] font-black text-xs sm:text-sm uppercase tracking-wide shadow-[0_0_10px_rgba(212,175,55,0.3)]">
+                <Trophy className="w-4 h-4 text-[#FFEA00] animate-bounce" />
                 <span>⭐ {isEn ? "The Supreme #1 Integrated Legal Workspace Platform in Saudi Arabia" : "المنظومة القانونية المتكاملة والذكاء القضائي الأعلى اعتماداً بالسعودية"}</span>
               </div>
 
@@ -364,13 +367,13 @@ export default function MainLandingPage({ onSignInSelect, onTrialSelect }: MainL
                   <>
                     <span className="text-[#020617]">Judicial Digital Ecosystem</span>
                     <br />
-                    Engineered for <span className="bg-gradient-to-r from-amber-500 to-yellow-400 bg-clip-text text-transparent">Elite KSA Law Firms</span>
+                    Engineered for <span className="bg-gradient-to-r from-[#D4AF37] to-[#FFEA00] bg-clip-text text-transparent" style={{ textShadow: '0 0 20px rgba(212,175,55,0.2)' }}>Elite KSA Law Firms</span>
                   </>
                 ) : (
                   <>
                     <span className="text-[#020617]">العدالة الشاملة والمصممة</span>
                     <br />
-                    خصيصاً لتمكين <span className="text-amber-400 font-black font-display">مكاتب المستشارين والمحاميين والمستشاريين القانونيين</span> بالمملكة
+                    خصيصاً لتمكين <span className="text-[#D4AF37] font-black font-display" style={{ textShadow: '0 1px 3px rgba(0,0,0,0.1), 0 0 12px rgba(212,175,55,0.5)' }}>مكاتب المستشارين والمحاميين والمستشاريين القانونيين</span> بالمملكة
                   </>
                 )}
               </h2>
@@ -424,18 +427,18 @@ export default function MainLandingPage({ onSignInSelect, onTrialSelect }: MainL
                 </div>
               </div>
 
-              {/* Conversion Actions urging "Trial Version" */}
-              <div className="bg-amber-500/[0.06] border-2 border-amber-500/40 p-6 rounded-3xl mt-6 space-y-4 shadow-md relative">
+              {/* Conversion Actions urging "Trial Version" with royal golden contrast theme */}
+              <div className="bg-gradient-to-r from-[#050E21]/95 to-[#0A1E3F]/90 border-2 border-[#D4AF37] p-6 rounded-3xl mt-6 space-y-4 shadow-[0_0_15px_rgba(212,175,55,0.2)] relative">
                 <div className="absolute top-3 left-3 flex gap-1">
                   <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping"></span>
                   <span className="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
                 </div>
                 <div>
-                  <h4 className="text-sm font-black text-amber-950 flex items-center gap-1.5">
+                  <h4 className="text-sm font-black text-[#FFEA00] flex items-center gap-1.5" style={{ textShadow: '0 0 8px rgba(255,234,0,0.4)' }}>
                     <span>🔥</span>
                     <span>{isEn ? "Try Al-Adalah Free Trial Version (No Payment Needed)" : "احصل مجاناً على النسخة التجريبية الشاملة لكافة الخصائص"}</span>
                   </h4>
-                  <p className="text-xs text-slate-950 font-bold leading-relaxed mt-1.5">
+                  <p className="text-xs text-white font-extrabold leading-relaxed mt-1.5">
                     {isEn 
                       ? "Get full unconstrained 48-Hour premium access to the Lawyers suite, WhatsApp mock dispatch parameters, Najiz simulation logs, and customized legal AI draft generators to witness the massive lift in firm coordination."
                       : "امنح مكتبك فرصة تجربة التزامن الذاتي، إسناد المهام، صياغة المذكرات بالـ AI، ومراسلة عملائك بنسخة تجريبية مبسطة وسهلة الاستخدام بالكامل وبشاشات تفاعلية."}
@@ -900,42 +903,42 @@ export default function MainLandingPage({ onSignInSelect, onTrialSelect }: MainL
 
             </div>
 
-            {/* Left box displays target calculated values dynamically */}
-            <div className="lg:col-span-6 bg-sky-50 p-8 rounded-[2.5rem] border-2 border-amber-600/40 text-slate-950 relative overflow-hidden flex flex-col justify-between h-[360px] shadow-2xl">
-              <div className="absolute top-0 right-0 w-44 h-44 bg-blue-500/10 blur-3xl rounded-full"></div>
+            {/* Left box displays target calculated values dynamically with luxury golden theme */}
+            <div className="lg:col-span-6 bg-gradient-to-br from-[#050E21] via-[#0A1E3F] to-[#0D244D] p-8 rounded-[2.5rem] border-2 border-[#D4AF37] text-white relative overflow-hidden flex flex-col justify-between h-[360px] shadow-[0_4px_30px_rgba(212,175,55,0.25)]">
+              <div className="absolute top-0 right-0 w-44 h-44 bg-amber-500/10 blur-3xl rounded-full"></div>
               
               <div className="space-y-4">
-                <span className="text-xs bg-amber-500/10 text-amber-800 border border-amber-600/30 px-3 py-1 rounded-full font-black uppercase tracking-widest inline-block">
+                <span className="text-xs bg-[#D4AF37]/20 text-[#FFEA00] border border-[#D4AF37]/50 px-3 py-1 rounded-full font-black uppercase tracking-widest inline-block shadow-sm">
                   🎯 {isEn ? "Value Unleashed Monthly" : "الوفورات التشغيلية الحقيقية لمكتبك شهرياً"}
                 </span>
                 
-                <h4 className="text-xl font-black text-slate-900">
+                <h4 className="text-xl font-black text-white" style={{ textShadow: '0 1px 3px rgba(0,0,0,0.8)' }}>
                   {isEn 
                     ? "Through Al-Adalah automation, your legal firm achieves:" 
                     : "بتفعيلك لمنظومة العدالة الذكية، يستعيد مكتبك الأرقام التالية:"}
                 </h4>
 
                 <div className="grid grid-cols-2 gap-5 pt-3">
-                  <div className="p-4 bg-white border border-slate-200 rounded-2xl shadow-sm">
-                    <span className="text-xs text-slate-800 font-bold block">{isEn ? "Saved Billable Hours" : "ساعات العمل المهدورة المستعادة:"}</span>
-                    <span className="text-3xl font-black text-emerald-700 block mt-1 font-sans">{calculatedSavingsHours} {isEn ? "Hrs" : "ساعة"}</span>
+                  <div className="p-4 bg-[#0A1E3F]/85 border border-[#D4AF37]/40 rounded-2xl shadow-md transition-all hover:scale-105 duration-300">
+                    <span className="text-xs text-slate-200 font-extrabold block">{isEn ? "Saved Billable Hours" : "ساعات العمل المهدورة المستعادة:"}</span>
+                    <span className="text-3xl font-black text-[#FFEA00] block mt-1 font-sans" style={{ textShadow: '0 0 10px rgba(255,234,0,0.4)' }}>{calculatedSavingsHours} {isEn ? "Hrs" : "ساعة"}</span>
                   </div>
-                  <div className="p-4 bg-white border border-slate-200 rounded-2xl shadow-sm">
-                    <span className="text-xs text-slate-800 font-bold block">{isEn ? "Equivalent Business Value" : "القيمة المقابلة المحققة للمكتب:"}</span>
-                    <span className="text-3xl font-black text-amber-400 font-black block mt-1 font-sans">{calculatedSavesSAR.toLocaleString()} {isEn ? "SAR" : "ر.س"}</span>
+                  <div className="p-4 bg-[#0A1E3F]/85 border border-[#D4AF37]/40 rounded-2xl shadow-md transition-all hover:scale-105 duration-300">
+                    <span className="text-xs text-slate-200 font-extrabold block">{isEn ? "Equivalent Business Value" : "القيمة المقابلة المحققة للمكتب:"}</span>
+                    <span className="text-3xl font-black text-emerald-400 block mt-1 font-sans" style={{ textShadow: '0 0 10px rgba(52,211,153,0.4)' }}>{calculatedSavesSAR.toLocaleString()} {isEn ? "SAR" : "ر.س"}</span>
                   </div>
                 </div>
               </div>
 
-              <div className="border-t border-slate-200 pt-5 mt-4 flex flex-col sm:flex-row justify-between items-center gap-4">
-                <p className="text-xs text-slate-900 font-bold shrink-0">
+              <div className="border-t border-amber-500/20 pt-5 mt-4 flex flex-col sm:flex-row justify-between items-center gap-4">
+                <p className="text-xs text-slate-200 font-extrabold shrink-0">
                   {isEn 
                     ? "Cuts administrative support cost, protects important dates, and doubles profits."
                     : "احم مكتبك من خطأ مدد الجلسات وسرّع من تحصيل الأتعاب فورياً."}
                 </p>
                 <button 
                   onClick={onTrialSelect}
-                  className="w-full sm:w-auto px-5 py-2.5 bg-gradient-to-r from-amber-500 to-yellow-400 active:scale-95 transition-all text-slate-950 font-black text-xs rounded-xl flex items-center justify-center gap-1 cursor-pointer shadow-md"
+                  className="w-full sm:w-auto px-6 py-3 bg-gradient-to-r from-[#D4AF37] via-[#FFD700] to-[#AA7C11] hover:from-[#FFD700] hover:to-[#D4AF37] border-2 border-[#D4AF37]/80 text-[#050E21] font-extrabold text-xs rounded-xl flex items-center justify-center gap-1.5 transition-all transform hover:scale-105 active:scale-[0.98] cursor-pointer shadow-[0_0_20px_rgba(212,175,55,0.5)]"
                 >
                   <span>{isEn ? "Instantly Onboard Trial Version 🚀" : "ابدأ استعراض التجربة الفورية 🚀"}</span>
                 </button>
@@ -1049,8 +1052,8 @@ export default function MainLandingPage({ onSignInSelect, onTrialSelect }: MainL
             </table>
           </div>
 
-          <div className="mt-8 p-6 rounded-2xl bg-[#0c2461]/5  border border-slate-800  text-center">
-            <p className="text-xs md:text-sm text-[#0c2461] font-black">
+          <div className="mt-8 p-6 rounded-2xl bg-[#0c2461]/5 border border-slate-300 text-center shadow-sm">
+            <p className="text-sm md:text-base font-black" style={{ color: '#0B2545', fontWeight: 900 }}>
               💡 {isEn 
                 ? "Al-Adalah achieves S-Tier efficiency. Optimize operating costs and win cases securely. Activate the Trial version on any device instantly."
                 : "الانتقال إلى منصة العدالة يضمن لك الكفاءة الكاملة وحلولا متفوقة خالية من التعقيد لإدارة مئات المكاتب وتفاصيل القضايا بكل سرية وتنظيم احترافي."}
@@ -1131,10 +1134,10 @@ export default function MainLandingPage({ onSignInSelect, onTrialSelect }: MainL
           <div className="pt-6 flex flex-col sm:flex-row justify-center gap-4">
             <button 
               onClick={onTrialSelect}
-              className="px-10 py-5 bg-gradient-to-r from-amber-500 to-yellow-500 text-slate-950 font-black rounded-2xl text-base shadow-2xl active:scale-95 transition-all text-center flex items-center justify-center gap-2"
+              className="px-10 py-5 bg-gradient-to-r from-[#D4AF37] via-[#FFD700] to-[#AA7C11] hover:from-[#FFD700] hover:to-[#D4AF37] border-2 border-[#D4AF37] text-[#050E21] font-black rounded-2xl text-lg shadow-[0_0_30px_rgba(212,175,55,0.7)] hover:shadow-[0_0_45px_rgba(212,175,55,0.95)] transition-all transform hover:scale-105 active:scale-95 text-center flex items-center justify-center gap-2 cursor-pointer"
               id="cta-activate-trial-unlocked"
             >
-              <Zap className="w-5 h-5 text-slate-950" />
+              <Zap className="w-5 h-5 text-[#050E21]" />
               <span>{isEn ? "Activate Unlocked Free Trial Version Only ⚡" : "ابدأ استعراض النسخة التجريبية فورا (بدون التزام) ⚡"}</span>
             </button>
             <button 
@@ -1217,19 +1220,27 @@ export default function MainLandingPage({ onSignInSelect, onTrialSelect }: MainL
       </section>
 
       {/* Footer Block */}
-      <footer className="py-16 text-right border-t bg-white border-slate-800 font-sans relative z-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <footer className="py-20 text-right font-sans relative z-10 overflow-hidden" style={{ background: 'radial-gradient(circle at top right, rgba(212, 175, 55, 0.22) 0%, transparent 45%), radial-gradient(circle at bottom left, rgba(212, 175, 55, 0.12) 0%, transparent 45%), linear-gradient(135deg, #050E21 0%, #0A1E3F 100%)', borderTop: '3px solid #D4AF37', boxShadow: '0 -15px 40px rgba(212, 175, 55, 0.35)' }}>
+        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI1MCIgaGVpZ2h0PSI1MCI+PGNpcmNsZSBjeD0iMiIgY3k9IjIiIHI9IjEiIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wNSIvPjwvc3ZnPg==')] opacity-20 pointer-events-none"></div>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           
-          <div className="grid grid-cols-1 md:grid-cols-12 gap-10 pb-12 border-b border-slate-800 ">
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-12 pb-12 border-b-2 border-amber-500/20">
             
-            <div className="md:col-span-5 space-y-4">
-              <div className="flex items-center gap-2 justify-start">
-                <div className="w-8 h-8 bg-amber-600/10 rounded-lg flex items-center justify-center text-amber-400 font-black">
-                  <Scale className="w-4 h-4" />
+            <div className="md:col-span-5 space-y-5">
+              <div className="flex items-center gap-3 justify-start">
+                <div className="w-12 h-12 bg-gradient-to-tr from-[#050E21] to-[#D4AF37] p-0.5 rounded-xl flex items-center justify-center border-2 border-[#D4AF37] shadow-[0_0_15px_rgba(212,175,55,0.7)] animate-pulse">
+                  <Scale className="w-6 h-6 text-[#FFD700]" />
                 </div>
-                <span className="font-extrabold text-lg text-[#0c2461]">{isEn ? "Al-Adalah Platform" : "منصة العدالة لإدارة مكاتب المحاماة"}</span>
+                <div className="flex flex-col">
+                  <span className="font-extrabold text-2xl" style={{ color: '#FFFFFF', textShadow: '0 0 12px rgba(255,255,255,0.3)' }}>
+                    {isEn ? "Al-Adalah Platform" : "منصة العدالة لإدارة مكاتب المحاماة"}
+                  </span>
+                  <span className="text-[10px] font-black tracking-wider text-[#FFEA00]" style={{ textShadow: '0 0 8px rgba(255,234,0,0.5)' }}>
+                    {isEn ? "INTELLIGENT JUDICIAL PLATFORM" : "أذكى منظومة لإدارة القضايا ومكاتب المحاماة بالمملكة"}
+                  </span>
+                </div>
               </div>
-              <p className="text-xs text-slate-900  leading-relaxed max-w-sm font-bold">
+              <p className="text-sm text-[#F8FAFC] leading-relaxed max-w-sm font-extrabold" style={{ textShadow: '0 1px 2px rgba(0,0,0,0.5)' }}>
                 {isEn 
                   ? "Leading the legal tech paradigm shift inside the Kingdom. Delivering secure, sovereign, and intelligent judicial operating workflows for elite Saudi law firms."
                   : "العدالة القانونية والشرعية الرقمية الأكثر تفصيلاً وسهولة لمكاتب المستشارين والمحاميين والمستشاريين القانونيين في الرياض، وباقي مدن المملكة. نوفر واجهات مبسطة تجمع كل المزايا المالية والتقنية وندعم تجربة العميل الشرعي العربي المحترف."
@@ -1237,42 +1248,64 @@ export default function MainLandingPage({ onSignInSelect, onTrialSelect }: MainL
               </p>
             </div>
 
-            <div className="md:col-span-7 grid grid-cols-2 sm:grid-cols-3 gap-6 font-bold">
-              <div className="space-y-3">
-                <h5 className="text-xs text-[#0c2461]">{isEn ? "Core Modules" : "ميزات العدالة"}</h5>
-                <ul className="space-y-2 text-sm text-slate-900  font-semibold font-sans">
-                  <li>{isEn ? "MOJ Najiz Sync" : "مزامنة ناجز والوكالات"}</li>
-                  <li>{isEn ? "Saudi Legal AI Helper" : "مستشار الذكاء الاصطناعي (AI)"}</li>
-                  <li>{isEn ? "ZATCA compliant Invoices" : "فواتير وسندات الزكاة (مرحلة ٢)"}</li>
+            <div className="md:col-span-7 grid grid-cols-2 sm:grid-cols-3 gap-8 font-black">
+              <div className="space-y-4">
+                <h5 className="text-base font-extrabold border-r-4 border-[#D4AF37] pr-3" style={{ color: '#FFEA00', textShadow: '0 0 8px rgba(255,234,0,0.6)' }}>{isEn ? "Core Modules" : "ميزات العدالة"}</h5>
+                <ul className="space-y-3 text-sm text-white font-extrabold font-sans">
+                  <li className="hover:text-[#FFEA00] transition-all duration-300 transform hover:translate-x-[-4px] cursor-pointer flex items-center justify-start gap-1.5">
+                    <span className="text-[#FFEA00]">✦</span>
+                    <span>{isEn ? "MOJ Najiz Sync" : "مزامنة ناجز والوكالات"}</span>
+                  </li>
+                  <li className="hover:text-[#FFEA00] transition-all duration-300 transform hover:translate-x-[-4px] cursor-pointer flex items-center justify-start gap-1.5">
+                    <span className="text-[#FFEA00]">✦</span>
+                    <span>{isEn ? "Saudi Legal AI Helper" : "مستشار الذكاء الاصطناعي (AI)"}</span>
+                  </li>
+                  <li className="hover:text-[#FFEA00] transition-all duration-300 transform hover:translate-x-[-4px] cursor-pointer flex items-center justify-start gap-1.5">
+                    <span className="text-[#FFEA00]">✦</span>
+                    <span>{isEn ? "ZATCA compliant Invoices" : "فواتير وسندات الزكاة (مرحلة ٢)"}</span>
+                  </li>
                 </ul>
               </div>
 
-              <div className="space-y-3">
-                <h5 className="text-xs text-[#0c2461]">{isEn ? "Security & Hosting" : "أمان الأرشيف"}</h5>
-                <ul className="space-y-2 text-sm text-slate-900  font-semibold font-sans">
-                  <li>{isEn ? "KSA Cloud Hostings" : "خوادم وطنية آمنة بالرياض"}</li>
-                  <li>{isEn ? "AES-256 Encryption Vaults" : "تشفير الملفات والتعميلات الفائق"}</li>
-                  <li>{isEn ? "Lawyer Audit Logs" : "سجلات مراقبة جرد الموظفين"}</li>
+              <div className="space-y-4">
+                <h5 className="text-base font-extrabold border-r-4 border-[#D4AF37] pr-3" style={{ color: '#FFEA00', textShadow: '0 0 8px rgba(255,234,0,0.6)' }}>{isEn ? "Security & Hosting" : "أمان الأرشيف"}</h5>
+                <ul className="space-y-3 text-sm text-white font-extrabold font-sans">
+                  <li className="hover:text-[#FFEA00] transition-all duration-300 transform hover:translate-x-[-4px] cursor-pointer flex items-center justify-start gap-1.5">
+                    <span className="text-[#FFEA00]">✦</span>
+                    <span>{isEn ? "KSA Cloud Hostings" : "خوادم وطنية آمنة بالرياض"}</span>
+                  </li>
+                  <li className="hover:text-[#FFEA00] transition-all duration-300 transform hover:translate-x-[-4px] cursor-pointer flex items-center justify-start gap-1.5">
+                    <span className="text-[#FFEA00]">✦</span>
+                    <span>{isEn ? "AES-256 Encryption Vaults" : "تشفير الملفات والتعميلات الفائق"}</span>
+                  </li>
+                  <li className="hover:text-[#FFEA00] transition-all duration-300 transform hover:translate-x-[-4px] cursor-pointer flex items-center justify-start gap-1.5">
+                    <span className="text-[#FFEA00]">✦</span>
+                    <span>{isEn ? "Lawyer Audit Logs" : "سجلات مراقبة جرد الموظفين"}</span>
+                  </li>
                 </ul>
               </div>
 
-              <div className="space-y-3">
-                <h5 className="text-xs text-[#0c2461]">{isEn ? "Trial & Assist" : "أرقام الدعم"}</h5>
-                <p className="text-xs text-amber-400 font-black font-mono">support@al-adalah.sa</p>
-                <p className="text-xs text-slate-900  font-sans">{isEn ? "Dedicated assist team 24/7" : "فريق فني ومساندة متخصص ٢٤ ساعة بالرياض"}</p>
+              <div className="space-y-4">
+                <h5 className="text-base font-extrabold border-r-4 border-[#D4AF37] pr-3" style={{ color: '#FFEA00', textShadow: '0 0 8px rgba(255,234,0,0.6)' }}>{isEn ? "Trial & Assist" : "أرقام الدعم"}</h5>
+                <p className="text-sm text-[#FFEA00] font-black font-mono tracking-wide animate-pulse" style={{ textShadow: '0 0 10px rgba(255,234,0,0.8)' }}>
+                  support@al-adalah.sa
+                </p>
+                <p className="text-xs text-white leading-relaxed font-black font-sans">
+                  {isEn ? "Dedicated assist team 24/7" : "فريق فني ومساندة متخصص ٢٤ ساعة بالرياض"}
+                </p>
               </div>
             </div>
 
           </div>
 
-          <div className="flex flex-col sm:flex-row justify-between items-center gap-4 pt-8 text-sm font-bold text-slate-900  font-sans">
-            <span>
+          <div className="flex flex-col sm:flex-row justify-between items-center gap-4 pt-8 text-sm font-black text-white font-sans">
+            <span className="text-slate-200">
               © {new Date().getFullYear()} {isEn ? "Al-Adalah Intelligent Solutions Co. All rights reserved." : "جميع الحقوق محفوظة لمنصة العدالة لإدارة مكاتب المحاماة."}
             </span>
-            <div className="flex gap-4">
-              <span>{isEn ? "Privacy Shield Document" : "وثيقة السرية وحماية بيانات الفروع"}</span>
-              <span>•</span>
-              <span>{isEn ? "Terms & Disclaimers" : "شروط الاستخدام وتأمين الأسرار"}</span>
+            <div className="flex gap-4 text-white">
+              <span className="hover:text-[#FFEA00] transition-all duration-300 cursor-pointer hover:underline" style={{ textShadow: '0 1px 3px rgba(0,0,0,0.4)' }}>{isEn ? "Privacy Shield Document" : "وثيقة السرية وحماية بيانات الفروع"}</span>
+              <span className="text-amber-500/50">•</span>
+              <span className="hover:text-[#FFEA00] transition-all duration-300 cursor-pointer hover:underline" style={{ textShadow: '0 1px 3px rgba(0,0,0,0.4)' }}>{isEn ? "Terms & Disclaimers" : "شروط الاستخدام وتأمين الأسرار"}</span>
             </div>
           </div>
 

@@ -15,6 +15,21 @@ export const ErrorToaster = () => {
     const handleError = (e: any) => {
       const detail = e.detail;
       if (detail && detail.message) {
+        // Prevent showing popup warnings for connection fluctuations or development WebSocket disconnects
+        const msg = String(detail.message).toLowerCase();
+        if (
+          msg.includes('websocket') ||
+          msg.includes('piesocket') ||
+          msg.includes('wss://') ||
+          msg.includes('ws://') ||
+          msg.includes('socket') ||
+          msg.includes('failed to connect') ||
+          msg.includes('network') ||
+          msg.includes('connection')
+        ) {
+          return;
+        }
+
         setErrors(prev => {
           // Keep only the latest 3 active errors
           const updated = [...prev, detail];

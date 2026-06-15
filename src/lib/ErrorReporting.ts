@@ -83,6 +83,19 @@ export const ErrorReporting = {
 export const initGlobalErrorHandling = () => {
   if (typeof window !== 'undefined') {
     window.addEventListener('error', (event) => {
+      const msg = (event.message || "").toLowerCase();
+      if (
+        msg.includes('websocket') || 
+        msg.includes('piesocket') || 
+        msg.includes('wss://') || 
+        msg.includes('ws://') || 
+        msg.includes('socket') || 
+        msg.includes('failed to connect') ||
+        msg.includes('networkerror') ||
+        msg.includes('connection')
+      ) {
+        return; // Ignore benign websocket closed/reconnecting alerts
+      }
       ErrorReporting.log(event.error || new Error(event.message));
     });
     
@@ -90,6 +103,19 @@ export const initGlobalErrorHandling = () => {
       const reason = event.reason;
       let errorMessage = "Unhandled Promise Rejection";
       let context: any = { reason: reason instanceof Error ? reason.message : reason };
+
+      const rStr = String(reason || "").toLowerCase();
+      if (
+        rStr.includes('websocket') || 
+        rStr.includes('piesocket') || 
+        rStr.includes('wss://') || 
+        rStr.includes('ws://') || 
+        rStr.includes('socket') || 
+        rStr.includes('failed to connect') ||
+        rStr.includes('connection')
+      ) {
+        return; // Ignore benign web service client errors representing connection timeouts in development / sandboxes
+      }
 
       if (reason instanceof Error) {
         errorMessage = `Unhandled Rejection: ${reason.message}`;
