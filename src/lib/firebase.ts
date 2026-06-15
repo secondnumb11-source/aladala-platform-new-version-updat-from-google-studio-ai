@@ -1,29 +1,34 @@
-import { initializeApp, getApps, getApp } from 'firebase/app';
-import { getAuth } from 'firebase/auth';
-import { 
-  initializeFirestore, 
-  getFirestore, 
-  memoryLocalCache
-} from 'firebase/firestore';
-import { getStorage } from 'firebase/storage';
-import firebaseConfig from '../../firebase-applet-config.json';
+import { initializeApp } from "firebase/app";
+import { getAnalytics, isSupported } from "firebase/analytics";
+import { getAuth, GoogleAuthProvider } from "firebase/auth";
+import { getFirestore } from "firebase/firestore";
 
-// Ensure Firebase is only initialized once, even during HMR or multiple imports
-export const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
+// Firebase configuration using environment variables for security
+// The provided values have been integrated as defaults but should be moved to .env for production
+const firebaseConfig = {
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "AIzaSyCIgVDe5mfNZK7oE9XwxhdLTH8MBC36o0o",
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || "platform-ai-studio-fileeeee.firebaseapp.com",
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || "platform-ai-studio-fileeeee",
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || "platform-ai-studio-fileeeee.firebasestorage.app",
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "699587980568",
+  appId: import.meta.env.VITE_FIREBASE_APP_ID || "1:699587980568:web:9e93151c0c3ebfb5a4826d",
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID || "G-PZYWD5NXFG"
+};
 
-let firestoreInstance;
-try {
-  // Try initializing with settings, memory cache persistence config
-  firestoreInstance = initializeFirestore(app, {
-    localCache: memoryLocalCache()
-  }, (firebaseConfig as any).firestoreDatabaseId);
-} catch (e) {
-  // If already initialized (e.g., in HMR/re-renders), retrieve the existing instance safely
-  firestoreInstance = getFirestore(app, (firebaseConfig as any).firestoreDatabaseId);
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+const googleProvider = new GoogleAuthProvider();
+
+// Initialize Analytics (Client-side only)
+let analytics = null;
+if (typeof window !== "undefined") {
+  isSupported().then((supported) => {
+    if (supported) {
+      analytics = getAnalytics(app);
+    }
+  });
 }
 
-export const db = firestoreInstance;
-
-export const auth = getAuth(app);
-export const storage = getStorage(app);
-
+export { app, auth, db, googleProvider, analytics };

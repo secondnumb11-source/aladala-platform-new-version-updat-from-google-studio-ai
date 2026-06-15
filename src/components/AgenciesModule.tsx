@@ -6,15 +6,7 @@ import {
 } from 'lucide-react';
 import CountdownTimer from './CountdownTimer';
 import { motion, AnimatePresence } from 'motion/react';
-import { 
-  collection, 
-  onSnapshot, 
-  doc, 
-  addDoc,
-  deleteDoc, 
-  query
-} from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { supabase } from '@/lib/supabase';
 import { PowerOfAttorney, Client } from '@/types';
 
 interface AgenciesModuleProps {
@@ -43,16 +35,23 @@ export default function AgenciesModule({ clients, onUpdateState }: AgenciesModul
 
   const [notification, setNotification] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
 
+  const fetchAgencies = async () => {
+    const { data, error } = await supabase.from('powersOfAttorney').select('*');
+    if (!error && data) {
+      setAgencies(data as PowerOfAttorney[]);
+    }
+  };
+
   useEffect(() => {
-    const q = query(collection(db, 'powersOfAttorney'));
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const list: PowerOfAttorney[] = [];
-      snapshot.forEach((docSnap) => {
-        list.push({ id: docSnap.id, ...docSnap.data() } as PowerOfAttorney);
-      });
-      setAgencies(list);
-    });
-    return () => unsubscribe();
+    fetchAgencies();
+    const sub = supabase.channel('poas-changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'powersOfAttorney' }, () => {
+        fetchAgencies();
+      })
+      .subscribe();
+    return () => {
+      supabase.removeChannel(sub);
+    };
   }, []);
 
   const showToast = (message: string, type: 'success' | 'error' | 'info' = 'success') => {
@@ -73,7 +72,7 @@ export default function AgenciesModule({ clients, onUpdateState }: AgenciesModul
     e.stopPropagation();
     if (!confirm('هل أنت متأكد من حذف هذه الوكالة بصفة نهائية؟')) return;
     try {
-      await deleteDoc(doc(db, 'powersOfAttorney', id));
+      await supabase.from('powersOfAttorney').delete().eq('id', id);
       showToast('تم حذف الوكالة بنجاح', 'success');
       if (selectedAgency?.id === id) setSelectedAgency(null);
     } catch (err: any) {
@@ -120,7 +119,7 @@ export default function AgenciesModule({ clients, onUpdateState }: AgenciesModul
     };
 
     try {
-      await addDoc(collection(db, 'powersOfAttorney'), newPoa);
+      await supabase.from('powersOfAttorney').insert([newPoa]);
       showToast('تم حفظ وإصدار كارت الوكالة بنجاح', 'success');
       setShowAddModal(false);
       setPoaNumber(''); setClientName(''); setLawyerName(''); setIssueDate(''); setExpiryDate(''); setScope(''); setClausesText(''); setPartiesText('');
@@ -170,7 +169,7 @@ export default function AgenciesModule({ clients, onUpdateState }: AgenciesModul
       let addedCount = 0;
       for (const poa of mockNajizPoas) {
         if (!agencies.some((a) => a.poaNumber === poa.poaNumber)) {
-          await addDoc(collection(db, 'powersOfAttorney'), poa);
+          await supabase.from('powersOfAttorney').insert([poa]);
           addedCount++;
         }
       }

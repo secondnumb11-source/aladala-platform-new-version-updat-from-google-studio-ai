@@ -2,8 +2,7 @@ import React, { useState } from 'react';
 import { Download, Link as LinkIcon, Zap, CheckCircle2, Copy, Chrome, ShieldAlert, Cpu, Bot, Rocket, BookOpen, Key, Link2 } from 'lucide-react';
 import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
-import { db } from '@/lib/firebase';
-import { doc, getDoc } from 'firebase/firestore';
+import { supabase } from '@/lib/supabase';
 
 interface NajizExtensionHubProps {
   currentUser: any;

@@ -55,9 +55,25 @@ export default function DashboardStats({
           </div>
 
           <div className="flex items-center gap-4 bg-white/90 backdrop-blur-md border border-slate-200 px-5 py-4 rounded-2xl shadow-xl shadow-indigo-900/10">
-            <div className={`w-3 h-3 rounded-full ${syncStatus.status === "stable" ? "bg-emerald-500 shadow-[0_0_12px_rgba(16,185,129,0.5)] animate-pulse" : "bg-amber-500"}`}></div>
+            <div className={`w-3 h-3 rounded-full ${
+              syncStatus.status === "stable" ? "bg-emerald-500 shadow-[0_0_12px_rgba(16,185,129,0.5)] animate-pulse" 
+              : syncStatus.status === "syncing" ? "bg-indigo-500 animate-spin"
+              : syncStatus.status === "error" ? "bg-rose-500"
+              : "bg-amber-500"
+            }`}></div>
             <div>
-              <div className="text-slate-900 text-xs uppercase font-black tracking-wider">آخر مزامنة ناجز التلقائية</div>
+              <div className="flex items-center gap-2">
+                <div className="text-slate-900 text-xs uppercase font-black tracking-wider">آخر مزامنة ناجز التلقائية</div>
+                <span className={`text-[9.5px] px-2 py-0.5 rounded-full font-black ${
+                  syncStatus.status === "stable" ? "bg-emerald-100 text-emerald-800 border border-emerald-250"
+                  : syncStatus.status === "syncing" ? "bg-indigo-100 text-indigo-800 border border-indigo-250"
+                  : "bg-amber-100 text-amber-800 border border-amber-250"
+                }`}>
+                  {syncStatus.status === "stable" ? "مكتملة ومحدّثة" 
+                   : syncStatus.status === "syncing" ? "جاري التحديث الآن" 
+                   : "تم الاتصال بنجاح"}
+                </span>
+              </div>
               <div className="text-indigo-900 text-sm font-mono font-black mt-0.5" dir="ltr">
                 {syncStatus.lastSync === "لا يوجد" || !syncStatus.lastSync ? "لم تتم بعد" : new Date(syncStatus.lastSync).toLocaleString("ar-SA")}
               </div>

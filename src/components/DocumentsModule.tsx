@@ -32,9 +32,8 @@ import {
   Landmark
 } from 'lucide-react';
 import { Document, Client, Case } from '@/types';
-import { storage, auth } from '@/lib/firebase';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { GoogleAuthProvider, signInWithPopup, onAuthStateChanged, User } from 'firebase/auth';
+import { supabase } from '@/lib/supabase';
+import { User } from '@supabase/supabase-js';
 
 export const getDocColorStyles = (doc: Document) => {
   const code = doc.colorCode;
@@ -122,15 +121,15 @@ export default function DocumentsModule({
 
   // Sync / Listen to Auth Changes
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (usr) => {
-      setGdriveUser(usr);
-      if (!usr) {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      setGdriveUser(session?.user || null);
+      if (!session) {
         setGoogleAccessToken(null);
         cachedGoogleAccessToken = null;
         setGdriveFiles([]);
       }
     });
-    return () => unsubscribe();
+    return () => subscription.unsubscribe();
   }, []);
 
   // Fetch Google Drive Files when access token is active
@@ -191,22 +190,14 @@ export default function DocumentsModule({
     setIsGdriveLoading(true);
     setGdriveError(null);
     try {
-      const provider = new GoogleAuthProvider();
-      provider.addScope('https://www.googleapis.com/auth/drive');
-      
-      const result = await signInWithPopup(auth, provider);
-      const credential = GoogleAuthProvider.credentialFromResult(result);
-      if (!credential?.accessToken) {
-        throw new Error('فشل الحصول على رمز الوصول من مصادقة Google.');
-      }
-      
-      const token = credential.accessToken;
-      cachedGoogleAccessToken = token;
-      setGoogleAccessToken(token);
-      setGdriveUser(result.user);
-      
-      // Auto switch view or trigger initial load
-      setActiveStorageTab('gdrive');
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          scopes: 'https://www.googleapis.com/auth/drive.readonly',
+          redirectTo: window.location.origin
+        }
+      });
+      if (error) throw error;
     } catch (err: any) {
       console.error('[Google Drive] Authentication failed:', err);
       // Give a friendly message if popup blocked or cancelled
@@ -978,9 +969,18 @@ export default function DocumentsModule({
     const ext = file.name.split('.').pop()?.toLowerCase() || 'pdf';
     
     try {
-      const storageRef = ref(storage, `documents/${Date.now()}_${file.name}`);
-      const uploadResult = await uploadBytes(storageRef, file);
-      const downloadURL = await getDownloadURL(uploadResult.ref);
+      const fileName = `${Date.now()}_${file.name}`;
+      const { data, error } = await supabase.storage
+        .from('documents')
+        .upload(`documents/${fileName}`, file);
+
+      if (error) throw error;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('documents')
+        .getPublicUrl(`documents/${fileName}`);
+      
+      const downloadURL = publicUrl;
       
       let category = 'العقود والاتفاقيات';
       const fileNameLower = file.name.toLowerCase();

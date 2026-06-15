@@ -28,8 +28,7 @@ import {
   CheckCircle2
 } from 'lucide-react';
 import { Task, Case } from '@/types';
-import { db } from '@/lib/firebase';
-import { collection, onSnapshot, query, where, updateDoc, doc } from 'firebase/firestore';
+import { supabase } from '@/lib/supabase';
 import { motion, AnimatePresence } from 'motion/react';
 import TaskCountdown from './TaskCountdown';
 import { 
@@ -132,20 +131,23 @@ export default function TasksModule({
   const [taskAssigned, setTaskAssigned] = useState('');
   const [taskCase, setTaskCase] = useState('');
   const [taskDueDate, setTaskDueDate] = useState('');
+  const [taskDueTime, setTaskDueTime] = useState('09:00');
   const [taskReminderEnabled, setTaskReminderEnabled] = useState(false);
   const [taskReminderTime, setTaskReminderTime] = useState('09:00');
   const [taskType, setTaskType] = useState<'drafting' | 'hearing' | 'client_meeting' | 'audit' | 'other'>('drafting');
   const [teamMembers, setTeamMembers] = useState<any[]>([]);
 
   useEffect(() => {
-    const unsubscribe = onSnapshot(collection(db, 'employees'), (snapshot) => {
-      const emps = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as any));
-      setTeamMembers(emps);
-      if (emps.length > 0 && !taskAssigned) {
-         setTaskAssigned(emps[0].name);
+    const fetchTeam = async () => {
+      const { data, error } = await supabase.from('employees').select('*');
+      if (data) {
+        setTeamMembers(data);
+        if (data.length > 0 && !taskAssigned) {
+          setTaskAssigned(data[0].name);
+        }
       }
-    });
-    return () => unsubscribe();
+    };
+    fetchTeam();
   }, []);
 
   // Smart Sorting and Notification Alerts state
@@ -685,7 +687,7 @@ export default function TasksModule({
       status: 'todo',
       priority: taskPriority,
       assignedTo: taskAssigned,
-      dueDate: taskDueDate,
+      dueDate: `${taskDueDate}T${taskDueTime}`,
       caseNumber: taskCase || undefined
     };
 
@@ -837,34 +839,8 @@ export default function TasksModule({
         </div>
       </div>
 
-      {/* Embedded WhatsApp/Email Automation Panel */}
-      <div className="bg-slate-50 border border-slate-200 rounded-[2.5rem] p-8 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] flex flex-col md:flex-row items-center justify-between gap-6 relative text-right transition-all hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.1)]">
-        <div className="absolute top-0 right-0 w-64 h-64 bg-slate-200/50 blur-[80px] rounded-full pointer-events-none"></div>
-        <div className="relative z-10 space-y-3">
-          <div className="flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-slate-800 animate-pulse"></span>
-            <h3 className="font-black text-slate-900 text-lg tracking-tight">نظام الأتمتة: رسائل تذكير العملاء (WhatsApp & Email)</h3>
-          </div>
-          <p className="text-xs font-bold leading-loose text-slate-600 max-w-2xl">
-            يقوم النظام التلقائي برصد الجلسات القانونية التي يتبقى على موعد انعقادها أقل من 24 ساعة، ويبدأ ببث رسائل تذكير للعميل المعني. 
-            <span className="block mt-1 text-slate-500 font-extrabold">يمكنك تعديل وصياغة قالب الرسالة وتفاصيل الإرسال من خلال قسم (إشعارات العملاء-واتساب).</span>
-          </p>
-        </div>
-        <button 
-          onClick={() => {
-            const sendingToast = { id: 'whatsapp-auto', title: 'جاري مسح الجلسات وإرسال الإشعارات', message: 'يجري التحقق من الجلسات القريبة وإطلاق الرسائل للعملاء', type: 'info' as 'info' };
-            setToasts(prev => [sendingToast, ...prev].slice(0, 4));
-            setTimeout(() => {
-              setToasts(prev => prev.filter(t => t.id !== 'whatsapp-auto'));
-              triggerToast('تم البث التلقائي بنجاح', 'تم استهداف 3 عملاء لديهم جلسات قضائية خلال 24 ساعة عبر المنصة', 'critical');
-            }, 3000);
-          }}
-          className="relative z-10 shrink-0 bg-slate-900 text-white hover:bg-slate-800 font-black px-6 py-4 rounded-xl flex items-center gap-3 transition-colors shadow-md cursor-pointer"
-        >
-          <div className="w-2 h-2 bg-slate-300 rounded-full animate-ping"></div>
-          <span>تشغيل بث الإشعارات الآن</span>
-        </button>
-      </div>
+      {/* Embedded WhatsApp/Email Automation Panel removed to WhatsappTemplates as requested */}
+
 
       {/* AI Smart Prioritization suggestions box overlay/panel */}
       {showAiSuggestions && (
@@ -1457,13 +1433,21 @@ export default function TasksModule({
                 </div>
 
                 <div>
-                  <label className="text-sm text-[#fbbf24]  block mb-1 font-black">تاريخ الاستحقاق:</label>
-                  <input 
-                    type="date"
-                    value={taskDueDate}
-                    onChange={(e) => setTaskDueDate(e.target.value)}
-                    className="w-full bg-slate-800 border border-slate-700 rounded-xl py-2 px-3 text-xs text-white  font-sans font-bold focus:outline-none"
-                  />
+                  <label className="text-sm text-[#fbbf24] block mb-1 font-black">موعد وتاريخ الاستحقاق:</label>
+                  <div className="grid grid-cols-2 gap-2">
+                    <input 
+                      type="date"
+                      value={taskDueDate}
+                      onChange={(e) => setTaskDueDate(e.target.value)}
+                      className="w-full bg-slate-800 border border-slate-700 rounded-xl py-2 px-3 text-xs text-white font-sans font-bold focus:outline-none"
+                    />
+                    <input 
+                      type="time"
+                      value={taskDueTime}
+                      onChange={(e) => setTaskDueTime(e.target.value)}
+                      className="w-full bg-slate-800 border border-slate-700 rounded-xl py-2 px-3 text-xs text-white font-sans font-bold focus:outline-none"
+                    />
+                  </div>
                 </div>
               </div>
 

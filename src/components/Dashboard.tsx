@@ -4,8 +4,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { db, auth } from '@/lib/firebase';
-import { doc, setDoc, getDoc, collection, query, onSnapshot, orderBy } from 'firebase/firestore';
+import { supabase } from '@/lib/supabase';
 import { SortableWidgetWrapper } from './SortableWidgetWrapper';
 import { 
   DndContext, 
@@ -131,7 +130,7 @@ export const SummaryWidget = ({ icon, title, description, badgeValue, children }
         </div>
         <div>
           <h4 className="font-black text-white text-base tracking-tight">{title}</h4>
-          <p className="text-[11px] text-slate-300 font-semibold mt-0.5">{description}</p>
+          <p className="text-[11px] text-muted-ui font-semibold mt-0.5">{description}</p>
         </div>
       </div>
       {badgeValue !== undefined && (
@@ -333,15 +332,15 @@ const Dashboard = function Dashboard({
     window.dispatchEvent(new Event('adalah-username-changed'));
 
     try {
-      const uid = auth?.currentUser?.uid;
+      const uid = currentUser?.id;
       if (uid) {
-        await setDoc(doc(db, 'users', uid), { name: val }, { merge: true });
+        await supabase.from('users').update({ name: val }).eq('id', uid);
         if (onUpdateState) {
           onUpdateState('users', { id: uid, name: val });
         }
       }
     } catch (err) {
-      console.warn("Failed to save name to Firestore", err);
+      console.warn("Failed to save name to Supabase", err);
     }
   };
 
@@ -379,27 +378,42 @@ const Dashboard = function Dashboard({
         setEmployees(JSON.parse(backup));
       } catch (e) {}
     }
-    const q = query(collection(db, 'employees'));
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const emps = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      emps.sort((a: any, b: any) => (a.name || '').localeCompare(b.name || ''));
-      setEmployees(emps);
-      localStorage.setItem('employees_backup', JSON.stringify(emps));
-    }, (error) => {
-      console.warn("Error subscribing to employees in Dashboard:", error);
-    });
 
-    const qAgencies = query(collection(db, 'powersOfAttorney'));
-    const unsubAgencies = onSnapshot(qAgencies, (snapshot) => {
-      const agList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      setAgencies(agList);
-    }, (error) => {
-      console.warn("Error subscribing to agencies in Dashboard:", error);
-    });
+    const fetchDashboardData = async () => {
+      try {
+        const [empRes, poaRes] = await Promise.all([
+          supabase.from('employees').select('*'),
+          supabase.from('powersOfAttorney').select('*')
+        ]);
+        
+        if (empRes.data) {
+          const emps = empRes.data;
+          emps.sort((a: any, b: any) => (a.name || '').localeCompare(b.name || ''));
+          setEmployees(emps);
+          localStorage.setItem('employees_backup', JSON.stringify(emps));
+        }
+
+        if (poaRes.data) {
+          setAgencies(poaRes.data);
+        }
+      } catch (err) {
+        console.warn("Error fetching dashboard data from Supabase:", err);
+      }
+    };
+
+    fetchDashboardData();
+
+    const empSub = supabase.channel('dashboard-employees')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'employees' }, fetchDashboardData)
+      .subscribe();
+
+    const poaSub = supabase.channel('dashboard-poas')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'powersOfAttorney' }, fetchDashboardData)
+      .subscribe();
 
     return () => {
-      unsubscribe();
-      unsubAgencies();
+      supabase.removeChannel(empSub);
+      supabase.removeChannel(poaSub);
     };
   }, []);
 
@@ -447,15 +461,20 @@ const Dashboard = function Dashboard({
   }, [employees]);
 
   useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged(async (user) => {
-      if (user) {
+    if (currentUser?.id) {
+      const fetchLayout = async () => {
         try {
-          const layoutDoc = await getDoc(doc(db, 'users', user.uid, 'preferences', 'dashboardLayout'));
-          if (layoutDoc.exists()) {
-            const fetchedItems = layoutDoc.data().widgets;
+          const { data, error } = await supabase
+            .from('user_preferences')
+            .select('widgets')
+            .eq('user_id', currentUser.id)
+            .eq('key', 'dashboardLayout')
+            .maybeSingle();
+
+          if (data && data.widgets) {
+            const fetchedItems = data.widgets;
             if (Array.isArray(fetchedItems) && fetchedItems.length > 0) {
               setWidgets((prevWidgets: any) => {
-                // Filter out non-existent or deprecated widgets
                 const existingIds = new Set(fetchedItems.map((w: any) => w.id));
                 const newWidgets = prevWidgets.filter((w: any) => !existingIds.has(w.id));
                 const combined = [...fetchedItems, ...newWidgets].filter((w: any) => w.id !== 'stats' && w.id !== 'activeCaseTracking');
@@ -463,15 +482,13 @@ const Dashboard = function Dashboard({
               });
             }
           }
-        } catch (err: any) {
-          if (err?.code === 'unavailable' || String(err).includes('offline')) {
-            console.warn("Failed to load dashboard layout from Firestore (offline).", err);
-          } else {
-            console.error("Failed to load dashboard layout from Firestore:", err);
-          }
+        } catch (err) {
+          console.warn("Failed to load dashboard layout from Supabase.", err);
         }
-      }
-    });
+      };
+      
+      fetchLayout();
+    }
 
     const handleThemeEvent = () => {
       setThemeTick(Date.now());
@@ -484,7 +501,6 @@ const Dashboard = function Dashboard({
     }, 1500);
     
     return () => {
-      unsubscribe();
       window.removeEventListener('adalah-advanced-config-updated', handleThemeEvent);
       clearTimeout(loader);
     };
@@ -737,14 +753,22 @@ const Dashboard = function Dashboard({
     saveWidgets(updated);
   };
 
-  const saveWidgets = (updated: any) => {
+  const saveWidgets = async (updated: any) => {
     localStorage.setItem(`dashboard_widgets_config_${selectedRole}_v2`, JSON.stringify(updated));
-    const uid = auth.currentUser?.uid;
+    const uid = currentUser?.id;
     if (uid) {
-      setDoc(doc(db, 'users', uid, 'preferences', 'dashboardLayout'), { 
-        widgets: updated,
-        lastUpdated: new Date().toISOString()
-      }, { merge: true }).catch(e => console.error(e));
+      try {
+        await supabase
+          .from('user_preferences')
+          .upsert({ 
+            user_id: uid,
+            key: 'dashboardLayout',
+            widgets: updated,
+            updated_at: new Date().toISOString()
+          }, { onConflict: 'user_id,key' });
+      } catch (e) {
+        console.error("Failed to save layout to Supabase", e);
+      }
     }
   };
 
@@ -809,16 +833,20 @@ const Dashboard = function Dashboard({
       // Persist to local storage as fast-cache
       localStorage.setItem(`dashboard_widgets_config_${selectedRole}_v2`, JSON.stringify(newItems));
       
-      // Persist to Firestore for multi-device sync
-      const uid = auth.currentUser?.uid;
+      // Persist to Supabase for multi-device sync
+      const uid = currentUser?.id;
       if (uid) {
         try {
-          await setDoc(doc(db, 'users', uid, 'preferences', 'dashboardLayout'), { 
-            widgets: newItems,
-            lastUpdated: new Date().toISOString()
-          }, { merge: true });
+          await supabase
+            .from('user_preferences')
+            .upsert({ 
+              user_id: uid,
+              key: 'dashboardLayout',
+              widgets: newItems,
+              updated_at: new Date().toISOString()
+            }, { onConflict: 'user_id,key' });
         } catch (e) {
-          console.error("Failed to save layout to Firestore", e);
+          console.error("Failed to save layout to Supabase", e);
         }
       }
     }
@@ -853,11 +881,18 @@ const Dashboard = function Dashboard({
     setWidgets(defaultWidgets);
     localStorage.removeItem(`dashboard_widgets_config_${selectedRole}_v2`);
     
-    // delete from firestore
-    const uid = auth.currentUser?.uid;
+    // delete from Supabase
+    const uid = currentUser?.id;
     if (uid) {
-       setDoc(doc(db, 'users', uid, 'preferences', 'dashboardLayout'), { widgets: defaultWidgets }, { merge: true })
-         .catch(err => console.warn("Failed to save layout preferences", err));
+       supabase.from('user_preferences').upsert({ 
+         user_id: uid,
+         key: 'dashboardLayout',
+         widgets: defaultWidgets,
+         updated_at: new Date().toISOString()
+       }, { onConflict: 'user_id,key' })
+       .then(({ error }) => {
+         if (error) console.warn("Failed to save layout preferences", error.message);
+       });
     }
   };
 

@@ -69,18 +69,21 @@ import {
   Expense
 } from '@/types';
 
-import { auth } from '@/lib/firebase';
-import { signOut } from 'firebase/auth';
-import { FirebaseProvider, useFirebase } from '@/contexts/FirebaseContext';
+import { SupabaseProvider, useSupabase } from '@/contexts/SupabaseContext';
+import { useSupabaseData } from '@/hooks/useSupabaseData';
+import { supabase } from '@/lib/supabase';
+import { auth as firebaseAuth } from '@/lib/firebase';
+import { onAuthStateChanged } from 'firebase/auth';
+import { auditLogger, AuditAction } from '@/lib/AuditLogger';
 import { SpeedInsights } from '@vercel/speed-insights/react';
 
 export default function App() {
   return (
-    <FirebaseProvider>
+    <SupabaseProvider>
       <React.Suspense fallback={<SkeletonLoader />}>
         <AppContent />
       </React.Suspense>
-    </FirebaseProvider>
+    </SupabaseProvider>
   );
 }
 
@@ -92,12 +95,11 @@ function RouteGuard({ children, isAuthenticated, setCurrentTab }: { children: Re
   useEffect(() => {
     // Check if token exists in localStorage or if user is authenticated via Context
     const hasLocalToken = !!localStorage.getItem('adalah-platform-auth') || 
-                          !!localStorage.getItem('firebase:host:ai-studio-f64c5801-7b7c-42fe-881a-836e89b17f37') ||
-                          Object.keys(localStorage).some(k => k.startsWith('firebase:authUser:'));
+                          !!localStorage.getItem('supabase.auth.token');
     const isBypass = window.location.hash.includes('bypass');
     
     // We only redirect if we are SURE there is no session at all
-    // If hasLocalToken is true, we give it a bit of time for Firebase to initialize
+    // If hasLocalToken is true, we give it a bit of time for Supabase to initialize
     if (!isAuthenticated && !hasLocalToken && !isBypass) {
       // Clear sensitive temp data and redirect to login
       localStorage.removeItem('adalah_sensitive_data');
@@ -116,7 +118,8 @@ function RouteGuard({ children, isAuthenticated, setCurrentTab }: { children: Re
 }
 
 function AppContent() {
-  const { user, profile, loading: authLoading, connectionStatus } = useFirebase();
+  const { user, profile, loading: authLoading, connectionStatus } = useSupabase();
+  const { cases, clients, tasks, loading: dataLoading, createRecord, updateRecord, deleteRecord, refresh } = useSupabaseData();
   
   // Implementation of periodic localStorage cache cleanup and state conflict resolution
   useEffect(() => {
@@ -129,7 +132,7 @@ function AppContent() {
       // Keys to preserve
       const themes = localStorage.getItem('adalah-custom-themes');
       const roles = localStorage.getItem('platform-custom-roles');
-      const auth = localStorage.getItem('firebase:host:ai-studio-f64c5801-7b7c-42fe-881a-836e89b17f37');
+      const authTokens = localStorage.getItem('supabase.auth.token');
       
       // Clean conflicts
       const conflictKeys = [
@@ -180,27 +183,50 @@ function AppContent() {
   const [authMode, setAuthMode] = useState<"lawyer" | "trial">("lawyer");
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [currentUser, setCurrentUser] = useState<any | null>(null);
+  const [firebaseUser, setFirebaseUser] = useState<any>(null);
+  const authSyncRef = React.useRef<string | null>(null);
+
+  // Monitor Firebase Auth changes
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(firebaseAuth, (user) => {
+      setFirebaseUser(user);
+    });
+    return () => unsubscribe();
+  }, []);
 
   useEffect(() => {
+    const activeUser = user || firebaseUser;
+    const userId = activeUser?.id || (activeUser as any)?.uid || null;
+    const profileRole = profile?.role || (activeUser as any)?.role || (userId ? 'lawyer' : null);
+    
+    // Check if we already stabilized for this user/role combination
+    const syncKey = `${userId}-${profileRole}-${authLoading}`;
+    if (authSyncRef.current === syncKey) return;
+
     if (authLoading) return;
     
     // Check if we have a locally authenticated employee bypassing Firebase
     const hasEmployeeBypass = localStorage.getItem('adalah-employee-auth-bypass') === 'true';
     if (hasEmployeeBypass && currentUser?.role === 'employee') {
-       return; // Do not overwrite state if an employee is logged in via local auth
+       authSyncRef.current = syncKey;
+       return; 
     }
 
-    if (user && profile) {
+    if (activeUser && userId) {
+      const role = profileRole || 'lawyer';
+      const userName = profile?.name || (activeUser as any).displayName || activeUser.user_metadata?.name || 'مستخدم النظام';
+
+      authSyncRef.current = syncKey;
       setIsAuthenticated(true);
       setShowLandingPage(false);
-      const role = profile.role || 'lawyer';
       setCurrentUser({
         role: role,
-        id: user.uid,
-        name: profile.name || user.displayName || 'مستخدم النظام',
-        permittedModules: (profile as any).permittedModules || [],
-        sidebarConfig: (profile as any).sidebarConfig || []
+        id: userId,
+        name: userName,
+        permittedModules: (profile as any)?.permittedModules || [],
+        sidebarConfig: (profile as any)?.sidebarConfig || []
       });
+      
       if (role === 'client') {
         setSelectedRole('client');
         setCurrentTab('client-portal');
@@ -212,12 +238,13 @@ function AppContent() {
       } else {
         setSelectedRole('admin');
       }
-    } else if (!user && !hasEmployeeBypass) {
+    } else if (!activeUser && !hasEmployeeBypass) {
+      authSyncRef.current = syncKey;
       setIsAuthenticated(false);
       setShowLandingPage(true);
       setCurrentUser(null);
     }
-  }, [user, profile, authLoading, currentUser]);
+  }, [user, profile, firebaseUser, authLoading, currentUser?.id, currentUser?.role, isAuthenticated]);
 
   const [currentTab, setCurrentTab] = useState('dashboard');
   const [selectedRole, setSelectedRole] = useState('admin');
@@ -393,10 +420,7 @@ function AppContent() {
   const ALL_GRADIENT_THEMES = [...DARK_GRADIENT_THEMES, ...customThemes];
 
   // Core Data States Relocated to avoid TDZ errors in custom hooks
-  const [clients, setClients] = useState<Client[]>([]);
-  const [cases, setCases] = useState<Case[]>([]);
   const [hearings, setHearings] = useState<Hearing[]>([]);
-  const [tasks, setTasks] = useState<Task[]>([]);
   const [documents, setDocuments] = useState<LegalDoc[]>([]);
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [expenses, setExpenses] = useState<Expense[]>([]);
@@ -440,11 +464,20 @@ function AppContent() {
 
   const handleLogout = async () => {
     try {
-      if (auth) {
-        await signOut(auth);
+      if (currentUser) {
+        auditLogger.log({
+          user_id: currentUser.id,
+          user_name: currentUser.name,
+          role: currentUser.role,
+          action: AuditAction.LOGOUT,
+          entity_type: 'auth',
+          details: 'User logged out'
+        });
       }
+      await supabase.auth.signOut();
+      await firebaseAuth.signOut();
     } catch (err) {
-      console.warn("Firebase logout details (session variables cleared):", err);
+      console.warn("Auth logout details (session variables cleared):", err);
     } finally {
       // Clear session storage and selective localStorage keys
       sessionStorage.clear();
@@ -675,7 +708,7 @@ function AppContent() {
     
     // Throttled scan to prevent overhead
     const targetContainers = document.querySelectorAll(
-      '.bg-slate-900, .bg-slate-950, .bg-midnight, [class*="bg-midnight"], [class*="bg-slate-9"], [class*="bg-[#050e21]"], [class*="bg-[#030712]"], [class*="bg-[#0b1e33]"], [class*="bg-[#11243f]"], [class*="bg-[#0b1a2d]"], [class*="bg-[#0c2461]"], [class*="bg-[#041a45]"], [class*="bg-[#0b1329]"], [class*="bg-slate-800"], aside, .bg-gradient-to-br, [class*="from-slate-9"], [class*="from-[#0C121E]"], .card-professional-stable, .card-professional-case, .customizable-card, [style*="background-color"], .motion-div, [style*="background"]'
+      '.login-sidebar-panel, .bg-slate-900, .bg-slate-950, .bg-midnight, [class*="bg-midnight"], [class*="bg-slate-9"], [class*="bg-[#050e21]"], [class*="bg-[#030712]"], [class*="bg-[#0b1e33]"], [class*="bg-[#11243f]"], [class*="bg-[#0b1a2d]"], [class*="bg-[#0c2461]"], [class*="bg-[#041a45]"], [class*="bg-[#0b1329]"], [class*="bg-slate-800"], aside, .bg-gradient-to-br, [class*="from-slate-9"], [class*="from-[#0C121E]"], .card-professional-stable, .card-professional-case, .customizable-card, [style*="background-color"], .motion-div, [style*="background"]'
     );
 
     targetContainers.forEach(container => {
@@ -686,21 +719,37 @@ function AppContent() {
       let isDarkBg = true; // default assume dark for legacy dark classes
       const rgbBgMatch = computedBg.match(/rgba?\s*\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/);
       if (rgbBgMatch) {
-        const r = parseInt(rgbBgMatch[1]);
-        const g = parseInt(rgbBgMatch[2]);
-        const b = parseInt(rgbBgMatch[3]);
-        // Ignore transparent backgrounds when computing brightness (mostly 0,0,0,0)
-        // If it's a solid or semi-transparent color, compute brightness
-        if (!(r === 0 && g === 0 && b === 0 && computedBg.includes('0)'))) {
-           const brightness = (r * 299 + g * 587 + b * 114) / 1000;
-           isDarkBg = brightness < 130;
-        }
+         const r = parseInt(rgbBgMatch[1]);
+         const g = parseInt(rgbBgMatch[2]);
+         const b = parseInt(rgbBgMatch[3]);
+         // Ignore transparent backgrounds when computing brightness (mostly 0,0,0,0)
+         // If it's a solid or semi-transparent color, compute brightness
+         if (!(r === 0 && g === 0 && b === 0 && computedBg.includes('0)'))) {
+            const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+            isDarkBg = brightness < 130;
+         }
+      }
+
+      // Special case for login-sidebar-panel: Force SVGs to update
+      if (htmlContainer.classList.contains('login-sidebar-panel') || htmlContainer.closest('.login-sidebar-panel')) {
+         const svgElements = htmlContainer.querySelectorAll('svg');
+         svgElements.forEach(svgEl => {
+            const htmlSvg = svgEl as unknown as HTMLElement;
+            let isElementDarkBg = true;
+            const activeBgContainer = htmlSvg.closest('.bg-white, .bg-slate-50, .bg-slate-100, .bg-gray-50, .bg-gray-100, .bg-sky-50');
+            if (activeBgContainer) {
+               isElementDarkBg = false;
+            }
+            const finalColor = isElementDarkBg ? '#facc15' : '#020617';
+            htmlSvg.style.setProperty('color', finalColor, 'important');
+            htmlSvg.setAttribute('data-contrast-fixed', 'true');
+         });
       }
 
       // Use a marker to avoid re-scanning optimized containers unless content actually changes
       const isCaseCard = htmlContainer.classList.contains('card-professional-case') || htmlContainer.classList.contains('card-professional-stable') || !!htmlContainer.closest('.card-professional-stable') || !!htmlContainer.closest('.card-professional-case');
       
-      // Track previous background brightness classification
+      // Track previous background classification
       const prevBgState = htmlContainer.getAttribute('data-prev-bg-dark');
       const currentBgState = isDarkBg.toString();
       
@@ -732,6 +781,27 @@ function AppContent() {
                                 htmlEl.classList.contains('case-status-badge') || 
                                 htmlEl.closest('.case-status-badge') !== null;
         if (isColoredStatus) return;
+
+        // SPECIFIC RULE FOR THE RIGHT LOGIN SIDEBAR PANEL CARD
+        const insideSidebar = htmlEl.closest('.login-sidebar-panel');
+        if (insideSidebar) {
+           let isElementDarkBg = true;
+           const activeBgContainer = htmlEl.closest('.bg-white, .bg-slate-50, .bg-slate-100, .bg-gray-50, .bg-gray-100, .bg-sky-50');
+           if (activeBgContainer) {
+              isElementDarkBg = false;
+           }
+           let finalColor = '#ffffff'; // default to bright white
+           if (isElementDarkBg) {
+              const tag = htmlEl.tagName.toLowerCase();
+              const isHeadingOrBold = tag.startsWith('h') || htmlEl.classList.contains('font-bold') || htmlEl.classList.contains('font-black') || tag === 'strong' || tag === 'b';
+              finalColor = isHeadingOrBold ? '#facc15' : '#ffffff';
+           } else {
+              finalColor = '#020617';
+           }
+           htmlEl.style.setProperty('color', finalColor, 'important');
+           htmlEl.setAttribute('data-contrast-fixed', 'true');
+           return;
+        }
 
         const targetTextColor = isDarkBg ? '#FFFFFF' : '#0F172A';
         const targetHeaderColor = isDarkBg ? '#FACC15' : '#1E293B';
@@ -824,6 +894,23 @@ function AppContent() {
         setCurrentTab('cases');
         // Dispatch custom event to trigger the modal in CasesModule
         window.dispatchEvent(new CustomEvent('adalah-trigger-new-case'));
+      }
+
+      // Ctrl + P or Cmd + P for Smart Judicial Calculator (الحاسبة القضائية الذكية)
+      if ((e.ctrlKey || e.metaKey) && !e.shiftKey && (e.key === 'p' || e.key === 'P')) {
+        e.preventDefault();
+        setCurrentTab('ai-judicial-calc');
+        setSelectedCase(null);
+        
+        // Show high-priority success indicator
+        const calcIndicator = document.createElement('div');
+        calcIndicator.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#0f172a;zoom:1;color:#f59e0b;border:2px solid #f59e0b;padding:12px 24px;border-radius:14px;font-weight:900;z-index:99999;box-shadow:0 20px 40px rgba(0,0,0,0.35);transition:opacity 0.5s;direction:rtl;font-family:sans-serif;font-size:14px;';
+        calcIndicator.innerText = '🎛️ تم الانتقال السريع إلى الحاسبة القضائية الذكية عن طريق الاختصار (Ctrl + P)';
+        document.body.appendChild(calcIndicator);
+        setTimeout(() => {
+          calcIndicator.style.opacity = '0';
+          setTimeout(() => document.body.removeChild(calcIndicator), 500);
+        }, 2200);
       }
       
       // Ctrl+Shift+S for Quick Save (Focus Mode DataPersistenceLayer triggering)
@@ -1049,10 +1136,8 @@ function AppContent() {
         if (res.ok) {
           const data = await res.json();
           if (active && data) {
-            if (data.clients) setClients(data.clients);
-            if (data.cases) setCases(data.cases);
+            // cases, clients, tasks are handled by useSupabaseData
             if (data.hearings) setHearings(data.hearings);
-            if (data.tasks) setTasks(data.tasks);
             if (data.documents) setDocuments(data.documents);
             if (data.invoices) setInvoices(data.invoices);
             if (data.expenses) setExpenses(data.expenses);
@@ -1078,6 +1163,43 @@ function AppContent() {
 
   // --- Dynamic State Update Multiplexer ---
   const handleUpdateGlobalState = (type: string, data: any) => {
+    // Intercept Supabase managed entities
+    if (type === 'cases') {
+      const exists = cases.some(c => c.id === data.id || c.caseNumber === data.caseNumber);
+      if (exists) {
+        updateRecord('cases', data.id, data);
+      } else {
+        createRecord('cases', data);
+        const newHearing: Hearing = {
+          id: `h-${Date.now()}`,
+          caseNumber: data.caseNumber,
+          caseName: data.caseName,
+          date: data.nextSessionDate || "2026-06-30",
+          time: data.nextSessionTime || "09:00 صباحاً",
+          courtName: data.courtName,
+          status: 'upcoming'
+        };
+        setHearings(prev => [newHearing, ...prev]);
+      }
+      return;
+    } else if (type === 'clients') {
+      const exists = clients.some(c => c.id === data.id);
+      if (exists) {
+        updateRecord('clients', data.id, data);
+      } else {
+        createRecord('clients', data);
+      }
+      return;
+    } else if (type === 'tasks') {
+      const exists = tasks.some(t => t.id === data.id);
+      if (exists) {
+        updateRecord('tasks', data.id, data);
+      } else {
+        createRecord('tasks', data);
+      }
+      return;
+    }
+
     // Send state change immediately to server
     fetch('/api/state/update', {
       method: 'POST',
@@ -1089,10 +1211,8 @@ function AppContent() {
         const d = await res.json();
         if (d.success && d.state) {
           // Sync state back
-          if (d.state.clients) setClients(d.state.clients);
-          if (d.state.cases) setCases(d.state.cases);
+          // cases, clients, tasks handled by useSupabaseData
           if (d.state.hearings) setHearings(d.state.hearings);
-          if (d.state.tasks) setTasks(d.state.tasks);
           if (d.state.documents) setDocuments(d.state.documents);
           if (d.state.invoices) setInvoices(d.state.invoices);
           if (d.state.expenses) setExpenses(d.state.expenses);
@@ -1106,43 +1226,12 @@ function AppContent() {
     });
 
     // Instant local state transition fallback so user interaction is ultra-snappy
-    if (type === 'cases') {
-      const exists = cases.some(c => c.id === data.id || c.caseNumber === data.caseNumber);
-      if (exists) {
-        setCases(prev => prev.map(c => (c.id === data.id || c.caseNumber === data.caseNumber) ? { ...c, ...data } : c));
-      } else {
-        setCases(prev => [data, ...prev]);
-        const newHearing: Hearing = {
-          id: `h-${Date.now()}`,
-          caseNumber: data.caseNumber,
-          caseName: data.caseName,
-          date: data.nextSessionDate || "2026-06-30",
-          time: data.nextSessionTime || "09:00 صباحاً",
-          courtName: data.courtName,
-          status: 'upcoming'
-        };
-        setHearings(prev => [newHearing, ...prev]);
-      }
-    } else if (type === 'clients') {
-      const exists = clients.some(c => c.id === data.id);
-      if (exists) {
-        setClients(prev => prev.map(c => c.id === data.id ? { ...c, ...data } : c));
-      } else {
-        setClients(prev => [data, ...prev]);
-      }
-    } else if (type === 'contracts') {
+    if (type === 'contracts') {
       const exists = (contracts || []).some(c => c.id === data.id);
       if (exists) {
         setContracts(prev => prev.map(c => c.id === data.id ? { ...c, ...data } : c));
       } else {
         setContracts(prev => [data, ...prev]);
-      }
-    } else if (type === 'tasks') {
-      const exists = tasks.some(t => t.id === data.id);
-      if (exists) {
-        setTasks(prev => prev.map(t => t.id === data.id ? { ...t, ...data } : t));
-      } else {
-        setTasks(prev => [data, ...prev]);
       }
     } else if (type === 'documents') {
       setDocuments(prev => [data, ...prev]);

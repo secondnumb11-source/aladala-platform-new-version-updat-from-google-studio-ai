@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import TaskCountdown from './TaskCountdown';
 import { 
   Users, Lock, Shield, CheckSquare, Briefcase, PlusCircle, 
   CheckCircle, TrendingUp, AlertCircle, FileText, Clock, Layout, 
@@ -14,24 +15,9 @@ import {
 } from 'recharts';
 import { motion, AnimatePresence } from 'motion/react';
 import { QRCodeSVG } from 'qrcode.react';
-import { 
-  collection, 
-  query, 
-  where, 
-  getDocs, 
-  addDoc, 
-  serverTimestamp,
-  doc,
-  updateDoc,
-  onSnapshot,
-  orderBy,
-  setDoc,
-  deleteDoc
-} from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { supabase } from '@/lib/supabase';
+import { auditLogger, AuditAction } from '@/lib/AuditLogger';
 import { Case, Client, Task, Employee, LeaveRequest, AttendanceRecord } from '@/types';
-
-import TaskCountdown from './TaskCountdown';
 
 // Custom Searchable Dropdown Multi-Select
 interface DropdownSelectProps {
@@ -214,7 +200,7 @@ export default function EmployeePortal({
   useEffect(() => {
     if (!isAdmin) return;
     
-    // 1. Immediately load from shared local backup to stay fully synchronized across tabs
+    // 1. Immediately load from shared local backup
     const backup = localStorage.getItem('employees_backup');
     if (backup) {
       try {
@@ -227,21 +213,25 @@ export default function EmployeePortal({
       }
     }
 
-    // 2. Continuous real-time stream from Firestore database (Query without orderBy to avoid index failures, sort in-memory)
-    const q = query(collection(db, 'employees'));
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const emps = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Employee));
-      emps.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
-      if (emps.length > 0) {
+    const fetchEmployees = async () => {
+      const { data, error } = await supabase.from('employees').select('*');
+      if (data) {
+        const emps = data as Employee[];
+        emps.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
         setEmployees(emps);
         localStorage.setItem('employees_backup', JSON.stringify(emps));
-      } else if (!backup) {
-        setEmployees([]);
       }
-    }, (error) => {
-      console.error("Error loading live portal employees stream:", error);
-    });
-    return () => unsubscribe();
+    };
+
+    fetchEmployees();
+
+    const channel = supabase.channel('portal-employees-changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'employees' }, fetchEmployees)
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [isAdmin]);
 
   const handleSelectEmployee = (id: string) => {
@@ -317,7 +307,7 @@ export default function EmployeePortal({
 
     try {
       console.log('Attempting to save employee config:', selectedConfigEmployee.id, updates);
-      await setDoc(doc(db, 'employees', selectedConfigEmployee.id), updates, { merge: true });
+      await supabase.from('employees').upsert({ id: selectedConfigEmployee.id, ...updates });
       
       // Update the local list to ensure immediate responsiveness
       setEmployees(prev => prev.map(e => e.id === selectedConfigEmployee.id ? { ...e, ...updates } : e));
@@ -383,28 +373,50 @@ export default function EmployeePortal({
     if (!loggedInEmployee) return;
     
     // Attendance
-    const attQ = query(
-      collection(db, 'attendance'), 
-      where('employeeId', '==', loggedInEmployee.id),
-      orderBy('date', 'desc')
-    );
-    const unsubAtt = onSnapshot(attQ, (snap) => {
-      setAttendance(snap.docs.map(d => ({ id: d.id, ...d.data() } as AttendanceRecord)));
-    });
+    const fetchAttendance = async () => {
+      const { data, error } = await supabase
+        .from('attendance')
+        .select('*')
+        .eq('employeeId', loggedInEmployee.id)
+        .order('date', { ascending: false });
+      
+      if (data) setAttendance(data);
+    };
+
+    fetchAttendance();
+    const attChannel = supabase.channel(`attendance-${loggedInEmployee.id}`)
+      .on('postgres_changes', { 
+        event: '*', 
+        schema: 'public', 
+        table: 'attendance', 
+        filter: `employeeId=eq.${loggedInEmployee.id}` 
+      }, fetchAttendance)
+      .subscribe();
 
     // Leave Requests
-    const leaveQ = query(
-      collection(db, 'leave_requests'), 
-      where('employeeId', '==', loggedInEmployee.id),
-      orderBy('requestedAt', 'desc')
-    );
-    const unsubLeave = onSnapshot(leaveQ, (snap) => {
-      setLeaveRequests(snap.docs.map(d => ({ id: d.id, ...d.data() } as LeaveRequest)));
-    });
+    const fetchLeave = async () => {
+      const { data, error } = await supabase
+        .from('leave_requests')
+        .select('*')
+        .eq('employeeId', loggedInEmployee.id)
+        .order('requestedAt', { ascending: false });
+      
+      if (data) setLeaveRequests(data);
+    };
+
+    fetchLeave();
+    const leaveChannel = supabase.channel(`leave-${loggedInEmployee.id}`)
+      .on('postgres_changes', { 
+        event: '*', 
+        schema: 'public', 
+        table: 'leave_requests', 
+        filter: `employeeId=eq.${loggedInEmployee.id}` 
+      }, fetchLeave)
+      .subscribe();
 
     return () => {
-      unsubAtt();
-      unsubLeave();
+      supabase.removeChannel(attChannel);
+      supabase.removeChannel(leaveChannel);
     };
   }, [loggedInEmployee]);
 
@@ -483,7 +495,7 @@ export default function EmployeePortal({
           };
 
           try {
-            await addDoc(collection(db, 'attendance'), newRecord);
+            await supabase.from('attendance').insert(newRecord);
             alert(`✅ تم إثبات الحضور والموقع الجغرافي بنجاح.`);
             setShowCheckInModal(false);
           } catch (e) {
@@ -521,7 +533,7 @@ export default function EmployeePortal({
     };
 
     try {
-      await addDoc(collection(db, 'leave_requests'), newLeave);
+      await supabase.from('leave_requests').insert(newLeave);
       alert('✅ تم إرسال طلب الإجازة للمدير المباشر بنجاح. سيصلك إشعار فور اتخاذ قرار.');
       setShowLeaveForm(false);
     } catch (e) {
@@ -584,16 +596,20 @@ export default function EmployeePortal({
         attachmentsCount: 1
       };
 
-      // Add to Firestore cases
-      const caseDoc = await addDoc(collection(db, 'cases'), newSimCase);
+      // Add to cases
+      const { data: caseDoc, error: caseErr } = await supabase.from('cases').insert(newSimCase).select().single();
       
-      // Update employee assigned cases so it is automatically listed in their dashboard!
-      if (loggedInEmployee) {
+      if (caseErr) throw caseErr;
+
+      // Update employee assigned cases
+      if (loggedInEmployee && caseDoc) {
         const updatedCases = [...(loggedInEmployee.assignedCases || []), caseDoc.id];
-        await updateDoc(doc(db, 'employees', loggedInEmployee.id), {
+        const { error: empUpdateErr } = await supabase.from('employees').update({
           assignedCases: updatedCases,
           najizApiKey: activeKey
-        });
+        }).eq('id', loggedInEmployee.id);
+
+        if (empUpdateErr) throw empUpdateErr;
 
         // Sync local storage state too
         const freshEmp = { ...loggedInEmployee, assignedCases: updatedCases, najizApiKey: activeKey };
@@ -611,7 +627,7 @@ export default function EmployeePortal({
         dueDate: new Date(Date.now() + 86400000 * 2).toISOString(),
         caseNumber: `1447-${randomId}`
       };
-      await addDoc(collection(db, 'tasks'), testTask);
+      await supabase.from('tasks').insert(testTask);
 
       // Audit logs
       await writeAuditLog('مزامنة ناجز', `تم سحب الدعوى التجارية رقم ${newSimCase.caseNumber} وتعيينها للموظف بنجاح`, loggedInEmployee!);
@@ -630,13 +646,13 @@ export default function EmployeePortal({
 
   const writeAuditLog = async (action: string, details: string, emp: Employee) => {
     try {
-      await addDoc(collection(db, 'auditlogs'), {
-        action,
+      await auditLogger.log({
+        action: action as any,
         details,
-        userId: emp.id,
-        userName: emp.name,
-        timestamp: new Date().toISOString(),
-        type: 'sync'
+        user_id: emp.id,
+        user_name: emp.name,
+        entity_type: 'sync',
+        role: 'employee'
       });
     } catch (e) {}
   };
@@ -647,22 +663,24 @@ export default function EmployeePortal({
     setLoginError('');
 
     try {
-      const q = query(
-        collection(db, 'employees'), 
-        where('username', '==', loginUsername.trim())
-      );
-      const snapshot = await getDocs(q);
+      const { data: employees, error } = await supabase
+        .from('employees')
+        .select('*')
+        .eq('username', loginUsername.trim());
       
-      if (!snapshot.empty) {
-        const matchedDoc = snapshot.docs.find(doc => doc.data().password === loginPassword);
-        if (matchedDoc) {
-          const empData = { id: matchedDoc.id, ...matchedDoc.data() } as Employee;
+      if (error) throw error;
+      
+      if (employees && employees.length > 0) {
+        const matchedEmp = employees.find(e => e.password === loginPassword);
+        if (matchedEmp) {
+          const empData = matchedEmp as Employee;
           
           const currentLoginCount = (empData as any).loginCount || 0;
-          await updateDoc(doc(db, 'employees', matchedDoc.id), {
+          await supabase.from('employees').update({
             loginCount: currentLoginCount + 1,
             lastLoginAt: new Date().toISOString()
-          });
+          }).eq('id', matchedEmp.id);
+          
           (empData as any).loginCount = currentLoginCount + 1;
 
           setLoggedInEmployee(empData);
@@ -707,7 +725,7 @@ export default function EmployeePortal({
       if (taskObj) {
          onUpdateState('tasks', { ...taskObj, status: newStatus });
       }
-      await updateDoc(doc(db, 'tasks', taskId), { status: newStatus });
+      await supabase.from('tasks').update({ status: newStatus }).eq('id', taskId);
       if (loggedInEmployee) {
         await writeAuditLog('تحديث حالة المهمة', `تحديث حالة المهمة إلى: ${newStatus}`, loggedInEmployee);
       }
@@ -1646,8 +1664,8 @@ export default function EmployeePortal({
                     { label: 'المهام المعلقة / قيد العمل', value: myTasks.filter(t => t.status === 'todo' || t.status === 'in_progress' || t.status === 'review').length, color: 'text-blue-600', bg: 'bg-blue-50 text-blue-900', accent: 'bg-blue-100', icon: Clock },
                     { label: 'المهام المتأخرة / قريبة', value: myTasks.filter(t => (t.status === 'todo' || t.status === 'in_progress') && t.dueDate && t.dueDate < new Date().toISOString().split('T')[0]).length, color: 'text-rose-600', bg: 'bg-rose-50 text-rose-900', accent: 'bg-rose-100', icon: AlertTriangle }
                   ].map((stat, i) => (
-                    <div key={i} className={`${stat.bg} border border-[#e2e8f0] p-6 rounded-[2.5rem] flex flex-col justify-between shadow-sm relative overflow-hidden min-h-[160px] group hover:-translate-y-1 transition-all`}>
-                       <stat.icon className={`w-8 h-8 ${stat.color} mb-4 relative z-10 transition-transform group-hover:scale-110`} />
+                    <div key={i} className={`${stat.bg} border border-[#e2e8f0] p-6 rounded-[2.5rem] flex flex-col justify-between shadow-sm relative overflow-hidden min-h-[160px] group  transition-all`}>
+                       <stat.icon className={`w-8 h-8 ${stat.color} mb-4 relative z-10 transition-transform `} />
                        <div className="relative z-10">
                           <div className={`text-4xl font-black ${stat.color} mb-1 tracking-tight`}>{stat.value}</div>
                           <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">{stat.label}</span>
@@ -2153,16 +2171,24 @@ export default function EmployeePortal({
                     myTasks.slice(0, 5).map(t => (
                       <div key={t.id} className="p-6 bg-slate-50 border border-slate-100 rounded-[2.5rem] space-y-4 hover:bg-white hover:border-amber-200 transition-all shadow-sm">
                         <div className="flex items-center justify-between">
-                          <h5 className="text-sm font-black text-slate-900 flex items-center gap-3">
-                            <span className={`w-2 h-2 rounded-full ${t.priority === 'high' ? 'bg-rose-600 shadow-[0_0_8px_rgba(225,29,72,0.3)]' : 'bg-slate-300'}`} />
-                            {t.title}
-                          </h5>
-                          <span className={`text-[9px] font-black px-3 py-1 rounded-full ${t.status === 'completed' || t.status === 'done' ? 'bg-emerald-100 text-emerald-700 border border-emerald-200' : 'bg-amber-100 text-amber-700 border border-amber-200'}`}>
+                          <div className="flex-1 min-w-0">
+                            <h5 className="text-sm font-black text-slate-900 flex items-center gap-3">
+                              <span className={`w-2 h-2 rounded-full shrink-0 ${t.priority === 'high' ? 'bg-rose-600 shadow-[0_0_8px_rgba(225,29,72,0.3)]' : 'bg-slate-300'}`} />
+                              <span className="truncate">{t.title}</span>
+                            </h5>
+                            <div className="mt-2">
+                               <TaskCountdown dueDate={t.dueDate} />
+                            </div>
+                          </div>
+                          <span className={`text-[9px] font-black px-3 py-1 rounded-full shrink-0 ${t.status === 'completed' || t.status === 'done' ? 'bg-emerald-100 text-emerald-700 border border-emerald-200' : 'bg-amber-100 text-amber-700 border border-amber-200'}`}>
                             {t.status === 'completed' || t.status === 'done' ? 'موثقة ومنجزة ✅' : 'جارية للمتابعة ⏳'}
                           </span>
                         </div>
                         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-4 border-t border-slate-200">
-                          <TaskCountdown dueDate={t.dueDate} />
+                          <div className="flex items-center gap-2">
+                            <span className="text-[10px] text-slate-400 font-black">المده المتبقية:</span>
+                            <TaskCountdown dueDate={t.dueDate} />
+                          </div>
                           <select 
                             value={t.status} 
                             onChange={(e) => handleToggleTaskStatus(t.id, e.target.value)} 

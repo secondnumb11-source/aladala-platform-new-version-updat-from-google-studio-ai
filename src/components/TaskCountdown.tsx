@@ -8,7 +8,8 @@ export default function TaskCountdown({ dueDate, status }: { dueDate: string, st
     minutes: number;
     seconds: number;
     isOverdue: boolean;
-  }>({ days: 0, hours: 0, minutes: 0, seconds: 0, isOverdue: false });
+    isNear: boolean;
+  }>({ days: 0, hours: 0, minutes: 0, seconds: 0, isOverdue: false, isNear: false });
 
   useEffect(() => {
     const calculateTime = () => {
@@ -18,21 +19,31 @@ export default function TaskCountdown({ dueDate, status }: { dueDate: string, st
       const difference = targetTime - now;
 
       if (difference <= 0) {
-        setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0, isOverdue: true });
+        setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0, isOverdue: true, isNear: false });
         return;
       }
 
+      const days = Math.floor(difference / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((difference % (1000 * 60)) / 1000);
+
+      // "Near" if less than 2 hours remaining
+      const totalMinutes = days * 1440 + hours * 60 + minutes;
+      const isNear = totalMinutes < 120 && totalMinutes > 0;
+
       setTimeLeft({
-        days: Math.floor(difference / (1000 * 60 * 60 * 24)),
-        hours: Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
-        minutes: Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60)),
-        seconds: Math.floor((difference % (1000 * 60)) / 1000),
-        isOverdue: false
+        days,
+        hours,
+        minutes,
+        seconds,
+        isOverdue: false,
+        isNear
       });
     };
 
     calculateTime();
-    if (status === 'completed' || status === 'done') return; // Pause timer if task is done
+    if (status === 'completed' || status === 'done') return; 
 
     const timer = setInterval(calculateTime, 1000);
     return () => clearInterval(timer);
@@ -41,22 +52,23 @@ export default function TaskCountdown({ dueDate, status }: { dueDate: string, st
   if (!dueDate || status === 'completed' || status === 'done') return null;
 
   return (
-    <div className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border ${
+    <div className={`flex items-center gap-2 px-2.5 py-1.5 rounded-xl border transition-all duration-300 ${
       timeLeft.isOverdue 
-        ? 'bg-rose-50 border-rose-200 text-rose-600' 
-        : timeLeft.days === 0 && timeLeft.hours < 24 
-          ? 'bg-amber-50 border-amber-200 text-amber-600 animate-pulse'
-          : 'bg-slate-50 border-slate-200 text-slate-500'
+        ? 'bg-rose-500 border-rose-400 text-white shadow-lg shadow-rose-500/20' 
+        : timeLeft.isNear
+          ? 'bg-amber-500 border-amber-400 text-white animate-pulse shadow-lg shadow-amber-500/20'
+          : 'bg-slate-900 border-slate-800 text-amber-400'
     }`}>
-      <Clock className="w-3.5 h-3.5 shrink-0" />
-      <div className="flex bg-transparent items-center gap-1.5 text-[10px] font-black tracking-widest font-mono" dir="ltr">
+      <Clock className={`w-3.5 h-3.5 shrink-0 ${timeLeft.isNear ? 'animate-spin' : ''}`} />
+      <div className="flex bg-transparent items-center gap-1 text-[11px] font-black tracking-tighter" dir="ltr">
         {timeLeft.isOverdue ? (
-          <span className="text-rose-600 font-sans">متأخر</span>
+          <span className="font-sans">منتهي</span>
         ) : (
-          <div className="flex gap-1.5 items-center">
-            {timeLeft.days > 0 && <span title="أيام">{timeLeft.days}d</span>}
-            <span title="ساعات">{timeLeft.hours.toString().padStart(2, '0')}h</span>
-            <span title="دقائق" className="opacity-80">{timeLeft.minutes.toString().padStart(2, '0')}m</span>
+          <div className="flex gap-1 items-center font-mono">
+            {timeLeft.days > 0 && <span>{timeLeft.days}d</span>}
+            <span>{timeLeft.hours.toString().padStart(2, '0')}:</span>
+            <span>{timeLeft.minutes.toString().padStart(2, '0')}:</span>
+            <span className="opacity-70">{timeLeft.seconds.toString().padStart(2, '0')}s</span>
           </div>
         )}
       </div>

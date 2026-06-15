@@ -1,8 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Bell, Check, Trash2, Clock } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-import { db } from '@/lib/firebase';
-import { collection, getDocs } from 'firebase/firestore';
 
 interface Notification {
   id: string;
@@ -67,12 +65,11 @@ export default function NotificationsBell() {
   useEffect(() => {
     const fetchRealAlerts = async () => {
       try {
-        const casesSnap = await getDocs(collection(db, 'cases'));
-        const realCases: any[] = [];
-        casesSnap.forEach(docSnap => {
-          realCases.push({ id: docSnap.id, ...docSnap.data() });
-        });
-
+        const res = await fetch('/api/state');
+        if (!res.ok) return;
+        const stateData = await res.json();
+        
+        const realCases = stateData.cases || [];
         const activeCasesAlerts: Notification[] = [];
         
         realCases.forEach((c: any) => {
@@ -100,12 +97,7 @@ export default function NotificationsBell() {
           }
         });
 
-        const tasksSnap = await getDocs(collection(db, 'tasks'));
-        const realTasks: any[] = [];
-        tasksSnap.forEach(tSnap => {
-          realTasks.push({ id: tSnap.id, ...tSnap.data() });
-        });
-
+        const realTasks = stateData.tasks || [];
         const tasksAlerts: Notification[] = [];
         realTasks.forEach((t: any) => {
           if (t.status !== 'done' && t.dueDate) {
@@ -115,7 +107,6 @@ export default function NotificationsBell() {
             } catch(e){}
             const today = new Date();
             const diffTime = limitDate.getTime() - today.getTime();
-            const diffHours = Math.ceil(diffTime / (1000 * 60 * 60));
             const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
             
             if (diffDays <= 7 && diffDays >= -3) {
@@ -133,10 +124,9 @@ export default function NotificationsBell() {
           }
         });
 
-        const invoicesSnap = await getDocs(collection(db, 'invoices'));
+        const realInvoices = stateData.invoices || [];
         const invoicesAlerts: Notification[] = [];
-        invoicesSnap.forEach(iSnap => {
-          const inv = iSnap.data();
+        realInvoices.forEach((inv: any) => {
           if (inv.status === 'pending' && inv.dueDate) {
             let dDate = new Date();
             try { dDate = new Date(inv.dueDate); } catch(e){}
@@ -144,7 +134,7 @@ export default function NotificationsBell() {
             const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
             if (diffDays > 30) {
               invoicesAlerts.push({
-                id: `real-invoice-alert-${iSnap.id}`,
+                id: `real-invoice-alert-${inv.id}`,
                 title: `فاتورة متأخرة لأكثر من ٣٠ يوماً`,
                 message: `تنبيه مالي: توجد فاتورة متأخرة للعميل [${inv.clientName || 'غير معروف'}] بقيمة ${inv.totalAmount} ر.س.`,
                 time: 'تنبيه ذكي 💰',
@@ -157,10 +147,9 @@ export default function NotificationsBell() {
         });
 
         // Fetch Powers of Attorney close to expiry
-        const poasSnap = await getDocs(collection(db, 'powersOfAttorney'));
+        const realPoas = stateData.powersOfAttorney || [];
         const poasAlerts: Notification[] = [];
-        poasSnap.forEach(poaDoc => {
-          const poa = poaDoc.data();
+        realPoas.forEach((poa: any) => {
           if (poa.expiryDate) {
             let expDate = new Date();
             try { expDate = new Date(poa.expiryDate); } catch(e){}
@@ -172,7 +161,7 @@ export default function NotificationsBell() {
             
             if (diffDays <= 60 && diffDays >= -15) {
               poasAlerts.push({
-                id: `real-poa-alert-${poaDoc.id}`,
+                id: `real-poa-alert-${poa.id}`,
                 title: diffDays <= 0 ? `وكالة منتهية الصلاحية` : `قرب انتهاء صلاحية وكالة`,
                 message: diffDays <= 0 
                   ? `انتهى سريان الوكالة رقم ${poa.poaNumber || ''} للموكل "${poa.clientName || ''}"`

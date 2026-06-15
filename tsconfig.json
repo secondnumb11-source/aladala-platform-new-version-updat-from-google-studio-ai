@@ -22,5 +22,7 @@
     },
     "baseUrl": ".",
     "noEmit": true
-  }
+  },
+  "include": ["src/**/*", "server.ts"],
+  "exclude": ["page.tsx", "utils/**/*"]
 }

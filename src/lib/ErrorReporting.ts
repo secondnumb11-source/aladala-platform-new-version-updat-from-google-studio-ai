@@ -1,5 +1,4 @@
-import { db } from './firebase';
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { supabase } from './supabase';
 
 export const ErrorReporting = {
   log: async (error: Error, contextInfo?: Record<string, any>) => {
@@ -42,15 +41,16 @@ export const ErrorReporting = {
       if (localLogs.length > 20) localLogs.shift();
       localStorage.setItem('adalah-error-logs', JSON.stringify(localLogs));
 
-      // 2. Transmit to Firebase for remote debugging
+      // 2. Transmit to Supabase for remote auditing and compliance
       try {
-        const errorLogsRef = collection(db, "system_errors");
-        await addDoc(errorLogsRef, {
-          ...errorPayload,
-          serverTime: serverTimestamp()
-        });
-      } catch (fbErr) {
-        console.warn("[ErrorReporting] Failed to transmit to Firebase:", fbErr);
+        if (supabase) {
+          await supabase.from('system_errors').insert([{
+            ...errorPayload,
+            serverTime: new Date().toISOString()
+          }]);
+        }
+      } catch (sbErr) {
+        console.warn("[ErrorReporting] Failed to transmit to Supabase:", sbErr);
       }
 
       // We use warn here to prevent failing the AI Studio metrics if it's an expected offline error

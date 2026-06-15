@@ -30,8 +30,7 @@ import {
 } from 'lucide-react';
 import { Client, Case } from '@/types';
 import { generateUsername, generatePassword } from '@/utils/credentials';
-import { auth } from '@/lib/firebase';
-import { GoogleAuthProvider, signInWithPopup, onAuthStateChanged } from 'firebase/auth';
+import { supabase } from '@/lib/supabase';
 
 interface ClientsModuleProps {
   clients: Client[];
@@ -181,32 +180,19 @@ export default function ClientsModule({
     setIsSyncing(true);
     setSyncError(null);
     try {
-      const provider = new GoogleAuthProvider();
-      provider.addScope('https://www.googleapis.com/auth/contacts.readonly');
-      provider.addScope('https://www.googleapis.com/auth/userinfo.email');
-      provider.addScope('https://www.googleapis.com/auth/userinfo.profile');
-      
-      const result = await signInWithPopup(auth, provider);
-      const credential = GoogleAuthProvider.credentialFromResult(result);
-      if (!credential?.accessToken) {
-        throw new Error('فشل الحصول على رمز الوصول من مصادقة Google.');
-      }
-      
-      const token = credential.accessToken;
-      cachedGoogleAccessToken = token;
-      setGoogleAccessToken(token);
-      
-      // Auto trigger sync after login
-      await importGoogleContacts(token);
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          scopes: 'https://www.googleapis.com/auth/contacts.readonly',
+          redirectTo: window.location.origin
+        }
+      });
+      if (error) throw error;
+      // Note: Full contact sync will require redirection.
+      setSyncError('ميزة مزامنة جهات الاتصال تتطلب إعادة توجيه الصفحة، قد يكون ذلك محدوداً في بيئة المعاينة.');
     } catch (err: any) {
       console.error('[Google Contacts] Auth error:', err);
-      if (err.code === 'auth/popup-closed-by-user') {
-        setSyncError(null);
-      } else if (err.code === 'auth/popup-blocked') {
-        setSyncError('تم حظر النافذة المنبثقة لمصادقة Google بواسطة المتصفح. يرجى تفعيل النوافذ المنبثقة وإعادة المحاولة.');
-      } else {
-        setSyncError(err.message || 'فشلت عملية المصادقة الرقمية مع حساب Google');
-      }
+      setSyncError(err.message || 'فشلت عملية المصادقة الرقمية مع حساب Google');
     } finally {
       setIsSyncing(false);
     }

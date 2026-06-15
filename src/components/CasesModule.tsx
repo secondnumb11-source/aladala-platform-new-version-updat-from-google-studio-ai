@@ -76,7 +76,6 @@ import { motion, AnimatePresence } from 'motion/react';
 import { InteractiveCard } from './InteractiveCard';
 import { Case, Client, Attachment } from '@/types';
 import { useAdaptiveContrast } from '../utils/themeUtils';
-import { auth } from '@/lib/firebase';
 
 export const getCaseDocumentTags = (c: Case): string[] => {
   const tags: string[] = ['مفهرس_آلياً'];
@@ -135,6 +134,78 @@ export const getCaseDocumentTags = (c: Case): string[] => {
   }
 
   return Array.from(new Set(tags));
+};
+
+interface CaseClassificationTagsProps {
+  category: string;
+  status: string;
+  isHighContrast?: boolean;
+}
+
+export const CaseClassificationTags: React.FC<CaseClassificationTagsProps> = ({ category, status, isHighContrast }) => {
+  let categoryLabel = 'استشارات عامة';
+  let categoryColor = 'bg-slate-100 border-slate-900 text-slate-950 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-200';
+  
+  if (category === 'commercial') {
+    categoryLabel = 'تجاري';
+    categoryColor = 'bg-blue-100 border-blue-400 text-blue-950';
+  } else if (category === 'labor') {
+    categoryLabel = 'عمالي';
+    categoryColor = 'bg-purple-100 border-purple-400 text-purple-950';
+  } else if (category === 'civil') {
+    categoryLabel = 'مدني';
+    categoryColor = 'bg-sky-100 border-sky-400 text-sky-950';
+  } else if (category === 'criminal') {
+    categoryLabel = 'جنائي';
+    categoryColor = 'bg-rose-100 border-rose-450 text-rose-950';
+  } else if (category === 'personal_status') {
+    categoryLabel = 'أحوال شخصية';
+    categoryColor = 'bg-violet-100 border-violet-400 text-violet-950';
+  } else if (category === 'administrative') {
+    categoryLabel = 'إداري';
+    categoryColor = 'bg-teal-100 border-teal-400 text-teal-950';
+  } else if (category === 'execution') {
+    categoryLabel = 'تنفيذ قضائي';
+    categoryColor = 'bg-cyan-100 border-cyan-400 text-cyan-950';
+  }
+
+  // Emerald for Active, Amber for Review
+  let statusLabel = 'تحت الدراسة';
+  let statusColor = 'bg-slate-100 border-slate-900 text-slate-950 dark:bg-slate-800/80';
+  
+  if (status === 'active' || status === 'judgment_issued') {
+    statusLabel = 'نشط جاري';
+    statusColor = 'bg-emerald-150 border-emerald-500 text-emerald-950 font-black shadow-sm';
+  } else if (status === 'under_review' || status === 'under_study' || status === 'appeal') {
+    statusLabel = 'قيد المراجعة';
+    statusColor = 'bg-amber-100 border-amber-500 text-amber-950 font-black shadow-sm';
+  } else if (status === 'closed' || status === 'archived') {
+    statusLabel = 'مؤرشف ومغلق';
+    statusColor = 'bg-gray-100 border-gray-400 text-gray-900';
+  }
+
+  return (
+    <div className="flex flex-wrap items-center gap-2 mt-1.5 font-sans" dir="rtl">
+      <span className={`text-[10px] font-black px-2.5 py-1 rounded-xl border transition-all inline-flex items-center gap-1 shrink-0 ${categoryColor}`}>
+        🏷️ {categoryLabel}
+      </span>
+      <span className={`text-[10px] font-black px-2.5 py-1 rounded-xl border transition-all inline-flex items-center gap-1 shrink-0 ${statusColor}`}>
+        ⚖️ {statusLabel}
+      </span>
+    </div>
+  );
+};
+
+export const getLeadLawyerName = (c: Case): string => {
+  if (c.lead_lawyer_id) {
+    if (c.lead_lawyer_id.includes('البقمي') || c.lead_lawyer_id === 'baqami') return 'المحامي أحمد البقمي';
+    if (c.lead_lawyer_id.includes('القحطاني') || c.lead_lawyer_id === 'qahtani') return 'د. عادل القحطاني';
+    if (c.lead_lawyer_id.includes('الغامدي') || c.lead_lawyer_id === 'ghamdi') return 'أ. خالد الغامدي';
+    return c.lead_lawyer_id;
+  }
+  const hash = c.id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+  const lawyers = ['المحامي أحمد البقمي', 'د. عادل القحطاني', 'أ. خالد الغامدي'];
+  return lawyers[hash % lawyers.length];
 };
 
 interface CasesModuleProps {
@@ -589,6 +660,8 @@ export default React.memo(function CasesModule({
   const [reportModalCase, setReportModalCase] = useState<Case | null>(null);
   const [stageFilter, setStageFilter] = useState('all');
   const [priorityFilter, setPriorityFilter] = useState('all');
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [lawyerFilter, setLawyerFilter] = useState('all');
   const [viewMode, setViewMode] = useState<'grid' | 'table'>(() => {
     return (localStorage.getItem('adalah-cases-view-mode') as 'grid' | 'table') || 'grid';
   });
@@ -1243,8 +1316,8 @@ export default React.memo(function CasesModule({
     const historyEntry: any = {
       id: `hist-${Date.now()}`,
       timestamp: new Date().toISOString(),
-      userId: auth.currentUser?.uid || 'system',
-      userName: auth.currentUser?.displayName || 'نظام العدالة',
+      userId: 'system',
+      userName: 'نظام العدالة',
       type: options?.isAiAssisted ? 'ai_update' : 'status_change',
       field: 'status',
       oldValue: c.status,
@@ -1642,7 +1715,32 @@ export default React.memo(function CasesModule({
     const matchesLastSession = !lastSessionFilter || (c.lastSessionDate && c.lastSessionDate.includes(lastSessionFilter));
     const matchesNextAppointment = !nextAppointmentFilter || (c.nextSessionDate && c.nextSessionDate.includes(nextAppointmentFilter));
 
-    return matchesSearch && matchesCategory && matchesStage && matchesCourt && matchesDocTag && matchesLastSession && matchesNextAppointment;
+    // Support filtering by Status: (active, closed, under_review)
+    let matchesStatus = true;
+    if (statusFilter !== 'all') {
+      if (statusFilter === 'active') {
+        matchesStatus = c.status === 'active';
+      } else if (statusFilter === 'closed') {
+        matchesStatus = c.status === 'closed';
+      } else if (statusFilter === 'under_review') {
+        matchesStatus = c.status === 'under_review' || c.status === 'under_study' || c.status === 'appeal';
+      }
+    }
+
+    // Support filtering by Legal Officer / Lawyer
+    let matchesLawyer = true;
+    if (lawyerFilter !== 'all') {
+      const respLawyerName = getLeadLawyerName(c);
+      if (lawyerFilter === 'baqami') {
+        matchesLawyer = respLawyerName.includes('البقمي');
+      } else if (lawyerFilter === 'qahtani') {
+        matchesLawyer = respLawyerName.includes('القحطاني');
+      } else if (lawyerFilter === 'ghamdi') {
+        matchesLawyer = respLawyerName.includes('الغامدي');
+      }
+    }
+
+    return matchesSearch && matchesCategory && matchesStage && matchesCourt && matchesDocTag && matchesLastSession && matchesNextAppointment && matchesStatus && matchesLawyer;
   });
 
   const isCaseOverdue = (c: Case) => {
@@ -1667,7 +1765,7 @@ export default React.memo(function CasesModule({
   // Reset pagination on filter change
   React.useEffect(() => {
     setVisibleCount(6);
-  }, [categoryFilter, stageFilter, courtFilter, searchTerm, selectedDocTag]);
+  }, [categoryFilter, stageFilter, courtFilter, searchTerm, selectedDocTag, statusFilter, lawyerFilter]);
 
   // Load more sentinel trigger observer
   React.useEffect(() => {
@@ -2858,6 +2956,34 @@ export default React.memo(function CasesModule({
                 </select>
               </div>
 
+              <div className="flex flex-col space-y-3 font-sans">
+                <label className="text-[10px] font-black text-slate-900 uppercase tracking-[0.3em] mr-1">حالة القضية (Status)</label>
+                <select 
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                  className="bg-white border-2 border-slate-200 text-slate-900 px-6 py-4 rounded-2xl text-[11px] font-black focus:border-amber-500 outline-none transition-all cursor-pointer min-w-[160px] appearance-none shadow-sm hover:border-slate-300"
+                >
+                  <option value="all">كافة الحالات</option>
+                  <option value="active">نشطة جارية</option>
+                  <option value="closed">مغلقة مؤرشفة</option>
+                  <option value="under_review">قيد النظر والمراجعة</option>
+                </select>
+              </div>
+
+              <div className="flex flex-col space-y-3 font-sans">
+                <label className="text-[10px] font-black text-slate-900 uppercase tracking-[0.3em] mr-1">المسؤول القانوني (Counsel)</label>
+                <select 
+                  value={lawyerFilter}
+                  onChange={(e) => setLawyerFilter(e.target.value)}
+                  className="bg-white border-2 border-slate-200 text-slate-900 px-6 py-4 rounded-2xl text-[11px] font-black focus:border-amber-500 outline-none transition-all cursor-pointer min-w-[200px] appearance-none shadow-sm hover:border-slate-300"
+                >
+                  <option value="all">كافة المستشارين</option>
+                  <option value="baqami">المحامي أحمد البقمي</option>
+                  <option value="qahtani">د. عادل القحطاني</option>
+                  <option value="ghamdi">أ. خالد الغامدي</option>
+                </select>
+              </div>
+
             </div>
           </div>
 
@@ -2969,8 +3095,8 @@ export default React.memo(function CasesModule({
                       style={style}
                       className={`flex items-center text-right transition-all group cursor-pointer ${
                         isHighContrast 
-                          ? 'hover:bg-slate-100 even:bg-slate-50/50' 
-                          : 'hover:bg-amber-500/10'
+                          ? (index % 2 === 0 ? 'bg-slate-50 hover:bg-slate-100' : 'bg-white hover:bg-slate-100') 
+                          : (index % 2 === 0 ? 'bg-[#0a182f]/40 hover:bg-amber-500/10' : 'bg-transparent hover:bg-amber-500/10')
                       } ${c.archived ? 'opacity-50 grayscale-[0.5]' : ''}`} 
                       onClick={() => onSelectCase(c)}
                       dir="rtl"
@@ -2985,6 +3111,7 @@ export default React.memo(function CasesModule({
                             </span>
                           )}
                         </div>
+                        <CaseClassificationTags category={c.category} status={c.status} isHighContrast={isHighContrast} />
                       </div>
                       <div className={`flex-[1.5] px-4 py-3 text-[11px] font-black tracking-tight truncate ${isHighContrast ? 'text-slate-800' : 'text-indigo-300'} transition-colors`}>{c.clientName}</div>
                       <div className="flex-[1] px-4 py-3">
@@ -3127,6 +3254,7 @@ export default React.memo(function CasesModule({
                           isHighContrast ? 'text-slate-900' : 'text-white'
                         }`}>
                           <span>{c.caseName}</span>
+                          <CaseClassificationTags category={c.category} status={c.status} isHighContrast={isHighContrast} />
                           {isCaseOverdue(c) && (
                             <span className="bg-rose-600/20 border border-rose-500/50 text-rose-400 text-[10px] px-3 py-1.5 rounded-xl flex items-center gap-2 animate-bounce-subtle shrink-0">
                                <AlertCircle className="w-3 h-3" />

@@ -740,7 +740,7 @@ export default function AILegalSearch() {
               </div>
             </div>
 
-            <div className="z-10 bg-white/10 backdrop-blur-xl p-8 rounded-[2.5rem] border-2 border-amber-400/40 text-center shrink-0 min-w-[220px] shadow-2xl relative group hover:scale-105 transition-transform duration-500">
+            <div className="z-10 bg-white/10 backdrop-blur-xl p-8 rounded-[2.5rem] border-2 border-amber-400/40 text-center shrink-0 min-w-[220px] shadow-2xl relative group  transition-transform duration-500">
               <div className="absolute inset-0 bg-amber-400/5 animate-pulse rounded-[2.5rem]"></div>
               <div className="text-4xl font-black text-amber-400 font-mono drop-shadow-[0_0_10px_rgba(251,191,36,0.5)]">15,000+</div>
               <div className="text-xs text-white mt-2 font-black tracking-widest">بند ومبدأ قضائي مرصود وموثوق</div>

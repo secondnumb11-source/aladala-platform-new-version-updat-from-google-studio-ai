@@ -30,6 +30,11 @@
   --rotate-y: 0deg;
 }
 
+/* Accessible Text Semantic Tokens */
+.text-primary-ui { @apply text-slate-950 dark:text-slate-50; }
+.text-secondary-ui { @apply text-slate-700 dark:text-slate-300; }
+.text-muted-ui { @apply text-slate-500 dark:text-slate-400; }
+
 .no-hover-parallax,
 .no-hover-parallax *:not(:hover) {
   transform: none !important;
@@ -221,6 +226,40 @@ tbody td {
   font-size: 14px;
 }
 
+/* =========================================================================
+   WCAG COMPLIANCE HIGH-CONTRAST FOR DATA TABLES (تاكيد تباين جداول البيانات)
+   Ensures text on light/grey/transparent rows has contrast matching WCAG Standards
+   ========================================================================= */
+/* In light themes, enforce pristine Slate-950 for absolute legibility */
+html:not(.dark) table td,
+html:not(.dark) table td *,
+html:not(.dark) table th,
+html:not(.dark) table th * {
+  color: #020617 !important; /* Slate-950 */
+}
+
+/* Specific styling for grey backgrounds to enforce Slate-950 contrast */
+tr[class*="bg-slate-50"] td,
+tr[class*="bg-slate-50"] td *,
+tr[class*="bg-slate-100"] td,
+tr[class*="bg-slate-100"] td *,
+tr[class*="bg-gray-50"] td,
+tr[class*="bg-gray-50"] td *,
+.bg-slate-50 td,
+.bg-slate-50 td *,
+.even\:bg-slate-50\/50 td,
+.even\:bg-slate-50\/50 td * {
+  color: #020617 !important; /* Force pristine Slate-950 */
+  font-weight: 700 !important;
+}
+
+/* Make headers in light mode extremely clear and readable */
+html:not(.dark) thead th,
+html:not(.dark) thead th * {
+  color: #020617 !important;
+  font-weight: 900 !important;
+}
+
 tbody tr td:first-child {
   border-right: 4px solid var(--primary);
   border-top-right-radius: 16px;
@@ -232,6 +271,113 @@ tbody tr td:last-child {
   border-top-left-radius: 16px;
   border-bottom-left-radius: 16px;
   border-right: none;
+}
+
+/* =========================================================================
+   LANDING COMPETITIVE MATRIX CONTRAST FIXES (تأمين تباين ألوان الكارت)
+   ========================================================================= */
+.landing-matrix-table {
+  border-collapse: separate !important;
+  border-spacing: 0 !important;
+  width: 100% !important;
+}
+
+/* Light mode styles */
+html:not(.dark) .landing-matrix-table th {
+  background-color: #f8fafc !important;
+  color: #0c2461 !important;
+  border-bottom: 3px solid #cbd5e1 !important;
+  font-weight: 900 !important;
+}
+
+/* Make middle header stand out as a beautiful, high-contrast signature emerald header */
+html:not(.dark) .landing-matrix-table th.col-header-adalah {
+  background-color: #065f46 !important;
+  color: #ffffff !important;
+  border-bottom: 3px solid #047857 !important;
+}
+
+html:not(.dark) .landing-matrix-table td {
+  background-color: #ffffff !important;
+  color: #020617 !important;
+  border-top: 1px solid #cbd5e1 !important;
+  border-bottom: 1px solid #cbd5e1 !important;
+}
+
+/* Subtle tint for Al-Adalah column cell to establish a beautiful, high-contrast column guide */
+html:not(.dark) .landing-matrix-table td.col-cell-adalah {
+  background-color: #f0fdf4 !important; /* Soft light-emerald tint */
+  border-left: 1px solid #bbf7d0 !important;
+  border-right: 1px solid #bbf7d0 !important;
+}
+
+html:not(.dark) .landing-matrix-table .col-feature-title {
+  color: #0c2461 !important;
+  font-weight: 900 !important;
+}
+
+html:not(.dark) .landing-matrix-table .col-feature-desc {
+  color: #1e293b !important; /* slate-800 for pristine readability */
+  font-weight: 500 !important;
+}
+
+/* Solid high-contrast badges */
+html:not(.dark) .landing-matrix-table .badge-adalah {
+  background-color: #166534 !important; /* Rich deep green, exceeds WCAG contrast with white text */
+  color: #ffffff !important;
+  border: 1px solid #14532d !important;
+}
+
+html:not(.dark) .landing-matrix-table .badge-competitor {
+  background-color: #fee2e2 !important; /* Light rose */
+  color: #991b1b !important; /* Dark red */
+  border: 1px solid #fca5a5 !important;
+}
+
+/* Dark mode styles */
+html.dark .landing-matrix-table th {
+  background-color: #1e293b !important;
+  color: #f8fafc !important;
+  border-bottom: 3px solid #334155 !important;
+}
+
+html.dark .landing-matrix-table th.col-header-adalah {
+  background-color: #064e3b !important;
+  color: #ffffff !important;
+  border-bottom: 3px solid #059669 !important;
+}
+
+html.dark .landing-matrix-table td {
+  background-color: #0f172a !important;
+  color: #cbd5e1 !important;
+  border-top: 1px solid #334155 !important;
+  border-bottom: 1px solid #334155 !important;
+}
+
+html.dark .landing-matrix-table td.col-cell-adalah {
+  background-color: #022c22 !important; /* Deep emerald-slate tint */
+  border-left: 1px solid #064e3b !important;
+  border-right: 1px solid #064e3b !important;
+}
+
+html.dark .landing-matrix-table .col-feature-title {
+  color: #f8fafc !important;
+}
+
+html.dark .landing-matrix-table .col-feature-desc {
+  color: #94a3b8 !important;
+}
+
+html.dark .landing-matrix-table .badge-adalah {
+  background-color: #052e16 !important;
+  color: #34d399 !important;
+  border: 1px solid #059669 !important;
+}
+
+html.dark .landing-matrix-table .badge-competitor {
+  background-color: #450a0a !important;
+  color: #fca5a5 !important;
+  border: 1px solid #ef4444 !important;
 }
 
 html.dark tbody td {
@@ -1851,6 +1997,106 @@ body.focus-mode-active main {
 .card-scheme-contrast .recharts-cartesian-grid-horizontal line,
 .card-scheme-contrast .recharts-cartesian-grid-vertical line {
   stroke: #ffffff !important;
+}
+
+/* =========================================================================
+   LOGIN SIDEBAR HIGH CONTRAST THEME OVERRIDES (الكارت المحدد في صفحة تسجيل الدخول)
+   ========================================================================= */
+
+/* Default rules for login-sidebar-panel background and text */
+.login-sidebar-panel {
+  color: #ffffff !important; /* Bright White default */
+}
+
+/* Headings and Bold texts should be Bright Yellow (اللون الأصفر الساطع) */
+.login-sidebar-panel h1,
+.login-sidebar-panel h2,
+.login-sidebar-panel h3,
+.login-sidebar-panel h4,
+.login-sidebar-panel h5,
+.login-sidebar-panel h6,
+.login-sidebar-panel strong,
+.login-sidebar-panel b,
+.login-sidebar-panel .font-bold,
+.login-sidebar-panel .font-black {
+  color: #facc15 !important; /* Bright Yellow */
+}
+
+/* Regular texts, paragraphs, links, list items, etc. should be Bright White (اللون الأبيض الساطع) */
+.login-sidebar-panel p,
+.login-sidebar-panel span,
+.login-sidebar-panel label,
+.login-sidebar-panel li,
+.login-sidebar-panel small,
+.login-sidebar-panel button {
+  color: #ffffff !important; /* Bright White */
+}
+
+/* Specifically style the dark cards inside the sidebar login panel too */
+.login-sidebar-panel .bg-slate-900\/50,
+.login-sidebar-panel [class*="bg-slate-9"] {
+  border: 1px solid rgba(250, 204, 21, 0.3) !important;
+}
+
+.login-sidebar-panel .bg-slate-900\/50 h3,
+.login-sidebar-panel [class*="bg-slate-9"] h3,
+.login-sidebar-panel .bg-slate-900\/50 strong,
+.login-sidebar-panel [class*="bg-slate-9"] strong {
+  color: #facc15 !important; /* Bright Yellow */
+}
+
+.login-sidebar-panel .bg-slate-900\/50 p,
+.login-sidebar-panel [class*="bg-slate-9"] p,
+.login-sidebar-panel .bg-slate-900\/50 span,
+.login-sidebar-panel [class*="bg-slate-9"] span {
+  color: #ffffff !important; /* Bright White */
+}
+
+/* Ensure all icons & icon wrappers are colored bright yellow as well to match the theme */
+.login-sidebar-panel svg,
+.login-sidebar-panel .bg-amber-500\/10 svg,
+.login-sidebar-panel .bg-amber-500\/10 {
+  color: #facc15 !important;
+}
+
+/* Ensure the background is clear or semi-transparent yellow for icons */
+.login-sidebar-panel .bg-amber-500\/10 {
+  background-color: rgba(250, 204, 21, 0.15) !important;
+  border: 1px solid rgba(250, 204, 21, 0.3) !important;
+}
+
+/* -------------------------------------------------------------------------
+   IF ANY ELEMENT IN THE SIDEBAR HAS A LIGHT OR BRIGHT BACKGROUND:
+   Make the text color Dark Blue (اللون الأزرق الداكن)
+   ------------------------------------------------------------------------- */
+.login-sidebar-panel .bg-white,
+.login-sidebar-panel .bg-slate-100,
+.login-sidebar-panel .bg-gray-100,
+.login-sidebar-panel .bg-sky-50,
+.login-sidebar-panel [class*="bg-light"],
+.login-sidebar-panel [class*="bg-white"],
+.login-sidebar-panel [class*="bg-slate-50"],
+.login-sidebar-panel [class*="bg-slate-100"],
+.login-sidebar-panel [class*="bg-gray-50"] {
+  background-color: #ffffff !important; /* Solid or bright background */
+  border-color: #020617 !important;
+}
+
+.login-sidebar-panel .bg-white *,
+.login-sidebar-panel .bg-slate-100 *,
+.login-sidebar-panel .bg-gray-100 *,
+.login-sidebar-panel .bg-sky-50 *,
+.login-sidebar-panel [class*="bg-light"] *,
+.login-sidebar-panel [class*="bg-white"] *,
+.login-sidebar-panel [class*="bg-slate-50"] *,
+.login-sidebar-panel [class*="bg-slate-100"] *,
+.login-sidebar-panel [class*="bg-gray-50"] * {
+  color: #020617 !important; /* Dark Blue */
+}
+
+.login-sidebar-panel .bg-white svg,
+.login-sidebar-panel [class*="bg-white"] svg {
+  color: #020617 !important;
 }
 
 

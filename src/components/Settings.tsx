@@ -32,7 +32,7 @@ import {
   ArrowUp,
   ArrowDown
 } from 'lucide-react';
-import { useFirebase } from '@/contexts/FirebaseContext';
+import { useSupabase } from '@/contexts/SupabaseContext';
 
 interface SentEmail {
   id: string;
@@ -97,7 +97,7 @@ export default function Settings({
   isDarkMode = false,
   onDarkModeChange
 }: SettingsProps) {
-  const { profile } = useFirebase();
+  const { profile } = useSupabase();
   // Sync config
   const [apiKey, setApiKey] = useState('');
   const [webhookUrl, setWebhookUrl] = useState('');
@@ -298,6 +298,8 @@ export default function Settings({
   const [isBackingUp, setIsBackingUp] = useState(false);
   const [backupSuccess, setBackupSuccess] = useState(false);
   const [backupHistoryList, setBackupHistoryList] = useState<any[]>([]);
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [syncSuccess, setSyncSuccess] = useState<any>(null);
 
   // Office Profile states
   const [officeName, setOfficeName] = useState('منصة العدالة لإدارة مكاتب المحاماة');
@@ -559,6 +561,32 @@ export default function Settings({
       console.error('Backup trigger failed:', err);
     } finally {
       setIsBackingUp(false);
+    }
+  };
+
+  const handleTriggerSync = async () => {
+    setIsSyncing(true);
+    setSyncSuccess(null);
+    try {
+      const res = await fetch('/api/sync/firebase-to-supabase', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      });
+      if (res.ok) {
+        const result = await res.json();
+        setSyncSuccess(result.result);
+        alert('✅ تم ترحيل ومزامنة كامل بيانات Firebase القديمة بمشروعك السحابي إلى Supabase بنجاح!');
+        if (result.result && result.result.history) {
+          setBackupHistoryList(result.result.history);
+        }
+      } else {
+        alert('❌ فشل نقل البيانات. يرجى التحقق من خطأ الاتصال وسجلات المزامنة.');
+      }
+    } catch (err) {
+      console.error('Migration failed:', err);
+      alert('❌ فشل نقل البيانات. يرجى التحقق من الخادم وسجلات المزامنة.');
+    } finally {
+      setIsSyncing(false);
     }
   };
 
@@ -1850,24 +1878,41 @@ export default function Settings({
               </div>
             )}
 
-            <div className="flex justify-between items-center pt-2">
-              {backupSuccess && (
-                <span className="text-emerald-600 text-xs font-bold animate-pulse">
-                  ✅ تم الحفظ والنسخ السحابي بنجاح!
-                </span>
-              )}
-              {isBackingUp && (
-                <span className="text-primary text-xs font-bold">
-                  ⚡ جاري رفع السيرفر وتشفير الجداول...
-                </span>
-              )}
-              <button
-                type="button"
-                onClick={() => setIsBackupConfOpen(true)}
-                className="bg-sky-50 text-white font-bold text-xs py-2.5 px-6 rounded-xl transition-all"
-              >
-                تشغيل النسخ الاحتياطي الفوري السحابي ☁️
-              </button>
+            <div className="flex flex-col sm:flex-row justify-between items-center gap-4 pt-2 border-t border-slate-100 mt-2">
+              <div className="flex flex-col gap-1 text-right">
+                {backupSuccess && (
+                  <span className="text-emerald-600 text-xs font-bold animate-pulse">
+                    ✅ تم الحفظ والنسخ السحابي بنجاح!
+                  </span>
+                )}
+                {isBackingUp && (
+                  <span className="text-primary text-xs font-bold animate-pulse">
+                    ⚡ جاري رفع السيرفر وتشفير الجداول...
+                  </span>
+                )}
+                {isSyncing && (
+                  <span className="text-amber-600 text-xs font-bold animate-pulse">
+                    🔄 جاري ترحيل وتأمين كامل بيانات Firebase القديمة إلى Supabase...
+                  </span>
+                )}
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  disabled={isSyncing}
+                  onClick={handleTriggerSync}
+                  className="bg-amber-600 hover:bg-amber-750 text-white font-bold text-xs py-2.5 px-4 rounded-xl transition-all shadow-md active:scale-90 disabled:opacity-50"
+                >
+                  🚀 ترحيل ومزامنة Firebase ➔ Supabase
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setIsBackupConfOpen(true)}
+                  className="bg-primary hover:bg-primary/95 text-white font-bold text-xs py-2.5 px-6 rounded-xl transition-all shadow-md"
+                >
+                  تشغيل النسخ الاحتياطي الفوري السحابي ☁️
+                </button>
+              </div>
             </div>
           </div>
 

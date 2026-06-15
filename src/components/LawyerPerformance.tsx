@@ -460,7 +460,7 @@ export default function LawyerPerformance({ cases }: LawyerPerformanceProps) {
           
           <div className="w-full space-y-3 mt-4">
             {categoriesMap.map((cat, idx) => (
-              <div key={idx} className="flex items-center justify-between bg-slate-50 p-3 rounded-2xl border border-slate-100 transition-all hover:scale-[1.02] cursor-pointer">
+              <div key={idx} className="flex items-center justify-between bg-slate-50 p-3 rounded-2xl border border-slate-100 transition-all  cursor-pointer">
                 <div className="flex items-center gap-3">
                   <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: COLORS[idx % COLORS.length] }}></span>
                   <span className="text-[11px] text-slate-700 font-black">{cat.name}</span>

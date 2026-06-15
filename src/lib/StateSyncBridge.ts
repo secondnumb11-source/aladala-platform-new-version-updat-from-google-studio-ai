@@ -1,8 +1,7 @@
-import { db } from './firebase';
-import { doc, getDoc, setDoc, onSnapshot, serverTimestamp } from 'firebase/firestore';
+import { supabase } from './supabase';
 
 /**
- * StateSyncBridge: unifies app state synchronization between Firebase,
+ * StateSyncBridge: unifies app state synchronization between Supabase,
  * LocalStorage, and in-memory React states.
  */
 export const StateSyncBridge = {
@@ -22,19 +21,42 @@ export const StateSyncBridge = {
         }
       }
 
-      // Sync with Firebase Document
-      const docRef = doc(db, "user_state", `${userId}_${stateKey}`);
-      
-      // Real-time listener for remote updates
-      const unsubscribe = onSnapshot(docRef, (snap) => {
-        if (snap.exists()) {
-          const remoteData = snap.data().payload;
-          localStorage.setItem(localKey, JSON.stringify(remoteData));
-          setStateFn(remoteData);
+      // Initial fetch from Supabase
+      const fetchState = async () => {
+        const { data, error } = await supabase
+          .from('user_states')
+          .select('payload')
+          .eq('user_id', userId)
+          .eq('state_key', stateKey)
+          .maybeSingle();
+        
+        if (data && data.payload) {
+          localStorage.setItem(localKey, JSON.stringify(data.payload));
+          setStateFn(data.payload);
         }
-      });
+      };
 
-      return unsubscribe; // Return cleanup function
+      fetchState();
+
+      // Real-time listener for remote updates
+      const channel = supabase.channel(`user-state-${userId}-${stateKey}`)
+        .on('postgres_changes', { 
+          event: '*', 
+          schema: 'public', 
+          table: 'user_states', 
+          filter: `user_id=eq.${userId}` 
+        }, (payload: any) => {
+          if (payload.new && payload.new.state_key === stateKey) {
+            const remoteData = payload.new.payload;
+            localStorage.setItem(localKey, JSON.stringify(remoteData));
+            setStateFn(remoteData);
+          }
+        })
+        .subscribe();
+
+      return () => {
+        supabase.removeChannel(channel);
+      };
     } catch (err) {
       console.warn(`[StateSyncBridge] Error syncing ${stateKey}:`, err);
     }
@@ -46,8 +68,16 @@ export const StateSyncBridge = {
       const localKey = `adalah-sync-${userId}-${stateKey}`;
       localStorage.setItem(localKey, JSON.stringify(newState));
       
-      const docRef = doc(db, "user_state", `${userId}_${stateKey}`);
-      await setDoc(docRef, { payload: newState, updatedAt: serverTimestamp() }, { merge: true });
+      const { error } = await supabase
+        .from('user_states')
+        .upsert({ 
+          user_id: userId, 
+          state_key: stateKey, 
+          payload: newState, 
+          updated_at: new Date().toISOString() 
+        }, { onConflict: 'user_id,state_key' });
+      
+      if (error) throw error;
     } catch (err) {
       console.warn(`[StateSyncBridge] Error updating ${stateKey}:`, err);
     }

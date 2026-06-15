@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import TaskCountdown from './TaskCountdown';
 import { 
   Users, Plus, Search, Phone, Mail, 
   UserCheck, Calendar, Briefcase, 
@@ -8,22 +9,12 @@ import {
   CheckCircle2, X, Download, SlidersHorizontal, AlertTriangle
 } from 'lucide-react';
 import { motion } from 'motion/react';
-import { 
-  collection, 
-  onSnapshot, 
-  doc, 
-  setDoc, 
-  addDoc,
-  deleteDoc, 
-  query,
-  orderBy
-} from 'firebase/firestore';
-import { db } from '@/lib/firebase';
-import { useFirebase } from '@/contexts/FirebaseContext';
+import { supabase } from '@/lib/supabase';
+import { useSupabase } from '@/contexts/SupabaseContext';
 import { Case, Task, Employee, Client } from '@/types';
 
 export default function EmployeesData({ tasks }: { cases: Case[], tasks: Task[], clients?: Client[], onUpdateState?: (t: string, d: any) => void }) {
-  const { user, profile } = useFirebase();
+  const { user, profile } = useSupabase();
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [loading, setLoading] = useState(true);
   const [view, setView] = useState<'list' | 'form'>('list');
@@ -241,7 +232,7 @@ export default function EmployeesData({ tasks }: { cases: Case[], tasks: Task[],
     localStorage.setItem('employees_card_sizes_v1', JSON.stringify(updated));
   };
 
-  // Sync with Firestore Employees Collection
+  // Sync with Supabase Employees Table
   useEffect(() => {
     // 1. Initial immediate load from local backup
     const backup = localStorage.getItem('employees_backup');
@@ -253,22 +244,28 @@ export default function EmployeesData({ tasks }: { cases: Case[], tasks: Task[],
       }
     }
 
-    const q = query(collection(db, 'employees'));
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const emps: Employee[] = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Employee));
-      emps.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
-      if (emps.length > 0) {
+    const fetchEmployees = async () => {
+      const { data, error } = await supabase.from('employees').select('*');
+      if (error) {
+        console.error("Error fetching employees from Supabase:", error);
+      } else if (data) {
+        const emps = data as Employee[];
+        emps.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
         setEmployees(emps);
         localStorage.setItem('employees_backup', JSON.stringify(emps));
-      } else if (!backup) {
-        setEmployees([]);
       }
       setLoading(false);
-    }, (error) => {
-      console.error("Error fetching employees from Cloud Firestore, using backup fallback:", error);
-      setLoading(false);
-    });
-    return () => unsubscribe();
+    };
+
+    fetchEmployees();
+
+    const channel = supabase.channel('employees-changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'employees' }, fetchEmployees)
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   useEffect(() => {
@@ -362,24 +359,31 @@ export default function EmployeesData({ tasks }: { cases: Case[], tasks: Task[],
       localStorage.setItem('employees_backup', JSON.stringify(currentBackupList));
       setEmployees(currentBackupList);
 
-      // 2. Try persisting to Firestore cloud
+      // 2. Try persisting to Supabase
       if (isNew) {
-        const newRef = await addDoc(collection(db, 'employees'), empData).catch((err) => {
-          console.warn("Firestore collection add failed, saving with offline ID block:", err);
-          return null;
-        });
-        if (newRef) {
-          empData.id = newRef.id;
-          await setDoc(newRef, { id: newRef.id }, { merge: true }).catch(err => console.error(err));
-          // Re-update local list with the newly confirmed server ID
-          const updatedBackup = currentBackupList.map((item: any) => item.id === tempId ? { ...item, id: newRef.id } : item);
+        const { data: insertResult, error: insertError } = await supabase
+          .from('employees')
+          .insert([empData])
+          .select()
+          .single();
+        
+        if (insertError) {
+          console.warn("Supabase insert failed, relying on local sync:", insertError);
+        } else if (insertResult) {
+          // Re-update local list with the newly confirmed server ID if different
+          const updatedBackup = currentBackupList.map((item: any) => item.id === tempId ? { ...item, id: insertResult.id } : item);
           localStorage.setItem('employees_backup', JSON.stringify(updatedBackup));
           setEmployees(updatedBackup);
         }
       } else {
-        await setDoc(doc(db, 'employees', formData.id as string), empData, { merge: true }).catch(err => {
-          console.warn("Firestore update failed, relying on offline cache:", err);
-        });
+        const { error: updateError } = await supabase
+          .from('employees')
+          .update(empData)
+          .eq('id', formData.id);
+        
+        if (updateError) {
+          console.warn("Supabase update failed, relying on local cache:", updateError);
+        }
       }
 
       alert('✅ تم حفظ بيانات الموظف ومزامنتها بنجاح مع كافة الأقسام وبوابة الموظفين.');
@@ -395,10 +399,11 @@ export default function EmployeesData({ tasks }: { cases: Case[], tasks: Task[],
     }
   };
 
-  const handleDeleteEmployee = async (id: string) => {
+  const handleDeleteEmployee = async (id: string | number) => {
     if (!confirm('هل أنت متأكد من حذف هذا الموظف؟')) return;
     try {
-      await deleteDoc(doc(db, 'employees', id));
+      const { error } = await supabase.from('employees').delete().eq('id', id);
+      if (error) throw error;
     } catch (err) {
       alert('خطأ في الحذف.');
     }
@@ -870,6 +875,20 @@ export default function EmployeesData({ tasks }: { cases: Case[], tasks: Task[],
                 </div>
 
                 <div className="grid grid-cols-2 gap-y-6 gap-x-4 border-t border-slate-100 pt-6">
+                  {(() => {
+                    const empTasks = (tasks || []).filter(t => (t.assignedTo || '').toLowerCase() === (emp.name || '').toLowerCase() && t.status !== 'done');
+                    const mostUrgentTask = [...empTasks].sort((a,b) => new Date(a.dueDate || 0).getTime() - new Date(b.dueDate || 0).getTime())[0];
+                    
+                    return mostUrgentTask ? (
+                      <div className="col-span-2 space-y-2 mb-2 p-3 bg-slate-50 rounded-2xl border border-slate-100">
+                         <div className="flex items-center justify-between">
+                            <span className="text-[9px] font-black text-slate-400">أكثر مهمة إلحاحاً:</span>
+                            <TaskCountdown dueDate={mostUrgentTask.dueDate || ''} status={mostUrgentTask.status} />
+                         </div>
+                         <p className="text-[11px] font-black text-slate-700 truncate">{mostUrgentTask.title}</p>
+                      </div>
+                    ) : null;
+                  })()}
                   <div className="space-y-1.5 flex flex-col">
                     <div className="flex items-center gap-1.5 text-[10px] font-black text-slate-400">
                       <CheckCircle2 className="w-3.5 h-3.5" />

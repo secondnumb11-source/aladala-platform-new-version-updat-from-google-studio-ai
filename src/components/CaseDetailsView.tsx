@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import CourtMapAndServices from "./CourtMapAndServices";
 import AiDrafting from "./AiDrafting";
+import { getLeadLawyerName } from "./CasesModule";
 
 interface CaseDetailsViewProps {
   item: CourtCase;
@@ -455,7 +456,7 @@ export default function CaseDetailsView({
                       <span className="p-1 bg-accent/10 text-accent rounded">👤</span>
                       <div>
                         <span className="text-slate-900 block">المحامي الشريك المشرف (lead_lawyer_id):</span>
-                        <strong className="text-main  text-xs block">د. عادل القحطاني (عضو شريك أول)</strong>
+                        <strong className="text-main  text-xs block">{getLeadLawyerName(item)} (عضو شريك أول)</strong>
                       </div>
                     </div>
                     <div className="flex items-center gap-2">

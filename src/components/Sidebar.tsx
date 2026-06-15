@@ -51,8 +51,7 @@ import {
 
 import ThemeToggle from './ThemeToggle';
 import { Case } from '@/types';
-import { auth, db } from '@/lib/firebase';
-import { doc, setDoc } from 'firebase/firestore';
+import { supabase } from '@/lib/supabase';
 
 interface SidebarProps {
   currentTab: string;
@@ -74,7 +73,7 @@ interface SidebarItem {
   children?: { id: string; name: string; icon?: React.ComponentType<any>; tooltip?: string }[];
 }
 
-import { useFirebase } from '@/contexts/FirebaseContext';
+import { useSupabase } from '@/contexts/SupabaseContext';
 
 export default function Sidebar({
   currentTab,
@@ -86,11 +85,12 @@ export default function Sidebar({
   customRoles,
   currentUser
 }: SidebarProps) {
-  const { connectionStatus } = useFirebase();
+  const { connectionStatus } = useSupabase();
   const isNajizConnected = localStorage.getItem('najiz_api_connected') === 'true';
   const [mobileOpen, setMobileOpen] = React.useState(false);
   const [sidebarWidth, setSidebarWidth] = React.useState(395);
   const [isResizing, setIsResizing] = React.useState(false);
+  const dateInputRef = React.useRef<HTMLInputElement>(null);
 
   const startResizing = React.useCallback((mouseDownEvent: React.MouseEvent) => {
     setIsResizing(true);
@@ -173,15 +173,15 @@ export default function Sidebar({
     window.dispatchEvent(new Event('adalah-username-changed'));
 
     try {
-      const uid = auth?.currentUser?.uid;
+      const uid = currentUser?.id;
       if (uid) {
-        await setDoc(doc(db, 'users', uid), { name: val }, { merge: true });
+        await supabase.from('users').update({ name: val }).eq('id', uid);
         if (onUpdateState) {
           onUpdateState('users', { id: uid, name: val });
         }
       }
     } catch (err) {
-      console.warn("Failed to save name to Firestore", err);
+      console.warn("Failed to save name to Supabase", err);
     }
   };
 
@@ -284,7 +284,7 @@ export default function Sidebar({
         style={{ width: `${sidebarWidth}px` }}
         className={`fixed lg:sticky top-0 right-0 lg:right-auto lg:left-auto h-screen z-40 bg-slate-950/70 backdrop-blur-2xl border-l border-white/5 transform transition-transform duration-300 lg:translate-x-0 ${
           mobileOpen ? 'translate-x-0' : 'translate-x-full'
-        } flex flex-col justify-between shadow-[0_0_50px_rgba(0,0,0,0.4)] lg:shadow-none overflow-x-hidden overflow-y-hidden shrink-0`}
+        } flex flex-col justify-between lg:shadow-none overflow-x-hidden overflow-y-hidden shrink-0`}
         dir="rtl"
       >
         {/* Resize Handle */}
@@ -293,17 +293,6 @@ export default function Sidebar({
           className={`absolute left-0 top-0 bottom-0 w-2 cursor-col-resize z-50 transition-colors ${isResizing ? 'bg-amber-500/50' : ''}`}
         />
 
-        {/* Elegant Vertical Designer Ruler */}
-        <div className="absolute left-0 top-0 bottom-0 w-[4px] z-50 pointer-events-none overflow-hidden flex flex-col justify-between items-center py-10">
-          <div className="w-full h-full bg-gradient-to-b from-slate-900 via-amber-600 to-amber-200 opacity-80" 
-               style={{ background: 'linear-gradient(to bottom, #020617 0%, #0c1424 30%, #9a7d2c 70%, #d4af37 100%)' }} />
-          {/* Tic marks for 'ruler' feel */}
-          <div className="absolute inset-0 flex flex-col justify-around py-4 opacity-30">
-            {[...Array(60)].map((_, i) => (
-              <div key={i} className={`w-full border-b border-white ${i % 5 === 0 ? 'h-[2px] opacity-60' : 'h-[1px] opacity-30'}`} />
-            ))}
-          </div>
-        </div>
         <div className="flex-1 flex flex-col overflow-hidden w-full">
           {/* Logo & Platform Name */}
           <div className="p-8 border-b border-slate-800 relative overflow-hidden">
@@ -331,86 +320,48 @@ export default function Sidebar({
 
           <div className="p-5 flex-1 overflow-y-auto space-y-8 sidebar-scrollbar relative w-full overflow-x-hidden">
             {/* ⏰ CUSTOMIZABLE COMPACT SIDEBAR CLOCK WITH WELCOME GREETING */}
-            <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-3.5 shadow-lg relative overflow-visible group/clock-card">
-              <div className="absolute inset-0 bg-gradient-to-tr from-amber-500/5 to-transparent pointer-events-none rounded-2xl"></div>
+            <div className="bg-slate-900/40 border border-slate-800 rounded-xl p-2.5 relative overflow-visible group/clock-card">
+              <div className="absolute inset-0 bg-gradient-to-tr from-amber-500/5 to-transparent pointer-events-none rounded-xl"></div>
               
-              <div className="flex items-center justify-between gap-3 relative z-10 w-full">
-                <div className="flex flex-col text-right select-none md:max-w-[125px]">
-                  {isEditingUserName ? (
-                    <input 
-                      autoFocus
-                      className="text-xs font-black text-amber-400 bg-slate-950 border border-slate-700/80 rounded px-1.5 py-0.5 focus:outline-none focus:border-amber-500 transition-all w-[90px] text-right"
-                      value={userName}
-                      onChange={(e) => setUserName(e.target.value)}
-                      onBlur={() => {
-                        setIsEditingUserName(false);
-                        handleSaveUserName(userName);
-                      }}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') {
+              <div className="relative z-10 flex flex-col gap-2">
+                <div className="flex items-center justify-between gap-2 border-b border-slate-800 pb-2">
+                  <div className="flex flex-col text-right select-none">
+                    {isEditingUserName ? (
+                      <input 
+                        autoFocus
+                        className="text-[11px] font-black text-amber-400 bg-slate-950 border border-slate-700/80 rounded px-1.5 py-0.5 focus:outline-none focus:border-amber-500 transition-all w-[80px] text-right"
+                        value={userName}
+                        onChange={(e) => setUserName(e.target.value)}
+                        onBlur={() => {
                           setIsEditingUserName(false);
                           handleSaveUserName(userName);
-                        }
-                      }}
-                    />
-                  ) : (
-                    <div 
-                      className="cursor-pointer group flex flex-col items-start text-right hover:text-amber-100 transition-colors"
-                      onClick={() => setIsEditingUserName(true)}
-                      title="اضغط لتعديل اسمك"
-                    >
-                      <span className="text-[12px] font-black text-white leading-tight">
-                        مرحباً بك،
-                      </span>
-                      <div className="flex items-center gap-1 select-none">
-                        <span className="text-[11px] font-black text-amber-400 truncate max-w-[85px]" title={userName}>
-                          {userName} 👋
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            setIsEditingUserName(false);
+                            handleSaveUserName(userName);
+                          }
+                        }}
+                      />
+                    ) : (
+                      <div 
+                        className="cursor-pointer flex flex-col items-start text-right"
+                        onClick={() => setIsEditingUserName(true)}
+                        title="اضغط لتعديل اسمك"
+                      >
+                        <span className="text-[10px] font-black text-white leading-tight">مرحباً</span>
+                        <span className="text-[11px] font-black text-amber-400 truncate max-w-[80px]" title={userName}>
+                          {userName}
                         </span>
-                        <Edit3 className="w-2.5 h-2.5 opacity-0 group-hover:opacity-100 text-amber-500 transition-opacity shrink-0" />
                       </div>
-                    </div>
-                  )}
-                  {/* Date and Toggle */}
-                  <div className="flex items-center gap-1.5 mt-1">
-                    <span className="text-[10px] text-slate-300 font-bold">
-                      {isHijri 
-                        ? time.toLocaleDateString('ar-SA-u-ca-islamic', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })
-                        : time.toLocaleDateString('ar-EG', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })
-                      }
-                    </span>
-                    <button 
-                      onClick={toggleCalendar}
-                      className="text-[8px] bg-slate-800 hover:bg-slate-700 text-amber-500 px-1.5 py-0.5 rounded border border-slate-700 transition-colors"
-                      title="تبديل التاريخ (هجري/ميلادي)"
-                    >
-                      {isHijri ? 'ميلادي' : 'هجري'}
-                    </button>
-                  </div>
-                </div>
-
-                {/* Clock Box */}
-                <div className="flex items-center gap-2 shrink-0">
-                  <div 
-                    className="rounded-xl bg-slate-950/80 border border-slate-800 shadow-md flex items-center justify-center select-none transition-all duration-350 px-3 py-1.5"
-                  >
-                    <span 
-                      className="tabular-nums font-black font-mono tracking-wider text-sm" 
-                      style={{ color: '#39ff14', textShadow: '0 0 5px rgba(57,255,20,0.4)' }}
-                    >
-                      {time.toLocaleTimeString('ar-SA', { 
-                        hour: '2-digit', 
-                        minute: '2-digit', 
-                        second: '2-digit', 
-                        hour12: true 
-                      })}
-                    </span>
+                    )}
                   </div>
 
                   {/* Settings Trigger Icon */}
                   <div className="relative">
                     <button 
                       onClick={() => setShowClockSettings(!showClockSettings)}
-                      className={`p-1.5 rounded-lg text-slate-500 hover:text-amber-500 hover:bg-slate-800 transition-all ${showClockSettings ? 'bg-slate-800 text-amber-500 rotate-45' : ''}`}
+                      className={`p-1.5 rounded-lg text-slate-500 transition-all ${showClockSettings ? 'bg-slate-800 text-amber-500 rotate-45' : ''}`}
                       title="صلاحية النظام"
                       aria-label="Settings"
                     >
@@ -422,7 +373,6 @@ export default function Sidebar({
                       <div className="absolute left-0 top-full mt-2 w-64 bg-slate-950 border border-slate-800 shadow-[0_20px_50px_rgba(0,0,0,0.8)] rounded-2xl p-4.5 z-50 dir-rtl border-amber-500/20">
                         <div className="absolute top-0 right-1/2 translate-x-1/2 -translate-y-[6px] w-3 h-3 rotate-45 bg-slate-950 border-t border-r border-slate-800"></div>
                         <div className="space-y-4 relative z-10">
-                          {/* Optional Quick Role Switcher inside menu */}
                           {currentUser?.role !== 'client' && currentUser?.role !== 'employee' && (
                             <div className="pt-2 border-t border-slate-850">
                               <span className="text-[10px] font-black text-slate-400 mb-1 block">صلاحية النظام</span>
@@ -450,6 +400,72 @@ export default function Sidebar({
                         </div>
                       </div>
                     )}
+                  </div>
+                </div>
+                
+                {/* Time/Date & Converter */}
+                <div className="flex items-start justify-between gap-2 pt-1">
+                  <div className="flex flex-col items-start gap-0.5">
+                    <span 
+                      className="tabular-nums font-black font-mono text-xl leading-none" 
+                      style={{ color: '#39ff14', textShadow: '0 0 10px rgba(57,255,20,0.8)' }}
+                    >
+                      {time.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })}
+                    </span>
+                    <span 
+                      className="text-[11px] font-black tabular-nums tracking-tight text-left"
+                      style={{ color: '#39ff14', textShadow: '0 0 5px rgba(57,255,20,0.5)' }}
+                    >
+                      {isHijri 
+                        ? time.toLocaleDateString('ar-SA-u-ca-islamic-nu-latn', { year: 'numeric', month: 'short', day: 'numeric' })
+                        : time.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
+                      }
+                    </span>
+                  </div>
+                  
+                  <div className="flex flex-col gap-1 items-end">
+                    <button 
+                      onClick={toggleCalendar}
+                      className="text-[9px] bg-slate-800 text-[#39ff14] px-1.5 py-0.5 rounded border border-[#39ff14]/30 font-black hover:bg-slate-700 transition-colors"
+                      title="تبديل التاريخ"
+                    >
+                      {isHijri ? 'ميلادي' : 'هجري'}
+                    </button>
+
+                    {/* Converter Trigger */}
+                    <button
+                      onClick={() => {
+                        if (dateInputRef.current) {
+                          dateInputRef.current.focus();
+                          try {
+                            dateInputRef.current.showPicker();
+                          } catch (e) {
+                            dateInputRef.current.click();
+                          }
+                        }
+                      }}
+                      className="bg-slate-800 border border-[#39ff14]/30 text-[#39ff14] rounded p-1 hover:bg-slate-700 transition-colors"
+                      title="فتح محول التاريخ"
+                    >
+                      <Calculator className="w-3.5 h-3.5" />
+                    </button>
+                    
+                    {/* Hidden Converter Input */}
+                    <input
+                      ref={dateInputRef}
+                      type="date"
+                      className="opacity-0 fixed top-0 right-0 w-1 h-1 pointer-events-none"
+                      onChange={(e) => {
+                        if (e.target.value) {
+                          const date = new Date(e.target.value);
+                          if (!isNaN(date.getTime())) {
+                            const gFull = date.toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' });
+                            const hFull = date.toLocaleDateString('ar-SA-u-ca-islamic-nu-latn', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' });
+                            alert(`نتائج المحول:\n\nالميلادي: ${gFull}\nالهجري: ${hFull}`);
+                          }
+                        }
+                      }}
+                    />
                   </div>
                 </div>
               </div>
@@ -519,7 +535,7 @@ export default function Sidebar({
               return (
                 <div key={cat.title} className="space-y-1 pt-1.5 border-t border-slate-900/40">
                   <div className="px-3 flex items-center gap-2 mb-2 group cursor-default">
-                    <span className="w-1.5 h-3 bg-gradient-to-b from-sky-400 to-blue-600 rounded-full shadow-[0_0_12px_rgba(56,189,248,0.8)][0_0_20px_rgba(56,189,248,1)] transition-all duration-300"></span>
+                    <span className="w-1.5 h-3 bg-gradient-to-b from-sky-400 to-blue-600 rounded-full"></span>
                     <h3 className="text-[10px] font-black text-slate-300 uppercase tracking-widest">{cat.title}</h3>
                   </div>
                   <div className="space-y-1">
@@ -530,7 +546,7 @@ export default function Sidebar({
 
                       return (
                         <div key={item.id} className={`relative group/nav-item font-bold ${isActive ? 'active-nav-item' : ''}`}>
-                          <motion.button
+                          <button
                             onClick={(e) => {
                               if (item.children) {
                                 setAiExpanded(!aiExpanded);
@@ -554,38 +570,20 @@ export default function Sidebar({
                                 });
                               }
                             }}
-                            whileHover={{ scale: 1.03 }}
-                            whileTap={{ scale: 0.98 }}
-                            className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-[12px] transition-all duration-300 relative overflow-hidden group select-none border ${
+                            className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-[12px] relative overflow-hidden group select-none border ${
                               isActive 
-                                ? 'text-white font-extrabold border-[#B3933B] shadow-[0_4px_15px_rgba(154,125,44,0.35)]' 
+                                ? 'text-white font-extrabold border-[#B3933B] bg-amber-500/10' 
                                 : 'text-slate-300 border-transparent'
                             }`}
                           >
-                            {/* Background gold layer covering the section name fully */}
-                            <div 
-                              className={`absolute inset-0 transition-all duration-300 z-0 rounded-xl ${
-                                isActive 
-                                  ? 'bg-amber-500/10 border border-amber-500/30' 
-                                  : 'bg-transparent'
-                              }`}
-                            />
-                            
-                            {/* Decorative gold sweep animation when hovered or active */}
-                            <div 
-                              className={`absolute -inset-x-20 top-0 h-[1.5px] bg-gradient-to-r from-transparent via-[#ffdca3]/80 to-transparent transition-transform duration-1000 z-10 ${
-                                isActive ? 'animate-pulse' : 'group-hover:translate-x-full'
-                              }`}
-                            />
-
                             {/* Content */}
                             <div className="flex items-center gap-3 relative z-10 w-full overflow-hidden">
-                              <Icon className={`w-5 h-5 shrink-0 transition-all duration-300 drop-shadow-md ${isActive ? 'text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]' : 'text-sky-400 drop-shadow-[0_0_8px_rgba(56,189,248,0.6)][0_0_12px_rgba(56,189,248,0.9)]'}`} />
+                              <Icon className={`w-5 h-5 shrink-0 ${isActive ? 'text-white' : 'text-sky-400'}`} />
                               <div className="text-right leading-relaxed flex items-center gap-x-1.5 truncate">
                                 {item.name.includes('AI') ? (
                                   <div className="flex items-center gap-1.5 min-w-0">
                                     <span className="truncate font-black text-[13px]">{item.name.replace('AI', '').trim()}</span>
-                                    <span className={`px-1.5 py-0.5 rounded-md border text-[10px] font-black uppercase tracking-wider shrink-0 shadow-[0_0_15px_rgba(56,189,248,0.5)] ai-icon-pulse ${isActive ? 'border-sky-400 bg-sky-400/20 text-sky-200' : 'border-sky-600 bg-sky-900/40 text-sky-400'}`}>AI</span>
+                                    <span className={`px-1.5 py-0.5 rounded-md border text-[10px] font-black uppercase tracking-wider shrink-0 ${isActive ? 'border-sky-400 bg-sky-400/20 text-sky-200' : 'border-sky-600 bg-sky-900/40 text-sky-400'}`}>AI</span>
                                   </div>
                                 ) : (
                                   <span className="truncate font-black text-[13px]">{item.name}</span>
@@ -594,12 +592,12 @@ export default function Sidebar({
                             </div>
                             <div className="flex items-center gap-2 relative z-10">
                               {item.isPremium && (
-                                <Crown className={`w-4 h-4 shrink-0 ${isActive ? 'text-white animate-pulse drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]' : 'text-[#fcd34d] drop-shadow-[0_0_5px_rgba(251,191,36,0.5)]'}`} />
+                                <Crown className={`w-4 h-4 shrink-0 ${isActive ? 'text-white' : 'text-[#fcd34d]'}`} />
                               )}
                               {item.children && (
                                 <div 
                                   id="sidebar-ai-assistant-arrow"
-                                  className="transition-all duration-300 ml-2 select-none flex items-center justify-center shrink-0 text-slate-400"
+                                  className="ml-2 select-none flex items-center justify-center shrink-0 text-slate-400"
                                 >
                                   {isItemExpanded ? (
                                     <ChevronUp className="w-5 h-5" />
@@ -609,28 +607,8 @@ export default function Sidebar({
                                 </div>
                               )}
                             </div>
-                          </motion.button>
+                          </button>
                           
-                          {/* Advanced glassmorphism interactive tooltip with smooth slide transition */}
-                          <div 
-                            className="absolute right-full mr-3 top-2.5 opacity-0 pointer-events-none group-hover/nav-item:opacity-100 group-hover/nav-item:-translate-x-1.5 transition-all duration-300 z-50 bg-[#070E1A]/95 backdrop-blur-md border border-[#B3933B] text-amber-100 text-[11px] font-black py-2.5 px-4 rounded-xl shadow-[0_10px_30px_rgba(154,125,44,0.35)] whitespace-nowrap flex items-center gap-2.5"
-                            style={{ direction: 'rtl' }}
-                          >
-                            <span className="w-2 h-2 rounded-full bg-yellow-400 animate-ping"></span>
-                            <span className="font-sans font-black text-xs flex items-center gap-1.5">
-                              {item.name.includes('AI') ? (
-                                <>
-                                  <span className="drop-shadow-md text-white">{item.name.replace('AI', '').trim()}</span>
-                                  <span className="px-1.5 py-0.5 rounded-md border-sky-400 bg-sky-400/20 text-sky-300 text-[10px] font-black uppercase tracking-wider shadow-[0_0_12px_rgba(56,189,248,0.6)] animate-pulse">AI</span>
-                                </>
-                              ) : (
-                                <span className="drop-shadow-md text-white">{item.name}</span>
-                              )}
-                            </span>
-                            {/* Pointing triangle */}
-                            <div className="absolute top-1/2 -translate-y-1/2 -right-1 border-y-4 border-y-transparent border-l-4 border-l-[#B3933B]"></div>
-                          </div>
-
                           {/* Render Sub-items with animation */}
                           <AnimatePresence>
                             {item.children && isItemExpanded && (

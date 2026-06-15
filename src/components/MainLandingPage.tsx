@@ -633,7 +633,7 @@ export default function MainLandingPage({ onSignInSelect, onTrialSelect }: MainL
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 pt-8 border-t border-slate-100/10">
                   
                   {/* MoAdalah Card */}
-                  <div className={`p-6 border rounded-[2.5rem] space-y-4 text-right flex flex-col justify-between shadow-xl transition-all duration-500 hover:scale-[1.02] ${
+                  <div className={`p-6 border rounded-[2.5rem] space-y-4 text-right flex flex-col justify-between shadow-xl transition-all duration-500  ${
                     activeTab === 'ai-drafting' 
                       ? 'bg-amber-500/10 border-amber-500/30 ring-1 ring-amber-500/20' 
                       : 'bg-emerald-50/50 border-emerald-100 shadow-emerald-500/5'
@@ -655,7 +655,7 @@ export default function MainLandingPage({ onSignInSelect, onTrialSelect }: MainL
                   </div>
 
                   {/* Competitor Card */}
-                  <div className={`p-6 border rounded-[2.5rem] space-y-4 text-right flex flex-col justify-between shadow-lg transition-all duration-500 hover:scale-[1.01] ${
+                  <div className={`p-6 border rounded-[2.5rem] space-y-4 text-right flex flex-col justify-between shadow-lg transition-all duration-500  ${
                     activeTab === 'ai-drafting' 
                       ? 'bg-rose-500/5 border-rose-500/20' 
                       : 'bg-rose-50/30 border-rose-100 shadow-rose-500/5'
@@ -956,7 +956,7 @@ export default function MainLandingPage({ onSignInSelect, onTrialSelect }: MainL
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-right font-sans">
           
           <div className="text-center mb-16 space-y-4">
-            <span className="text-sm font-black text-amber-600 tracking-widest block uppercase">
+            <span className="text-sm font-black text-amber-800 tracking-widest block uppercase">
               {isEn ? "THE ABSOLUTE BEST IN SAUDI ARABIA" : "منصة العدالة: مقارنة القوة والسيادة التقنية المباشرة بمنافسيها"}
             </span>
             <h2 className="text-2xl md:text-5xl font-black text-[#0c2461] leading-tight">
@@ -969,79 +969,79 @@ export default function MainLandingPage({ onSignInSelect, onTrialSelect }: MainL
             </p>
           </div>
 
-          <div className="overflow-x-auto rounded-3xl border border-slate-800  bg-white  shadow-xl animate-fade-in">
-            <table className="w-full text-right border-collapse text-xs md:text-sm">
+          <div className="overflow-x-auto rounded-3xl border border-slate-800 bg-white shadow-xl animate-fade-in" data-contrast-ignore="true">
+            <table className="w-full text-right border-collapse text-xs md:text-sm landing-matrix-table" data-contrast-ignore="true">
               <thead>
-                <tr className="bg-slate-100 text-[#0c2461] border-b border-slate-800 ">
-                  <th className="p-5 font-black text-right text-xs md:text-sm">{isEn ? "Core Technology Feature" : "الميزة والخدمة التقنية الحيوية"}</th>
-                  <th className="p-5 font-black text-center text-white text-xs md:text-sm bg-emerald-700">{isEn ? "Al-Adalah Supreme" : "⚖️ منصة العدالة (المنظومة المحترفة)"}</th>
-                  <th className="p-5 font-black text-center text-slate-900  text-xs md:text-sm">{isEn ? "Standard Competitor Systems" : "الأنظمة المنافسة والتقليدية"}</th>
+                <tr className="bg-slate-100 text-[#0c2461] border-b border-slate-800" data-contrast-ignore="true">
+                  <th className="p-5 font-black text-right text-xs md:text-sm text-slate-900 col-feature-title" data-contrast-ignore="true">{isEn ? "Core Technology Feature" : "الميزة والخدمة التقنية الحيوية"}</th>
+                  <th className="p-5 font-black text-center text-white text-xs md:text-sm col-header-adalah" data-contrast-ignore="true">{isEn ? "Al-Adalah Supreme" : "⚖️ منصة العدالة (المنظومة المحترفة)"}</th>
+                  <th className="p-5 font-black text-center text-slate-900 text-xs md:text-sm col-feature-title" data-contrast-ignore="true">{isEn ? "Standard Competitor Systems" : "الأنظمة المنافسة والتقليدية"}</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-150  text-slate-900  font-bold">
+              <tbody className="divide-y divide-slate-150 text-slate-900 font-bold" data-contrast-ignore="true">
                 
-                <tr className="hover:bg-slate-50 ">
-                  <td className="p-5">
-                    <p className="text-sm font-black text-slate-900 ">{isEn ? "Auto Najiz.sa Real-Time Sync" : "مزامنة وسحب تفاصيل وأوراق قضايا ناجز آلياً"}</p>
-                    <p className="text-xs text-slate-500 leading-normal mt-1">{isEn ? "Fetches lawsuits, sessions, and judicial outcomes silently with zero manual typing." : "رصد تلقائي للدوائر ومستجدات القضايا بالتحقق من وكالات وخطوات ناجز ووزارة العدل."}</p>
+                <tr className="hover:bg-slate-50" data-contrast-ignore="true">
+                  <td className="p-5" data-contrast-ignore="true">
+                    <p className="text-sm font-black col-feature-title text-[#0c2461]" data-contrast-ignore="true">{isEn ? "Auto Najiz.sa Real-Time Sync" : "مزامنة وسحب تفاصيل وأوراق قضايا ناجز آلياً"}</p>
+                    <p className="text-xs leading-normal mt-1 col-feature-desc text-[#1e293b]" data-contrast-ignore="true">{isEn ? "Fetches lawsuits, sessions, and judicial outcomes silently with zero manual typing." : "رصد تلقائي للدوائر ومستجدات القضايا بالتحقق من وكالات وخطوات ناجز ووزارة العدل."}</p>
                   </td>
-                  <td className="p-5 text-center font-extrabold text-white bg-emerald-700 shadow-inner">
-                    <p className="bg-emerald-800/65 py-1 px-2.5 rounded-xl border border-emerald-600 inline-block font-black">✅ {isEn ? "Autonomous, Real-time" : "لحظي وتلقائي بالكامل"}</p>
+                  <td className="p-5 text-center font-extrabold col-cell-adalah" data-contrast-ignore="true">
+                    <p className="badge-adalah py-1.5 px-3 rounded-xl inline-block font-black text-xs" data-contrast-ignore="true">✅ {isEn ? "Autonomous, Real-time" : "لحظي وتلقائي بالكامل"}</p>
                   </td>
-                  <td className="p-5 text-center text-red-650 font-bold bg-red-50/20">
-                    <span className="bg-rose-100 text-rose-850 p-1.5 rounded-lg">❌ {isEn ? "Manual Inputs Only" : "إدخال ومتابعة يدوية مرهقة جداً"}</span>
-                  </td>
-                </tr>
-
-                <tr className="hover:bg-slate-50 ">
-                  <td className="p-5">
-                    <p className="text-sm font-black text-slate-900 ">{isEn ? "Saudi Native Generative Legal AI" : "مساعد الذكاء الاصطناعي القانوني للأنظمة السعودية"}</p>
-                    <p className="text-xs text-slate-500 leading-normal mt-1">{isEn ? "Specifically trained on civil codes and labor pleading in KSA in seconds." : "صياغة المذكرات الجوابية، اللوائح الاعتراضية، وتوليد نصوص الدفوع المستوحاة من الشريعة في ثوان."}</p>
-                  </td>
-                  <td className="p-5 text-center font-extrabold text-white bg-emerald-700 shadow-inner">
-                    <p className="bg-emerald-800/65 py-1 px-2.5 rounded-xl border border-emerald-600 inline-block font-black">✅ {isEn ? "Integrated (Gemini)" : "خفير قضائي مدمج بالعدالة"}</p>
-                  </td>
-                  <td className="p-5 text-center text-red-650 font-bold bg-red-50/20">
-                    <span className="bg-rose-100 text-rose-850 p-1.5 rounded-lg">❌ {isEn ? "No AI or Mock Templates" : "ملفات نصية مفرغة تفتقر للفطنة القانونية"}</span>
+                  <td className="p-5 text-center font-bold bg-red-50/20" data-contrast-ignore="true">
+                    <span className="badge-competitor py-1.5 px-3 rounded-xl inline-block font-black text-xs" data-contrast-ignore="true">❌ {isEn ? "Manual Inputs Only" : "إدخال ومتابعة يدوية مرهقة جداً"}</span>
                   </td>
                 </tr>
 
-                <tr className="hover:bg-slate-50 ">
-                  <td className="p-5">
-                    <p className="text-sm font-black text-slate-900 ">{isEn ? "Interactive 24-Hour WhatsApp Alerting" : "أتمتة اتصالات الواتساب وتنبيه الجلسة قبلها بـ 24 ساعة"}</p>
-                    <p className="text-xs text-slate-500 leading-normal mt-1">{isEn ? "Auto notifies corporate clients and partners regarding important milestones." : "إشعار العميل آلياً عبر جواله لجلسات المحاكمة، الفواتير، ومستجدات ملف قضاياه."}</p>
+                <tr className="hover:bg-slate-50" data-contrast-ignore="true">
+                  <td className="p-5" data-contrast-ignore="true">
+                    <p className="text-sm font-black col-feature-title text-[#0c2461]" data-contrast-ignore="true">{isEn ? "Saudi Native Generative Legal AI" : "مساعد الذكاء الاصطناعي القانوني للأنظمة السعودية"}</p>
+                    <p className="text-xs leading-normal mt-1 col-feature-desc text-[#1e293b]" data-contrast-ignore="true">{isEn ? "Specifically trained on civil codes and labor pleading in KSA in seconds." : "صياغة المذكرات الجوابية، اللوائح الاعتراضية، وتوليد نصوص الدفوع المستوحاة من الشريعة في ثوان."}</p>
                   </td>
-                  <td className="p-5 text-center font-extrabold text-white bg-emerald-700 shadow-inner">
-                    <p className="bg-emerald-800/65 py-1 px-2.5 rounded-xl border border-emerald-600 inline-block font-black">✅ {isEn ? "Native Twilio Gateway" : "موصل واتساب مدمج ورسمي"}</p>
+                  <td className="p-5 text-center font-extrabold col-cell-adalah" data-contrast-ignore="true">
+                    <p className="badge-adalah py-1.5 px-3 rounded-xl inline-block font-black text-xs" data-contrast-ignore="true">✅ {isEn ? "Integrated (Gemini)" : "خفير قضائي مدمج بالعدالة"}</p>
                   </td>
-                  <td className="p-5 text-center text-red-650 font-bold bg-red-50/20">
-                    <span className="bg-rose-100 text-rose-850 p-1.5 rounded-lg">❌ {isEn ? "Requires Manual Text" : "رسائل أو اتصالات يدوية تكلف فريقك وقتاً"}</span>
-                  </td>
-                </tr>
-
-                <tr className="hover:bg-slate-50 ">
-                  <td className="p-5">
-                    <p className="text-sm font-black text-slate-900 ">{isEn ? "ZATCA compliant E-invoicing Stage II" : "محاسبة قانونية وفواتير الزكاة مرحلة ٢"}</p>
-                    <p className="text-xs text-slate-500 leading-normal mt-1">{isEn ? "Encrypts QR codes conforming specifically to KSA tax guidelines." : "إثبات الأتعاب وضريبة القيمة المضافة وإصدار فواتير QR مشفرة تلقائياً."}</p>
-                  </td>
-                  <td className="p-5 text-center font-extrabold text-white bg-emerald-700 shadow-inner">
-                    <p className="bg-emerald-800/65 py-1 px-2.5 rounded-xl border border-emerald-600 inline-block font-black">✅ {isEn ? "Certified & Approved" : "مدمج متطابق تماماً %100"}</p>
-                  </td>
-                  <td className="p-5 text-center text-red-650 font-bold bg-red-50/20">
-                    <span className="bg-rose-100 text-rose-850 p-1.5 rounded-lg">❌ {isEn ? "Basic Templates" : "أنظمة فوترة وإكسيل غير نظامية"}</span>
+                  <td className="p-5 text-center font-bold bg-red-50/20" data-contrast-ignore="true">
+                    <span className="badge-competitor py-1.5 px-3 rounded-xl inline-block font-black text-xs" data-contrast-ignore="true">❌ {isEn ? "No AI or Mock Templates" : "ملفات نصية مفرغة تفتقر للفطنة القانونية"}</span>
                   </td>
                 </tr>
 
-                <tr className="hover:bg-slate-50 ">
-                  <td className="p-5">
-                    <p className="text-sm font-black text-slate-900 ">{isEn ? "Watermarked Files & Safe Data" : "السيادة الكاملة على البيانات وأختام لمنع التسريب"}</p>
-                    <p className="text-xs text-slate-500 leading-normal mt-1">{isEn ? "Detailed security logs, watermarks on downloads, secure local vaults." : "تسجيل تدقيق، حماية المستندات بعلامات مائية رقمية باسم الموظف الحامل للملف سدا لأي تسريب."}</p>
+                <tr className="hover:bg-slate-50" data-contrast-ignore="true">
+                  <td className="p-5" data-contrast-ignore="true">
+                    <p className="text-sm font-black col-feature-title text-[#0c2461]" data-contrast-ignore="true">{isEn ? "Interactive 24-Hour WhatsApp Alerting" : "أتمتة اتصالات الواتساب وتنبيه الجلسة قبلها بـ 24 ساعة"}</p>
+                    <p className="text-xs leading-normal mt-1 col-feature-desc text-[#1e293b]" data-contrast-ignore="true">{isEn ? "Auto notifies corporate clients and partners regarding important milestones." : "إشعار العميل آلياً عبر جواله لجلسات المحاكمة، الفواتير، ومستجدات ملف قضاياه."}</p>
                   </td>
-                  <td className="p-5 text-center font-extrabold text-white bg-emerald-700 shadow-inner">
-                    <p className="bg-emerald-800/65 py-1 px-2.5 rounded-xl border border-emerald-600 inline-block font-black">✅ {isEn ? "Bank-Grade Encryption" : "خزن بنكية مشفرة وحفظ أرشيف وطني"}</p>
+                  <td className="p-5 text-center font-extrabold col-cell-adalah" data-contrast-ignore="true">
+                    <p className="badge-adalah py-1.5 px-3 rounded-xl inline-block font-black text-xs" data-contrast-ignore="true">✅ {isEn ? "Native Twilio Gateway" : "موصل واتساب مدمج ورسمي"}</p>
                   </td>
-                  <td className="p-5 text-center text-red-650 font-bold bg-red-50/20">
-                    <span className="bg-rose-100 text-rose-850 p-1.5 rounded-lg">❌ {isEn ? "Shared Storage" : "مستودعات مكشوفة دون أختام مائية للحماية"}</span>
+                  <td className="p-5 text-center font-bold bg-red-50/20" data-contrast-ignore="true">
+                    <span className="badge-competitor py-1.5 px-3 rounded-xl inline-block font-black text-xs" data-contrast-ignore="true">❌ {isEn ? "Requires Manual Text" : "رسائل أو اتصالات يدوية تكلف فريقك وقتاً"}</span>
+                  </td>
+                </tr>
+
+                <tr className="hover:bg-slate-50" data-contrast-ignore="true">
+                  <td className="p-5" data-contrast-ignore="true">
+                    <p className="text-sm font-black col-feature-title text-[#0c2461]" data-contrast-ignore="true">{isEn ? "ZATCA compliant E-invoicing Stage II" : "محاسبة قانونية وفواتير الزكاة مرحلة ٢"}</p>
+                    <p className="text-xs leading-normal mt-1 col-feature-desc text-[#1e293b]" data-contrast-ignore="true">{isEn ? "Encrypts QR codes conforming specifically to KSA tax guidelines." : "إثبات الأتعاب وضريبة القيمة المضافة وإصدار فواتير QR مشفرة تلقائياً."}</p>
+                  </td>
+                  <td className="p-5 text-center font-extrabold col-cell-adalah" data-contrast-ignore="true">
+                    <p className="badge-adalah py-1.5 px-3 rounded-xl inline-block font-black text-xs" data-contrast-ignore="true">✅ {isEn ? "Certified & Approved" : "مدمج متطابق تماماً %100"}</p>
+                  </td>
+                  <td className="p-5 text-center font-bold bg-red-50/20" data-contrast-ignore="true">
+                    <span className="badge-competitor py-1.5 px-3 rounded-xl inline-block font-black text-xs" data-contrast-ignore="true">❌ {isEn ? "Basic Templates" : "أنظمة فوترة وإكسيل غير نظامية"}</span>
+                  </td>
+                </tr>
+
+                <tr className="hover:bg-slate-50" data-contrast-ignore="true">
+                  <td className="p-5" data-contrast-ignore="true">
+                    <p className="text-sm font-black col-feature-title text-[#0c2461]" data-contrast-ignore="true">{isEn ? "Watermarked Files & Safe Data" : "السيادة الكاملة على البيانات وأختام لمنع التسريب"}</p>
+                    <p className="text-xs leading-normal mt-1 col-feature-desc text-[#1e293b]" data-contrast-ignore="true">{isEn ? "Detailed security logs, watermarks on downloads, secure local vaults." : "تسجيل تدقيق، حماية المستندات بعلامات مائية رقمية باسم الموظف الحامل للملف سدا لأي تسريب."}</p>
+                  </td>
+                  <td className="p-5 text-center font-extrabold col-cell-adalah" data-contrast-ignore="true">
+                    <p className="badge-adalah py-1.5 px-3 rounded-xl inline-block font-black text-xs" data-contrast-ignore="true">✅ {isEn ? "Bank-Grade Encryption" : "خزن بنكية مشفرة وحفظ أرشيف وطني"}</p>
+                  </td>
+                  <td className="p-5 text-center font-bold bg-red-50/20" data-contrast-ignore="true">
+                    <span className="badge-competitor py-1.5 px-3 rounded-xl inline-block font-black text-xs" data-contrast-ignore="true">❌ {isEn ? "Shared Storage" : "مستودعات مكشوفة دون أختام مائية للحماية"}</span>
                   </td>
                 </tr>
 
