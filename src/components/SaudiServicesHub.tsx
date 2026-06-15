@@ -580,22 +580,22 @@ export default function SaudiServicesHub({
                   </p>
                   <div className="space-y-4 p-5 rounded-2xl border bg-slate-50 border-slate-200">
                     <div>
-                      <label className="block font-black mb-1.5 text-slate-950">مبلغ التركة الإجمالي (ر.س):</label>
-                      <input type="number" value={estateAmount} onChange={e => setEstateAmount(Number(e.target.value))} className="w-full rounded-xl p-2.5 font-mono font-black border bg-white border-slate-300 text-slate-950" />
+                      <label htmlFor="estate-amount" className="block font-black mb-1.5 text-slate-950">مبلغ التركة الإجمالي (ر.س):</label>
+                      <input id="estate-amount" type="number" value={estateAmount} onChange={e => setEstateAmount(Number(e.target.value))} className="w-full rounded-xl p-2.5 font-mono font-black border bg-white border-slate-300 text-slate-950" />
                     </div>
                     <div className="grid grid-cols-2 gap-4">
-                      <label className="flex items-center gap-2 font-black cursor-pointer"><input type="checkbox" checked={hasWife} onChange={e => setHasWife(e.target.checked)} className="accent-amber-600 w-4 h-4" /> وجود زوجة</label>
-                      <label className="flex items-center gap-2 font-black cursor-pointer"><input type="checkbox" checked={hasFather} onChange={e => setHasFather(e.target.checked)} className="accent-amber-600 w-4 h-4" /> الأب حي</label>
-                      <label className="flex items-center gap-2 font-black cursor-pointer"><input type="checkbox" checked={hasMother} onChange={e => setHasMother(e.target.checked)} className="accent-amber-600 w-4 h-4" /> الأم حية</label>
+                      <label htmlFor="has-wife" className="flex items-center gap-2 font-black cursor-pointer">وجود زوجة<input id="has-wife" type="checkbox" checked={hasWife} onChange={e => setHasWife(e.target.checked)} className="accent-amber-600 w-4 h-4" /></label>
+                      <label htmlFor="has-father" className="flex items-center gap-2 font-black cursor-pointer">الأب حي<input id="has-father" type="checkbox" checked={hasFather} onChange={e => setHasFather(e.target.checked)} className="accent-amber-600 w-4 h-4" /></label>
+                      <label htmlFor="has-mother" className="flex items-center gap-2 font-black cursor-pointer">الأم حية<input id="has-mother" type="checkbox" checked={hasMother} onChange={e => setHasMother(e.target.checked)} className="accent-amber-600 w-4 h-4" /></label>
                     </div>
                     <div className="grid grid-cols-2 gap-4 border-t border-slate-200 pt-3">
                       <div>
-                        <label className="block text-[10px] font-black text-slate-600">عدد الأبناء (ذكور):</label>
-                        <input type="number" value={sonsCount} onChange={e => setSonsCount(Number(e.target.value))} className="w-full rounded-xl p-2 font-mono font-black border bg-white border-slate-300 text-slate-950" />
+                        <label htmlFor="sons-count" className="block text-[10px] font-black text-slate-600">عدد الأبناء (ذكور):</label>
+                        <input id="sons-count" type="number" value={sonsCount} onChange={e => setSonsCount(Number(e.target.value))} className="w-full rounded-xl p-2 font-mono font-black border bg-white border-slate-300 text-slate-950" />
                       </div>
                       <div>
-                        <label className="block text-[10px] font-black text-slate-600">عدد البنات (إناث):</label>
-                        <input type="number" value={daughtersCount} onChange={e => setDaughtersCount(Number(e.target.value))} className="w-full rounded-xl p-2 font-mono font-black border bg-white border-slate-300 text-slate-950" />
+                        <label htmlFor="daughters-count" className="block text-[10px] font-black text-slate-600">عدد البنات (إناث):</label>
+                        <input id="daughters-count" type="number" value={daughtersCount} onChange={e => setDaughtersCount(Number(e.target.value))} className="w-full rounded-xl p-2 font-mono font-black border bg-white border-slate-300 text-slate-950" />
                       </div>
                     </div>
                     <button onClick={calculateInheritance} className="w-full bg-amber-600 text-white font-black py-3 rounded-xl shadow-lg shadow-amber-600/20 transition-all cursor-pointer">احسب الأنصبة الشرعية</button>
@@ -617,12 +617,13 @@ export default function SaudiServicesHub({
                 <div className="space-y-4">
                   <div className="space-y-3 p-5 rounded-2xl border bg-slate-50 border-slate-200">
                     <div>
-                      <label className="block font-black mb-1.5 text-slate-950">رقم ملف القضية المستأنفة:</label>
-                      <input type="text" value={appealCaseNumber} onChange={e => setAppealCaseNumber(e.target.value)} className="w-full rounded-xl p-2.5 font-mono font-black border bg-white border-slate-300 text-slate-950" placeholder="441xxxxXx" />
+                      <label htmlFor="appeal-case-number" className="block font-black mb-1.5 text-slate-950">رقم ملف القضية المستأنفة:</label>
+                      <input id="appeal-case-number" type="text" value={appealCaseNumber} onChange={e => setAppealCaseNumber(e.target.value)} className="w-full rounded-xl p-2.5 font-mono font-black border bg-white border-slate-300 text-slate-950" placeholder="441xxxxXx" />
                     </div>
                     <div>
-                      <label className="block font-black mb-1.5 text-slate-950">سبب اعتراض الاستئناف:</label>
+                      <label htmlFor="appeal-reason" className="block font-black mb-1.5 text-slate-950">سبب اعتراض الاستئناف:</label>
                       <select 
+                        id="appeal-reason"
                         value={appealReason} 
                         onChange={e => setAppealReason(e.target.value)} 
                         className="w-full rounded-xl p-2.5 font-bold border bg-white border-slate-300 text-slate-950"

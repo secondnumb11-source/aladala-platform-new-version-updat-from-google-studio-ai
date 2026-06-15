@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
 import { Activity, Clock, CheckCircle2, TrendingUp, AlertTriangle, ShieldCheck } from 'lucide-react';
 import { InteractiveCard } from './InteractiveCard';
 
@@ -7,35 +7,6 @@ export const NajizWidget = () => {
   const [syncedOps, setSyncedOps] = useState(1432);
   const [latency, setLatency] = useState(120);
   const [status, setStatus] = useState<'connected' | 'syncing' | 'error'>('connected');
-
-  // Simulate real-time data updates
-  /*
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setLatency(prev => {
-        const variation = Math.random() > 0.5 ? 5 : -5;
-        let newLatency = prev + variation;
-        if (newLatency < 45) newLatency = 45;
-        if (newLatency > 800) newLatency = 800;
-        
-        if (newLatency > 500) {
-          setStatus('error');
-        } else if (Math.random() > 0.8) {
-          setStatus('syncing');
-        } else {
-          setStatus('connected');
-        }
-        
-        return newLatency;
-      });
-      
-      if (Math.random() > 0.7) {
-        setSyncedOps(prev => prev + 1);
-      }
-    }, 3000);
-    return () => clearInterval(interval);
-  }, []);
-  */
 
   return (
     <InteractiveCard className="h-full border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 overflow-hidden relative">

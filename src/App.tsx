@@ -87,8 +87,6 @@ export default function App() {
   );
 }
 
-const brightnessCache: Record<string, boolean> = {};
-
 function RouteGuard({ children, isAuthenticated, setCurrentTab }: { children: React.ReactNode, isAuthenticated: boolean, setCurrentTab: (t: string) => void }) {
   const [isVerified, setIsVerified] = useState(false);
 
@@ -700,180 +698,6 @@ function AppContent() {
     window.dispatchEvent(new Event('adalah-advanced-config-updated'));
   }, [highContrastMode]);
 
-  // Optimize brightness scanner with memoization and MutationObserver for efficiency
-  const isScanning = React.useRef(false);
-  const scanAndFixContrast = React.useCallback(() => {
-    if (isScanning.current) return;
-    isScanning.current = true;
-    
-    // Throttled scan to prevent overhead
-    const targetContainers = document.querySelectorAll(
-      '.login-sidebar-panel, .bg-slate-900, .bg-slate-950, .bg-midnight, [class*="bg-midnight"], [class*="bg-slate-9"], [class*="bg-[#050e21]"], [class*="bg-[#030712]"], [class*="bg-[#0b1e33]"], [class*="bg-[#11243f]"], [class*="bg-[#0b1a2d]"], [class*="bg-[#0c2461]"], [class*="bg-[#041a45]"], [class*="bg-[#0b1329]"], [class*="bg-slate-800"], aside, .bg-gradient-to-br, [class*="from-slate-9"], [class*="from-[#0C121E]"], .card-professional-stable, .card-professional-case, .customizable-card, [style*="background-color"], .motion-div, [style*="background"]'
-    );
-
-    targetContainers.forEach(container => {
-      const htmlContainer = container as HTMLElement;
-      
-      // Dynamic Background Brightness Analysis for motion.div & Cards
-      const computedBg = window.getComputedStyle(htmlContainer).backgroundColor;
-      let isDarkBg = true; // default assume dark for legacy dark classes
-      const rgbBgMatch = computedBg.match(/rgba?\s*\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/);
-      if (rgbBgMatch) {
-         const r = parseInt(rgbBgMatch[1]);
-         const g = parseInt(rgbBgMatch[2]);
-         const b = parseInt(rgbBgMatch[3]);
-         // Ignore transparent backgrounds when computing brightness (mostly 0,0,0,0)
-         // If it's a solid or semi-transparent color, compute brightness
-         if (!(r === 0 && g === 0 && b === 0 && computedBg.includes('0)'))) {
-            const brightness = (r * 299 + g * 587 + b * 114) / 1000;
-            isDarkBg = brightness < 130;
-         }
-      }
-
-      // Special case for login-sidebar-panel: Force SVGs to update
-      if (htmlContainer.classList.contains('login-sidebar-panel') || htmlContainer.closest('.login-sidebar-panel')) {
-         const svgElements = htmlContainer.querySelectorAll('svg');
-         svgElements.forEach(svgEl => {
-            const htmlSvg = svgEl as unknown as HTMLElement;
-            let isElementDarkBg = true;
-            const activeBgContainer = htmlSvg.closest('.bg-white, .bg-slate-50, .bg-slate-100, .bg-gray-50, .bg-gray-100, .bg-sky-50');
-            if (activeBgContainer) {
-               isElementDarkBg = false;
-            }
-            const finalColor = isElementDarkBg ? '#facc15' : '#020617';
-            htmlSvg.style.setProperty('color', finalColor, 'important');
-            htmlSvg.setAttribute('data-contrast-fixed', 'true');
-         });
-      }
-
-      // Use a marker to avoid re-scanning optimized containers unless content actually changes
-      const isCaseCard = htmlContainer.classList.contains('card-professional-case') || htmlContainer.classList.contains('card-professional-stable') || !!htmlContainer.closest('.card-professional-stable') || !!htmlContainer.closest('.card-professional-case');
-      
-      // Track previous background classification
-      const prevBgState = htmlContainer.getAttribute('data-prev-bg-dark');
-      const currentBgState = isDarkBg.toString();
-      
-      if (prevBgState !== currentBgState) {
-        // If brightness flipped, we must re-scan its children
-        htmlContainer.setAttribute('data-prev-bg-dark', currentBgState);
-        htmlContainer.removeAttribute('data-scan-optimized');
-      }
-
-      if (htmlContainer.getAttribute('data-scan-optimized') === 'true' && !isCaseCard && !htmlContainer.classList.contains('customizable-card')) return;
-      
-      if (isDarkBg) {
-        htmlContainer.classList.add('text-high-contrast-light-bg');
-        htmlContainer.classList.remove('text-high-contrast-dark-bg');
-      } else {
-        htmlContainer.classList.add('text-high-contrast-dark-bg');
-        htmlContainer.classList.remove('text-high-contrast-light-bg');
-      }
-
-      const textElements = htmlContainer.querySelectorAll('h1, h2, h3, h4, h5, h6, p, span, strong, b, label, li, td, th');
-      textElements.forEach(el => {
-        const htmlEl = el as HTMLElement;
-
-        // Skip colored status lights, badges or specific indicators (red/green logos/texts)
-        const classStr = htmlEl.className || '';
-        const isColoredStatus = /text-(red|emerald|green|rose|amber|blue|indigo)-/i.test(classStr) || 
-                                /bg-(red|emerald|green|rose|amber|blue|indigo)-/i.test(classStr) || 
-                                htmlEl.getAttribute('data-contrast-ignore') === 'true' ||
-                                htmlEl.classList.contains('case-status-badge') || 
-                                htmlEl.closest('.case-status-badge') !== null;
-        if (isColoredStatus) return;
-
-        // SPECIFIC RULE FOR THE RIGHT LOGIN SIDEBAR PANEL CARD
-        const insideSidebar = htmlEl.closest('.login-sidebar-panel');
-        if (insideSidebar) {
-           let isElementDarkBg = true;
-           const activeBgContainer = htmlEl.closest('.bg-white, .bg-slate-50, .bg-slate-100, .bg-gray-50, .bg-gray-100, .bg-sky-50');
-           if (activeBgContainer) {
-              isElementDarkBg = false;
-           }
-           let finalColor = '#ffffff'; // default to bright white
-           if (isElementDarkBg) {
-              const tag = htmlEl.tagName.toLowerCase();
-              const isHeadingOrBold = tag.startsWith('h') || htmlEl.classList.contains('font-bold') || htmlEl.classList.contains('font-black') || tag === 'strong' || tag === 'b';
-              finalColor = isHeadingOrBold ? '#facc15' : '#ffffff';
-           } else {
-              finalColor = '#020617';
-           }
-           htmlEl.style.setProperty('color', finalColor, 'important');
-           htmlEl.setAttribute('data-contrast-fixed', 'true');
-           return;
-        }
-
-        const targetTextColor = isDarkBg ? '#FFFFFF' : '#0F172A';
-        const targetHeaderColor = isDarkBg ? '#FACC15' : '#1E293B';
-
-        if (isCaseCard) {
-          // Inside Case Cards
-          const isCaseName = htmlEl.classList.contains('case-name-text') || htmlEl.tagName.toLowerCase() === 'h3';
-          const isHeader = htmlEl.classList.contains('case-header-title') || htmlEl.tagName.toLowerCase() === 'h4' || htmlEl.tagName.toLowerCase() === 'h1' || htmlEl.tagName.toLowerCase() === 'h2';
-          const isInnerCardBoxText = htmlEl.closest('.inner-card-box') !== null || htmlEl.classList.contains('inner-card-box');
-          
-          if (isCaseName) {
-            htmlEl.style.setProperty('color', targetTextColor, 'important');
-            htmlEl.style.setProperty('font-weight', 'black', 'important');
-          } else if (isHeader) {
-            htmlEl.style.setProperty('color', targetHeaderColor, 'important');
-            htmlEl.style.setProperty('font-weight', 'black', 'important');
-          } else {
-            if (htmlEl.classList.contains('text-yellow-300') || htmlEl.classList.contains('text-yellow-400') || htmlEl.classList.contains('text-gold-bright') || htmlEl.innerText.includes('#') || htmlEl.innerText.includes('نظام التقاضي الموحد')) {
-              htmlEl.style.setProperty('color', targetHeaderColor, 'important');
-            } else {
-              htmlEl.style.setProperty('color', targetTextColor, 'important');
-            }
-          }
-
-          if (isInnerCardBoxText) {
-            htmlEl.style.setProperty('text-shadow', isDarkBg ? '0 2px 4px rgba(0, 0, 0, 0.75)' : 'none', 'important');
-            htmlEl.style.setProperty('color', targetTextColor, 'important');
-          }
-
-          htmlEl.setAttribute('data-contrast-fixed', 'true');
-          return;
-        }
-
-        // Apply dynamically calculated contrast color directly
-        const isHeaderTag = ['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'strong', 'b'].includes(htmlEl.tagName.toLowerCase());
-        htmlEl.style.setProperty('color', isHeaderTag ? targetHeaderColor : targetTextColor, 'important');
-        if (!isDarkBg) {
-           htmlEl.style.setProperty('text-shadow', 'none', 'important');
-        }
-        htmlEl.setAttribute('data-contrast-fixed', 'true');
-      });
-      htmlContainer.setAttribute('data-scan-optimized', 'true');
-    });
-
-    // Reset scanning flag after a delay
-    setTimeout(() => {
-      isScanning.current = false;
-    }, 100);
-  }, [darkGradientTheme, highContrastMode, isDarkMode]);
-
-    // Use MutationObserver for background scan efficiency - keeps scanning decoupled from hover/mouse events
-    useEffect(() => {
-      scanAndFixContrast();
-      const observer = new MutationObserver((mutations) => {
-        const meaningful = mutations.some(m => {
-          if (m.type === 'attributes' && (m.attributeName === 'data-scan-optimized' || m.attributeName === 'data-contrast-fixed')) return false;
-          if (m.type === 'attributes' && m.attributeName === 'style') {
-             const target = m.target as HTMLElement;
-             if (target.getAttribute('data-contrast-fixed') === 'true') return false;
-             return true;
-          }
-          return true;
-        });
-        if (meaningful) {
-          requestAnimationFrame(() => scanAndFixContrast());
-        }
-      });
-      // also observe style attribute
-      observer.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['class', 'style'] });
-      return () => observer.disconnect();
-    }, [scanAndFixContrast]);
-
   // Global Keyboard Shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -1250,6 +1074,13 @@ function AppContent() {
           body: `العميل: ${data.senderName || 'بوابة العملاء'}\nالمضمون: ${data.text}`,
           tag: `msg-${data.id || Date.now()}`
         });
+      }
+    } else if (type === 'hearings') {
+      const exists = hearings.some(h => h.id === data.id || (h.caseNumber === data.caseNumber && h.date === data.date));
+      if (exists) {
+        setHearings(prev => prev.map(h => (h.id === data.id || (h.caseNumber === data.caseNumber && h.date === data.date)) ? { ...h, ...data } : h));
+      } else {
+        setHearings(prev => [data, ...prev]);
       }
     } else if (type === 'stateOfPlatform') {
       if (data.type === 'expenses') {

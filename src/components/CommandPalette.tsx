@@ -207,7 +207,12 @@ export default function CommandPalette({
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-[100] flex items-start justify-center pt-[10vh] px-4 md:px-0">
+        <div 
+          className="fixed inset-0 z-[100] flex items-start justify-center pt-[10vh] px-4 md:px-0"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="command-palette-title"
+        >
           
           {/* Backdrop Blur overlay */}
           <motion.div
@@ -229,7 +234,7 @@ export default function CommandPalette({
           >
             {/* Search Input Row */}
             <div className="flex items-center gap-3.5 px-5 py-4 border-b border-slate-800 bg-[#061424]">
-              <Search className="w-5 h-5 text-amber-500 shrink-0" />
+              <Search className="w-5 h-5 text-amber-500 shrink-0" aria-hidden="true" />
               <input
                 ref={inputRef}
                 type="text"
@@ -239,6 +244,7 @@ export default function CommandPalette({
                   setSelectedIndex(0);
                 }}
                 placeholder="ابحث عن قضية، موكل، مهمة، أو تنقل عبر الأقسام... (Ctrl+Space)"
+                aria-label="حقل البحث السريع في لوحة الأوامر"
                 className="w-full bg-transparent border-none text-slate-100 placeholder-slate-500 outline-none text-sm font-sans"
               />
               <div className="bg-slate-800 text-[10px] text-slate-400 font-mono font-bold px-2.5 py-1 rounded-lg border border-slate-700/60 shrink-0 shadow-sm">

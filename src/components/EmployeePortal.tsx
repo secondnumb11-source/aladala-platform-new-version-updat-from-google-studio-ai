@@ -2858,12 +2858,12 @@ export default function EmployeePortal({
                     </select>
                   </div>
                   <div className="space-y-2">
-                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest block pr-2">بداية الإجازة</label>
-                    <input type="date" name="startDate" required className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3 text-slate-950 font-bold text-sm outline-none" />
+                    <label htmlFor="leave-start-date" className="text-[10px] font-black text-slate-500 uppercase tracking-widest block pr-2">بداية الإجازة</label>
+                    <input id="leave-start-date" type="date" name="startDate" required className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3 text-slate-950 font-bold text-sm outline-none" />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest block pr-2">نهاية الإجازة</label>
-                    <input type="date" name="endDate" required className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3 text-slate-950 font-bold text-sm outline-none" />
+                    <label htmlFor="leave-end-date" className="text-[10px] font-black text-slate-500 uppercase tracking-widest block pr-2">نهاية الإجازة</label>
+                    <input id="leave-end-date" type="date" name="endDate" required className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3 text-slate-950 font-bold text-sm outline-none" />
                   </div>
                 </div>
 

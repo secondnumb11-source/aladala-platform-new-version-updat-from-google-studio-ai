@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <title>منصة العدالة - مزامنة ناجز</title>
+  <style>
+    :root {
+      --primary: #1e3a8a; /* Dark Blue */
+      --primary-hover: #172554;
+      --secondary: #d97706; /* Golden hue */
+      --secondary-hover: #b45309;
+      --bg: #f8fafc;
+      --surface: #ffffff;
+      --text: #0f172a;
+      --text-muted: #64748b;
+      --border: #e2e8f0;
+      --success: #10b981;
+      --danger: #ef4444;
+    }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      width: 380px;
+      margin: 0;
+      padding: 0;
+    }
+    header {
+      background: linear-gradient(135deg, var(--primary), var(--primary-hover));
+      color: white;
+      padding: 16px;
+      text-align: center;
+      border-bottom: 2px solid var(--secondary);
+    }
+    header h1 {
+      margin: 0;
+      font-size: 16px;
+      font-weight: bold;
+    }
+    header p {
+      margin: 4px 0 0;
+      font-size: 12px;
+      opacity: 0.9;
+    }
+    .container {
+      padding: 16px;
+    }
+    .section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px;
+      margin-bottom: 16px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+    .section-title {
+      font-size: 14px;
+      font-weight: bold;
+      margin-bottom: 12px;
+      color: var(--primary);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .form-group {
+      margin-bottom: 12px;
+    }
+    .form-group label {
+      display: block;
+      font-size: 12px;
+      margin-bottom: 4px;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+    .form-group input {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      font-size: 13px;
+      box-sizing: border-box;
+      outline: none;
+      direction: ltr;
+      text-align: left;
+    }
+    .form-group input:focus {
+      border-color: var(--primary);
+    }
+    .btn {
+      width: 100%;
+      padding: 10px;
+      border: none;
+      border-radius: 4px;
+      font-size: 13px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-primary {
+      background: var(--primary);
+      color: white;
+      margin-bottom: 12px;
+    }
+    .btn-primary:hover {
+      background: var(--primary-hover);
+    }
+    .btn-gold {
+      background: var(--secondary);
+      color: white;
+    }
+    .btn-gold:hover {
+      background: var(--secondary-hover);
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+    .btn-outline {
+      background: transparent;
+      border: 1px solid var(--primary);
+      color: var(--primary);
+      padding: 8px;
+      font-size: 11px;
+      font-weight: bold;
+    }
+    .btn-outline:hover {
+      background: var(--primary);
+      color: white;
+    }
+    .status {
+      font-size: 12px;
+      text-align: center;
+      margin-top: 12px;
+      font-weight: bold;
+      padding: 8px;
+      border-radius: 4px;
+      display: none;
+    }
+    .status.success {
+      background: #d1fae5;
+      color: var(--success);
+      display: block;
+    }
+    .status.error {
+      background: #fee2e2;
+      color: var(--danger);
+      display: block;
+    }
+    .status.loading {
+      background: #e0f2fe;
+      color: #0284c7;
+      display: block;
+    }
+    .footer {
+      text-align: center;
+      font-size: 11px;
+      color: var(--text-muted);
+      padding-bottom: 16px;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>منصة العدالة</h1>
+    <p>أداة المزامنة الذكية مع منصة ناجز</p>
+  </header>
+
+  <div class="container">
+    <!-- إعدادات الربط -->
+    <div class="section">
+      <div class="section-title">🔗 إعدادات الربط مع النظام (API)</div>
+      <div class="form-group">
+        <label>رابط الربط (API URL)</label>
+        <input type="text" id="apiUrl" placeholder="https://your-platform.com/api/najiz-webhook">
+      </div>
+      <div class="form-group">
+        <label>مفتاح الربط السري (API Key)</label>
+        <input type="password" id="apiKey" placeholder="sk_...">
+      </div>
+      <button class="btn btn-primary" id="saveConfigBtn">حفظ الإعدادات</button>
+      <div id="configStatus" class="status"></div>
+    </div>
+
+    <!-- أزرار المزامنة -->
+    <div class="section">
+      <div class="section-title">⚡ عمليات المزامنة والجلب</div>
+      <p style="font-size: 11px; color: var(--text-muted); margin-top: 0; margin-bottom: 12px;">سجل دخولك إلى منصة ناجز أولاً لتعمل هذه الميزات بشكل صحيح.</p>
+      
+      <button class="btn btn-gold" id="syncAllBtn" style="margin-bottom: 16px; font-size: 14px; padding: 12px;">
+        مزامنة كافة البيانات تلقائياً
+      </button>
+
+      <div class="grid">
+        <button class="btn btn-outline" data-action="cases">مزامنة جميع القضايا</button>
+        <button class="btn btn-outline" data-action="sessions">مزامنة جميع الجلسات</button>
+        <button class="btn btn-outline" data-action="clients">مزامنة العملاء والموكلين</button>
+        <button class="btn btn-outline" data-action="agencies">مزامنة جميع الوكالات</button>
+        <button class="btn btn-outline" data-action="judgments">مزامنة جميع الأحكام</button>
+        <button class="btn btn-outline" data-action="execution">مزامنة طلبات التنفيذ</button>
+        <button class="btn btn-outline" data-action="case_requests">مزامنة طلبات القضايا</button>
+        <button class="btn btn-outline" data-action="dates">مزامنة التواريخ والمواعيد</button>
+      </div>
+
+      <div id="syncStatus" class="status"></div>
+    </div>
+  </div>
+
+  <div class="footer">
+    تم التطوير بواسطة منصة العدالة لإدارة مكاتب المحاماة
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

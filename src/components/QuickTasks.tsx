@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Task } from '@/types';
 import { CheckCircle, Clock, AlertTriangle, Timer } from 'lucide-react';
 import { motion } from 'motion/react';
@@ -9,7 +9,7 @@ interface QuickTasksProps {
 
 function CountdownTimer({ targetDate, taskTitle, status }: { targetDate: string, taskTitle: string, status?: string }) {
   const [timeLeft, setTimeLeft] = useState<{ d: number, h: number, m: number, s: number } | null>(null);
-  const [hasNotified, setHasNotified] = useState(false);
+  const hasNotifiedRef = useRef(false);
 
   useEffect(() => {
     const calculate = () => {
@@ -30,7 +30,7 @@ function CountdownTimer({ targetDate, taskTitle, status }: { targetDate: string,
       setTimeLeft({ d, h, m, s });
 
       // Notify if less than 60 minutes and not notified yet
-      if (d === 0 && h === 0 && m < 60 && !hasNotified) {
+      if (d === 0 && h === 0 && m < 60 && !hasNotifiedRef.current) {
         if ('Notification' in window && Notification.permission === 'granted') {
           try {
             new Notification('⚠️ تنبيه: اقتراب انتهاء المهمة', {
@@ -39,7 +39,7 @@ function CountdownTimer({ targetDate, taskTitle, status }: { targetDate: string,
               icon: '/favicon.ico',
               tag: `task-deadline-${taskTitle}`
             });
-            setHasNotified(true);
+            hasNotifiedRef.current = true;
           } catch (e) {
             console.warn("Notification error", e);
           }
@@ -50,7 +50,7 @@ function CountdownTimer({ targetDate, taskTitle, status }: { targetDate: string,
     calculate();
     const timer = setInterval(calculate, 1000);
     return () => clearInterval(timer);
-  }, [targetDate, taskTitle, hasNotified, status]);
+  }, [targetDate, taskTitle, status]);
 
   if (status === 'done' || status === 'completed') {
     return <span className="text-emerald-500 font-black flex items-center gap-1"><CheckCircle className="w-3 h-3" /> منجزة</span>;

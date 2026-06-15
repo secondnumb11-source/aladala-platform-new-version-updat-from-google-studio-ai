@@ -77,7 +77,13 @@ export default function FeedbackModal({ isOpen, onClose, selectedRole }: Feedbac
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-[#050e21]/40 backdrop-blur-xl animate-fade-in" dir="rtl">
+    <div 
+      className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-[#050e21]/40 backdrop-blur-xl animate-fade-in" 
+      role="dialog" 
+      aria-modal="true" 
+      aria-labelledby="feedback-modal-title"
+      dir="rtl"
+    >
       <motion.div 
         initial={{ opacity: 0, scale: 0.95, y: 15 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -88,6 +94,7 @@ export default function FeedbackModal({ isOpen, onClose, selectedRole }: Feedbac
         {!isSuccess && (
           <button 
             onClick={onClose}
+            aria-label="إغلاق نافذة التقييم"
             className="absolute top-8 left-8 p-3 rounded-2xl bg-slate-50 text-slate-600 transition-all border border-slate-200 shadow-sm"
           >
             <X className="w-5 h-5" />
@@ -123,7 +130,7 @@ export default function FeedbackModal({ isOpen, onClose, selectedRole }: Feedbac
               </div>
               <div>
                 <span className="text-xs text-primary font-black uppercase tracking-wider block mb-1">AI Session Performance Audit</span>
-                <h3 className="text-xl font-display font-black text-slate-900 tracking-tight">تقييم أداء نظام الذكاء الاصطناعي القانوني ⚖️🧠</h3>
+                <h3 id="feedback-modal-title" className="text-xl font-display font-black text-slate-900 tracking-tight">تقييم أداء نظام الذكاء الاصطناعي القانوني ⚖️🧠</h3>
               </div>
             </div>
 
