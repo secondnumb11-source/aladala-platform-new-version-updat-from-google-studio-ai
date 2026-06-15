@@ -241,19 +241,19 @@ export default function TimelineD3({ hearings, tasks }: TimelineD3Props) {
       <div className="absolute top-0 right-0 left-0 h-1.5 bg-gradient-to-r from-[#D4AF37] via-amber-500 to-[#D4AF37]"></div>
 
       {/* Main Header of Timeline Card */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-slate-100 pb-5">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-slate-200 pb-5">
         <div className="flex items-center gap-4">
-          <div className="w-12 h-12 bg-gradient-to-tr from-[#0B2545] to-[#1E3A8A] text-white rounded-2xl flex items-center justify-center shadow-lg shadow-[#0B2545]/20">
+          <div className="w-12 h-12 bg-gradient-to-tr from-[#0B2545] to-[#1E3A8A] text-white rounded-2xl flex items-center justify-center shadow-md shadow-[#0B2545]/20 shrink-0">
             <Scale className="w-6 h-6 text-[#FFD700]" />
           </div>
           <div>
-            <h3 className="font-extrabold text-xl text-[#0B2545] tracking-tight flex items-center gap-2">
+            <h3 className="font-black text-xl text-[#0B2545] tracking-tight flex items-center gap-2 flex-wrap">
               التسلسل الزمني الإستراتيجي للمقاضاة
-              <span className="text-[12px] bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 px-2.5 py-0.5 rounded-full font-black animate-pulse">
-                حي وموثوق ✓
+              <span className="text-[11px] bg-emerald-100 border border-emerald-300 text-emerald-950 px-2.5 py-0.5 rounded-full font-black">
+                مباشر ✓
               </span>
             </h3>
-            <p className="font-bold text-xs text-slate-500 mt-0.5">
+            <p className="font-black text-xs text-slate-950 mt-1">
               رصد مرتب للمواعيد والجلسات المحكمة ومتابعة المهام القانونية مرتبطة بالقضايا المسجلة.
             </p>
           </div>
@@ -358,7 +358,7 @@ export default function TimelineD3({ hearings, tasks }: TimelineD3Props) {
                     className={`flex-shrink-0 w-[240px] rounded-2xl p-5 border-2 transition-all duration-300 transform cursor-pointer relative z-10 select-none ${
                       isSelected 
                         ? 'bg-[#0B2545] border-[#D4AF37] text-white shadow-2xl scale-[1.03] -translate-y-1' 
-                        : 'bg-white hover:bg-slate-50 border-slate-200 hover:border-slate-300 text-[#0B2545] shadow-md hover:scale-[1.01]'
+                        : 'bg-white hover:bg-slate-50 border-slate-300 hover:border-slate-400 text-[#0B2545] shadow-md hover:scale-[1.01]'
                     }`}
                     style={{ scrollSnapAlign: 'start' }}
                   >
@@ -367,15 +367,15 @@ export default function TimelineD3({ hearings, tasks }: TimelineD3Props) {
                       {/* Event Type Indicator Icon */}
                       <span className={`px-2.5 py-1 rounded-lg text-[10px] font-black uppercase font-sans ${
                         isSelected 
-                          ? isHearing ? 'bg-amber-500/25 text-amber-300 border border-amber-500/30' : 'bg-blue-500/30 text-blue-300 border border-blue-500/30'
-                          : isHearing ? 'bg-amber-100 text-amber-800' : 'bg-blue-100 text-blue-800'
+                          ? isHearing ? 'bg-amber-500/25 timeline-bright-yellow border border-amber-500/30' : 'bg-blue-500/30 timeline-bright-white border border-blue-500/30'
+                          : isHearing ? 'bg-amber-100 text-amber-900 font-extrabold border border-amber-305' : 'bg-blue-100 text-blue-900 font-extrabold border border-blue-305'
                       }`}>
                         {isHearing ? 'جلسة' : 'مهمة مستهدفة'}
                       </span>
 
                       {/* Timeline Dot visual connection flag */}
                       <div className="flex items-center gap-1.5">
-                        <span className="text-[10px] font-semibold text-slate-400 font-mono">#{index + 1}</span>
+                        <span className={`text-[10px] font-bold font-mono ${isSelected ? 'timeline-bright-white' : 'text-slate-800'}`}>#{index + 1}</span>
                         <div className={`w-3 h-3 rounded-full border-2 ${
                           isSelected ? 'bg-[#FFD700] border-white' : isHearing ? 'bg-amber-500 border-white' : 'bg-blue-600 border-white'
                         }`}></div>
@@ -384,43 +384,43 @@ export default function TimelineD3({ hearings, tasks }: TimelineD3Props) {
 
                     {/* Milestone Huge Date Visual */}
                     <div className="flex items-baseline gap-2 mb-2">
-                      <span className={`text-4xl font-extrabold tracking-tight tabular-nums ${isSelected ? 'text-white' : 'text-[#0B2545]'}`}>
+                      <span className={`text-4xl font-extrabold tracking-tight tabular-nums ${isSelected ? 'timeline-bright-white' : 'text-[#0B2545]'}`}>
                         {eventDay}
                       </span>
                       <div className="flex flex-col">
-                        <span className={`text-[12px] font-black leading-none ${isSelected ? 'text-amber-400' : 'text-[#826217]'}`}>
+                        <span className={`text-[12px] font-black leading-none ${isSelected ? 'timeline-bright-yellow' : 'text-[#826217] font-black'}`}>
                           {eventMonthYear}
                         </span>
-                        <span className="text-[9px] font-bold text-slate-400 mt-0.5 leading-none">{dayOfWeek}</span>
+                        <span className={`text-[10px] font-extrabold mt-0.5 leading-none ${isSelected ? 'timeline-text-slate-200' : 'text-slate-800'}`}>{dayOfWeek}</span>
                       </div>
                     </div>
 
                     {/* Main Event Title and Body text */}
                     <div className="space-y-1.5">
-                      <h4 className={`text-[13px] font-black leading-snug line-clamp-2 ${isSelected ? 'text-white' : 'text-[#0B2545]'}`}>
+                      <h4 className={`text-[13px] font-black leading-snug line-clamp-2 ${isSelected ? 'timeline-bright-white' : 'text-[#0B2545]'}`}>
                         {ev.title}
                       </h4>
-                      <p className={`text-[10px] font-medium font-mono tracking-tight flex items-center gap-1 ${
-                        isSelected ? 'text-slate-300' : 'text-slate-500'
+                      <p className={`text-[10px] font-black font-mono tracking-tight flex items-center gap-1 ${
+                        isSelected ? 'timeline-text-slate-200' : 'text-slate-900'
                       }`}>
                         <span>قضية: {ev.caseNumber}</span>
                       </p>
                     </div>
 
                     {/* Micro location/Time footer */}
-                    <div className="flex justify-between items-center mt-4 pt-3 border-t border-dashed border-slate-100/10" style={{ borderTopColor: isSelected ? 'rgba(255,255,255,0.1)' : 'rgba(15,23,42,0.06)' }}>
-                      <div className="flex items-center gap-1 text-[10px] font-bold">
-                        <Clock className={`w-3 h-3 ${isSelected ? 'text-amber-400' : 'text-[#826217]'}`} />
-                        <span className={`font-semibold ${isSelected ? 'text-slate-200' : 'text-slate-600'}`}>{ev.time}</span>
+                    <div className="flex justify-between items-center mt-4 pt-3 border-t border-dashed border-slate-100/10" style={{ borderTopColor: isSelected ? 'rgba(255,255,255,0.1)' : 'rgba(15,23,42,0.15)' }}>
+                      <div className="flex items-center gap-1 text-[10px] font-extrabold">
+                        <Clock className={`w-3.5 h-3.5 ${isSelected ? 'text-amber-400' : 'text-[#0B2545]'}`} />
+                        <span className={`font-black ${isSelected ? 'timeline-bright-white' : 'text-slate-950'}`}>{ev.time}</span>
                       </div>
                       
                       {isHearing ? (
-                        <span className={`text-[9px] font-extrabold ${isSelected ? 'text-emerald-400' : 'text-emerald-600'}`}>
+                        <span className={`text-[9.5px] font-black ${isSelected ? 'timeline-text-emerald-400' : 'text-emerald-950'}`}>
                           {ev.courtName.substring(0, 16)}...
                         </span>
                       ) : (
-                        <span className={`text-[9px] font-extrabold uppercase ${
-                          ev.priority === 'high' ? 'text-rose-500 bg-rose-500/10 px-1 rounded' : 'text-slate-500'
+                        <span className={`text-[9.5px] font-black uppercase ${
+                          ev.priority === 'high' ? 'text-rose-700 bg-rose-100 px-1.5 py-0.5 rounded border border-rose-300' : (isSelected ? 'timeline-bright-white' : 'text-slate-850')
                         }`}>
                           {ev.courtName}
                         </span>
@@ -478,20 +478,20 @@ export default function TimelineD3({ hearings, tasks }: TimelineD3Props) {
                   <div className="absolute top-0 left-0 w-32 h-32 bg-[#D4AF37]/5 rounded-full blur-3xl"></div>
                   
                   <div className="space-y-1 z-10">
-                    <span className="text-[10px] text-[#FFD700] font-black uppercase tracking-widest block">حالة الإجراء الاستراتيجي</span>
-                    <h3 className="text-lg font-black">{selectedEvent.type === 'hearing' ? 'جلسة مقاضاة' : 'مستند قضائي هام'}</h3>
+                    <span className="text-[10px] font-black uppercase tracking-widest block timeline-bright-yellow">حالة الإجراء الاستراتيجي</span>
+                    <h3 className="text-lg font-black timeline-bright-white">{selectedEvent.type === 'hearing' ? 'جلسة مقاضاة' : 'مستند قضائي هام'}</h3>
                   </div>
 
                   <div className="flex items-center justify-between mt-6 z-10">
                     <div className="space-y-0.5">
-                      <span className="text-[10px] text-slate-300 block">تصنيف الإشعار</span>
-                      <span className="text-xs font-bold text-amber-300">{selectedEvent.type === 'hearing' ? 'إشعار مباشر من ناجز' : 'إجراء داخلي مكلف'}</span>
+                      <span className="text-[10px] block timeline-text-slate-200">تصنيف الإشعار</span>
+                      <span className="text-xs font-bold timeline-bright-yellow">{selectedEvent.type === 'hearing' ? 'إشعار مباشر من ناجز' : 'إجراء داخلي مكلف'}</span>
                     </div>
                     
                     <span className={`px-3 py-1.5 rounded-xl text-xs font-black ${
                       selectedEvent.status === 'completed' || selectedEvent.status === 'done'
-                        ? 'bg-emerald-500/25 text-emerald-400 border border-emerald-500/30'
-                        : 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
+                        ? 'bg-emerald-500/25 timeline-text-emerald-400 border border-emerald-500/30'
+                        : 'bg-amber-500/20 timeline-text-amber-300 border border-amber-500/30'
                     }`}>
                       {selectedEvent.status === 'completed' || selectedEvent.status === 'done' ? 'مكتمل ومغلق ✓' : 'قيد الانتظار والمتابعة'}
                     </span>

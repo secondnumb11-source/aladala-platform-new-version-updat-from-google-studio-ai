@@ -815,18 +815,18 @@ const Dashboard = function Dashboard({
   };
 
   const [widgets, setWidgets] = useState(() => {
-    const saved = localStorage.getItem(`dashboard_widgets_config_${selectedRole}_v2`);
+    const saved = localStorage.getItem(`dashboard_widgets_config_${selectedRole}_v4`);
     let initialList = [
       { id: 'kpiCases', visible: true, order: 0, size: 'qr' },
       { id: 'kpiClients', visible: true, order: 1, size: 'qr' },
       { id: 'kpiInvoices', visible: true, order: 2, size: 'qr' },
       { id: 'kpiTasks', visible: true, order: 3, size: 'qr' },
-      { id: 'najizPerformance', visible: true, order: 4, size: 'half' },
-      { id: 'employeePerformanceKPI', visible: true, order: 5, size: 'half' },
-      { id: 'upcomingHearingsCard', visible: true, order: 6, size: 'half' },
-      { id: 'appealsReminder', visible: true, order: 7, size: 'half' },
-      { id: 'overdueTasks', visible: true, order: 8, size: 'half' },
-      { id: 'timelineCard', visible: true, order: 9, size: 'half' },
+      { id: 'timelineCard', visible: true, order: 4, size: 'half' },
+      { id: 'upcomingHearingsCard', visible: true, order: 5, size: 'qr' },
+      { id: 'appealsReminder', visible: true, order: 6, size: 'qr' },
+      { id: 'overdueTasks', visible: true, order: 7, size: 'qr' },
+      { id: 'najizPerformance', visible: true, order: 8, size: 'half' },
+      { id: 'employeePerformanceKPI', visible: true, order: 9, size: 'half' },
       { id: 'summaryAI', visible: true, order: 10, size: 'full' },
       { id: 'taskSuggestions', visible: true, order: 11, size: 'full' },
       { id: 'legalPerformanceMetrics', visible: true, order: 12, size: 'half' },
@@ -865,7 +865,7 @@ const Dashboard = function Dashboard({
       setWidgets(newItems);
       
       // Persist to local storage as fast-cache
-      localStorage.setItem(`dashboard_widgets_config_${selectedRole}_v2`, JSON.stringify(newItems));
+      localStorage.setItem(`dashboard_widgets_config_${selectedRole}_v4`, JSON.stringify(newItems));
       
       // Persist to Supabase for multi-device sync
       const uid = currentUser?.id;
@@ -874,10 +874,10 @@ const Dashboard = function Dashboard({
           await supabase
             .from('user_preferences')
             .upsert({ 
-              user_id: uid,
-              key: 'dashboardLayout',
-              widgets: newItems,
-              updated_at: new Date().toISOString()
+               user_id: uid,
+               key: 'dashboardLayout',
+               widgets: newItems,
+               updated_at: new Date().toISOString()
             }, { onConflict: 'user_id,key' });
         } catch (e) {
           console.error("Failed to save layout to Supabase", e);
@@ -892,12 +892,12 @@ const Dashboard = function Dashboard({
       { id: 'kpiClients', visible: true, order: 1, size: 'qr' },
       { id: 'kpiInvoices', visible: true, order: 2, size: 'qr' },
       { id: 'kpiTasks', visible: true, order: 3, size: 'qr' },
-      { id: 'najizPerformance', visible: true, order: 4, size: 'half' },
-      { id: 'employeePerformanceKPI', visible: true, order: 5, size: 'half' },
-      { id: 'upcomingHearingsCard', visible: true, order: 6, size: 'half' },
-      { id: 'appealsReminder', visible: true, order: 7, size: 'half' },
-      { id: 'overdueTasks', visible: true, order: 8, size: 'half' },
-      { id: 'timelineCard', visible: true, order: 9, size: 'half' },
+      { id: 'timelineCard', visible: true, order: 4, size: 'half' },
+      { id: 'upcomingHearingsCard', visible: true, order: 5, size: 'qr' },
+      { id: 'appealsReminder', visible: true, order: 6, size: 'qr' },
+      { id: 'overdueTasks', visible: true, order: 7, size: 'qr' },
+      { id: 'najizPerformance', visible: true, order: 8, size: 'half' },
+      { id: 'employeePerformanceKPI', visible: true, order: 9, size: 'half' },
       { id: 'summaryAI', visible: true, order: 10, size: 'full' },
       { id: 'taskSuggestions', visible: true, order: 11, size: 'full' },
       { id: 'legalPerformanceMetrics', visible: true, order: 12, size: 'half' },
@@ -909,11 +909,12 @@ const Dashboard = function Dashboard({
       { id: 'legalRiskMatrix', visible: true, order: 18, size: 'half' },
       { id: 'summaryCalendar', visible: true, order: 19, size: 'half' },
       { id: 'partnerAnalytics', visible: true, order: 20, size: 'half' },
+      { id: 'casesStatusDist', visible: true, order: 20.5, size: 'half' },
       { id: 'efficiency', visible: true, order: 21, size: 'half' },
       { id: 'agenda', visible: true, order: 22, size: 'full' },
     ];
     setWidgets(defaultWidgets);
-    localStorage.removeItem(`dashboard_widgets_config_${selectedRole}_v2`);
+    localStorage.removeItem(`dashboard_widgets_config_${selectedRole}_v4`);
     
     // delete from Supabase
     const uid = currentUser?.id;
@@ -1729,20 +1730,19 @@ const Dashboard = function Dashboard({
                         <GripVertical className="w-8 h-8 text-amber-500 animate-pulse" />
                       </div>
                     )}
-                    <SummaryWidget icon={<ClockIcon className="w-5 h-5 text-[#fbbf24]" />} title="تنبيهات مهل/مدد الاستئناف" description="المواعيد الزمنية النظامية للقضايا الفعالة">
+                    <SummaryWidget icon={<ClockIcon className="w-5 h-5 text-[#fbbf24]" />} title="تنبيهات مهل الاستئناف" description="المواعيد الزمنية النظامية للقضايا الفعالة">
                       <div className="space-y-3 mt-1 max-h-[220px] overflow-y-auto custom-scrollbar">
                          {(() => {
                            const criticalCases = cases.filter((c: any) => 
                              c.status === 'primary_judgment' || 
                              c.status === 'final_judgment' || 
                              c.status === 'appeal' ||
-                             c.status === 'active' ||
                              c.priority === 'high'
                            );
 
                            if (criticalCases.length === 0) {
                              return (
-                               <div className="text-center py-4 text-xs text-slate-200 font-bold font-bold">
+                               <div className="text-center py-4 text-xs text-slate-200 font-bold">
                                  ✅ لا توجد قضايا بمهل حرجة حالياً.
                                </div>
                              );
@@ -1772,39 +1772,16 @@ const Dashboard = function Dashboard({
                                  <p className="text-[10px] text-white font-bold leading-relaxed">
                                    قضية {c.clientName || 'العميل'}. تنتهي مهلة الاستئناف النظامية بتاريخ {deadlineDate.toISOString().split('T')[0]}
                                  </p>
-                               </div>
+                                </div>
                              );
                            });
                          })()}
-                         {false && cases.filter((c: any) => c.status === 'final_judgment' || c.status === 'primary_judgment' || c.status === 'closed').slice(0, 1).map((c: any, index) => (
-                           <div key={index} className="bg-slate-900 p-3 rounded-xl border border-slate-800 space-y-1.5 shadow-sm">
-                             <div className="flex items-center justify-between text-[10px]">
-                               <span className="text-rose-400 font-black animate-pulse">تبقّى 7 أيام فقط!</span>
-                               <span className="text-white font-mono font-bold">رقم {c.caseNumber}</span>
-                             </div>
-                             <h5 className="text-[10px] font-bold text-[#fbbf24] line-clamp-1">{c.caseName}</h5>
-                             <p className="text-[11px] text-white font-bold leading-relaxed">
-                               صدر حكم ابتدائي، تنتهي مهلة الاستئناف النظامية (30 يوماماً) بتاريخ: 2026-06-15
-                             </p>
-                           </div>
-                         ))}
-                         {false && cases.filter(c => c.status === 'final_judgment' || c.status === 'primary_judgment' || c.status === 'closed').length === 0 && (
-                            <div className="bg-slate-900 p-3 rounded-xl border border-slate-800 space-y-1.5 shadow-sm">
-                             <div className="flex items-center justify-between text-[10px]">
-                               <span className="text-rose-400 font-black animate-pulse">تبقّى 5 أيام فقط!</span>
-                               <span className="text-white font-mono font-bold">رقم 5683921</span>
-                             </div>
-                             <h5 className="text-[10px] font-bold text-[#fbbf24] line-clamp-1">دعوى إثبات شراكة تجارية</h5>
-                             <p className="text-[11px] text-white font-bold leading-relaxed">
-                               صدر حكم ابتدائي، تنتهي مهلة الاستئناف النظامية (30 يوماً) بنهاية الأسبوع الجاري.
-                             </p>
-                           </div>
-                         )}
                       </div>
-                   </SummaryWidget>
-                   </div>
+                    </SummaryWidget>
+                  </div>
                 </EnhancedSortableWidgetWrapper>
               );
+
               if (widget.id === 'summaryInvoicesAI') return (
                 <EnhancedSortableWidgetWrapper widgetColor={widget.color} onChangeColor={handleUpdateWidgetColor} className={getWidgetClassName(widget.size)} key="summaryInvoicesAI" id="summaryInvoicesAI" isCustomizing={isCustomizing} widgetSize={widget.size} onResize={handleUpdateWidgetSize}>
                   <div className={`h-full relative ${isCustomizing ? 'opacity-80 ring-2 ring-dashed ring-amber-400 rounded-3xl' : ''}`}>
@@ -1813,15 +1790,15 @@ const Dashboard = function Dashboard({
                         <GripVertical className="w-8 h-8 text-amber-500 animate-pulse" />
                       </div>
                     )}
-                    <SummaryWidget icon={<FileText className="w-5 h-5" />} title="الفواتير الذكية ZATCA" description="الفواتير ومدقق العقود AI" badgeValue={invoices.length}>
+                    <SummaryWidget icon={<FileText className="w-5 h-5 text-[#fbbf24]" />} title="الفواتير الذكية ZATCA" description="الفواتير ومدقق العقود AI" badgeValue={invoices.length}>
                       <div className="space-y-3 mt-1">
                         <div className="flex justify-between items-center text-xs border-b border-white/5 pb-2">
-                           <span className="flex items-center gap-1.5 text-white font-bold font-bold"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" /> فواتير معتمدة</span>
+                           <span className="flex items-center gap-1.5 text-white font-bold"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" /> فواتير معتمدة</span>
                            <span className="font-black text-emerald-400">{invoices.filter(i => i.status === 'paid').length}</span>
                         </div>
                         <div className="flex justify-between items-center text-xs">
-                           <span className="flex items-center gap-1.5 text-white font-bold font-bold"><Briefcase className="w-3.5 h-3.5 text-[#FACC15] font-black" /> صياغة عقود (AI)</span>
-                           <span className="font-black text-[#FACC15] font-black">مفعل</span>
+                           <span className="flex items-center gap-1.5 text-white font-bold"><Briefcase className="w-3.5 h-3.5 text-[#FACC15]" /> صياغة عقود (AI)</span>
+                           <span className="font-black text-[#FACC15]">مفعل</span>
                         </div>
                       </div>
                     </SummaryWidget>
@@ -1838,75 +1815,67 @@ const Dashboard = function Dashboard({
                       </div>
                     )}
                     <TaskSuggestions 
-                    hearings={hearings}
-                    tasks={tasks}
-                    onAddTask={(taskData) => {
-                      if (onUpdateState) {
-                        const newTask: Task = {
-                          id: `t-${Date.now()}`,
-                          caseNumber: taskData.caseNumber || 'N/A',
-                          title: taskData.title || 'Incomplete Task',
-                          description: taskData.description || '',
-                          status: 'pending',
-                          priority: (taskData.priority as any) || 'medium',
-                          assignedTo: 'المحامي الحالي',
-                          dueDate: new Date(Date.now() + 86400000).toISOString().split('T')[0]
-                        };
-                        onUpdateState('tasks', newTask);
-                        alert('✅ تم إضافة المهمة المقترحة بنجاح إلى جدول أعمالك.');
-                      }
-                    }}
-                  />
+                      hearings={hearings}
+                      tasks={tasks}
+                      onAddTask={(taskData) => {
+                        if (onUpdateState) {
+                          const newTask = {
+                            id: `t-${Date.now()}`,
+                            caseNumber: taskData.caseNumber || 'N/A',
+                            title: taskData.title || 'Incomplete Task',
+                            description: taskData.description || '',
+                            status: 'pending',
+                            priority: taskData.priority || 'medium',
+                            assignedTo: 'المحامي الحالي',
+                            dueDate: new Date(Date.now() + 86400000).toISOString().split('T')[0]
+                          };
+                          onUpdateState('tasks', newTask);
+                          alert('✅ تم إضافة المهمة المقترحة بنجاح إلى جدول أعمالك.');
+                        }
+                      }}
+                    />
                   </div>
                 </EnhancedSortableWidgetWrapper>
               );
-              if (widget.id === 'upcomingHearingsCard') return (
+
+                            if (widget.id === 'upcomingHearingsCard') return (
                 <EnhancedSortableWidgetWrapper widgetColor={widget.color} onChangeColor={handleUpdateWidgetColor} className={getWidgetClassName(widget.size)} key="upcomingHearingsCard" id="upcomingHearingsCard" isCustomizing={isCustomizing} widgetSize={widget.size} onResize={handleUpdateWidgetSize}>
-                  <div className={`group bg-white border border-slate-200 rounded-[2.5rem] p-8 shadow-sm space-y-6 relative h-full ${isCustomizing ? 'opacity-80 ring-2 ring-dashed ring-amber-400' : ''}`}>
+                  <div className={`group bg-white border border-slate-200 rounded-[2.5rem] ${widget.size === 'qr' ? 'p-4 space-y-3' : 'p-6 space-y-4 md:p-8 md:space-y-6'} relative h-full flex flex-col justify-between ${isCustomizing ? 'opacity-80 ring-2 ring-dashed ring-amber-400' : ''}`}>
                     {isCustomizing && (
                       <div className="absolute inset-0 bg-amber-500/5 z-50 flex items-center justify-center rounded-[2.5rem]">
                         <GripVertical className="w-8 h-8 text-amber-500 animate-pulse" />
                       </div>
                     )}
-                    <div className="flex items-center justify-between">
-                      <h3 className="font-black text-slate-900 text-lg flex items-center gap-2">
-                         <Calendar className="w-5 h-5 text-indigo-500" />
-                         أقرب مواعيد الجلسات القضائية
+                    <div className="flex items-center justify-between gap-1.5 break-words">
+                      <h3 className={`font-black text-slate-950 ${widget.size === 'qr' ? 'text-xs' : 'text-sm md:text-base'} flex items-center gap-1.5`}>
+                         <Calendar className={`${widget.size === 'qr' ? 'w-4 h-4' : 'w-5.5 h-5.5'} text-indigo-600 animate-pulse`} />
+                         مواعيد الجلسات
                       </h3>
-                      <div className="flex items-center gap-2 bg-indigo-50 px-3 py-1.5 rounded-xl border border-indigo-100">
-                         <span className="text-[10px] font-black text-indigo-600">توزيع المحاكم</span>
-                         <div className="w-8 h-8">
-                            <ResponsiveContainer width="100%" height="100%" key={themeTick}>
-                              <PieChart>
-                                <Pie data={courtDistributionData} cx="50%" cy="50%" innerRadius={10} outerRadius={14} paddingAngle={2} dataKey="value">
-                                  {courtDistributionData.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.color} stroke="none" />)}
-                                </Pie>
-                              </PieChart>
-                            </ResponsiveContainer>
-                         </div>
+                      <div className={`flex items-center gap-1 bg-indigo-50/70 px-2 py-0.5 rounded-lg border border-indigo-100/50 text-[10px] font-black text-indigo-700 font-bold shrink-0`}>
+                         {hearings.filter(h => h.date >= new Date().toISOString().split('T')[0]).length || 0} جلسة
                       </div>
                     </div>
-                    <div className="space-y-4">
+                    <div className={`space-y-2 flex-1 overflow-y-auto custom-scrollbar ${widget.size === 'qr' ? 'max-h-[140px]' : 'max-h-[220px]'}`}>
                       {hearings.filter(h => h.date >= new Date().toISOString().split('T')[0]).slice(0, 3).map((h, i) => {
                          const relatedCase = cases.find(c => c.caseNumber === h.caseNumber);
                          return (
-                           <div key={i} className="p-4 bg-slate-50 border border-slate-100 rounded-2xl flex items-center gap-4">
-                              <div className="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-xl flex flex-col items-center justify-center shrink-0">
-                                <span className="text-[10px] font-black">{new Date(h.date).getDate()}</span>
-                                <span className="text-[10px] font-bold">{new Date(h.date).toLocaleDateString('ar-SA', { month: 'short' })}</span>
+                           <div key={i} className="p-2.5 bg-slate-50 border border-slate-100 hover:border-indigo-100 rounded-xl flex items-center gap-2.5 text-right transition-all">
+                              <div className="w-10 h-10 bg-indigo-50 border border-indigo-100/40 text-indigo-700 rounded-lg flex flex-col items-center justify-center shrink-0">
+                                <span className="text-[10px] font-extrabold leading-none">{new Date(h.date).getDate()}</span>
+                                <span className="text-[8.5px] font-extrabold leading-none mt-1">{new Date(h.date).toLocaleDateString('ar-SA', { month: 'short' })}</span>
                               </div>
                               <div className="flex-1 min-w-0">
-                                <h4 className="text-xs font-black text-slate-800 line-clamp-1">{h.caseName}</h4>
-                                <p className="text-[10px] text-slate-700 font-bold truncate mt-1">قضية رقم: {relatedCase?.caseNumber || h.caseNumber || 'غير محدد'}</p>
+                                <h4 className="text-[11px] font-black text-slate-950 line-clamp-1 truncate">{h.caseName}</h4>
+                                <p className="text-[9px] text-slate-900 font-extrabold truncate mt-0.5">رقم القضية: {relatedCase?.caseNumber || h.caseNumber || 'غير محدد'}</p>
                               </div>
-                              <div className="text-[10px] font-black text-slate-200 font-bold shrink-0">
+                              <div className="text-[9.5px] font-extrabold text-indigo-700 font-mono bg-indigo-50/30 px-1.5 py-0.5 rounded shrink-0">
                                 {h.time}
                               </div>
                            </div>
                          );
                       })}
                       {hearings.filter(h => h.date >= new Date().toISOString().split('T')[0]).length === 0 && (
-                         <div className="p-6 text-center text-slate-700 font-bold text-xs bg-slate-50 rounded-2xl border border-slate-100">لا توجد جلسات قادمة مجدولة</div>
+                         <div className="p-4 text-center text-slate-950 font-extrabold text-[10.5px] bg-slate-50 rounded-xl border border-slate-100">لا توجد جلسات قادمة مجدولة</div>
                       )}
                     </div>
                   </div>
@@ -2363,22 +2332,12 @@ const Dashboard = function Dashboard({
                         <GripVertical className="w-8 h-8 text-amber-500 animate-pulse" />
                       </div>
                     )}
-                    <div className="bg-[#0f172a] border border-slate-800 rounded-[2.5rem] p-6 shadow-2xl space-y-4 h-full flex flex-col">
-                      <div className="flex items-center justify-between">
-                         <h3 className="font-black text-slate-100 text-sm flex items-center gap-2">
-                           <Activity className="w-4 h-4 text-emerald-400" />
-                           التسلسل الزمني للقضايا
-                         </h3>
-                      </div>
-                      <div className="flex-1 rounded-2xl overflow-hidden bg-slate-900 border border-slate-800 relative min-h-[300px]">
-                        <TimelineD3 hearings={hearings} tasks={tasks} />
-                      </div>
-                    </div>
+                    <TimelineD3 hearings={hearings} tasks={tasks} />
                   </div>
                 </EnhancedSortableWidgetWrapper>
               );
 
-              if (widget.id === 'appealsReminder') return (
+                            if (widget.id === 'appealsReminder') return (
                 <EnhancedSortableWidgetWrapper widgetColor={widget.color} onChangeColor={handleUpdateWidgetColor} className={getWidgetClassName(widget.size)} key="appealsReminder" id="appealsReminder" isCustomizing={isCustomizing} widgetSize={widget.size} onResize={handleUpdateWidgetSize}>
                   <div className={`h-full relative ${isCustomizing ? 'opacity-80 ring-2 ring-dashed ring-amber-400 rounded-[2.5rem]' : ''}`}>
                     {isCustomizing && (
@@ -2386,39 +2345,39 @@ const Dashboard = function Dashboard({
                         <GripVertical className="w-8 h-8 text-amber-500 animate-pulse" />
                       </div>
                     )}
-                    <div className="bg-gradient-to-br from-rose-500 to-rose-700 border-none rounded-[2.5rem] p-8 shadow-xl space-y-6 text-white h-full relative overflow-hidden">
+                    <div className={`bg-gradient-to-br from-[#110406] to-[#1e070c] border border-rose-500/30 rounded-[2.5rem] ${widget.size === 'qr' ? 'p-4 space-y-3' : 'p-6 space-y-4 md:p-8 md:space-y-6'} text-white h-full relative overflow-hidden flex flex-col justify-between`}>
                        <div className="flex justify-between items-center relative z-10">
-                          <h3 className="font-black text-xl flex items-center gap-2">
-                             <AlertTriangle className="w-6 h-6 text-rose-200" />
-                             مهل الاستئناف الحرجة
+                          <h3 className={`font-black ${widget.size === 'qr' ? 'text-xs' : 'text-sm md:text-base'} flex items-center gap-1.5 text-[#fecdd3]`}>
+                             <AlertTriangle className={`${widget.size === 'qr' ? 'w-4 h-4' : 'w-5.5 h-5.5'} text-rose-400 animate-pulse`} />
+                             تنبيهات مهل الاستئناف
                           </h3>
-                          <div className="bg-white/20 backdrop-blur-md px-3 py-1 rounded-xl text-xs font-black">
+                          <div className={`bg-rose-500/25 px-2 py-0.5 rounded-lg ${widget.size === 'qr' ? 'text-[9px]' : 'text-[10px]'} font-black text-rose-300 border border-rose-500/35`}>
                             {cases.filter(c => c.appeal_deadline).length} مهل
                           </div>
                        </div>
-                       <div className="space-y-3 relative z-10">
-                         {cases.filter(c => c.appeal_deadline).sort((a,b) => new Date(a.appeal_deadline!).getTime() - new Date(b.appeal_deadline!).getTime()).slice(0, 3).map((c, i) => {
-                           const isUrgent = new Date(c.appeal_deadline!).getTime() - new Date().getTime() < 3 * 24 * 60 * 60 * 1000;
-                           return (
-                             <div key={i} className="bg-white/10 backdrop-blur border border-white/20 p-4 rounded-2xl flex items-center justify-between">
-                               <div>
-                                 <h4 className="font-bold text-sm truncate max-w-[150px]">{c.caseName}</h4>
-                                 <p className="text-xs text-rose-100 mt-1 opacity-90 truncate max-w-[150px]">{c.caseNumber}</p>
-                               </div>
-                               <div className="text-left shrink-0">
-                                 <span className={`text-[10px] font-black px-2 py-1 rounded-lg inline-block ${isUrgent ? 'bg-white text-rose-600 animate-pulse' : 'bg-white/20 text-white'}`}>
-                                    {isUrgent ? 'اقترب الانتهاء!' : 'متبقي وقت'}
-                                 </span>
-                                 <p className="text-xs font-bold mt-1.5">{new Date(c.appeal_deadline!).toLocaleDateString('ar-SA')}</p>
-                               </div>
-                             </div>
-                           )
-                         })}
-                         {cases.filter(c => c.appeal_deadline).length === 0 && (
-                           <div className="text-center p-8 text-rose-100 font-bold bg-white/5 rounded-2xl border border-white/10">
-                             لا يوجد مواعيد استئناف قادمة
-                           </div>
-                         )}
+                       <div className={`space-y-2 relative z-10 overflow-y-auto custom-scrollbar flex-1 ${widget.size === 'qr' ? 'max-h-[140px]' : 'max-h-[190px]'}`}>
+                          {cases.filter(c => c.appeal_deadline).sort((a,b) => new Date(a.appeal_deadline!).getTime() - new Date(b.appeal_deadline!).getTime()).slice(0, 3).map((c, i) => {
+                            const isUrgent = new Date(c.appeal_deadline!).getTime() - new Date().getTime() < 3 * 24 * 60 * 60 * 1000;
+                            return (
+                              <div key={i} className={`bg-slate-900/85 hover:bg-slate-900 border border-rose-950 p-2.5 rounded-xl flex items-center justify-between gap-1.5 transition-colors`}>
+                                <div className="min-w-0 flex-1 text-right">
+                                  <h4 className="font-extrabold text-[11px] text-white truncate">{c.caseName}</h4>
+                                  <p className="text-[9px] text-[#fca5a5] mt-0.5 opacity-90 truncate font-bold">رقم {c.caseNumber}</p>
+                                </div>
+                                <div className="text-left shrink-0">
+                                  <span className={`text-[8.5px] font-black px-1.5 py-0.5 rounded ${isUrgent ? 'bg-rose-500 text-white animate-pulse' : 'bg-[#e11d48] text-white'}`}>
+                                     {isUrgent ? 'حرج!' : 'مهلة'}
+                                  </span>
+                                  <p className="text-[10px] font-extrabold text-white font-mono mt-0.5">{new Date(c.appeal_deadline!).toLocaleDateString('ar-SA')}</p>
+                                </div>
+                              </div>
+                            )
+                          })}
+                          {cases.filter(c => c.appeal_deadline).length === 0 && (
+                            <div className="text-center p-6 text-rose-200 font-bold text-[11px] bg-[#22070e] rounded-2xl border border-white/10">
+                              لا توجد مواعيد استئناف قادمة
+                            </div>
+                          )}
                        </div>
                     </div>
                   </div>
@@ -2433,27 +2392,27 @@ const Dashboard = function Dashboard({
                         <GripVertical className="w-8 h-8 text-amber-500 animate-pulse" />
                       </div>
                     )}
-                    <div className="bg-white border border-rose-200 rounded-[2.5rem] p-8 shadow-sm space-y-6 h-full border-b-4 border-b-rose-500 flex flex-col">
+                    <div className={`bg-white border-2 border-rose-200 rounded-[2.5rem] ${widget.size === 'qr' ? 'p-4 space-y-3' : 'p-6 space-y-4 md:p-8 md:space-y-6'} shadow-sm h-full border-b-4 border-b-rose-500 flex flex-col justify-between`}>
                       <div className="flex items-center justify-between">
-                         <h3 className="font-black text-rose-600 text-lg flex items-center gap-2">
-                           <AlertCircle className="w-5 h-5" />
+                         <h3 className={`font-black text-rose-600 ${widget.size === 'qr' ? 'text-xs' : 'text-sm md:text-base'} flex items-center gap-1.5`}>
+                           <AlertCircle className="w-4.5 h-4.5 shrink-0" />
                            المهام المتأخرة
                          </h3>
-                         <span className="text-xs font-black bg-rose-50 text-rose-600 px-3 py-1 rounded-full">يتطلب تدخلاً فورياً</span>
+                         {widget.size !== 'qr' && <span className="text-[10px] font-black bg-rose-50 text-rose-600 px-2 py-0.5 rounded-full">يتطلب تدخلاً</span>}
                       </div>
-                      <div className="space-y-4 flex-1">
+                      <div className={`space-y-2 flex-1 overflow-y-auto custom-scrollbar ${widget.size === 'qr' ? 'max-h-[140px]' : 'max-h-[220px]'}`}>
                         {tasks.filter(t => t.dueDate && new Date(t.dueDate) < new Date() && t.status !== 'done').slice(0, 4).map((t, i) => (
-                           <div key={i} className="flex gap-3 items-center group cursor-pointer transition-all hover:bg-slate-50 p-2 rounded-xl border border-transparent hover:border-slate-100">
-                              <div className="w-2 h-2 rounded-full bg-rose-500 shrink-0" />
+                           <div key={i} className="flex gap-2 items-center group cursor-pointer transition-all hover:bg-rose-50 p-2 rounded-xl border border-transparent hover:border-rose-100 text-right">
+                              <div className="w-2.5 h-2.5 rounded-full bg-rose-600 shrink-0" />
                               <div className="flex-1 min-w-0">
-                                <h4 className="text-xs font-black text-slate-800 line-clamp-1 truncate mb-1.5">{t.title}</h4>
+                                <h4 className="text-[11.5px] font-black text-slate-900 line-clamp-1 truncate mb-1">{t.title}</h4>
                                 <TaskCountdown dueDate={t.dueDate!} status={t.status} />
                               </div>
                            </div>
                         ))}
                         {tasks.filter(t => t.dueDate && new Date(t.dueDate) < new Date() && t.status !== 'done').length === 0 && (
                           <div className="h-full flex items-center justify-center">
-                            <p className="text-center text-xs font-bold text-slate-700 py-8 bg-slate-50 rounded-2xl border border-slate-100 border-dashed w-full">المهام مكتملة، عمل ممتاز ✅</p>
+                            <p className="text-center text-[10.5px] font-black text-emerald-600 py-6 bg-emerald-50 rounded-2xl border border-emerald-100 border-dashed w-full">المهام مكتملة، عمل ممتاز ✅</p>
                           </div>
                         )}
                       </div>

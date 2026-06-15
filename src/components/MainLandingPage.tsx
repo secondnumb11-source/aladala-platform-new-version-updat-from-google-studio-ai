@@ -355,102 +355,49 @@ export default function MainLandingPage({ onSignInSelect, onTrialSelect }: MainL
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 items-center">
             
             {/* Title, pitch and main trial incentive */}
-            <div className="lg:col-span-7 space-y-8 text-right">
+            <div className="lg:col-span-12 space-y-8 text-right">
               
-              <div className="inline-flex items-center gap-2.5 px-4 py-2 rounded-full border border-[#D4AF37] bg-[#D4AF37]/15 text-[#FFEA00] font-black text-xs sm:text-sm uppercase tracking-wide shadow-[0_0_10px_rgba(212,175,55,0.3)]">
-                <Trophy className="w-4 h-4 text-[#FFEA00] animate-bounce" />
-                <span>⭐ {isEn ? "The Supreme #1 Integrated Legal Workspace Platform in Saudi Arabia" : "المنظومة القانونية المتكاملة والذكاء القضائي الأعلى اعتماداً بالسعودية"}</span>
+              <div className="inline-flex items-center gap-2.5 px-4 py-2 rounded-full border border-[#D4AF37] bg-[#D3AF37]/20 !text-[#0c2461] font-black text-xs sm:text-sm uppercase tracking-wide shadow-[0_4px_12px_rgba(212,175,55,0.25)]">
+                <Trophy className="w-4 h-4 !text-[#0c2461] animate-bounce" style={{ filter: 'drop-shadow(0 0 3px rgba(59,130,246,0.35))' }} />
+                <span className="font-black" style={{ color: '#0c2461', fontWeight: 900, textShadow: '0 0 8px rgba(59,100,246,0.45), 0 0 15px rgba(59,100,246,0.2)' }}>
+                  ⭐ {isEn ? "The Supreme #1 Integrated Legal Workspace Platform in Saudi Arabia" : "المنظومة القانونية المتكاملة والذكاء القضائي الأعلى اعتماداً بالسعودية"}
+                </span>
               </div>
 
               <h2 className="text-4xl sm:text-6xl font-black leading-tight tracking-tight text-slate-950 font-display">
-                {isEn ? (
-                  <>
-                    <span className="text-[#020617]">Judicial Digital Ecosystem</span>
-                    <br />
-                    Engineered for <span className="bg-gradient-to-r from-[#D4AF37] to-[#FFEA00] bg-clip-text text-transparent" style={{ textShadow: '0 0 20px rgba(212,175,55,0.2)' }}>Elite KSA Law Firms</span>
-                  </>
-                ) : (
-                  <>
-                    <span className="text-[#020617]">العدالة الشاملة والمصممة</span>
-                    <br />
-                    خصيصاً لتمكين <span className="text-[#D4AF37] font-black font-display" style={{ textShadow: '0 1px 3px rgba(0,0,0,0.1), 0 0 12px rgba(212,175,55,0.5)' }}>مكاتب المستشارين والمحاميين والمستشاريين القانونيين</span> بالمملكة
-                  </>
-                )}
+                {isEn ? "Al-Adalah Platform" : "منصة العدالة"} <br />
+                <span className="text-[#0c2461]">{isEn ? "Unified Legal AI & Law Practice Optimization" : "المنظومة القضائية والذكاء الاصطناعي الأقوى بالمملكة"}</span>
               </h2>
 
-              <p className="text-base md:text-lg font-bold leading-relaxed text-slate-900">
+              <p className="text-base sm:text-lg text-slate-800 font-bold leading-relaxed">
                 {isEn 
-                  ? "Simplify daily legal defense workflows, automate client engagement, and maximize productivity. Al-Adalah bridges MOJ Najiz portals, Generative Legal Chat assistants (Gemini), official WhatsApp notification engines, and ZATCA Phase II compliance into a beautifully integrated, ultra-confidential Arabic cloud platform."
-                  : "توفر منصة العدالة أسهل نظام تقني لإدارة مكاتب المحاماة في المملكة. نربطك مباشرة بـ بوابة ناجز لمزامنة الجلسات، ونوفر لك صياغة اللوائح بالذكاء الاصطناعي، إصدار الفواتير الضريبية (هيئة الزكاة والضريبة والجمارك)، ونظام إشعارات واتساب متكامل، لتسهيل عملك وإنجاز القضايا بضغطة زر."}
+                  ? "Al-Adalah is Saudi Arabia's leading legal tech and artificial intelligence workspace platform built natively for modern law firm operations. Connect to Najiz.sa, generate court pleas, issue ZATCA Phase II tax invoices, and automate WhatsApp client status tracking with absolute precision."
+                  : "المنصة القانونية والذكاء القضائي المتكامل والحل التقني لإدارة مكاتب المحاماة في المملكة. نربطك مباشرة بـ بوابة ناجز لمزامنة الجلسات، ونوفر لك صياغة اللوائح بالذكاء الاصطناعي، إصدار الفواتير الضريبية (هيئة الزكاة والضريبة والجمارك)، ونظام إشعارات واتساب متكامل، لتسهيل عملك وإنجاز القضايا بضغطة زر."}
               </p>
 
-              {/* Instant benefits highlight list */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-right">
-                <div className="p-4.5 rounded-2xl bg-white border border-slate-150 transition-colors shadow-sm flex items-center gap-3 animate-fade-in">
-                  <div className="p-1.5 bg-emerald-600 text-white rounded-lg flex items-center justify-center shrink-0">
-                    <Check className="w-4 h-4 font-black" />
-                  </div>
-                  <div>
-                    <span className="text-sm font-extrabold text-slate-950 block">{isEn ? "Direct Najiz.sa Live Match" : "مزامنة لحظية مباشرة مع ناجز"}</span>
-                    <span className="text-xs text-slate-800 block leading-relaxed">{isEn ? "No manual typing or oversight mistakes" : "رصد تلقائي للدوائر ومستجدات القضايا"}</span>
-                  </div>
-                </div>
-
-                <div className="p-4.5 rounded-2xl bg-white border border-slate-150 transition-colors shadow-sm flex items-center gap-3 animate-fade-in">
-                  <div className="p-1.5 bg-emerald-600 text-white rounded-lg flex items-center justify-center shrink-0">
-                    <Check className="w-4 h-4 font-black" />
-                  </div>
-                  <div>
-                    <span className="text-sm font-extrabold text-slate-950 block">{isEn ? "Generative Court AI Memo Drafts" : "الذكاء الاصطناعي التبادلي القضائي"}</span>
-                    <span className="text-xs text-slate-800 block leading-relaxed">{isEn ? "Formulate defenses in less than 10 seconds" : "ابتكار وصياغة ردود الدفوع والاعتراضات"}</span>
-                  </div>
-                </div>
-
-                <div className="p-4.5 rounded-2xl bg-white border border-slate-150 transition-colors shadow-sm flex items-center gap-3 animate-fade-in">
-                  <div className="p-1.5 bg-emerald-600 text-white rounded-lg flex items-center justify-center shrink-0">
-                    <Check className="w-4 h-4 font-black" />
-                  </div>
-                  <div>
-                    <span className="text-sm font-extrabold text-slate-950 block">{isEn ? "Client Server-Side WhatsApp" : "أتمتة بث وإشعارات الواتساب (24H)"}</span>
-                    <span className="text-xs text-slate-800 block leading-relaxed">{isEn ? "Auto notify clients on hearing status changes" : "تحديثات العملاء التنبيهية بدون تدخل بشري"}</span>
-                  </div>
-                </div>
-
-                <div className="p-4.5 rounded-2xl bg-white border border-slate-150 transition-colors shadow-sm flex items-center gap-3 animate-fade-in">
-                  <div className="p-1.5 bg-emerald-600 text-white rounded-lg flex items-center justify-center shrink-0">
-                    <Check className="w-4 h-4 font-black" />
-                  </div>
-                  <div>
-                    <span className="text-sm font-extrabold text-slate-950 block">{isEn ? "ZATCA compliant E-invoices" : "محاسبة وفوترة متطابقة للزكاة ٢"}</span>
-                    <span className="text-xs text-slate-800 block leading-relaxed">{isEn ? "Includes encrypted QR code stamps" : "سير الدفعات وضمان حركات التسوية المالية"}</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Conversion Actions urging "Trial Version" with royal golden contrast theme */}
-              <div className="bg-gradient-to-r from-[#050E21]/95 to-[#0A1E3F]/90 border-2 border-[#D4AF37] p-6 rounded-3xl mt-6 space-y-4 shadow-[0_0_15px_rgba(212,175,55,0.2)] relative">
+              <div id="trial-active-gold-card" className="bg-gradient-to-r from-[#050E21]/95 to-[#0A1E3F]/90 border-2 border-[#D4AF37] p-6 rounded-3xl mt-6 space-y-4 shadow-[0_4px_30px_rgba(212,175,55,0.45)] relative animate-pulse-subtle">
                 <div className="absolute top-3 left-3 flex gap-1">
                   <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping"></span>
                   <span className="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
                 </div>
                 <div>
-                  <h4 className="text-sm font-black text-[#FFEA00] flex items-center gap-1.5" style={{ textShadow: '0 0 8px rgba(255,234,0,0.4)' }}>
+                  <h4 className="text-sm md:text-base font-black flex items-center gap-1.5" style={{ color: '#FFF200', textShadow: '0 0 15px rgba(255, 242, 0, 0.95), 0 0 30px rgba(255, 242, 0, 0.5)' }}>
                     <span>🔥</span>
-                    <span>{isEn ? "Try Al-Adalah Free Trial Version (No Payment Needed)" : "احصل مجاناً على النسخة التجريبية الشاملة لكافة الخصائص"}</span>
+                    <span className="!text-[#FFF200] font-black" style={{ color: '#FFF200' }}>{isEn ? "Try Al-Adalah Free Trial Version (No Payment Needed)" : "احصل مجاناً على النسخة التجريبية الشاملة لكافة الخصائص"}</span>
                   </h4>
-                  <p className="text-xs text-white font-extrabold leading-relaxed mt-1.5">
+                  <p className="text-xs md:text-sm leading-relaxed mt-2 !text-[#FFFFFF] font-black font-bold" style={{ color: '#FFFFFF', textShadow: '0 0 8px rgba(255, 255, 255, 0.35)' }}>
                     {isEn 
                       ? "Get full unconstrained 48-Hour premium access to the Lawyers suite, WhatsApp mock dispatch parameters, Najiz simulation logs, and customized legal AI draft generators to witness the massive lift in firm coordination."
                       : "امنح مكتبك فرصة تجربة التزامن الذاتي، إسناد المهام، صياغة المذكرات بالـ AI، ومراسلة عملائك بنسخة تجريبية مبسطة وسهلة الاستخدام بالكامل وبشاشات تفاعلية."}
                   </p>
                 </div>
                 <div className="flex flex-col sm:flex-row gap-3 pt-2">
-                             {demoState === 'completed' && (
+                  {demoState === 'completed' && (
                     <div className="space-y-2.5 py-1 font-mono text-right text-[10.5px] text-emerald-500 font-bold">
                       {demoLogs.map((log, index) => (
                         <p key={index}>✓ {log}</p>
                       ))}
-                      <div className="mt-3 p-3 bg-emerald-50  border border-emerald-500 text-emerald-600 rounded-xl leading-relaxed text-[9.5px]">
+                      <div className="mt-3 p-3 bg-emerald-50 border border-emerald-500 text-emerald-600 rounded-xl leading-relaxed text-[9.5px]">
                         {isEn 
                           ? "Simulation Complete! Active case parsed. Notifications automatically delivered. Start free trials to integrate genuine files."
                           : "اكتمل الاختبار بنجاح تام! تم رصد مستند الدعوى بالـ AI، وجدولتها، ومراسلة العميل بـ WhatsApp. تتيح لك النسخة التجريبية دمج دعاوى حقيقية."}
@@ -461,17 +408,17 @@ export default function MainLandingPage({ onSignInSelect, onTrialSelect }: MainL
 
                 {/* Quick Trust Numbers Grid */}
                 <div className="grid grid-cols-3 gap-2.5 text-center font-sans">
-                  <div className="p-3 bg-slate-50  rounded-xl border border-slate-800  shadow-sm">
+                  <div className="p-3 bg-slate-50 rounded-xl border border-slate-800 shadow-sm">
                     <p className="text-xs text-amber-400 font-black font-bold">{isEn ? "ZATCA Compliance" : "فوترة الزكاة"}</p>
-                    <p className="text-sm font-black text-slate-900  mt-0.5">100%</p>
+                    <p className="text-sm font-black text-slate-900 mt-0.5">100%</p>
                   </div>
-                  <div className="p-3 bg-slate-50  rounded-xl border border-slate-800  shadow-sm">
+                  <div className="p-3 bg-slate-50 rounded-xl border border-slate-800 shadow-sm">
                     <p className="text-xs text-emerald-500 font-bold">{isEn ? "WhatsApp Rate" : "تسليم الواتساب"}</p>
                     <p className="text-sm font-black text-emerald-550 mt-0.5">99.9%</p>
                   </div>
-                  <div className="p-3 bg-slate-50  rounded-xl border border-slate-800  shadow-sm">
-                    <p className="text-xs text-slate-900  font-bold">{isEn ? "AI Precision" : "دقة الصياغة"}</p>
-                    <p className="text-sm font-black text-slate-900  mt-0.5">98.4%</p>
+                  <div className="p-3 bg-slate-50 rounded-xl border border-slate-800 shadow-sm">
+                    <p className="text-xs text-slate-900 font-bold">{isEn ? "AI Precision" : "دقة الصياغة"}</p>
+                    <p className="text-sm font-black text-slate-900 mt-0.5">98.4%</p>
                   </div>
                 </div>
 
@@ -919,13 +866,13 @@ export default function MainLandingPage({ onSignInSelect, onTrialSelect }: MainL
                 </h4>
 
                 <div className="grid grid-cols-2 gap-5 pt-3">
-                  <div className="p-4 bg-[#0A1E3F]/85 border border-[#D4AF37]/40 rounded-2xl shadow-md transition-all hover:scale-105 duration-300">
-                    <span className="text-xs text-slate-200 font-extrabold block">{isEn ? "Saved Billable Hours" : "ساعات العمل المهدورة المستعادة:"}</span>
-                    <span className="text-3xl font-black text-[#FFEA00] block mt-1 font-sans" style={{ textShadow: '0 0 10px rgba(255,234,0,0.4)' }}>{calculatedSavingsHours} {isEn ? "Hrs" : "ساعة"}</span>
+                  <div className="p-4 bg-[#030712] border-2 border-[#D4AF37] rounded-2xl shadow-xl transition-all hover:scale-105 duration-300">
+                    <span className="text-sm text-white font-black block mb-1 tracking-wide">{isEn ? "Saved Billable Hours" : "ساعات العمل المهدورة المستعادة:"}</span>
+                    <span className="text-3xl font-black text-[#FFFF00] block mt-1 font-sans drop-shadow-[0_2px_5px_rgba(0,0,0,0.9)]">{calculatedSavingsHours} {isEn ? "Hrs" : "ساعة"}</span>
                   </div>
-                  <div className="p-4 bg-[#0A1E3F]/85 border border-[#D4AF37]/40 rounded-2xl shadow-md transition-all hover:scale-105 duration-300">
-                    <span className="text-xs text-slate-200 font-extrabold block">{isEn ? "Equivalent Business Value" : "القيمة المقابلة المحققة للمكتب:"}</span>
-                    <span className="text-3xl font-black text-emerald-400 block mt-1 font-sans" style={{ textShadow: '0 0 10px rgba(52,211,153,0.4)' }}>{calculatedSavesSAR.toLocaleString()} {isEn ? "SAR" : "ر.س"}</span>
+                  <div className="p-4 bg-[#030712] border-2 border-[#D4AF37] rounded-2xl shadow-xl transition-all hover:scale-105 duration-300">
+                    <span className="text-sm text-white font-black block mb-1 tracking-wide">{isEn ? "Equivalent Business Value" : "القيمة المقابلة المحققة للمكتب:"}</span>
+                    <span className="text-3xl font-black text-[#FFFF00] block mt-1 font-sans drop-shadow-[0_2px_5px_rgba(0,0,0,0.9)]">{calculatedSavesSAR.toLocaleString()} {isEn ? "SAR" : "ر.س"}</span>
                   </div>
                 </div>
               </div>
@@ -1053,7 +1000,7 @@ export default function MainLandingPage({ onSignInSelect, onTrialSelect }: MainL
           </div>
 
           <div className="mt-8 p-6 rounded-2xl bg-[#0c2461]/5 border border-slate-300 text-center shadow-sm">
-            <p className="text-sm md:text-base font-black" style={{ color: '#0B2545', fontWeight: 900 }}>
+            <p className="text-sm md:text-base font-black !text-[#0c2461]" style={{ fontWeight: 900, textShadow: '0 0 10px rgba(59, 130, 246, 0.45), 0 0 20px rgba(59, 130, 246, 0.2)' }}>
               💡 {isEn 
                 ? "Al-Adalah achieves S-Tier efficiency. Optimize operating costs and win cases securely. Activate the Trial version on any device instantly."
                 : "الانتقال إلى منصة العدالة يضمن لك الكفاءة الكاملة وحلولا متفوقة خالية من التعقيد لإدارة مئات المكاتب وتفاصيل القضايا بكل سرية وتنظيم احترافي."}

@@ -2257,6 +2257,32 @@ html:not(.dark) {
   font-weight: 800 !important;
 }
 
+/* High Contrast Overrides for TimelineD3 selected and active focus cards to prevent .bg-white overrides */
+.timeline-bright-white {
+  color: #ffffff !important;
+  font-weight: 900 !important;
+}
+
+.timeline-bright-yellow {
+  color: #facc15 !important;
+  font-weight: 950 !important;
+}
+
+.timeline-text-slate-200 {
+  color: #e2e8f0 !important;
+  font-weight: 800 !important;
+}
+
+.timeline-text-emerald-400 {
+  color: #34d399 !important;
+  font-weight: 900 !important;
+}
+
+.timeline-text-amber-300 {
+  color: #fcd34d !important;
+  font-weight: 900 !important;
+}
+
 
 @keyframes scan {
   0% { transform: translateY(0); }

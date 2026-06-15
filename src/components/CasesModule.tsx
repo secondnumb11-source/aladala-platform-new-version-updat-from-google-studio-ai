@@ -3277,173 +3277,48 @@ export default React.memo(function CasesModule({
                               <BellRing className={`w-4 h-4 ${isHighContrast ? 'text-rose-900' : 'text-rose-500'}`} />
                               <span className={`text-[10px] font-black uppercase tracking-widest ${isHighContrast ? 'text-rose-950' : 'text-rose-500'}`}>مهلة الاستئناف</span>
                             </div>
-                            <div className="flex items-center gap-1.5">
-                              <span className={`text-sm font-black font-mono ${isHighContrast ? 'text-slate-950' : 'text-white'}`}>{calculateDaysLeft(c.judgment_date)}</span>
+                            <div className="flex items-center gap-1.5 font-mono">
+                              <span className={`text-sm font-black ${isHighContrast ? 'text-slate-950' : 'text-white'}`}>{calculateDaysLeft(c.judgment_date)}</span>
                               <span className={`text-[10px] font-bold ${isHighContrast ? 'text-slate-700' : 'text-white font-black font-bold'}`}>أيـام متبقية</span>
                             </div>
-                          </div>
-                        )}
-
-                        <div className={`inner-card-box p-4 rounded-2xl font-bold text-[13px] md:text-[14px] overflow-hidden relative space-y-3.5 shadow-md ${
-                          isHighContrast ? 'bg-white border-slate-200 border' : 'bg-[#090d16]'
-                        }`}>
-                           {/* Row 1: Client/Plaintiff */}
-                           <div className="relative z-10 flex justify-between items-center px-1 py-0.5">
-                              <div className="flex items-center gap-2">
-                                 <Users className={`w-3.5 h-3.5 opacity-80 ${isHighContrast ? 'text-white font-black font-bold' : ''}`} />
-                                 <span className={`text-xs font-bold tracking-wide font-sans ${isHighContrast ? 'text-white font-black font-bold' : ''}`}>العميل / المدعي</span>
-                              </div>
-                              <span className={`client-name-custom ${isHighContrast ? '!text-slate-900' : ''}`}>{c.clientName}</span>
-                           </div>
-
-                           {/* Row 2: Lawsuit Number */}
-                           <div className={`relative z-10 flex justify-between items-center border-t pt-2.5 px-1 ${isHighContrast ? 'border-slate-100' : 'border-slate-900/10'}`}>
-                              <div className="flex items-center gap-2">
-                                 <FileText className={`w-3.5 h-3.5 opacity-80 ${isHighContrast ? 'text-white font-black font-bold' : ''}`} />
-                                 <span className={`text-xs font-bold tracking-wide font-sans ${isHighContrast ? 'text-white font-black font-bold' : ''}`}>رقم الدعوى</span>
-                              </div>
-                              <span className={`case-number-custom ${isHighContrast ? '!text-amber-800' : ''}`}>#{c.caseNumber}</span>
-                           </div>
-
-                           {/* Row 3: Next Session Date */}
-                           <div className={`relative z-10 flex justify-between items-center border-t pt-2.5 px-1 ${isHighContrast ? 'border-slate-100' : 'border-slate-900/10'}`}>
-                              <div className="flex items-center gap-1.5">
-                                 <Calendar className={`w-3.5 h-3.5 opacity-85 ${isHighContrast ? 'text-slate-900' : 'text-amber-400 font-black/80'}`} />
-                                 <span className={`next-session-label-custom whitespace-nowrap ${isHighContrast ? '!text-white font-black font-bold' : ''}`}>الموعد القادم</span>
-                              </div>
-                              <div className={`flex items-center gap-1 font-mono px-2 py-0.5 rounded border scale-95 shrink-0 shadow-sm ${
-                                isHighContrast 
-                                  ? 'bg-slate-100 text-slate-950 border-slate-900 font-black' 
-                                  : 'bg-red-950/20 text-red-950 border-red-900/30'
-                              }`}>
-                                 <span className="font-extrabold text-[10px] tracking-wider">{c.nextSessionDate || 'غير محدد'}</span>
-                              </div>
-                           </div>
-
-                           {/* Appeal Countdown */}
-                           {(c.status === 'judgment_issued' || c.status === 'primary_judgment') && c.appeal_deadline && (
-                              <div className="relative z-10 flex justify-between items-center border-t border-rose-900/10 pt-2.5 px-1 bg-rose-500/5 rounded-lg p-2 mt-1">
-                                <div className="flex items-center gap-1.5">
-                                   <Clock className="w-3.5 h-3.5 text-rose-500 animate-pulse" />
-                                   <span className="text-[10px] font-black text-rose-600">مهلة الاستئناف</span>
-                                </div>
-                                <div className="flex flex-col items-end">
-                                   <span className="text-[14px] font-black text-rose-700 font-mono">
-                                     {getDaysLeft(c.appeal_deadline)} يوماً
-                                   </span>
-                                </div>
-                              </div>
-                           )}
-                        </div>
-
-                        <div className={`${isLegalReviewMode ? 'opacity-10' : ''}`}>
-                          {(() => {
-                             const hist = getCaseActivityTimeline(c).slice(0, 3);
-                             if (hist.length > 0) {
-                               return (
-                                 <div className="mt-3 mb-3 p-3 bg-slate-100/5 dark:bg-slate-900/40 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm relative z-10 font-sans">
-                                   <div className="text-[10px] font-black text-slate-700 mb-2 flex items-center gap-1.5 border-b border-slate-200 dark:border-slate-800 pb-1.5"><Clock className="w-3 h-3"/> سجل تغييرات مصغر</div>
-                                   <div className="space-y-2">
-                                     {hist.map((h: any, hIdx: number) => (
-                                       <div key={hIdx} className="flex justify-between items-center text-[10px] gap-2">
-                                         <span className={`truncate font-bold ${isHighContrast ? 'text-slate-800' : 'text-white font-bold'}`}>{h.title || h.notes || 'تحديث حالة القضية'}</span>
-                                         <span className="text-white font-black font-bold font-mono font-bold shrink-0">{h.date}</span>
-                                       </div>
-                                     ))}
-                                   </div>
-                                 </div>
-                               );
-                             }
-                             return null;
-                           })()}
-                          <CaseProgressBar caseObj={c} />
-                        </div>
-
-                        {/* Summary Preview Section - Local (Individual) Display - No layout shifting for other cards */}
-                        {summaryVisibleIds.includes(c.id) && (
-                          <motion.div 
-                            initial={{ opacity: 0, y: -10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            className="case-summary-island mt-4"
-                          >
-                             <div className="flex justify-between items-center mb-2 border-b border-white/5 pb-2">
-                                <span className="text-[11px] text-[#fbbf24] font-black uppercase tracking-tighter">ملخص الدعوى للمراجعة السريعة</span>
-                                <FileText className="w-3 h-3 text-slate-700" />
-                             </div>
-                             <p className="text-right leading-relaxed font-sans opacity-95">
-                               {c.summary || 'لا يوجد ملخص متوفر حالياً لهذه الدعوى.'}
-                             </p>
-                             {c.details && (
-                               <p className="text-[10px] text-white font-black font-bold mt-2 italic font-sans border-t border-white/5 pt-2">
-                                 بينات تكميلية: {c.details}
-                               </p>
-                             )}
-                          </motion.div>
-                        )}
-
-                        {/* Quick Actions without Health Score */}
-                        <div className="flex items-center justify-between mt-4">
-                          <div className="flex gap-2">
-                             {(() => {
-                               const styles = getStatusKineticStyles(c.status);
-                               const statusLabel = c.status === 'active' ? 'جاري العمل' : 
-                                                   c.status === 'closed' ? 'منتهية' : 
-                                                   c.status === 'judgment_issued' ? 'صدر حكم' : 
-                                                   c.status === 'new' ? 'جديدة' : 
-                                                   c.status === 'pending_session' ? 'بانتظار جلسة' :
-                                                   c.status === 'appeal' ? 'استئناف' :
-                                                   c.status === 'execution' ? 'قيد التنفيذ' :
-                                                   c.status === 'struck_off' ? 'شطبت' :
-                                                   c.status === 'primary_judgment' ? 'حكم ابتدائي' :
-                                                   c.status === 'final_judgment' ? 'حكم قطعي' :
-                                                   c.status === 'postponed' ? 'مؤجلة' :
-                                                   c.status === 'under_study' ? 'قيد الدراسة' :
-                                                   c.status === 'under_review' ? 'تحت المراجعة' : 'تحت الدراسة';
-                               return (
-                                 <button
-                                    type="button"
-                                    className={`px-3 py-1.5 rounded-lg text-[10px] font-black border transition-all ${styles.text} bg-transparent drop-shadow-sm cursor-default shadow-sm`}
-                                 >
-                                    {statusLabel}
-                                 </button>
-                               );
-                             })()}
-                             <button
+                            <div className="flex gap-1.5">
+                              <button
                                 type="button"
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   handleStatusTransition(c, 'closed');
                                 }}
                                 className="px-3 py-1.5 rounded-lg text-[10px] font-black border border-[#ffff00] text-[#ffff00] bg-transparent transition-colors cursor-pointer z-35 shadow-sm"
-                             >
+                              >
                                 أرشفة
-                             </button>
-                             <button
-                               type="button"
-                               onClick={(e) => {
-                                 e.stopPropagation();
-                                 alert(`تم تعيين تنبيه لهذه القضية (${c.caseNumber}). لتذكير المهام والجلسات قبل 24 ساعة عبر الإشعارات.`);
-                               }}
-                               className="px-3 py-1.5 rounded-lg bg-indigo-500/10 text-indigo-400 border border-indigo-500/30 transition-colors cursor-pointer z-35 shadow-sm flex items-center gap-1"
-                               title="تفعيل التنبيه المسبق (24 ساعة)"
-                            >
-                               <span>🔔</span>
-                               <span className="text-[10px] font-black">تذكير 24س</span>
-                            </button>
-                             <button
-                               type="button"
-                               onClick={(e) => {
-                                 e.stopPropagation();
-                                 setReportModalCase(c);
-                               }}
-                               className="px-3 py-1.5 rounded-lg bg-emerald-500/10 text-emerald-500 border border-emerald-500/30 transition-colors cursor-pointer z-35 shadow-sm flex items-center gap-1"
-                               title="توليد تقرير سريع"
-                            >
-                               <Printer className="w-3 h-3" />
-                               <span className="text-[10px] font-black">تقرير سريع</span>
-                            </button>
+                              </button>
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  alert(`تم تعيين تنبيه لهذه القضية (${c.caseNumber}). لتذكير المهام والجلسات قبل 24 ساعة عبر الإشعارات.`);
+                                }}
+                                className="px-3 py-1.5 rounded-lg bg-indigo-500/10 text-indigo-400 border border-indigo-500/30 transition-colors cursor-pointer z-[35] shadow-sm flex items-center gap-1"
+                                title="تفعيل التنبيه المسبق (24 ساعة)"
+                              >
+                                🔔
+                                <span className="text-[10px] font-black">تذكير 24س</span>
+                              </button>
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setReportModalCase(c);
+                                }}
+                                className="px-3 py-1.5 rounded-lg bg-emerald-500/10 text-emerald-500 border border-emerald-500/30 transition-colors cursor-pointer z-[35] shadow-sm flex items-center gap-1"
+                                title="توليد تقرير سريع"
+                              >
+                                <Printer className="w-3 h-3" />
+                                <span className="text-[10px] font-black">تقرير سريع</span>
+                              </button>
+                            </div>
                           </div>
-                        </div>
+                        )}
                       </div>
 
                       <div className="mt-8 flex flex-col gap-4 border-t border-white/10 pt-6 relative z-10">
@@ -3460,7 +3335,7 @@ export default React.memo(function CasesModule({
                                 e.stopPropagation();
                                 toggleSummary(c.id);
                               }}
-                              className="text-[10.5px] font-black px-3 py-1.5 rounded-lg border border-[#cfa036] bg-[#cfa036] text-[#023e8a][#b08427][#012a5e] transition-all cursor-pointer z-35 font-sans shadow-lg shadow-amber-500/10"
+                              className="text-[10.5px] font-black px-3 py-1.5 rounded-lg border border-[#cfa036] bg-[#cfa036] text-[#012a5e] transition-all cursor-pointer z-35 font-sans shadow-lg shadow-amber-500/10"
                             >
                               {summaryVisibleIds.includes(c.id) ? 'إخفاء ملخص القضية ▲' : 'ملخص عن القضية 🔍 ▼'}
                             </button>
@@ -3471,8 +3346,6 @@ export default React.memo(function CasesModule({
                             </div>
                           </div>
                         </div>
-
-                        {/* Expandable area removed per user request - summary now shows inside Card locally */}
                       </div>
                     </div>
                   </div>
@@ -3481,7 +3354,6 @@ export default React.memo(function CasesModule({
             </div>
           )}
 
-          {/* Infinite Sentinel ref and Skeleton loading frames */}
           <div ref={loadMoreRef} className="h-6 w-full mt-4 bg-transparent" />
 
           {isVirtualLoading && (
@@ -3512,7 +3384,6 @@ export default React.memo(function CasesModule({
         </div>
       )}
 
-      {/* Creation Modal */}
       {isCreateOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#050e21]/80 backdrop-blur-md p-6 animate-in fade-in duration-500">
           <div className="bg-[#050e21] border border-slate-800 rounded-[2.5rem] w-full max-w-5xl p-0 overflow-hidden shadow-2xl animate-in zoom-in-95 duration-500">
@@ -3529,7 +3400,7 @@ export default React.memo(function CasesModule({
               </div>
               <button 
                 onClick={() => setIsCreateOpen(false)}
-                className="w-12 h-12 bg-[#050e21][#050e21] text-white rounded-2xl flex items-center justify-center transition-all cursor-pointer border border-white"
+                className="w-12 h-12 bg-[#050e21] text-white rounded-2xl flex items-center justify-center transition-all cursor-pointer border border-white"
               >
                 ×
               </button>
@@ -3537,56 +3408,55 @@ export default React.memo(function CasesModule({
 
             <form onSubmit={handleCreateCase} className="p-8 pb-10">
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 font-sans">
-                
                 {/* Fieldset 1: الأساسيات */}
-                <fieldset className="border border-slate-800 rounded-2xl p-5 space-y-4 bg-slate-900/40">
-                  <legend className="text-xs font-black text-amber-500 px-3 py-1 bg-[#050e21] border border-slate-800 rounded-lg">البيانات الأساسية</legend>
+                <fieldset className="border border-[#D4AF37]/40 rounded-3xl p-6 space-y-6 bg-[#0a1e3f]/50 relative overflow-hidden shadow-[0_12px_40px_rgba(0,0,0,0.6)]">
+                  <legend className="text-sm font-black text-[#FFD700] px-4 py-1.5 bg-[#050e21] border-2 border-[#D4AF37]/70 rounded-xl shadow-[0_0_15px_rgba(212,175,55,0.4)]">البيانات الأساسية</legend>
                   
                   <div className="space-y-2">
-                    <label className="text-[10px] font-black text-[#FACC15] uppercase">رقم الدعوى</label>
-                    <input type="number" value={newCaseNumber} onChange={(e) => setNewCaseNumber(e.target.value)} placeholder="00000" required
-                      className="w-full theme-card-bg border border-slate-700/50 rounded-xl py-2 px-3 text-xs font-black text-white focus:outline-none focus:border-amber-500 transition-colors" />
+                    <label className="text-sm font-black text-[#FFD700] uppercase tracking-wider block">رقم الدعوى</label>
+                    <input type="text" value={newCaseNumber} onChange={(e) => setNewCaseNumber(e.target.value)} placeholder="00000" required
+                      className="w-full bg-[#020813] border-2 border-[#D4AF37]/30 hover:border-[#FF7F00]/60 focus:border-[#FF7F00] rounded-xl py-3 px-4 text-base md:text-lg font-black text-[#FF7F00] placeholder-[#FF7F00]/40 focus:outline-none transition-all shadow-[inset_0_2px_8px_rgba(0,0,0,0.9)] focus:ring-1 focus:ring-[#FF7F00]" />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-[10px] font-black text-[#FACC15] uppercase">مسمى الخصومة</label>
+                    <label className="text-sm font-black text-[#FFD700] uppercase tracking-wider block">مسمى الخصومة</label>
                     <input type="text" value={newCaseName} onChange={(e) => setNewCaseName(e.target.value)} placeholder="اسم الدعوى بالكامل" required
-                      className="w-full theme-card-bg border border-slate-700/50 rounded-xl py-2 px-3 text-xs font-black text-white focus:outline-none focus:border-amber-500 transition-colors" />
+                      className="w-full bg-[#020813] border-2 border-[#D4AF37]/30 hover:border-[#FF7F00]/60 focus:border-[#FF7F00] rounded-xl py-3 px-4 text-base md:text-lg font-black text-[#FF7F00] placeholder-[#FF7F00]/40 focus:outline-none transition-all shadow-[inset_0_2px_8px_rgba(0,0,0,0.9)] focus:ring-1 focus:ring-[#FF7F00]" />
                   </div>
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <label className="text-[10px] font-black text-[#FACC15] uppercase">المحكمة</label>
+                      <label className="text-sm font-black text-[#FFD700] uppercase tracking-wider block">المحكمة</label>
                       <input type="text" value={newCourt} onChange={(e) => setNewCourt(e.target.value)} placeholder="اسم المحكمة"
-                        className="w-full theme-card-bg border border-slate-700/50 rounded-xl py-2 px-3 text-xs font-black text-white focus:outline-none focus:border-amber-500 transition-colors" />
+                        className="w-full bg-[#020813] border-2 border-[#D4AF37]/30 hover:border-[#FF7F00]/60 focus:border-[#FF7F00] rounded-xl py-3 px-4 text-base md:text-lg font-black text-[#FF7F00] placeholder-[#FF7F00]/40 focus:outline-none transition-all shadow-[inset_0_2px_8px_rgba(0,0,0,0.9)] focus:ring-1 focus:ring-[#FF7F00]" />
                     </div>
                     <div className="space-y-2">
-                      <label className="text-[10px] font-black text-[#FACC15] uppercase">التصنيف</label>
-                      <select value={newCategory} onChange={(e) => { setNewCategory(e.target.value); setCategoryFilter([e.target.value]); }}
-                        className="w-full theme-card-bg border border-slate-700/50 rounded-xl py-2 px-3 text-xs font-black text-white focus:outline-none focus:border-amber-500 transition-colors"
+                      <label className="text-sm font-black text-[#FFD700] uppercase tracking-wider block">التصنيف</label>
+                      <select value={newCategory} onChange={(e) => { setNewCategory(e.target.value); }}
+                        className="w-full bg-[#020813] border-2 border-[#D4AF37]/30 hover:border-[#FF7F00]/60 focus:border-[#FF7F00] rounded-xl py-3 px-4 text-base md:text-lg font-black text-[#FF7F00] focus:outline-none transition-all shadow-[inset_0_2px_8px_rgba(0,0,0,0.9)] focus:ring-1 focus:ring-[#FF7F00]"
                       >
-                        <option value="criminal">جزائية 🛡️</option>
-                        <option value="labor">عمالية 💼</option>
-                        <option value="commercial">تجارية 🏛️</option>
-                        <option value="personal_status">أحوال شخصية ⚖️</option>
-                        <option value="administrative">إدارية 🏛️</option>
-                        <option value="execution">منازعة تنفيذ ⚡</option>
-                        <option value="consultation">استشارة قانونية 💡</option>
-                        <option value="other">أخرى 📌</option>
+                        <option value="criminal" className="bg-[#050e21] text-[#FF7F00]">جزائية 🛡️</option>
+                        <option value="labor" className="bg-[#050e21] text-[#FF7F00]">عمالية 💼</option>
+                        <option value="commercial" className="bg-[#050e21] text-[#FF7F00]">تجارية 🏛️</option>
+                        <option value="personal_status" className="bg-[#050e21] text-[#FF7F00]">أحوال شخصية ⚖️</option>
+                        <option value="administrative" className="bg-[#050e21] text-[#FF7F00]">إدارية 🏛️</option>
+                        <option value="execution" className="bg-[#050e21] text-[#FF7F00]">منازعة تنفيذ ⚡</option>
+                        <option value="consultation" className="bg-[#050e21] text-[#FF7F00]">استشارة قانونية 💡</option>
+                        <option value="other" className="bg-[#050e21] text-[#FF7F00]">أخرى 📌</option>
                       </select>
                     </div>
                   </div>
                 </fieldset>
 
                 {/* Fieldset 2: الأطراف */}
-                <fieldset className="border border-slate-800 rounded-2xl p-5 space-y-4 bg-slate-900/40">
-                  <legend className="text-xs font-black text-amber-500 px-3 py-1 bg-[#050e21] border border-slate-800 rounded-lg">بيانات الأطراف</legend>
+                <fieldset className="border border-[#D4AF37]/40 rounded-3xl p-6 space-y-6 bg-[#0a1e3f]/50 relative overflow-hidden shadow-[0_12px_40px_rgba(0,0,0,0.6)]">
+                  <legend className="text-sm font-black text-[#FFD700] px-4 py-1.5 bg-[#050e21] border-2 border-[#D4AF37]/70 rounded-xl shadow-[0_0_15px_rgba(212,175,55,0.4)]">بيانات الأطراف</legend>
                   
-                  <div className="flex gap-4 mb-2">
-                    <label className="flex items-center gap-2 text-xs font-black text-white font-bold cursor-pointer">
-                      <input type="radio" name="clientType" value="individual" checked={newClientType === 'individual'} onChange={() => setNewClientType('individual')} className="accent-amber-500" />
+                  <div className="flex gap-6 mb-3">
+                    <label className="flex items-center gap-2 text-base font-black text-white hover:text-[#FF7F00] transition-colors cursor-pointer">
+                      <input type="radio" name="clientType" value="individual" checked={newClientType === 'individual'} onChange={() => setNewClientType('individual')} className="accent-[#FF7F00] h-5 w-5" />
                       فرد
                     </label>
-                    <label className="flex items-center gap-2 text-xs font-black text-white font-bold cursor-pointer">
-                      <input type="radio" name="clientType" value="company" checked={newClientType === 'company'} onChange={() => setNewClientType('company')} className="accent-amber-500" />
+                    <label className="flex items-center gap-2 text-base font-black text-white hover:text-[#FF7F00] transition-colors cursor-pointer">
+                      <input type="radio" name="clientType" value="company" checked={newClientType === 'company'} onChange={() => setNewClientType('company')} className="accent-[#FF7F00] h-5 w-5" />
                       شركة تجارية
                     </label>
                   </div>
@@ -3594,58 +3464,58 @@ export default React.memo(function CasesModule({
                   {newClientType === 'individual' ? (
                     <div className="space-y-4 transition-all duration-300">
                       <div className="space-y-2">
-                        <label className="text-[10px] font-black text-[#FACC15] uppercase">العميل / المدعي (فرد)</label>
-                        <div className="flex flex-col gap-2 relative">
+                        <label className="text-sm font-black text-[#FFD700] uppercase block">العميل / المدعي (فرد)</label>
+                        <div className="flex flex-col gap-3 relative">
                           <input type="text" value={newClientName} onChange={(e) => setNewClientName(e.target.value)} placeholder="اسم المدعي بالكامل" required list="clients-list"
-                            className="w-full theme-card-bg border border-slate-700/50 rounded-xl py-2 px-3 text-xs font-black text-white focus:outline-none focus:border-amber-500 transition-colors" 
+                            className="w-full bg-[#020813] border-2 border-[#D4AF37]/30 hover:border-[#FF7F00]/60 focus:border-[#FF7F00] rounded-xl py-3 px-4 text-base md:text-lg font-black text-[#FF7F00] placeholder-[#FF7F00]/40 focus:outline-none transition-all shadow-[inset_0_2px_8px_rgba(0,0,0,0.9)] focus:ring-1 focus:ring-[#FF7F00]" 
                           />
                           <datalist id="clients-list">
-                            {clients.map(cl => ( <option key={cl.id} value={cl.name} /> ))}
+                            {clients.map(cl => ( <option key={cl.id} value={cl.name} className="bg-[#050e21] text-[#FF7F00]" /> ))}
                           </datalist>
                           <input type="text" value={newPlaintiffNationalId} onChange={(e) => setNewPlaintiffNationalId(e.target.value)} placeholder="رقم هوية المدعي"
-                            className="w-full theme-card-bg border border-slate-700/50 rounded-xl py-2 px-3 text-xs font-black text-white focus:outline-none focus:border-amber-500 transition-colors" />
+                            className="w-full bg-[#020813] border-2 border-[#D4AF37]/30 hover:border-[#FF7F00]/60 focus:border-[#FF7F00] rounded-xl py-3 px-4 text-base md:text-lg font-black text-[#FF7F00] placeholder-[#FF7F00]/40 focus:outline-none transition-all shadow-[inset_0_2px_8px_rgba(0,0,0,0.9)] focus:ring-1 focus:ring-[#FF7F00]" />
                           <input type="text" value={newPlaintiffPhone} onChange={(e) => setNewPlaintiffPhone(e.target.value)} placeholder="رقم هاتف المدعي"
-                            className="w-full theme-card-bg border border-slate-700/50 rounded-xl py-2 px-3 text-xs font-black text-white focus:outline-none focus:border-amber-500 transition-colors" />
+                            className="w-full bg-[#020813] border-2 border-[#D4AF37]/30 hover:border-[#FF7F00]/60 focus:border-[#FF7F00] rounded-xl py-3 px-4 text-base md:text-lg font-black text-[#FF7F00] placeholder-[#FF7F00]/40 focus:outline-none transition-all shadow-[inset_0_2px_8px_rgba(0,0,0,0.9)] focus:ring-1 focus:ring-[#FF7F00]" />
                         </div>
                       </div>
                       
-                      <div className="space-y-2 pt-2 border-t border-slate-800">
-                        <label className="text-[10px] font-black text-[#FACC15] uppercase">الخصم / المدعى عليه (فرد)</label>
-                        <div className="flex flex-col gap-2">
+                      <div className="space-y-2 pt-3 border-t-2 border-[#D4AF37]/20">
+                        <label className="text-sm font-black text-[#FFD700] uppercase block">الخصم / المدعى عليه (فرد)</label>
+                        <div className="flex flex-col gap-3">
                           <input type="text" value={newOpponent} onChange={(e) => setNewOpponent(e.target.value)} placeholder="اسم المدعى عليه"
-                            className="w-full theme-card-bg border border-slate-700/50 rounded-xl py-2 px-3 text-xs font-black text-white focus:outline-none focus:border-amber-500 transition-colors" />
+                            className="w-full bg-[#020813] border-2 border-[#D4AF37]/30 hover:border-[#FF7F00]/60 focus:border-[#FF7F00] rounded-xl py-3 px-4 text-base md:text-lg font-black text-[#FF7F00] placeholder-[#FF7F00]/40 focus:outline-none transition-all shadow-[inset_0_2px_8px_rgba(0,0,0,0.9)] focus:ring-1 focus:ring-[#FF7F00]" />
                           <input type="text" value={newOpponentNationalId} onChange={(e) => setNewOpponentNationalId(e.target.value)} placeholder="رقم هوية المدعى عليه"
-                            className="w-full theme-card-bg border border-slate-700/50 rounded-xl py-2 px-3 text-xs font-black text-white focus:outline-none focus:border-amber-500 transition-colors" />
+                            className="w-full bg-[#020813] border-2 border-[#D4AF37]/30 hover:border-[#FF7F00]/60 focus:border-[#FF7F00] rounded-xl py-3 px-4 text-base md:text-lg font-black text-[#FF7F00] placeholder-[#FF7F00]/40 focus:outline-none transition-all shadow-[inset_0_2px_8px_rgba(0,0,0,0.9)] focus:ring-1 focus:ring-[#FF7F00]" />
                         </div>
                       </div>
-
-                      <div className="space-y-2 pt-2 border-t border-slate-800">
-                         <div className="flex flex-col gap-2">
+ 
+                      <div className="space-y-2 pt-3 border-t-2 border-[#D4AF37]/20">
+                         <div className="flex flex-col gap-3">
                           <input type="text" value={newPoANumber} onChange={(e) => setNewPoANumber(e.target.value)} placeholder="رقم الوكالة"
-                              className="w-full theme-card-bg border border-slate-700/50 rounded-xl py-2 px-3 text-xs font-black text-white focus:outline-none focus:border-amber-500 transition-colors" />
+                            className="w-full bg-[#020813] border-2 border-[#D4AF37]/30 hover:border-[#FF7F00]/60 focus:border-[#FF7F00] rounded-xl py-3 px-4 text-base md:text-lg font-black text-[#FF7F00] placeholder-[#FF7F00]/40 focus:outline-none transition-all shadow-[inset_0_2px_8px_rgba(0,0,0,0.9)] focus:ring-1 focus:ring-[#FF7F00]" />
                           <input type="text" value={newNajizNumber} onChange={(e) => setNewNajizNumber(e.target.value)} placeholder="رقم الدعوى على ناجز (إن وجد)"
-                              className="w-full theme-card-bg border border-slate-700/50 rounded-xl py-2 px-3 text-xs font-black text-white focus:outline-none focus:border-amber-500 transition-colors" />
+                            className="w-full bg-[#020813] border-2 border-[#D4AF37]/30 hover:border-[#FF7F00]/60 focus:border-[#FF7F00] rounded-xl py-3 px-4 text-base md:text-lg font-black text-[#FF7F00] placeholder-[#FF7F00]/40 focus:outline-none transition-all shadow-[inset_0_2px_8px_rgba(0,0,0,0.9)] focus:ring-1 focus:ring-[#FF7F00]" />
                          </div>
                       </div>
                     </div>
                   ) : (
                     <div className="space-y-4 transition-all duration-300">
                       <div className="space-y-2">
-                        <label className="text-[10px] font-black text-[#FACC15] uppercase">بيانات الشركة (تجارية)</label>
-                        <div className="flex flex-col gap-2">
+                        <label className="text-sm font-black text-[#FFD700] uppercase block">بيانات الشركة (تجارية)</label>
+                        <div className="flex flex-col gap-3">
                           <input type="text" value={newClientName} onChange={(e) => setNewClientName(e.target.value)} placeholder="اسم الشركة" required
-                            className="w-full theme-card-bg border border-slate-700/50 rounded-xl py-2 px-3 text-xs font-black text-white focus:outline-none focus:border-amber-500 transition-colors" />
+                            className="w-full bg-[#020813] border-2 border-[#D4AF37]/30 hover:border-[#FF7F00]/60 focus:border-[#FF7F00] rounded-xl py-3 px-4 text-base md:text-lg font-black text-[#FF7F00] placeholder-[#FF7F00]/40 focus:outline-none transition-all shadow-[inset_0_2px_8px_rgba(0,0,0,0.9)] focus:ring-1 focus:ring-[#FF7F00]" />
                           <input type="text" value={newCompanyCR} onChange={(e) => setNewCompanyCR(e.target.value)} placeholder="رقم السجل التجاري أو الرقم الموحد"
-                            className="w-full theme-card-bg border border-slate-700/50 rounded-xl py-2 px-3 text-xs font-black text-white focus:outline-none focus:border-amber-500 transition-colors" />
+                            className="w-full bg-[#020813] border-2 border-[#D4AF37]/30 hover:border-[#FF7F00]/60 focus:border-[#FF7F00] rounded-xl py-3 px-4 text-base md:text-lg font-black text-[#FF7F00] placeholder-[#FF7F00]/40 focus:outline-none transition-all shadow-[inset_0_2px_8px_rgba(0,0,0,0.9)] focus:ring-1 focus:ring-[#FF7F00]" />
                         </div>
                       </div>
                       
-                      <div className="space-y-2 pt-2 border-t border-slate-800">
-                         <div className="flex flex-col gap-2">
+                      <div className="space-y-2 pt-3 border-t-2 border-[#D4AF37]/20">
+                         <div className="flex flex-col gap-3">
                           <input type="text" value={newPoANumber} onChange={(e) => setNewPoANumber(e.target.value)} placeholder="رقم الوكالة (إن وجد)"
-                              className="w-full theme-card-bg border border-slate-700/50 rounded-xl py-2 px-3 text-xs font-black text-white focus:outline-none focus:border-amber-500 transition-colors" />
+                            className="w-full bg-[#020813] border-2 border-[#D4AF37]/30 hover:border-[#FF7F00]/60 focus:border-[#FF7F00] rounded-xl py-3 px-4 text-base md:text-lg font-black text-[#FF7F00] placeholder-[#FF7F00]/40 focus:outline-none transition-all shadow-[inset_0_2px_8px_rgba(0,0,0,0.9)] focus:ring-1 focus:ring-[#FF7F00]" />
                           <input type="text" value={newNajizNumber} onChange={(e) => setNewNajizNumber(e.target.value)} placeholder="رقم الدعوى على ناجز (إن وجد)"
-                              className="w-full theme-card-bg border border-slate-700/50 rounded-xl py-2 px-3 text-xs font-black text-white focus:outline-none focus:border-amber-500 transition-colors" />
+                            className="w-full bg-[#020813] border-2 border-[#D4AF37]/30 hover:border-[#FF7F00]/60 focus:border-[#FF7F00] rounded-xl py-3 px-4 text-base md:text-lg font-black text-[#FF7F00] placeholder-[#FF7F00]/40 focus:outline-none transition-all shadow-[inset_0_2px_8px_rgba(0,0,0,0.9)] focus:ring-1 focus:ring-[#FF7F00]" />
                          </div>
                       </div>
                     </div>
@@ -3653,24 +3523,24 @@ export default React.memo(function CasesModule({
                 </fieldset>
 
                 {/* Fieldset 3: التفاصيل وتاريخ الجلسة */}
-                <fieldset className="border border-slate-800 rounded-2xl p-5 space-y-4 bg-slate-900/40 flex flex-col">
-                  <legend className="text-xs font-black text-amber-500 px-3 py-1 bg-[#050e21] border border-slate-800 rounded-lg">الجدولة والملاحظات</legend>
+                <fieldset className="border border-[#D4AF37]/40 rounded-3xl p-6 space-y-6 bg-[#0a1e3f]/50 flex flex-col relative overflow-hidden shadow-[0_12px_40px_rgba(0,0,0,0.6)]">
+                  <legend className="text-sm font-black text-[#FFD700] px-4 py-1.5 bg-[#050e21] border-2 border-[#D4AF37]/70 rounded-xl shadow-[0_0_15px_rgba(212,175,55,0.4)]">الجدولة والملاحظات</legend>
                   
                   <div className="space-y-2">
-                    <label className="text-[10px] font-black text-[#FACC15] uppercase">تاريخ الجلسة القادمة</label>
+                    <label className="text-sm font-black text-[#FFD700] uppercase block">تاريخ الجلسة القادمة</label>
                     <input type="date" value={newNextDate} onChange={(e) => setNewNextDate(e.target.value)}
-                      className="w-full theme-card-bg border border-slate-700/50 rounded-xl py-2 px-3 text-xs font-black text-white focus:outline-none focus:border-amber-500 transition-colors" />
+                      className="w-full bg-[#020813] border-2 border-[#D4AF37]/30 hover:border-[#FF7F00]/60 focus:border-[#FF7F00] rounded-xl py-3 px-4 text-base md:text-lg font-black text-[#FF7F00] placeholder-[#FF7F00]/40 focus:outline-none transition-all shadow-[inset_0_2px_8px_rgba(0,0,0,0.9)] focus:ring-1 focus:ring-[#FF7F00]" />
                   </div>
                   <div className="space-y-2 flex-grow flex flex-col relative">
-                    <label className="text-[10px] font-black text-[#FACC15] uppercase">مذكرة الملخص السريع</label>
+                    <label className="text-sm font-black text-[#FFD700] uppercase block">مذكرة الملخص السريع</label>
                     <textarea value={newSummary} onChange={(e) => setNewSummary(e.target.value)} placeholder="اكتب ملخصاً هنا..."
-                      className="w-full theme-card-bg border border-slate-700/50 rounded-xl py-2 px-3 text-xs font-black text-white focus:outline-none focus:border-amber-500 resize-none flex-grow min-h-[60px]"
+                      className="w-full bg-[#020813] border-2 border-[#D4AF37]/30 hover:border-[#FF7F00]/60 focus:border-[#FF7F00] rounded-xl py-3 px-4 text-base md:text-lg font-black text-[#FF7F00] placeholder-[#FF7F00]/40 focus:outline-none transition-all shadow-[inset_0_2px_8px_rgba(0,0,0,0.9)] focus:ring-1 focus:ring-[#FF7F00] resize-none flex-grow min-h-[90px]"
                     ></textarea>
                   </div>
                   <div className="space-y-2 flex-grow flex flex-col relative">
-                    <label className="text-[10px] font-black text-[#FACC15] uppercase">تفاصيل الدعوى</label>
+                    <label className="text-sm font-black text-[#FFD700] uppercase block">تفاصيل الدعوى</label>
                     <textarea value={newDetails} onChange={(e) => setNewDetails(e.target.value)} placeholder="اكتب التفاصيل الهامة..."
-                      className="w-full theme-card-bg border border-slate-700/50 rounded-xl py-2 px-3 text-xs font-black text-white focus:outline-none focus:border-amber-500 resize-none flex-grow min-h-[60px]"
+                      className="w-full bg-[#020813] border-2 border-[#D4AF37]/30 hover:border-[#FF7F00]/60 focus:border-[#FF7F00] rounded-xl py-3 px-4 text-base md:text-lg font-black text-[#FF7F00] placeholder-[#FF7F00]/40 focus:outline-none transition-all shadow-[inset_0_2px_8px_rgba(0,0,0,0.9)] focus:ring-1 focus:ring-[#FF7F00] resize-none flex-grow min-h-[90px]"
                     ></textarea>
                   </div>
                 </fieldset>
@@ -3681,7 +3551,7 @@ export default React.memo(function CasesModule({
                   className="bg-[#0c1a35] text-white font-bold font-black py-3 px-8 rounded-xl text-xs uppercase transition-all border border-slate-700 cursor-pointer"
                 >إلغاء</button>
                 <button type="submit"
-                  className="bg-amber-400 text-blue-950 font-black py-3 px-12 rounded-xl text-xs uppercase transition-all shadow-[0_0_15px_rgba(251,191,36,0.3)][0_0_25px_rgba(251,191,36,0.5)] border border-amber-500 cursor-pointer"
+                  className="bg-amber-400 text-blue-950 font-black py-3 px-12 rounded-xl text-xs uppercase transition-all shadow-[0_0_15px_rgba(251,191,36,0.3)] border border-amber-500 cursor-pointer"
                 >حفظ الدعوى والمزامنة تلقائياً</button>
               </div>
             </form>
