@@ -9,7 +9,7 @@ import cors from 'cors';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { GoogleGenAI } from '@google/genai';
-import { createClient } from '@supabase/supabase-js';
+import { supabase as sharedSupabase } from './src/lib/supabase.js';
 import { initializeApp, cert } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
 import { Client as ElasticClient } from '@elastic/elasticsearch';
@@ -21,7 +21,6 @@ import fs from 'fs';
 import nodemailer from 'nodemailer';
 import twilio from 'twilio';
 import OpenAI from 'openai';
-
 import JSZip from 'jszip';
 
 // Supabase integration (Next-style helpers adapted for Express)
@@ -32,23 +31,43 @@ import { query } from './src/lib/db.js';
 let adminApp: any = null;
 let adminDb: any = null;
 
-// Initialize Firebase Admin if service account is available (Requested by user)
+// Initialize Firebase Admin if service account is available
 try {
   const saPath = path.resolve(process.cwd(), 'serviceAccountKey.json');
   if (fs.existsSync(saPath)) {
     const serviceAccount = JSON.parse(fs.readFileSync(saPath, 'utf8'));
+    if (serviceAccount && typeof serviceAccount.private_key === 'string') {
+      serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, '\n');
+    }
     adminApp = initializeApp({
       credential: cert(serviceAccount)
     });
     adminDb = getFirestore(adminApp);
     console.log('[Firebase Admin] Initialized successfully from serviceAccountKey.json');
-  } else if (process.env.FIREBASE_SERVICE_ACCOUNT) {
-    const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
-    adminApp = initializeApp({
-      credential: cert(serviceAccount)
-    });
-    adminDb = getFirestore(adminApp);
-    console.log('[Firebase Admin] Initialized successfully from environment variable');
+  } else if (process.env.FIREBASE_SERVICE_ACCOUNT && process.env.FIREBASE_SERVICE_ACCOUNT.trim().length > 0) {
+    try {
+      const saRaw = process.env.FIREBASE_SERVICE_ACCOUNT;
+      // Normalize common env var escaping issues
+      const saProcessed = saRaw.includes('\\n') ? saRaw.replace(/\\n/g, '\n') : saRaw;
+      const serviceAccount = JSON.parse(saProcessed);
+      adminApp = initializeApp({
+        credential: cert(serviceAccount)
+      });
+      adminDb = getFirestore(adminApp);
+      console.log('[Firebase Admin] Initialized successfully from environment variable');
+    } catch (parseErr: any) {
+      console.warn('[Firebase Admin] Primary parse failed, trying direct JSON.parse:', parseErr.message);
+      try {
+        const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+        adminApp = initializeApp({
+          credential: cert(serviceAccount)
+        });
+        adminDb = getFirestore(adminApp);
+        console.log('[Firebase Admin] Initialized successfully (raw)');
+      } catch (finalErr: any) {
+        console.error('[Firebase Admin] Critical JSON Parse error for FIREBASE_SERVICE_ACCOUNT:', finalErr.message);
+      }
+    }
   } else {
     console.log('[Firebase Admin] No service account found. Firestore features will be disabled.');
   }
@@ -317,52 +336,7 @@ setInterval(() => {
 let supabaseClient: any = null;
 
 function getSupabaseClient() {
-  if (supabaseClient === 'DISABLED') return null;
-  if (supabaseClient) return supabaseClient;
-  
-  const url = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || "https://sydcelofkzvtsfatxnka.supabase.co";
-  const key = process.env.SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || "sb_publishable_VW8gI2hAK_UzF8ApuoUUhA_KUmR1KYz";
-  if (!url || !key) return null;
-
-  const cleanUrl = url.trim().replace(/^['"]|['"]$/g, '');
-  const cleanKey = key.trim().replace(/^['"]|['"]$/g, '');
-
-  if (!cleanUrl || !cleanKey) return null;
-
-  // Validate format and check for common placeholder strings
-  const isPlaceholder = 
-    cleanUrl.includes('placeholder') || 
-    cleanUrl.includes('your-project') || 
-    cleanUrl.includes('YOUR_') || 
-    cleanUrl.includes('example.com') ||
-    cleanKey.includes('placeholder') ||
-    cleanKey.includes('YOUR_');
-
-  if (isPlaceholder) {
-    console.log('[Activity Log Audit] Supabase env variables are placeholders/template keys. Falling back to local logging.');
-    supabaseClient = 'DISABLED';
-    return null;
-  }
-
-  try {
-    const parsedUrl = new URL(cleanUrl);
-    if (!parsedUrl.protocol.startsWith('http')) {
-      supabaseClient = 'DISABLED';
-      return null;
-    }
-    
-    if (parsedUrl.hostname === 'your-project.supabase.co') {
-      supabaseClient = 'DISABLED';
-      return null;
-    }
-
-    supabaseClient = createClient(cleanUrl, cleanKey);
-    return supabaseClient;
-  } catch (err) {
-    console.error('Failed to initialize Supabase client:', err);
-    supabaseClient = 'DISABLED';
-    return null;
-  }
+  return sharedSupabase;
 }
 
 // Initialize Express
@@ -875,7 +849,7 @@ app.use((req, res, next) => {
     const supabase = getSupabaseClient();
     if (supabase) {
       supabase
-        .from('activity_logs')
+        .from('audit_trails')
         .insert([{
           timestamp: logData.timestamp,
           method: logData.method,
@@ -892,8 +866,7 @@ app.use((req, res, next) => {
             // Print fallback audit log
             console.log(`[Activity Log Audit Fallback] ${logData.method} ${logData.path} -> Status: ${logData.status} (Modification: ${logData.is_modification})`);
           }
-        })
-        .catch(err => {
+        }, (err) => {
           console.warn('[Activity Log Audit] Failed to write to Supabase action audit logs:', err);
           supabaseClient = 'DISABLED';
         });
@@ -940,7 +913,7 @@ let stateOfPlatform = {
       isNajizSync: true,
       priority: "high",
       createdAt: "2026-01-10",
-      attachmentsCount: 4
+      attachments_count: 4
     },
     {
       id: "case-2",
@@ -961,7 +934,7 @@ let stateOfPlatform = {
       isNajizSync: true,
       priority: "high",
       createdAt: "2026-02-18",
-      attachmentsCount: 2
+      attachments_count: 2
     },
     {
       id: "case-3",
@@ -982,7 +955,7 @@ let stateOfPlatform = {
       isNajizSync: false,
       priority: "medium",
       createdAt: "2026-03-05",
-      attachmentsCount: 3
+      attachments_count: 3
     },
     {
       id: "case-4",
@@ -1003,7 +976,7 @@ let stateOfPlatform = {
       isNajizSync: true,
       priority: "high",
       createdAt: "2026-04-12",
-      attachmentsCount: 6
+      attachments_count: 6
     }
   ],
   clients: [
@@ -1144,7 +1117,7 @@ let stateOfPlatform = {
       category: "العقود والاتفاقيات",
       uploadedAt: "2026-01-11",
       size: "4.2 MB",
-      extractedText: "عقد توريد مبرم بين شركة نادك للتنمية الزراعية والمدعى عليه لنقل الشحنات بقيمة 450000 ريال سعودي ويتحمل المدعى عليه غرامات تأديبية في حال تجاوز مدة الترانزيت 48 ساعة.",
+      content_text: "عقد توريد مبرم بين شركة نادك للتنمية الزراعية والمدعى عليه لنقل الشحنات بقيمة 450000 ريال سعودي ويتحمل المدعى عليه غرامات تأديبية في حال تجاوز مدة الترانزيت 48 ساعة.",
       tags: ["نادك", "عقد توريد", "شروط جزائية"]
     },
     {
@@ -1153,7 +1126,7 @@ let stateOfPlatform = {
       category: "الأوراق المالية",
       uploadedAt: "2026-02-19",
       size: "1.8 MB",
-      extractedText: "يتعهد السيد عادل بن مرزوق العتيبي بدفع مبلغ وقدره 2000000 ريال سعودي بموجب هذا السند للأمر لصالح ورثة مجموعة الشايع للاستثمار في الرياض.",
+      content_text: "يتعهد السيد عادل بن مرزوق العتيبي بدفع مبلغ وقدره 2000000 ريال سعودي بموجب هذا السند للأمر لصالح ورثة مجموعة الشايع للاستثمار في الرياض.",
       tags: ["سند لأمر", "تنفيذ", "الشايع"]
     },
     {
@@ -1162,7 +1135,7 @@ let stateOfPlatform = {
       category: "التقارير المالية والزكوية",
       uploadedAt: "2026-04-15",
       size: "12.4 MB",
-      extractedText: "تقرير فحص مالي يتضمن رصيد البتروكيماويات المتقدمة وجداول المعاملات الضريبية للعام المنصرم بخصم الصادرات الخليجية بنسبة 0% جفاء تطبيق القوانين.",
+      content_text: "تقرير فحص مالي يتضمن رصيد البتروكيماويات المتقدمة وجداول المعاملات الضريبية للعام المنصرم بخصم الصادرات الخليجية بنسبة 0% جفاء تطبيق القوانين.",
       tags: ["ديوان المظالم", "جمارك", "تقرير محاسب"]
     }
   ],
@@ -1387,9 +1360,22 @@ function checkHearingsConflicts(hearings: any[]) {
 
 // Fetch state
 app.get('/api/state', async (req, res) => {
-  const currentState = await fetchAllPlatformState();
-  const alerts = checkHearingsConflicts(currentState.hearings || []);
-  res.json({ ...currentState, hearingAlerts: alerts });
+  try {
+    const currentState = await fetchAllPlatformState();
+    if (!currentState) {
+      throw new Error("Platform state is null or undefined after fetch");
+    }
+    const alerts = checkHearingsConflicts(currentState.hearings || []);
+    res.setHeader('Content-Type', 'application/json');
+    res.json({ ...currentState, hearingAlerts: alerts });
+  } catch (error: any) {
+    console.error('[API Error] /api/state:', error);
+    res.status(500).setHeader('Content-Type', 'application/json').json({ 
+      error: 'Failed to fetch platform state', 
+      message: error.message,
+      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    });
+  }
 });
 
 // Update single item values of state
@@ -1507,14 +1493,14 @@ async function analyzeNajizDataWithAI(rawText: string, apiKeyUsed: string) {
   const result: {
     cases: any[];
     hearings: any[];
-    poas: any[];
+    powers_of_attorney: any[];
     clients: any[];
     tasks: any[];
     invoices: any[];
   } = {
     cases: [],
     hearings: [],
-    poas: [],
+    powers_of_attorney: [],
     clients: [],
     tasks: [],
     invoices: []
@@ -1563,7 +1549,7 @@ ${rawText}
     "summary": "string",
     "details": "string",
     "priority": "high | medium | low",
-    "attachmentsCount": 1
+    "attachments_count": 1
   }],
   "hearings": [{
     "caseNumber": "string",
@@ -1623,7 +1609,8 @@ ${rawText}
       if (parsed) {
         if (Array.isArray(parsed.cases)) result.cases = parsed.cases;
         if (Array.isArray(parsed.hearings)) result.hearings = parsed.hearings;
-        if (Array.isArray(parsed.poas)) result.poas = parsed.poas;
+        if (Array.isArray(parsed.powers_of_attorney)) result.powers_of_attorney = parsed.powers_of_attorney;
+        else if (Array.isArray(parsed.poas)) result.powers_of_attorney = parsed.poas;
         if (Array.isArray(parsed.clients)) result.clients = parsed.clients;
         if (Array.isArray(parsed.tasks)) result.tasks = parsed.tasks;
         if (Array.isArray(parsed.invoices)) result.invoices = parsed.invoices;
@@ -1653,7 +1640,7 @@ ${rawText}
         summary: "طلب تنفيذ حكم تجاري لإلغاء وتصفية مستحقات العقد المالي المبرم بين الطرفين.",
         details: "طلب تنفيذ صادر من محكمة التنفيذ لطلب سداد مستحقات مالية وتنفيذ جبري للقرار الصادر.",
         priority: "high",
-        attachmentsCount: 2
+        attachments_count: 2
       });
       result.tasks.push({
         title: "دراسة طلب التنفيذ وتجهيز الدفوع",
@@ -1675,7 +1662,7 @@ ${rawText}
       });
     } else if (rawText.includes("وكالة") || rawText.includes("توكيل") || rawText.includes("صك رقم") || rawText.includes("موكل")) {
       const poaNum = rawText.match(/\d{5,12}/)?.[0] || `39${Math.floor(100000 + Math.random() * 900000)}`;
-      result.poas.push({
+      result.powers_of_attorney.push({
         poaNumber: poaNum,
         issueDate: "2026-06-01",
         expiryDate: "2029-06-01",
@@ -1717,7 +1704,7 @@ ${rawText}
         summary: "مطالبة مالية بتعويض ناتج عن عقود التوريد المتأخرة والخاصة بالمنتجات الزراعية.",
         details: "موضوع الدعوى يتعلق بالإخلال بالعقد التجاري المبرم وعدم توريد الشحنات المتعاقد عليها بالموعد.",
         priority: "high",
-        attachmentsCount: 1
+        attachments_count: 1
       });
       result.hearings.push({
         caseNumber: caseNum,
@@ -1749,7 +1736,8 @@ ${rawText}
 // Webhook / API Key configured sync for platform-agnostic chrome extensions
 // Accepts JSON scraped from najiz by any lawyer
 app.post('/api/najiz-sync', async (req, res) => {
-  const { apiKey, cases, hearings, clients, documents, poas, tasks, invoices, syncType, rawText } = req.body;
+  const { apiKey, cases, hearings, clients, documents, powers_of_attorney, tasks, invoices, syncType, rawText } = req.body;
+  const poas = powers_of_attorney || req.body.poas;
   const requestApiKey = req.headers['x-api-key'] || apiKey;
 
   console.log('Received Najiz sync payload. Sync type:', syncType, 'Auth Key:', requestApiKey, 'Has rawText:', !!rawText);
@@ -1794,7 +1782,7 @@ app.post('/api/najiz-sync', async (req, res) => {
       }
       if (result.cases && result.cases.length > 0) finalCases = [...finalCases, ...result.cases];
       if (result.hearings && result.hearings.length > 0) finalHearings = [...finalHearings, ...result.hearings];
-      if (result.poas && result.poas.length > 0) finalPoas = [...finalPoas, ...result.poas];
+      if (result.powers_of_attorney && result.powers_of_attorney.length > 0) finalPoas = [...finalPoas, ...result.powers_of_attorney];
       if (result.clients && result.clients.length > 0) finalClients = [...finalClients, ...result.clients];
       if (result.tasks && result.tasks.length > 0) finalTasks = [...finalTasks, ...result.tasks];
       if (result.invoices && result.invoices.length > 0) finalInvoices = [...finalInvoices, ...result.invoices];
@@ -1838,7 +1826,7 @@ app.post('/api/najiz-sync', async (req, res) => {
           summary: scraped.summary || existing.summary,
           details: scraped.details || existing.details,
           priority: scraped.priority || existing.priority,
-          attachmentsCount: scraped.attachmentsCount ?? existing.attachmentsCount,
+          attachments_count: scraped.attachments_count ?? scraped.attachmentsCount ?? existing.attachments_count,
           
           // Schema matches for CourtCase
           caseClassification: scraped.caseClassification || existing.caseClassification || (scraped.category === "execution" ? "طلبات تنفيذ" : "تجاري/عمالي"),
@@ -1896,7 +1884,7 @@ app.post('/api/najiz-sync', async (req, res) => {
           isNajizSync: true,
           priority: scraped.priority || "high",
           createdAt: new Date().toISOString().split('T')[0],
-          attachmentsCount: scraped.attachmentsCount || 0,
+          attachments_count: (scraped.attachments_count ?? scraped.attachmentsCount) || 0,
           
           // Compatibilities for CourtCase Structure
           caseClassification: scraped.caseClassification || (scraped.category === "execution" ? "طلبات تنفيذ" : "تجاري/عمالي"),
@@ -2836,7 +2824,7 @@ app.get('/api/audit-logs', async (req, res) => {
   if (supabase) {
     try {
       const { data, error } = await supabase
-        .from('activity_logs')
+        .from('audit_trails')
         .select('*')
         .order('timestamp', { ascending: false })
         .limit(200);
@@ -2926,11 +2914,11 @@ app.post('/api/sync/firebase-to-supabase', async (req, res) => {
       // 2. Also try writing user state or collections into Supabase database if any tables are available
       try {
         // Log migration success in activity logs
-        await supabase.from('activity_logs').insert({
+        await supabase.from('audit_trails').insert({
           action: 'MIGRATION',
           details: `Migrated ${result.syncedCollections.length} collections from Firebase to Supabase. Size: ${sizeKb}`,
           timestamp: new Date().toISOString()
-        }).select().catch(() => {});
+        }).select();
       } catch (dbEx: any) {
         console.warn('[Sync Service] Supabase db write deferred:', dbEx.message);
       }
@@ -2942,7 +2930,7 @@ app.post('/api/sync/firebase-to-supabase', async (req, res) => {
         status: "completed",
         databaseSize: sizeKb,
         tablesCount: result.syncedCollections.length || Object.keys(stateOfPlatform).length,
-        destination: "Supabase cloud bucket & database activity_logs",
+        destination: "Supabase cloud bucket & database audit_trails",
         triggeredBy: "Firebase to Supabase Migration Tool"
       };
       backupHistory.unshift(syncJob);
@@ -3685,9 +3673,9 @@ app.post('/api/ai/parse-pdf', async (req, res) => {
         ]
       });
 
-      const extractedText = response.text ? response.text.trim() : "";
-      if (extractedText) {
-        return res.json({ success: true, text: extractedText });
+      const content_text = response.text ? response.text.trim() : "";
+      if (content_text) {
+        return res.json({ success: true, text: content_text });
       }
     } catch (e: any) {
       console.warn("Gemini multimodal parse-pdf failed, using smart parser fallback:", e.message);
@@ -4087,10 +4075,303 @@ app.post('/api/ai/predict-win', async (req, res) => {
   return res.json({ success: true, probability: chosen.probability, reason: chosen.reason });
 });
 
+async function initializeDatabaseTables() {
+  const activeUrl = process.env.POSTGRES_URL || "postgresql://postgres:Allah%40100200Allah@db.sydcelofkzvtsfatxnka.supabase.co:5432/postgres";
+  console.log('[Schema Auto-Init] Checking and creating default schemas on Supabase DB...');
+  try {
+    const { Client } = await import('pg');
+    const client = new Client({
+      connectionString: activeUrl,
+      connectionTimeoutMillis: 10000,
+      ssl: activeUrl.includes('localhost') || activeUrl.includes('127.0.0.1') ? false : { rejectUnauthorized: false }
+    });
+
+    await client.connect();
+    
+    // Extensions
+    await client.query('CREATE EXTENSION IF NOT EXISTS "uuid-ossp";');
+
+    // 1. profiles
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS public.profiles (
+        id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+        email TEXT,
+        name TEXT,
+        role TEXT DEFAULT 'lawyer',
+        avatar_url TEXT,
+        phone TEXT,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()),
+        updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now())
+      );
+    `);
+
+    // 2. employees
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS public.employees (
+        id TEXT PRIMARY KEY,
+        name TEXT NOT NULL,
+        role TEXT,
+        email TEXT,
+        phone TEXT,
+        status TEXT DEFAULT 'active',
+        salary NUMERIC,
+        department TEXT,
+        join_date TEXT,
+        "baseSalary" NUMERIC,
+        allowances NUMERIC,
+        deductions TEXT,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()),
+        updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now())
+      );
+    `);
+
+    // 3. clients
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS public.clients (
+        id TEXT PRIMARY KEY,
+        name TEXT NOT NULL,
+        phone TEXT,
+        email TEXT,
+        "isCompany" BOOLEAN DEFAULT false,
+        is_company BOOLEAN DEFAULT false,
+        "nationalId" TEXT,
+        national_id TEXT,
+        "id_number" TEXT,
+        najiz_id TEXT,
+        address TEXT,
+        status TEXT DEFAULT 'active',
+        "casesCount" INTEGER DEFAULT 0,
+        cases_count INTEGER DEFAULT 0,
+        "billingTotal" NUMERIC DEFAULT 0,
+        billing_total NUMERIC DEFAULT 0,
+        "activePortal" BOOLEAN DEFAULT false,
+        active_portal BOOLEAN DEFAULT false,
+        "portalToken" TEXT,
+        portal_token TEXT,
+        "portalLink" TEXT,
+        portal_link TEXT,
+        "portalUsername" TEXT,
+        portal_username TEXT,
+        "portalPassword" TEXT,
+        portal_password TEXT,
+        "priorityStatus" TEXT DEFAULT 'normal',
+        last_sync_at TIMESTAMP WITH TIME ZONE,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()),
+        updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now())
+      );
+    `);
+
+    // 4. cases
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS public.cases (
+        id TEXT PRIMARY KEY,
+        "caseNumber" TEXT NOT NULL,
+        "case_number" TEXT,
+        "court_case_number" TEXT,
+        "courtCaseNumber" TEXT,
+        "najiz_case_id" TEXT,
+        "najizCaseId" TEXT,
+        "najiz_case_number" TEXT,
+        title TEXT,
+        "caseName" TEXT,
+        case_name TEXT,
+        subject TEXT,
+        category TEXT,
+        "case_classification" TEXT,
+        "caseClassification" TEXT,
+        stage TEXT,
+        status TEXT,
+        "case_status" TEXT,
+        "caseStatus" TEXT,
+        priority TEXT DEFAULT 'medium',
+        "courtName" TEXT,
+        "court_name" TEXT,
+        "clientName" TEXT,
+        "client_name" TEXT,
+        "clientId" TEXT,
+        "client_id" TEXT,
+        "opponentName" TEXT,
+        "opponent_name" TEXT,
+        "opponentId" TEXT,
+        "opponent_id" TEXT,
+        summary TEXT,
+        details TEXT,
+        "lastSessionDate" TEXT,
+        "last_session_date" TEXT,
+        "last_session_at" TIMESTAMP WITH TIME ZONE,
+        "nextSessionDate" TEXT,
+        "next_session_date" TEXT,
+        "next_session_at" TIMESTAMP WITH TIME ZONE,
+        "attachments_count" INTEGER DEFAULT 0,
+        lawyers JSONB DEFAULT '[]'::jsonb,
+        metadata JSONB DEFAULT '{}'::jsonb,
+        "isNajizSync" BOOLEAN DEFAULT false,
+        "is_najiz_sync" BOOLEAN DEFAULT false,
+        "lastActivityAt" TEXT,
+        "last_activity_at" TEXT,
+        last_sync_at TIMESTAMP WITH TIME ZONE,
+        "updatedAt" TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()),
+        updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()),
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()),
+        "startDate" TEXT,
+        "start_date" TEXT
+      );
+    `);
+
+    // 5. tasks
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS public.tasks (
+        id TEXT PRIMARY KEY,
+        title TEXT NOT NULL,
+        "caseNumber" TEXT,
+        "case_number" TEXT,
+        description TEXT,
+        status TEXT DEFAULT 'pending',
+        priority TEXT DEFAULT 'medium',
+        "dueDate" TEXT,
+        "due_date" TEXT,
+        "assignedTo" TEXT,
+        "assigned_to" TEXT,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()),
+        updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now())
+      );
+    `);
+
+    // 6. hearings
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS public.hearings (
+        id TEXT PRIMARY KEY,
+        "caseNumber" TEXT,
+        "case_number" TEXT,
+        "caseName" TEXT,
+        "case_name" TEXT,
+        case_id TEXT,
+        date TEXT,
+        time TEXT,
+        location TEXT,
+        court_name TEXT,
+        "courtName" TEXT,
+        hall TEXT,
+        "hallNumber" TEXT,
+        judge TEXT,
+        "judgeName" TEXT,
+        status TEXT DEFAULT 'scheduled',
+        notes TEXT,
+        decision TEXT,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now())
+      );
+    `);
+
+    // 7. documents
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS public.documents (
+        id TEXT PRIMARY KEY,
+        case_id TEXT,
+        client_id TEXT,
+        name TEXT NOT NULL,
+        category TEXT,
+        size TEXT,
+        uploaded_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()),
+        "uploadedAt" TEXT,
+        content_text TEXT,
+        tags JSONB DEFAULT '[]'::jsonb,
+        storage_path TEXT,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now())
+      );
+    `);
+
+    // 8. powers_of_attorney
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS public.powers_of_attorney (
+        id TEXT PRIMARY KEY,
+        client_id TEXT,
+        poa_number TEXT NOT NULL,
+        issue_date TEXT,
+        expiry_date TEXT,
+        type TEXT,
+        status TEXT DEFAULT 'active',
+        file_url TEXT,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now())
+      );
+    `);
+
+    // 9. invoices
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS public.invoices (
+        id TEXT PRIMARY KEY,
+        case_id TEXT,
+        client_id TEXT,
+        "clientName" TEXT,
+        invoice_number TEXT,
+        amount NUMERIC NOT NULL,
+        vat NUMERIC DEFAULT 0,
+        "vatAmount" NUMERIC DEFAULT 0,
+        total NUMERIC NOT NULL,
+        "totalAmount" NUMERIC NOT NULL,
+        status TEXT DEFAULT 'draft',
+        issue_date TEXT,
+        "issueDate" TEXT,
+        due_date TEXT,
+        "dueDate" TEXT,
+        "paymentMethod" TEXT,
+        description TEXT,
+        "clientVat" TEXT,
+        "isZatcaSubmitted" BOOLEAN DEFAULT false,
+        "zatcaTimestamp" TEXT,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now())
+      );
+    `);
+
+    // 10. audit_trails
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS public.audit_trails (
+        id TEXT PRIMARY KEY,
+        user_id TEXT,
+        "userName" TEXT,
+        action TEXT NOT NULL,
+        entity_type TEXT,
+        entity_id TEXT,
+        old_data JSONB,
+        new_data JSONB,
+        ip_address TEXT,
+        user_agent TEXT,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now())
+      );
+    `);
+
+    // 11. expenses
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS public.expenses (
+        id TEXT PRIMARY KEY,
+        description TEXT,
+        amount NUMERIC,
+        category TEXT,
+        date TEXT,
+        "case_number" TEXT,
+        "caseNumber" TEXT,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now())
+      );
+    `);
+
+    // Reload PostgREST's schema cache so that Supabase is immediately aware of new tables
+    await client.query("NOTIFY pgrst, 'reload schema';");
+    console.log('[Schema Auto-Init] Schema Cache Reloaded successfully via NOTIFY pgrst.');
+
+    await client.end();
+  } catch (err: any) {
+    console.error('[Schema Auto-Init ERROR] Failed schema check/creation:', err);
+  }
+}
+
 async function bootApp() {
   console.log(`[Server] Booting in ${process.env.NODE_ENV || 'production'} mode...`);
   console.log(`[Server] Current directory: ${process.cwd()}`);
   console.log(`[Server] Listening on Port: ${PORT}`);
+  
+  // Initialize Database schemas asynchronously on boot
+  initializeDatabaseTables().catch(err => {
+    console.error('[bootApp] initializeDatabaseTables rejected:', err);
+  });
   
   if (adminDb) {
     // Non-blocking verification to avoid delaying the listen() call
@@ -4103,8 +4384,8 @@ async function bootApp() {
   }
   
   const isProduction = process.env.NODE_ENV === 'production' || 
-                      process.argv[1].includes('dist') || 
-                      process.argv[1].endsWith('server.cjs');
+                      (process.argv[1] && process.argv[1].includes('dist')) || 
+                      (process.argv[1] && process.argv[1].endsWith('server.cjs'));
   if (isProduction && process.env.NODE_ENV !== 'production') {
     process.env.NODE_ENV = 'production';
   }

@@ -667,7 +667,7 @@ export default function UnifiedAuthLanding({ initialTab = "lawyer", language = "
   };
 
   return (
-    <div className="flex min-h-screen bg-[#f8fafc] text-slate-900 font-sans" dir="rtl">
+    <div className="flex min-h-screen bg-[#f8fafc] text-black font-sans" dir="rtl">
       
       {/* 
         RIGHT SIDEBAR: Platform Features & Highlights
@@ -746,14 +746,14 @@ export default function UnifiedAuthLanding({ initialTab = "lawyer", language = "
         <div className="w-full max-w-2xl bg-white border-2 border-slate-200 rounded-[2.5rem] p-8 lg:p-10 space-y-7 relative z-10 shadow-2xl">
           
           <div className="text-center space-y-1 mb-8">
-            <h2 className="text-2xl font-black text-slate-955">تسجيل الدخول والنظام</h2>
-            <p className="text-xs text-slate-800 font-black">متاح للمستخدمين الحاليين والجدد عبر (Google - الجوال - البريد الإلكتروني)</p>
+            <h2 className="text-2xl font-black text-black">تسجيل الدخول والنظام</h2>
+            <p className="text-xs text-black font-black">متاح للمستخدمين الحاليين والجدد عبر (Google - الجوال - البريد الإلكتروني)</p>
           </div>
 
           {/* MOCK/DB CONNECTION NOTIFIER CHIP */}
-          <div className="p-3.5 bg-slate-100/70 border-2 border-slate-200 rounded-2xl text-center flex items-center justify-center gap-2 shadow-sm">
+          <div className="p-3.5 bg-slate-100/70 border-2 border-slate-300 rounded-2xl text-center flex items-center justify-center gap-2 shadow-sm">
             <div className={`w-3 h-3 rounded-full ${isSupabaseConfigured ? "bg-emerald-600 shadow-[0_0_10px_rgba(16,185,129,0.7)] animate-pulse" : "bg-amber-600 shadow-[0_0_10px_rgba(245,158,11,0.7)]"}`}></div>
-            <span className="text-xs text-slate-950 font-black tracking-widest">
+            <span className="text-xs text-black font-black tracking-widest">
               {isSupabaseConfigured 
                 ? "الاتصال السحابي مفعل ✓" 
                 : "وضع المحاكاة المعتمد ⚙"}
@@ -777,13 +777,13 @@ export default function UnifiedAuthLanding({ initialTab = "lawyer", language = "
           {/* ELITE TRIAL / DEMO BYPASS */}
           <div className="space-y-4">
             <div className="text-center">
-              <span className="text-[10px] text-slate-800 font-black uppercase tracking-[0.2em] block mb-1">تسجيل فوري (جديد أو مسجل)</span>
+              <span className="text-[10px] text-black font-black uppercase tracking-[0.2em] block mb-1">تسجيل فوري (جديد أو مسجل)</span>
             </div>
 
             <button
               onClick={handleGoogleSignIn}
               disabled={loading}
-              className="w-full bg-white border-2 border-slate-300 hover:border-amber-600/60 text-slate-950 text-xs font-black py-3.5 rounded-xl transition-all active:scale-95 flex items-center justify-center gap-3 cursor-pointer shadow-sm hover:shadow-md"
+              className="w-full bg-white border-2 border-slate-300 hover:border-amber-600/60 text-[#0f172a] text-xs font-black py-3.5 rounded-xl transition-all active:scale-95 flex items-center justify-center gap-3 cursor-pointer shadow-sm hover:shadow-md"
             >
               <img src="https://www.google.com/favicon.ico" alt="Google" className="w-4 h-4" />
               <span>{isEn ? "Sign In / Sign Up with Google" : "دخول أو تسجيل جديد عبر Google"}</span>
@@ -791,7 +791,7 @@ export default function UnifiedAuthLanding({ initialTab = "lawyer", language = "
             
             <div className="flex items-center gap-3">
               <div className="h-px bg-slate-300 flex-1"></div>
-              <span className="text-[10px] text-slate-800 font-black uppercase tracking-[0.2em]">أو عبر رسالة الجوال (SMS)</span>
+              <span className="text-[10px] text-[#1e293b] font-black uppercase tracking-[0.2em]">أو عبر رسالة الجوال (SMS)</span>
               <div className="h-px bg-slate-300 flex-1"></div>
             </div>
 
@@ -804,7 +804,7 @@ export default function UnifiedAuthLanding({ initialTab = "lawyer", language = "
                     placeholder={isEn ? "+966 5X XXX XXXX" : "+966 5X XXX XXXX"}
                     value={phoneNumber}
                     onChange={(e) => setPhoneNumber(e.target.value)}
-                    className="w-full bg-slate-50 border-2 border-slate-300 focus:border-[#7c2d12] focus:ring-1 focus:ring-[#7c2d12]/20 text-slate-950 text-xs font-black py-3.5 px-4 rounded-xl focus:outline-none transition-all text-center placeholder:text-slate-400 font-mono"
+                    className="w-full bg-slate-50 border-2 border-slate-300 focus:border-[#7c2d12] focus:ring-1 focus:ring-[#7c2d12]/20 text-[#0f172a] text-xs font-black py-3.5 px-4 rounded-xl focus:outline-none transition-all text-center placeholder:text-slate-600 font-mono"
                   />
                   <Smartphone className="w-4 h-4 text-slate-700 absolute left-3.5 top-3.5" />
                 </div>
@@ -826,7 +826,7 @@ export default function UnifiedAuthLanding({ initialTab = "lawyer", language = "
                     placeholder="000000"
                     value={verificationCode}
                     onChange={(e) => setVerificationCode(e.target.value)}
-                    className="w-full bg-slate-50 border-2 border-slate-300 focus:border-[#7c2d12] focus:ring-1 focus:ring-[#7c2d12]/20 text-slate-950 text-lg font-black py-3 px-4 rounded-xl focus:outline-none transition-all text-center tracking-[0.5em] placeholder:text-slate-400"
+                    className="w-full bg-slate-50 border-2 border-slate-300 focus:border-[#7c2d12] focus:ring-1 focus:ring-[#7c2d12]/20 text-[#0f172a] text-lg font-black py-3 px-4 rounded-xl focus:outline-none transition-all text-center tracking-[0.5em] placeholder:text-slate-600"
                   />
                 </div>
                 <button
@@ -843,9 +843,9 @@ export default function UnifiedAuthLanding({ initialTab = "lawyer", language = "
           <div id="recaptcha-container"></div>
 
           <div className="flex items-center gap-3">
-            <div className="h-px bg-slate-300 flex-1"></div>
-            <span className="text-[10px] text-slate-800 font-black uppercase tracking-[0.2em]">أو عبر خيارات البريد الإلكتروني</span>
-            <div className="h-px bg-slate-300 flex-1"></div>
+            <div className="h-px bg-slate-400 flex-1"></div>
+            <span className="text-[10px] text-black font-black uppercase tracking-[0.2em]">أو عبر خيارات البريد الإلكتروني</span>
+            <div className="h-px bg-slate-400 flex-1"></div>
           </div>
 
           {/* SUCCESS MESSAGE CARD */}
@@ -871,7 +871,7 @@ export default function UnifiedAuthLanding({ initialTab = "lawyer", language = "
               className={`flex-1 py-2.5 text-xs font-black text-center transition-all rounded-xl cursor-pointer min-w-[100px] ${
                 activeTab === "lawyer" 
                   ? "bg-[#7c2d12] text-white shadow-md font-black" 
-                  : "text-slate-700 hover:text-slate-950 hover:bg-slate-200/50"
+                  : "text-slate-700 hover:text-[#0f172a] hover:bg-slate-200/50"
               }`}
             >
               دخول (ايميل)
@@ -886,7 +886,7 @@ export default function UnifiedAuthLanding({ initialTab = "lawyer", language = "
               className={`flex-1 py-2.5 text-xs font-black text-center transition-all rounded-xl cursor-pointer min-w-[100px] ${
                 activeTab === "trial" 
                   ? "bg-[#7c2d12] text-white shadow-md font-black" 
-                  : "text-slate-700 hover:text-slate-950 hover:bg-slate-200/50"
+                  : "text-slate-700 hover:text-[#0f172a] hover:bg-slate-200/50"
               }`}
             >
               حساب جديد (ايميل)
@@ -901,7 +901,7 @@ export default function UnifiedAuthLanding({ initialTab = "lawyer", language = "
               className={`flex-1 py-2.5 text-xs font-black text-center transition-all rounded-xl cursor-pointer min-w-[100px] ${
                 activeTab === "client" 
                   ? "bg-[#7c2d12] text-white shadow-md font-black" 
-                  : "text-slate-700 hover:text-slate-950 hover:bg-slate-200/50"
+                  : "text-slate-700 hover:text-[#0f172a] hover:bg-slate-200/50"
               }`}
             >
               بوابة العملاء
@@ -916,7 +916,7 @@ export default function UnifiedAuthLanding({ initialTab = "lawyer", language = "
               className={`flex-1 py-2.5 text-xs font-black text-center transition-all rounded-xl cursor-pointer min-w-[100px] ${
                 activeTab === "employee" 
                   ? "bg-[#7c2d12] text-white shadow-md font-black" 
-                  : "text-slate-700 hover:text-slate-950 hover:bg-slate-200/50"
+                  : "text-slate-700 hover:text-[#0f172a] hover:bg-slate-200/50"
               }`}
             >
               الموظفين 🔑
@@ -936,7 +936,7 @@ export default function UnifiedAuthLanding({ initialTab = "lawyer", language = "
                 className="space-y-4"
               >
                 <div className="space-y-1.5">
-                  <label className="block text-sm font-black text-slate-900">البريد الإلكتروني المهني:</label>
+                  <label className="block text-sm font-black text-[#0f172a]">البريد الإلكتروني المهني:</label>
                   <div className="relative">
                     <input
                       type="email"
@@ -944,14 +944,14 @@ export default function UnifiedAuthLanding({ initialTab = "lawyer", language = "
                       placeholder="name@aladalah-law.sa"
                       value={lawyerEmail}
                       onChange={(e) => setLawyerEmail(e.target.value)}
-                      className="w-full bg-slate-50 border-2 border-slate-300 focus:border-[#7c2d12] focus:ring-1 focus:ring-[#7c2d12]/20 rounded-xl px-4 py-3 text-xs text-slate-950 placeholder-slate-400 focus:outline-none pl-11 transition-all font-black shadow-sm"
+                      className="w-full bg-slate-50 border-2 border-slate-300 focus:border-[#7c2d12] focus:ring-1 focus:ring-[#7c2d12]/20 rounded-xl px-4 py-3 text-xs text-[#0f172a] placeholder:text-slate-600 focus:outline-none pl-11 transition-all font-black shadow-sm"
                     />
                     <Mail className="w-4 h-4 text-slate-700 absolute left-3.5 top-3.5" />
                   </div>
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="block text-sm font-black text-slate-900">كلمة المرور:</label>
+                  <label className="block text-sm font-black text-[#0f172a]">كلمة المرور:</label>
                   <div className="relative">
                     <input
                       type="password"
@@ -959,7 +959,7 @@ export default function UnifiedAuthLanding({ initialTab = "lawyer", language = "
                       placeholder="••••••••"
                       value={lawyerPassword}
                       onChange={(e) => setLawyerPassword(e.target.value)}
-                      className="w-full bg-slate-50 border-2 border-slate-300 focus:border-[#7c2d12] focus:ring-1 focus:ring-[#7c2d12]/20 rounded-xl px-4 py-3 text-xs text-slate-955 placeholder-slate-400 focus:outline-none pl-11 transition-all font-black shadow-sm"
+                      className="w-full bg-slate-50 border-2 border-slate-300 focus:border-[#7c2d12] focus:ring-1 focus:ring-[#7c2d12]/20 rounded-xl px-4 py-3 text-xs text-[#0f172a] placeholder:text-slate-600 focus:outline-none pl-11 transition-all font-black shadow-sm"
                     />
                     <Lock className="w-4 h-4 text-slate-700 absolute left-3.5 top-3.5" />
                   </div>
@@ -993,7 +993,7 @@ export default function UnifiedAuthLanding({ initialTab = "lawyer", language = "
                 className="space-y-4"
               >
                 <div className="space-y-1.5">
-                  <label className="block text-sm font-black text-slate-900">اسم المستخدم العميل (أو رقم الهوية):</label>
+                  <label className="block text-sm font-black text-[#0f172a]">اسم المستخدم العميل (أو رقم الهوية):</label>
                   <div className="relative">
                     <input
                       type="text"
@@ -1001,14 +1001,14 @@ export default function UnifiedAuthLanding({ initialTab = "lawyer", language = "
                       placeholder="اسم المستخدم"
                       value={clientNationalId}
                       onChange={(e) => setClientNationalId(e.target.value)}
-                      className="w-full bg-slate-50 border-2 border-slate-300 focus:border-[#7c2d12] focus:ring-1 focus:ring-[#7c2d12]/20 rounded-xl px-4 py-3 text-xs text-slate-950 placeholder-slate-400 focus:outline-none pl-11 text-center font-mono transition-all font-black shadow-sm"
+                      className="w-full bg-slate-50 border-2 border-slate-300 focus:border-[#7c2d12] focus:ring-1 focus:ring-[#7c2d12]/20 rounded-xl px-4 py-3 text-xs text-[#0f172a] placeholder:text-slate-600 focus:outline-none pl-11 text-center font-mono transition-all font-black shadow-sm"
                     />
                     <User className="w-4 h-4 text-slate-700 absolute left-3.5 top-3.5" />
                   </div>
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="block text-sm font-black text-slate-900">كلمة المرور الموحدة (العدالة):</label>
+                  <label className="block text-sm font-black text-[#0f172a]">كلمة المرور الموحدة (العدالة):</label>
                   <div className="relative">
                     <input
                       type="password"
@@ -1016,7 +1016,7 @@ export default function UnifiedAuthLanding({ initialTab = "lawyer", language = "
                       placeholder="كلمة المرور"
                       value={clientPassword}
                       onChange={(e) => setClientPassword(e.target.value)}
-                      className="w-full bg-slate-50 border-2 border-slate-300 focus:border-[#7c2d12] focus:ring-1 focus:ring-[#7c2d12]/20 rounded-xl px-4 py-3 text-xs text-slate-955 placeholder-slate-400 focus:outline-none pl-11 text-center font-mono transition-all font-black shadow-sm"
+                      className="w-full bg-slate-50 border-2 border-slate-300 focus:border-[#7c2d12] focus:ring-1 focus:ring-[#7c2d12]/20 rounded-xl px-4 py-3 text-xs text-[#0f172a] placeholder:text-slate-600 focus:outline-none pl-11 text-center font-mono transition-all font-black shadow-sm"
                     />
                     <Lock className="w-4 h-4 text-slate-700 absolute left-3.5 top-3.5" />
                   </div>
@@ -1045,7 +1045,7 @@ export default function UnifiedAuthLanding({ initialTab = "lawyer", language = "
                 className="space-y-4"
               >
                 <div className="space-y-1.5">
-                  <label className="block text-sm font-black text-slate-900">اسم المستخدم للموظف:</label>
+                  <label className="block text-sm font-black text-[#0f172a]">اسم المستخدم للموظف:</label>
                   <div className="relative">
                     <input
                       type="text"
@@ -1053,14 +1053,14 @@ export default function UnifiedAuthLanding({ initialTab = "lawyer", language = "
                       placeholder="tamer أو adel"
                       value={empUsername}
                       onChange={(e) => setEmpUsername(e.target.value)}
-                      className="w-full bg-slate-50 border-2 border-slate-300 focus:border-[#7c2d12] focus:ring-1 focus:ring-[#7c2d12]/20 rounded-xl px-4 py-3 text-xs text-slate-950 placeholder-slate-400 focus:outline-none pl-11 text-center font-mono transition-all font-black shadow-sm"
+                      className="w-full bg-slate-50 border-2 border-slate-300 focus:border-[#7c2d12] focus:ring-1 focus:ring-[#7c2d12]/20 rounded-xl px-4 py-3 text-xs text-[#0f172a] placeholder:text-slate-600 focus:outline-none pl-11 text-center font-mono transition-all font-black shadow-sm"
                     />
                     <User className="w-4 h-4 text-slate-700 absolute left-3.5 top-3.5" />
                   </div>
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="block text-sm font-black text-slate-900">كلمة المرور الخاصة بالموظف:</label>
+                  <label className="block text-sm font-black text-[#0f172a]">كلمة المرور الخاصة بالموظف:</label>
                   <div className="relative">
                     <input
                       type="password"
@@ -1068,7 +1068,7 @@ export default function UnifiedAuthLanding({ initialTab = "lawyer", language = "
                       placeholder="رمز المرور (123)"
                       value={empPassword}
                       onChange={(e) => setEmpPassword(e.target.value)}
-                      className="w-full bg-slate-50 border-2 border-slate-300 focus:border-[#7c2d12] focus:ring-1 focus:ring-[#7c2d12]/20 rounded-xl px-4 py-3 text-xs text-slate-955 placeholder-slate-400 focus:outline-none pl-11 text-center font-mono transition-all font-black shadow-sm"
+                      className="w-full bg-slate-50 border-2 border-slate-300 focus:border-[#7c2d12] focus:ring-1 focus:ring-[#7c2d12]/20 rounded-xl px-4 py-3 text-xs text-[#0f172a] placeholder:text-slate-600 focus:outline-none pl-11 text-center font-mono transition-all font-black shadow-sm"
                     />
                     <Lock className="w-4 h-4 text-slate-700 absolute left-3.5 top-3.5" />
                   </div>
@@ -1105,7 +1105,7 @@ export default function UnifiedAuthLanding({ initialTab = "lawyer", language = "
 
                 {!isTrialLogin && (
                   <div className="space-y-1.5">
-                    <label className="block text-sm font-black text-slate-900">الاسم الكامل:</label>
+                    <label className="block text-sm font-black text-[#0f172a]">الاسم الكامل:</label>
                     <div className="relative">
                       <input
                         type="text"
@@ -1113,7 +1113,7 @@ export default function UnifiedAuthLanding({ initialTab = "lawyer", language = "
                         placeholder="أدخل اسمك الكريم"
                         value={trialName}
                         onChange={(e) => setTrialName(e.target.value)}
-                        className="w-full bg-slate-50 border-2 border-slate-300 focus:border-[#7c2d12] focus:ring-1 focus:ring-[#7c2d12]/20 rounded-xl px-4 py-3 text-xs text-slate-950 placeholder-slate-400 focus:outline-none pl-11 transition-all font-black shadow-sm"
+                        className="w-full bg-slate-50 border-2 border-slate-300 focus:border-[#7c2d12] focus:ring-1 focus:ring-[#7c2d12]/20 rounded-xl px-4 py-3 text-xs text-[#0f172a] placeholder:text-slate-600 focus:outline-none pl-11 transition-all font-black shadow-sm"
                       />
                       <User className="w-4 h-4 text-slate-700 absolute left-3.5 top-3.5" />
                     </div>
@@ -1121,7 +1121,7 @@ export default function UnifiedAuthLanding({ initialTab = "lawyer", language = "
                 )}
 
                 <div className="space-y-1.5">
-                  <label className="block text-sm font-black text-slate-900">البريد الإلكتروني:</label>
+                  <label className="block text-sm font-black text-[#0f172a]">البريد الإلكتروني:</label>
                   <div className="relative">
                     <input
                       type="email"
@@ -1129,7 +1129,7 @@ export default function UnifiedAuthLanding({ initialTab = "lawyer", language = "
                       placeholder="name@example.com"
                       value={trialEmail}
                       onChange={(e) => setTrialEmail(e.target.value)}
-                      className="w-full bg-slate-50 border-2 border-slate-300 focus:border-[#7c2d12] focus:ring-1 focus:ring-[#7c2d12]/20 rounded-xl px-4 py-3 text-xs text-slate-950 placeholder-slate-400 focus:outline-none pl-11 transition-all font-black shadow-sm"
+                      className="w-full bg-slate-50 border-2 border-slate-300 focus:border-[#7c2d12] focus:ring-1 focus:ring-[#7c2d12]/20 rounded-xl px-4 py-3 text-xs text-[#0f172a] placeholder:text-slate-600 focus:outline-none pl-11 transition-all font-black shadow-sm"
                     />
                     <Mail className="w-4 h-4 text-slate-700 absolute left-3.5 top-3.5" />
                   </div>
@@ -1137,7 +1137,7 @@ export default function UnifiedAuthLanding({ initialTab = "lawyer", language = "
 
                 {!isTrialLogin && (
                   <div className="space-y-1.5">
-                    <label className="block text-sm font-black text-slate-900">رقم الجوال:</label>
+                    <label className="block text-sm font-black text-[#0f172a]">رقم الجوال:</label>
                     <div className="relative">
                       <input
                         type="text"
@@ -1145,7 +1145,7 @@ export default function UnifiedAuthLanding({ initialTab = "lawyer", language = "
                         placeholder="+966 5X XXX XXXX"
                         value={trialPhone}
                         onChange={(e) => setTrialPhone(e.target.value)}
-                        className="w-full bg-slate-50 border-2 border-slate-300 focus:border-[#7c2d12] focus:ring-1 focus:ring-[#7c2d12]/20 rounded-xl px-4 py-3 text-xs text-slate-955 placeholder-slate-400 focus:outline-none pl-11 transition-all font-black shadow-sm"
+                        className="w-full bg-slate-50 border-2 border-slate-300 focus:border-[#7c2d12] focus:ring-1 focus:ring-[#7c2d12]/20 rounded-xl px-4 py-3 text-xs text-[#0f172a] placeholder:text-slate-600 focus:outline-none pl-11 transition-all font-black shadow-sm"
                       />
                       <Smartphone className="w-4 h-4 text-slate-700 absolute left-3.5 top-3.5" />
                     </div>
@@ -1153,7 +1153,7 @@ export default function UnifiedAuthLanding({ initialTab = "lawyer", language = "
                 )}
 
                 <div className="space-y-1.5">
-                  <label className="block text-sm font-black text-slate-900">كلمة المرور:</label>
+                  <label className="block text-sm font-black text-[#0f172a]">كلمة المرور:</label>
                   <div className="relative">
                     <input
                       type="password"
@@ -1161,7 +1161,7 @@ export default function UnifiedAuthLanding({ initialTab = "lawyer", language = "
                       placeholder="••••••••"
                       value={trialPassword}
                       onChange={(e) => setTrialPassword(e.target.value)}
-                      className="w-full bg-slate-50 border-2 border-slate-300 focus:border-[#7c2d12] focus:ring-1 focus:ring-[#7c2d12]/20 rounded-xl px-4 py-3 text-xs text-slate-955 placeholder-slate-400 focus:outline-none pl-11 transition-all font-black shadow-sm"
+                      className="w-full bg-slate-50 border-2 border-slate-300 focus:border-[#7c2d12] focus:ring-1 focus:ring-[#7c2d12]/20 rounded-xl px-4 py-3 text-xs text-[#0f172a] placeholder:text-slate-600 focus:outline-none pl-11 transition-all font-black shadow-sm"
                     />
                     <Lock className="w-4 h-4 text-slate-700 absolute left-3.5 top-3.5" />
                   </div>

@@ -71,7 +71,7 @@ export default function WorkspaceSync({
           <td><span style="background:rgba(202,138,4,0.1); color:#ca8a04; padding:3px 10px; border-radius:6px; font-weight:bold; font-size:11px;">${cs.caseStatus}</span></td>
         </tr>
       `).join('');
-    } else if (activePortalTab === 'poas') {
+    } else if (activePortalTab === 'powers_of_attorney') {
       reportTitle = 'تقرير صكوك التوكيل والوكالات المفعّلة للعملاء';
       tableHeaders = `
         <th>رقم الوكالة العدلية</th>
@@ -168,7 +168,7 @@ export default function WorkspaceSync({
   
   // Interactive Simulator States
   const [syncState, setSyncState] = useState<'idle' | 'scraping' | 'sending' | 'success' | 'error'>('idle');
-  const [activePortalTab, setActivePortalTab] = useState<'cases' | 'poas' | 'execution'>('cases');
+  const [activePortalTab, setActivePortalTab] = useState<'cases' | 'powers_of_attorney' | 'execution'>('cases');
   const [simulationLogs, setSimulationLogs] = useState<string[]>([]);
   const [dbSyncLogs, setDbSyncLogs] = useState<any[]>([]);
 
@@ -312,7 +312,7 @@ export default function WorkspaceSync({
           isNajizSync: true,
           priority: 'high',
           createdAt: nc.startDate,
-          attachmentsCount: 1
+          attachments_count: 1
         };
         onUpdateState('cases', builtCase);
       });
@@ -667,9 +667,9 @@ setInterval(injectAlAdalahBtn, 3000);`;
                       صحائف الدعاوى المقيدة ({mockNajizCases.length})
                     </button>
                     <button 
-                      onClick={() => setActivePortalTab('poas')}
+                      onClick={() => setActivePortalTab('powers_of_attorney')}
                       className={`py-2 px-4 text-xs font-black border-b-2 transition-all cursor-pointer whitespace-nowrap ${
-                        activePortalTab === 'poas' ? 'border-yellow-400 text-yellow-300' : 'border-transparent text-white font-bold'
+                        activePortalTab === 'powers_of_attorney' ? 'border-yellow-400 text-yellow-300' : 'border-transparent text-white font-bold'
                       }`}
                     >
                       كشوف الوكالات العدلية ({mockNajizPoas.length})
@@ -716,7 +716,7 @@ setInterval(injectAlAdalahBtn, 3000);`;
                   </div>
                 )}
 
-                {activePortalTab === 'poas' && (
+                {activePortalTab === 'powers_of_attorney' && (
                   <div className="space-y-4">
                     {mockNajizPoas.map((poa) => (
                       <div key={poa.number} className="bg-[#050e1b] border border-[#f1c40f]/15 rounded-2xl p-4 space-y-2 text-right">

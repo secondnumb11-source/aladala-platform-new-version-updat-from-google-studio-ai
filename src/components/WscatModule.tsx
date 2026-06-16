@@ -108,7 +108,15 @@ export default function WscatModule() {
         clearTimeout(reconnectTimeoutRef.current);
       }
       if (socket) {
-        socket.close();
+        socket.onopen = null;
+        socket.onmessage = null;
+        socket.onerror = null;
+        socket.onclose = null;
+        try {
+          if (socket.readyState === WebSocket.OPEN) {
+            socket.close();
+          }
+        } catch (e) {}
       }
       
       isPieManualDisconnectRef.current = true;
@@ -279,7 +287,15 @@ export default function WscatModule() {
   // Setup actual WebSocket connection
   const initiateConnection = (targetUrl: string, isReconnect = false) => {
     if (socket) {
-      socket.close();
+      socket.onopen = null;
+      socket.onmessage = null;
+      socket.onerror = null;
+      socket.onclose = null;
+      try {
+        if (socket.readyState === WebSocket.OPEN) {
+          socket.close();
+        }
+      } catch (e) {}
     }
 
     if (reconnectTimeoutRef.current) {
@@ -387,7 +403,15 @@ export default function WscatModule() {
       reconnectTimeoutRef.current = null;
     }
     if (socket) {
-      socket.close();
+      socket.onopen = null;
+      socket.onmessage = null;
+      socket.onerror = null;
+      socket.onclose = null;
+      try {
+        if (socket.readyState === WebSocket.OPEN) {
+          socket.close();
+        }
+      } catch (e) {}
     }
   };
 

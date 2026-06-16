@@ -36,14 +36,14 @@ export default function AIFinanceTool({ invoices = [] }: { invoices?: Invoice[] 
     <div className="space-y-6 animate-fade-in" dir="rtl">
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         <div className="lg:col-span-8 space-y-6">
-          <div className="bg-slate-50 border border-slate-200 p-8 rounded-[2.5rem] shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] transition-all hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.1)]">
+          <div className="bg-slate-950 border border-slate-800 p-8 rounded-[2.5rem] shadow-2xl transition-all hover:shadow-blue-500/10">
             <div className="flex items-center gap-4 mb-6">
-              <div className="p-3 bg-white border border-slate-200 text-slate-800 rounded-2xl shadow-sm">
+              <div className="p-3 bg-slate-900 border border-slate-800 text-blue-400 rounded-2xl shadow-sm">
                 <Bot className="w-6 h-6" />
               </div>
               <div>
-                <h2 className="text-xl font-black text-slate-900">المحاسب القانوني الآلي (AI Auditor)</h2>
-                <p className="text-xs text-slate-700 font-bold mt-1">تحليل مالي فوري، مطابقة ضريبية، واستخراج إيرادات المكتب آلياً.</p>
+                <h2 className="text-xl font-black text-white">المحاسب القانوني الآلي (AI Auditor)</h2>
+                <p className="text-xs text-white font-bold mt-1 opacity-80">تحليل مالي فوري، مطابقة ضريبية، واستخراج إيرادات المكتب آلياً.</p>
               </div>
             </div>
 
@@ -52,7 +52,7 @@ export default function AIFinanceTool({ invoices = [] }: { invoices?: Invoice[] 
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="اسأل المحاسب: كم إجمالي الإيرادات لشهر مايو؟ هل تم تسديد جميع فواتير التوكيل..."
-                className="w-full bg-white border border-slate-200 rounded-2xl px-5 py-4 text-sm font-bold leading-relaxed text-slate-900 h-32 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 custom-scrollbar resize-none font-sans shadow-inner placeholder:text-slate-200 font-bold"
+                className="w-full bg-slate-900 border border-slate-800 rounded-2xl px-5 py-4 text-sm font-bold leading-relaxed text-white h-32 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 custom-scrollbar resize-none font-sans shadow-inner placeholder:text-slate-200 font-bold"
               ></textarea>
               
               {isProcessing ? (
@@ -62,13 +62,13 @@ export default function AIFinanceTool({ invoices = [] }: { invoices?: Invoice[] 
                   <p className="text-xs font-black relative z-10 text-white font-bold">جاري مسح قواعد البيانات وحساب القوائم المالية...</p>
                 </div>
               ) : analysisResult ? (
-                <div className="bg-white border border-slate-200 p-6 rounded-2xl shadow-sm relative overflow-hidden flex flex-col gap-3">
+                <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl shadow-sm relative overflow-hidden flex flex-col gap-3">
                   <div className="absolute right-0 top-0 w-1.5 h-full bg-blue-500"></div>
-                  <h3 className="font-black text-slate-900 flex items-center gap-2 pr-2">
+                  <h3 className="font-black text-white flex items-center gap-2 pr-2">
                     <Bot className="w-4 h-4 text-blue-500" />
                     <span>التحليل المالي الذكي:</span>
                   </h3>
-                  <p className="whitespace-pre-line text-sm text-slate-200 font-bold font-bold leading-relaxed pr-2">
+                  <p className="whitespace-pre-line text-sm text-white font-bold font-bold leading-relaxed pr-2">
                     {analysisResult}
                   </p>
                 </div>
@@ -112,16 +112,16 @@ export default function AIFinanceTool({ invoices = [] }: { invoices?: Invoice[] 
       </div>
 
       {/* Duplicated & Embedded Judicial Fees Calculator with Extreme Contrast & Gold Identity */}
-      <div className="bg-[#0b1325] border border-amber-500/20 rounded-[2.5rem] p-8 shadow-2xl relative overflow-hidden mt-8 text-right text-high-contrast-light-bg">
-        <div className="absolute top-0 left-0 w-64 h-64 bg-amber-500/5 rounded-full blur-[80px] -translate-x-10 -translate-y-10"></div>
+      <div className="bg-slate-950 border border-yellow-500/30 rounded-[2.5rem] p-8 shadow-2xl relative overflow-hidden mt-8 text-right">
+        <div className="absolute top-0 left-0 w-64 h-64 bg-yellow-400/10 rounded-full blur-[80px] -translate-x-10 -translate-y-10"></div>
         <div className="border-b border-slate-800 pb-5 mb-6 font-sans">
           <div className="flex items-center gap-3">
-            <div className="p-3 bg-amber-500 text-slate-900 rounded-2xl shadow-lg">
+            <div className="p-3 bg-yellow-400 text-slate-950 rounded-2xl shadow-lg">
               <Calculator className="w-5 h-5 stroke-[2.5]" />
             </div>
             <div>
-              <h2 className="text-xl font-black text-white">حاسبة الأتعاب والرسوم القضائية السعودية</h2>
-              <p className="text-xs text-amber-500/80 font-bold mt-1">احتساب فوري للأتعاب المهنية، ضريبة القيمة المضافة، والرسوم القضائية التقريبية وفق الأنظمة السعودية.</p>
+              <h2 className="text-xl font-black !text-yellow-400 drop-shadow-md tracking-tight">حاسبة الأتعاب والرسوم القضائية السعودية</h2>
+              <p className="text-xs !text-white font-black mt-1 drop-shadow-sm opacity-90 leading-relaxed">احتساب فوري للأتعاب المهنية، ضريبة القيمة المضافة، والرسوم القضائية التقريبية وفق الأنظمة السعودية.</p>
             </div>
           </div>
         </div>
@@ -145,28 +145,28 @@ function JudicialFeesCalculatorEmbed() {
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 font-sans text-right">
-      <div className="bg-slate-900/60 p-6 rounded-2xl border border-white/5 space-y-6">
-        <h4 className="text-sm font-black text-amber-400 border-b border-white/5 pb-2">المتغيرات والمدخلات المالية</h4>
+      <div className="bg-slate-900/80 p-6 rounded-2xl border border-slate-800 space-y-6 shadow-inner">
+        <h4 className="text-sm font-black !text-yellow-400 border-b border-slate-800 pb-3 drop-shadow-sm tracking-wide">المتغيرات والمدخلات المالية</h4>
         
         <div className="space-y-4">
           <div className="space-y-2">
-            <label className="block text-xs font-black text-slate-350">قيمة المطالبة الاجمالية (ر.س)</label>
+            <label className="block text-xs font-black !text-white drop-shadow-sm">قيمة المطالبة الاجمالية (ر.س)</label>
             <input 
               type="number" 
               value={claimVal} 
               onChange={(e) => setClaimVal(Math.max(0, parseFloat(e.target.value) || 0))} 
-              className="w-full bg-slate-950 border border-slate-700 hover:border-amber-500/50 focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400 rounded-xl px-4 py-3 text-sm font-black text-white transition-all text-left placeholder:text-slate-200 font-bold"
+              className="w-full bg-slate-950 border border-slate-700 hover:border-yellow-400/50 focus:border-yellow-400 focus:outline-none focus:ring-1 focus:ring-yellow-400 rounded-xl px-4 py-3 text-sm font-black !text-white transition-all text-left placeholder:text-slate-500 shadow-inner"
               placeholder="مثال: 150000"
             />
-            <div className="flex justify-between items-center text-[10px] text-slate-100 font-bold font-bold px-1">
+            <div className="flex justify-between items-center text-[10px] !text-white font-black px-1 opacity-90 drop-shadow-sm">
               <span>منخفض</span>
-              <span>بين الـ 50ألف إلى 5 مليون ر.س</span>
+              <span>بين الـ 50 ألف إلى 5 مليون ر.س</span>
               <span>مرتفع</span>
             </div>
           </div>
 
           <div className="space-y-2">
-            <label className="block text-xs font-black text-slate-350">نسبة السعى/أتعاب المحاماة المتفق عليها (%)</label>
+            <label className="block text-xs font-black !text-white drop-shadow-sm mt-4">نسبة السعي/أتعاب المحاماة المتفق عليها (%)</label>
             <div className="flex gap-4 items-center">
               <input 
                 type="range" 
@@ -174,9 +174,9 @@ function JudicialFeesCalculatorEmbed() {
                 max="50" 
                 value={pursuitRate} 
                 onChange={(e) => setPursuitRate(parseInt(e.target.value) || 10)} 
-                className="flex-1 accent-amber-500"
+                className="flex-1 accent-yellow-400"
               />
-              <span className="w-16 text-center bg-slate-950 border border-slate-700 rounded-lg px-2 py-1 text-xs font-black text-amber-400">
+              <span className="w-16 text-center bg-slate-950 border border-slate-700 rounded-xl px-2 py-1.5 text-xs font-black !text-yellow-400 shadow-inner">
                 {pursuitRate} %
               </span>
             </div>
@@ -184,28 +184,30 @@ function JudicialFeesCalculatorEmbed() {
         </div>
       </div>
 
-      <div className="bg-slate-900/80 p-6 rounded-2xl border border-amber-500/10 space-y-4 shadow-inner relative overflow-hidden flex flex-col justify-between">
-        <div className="absolute top-0 right-0 w-2 h-full bg-amber-500" />
+      <div className="bg-slate-900 p-6 rounded-2xl border border-yellow-500/20 space-y-4 shadow-[inset_0_2px_10px_rgba(0,0,0,0.5)] relative overflow-hidden flex flex-col justify-between">
+        <div className="absolute top-0 right-0 w-1.5 h-full bg-yellow-400 shadow-[0_0_15px_rgba(250,204,21,0.6)]" />
         
         <div className="space-y-4">
-          <h4 className="text-sm font-black text-white pr-2 border-b border-white/5 pb-2">النتائج والتقديرات المالية التقريبية</h4>
+          <h4 className="text-sm font-black !text-yellow-400 pr-3 border-b border-slate-800 pb-3 drop-shadow-sm tracking-wide">
+            النتائج والتقديرات المالية التقريبية
+          </h4>
           
-          <div className="grid grid-cols-2 gap-4 text-xs font-bold pr-2">
-            <div className="text-slate-200 font-bold">أتعاب السعى الصافية:</div>
-            <div className="text-left text-white font-black">{advocacyFees.toLocaleString()} ر.س</div>
+          <div className="grid grid-cols-2 gap-y-5 gap-x-4 text-xs pr-3">
+            <div className="!text-white font-black opacity-95 drop-shadow-sm">أتعاب السعي الصافية:</div>
+            <div className="text-left !text-white font-black drop-shadow-sm">{advocacyFees.toLocaleString()} ر.س</div>
             
-            <div className="text-slate-200 font-bold">ضريبة القيمة المضافة (15%):</div>
-            <div className="text-left text-white font-black">{vatAmount.toLocaleString()} ر.س</div>
+            <div className="!text-white font-black opacity-95 drop-shadow-sm">ضريبة القيمة المضافة (15%):</div>
+            <div className="text-left !text-white font-black drop-shadow-sm">{vatAmount.toLocaleString()} ر.س</div>
             
-            <div className="text-amber-500">الرسوم القضائية التقريبية:</div>
-            <div className="text-left text-amber-400 font-black">{judicialFees.toLocaleString()} ر.س</div>
+            <div className="!text-yellow-400 font-black drop-shadow-md mt-2">الرسوم القضائية التقريبية:</div>
+            <div className="text-left !text-yellow-400 font-black drop-shadow-md mt-2">{judicialFees.toLocaleString()} ر.س</div>
           </div>
         </div>
 
-        <div className="bg-slate-950 p-4 rounded-xl border border-white/5 mt-4 flex justify-between items-center text-right">
-          <div className="text-xs font-black text-slate-200 font-bold">إجمالي الالتزام التقديري الكلي:</div>
-          <div className="text-lg font-black text-amber-400 text-left">
-            {totalCost.toLocaleString()} <span className="text-xs">ر.س</span>
+        <div className="bg-slate-950 p-5 rounded-xl border border-yellow-500/20 shadow-inner mt-6 flex justify-between items-center text-right">
+          <div className="text-xs font-black !text-white drop-shadow-sm">إجمالي الالتزام التقديري الكلي:</div>
+          <div className="text-xl font-black !text-yellow-400 text-left drop-shadow-md">
+            {totalCost.toLocaleString()} <span className="text-xs font-black ml-1 text-white">ر.س</span>
           </div>
         </div>
       </div>

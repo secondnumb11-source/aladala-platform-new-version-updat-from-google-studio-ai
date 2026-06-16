@@ -68,7 +68,7 @@ export interface Case {
   agreed_fees?: number;
   collected_fees?: number;
   expenses?: number;
-  attachmentsCount: number;
+  attachments_count: number;
   attachments?: Attachment[];
   archivedDocuments?: ArchiveItem[];
   financialRecords?: FinancialRecord[];
@@ -88,7 +88,7 @@ export interface Case {
 export type CourtCase = Case;
 export interface SyncStatus {
   status: 'stable' | 'syncing' | 'error' | 'disconnected';
-  lastSync: string;
+  last_sync_at: string;
 }
 
 export interface Client {
@@ -178,7 +178,7 @@ export interface DocumentVersion {
   name: string;
   size: string;
   uploadedAt: string;
-  extractedText?: string;
+  content_text?: string;
   changesSummary: string;
 }
 
@@ -188,7 +188,7 @@ export interface Document {
   category: string;
   uploadedAt: string;
   size: string;
-  extractedText?: string;
+  content_text?: string;
   tags: string[];
   versions?: DocumentVersion[];
   currentVersion?: number;
@@ -478,5 +478,19 @@ export interface Payroll {
   deductions: { name: string; amount: number }[];
   netSalary: number;
   status: 'pending' | 'paid';
+  createdAt: string;
+}
+
+export interface AuditTrail {
+  id: string;
+  userId?: string;
+  userName?: string;
+  action: string;
+  entityType?: string;
+  entityId?: string;
+  oldData?: any;
+  newData?: any;
+  ipAddress?: string;
+  userAgent?: string;
   createdAt: string;
 }

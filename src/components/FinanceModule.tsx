@@ -105,6 +105,8 @@ interface FinanceModuleProps {
   cases: Case[];
   expenses: { id: string; description: string; amount: number; category: string; date: string; caseNumber?: string }[];
   onUpdateState: (type: string, data: any) => void;
+  auditTrails: any[];
+  createRecord: (collection: string, data: any) => Promise<any>;
   viewMode?: 'billing' | 'calculator';
 }
 
@@ -114,6 +116,8 @@ export default function FinanceModule({
   cases,
   expenses,
   onUpdateState,
+  auditTrails,
+  createRecord,
   viewMode = 'billing'
 }: FinanceModuleProps) {
   
@@ -440,12 +444,19 @@ export default function FinanceModule({
   const [selectedSimInvoiceId, setSelectedSimInvoiceId] = useState('');
   const [payMethod, setPayMethod] = useState<'mada' | 'applepay' | 'cc' | 'sadad' | 'bank_transfer'>('mada');
   const [simulationLogs, setSimulationLogs] = useState<string[]>([]);
-  const [zatcaAuditLogs, setZatcaAuditLogs] = useState<{ id: string; invoiceId: string; status: string; timestamp: string; details: string; type: 'success' | 'warning' | 'info' }[]>(() => {
-    try {
-      const saved = localStorage.getItem('zatca_audit_logs');
-      return saved ? JSON.parse(saved) : [];
-    } catch { return []; }
-  });
+  
+  // ZATCA audits are now filtered from Supabase audit_trails
+  const zatcaAuditLogs = (auditTrails || [])
+    .filter(a => a.entityType === 'invoice' && a.action === 'ZATCA_SUBMISSION')
+    .map(a => ({
+      id: a.id,
+      invoiceId: a.entityId,
+      status: 'SUCCESS',
+      timestamp: new Date(a.createdAt).toLocaleString('ar-SA'),
+      details: a.newData?.details || a.action,
+      type: 'success' as const
+    }));
+
   const [isSimulatingPayment, setIsSimulatingPayment] = useState(false);
   const [isSubmittingZatca, setIsSubmittingZatca] = useState(false);
   const [isZatcaConnected, setIsZatcaConnected] = useState(true);
@@ -480,18 +491,18 @@ export default function FinanceModule({
     ];
     setSimulationLogs(prev => [...prev, ...finalLogs]);
 
-    const newAuditLog = {
-      id: `zat-${Date.now()}`,
-      invoiceId: inv.id,
-      status: 'SUCCESS',
-      timestamp: new Date().toLocaleString('ar-SA'),
-      details: `تم اعتماد الفاتورة وتوقيعها إلكترونياً واعتمادها في منصة فاتورة (ZATCA Phase 2). المرجع الزكوي: ${Math.random().toString(36).toUpperCase().substring(0, 8)}`,
-      type: 'success' as const
+    const auditPayload = {
+      action: 'ZATCA_SUBMISSION',
+      entity_type: 'invoice',
+      entity_id: inv.id,
+      new_data: {
+        status: 'SUCCESS',
+        zatca_reference: Math.random().toString(36).toUpperCase().substring(0, 8),
+        details: `تم اعتماد الفاتورة وتوقيعها إلكترونياً واعتمادها في منصة فاتورة (ZATCA Phase 2).`
+      }
     };
 
-    const updatedAudit = [newAuditLog, ...zatcaAuditLogs];
-    setZatcaAuditLogs(updatedAudit);
-    localStorage.setItem('zatca_audit_logs', JSON.stringify(updatedAudit));
+    await createRecord('audit_trails', auditPayload);
 
     const updated = { 
       ...inv, 
@@ -824,10 +835,10 @@ export default function FinanceModule({
               <div className="p-2 bg-[#d4af37] text-slate-950 rounded-xl shadow-md">
                 <Plus className="w-5 h-5 stroke-[2.5]" />
               </div>
-              <span className="text-[10px] font-black bg-slate-900 text-amber-400 px-2 py-0.5 rounded-full border border-amber-500/20 uppercase tracking-widest leading-none">Compliant ZATCA</span>
+              <span className="text-[10px] font-black bg-yellow-400 text-slate-950 px-2 py-0.5 rounded-full border border-yellow-500/20 uppercase tracking-widest leading-none shadow-lg">إصدار فاتورة أتعاب</span>
             </div>
             <div>
-              <h3 className="text-sm font-black text-white group-hover:text-amber-400 transition-colors leading-snug mb-1">
+              <h3 className="text-sm font-black text-yellow-400 transition-colors leading-snug mb-1">
                 توليد فاتورة أتعاب ضريبية
               </h3>
               <p className="text-[11px] font-bold text-white font-bold leading-normal">
@@ -850,10 +861,10 @@ export default function FinanceModule({
               <div className="p-2 bg-[#d4af37] text-slate-950 rounded-xl shadow-md">
                 <CreditCard className="w-5 h-5 stroke-[2.5]" />
               </div>
-              <span className="text-[10px] font-black bg-slate-900 text-amber-400 px-2 py-0.5 rounded-full border border-amber-500/20 uppercase tracking-widest leading-none">Direct Sync</span>
+              <span className="text-[10px] font-black bg-yellow-400 text-slate-950 px-2 py-0.5 rounded-full border border-yellow-500/20 uppercase tracking-widest leading-none shadow-lg">ربط بوابات دفع</span>
             </div>
             <div>
-              <h3 className="text-sm font-black text-white group-hover:text-amber-400 transition-colors leading-snug mb-1">
+              <h3 className="text-sm font-black text-yellow-400 transition-colors leading-snug mb-1">
                 بوابات الدفع الإلكتروني
               </h3>
               <p className="text-[11px] font-bold text-white font-bold leading-normal">
@@ -876,10 +887,10 @@ export default function FinanceModule({
               <div className="p-2 bg-[#d4af37] text-slate-950 rounded-xl shadow-md">
                 <Printer className="w-5 h-5 stroke-[2.5]" />
               </div>
-              <span className="text-[10px] font-black bg-slate-900 text-amber-400 px-2 py-0.5 rounded-full border border-amber-500/20 uppercase tracking-widest leading-none">Ready to Print</span>
+              <span className="text-[10px] font-black bg-yellow-400 text-slate-950 px-2 py-0.5 rounded-full border border-yellow-500/20 uppercase tracking-widest leading-none shadow-lg">إصدار سند قبض</span>
             </div>
             <div>
-              <h3 className="text-sm font-black text-white group-hover:text-amber-400 transition-colors leading-snug mb-1">
+              <h3 className="text-sm font-black text-yellow-400 transition-colors leading-snug mb-1">
                 إصدار سند قبض رسمي
               </h3>
               <p className="text-[11px] font-bold text-white font-bold leading-normal">
@@ -902,10 +913,10 @@ export default function FinanceModule({
               <div className="p-2 bg-[#d4af37] text-slate-950 rounded-xl shadow-md">
                 <TrendingDown className="w-5 h-5 stroke-[2.5]" />
               </div>
-              <span className="text-[10px] font-black bg-slate-900 text-amber-400 px-2 py-0.5 rounded-full border border-amber-500/20 uppercase tracking-widest leading-none">Financial Audit</span>
+              <span className="text-[10px] font-black bg-yellow-400 text-slate-950 px-2 py-0.5 rounded-full border border-yellow-500/20 uppercase tracking-widest leading-none shadow-lg">إصدار سند صرف</span>
             </div>
             <div>
-              <h3 className="text-sm font-black text-white group-hover:text-amber-400 transition-colors leading-snug mb-1">
+              <h3 className="text-sm font-black text-yellow-400 transition-colors leading-snug mb-1">
                 إصدار سند صرف معتمد
               </h3>
               <p className="text-[11px] font-bold text-white font-bold leading-normal">
@@ -928,10 +939,10 @@ export default function FinanceModule({
               <div className="p-2 bg-[#d4af37] text-slate-950 rounded-xl shadow-md">
                 <Calculator className="w-5 h-5 stroke-[2.5]" />
               </div>
-              <span className="text-[10px] font-black bg-slate-900 text-amber-400 px-2 py-0.5 rounded-full border border-amber-500/20 uppercase tracking-widest leading-none">Smart Calc</span>
+              <span className="text-[10px] font-black bg-yellow-400 text-slate-950 px-2 py-0.5 rounded-full border border-yellow-500/20 uppercase tracking-widest leading-none shadow-lg">حاسبة قضائية</span>
             </div>
             <div>
-              <h3 className="text-sm font-black text-white group-hover:text-amber-400 transition-colors leading-snug mb-1">
+              <h3 className="text-sm font-black text-yellow-400 transition-colors leading-snug mb-1">
                 حاسبة الأتعاب الذكية
               </h3>
               <p className="text-[11px] font-bold text-white font-bold leading-normal">

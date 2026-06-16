@@ -5,6 +5,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
+import { toCamel, toSnake } from '@/utils/schemaMapping';
 import { SortableWidgetWrapper } from './SortableWidgetWrapper';
 import { 
   DndContext, 
@@ -348,9 +349,9 @@ const Dashboard = function Dashboard({
     try {
       const uid = currentUser?.id;
       if (uid) {
-        await supabase.from('users').update({ name: val }).eq('id', uid);
+        await supabase.from('profiles').update({ name: val }).eq('id', uid);
         if (onUpdateState) {
-          onUpdateState('users', { id: uid, name: val });
+          onUpdateState('profiles', { id: uid, name: val });
         }
       }
     } catch (err) {
@@ -397,18 +398,18 @@ const Dashboard = function Dashboard({
       try {
         const [empRes, poaRes] = await Promise.all([
           supabase.from('employees').select('*'),
-          supabase.from('powersOfAttorney').select('*')
+          supabase.from('powers_of_attorney').select('*')
         ]);
         
         if (empRes.data) {
-          const emps = empRes.data;
+          const emps = toCamel(empRes.data);
           emps.sort((a: any, b: any) => (a.name || '').localeCompare(b.name || ''));
           setEmployees(emps);
           localStorage.setItem('employees_backup', JSON.stringify(emps));
         }
 
         if (poaRes.data) {
-          setAgencies(poaRes.data);
+          setAgencies(toCamel(poaRes.data));
         }
       } catch (err) {
         console.warn("Error fetching dashboard data from Supabase:", err);
@@ -419,11 +420,19 @@ const Dashboard = function Dashboard({
 
     const empSub = supabase.channel('dashboard-employees')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'employees' }, fetchDashboardData)
-      .subscribe();
+      .subscribe((status, error) => {
+        if (error) {
+          console.warn('[Supabase Realtime] Subscribe error for dashboard-employees:', error);
+        }
+      });
 
-    const poaSub = supabase.channel('dashboard-poas')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'powersOfAttorney' }, fetchDashboardData)
-      .subscribe();
+    const poaSub = supabase.channel('dashboard-powers_of_attorney')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'powers_of_attorney' }, fetchDashboardData)
+      .subscribe((status, error) => {
+        if (error) {
+          console.warn('[Supabase Realtime] Subscribe error for dashboard-powers_of_attorney:', error);
+        }
+      });
 
     return () => {
       supabase.removeChannel(empSub);
@@ -1502,45 +1511,45 @@ const Dashboard = function Dashboard({
                 ).length;
 
                 const pieChartData = [
-                  { name: 'قيد التداول', value: activeCount === 0 && reservedCount === 0 && closedCount === 0 ? 1 : activeCount, color: '#10b981' }, 
-                  { name: 'محجوزة للحكم', value: reservedCount, color: '#f59e0b' }, 
-                  { name: 'منتهية', value: closedCount, color: '#64748b' } 
+                  { name: 'جارية', value: activeCount === 0 && reservedCount === 0 && closedCount === 0 ? 1 : activeCount, color: '#D4AF37' }, 
+                  { name: 'جديدة', value: reservedCount, color: '#FFD700' }, 
+                  { name: 'مغلقة', value: closedCount, color: '#0c1a35' } 
                 ].filter(d => d.value > 0);
 
                 return (
                   <EnhancedSortableWidgetWrapper widgetColor={widget.color} onChangeColor={handleUpdateWidgetColor} className={getWidgetClassName(widget.size)} key="summaryCases" id="summaryCases" isCustomizing={isCustomizing} widgetSize={widget.size} onResize={handleUpdateWidgetSize}>
-                    <div className={`h-full relative ${isCustomizing ? 'opacity-80 ring-2 ring-dashed ring-amber-400 rounded-3xl' : ''}`}>
+                    <div className={`h-full relative ${isCustomizing ? 'opacity-80 ring-2 ring-dashed ring-[#D4AF37] rounded-3xl' : ''}`}>
                       {isCustomizing && (
-                        <div className="absolute inset-0 bg-amber-500/5 z-50 flex items-center justify-center rounded-3xl">
-                          <GripVertical className="w-8 h-8 text-amber-500 animate-pulse" />
+                        <div className="absolute inset-0 bg-[#D4AF37]/5 z-50 flex items-center justify-center rounded-3xl">
+                          <GripVertical className="w-8 h-8 text-[#D4AF37] animate-pulse" />
                         </div>
                       )}
                       
-                      <SummaryWidget icon={<Scale className="w-5 h-5 text-amber-500 mt-1" />} title="الإحصائيات الحية للقضايا" description="توزيع ونسب القضايا والقرارات" badgeValue={filteredCasesList.length}>
+                      <SummaryWidget icon={<Scale className="w-5 h-5 text-[#D4AF37] mt-1" />} title="الإحصائيات الحية للقضايا" description="توزيع ونسب القضايا والقرارات" badgeValue={filteredCasesList.length}>
                         <div className="flex items-center justify-between gap-1 mt-1 mb-2 bg-slate-900/60 p-1 rounded-xl border border-slate-700/80">
                           <span className="text-[10px] text-white font-bold font-bold px-1">التصفية:</span>
                           <div className="flex gap-1">
                             <button
                               onClick={() => setCasesTimeFilter('all')}
-                              className={`text-[11px] px-1.5 py-0.5 rounded-lg font-bold transition-all shrink-0 ${casesTimeFilter === 'all' ? 'bg-amber-500 text-slate-900 shadow-md' : 'text-white font-bold'}`}
+                              className={`text-[11px] px-1.5 py-0.5 rounded-lg font-bold transition-all shrink-0 ${casesTimeFilter === 'all' ? 'bg-[#D4AF37] text-slate-900 shadow-md' : 'text-white font-bold'}`}
                             >
                               الكل
                             </button>
                             <button
                               onClick={() => setCasesTimeFilter('month')}
-                              className={`text-[11px] px-1.5 py-0.5 rounded-lg font-bold transition-all shrink-0 ${casesTimeFilter === 'month' ? 'bg-amber-500 text-slate-900 shadow-md' : 'text-white font-bold'}`}
+                              className={`text-[11px] px-1.5 py-0.5 rounded-lg font-bold transition-all shrink-0 ${casesTimeFilter === 'month' ? 'bg-[#D4AF37] text-slate-900 shadow-md' : 'text-white font-bold'}`}
                             >
                               الشهر
                             </button>
                             <button
                               onClick={() => setCasesTimeFilter('3months')}
-                              className={`text-[11px] px-1.5 py-0.5 rounded-lg font-bold transition-all shrink-0 ${casesTimeFilter === '3months' ? 'bg-amber-500 text-slate-900 shadow-md' : 'text-white font-bold'}`}
+                              className={`text-[11px] px-1.5 py-0.5 rounded-lg font-bold transition-all shrink-0 ${casesTimeFilter === '3months' ? 'bg-[#D4AF37] text-slate-900 shadow-md' : 'text-white font-bold'}`}
                             >
-                              3 أسهر
+                              3 أشهر
                             </button>
                             <button
                               onClick={() => setCasesTimeFilter('year')}
-                              className={`text-[11px] px-1.5 py-0.5 rounded-lg font-bold transition-all shrink-0 ${casesTimeFilter === 'year' ? 'bg-amber-500 text-slate-900 shadow-md' : 'text-white font-bold'}`}
+                              className={`text-[11px] px-1.5 py-0.5 rounded-lg font-bold transition-all shrink-0 ${casesTimeFilter === 'year' ? 'bg-[#D4AF37] text-slate-900 shadow-md' : 'text-white font-bold'}`}
                             >
                               عام
                             </button>
@@ -1550,6 +1559,16 @@ const Dashboard = function Dashboard({
                         <div className="h-28 w-full relative flex items-center justify-center">
                           <ResponsiveContainer width="100%" height="100%" key={`pie-${themeTick}`}>
                             <PieChart>
+                              <defs>
+                                <linearGradient id="goldGradient" x1="0" y1="0" x2="0" y2="1">
+                                  <stop offset="5%" stopColor="#FFD700" stopOpacity={0.9}/>
+                                  <stop offset="95%" stopColor="#D4AF37" stopOpacity={0.9}/>
+                                </linearGradient>
+                                <linearGradient id="blueGradient" x1="0" y1="0" x2="0" y2="1">
+                                  <stop offset="5%" stopColor="#1e3a8a" stopOpacity={0.9}/>
+                                  <stop offset="95%" stopColor="#0c1a35" stopOpacity={0.9}/>
+                                </linearGradient>
+                              </defs>
                               <Pie
                                 data={pieChartData}
                                 cx="50%"
@@ -1560,33 +1579,34 @@ const Dashboard = function Dashboard({
                                 dataKey="value"
                               >
                                 {pieChartData.map((entry, index) => (
-                                  <Cell key={`cell-${index}`} fill={entry.color} />
+                                  <Cell key={`cell-${index}`} fill={entry.color === '#FFD700' ? 'url(#goldGradient)' : entry.color === '#0c1a35' ? 'url(#blueGradient)' : entry.color} />
                                 ))}
                               </Pie>
                               <RechartsTooltip 
-                                contentStyle={{ background: '#091b30', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', fontSize: '9px', direction: 'rtl', textAlign: 'right' }} 
+                                contentStyle={{ background: '#020813', border: '1px solid #D4AF37', borderRadius: '12px', fontSize: '9px', direction: 'rtl', textAlign: 'right' }} 
+                                itemStyle={{ color: '#fff' }}
                                 formatter={(value) => [`${value} قضية`, 'العدد']}
                               />
                             </PieChart>
                           </ResponsiveContainer>
                           <div className="absolute flex flex-col items-center justify-center pointer-events-none">
                             <span className="text-slate-200 font-bold text-[10px] leading-none mb-0.5 font-bold">الإجمالي</span>
-                            <span className="text-slate-100 font-sans font-black text-xs">{filteredCasesList.length}</span>
+                            <span className="text-[#D4AF37] font-sans font-black text-xs">{filteredCasesList.length}</span>
                           </div>
                         </div>
 
                         <div className="grid grid-cols-3 gap-2 mt-1 pt-2 border-t border-slate-700/80">
-                          <div className="bg-emerald-500/10 border border-emerald-500/20 p-1.5 rounded-xl text-center">
-                            <span className="block text-emerald-400 font-sans font-black text-sm leading-none mb-1">{activeCount}</span>
-                            <span className="text-[11px] font-bold text-emerald-300">قيد التداول</span>
+                          <div className="bg-[#D4AF37]/10 border border-[#D4AF37]/20 p-1.5 rounded-xl text-center">
+                            <span className="block text-[#D4AF37] font-sans font-black text-sm leading-none mb-1">{activeCount}</span>
+                            <span className="block text-[8px] font-bold text-white/70">جارية</span>
                           </div>
-                          <div className="bg-amber-500/10 border border-amber-500/20 p-1.5 rounded-xl text-center">
-                            <span className="block text-amber-400 font-sans font-black text-sm leading-none mb-1">{reservedCount}</span>
-                            <span className="text-[11px] font-bold text-amber-300">محجوزة</span>
+                          <div className="bg-[#FFD700]/10 border border-[#FFD700]/20 p-1.5 rounded-xl text-center">
+                            <span className="block text-[#FFD700] font-sans font-black text-sm leading-none mb-1">{reservedCount}</span>
+                            <span className="block text-[8px] font-bold text-white/70">جديدة</span>
                           </div>
-                          <div className="bg-slate-700/50 border border-slate-600/50 p-1.5 rounded-xl text-center font-sans">
-                            <span className="block text-white font-bold font-sans font-black text-sm leading-none mb-1">{closedCount}</span>
-                            <span className="text-[11px] font-bold text-white font-bold">منتهية</span>
+                          <div className="bg-[#0c1a35]/30 border border-[#0c1a35]/50 p-1.5 rounded-xl text-center">
+                            <span className="block text-slate-300 font-sans font-black text-sm leading-none mb-1">{closedCount}</span>
+                            <span className="block text-[8px] font-bold text-white/70">مغلقة</span>
                           </div>
                         </div>
 

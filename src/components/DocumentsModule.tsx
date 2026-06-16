@@ -252,7 +252,7 @@ export default function DocumentsModule({
         category: 'العقود والاتفاقيات', // Default
         uploadedAt: new Date().toISOString().split('T')[0],
         size: sizeStr,
-        extractedText: `تم استيراد هذا الملف بنجاح ومزامنته من Google Drive الخاص بك.
+        content_text: `تم استيراد هذا الملف بنجاح ومزامنته من Google Drive الخاص بك.
 اسم المستند: ${file.name}
 المستند السحابي المعرف: ${file.id}
 صيغة الملف: ${file.mimeType}
@@ -294,7 +294,7 @@ export default function DocumentsModule({
         description: 'مصدّر من منصة العدالة للمحاماة - عقد ومذكرة قضائية'
       };
       
-      const fileContent = doc.extractedText || `مستند قانوني: ${doc.name}\nتم تصديره من منصة العدالة القضائية.`;
+      const fileContent = doc.content_text || `مستند قانوني: ${doc.name}\nتم تصديره من منصة العدالة القضائية.`;
       const boundary = 'foo_bar_baz_adal_aladalah';
       const delimiter = `\r\n--${boundary}\r\n`;
       const close_delim = `\r\n--${boundary}--`;
@@ -546,7 +546,7 @@ export default function DocumentsModule({
       category: categoryType as any,
       uploadedAt: new Date().toISOString().split('T')[0],
       size: `${Math.ceil(editedDocContent.length / 1000)} KB`,
-      extractedText: editedDocContent,
+      content_text: editedDocContent,
       tags: ['تعبئة_ذكية', 'توليد_تلقائي', 'NLP_Ready', filledDocName.split(' ')[0]]
     } as any;
 
@@ -766,7 +766,7 @@ export default function DocumentsModule({
   // OCR Simulator
   const [selectedDocForOcr, setSelectedDocForOcr] = useState<Document | null>(documents[0]);
   const [isOcrLoading, setIsOcrLoading] = useState(false);
-  const [ocrResult, setOcrResult] = useState<string | null>(documents[0]?.extractedText || null);
+  const [ocrResult, setOcrResult] = useState<string | null>(documents[0]?.content_text || null);
 
   // Focused Reading Mode and color highlighting states
   const [isFocusedRead, setIsFocusedRead] = useState(false);
@@ -869,7 +869,7 @@ export default function DocumentsModule({
 
   React.useEffect(() => {
     if (selectedDocForOcr) {
-      setNewVersionText(selectedDocForOcr.extractedText || '');
+      setNewVersionText(selectedDocForOcr.content_text || '');
       setChangesSummary('');
     }
   }, [selectedDocForOcr]);
@@ -885,7 +885,7 @@ export default function DocumentsModule({
         name: doc.name,
         size: doc.size,
         uploadedAt: doc.uploadedAt,
-        extractedText: doc.extractedText || "مضمون النص ومراجعة البنود الأساسية لعقد التقاضي.",
+        content_text: doc.content_text || "مضمون النص ومراجعة البنود الأساسية لعقد التقاضي.",
         changesSummary: "النسخة الأساسية عند الإيداع"
       }
     ];
@@ -908,7 +908,7 @@ export default function DocumentsModule({
       name: selectedDocForOcr.name,
       size: `${(newVersionText.length / 1024).toFixed(1)} KB`,
       uploadedAt: new Date().toISOString().split('T')[0],
-      extractedText: newVersionText,
+      content_text: newVersionText,
       changesSummary: changesSummary.trim() || `تعديل المسودة وتحديث البنود القضائية الإصدار رقم ${nextVerNum}`
     };
     
@@ -916,7 +916,7 @@ export default function DocumentsModule({
     
     const updatedDoc: Document = {
       ...selectedDocForOcr,
-      extractedText: newVersionText,
+      content_text: newVersionText,
       versions: updatedVersions,
       currentVersion: nextVerNum
     };
@@ -938,14 +938,14 @@ export default function DocumentsModule({
     
     const updatedDoc: Document = {
       ...selectedDocForOcr,
-      extractedText: version.extractedText,
+      content_text: version.content_text,
       currentVersion: version.version
     };
     
     onUpdateState('documents', updatedDoc);
     setSelectedDocForOcr(updatedDoc);
-    setNewVersionText(version.extractedText);
-    setOcrResult(version.extractedText);
+    setNewVersionText(version.content_text);
+    setOcrResult(version.content_text);
     
     alert(`تم استرداد وإعادة تفعيل الإصدار رقم ${version.version} بنجاح!`);
   };
@@ -1047,7 +1047,7 @@ export default function DocumentsModule({
         category: category as any,
         uploadedAt: new Date().toISOString().split('T')[0],
         size: sizeStr,
-        extractedText: `تم مسح وفهرسة الملف المرفوع "${file.name}" بنجاح ممتثلاً للمعايير التقنية السعودية والأمن السيبراني.
+        content_text: `تم مسح وفهرسة الملف المرفوع "${file.name}" بنجاح ممتثلاً للمعايير التقنية السعودية والأمن السيبراني.
 تم استخراج بيانات القضية دلالياً عبر NLP:
 - اسم القضية المستنبط: ${extractedCaseName}
 - التاريخ المستخرج من المتن: ${extractedDate}
@@ -1062,7 +1062,7 @@ export default function DocumentsModule({
       onUpdateState('documents', newDoc);
       setIsUploading(false);
       setSelectedDocForOcr(newDoc);
-      setOcrResult(newDoc.extractedText || null);
+      setOcrResult(newDoc.content_text || null);
       alert(`✅ تمت عملية الرفع بنجاح!
       قامت تقنيات ذكاء الأعمال (NLP) بتحليل الملف النصي، وتصنيفه كـ "${category}" وتسميته تلقائياً بـ "${smartFileName}".
       يمكنك الآن البحث في محتوى هذا المستند باستخدام البحث العميق (NLP Content Search).`);
@@ -1098,7 +1098,7 @@ export default function DocumentsModule({
     setOcrResult(null);
 
     setTimeout(() => {
-      setOcrResult(doc.extractedText || "لم يتبين وجود سطور أو نصوص عربية مقروءة في هذا المستند.");
+      setOcrResult(doc.content_text || "لم يتبين وجود سطور أو نصوص عربية مقروءة في هذا المستند.");
       setIsOcrLoading(false);
     }, 1000);
   };
@@ -1146,7 +1146,7 @@ export default function DocumentsModule({
     const matchesSearch = 
       doc.name.toLowerCase().includes(term) || 
       (doc.tags && doc.tags.some(t => t.toLowerCase().includes(term))) ||
-      (isDeepSearch && doc.extractedText && doc.extractedText.toLowerCase().includes(term));
+      (isDeepSearch && doc.content_text && doc.content_text.toLowerCase().includes(term));
     
     const matchesDate = !dateFilter || doc.uploadedAt === dateFilter;
     const matchesType = !typeFilter || doc.category === typeFilter;
@@ -2289,9 +2289,9 @@ export default function DocumentsModule({
                                         {selectedDocForOcr.name}
                                       </h2>
                                       <div className="text-[10px] opacity-75 flex gap-2 items-center mt-2.5">
-                                        <span>⏱️ زمن القراءة المتوقع: {Math.max(1, Math.ceil((selectedDocForOcr.extractedText || "").split(/\s+/).length / 150))} دقيقة</span>
+                                        <span>⏱️ زمن القراءة المتوقع: {Math.max(1, Math.ceil((selectedDocForOcr.content_text || "").split(/\s+/).length / 150))} دقيقة</span>
                                         <span>•</span>
-                                        <span>📝 عدد الكلمات: {(selectedDocForOcr.extractedText || "").split(/\s+/).length} كلمة</span>
+                                        <span>📝 عدد الكلمات: {(selectedDocForOcr.content_text || "").split(/\s+/).length} كلمة</span>
                                       </div>
                                     </div>
 
@@ -2308,11 +2308,11 @@ export default function DocumentsModule({
                                       </p>
                                       
                                       <div className="space-y-4">
-                                        {selectedDocForOcr.extractedText ? (
+                                        {selectedDocForOcr.content_text ? (
                                           <div className={`p-4 rounded-xl border border-dashed text-right font-medium leading-relaxed shadow-sm ${
                                             readerTheme === 'sepia' ? 'bg-[#f4ebe1] border-[#dfd2be]' : readerTheme === 'dark' ? 'bg-[#0f141f] border-slate-800' : 'bg-slate-50 border-slate-200'
                                           }`}>
-                                            {renderHighlightedText(selectedDocForOcr.extractedText)}
+                                            {renderHighlightedText(selectedDocForOcr.content_text)}
                                           </div>
                                         ) : (
                                           <p className="text-center italic text-xs py-12 opacity-80">
@@ -2381,7 +2381,7 @@ export default function DocumentsModule({
                                   <div className={`p-3 border rounded-xl space-y-2 mt-2 ${isDocNightMode ? 'bg-[#050e21] border-yellow-500/30' : 'bg-amber-100/50 border-amber-900/40'}`}>
                                     <span className={`text-primary font-black block ${readMode ? 'text-sm' : 'text-xs'}`}>🔎 المقتطف العدلي المستخرج للفحص السريع:</span>
                                     <p className={`leading-relaxed font-bold italic ${readMode ? 'text-base line-clamp-none' : 'text-xs line-clamp-5'} ${isDocNightMode ? 'text-slate-100' : 'text-slate-800'}`}>
-                                      {selectedDocForOcr.extractedText ? `"${renderHighlightedText(selectedDocForOcr.extractedText)}"` : "لم يتم تشغيل القارئ الضوئي بعد؛ انقر فوق زر قراءة OCR لاستخراج المحتويات الخطية."}
+                                      {selectedDocForOcr.content_text ? `"${renderHighlightedText(selectedDocForOcr.content_text)}"` : "لم يتم تشغيل القارئ الضوئي بعد؛ انقر فوق زر قراءة OCR لاستخراج المحتويات الخطية."}
                                     </p>
                                   </div>
       

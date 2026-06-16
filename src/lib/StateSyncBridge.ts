@@ -23,16 +23,22 @@ export const StateSyncBridge = {
 
       // Initial fetch from Supabase
       const fetchState = async () => {
-        const { data, error } = await supabase
-          .from('user_states')
-          .select('payload')
-          .eq('user_id', userId)
-          .eq('state_key', stateKey)
-          .maybeSingle();
-        
-        if (data && data.payload) {
-          localStorage.setItem(localKey, JSON.stringify(data.payload));
-          setStateFn(data.payload);
+        try {
+          const { data, error } = await supabase
+            .from('user_states')
+            .select('payload')
+            .eq('user_id', userId)
+            .eq('state_key', stateKey)
+            .maybeSingle();
+          
+          if (error) throw error;
+
+          if (data && data.payload) {
+            localStorage.setItem(localKey, JSON.stringify(data.payload));
+            setStateFn(data.payload);
+          }
+        } catch (err) {
+          console.warn(`[StateSyncBridge] fetchState failed for ${stateKey}:`, err);
         }
       };
 
@@ -52,7 +58,11 @@ export const StateSyncBridge = {
             setStateFn(remoteData);
           }
         })
-        .subscribe();
+        .subscribe((status, error) => {
+          if (error) {
+            console.warn(`[Supabase Realtime] Subscribe error for state-sync-${stateKey}:`, error);
+          }
+        });
 
       return () => {
         supabase.removeChannel(channel);

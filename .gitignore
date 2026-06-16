@@ -4,3 +4,23 @@ coverage/
 *.log
 .env*
 !.env.example
+
+# Firebase & Secrets
+serviceAccountKey.json
+serviceAccountKey*.json
+*.json.bk
+
+# Build and IDE outputs
+dist/
+build/
+out/
+.next/
+.cache/
+.vscode/
+.idea/
+
+# Temporary files and scratchpads
+*.txt
+temp.txt
+tmp_output.txt
+

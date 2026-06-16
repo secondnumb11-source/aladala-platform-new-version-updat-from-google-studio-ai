@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useEffect, useLayoutEffect } from 'react';
-import { Search, AlertCircle, X, Wifi, Activity, AlertTriangle, Server, LogOut } from 'lucide-react';
+import { Search, AlertCircle, X, Wifi, Activity, AlertTriangle, Server, LogOut, RefreshCw } from 'lucide-react';
 import Sidebar from '@/components/Sidebar';
 import CommandPalette from '@/components/CommandPalette';
 import ExtensionDownloadSection from '@/components/ExtensionDownloadSection';
@@ -47,6 +47,7 @@ const WebSocketEcho = React.lazy(() => import('./components/WebSocketEcho'));
 import { SupabaseTodos } from './components/SupabaseTodos';
 import ElasticsearchModule from './components/ElasticsearchModule';
 import DbDevOpsModule from './components/DbDevOpsModule';
+import FailedPersistenceLogsDashboard from './components/FailedPersistenceLogsDashboard';
 
 const CalendarModule = React.lazy(() => import('./components/CalendarModule'));
 const SaudiServicesHub = React.lazy(() => import('./components/SaudiServicesHub'));
@@ -54,10 +55,13 @@ const CourtMapAndServices = React.lazy(() => import('./components/CourtMapAndSer
 
 const GlobalCustomizationEngine = React.lazy(() => import('./components/GlobalCustomizationEngine'));
 import { initGlobalErrorHandling } from './lib/ErrorReporting';
+import { runSupabaseDiagnostics } from './lib/debug-supabase';
 import { SkeletonLoader } from './components/SkeletonLoader';
 import { StateSyncBridge } from './lib/StateSyncBridge';
 
 initGlobalErrorHandling();
+runSupabaseDiagnostics().catch(err => console.error('[Supabase Top-Level Diagnostics] Failed:', err));
+import '@/lib/supabase/init';
 
 import { 
   Case, 
@@ -123,7 +127,180 @@ import { ErrorReporting } from '@/lib/ErrorReporting';
 
 function AppContent() {
   const { user, profile, loading: authLoading, connectionStatus } = useSupabase();
-  const { cases, clients, tasks, loading: dataLoading, createRecord, updateRecord, deleteRecord, refresh } = useSupabaseData();
+  const { 
+    cases, 
+    clients, 
+    tasks, 
+    hearings, 
+    documents, 
+    powersOfAttorney: agencies,
+    invoices,
+    employees,
+    loading: dataLoading, 
+    createRecord, 
+    updateRecord, 
+    deleteRecord, 
+    retryQueueSync, 
+    refresh,
+    auditTrails,
+    attachments,
+    clientPortal,
+    employeePortal,
+    attendance,
+    leaveRequests,
+    payments,
+    notifications,
+    systemErrors,
+    setHearings,
+    setDocuments,
+    setInvoices,
+    setEmployees
+  } = useSupabaseData();
+
+  const powersOfAttorney = agencies;
+
+  const [retryQueueCount, setRetryQueueCount] = useState(0);
+  const [syncingQueue, setSyncingQueue] = useState(false);
+
+  const [pendingLogsCount, setPendingLogsCount] = useState(0);
+  const [syncingPendingLogs, setSyncingPendingLogs] = useState(false);
+
+  const handleSyncPendingLogs = async () => {
+    setSyncingPendingLogs(true);
+    try {
+      const logs = JSON.parse(localStorage.getItem('failed_persistence_logs') || '[]');
+      const realLogs = logs.filter((item: any) => item.type !== 'init_test' && item.table !== 'init_test' && (item.table || item.type));
+
+      if (realLogs.length === 0) {
+        setPendingLogsCount(0);
+        return;
+      }
+
+      let successCount = 0;
+      let failedCount = 0;
+      const remainingLogs: any[] = [];
+
+      for (const log of realLogs) {
+        const table = log.table || log.type;
+        const action = log.action;
+        const data = log.data;
+
+        try {
+          let res;
+          if (action === 'CREATE' || action === 'INSERT') {
+            res = await createRecord(table as any, data);
+          } else if (action === 'UPDATE') {
+            res = await updateRecord(table as any, data.id, data);
+          } else {
+            res = await handleUpdateGlobalState(table, data);
+          }
+
+          if (res && res.success !== false) {
+            successCount++;
+          } else {
+            failedCount++;
+            remainingLogs.push(log);
+          }
+        } catch (err) {
+          console.error(`Error syncing record for table ${table}:`, err);
+          failedCount++;
+          remainingLogs.push(log);
+        }
+      }
+
+      const originalLogs = JSON.parse(localStorage.getItem('failed_persistence_logs') || '[]');
+      const testLogs = originalLogs.filter((item: any) => item.type === 'init_test' || item.table === 'init_test');
+
+      localStorage.setItem('failed_persistence_logs', JSON.stringify([...testLogs, ...remainingLogs]));
+      setPendingLogsCount(remainingLogs.length);
+    } catch (err: any) {
+      console.error("Failed to sync pending logs:", err);
+    } finally {
+      setSyncingPendingLogs(false);
+    }
+  };
+
+  const handleManualRetrySync = async () => {
+    setSyncingQueue(true);
+    try {
+      await retryQueueSync();
+    } catch(err) {
+      console.error("Queue sync crash:", err);
+    } finally {
+      setSyncingQueue(false);
+    }
+  };
+
+  useEffect(() => {
+    const checkQueue = () => {
+      try {
+        const queue = JSON.parse(localStorage.getItem('supabase_retry_queue') || '[]');
+        setRetryQueueCount(queue.length);
+      } catch (e) {
+        setRetryQueueCount(0);
+      }
+    };
+    const checkPendingLogs = () => {
+      try {
+        const logs = JSON.parse(localStorage.getItem('failed_persistence_logs') || '[]');
+        const realLogs = logs.filter((item: any) => item.type !== 'init_test' && item.table !== 'init_test' && (item.table || item.type));
+        setPendingLogsCount(realLogs.length);
+      } catch (e) {
+        setPendingLogsCount(0);
+      }
+    };
+
+    checkQueue();
+    checkPendingLogs();
+
+    window.addEventListener('supabase_retry_queue_changed', checkQueue);
+    window.addEventListener('adalah_error_logged', checkPendingLogs);
+    window.addEventListener('storage', checkPendingLogs);
+
+    return () => {
+      window.removeEventListener('supabase_retry_queue_changed', checkQueue);
+      window.removeEventListener('adalah_error_logged', checkPendingLogs);
+      window.removeEventListener('storage', checkPendingLogs);
+    };
+  }, []);
+
+  const [showRlsAlert, setShowRlsAlert] = useState<string | null>(null);
+
+  // RLS Diagnostic Utility
+  useEffect(() => {
+    const checkRlsPermissions = async () => {
+      try {
+        const diagnostics: string[] = [];
+        const tables = ['cases', 'clients', 'tasks'];
+        for (const table of tables) {
+          const testId = '00000000-0000-0000-0000-000000000000'; // test uuid
+          // Check INSERT
+          const { error: insErr } = await supabase.from(table).insert({ id: testId }).select().limit(1).maybeSingle();
+          if (insErr && insErr.code === '42501') {
+            diagnostics.push(`❌ ${table} (INSERT: RLS Denied)`);
+          } else {
+            diagnostics.push(`✅ ${table} (INSERT: Allowed or Type Error)`);
+            if (!insErr) await supabase.from(table).delete().eq('id', testId);
+          }
+          
+          // Check UPDATE
+          const { error: updErr } = await supabase.from(table).update({ created_at: new Date().toISOString() }).eq('id', testId);
+          if (updErr && updErr.code === '42501') {
+            diagnostics.push(`❌ ${table} (UPDATE: RLS Denied)`);
+          } else {
+            diagnostics.push(`✅ ${table} (UPDATE: Allowed or Type Error)`);
+          }
+        }
+        setShowRlsAlert(`تشخيص أذونات قاعدة البيانات (RLS):\n${diagnostics.join('\n')}`);
+        setTimeout(() => setShowRlsAlert(null), 25000); // 25 seconds visible
+      } catch (err: any) {
+        console.error("RLS Diagnostic Error:", err);
+      }
+    };
+    if (user) {
+      checkRlsPermissions();
+    }
+  }, [user]);
 
   useEffect(() => {
     if (user) {
@@ -430,9 +607,6 @@ function AppContent() {
   const ALL_GRADIENT_THEMES = [...DARK_GRADIENT_THEMES, ...customThemes];
 
   // Core Data States Relocated to avoid TDZ errors in custom hooks
-  const [hearings, setHearings] = useState<Hearing[]>([]);
-  const [documents, setDocuments] = useState<LegalDoc[]>([]);
-  const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [messages, setMessages] = useState<Message[]>([]);
   const [contracts, setContracts] = useState<any[]>([]);
@@ -595,7 +769,10 @@ function AppContent() {
           ws.onclose = null;
           ws.onerror = null;
           ws.onmessage = null;
-          ws.close();
+          ws.onopen = null;
+          if (ws.readyState === WebSocket.OPEN) {
+            ws.close();
+          }
         } catch (e) {}
         ws = null;
       }
@@ -608,7 +785,15 @@ function AppContent() {
       if (!isComponentMounted) return;
 
       if (ws) {
-        try { ws.close(); } catch (e) {}
+        try {
+          ws.onclose = null;
+          ws.onerror = null;
+          ws.onmessage = null;
+          ws.onopen = null;
+          if (ws.readyState === WebSocket.OPEN) {
+            ws.close();
+          }
+        } catch (e) {}
       }
 
       setPieSocketConnected('connecting');
@@ -1146,10 +1331,7 @@ function AppContent() {
         if (res.ok) {
           const data = await res.json();
           if (active && data) {
-            // cases, clients, tasks are handled by useSupabaseData
-            if (data.hearings) setHearings(data.hearings);
-            if (data.documents) setDocuments(data.documents);
-            if (data.invoices) setInvoices(data.invoices);
+            // cases, clients, tasks, hearings, documents, invoices are handled by useSupabaseData
             if (data.expenses) setExpenses(data.expenses);
             if (data.messages) setMessages(data.messages);
             if (data.contracts) setContracts(data.contracts);
@@ -1181,9 +1363,6 @@ function AppContent() {
       if (res.ok) {
         const d = await res.json();
         if (d.success && d.state) {
-          if (d.state.hearings) setHearings(d.state.hearings);
-          if (d.state.documents) setDocuments(d.state.documents);
-          if (d.state.invoices) setInvoices(d.state.invoices);
           if (d.state.expenses) setExpenses(d.state.expenses);
           if (d.state.messages) setMessages(d.state.messages);
           if (d.state.contracts) setContracts(d.state.contracts);
@@ -1195,46 +1374,156 @@ function AppContent() {
     });
   };
 
-  // --- Dynamic State Update Multiplexer ---
-  const handleUpdateGlobalState = (type: string, data: any) => {
-    // Intercept Supabase managed entities
-    if (type === 'cases') {
-      const exists = cases.some(c => c.id === data.id || c.caseNumber === data.caseNumber);
-      if (exists) {
-        updateRecord('cases', data.id, data);
-      } else {
-        createRecord('cases', data);
-        if (data.nextSessionDate) {
-          const newHearing: Hearing = {
-            id: `h-${Date.now()}`,
-            caseNumber: data.caseNumber,
-            caseName: data.caseName,
-            date: data.nextSessionDate,
-            time: data.nextSessionTime || "09:00 صباحاً",
-            courtName: data.courtName,
-            status: 'upcoming'
-          };
-          syncWithBackend('hearings', newHearing);
-          setHearings(prev => [newHearing, ...prev]);
+  // Listen for manual retries from the error toaster
+  useEffect(() => {
+    const handleRetry = (e: any) => {
+      const detail = e.detail;
+      if (detail && detail.type && detail.payload) {
+        console.log(`[App Content] User-triggered retry received for type=${detail.type}`, detail.payload);
+        handleUpdateGlobalState(detail.type, detail.payload);
+      }
+    };
+    window.addEventListener('adalah_retry_persistence', handleRetry);
+    return () => window.removeEventListener('adalah_retry_persistence', handleRetry);
+  }, [cases, clients, tasks]);
+
+  // Listen for adalah_error_logged to focus invalid input field
+  useEffect(() => {
+    const handleFocusInvalidField = (e: Event) => {
+      const customEvent = e as CustomEvent;
+      const { entityType, field } = customEvent.detail || {};
+      
+      if (!entityType || !field || field === 'unknown') return;
+      
+      console.log(`[Validation Field Focalizer] Seeking input for entityType=${entityType}, field=${field}`);
+      
+      const selectors = [
+        `input[name*="${field}" i]`,
+        `textarea[name*="${field}" i]`,
+        `select[name*="${field}" i]`,
+        `#${field}`,
+        `[data-field="${field}"]`,
+        field === 'title' ? 'input[placeholder*="عنوان" i]' : null,
+        field === 'caseNumber' || field === 'case_number' ? 'input[placeholder*="رقم القضية" i]' : null,
+        field === 'name' ? 'input[placeholder*="الاسم" i]' : null,
+        field === 'phone' ? 'input[placeholder*="الهاتف" i]' : null,
+        field === 'email' ? 'input[placeholder*="البريد" i]' : null
+      ].filter(Boolean) as string[];
+
+      let foundEl: HTMLElement | null = null;
+      for (const selector of selectors) {
+        const el = document.querySelector(selector);
+        if (el) {
+          foundEl = el as HTMLElement;
+          break;
         }
       }
-      return;
-    } else if (type === 'clients') {
-      const exists = clients.some(c => c.id === data.id);
-      if (exists) {
-        updateRecord('clients', data.id, data);
-      } else {
-        createRecord('clients', data);
+
+      if (foundEl) {
+        console.log(`[Validation Field Focalizer] Element found! Focusing & highlighting:`, foundEl);
+        foundEl.focus();
+        
+        const originalStyle = foundEl.style.border;
+        const originalBoxShadow = foundEl.style.boxShadow;
+        const originalTransition = foundEl.style.transition;
+
+        foundEl.style.transition = 'all 0.3s ease-in-out';
+        foundEl.style.border = '2px solid #ef4444'; 
+        foundEl.style.boxShadow = '0 0 10px rgba(239, 68, 68, 0.5)';
+        
+        setTimeout(() => {
+          if (foundEl) {
+            foundEl.style.border = originalStyle;
+            foundEl.style.boxShadow = originalBoxShadow;
+            foundEl.style.transition = originalTransition;
+          }
+        }, 5000);
       }
-      return;
-    } else if (type === 'tasks') {
-      const exists = tasks.some(t => t.id === data.id);
-      if (exists) {
-        updateRecord('tasks', data.id, data);
-      } else {
-        createRecord('tasks', data);
+    };
+
+    window.addEventListener('adalah_error_logged', handleFocusInvalidField);
+    return () => window.removeEventListener('adalah_error_logged', handleFocusInvalidField);
+  }, []);
+
+  const handleUpdateGlobalState = async (type: string, data: any) => {
+    // Intercept Supabase managed entities
+    const managedTables = [
+      'cases', 'clients', 'tasks', 'hearings', 'employees',
+      'powersOfAttorney', 'powers_of_attorney', 'documents', 'attachments',
+      'clientPortal', 'client_portal', 'employeePortal', 'employee_portal',
+      'attendance', 'leaveRequests', 'leave_requests', 'invoices', 'payments', 'vouchers',
+      'notifications', 'auditTrails', 'audit_trails', 'systemErrors', 'system_errors'
+    ];
+
+    if (managedTables.includes(type)) {
+      try {
+        let res;
+        
+        const existing = (() => {
+          switch(type) {
+            case 'cases': return (cases || []).find(c => c.id === data.id || c.caseNumber === data.caseNumber);
+            case 'clients': return (clients || []).find(c => c.id === data.id || c.nationalId === data.nationalId);
+            case 'tasks': return (tasks || []).find(t => t.id === data.id);
+            case 'hearings': return (hearings || []).find(h => h.id === data.id);
+            case 'employees': return (employees || []).find(e => e.id === data.id || e.nationalId === data.nationalId);
+            case 'powersOfAttorney':
+            case 'powers_of_attorney': return (powersOfAttorney || []).find(p => p.id === data.id || p.poaNumber === data.poaNumber);
+            case 'documents': return (documents || []).find(d => d.id === data.id);
+            case 'attachments': return (attachments || []).find(a => a.id === data.id);
+            case 'clientPortal':
+            case 'client_portal': return (clientPortal || []).find(cp => cp.id === data.id || cp.clientId === data.clientId);
+            case 'employeePortal':
+            case 'employee_portal': return (employeePortal || []).find(ep => ep.id === data.id || ep.employeeId === data.employeeId);
+            case 'attendance': return (attendance || []).find(at => at.id === data.id);
+            case 'leaveRequests':
+            case 'leave_requests': return (leaveRequests || []).find(l => l.id === data.id);
+            case 'invoices': return (invoices || []).find(i => i.id === data.id);
+            case 'payments':
+            case 'vouchers': return (payments || []).find(p => p.id === data.id);
+            case 'notifications': return (notifications || []).find(n => n.id === data.id);
+            case 'auditTrails':
+            case 'audit_trails': return (auditTrails || []).find(au => au.id === data.id);
+            case 'systemErrors':
+            case 'system_errors': return (systemErrors || []).find(s => s.id === data.id);
+            default: return null;
+          }
+        })();
+
+        if (existing) {
+          res = await updateRecord(type, existing.id, { ...data, id: existing.id });
+        } else {
+          res = await createRecord(type, data);
+          if (type === 'cases' && res?.success !== false && data.nextSessionDate) {
+            const newHearing: Hearing = {
+              id: `h-${Date.now()}`,
+              caseNumber: data.caseNumber,
+              caseName: data.caseName,
+              date: data.nextSessionDate,
+              time: data.nextSessionTime || "09:00 صباحاً",
+              courtName: data.courtName,
+              status: 'upcoming'
+            };
+            await createRecord('hearings', newHearing);
+          }
+        }
+
+        if (res === undefined || res?.success === false) {
+          const queue = JSON.parse(localStorage.getItem('failed_persistence_logs') || '[]');
+          queue.push({ timestamp: new Date().toISOString(), type, data, error: res });
+          localStorage.setItem('failed_persistence_logs', JSON.stringify(queue));
+          return res; 
+        }
+
+        // Only sync if successful
+        syncWithBackend(type, data);
+        return res;
+
+      } catch (err: any) {
+        const queue = JSON.parse(localStorage.getItem('failed_persistence_logs') || '[]');
+        queue.push({ timestamp: new Date().toISOString(), type, action: 'UNKNOWN', data, error: err?.message || String(err) });
+        localStorage.setItem('failed_persistence_logs', JSON.stringify(queue));
+        return { success: false, error: err };
       }
-      return;
     }
 
     // Send state change immediately to server
@@ -1433,6 +1722,36 @@ function AppContent() {
           {/* Universal Notification Bell (Global scope) */}
           <NotificationsBell />
 
+          {/* Supabase Retry Sync Banner */}
+          {retryQueueCount > 0 && (
+            <div className="bg-amber-500/5 border border-amber-500/30 p-4 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-4 animate-pulse shadow-md mb-4" dir="rtl">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-lg bg-amber-500/15 text-amber-500 flex items-center justify-center">
+                  <RefreshCw className="w-5 h-5 animate-spin" />
+                </div>
+                <div>
+                  <h4 className="text-sm font-bold text-amber-800">توجد مسودات معلقة بانتظار المزامنة السحابية ({retryQueueCount})</h4>
+                  <p className="text-xs text-amber-700 font-bold mt-1">تأثر حفظ البيانات بخلل في الاتصال بالإنترنت أو قيود الصلاحيات الـ RLS. يمكنك إعادة دفعها الآن.</p>
+                </div>
+              </div>
+              <button
+                onClick={handleManualRetrySync}
+                disabled={syncingQueue}
+                className="px-4 py-2 bg-gradient-to-l from-amber-600 to-amber-700 text-white font-bold rounded-xl text-xs hover:scale-105 active:scale-95 transition-all flex items-center gap-1.5 shadow-md shrink-0 cursor-pointer"
+              >
+                {syncingQueue ? (
+                  <>
+                    <RefreshCw className="w-3.5 h-3.5 animate-spin" /> جاري المزامنة...
+                  </>
+                ) : (
+                  <>
+                    <RefreshCw className="w-3.5 h-3.5" /> مزامنة وتحديث السحابة الآن (Retry Sync)
+                  </>
+                )}
+              </button>
+            </div>
+          )}
+
           {/* Toast Notifications */}
           <div className="fixed top-8 left-1/2 -translate-x-1/2 z-50 flex flex-col gap-3 pointer-events-none w-full max-w-lg">
             {alertMessages
@@ -1520,6 +1839,17 @@ function AppContent() {
                   <span>🌐</span>
                   <span>{language === 'ar' ? 'EN' : 'AR'}</span>
                 </button>
+                {pendingLogsCount > 0 && (
+                  <button
+                    onClick={handleSyncPendingLogs}
+                    disabled={syncingPendingLogs}
+                    className="flex items-center gap-1.5 px-3 py-2 text-[10px] bg-amber-500 hover:bg-amber-600 border border-amber-600 text-slate-950 font-black rounded-xl transition-all shadow-sm cursor-pointer animate-pulse shrink-0"
+                    title="مزامنة العمليات معلقة الحفظ بملف الأخطاء"
+                  >
+                    <span>🔄</span>
+                    <span>{syncingPendingLogs ? "جاري المزامنة..." : `مزامنة معلقات الأخطاء (${pendingLogsCount})`}</span>
+                  </button>
+                )}
                 <button
                   onClick={handleLogout}
                   className="flex items-center gap-2 px-5 py-3 text-xs font-black rounded-xl bg-rose-650 text-white transition-all shadow-md cursor-pointer"
@@ -1589,6 +1919,17 @@ function AppContent() {
                    <span className="uppercase tracking-widest">{language === 'ar' ? 'EN' : 'AR'}</span>
                 </button>
 
+                {pendingLogsCount > 0 && (
+                  <button
+                    onClick={handleSyncPendingLogs}
+                    disabled={syncingPendingLogs}
+                    className="flex items-center gap-1.5 px-3 py-2 text-[10px] bg-amber-500 hover:bg-amber-600 border border-amber-600 text-slate-950 font-black rounded-xl transition-all shadow-sm cursor-pointer animate-pulse shrink-0"
+                    title="مزامنة العمليات معلقة الحفظ بملف الأخطاء"
+                  >
+                    <span>🔄</span>
+                    <span>{syncingPendingLogs ? "جاري المزامنة..." : `مزامنة معلقات الأخطاء (${pendingLogsCount})`}</span>
+                  </button>
+                )}
                 <button
                    onClick={() => {
                      if (window.confirm('هل أنت متأكد من رغبتك في إنهاء الجلسة بشكل نهائي والخروج من النظام؟')) {
@@ -1696,6 +2037,8 @@ function AppContent() {
                 cases={employeeFilteredCases}
                 expenses={expenses}
                 onUpdateState={handleUpdateGlobalState}
+                auditTrails={auditTrails}
+                createRecord={createRecord}
                 viewMode="billing"
               />
             );
@@ -1709,6 +2052,8 @@ function AppContent() {
                 cases={employeeFilteredCases}
                 expenses={expenses}
                 onUpdateState={handleUpdateGlobalState}
+                auditTrails={auditTrails}
+                createRecord={createRecord}
                 viewMode="calculator"
               />
             );
@@ -1762,6 +2107,8 @@ function AppContent() {
             cases={employeeFilteredCases}
             expenses={expenses}
             onUpdateState={handleUpdateGlobalState}
+            auditTrails={auditTrails}
+            createRecord={createRecord}
           />
         )}
 
@@ -1877,6 +2224,10 @@ function AppContent() {
           <DbDevOpsModule />
         )}
 
+        {currentTab === 'failed-persistence' && (
+          <FailedPersistenceLogsDashboard onUpdateState={handleUpdateGlobalState} />
+        )}
+
         {currentTab === 'saudi-hub' && (
           <React.Suspense fallback={<SkeletonLoader />}>
             <SaudiServicesHub theme="dark" initialTab="portals" cases={employeeFilteredCases} language={language} />
@@ -1924,6 +2275,14 @@ function AppContent() {
         )}
 
       </main>
+
+      {showRlsAlert && (
+          <div className="fixed top-20 right-5 z-50 bg-slate-900 overflow-hidden border border-red-500/50 text-white p-4 rounded-xl shadow-[0_10px_40px_rgba(239,68,68,0.2)] max-w-sm animate-in slide-in-from-right fade-in" dir="ltr">
+            <h3 className="font-bold mb-2 text-red-400">RLS Settings Diagnostic:</h3>
+            <pre className="text-xs font-mono whitespace-pre-wrap bg-slate-950 p-2 rounded-lg border border-slate-800">{showRlsAlert}</pre>
+            <button onClick={() => setShowRlsAlert(null)} className="mt-3 w-full text-xs font-bold bg-slate-800 px-2 py-1.5 border border-slate-700 rounded-lg hover:bg-slate-700 transition-colors">Dismiss</button>
+          </div>
+      )}
 
       {/* Persistent Background Sync Service Widget */}
       <NajizSyncBackendService />

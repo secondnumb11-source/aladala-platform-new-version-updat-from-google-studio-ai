@@ -17,15 +17,15 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Load Data
-    chrome.storage.local.get(['apiUrl', 'apiKey', 'lastSync'], (data) => {
+    chrome.storage.local.get(['apiUrl', 'apiKey', 'last_sync_at'], (data) => {
        const apiUrlInput = document.getElementById('apiUrl') as HTMLInputElement;
        const apiKeyInput = document.getElementById('apiKey') as HTMLInputElement;
        if(data.apiUrl && apiUrlInput) apiUrlInput.value = data.apiUrl;
        if(data.apiKey && apiKeyInput) apiKeyInput.value = data.apiKey;
        
-       if (data.lastSync) {
+       if (data.last_sync_at) {
           const lastSyncEl = document.getElementById('last-sync-time');
-          if (lastSyncEl) lastSyncEl.innerText = 'آخر مزامنة: ' + new Date(data.lastSync).toLocaleString('ar-SA');
+          if (lastSyncEl) lastSyncEl.innerText = 'آخر مزامنة: ' + new Date(data.last_sync_at).toLocaleString('ar-SA');
        }
     });
 
@@ -68,7 +68,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 chrome.runtime.sendMessage({ action: 'START_SYNC', payload: { type: btn.type } }, (response) => {
                     if (response && response.success) {
                         el.innerText = 'تمت المزامنة بنجاح ✔️';
-                        chrome.storage.local.set({ lastSync: Date.now() });
+                        chrome.storage.local.set({ last_sync_at: Date.now() });
                     } else {
                         el.innerText = 'فشل المزامنة';
                     }

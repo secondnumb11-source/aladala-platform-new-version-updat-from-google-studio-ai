@@ -203,12 +203,13 @@ export default function ClientPortal({
 
   // Selected client cases (supports direct linking and custom permitted cases list with specific view/edit clearance)
   const isCasePermitted = (c: Case) => {
+    if (!viewingClient) return false;
     if (viewingClient && viewingClient.permittedCases && viewingClient.permittedCases.length > 0) {
       return viewingClient.permittedCases.includes(c.id) || viewingClient.permittedCases.includes(c.caseNumber) || c.clientId === viewingClient.id;
     }
     return c.clientId === viewingClient.id;
   };
-  const clientCases = isUnauthorizedClient ? [] : (cases || []).filter(isCasePermitted);
+  const clientCases = (isUnauthorizedClient || !viewingClient) ? [] : (cases || []).filter(isCasePermitted);
 
   // Permitted Case Filter dropdown selection state
   const [selectedCaseFilterId, setSelectedCaseFilterId] = useState<string>('all');
@@ -218,20 +219,20 @@ export default function ClientPortal({
     ? clientCases
     : clientCases.filter(c => c.id === selectedCaseFilterId || c.caseNumber === selectedCaseFilterId);
 
-  const clientInvoices = isUnauthorizedClient ? [] : (invoices || []).filter(inv => inv.clientId === viewingClient.id);
+  const clientInvoices = (isUnauthorizedClient || !viewingClient) ? [] : (invoices || []).filter(inv => inv.clientId === viewingClient?.id);
   
   // Custom filter numbers for related details (hearings, updates, tasks)
   const activeCaseFilterNumbers = selectedCaseFilterId === 'all'
     ? clientCases.map(c => c.caseNumber)
     : clientCases.filter(c => c.id === selectedCaseFilterId || c.caseNumber === selectedCaseFilterId).map(c => c.caseNumber);
 
-  const clientHearings = isUnauthorizedClient ? [] : (hearings || []).filter(h => activeCaseFilterNumbers.includes(h.caseNumber));
-  const clientMessages = isUnauthorizedClient ? [] : (messages || []).filter(m => activeCaseFilterNumbers.includes(m.caseNumber));
+  const clientHearings = (isUnauthorizedClient || !viewingClient) ? [] : (hearings || []).filter(h => activeCaseFilterNumbers.includes(h.caseNumber));
+  const clientMessages = (isUnauthorizedClient || !viewingClient) ? [] : (messages || []).filter(m => activeCaseFilterNumbers.includes(m.caseNumber));
   
-  const clientDocuments = isUnauthorizedClient ? [] : (documents || []).filter(d => {
-    const belongsToClient = (d as any).clientId === viewingClient.id || 
-      d.tags?.some(tag => viewingClient.name.includes(tag) || tag.includes(viewingClient.name)) ||
-      d.category.includes(viewingClient.name);
+  const clientDocuments = (isUnauthorizedClient || !viewingClient) ? [] : (documents || []).filter(d => {
+    const belongsToClient = (d as any).clientId === viewingClient?.id || 
+      (viewingClient?.name && d.tags?.some(tag => viewingClient.name.includes(tag) || tag.includes(viewingClient.name))) ||
+      (viewingClient?.name && d.category.includes(viewingClient.name));
     
     if (!belongsToClient) return false;
 
@@ -255,7 +256,7 @@ export default function ClientPortal({
     const newMsg: Message = {
       id: `msg-${Date.now()}`,
       sender: 'client',
-      senderName: viewingClient.name,
+      senderName: viewingClient?.name || 'عميل',
       text: clientMessageInput,
       timestamp: new Date().toISOString(),
       caseNumber: clientCases[0]?.caseNumber || "437194619"
@@ -273,10 +274,10 @@ export default function ClientPortal({
   };
 
   // Dynamic client contracts selection
-  const clientContracts = (contracts || []).filter(c => c.clientId === viewingClient.id);
+  const clientContracts = !viewingClient ? [] : (contracts || []).filter(c => c.clientId === viewingClient?.id);
   
   // Construct dynamic active contract
-  const activeContract: Contract = clientContracts.length > 0 ? clientContracts[0] : {
+  const activeContract: Contract | undefined = !viewingClient ? undefined : (clientContracts.length > 0 ? clientContracts[0] : {
     id: `contract-mock-${viewingClient.id}`,
     title: "عقد تمثيل ومرافعة شرعية للموكل " + viewingClient.name,
     clientName: viewingClient.name,
@@ -288,7 +289,7 @@ export default function ClientPortal({
     otpStatus: otpSent ? ('sent' as const) : ('unsent' as const),
     signedAt: '',
     signerName: ''
-  };
+  });
 
   const handleRequestOtp = () => {
     setIsOtpSending(true);
@@ -343,14 +344,18 @@ export default function ClientPortal({
     alert("✅ تم التوقيع والمصادقة الإلكترونية بنجاح عبر رمز OTP الواتساب!");
   };
 
-  if (isUnauthorizedClient) {
+  if (isUnauthorizedClient || !viewingClient) {
     return (
       <div className="flex flex-col items-center justify-center py-20 text-center space-y-4 text-right" dir="rtl">
         <div className="w-20 h-20 bg-rose-50 text-rose-600 rounded-full flex items-center justify-center">
           <ShieldAlert className="w-10 h-10" />
         </div>
-        <h2 className="text-xl font-display font-black text-slate-900">خطأ في المصادقة والوصول الشرعي</h2>
-        <p className="text-slate-900 font-bold max-w-md mx-auto">لم يتم العثور على ملف العميل المرتبط بحسابك. يرجى التواصل مع الدعم الفني لموكل لتصحيح بيانات الارتباط.</p>
+        <h2 className="text-xl font-display font-black text-slate-900">
+          {isUnauthorizedClient ? "خطأ في المصادقة والوصول الشرعي" : "لايوجد بيانات عملاء"}
+        </h2>
+        <p className="text-slate-900 font-bold max-w-md mx-auto">
+          {isUnauthorizedClient ? "لم يتم العثور على ملف العميل المرتبط بحسابك. يرجى التواصل مع الدعم الفني لموكل لتصحيح بيانات الارتباط." : "يرجى إضافة عملاء أولاً لتمكين عرض بوابة العملاء بشكل صحيح."}
+        </p>
       </div>
     );
   }
@@ -933,7 +938,7 @@ export default function ClientPortal({
                 <div>
                   <h4 className="font-bold text-sm text-slate-900">تم توقيع وتصديق العقد بنجاح</h4>
                   <p className="text-xs text-emerald-800 mt-1 font-bold leading-relaxed">
-                    الموقع المعتمد: {signerName || activeContract.signerName || viewingClient.name}
+                    الموقع المعتمد: {signerName || (activeContract && activeContract.signerName) || viewingClient?.name}
                   </p>
                   <p className="text-xs text-slate-900 mt-0.5 font-mono leading-tight">
                     البصمة الزمنية: {activeContract.signedAt || new Date().toISOString()} • التحقق: OTP عبر WhatsApp • متوافق مع نظام التعاملات الإلكترونية السعودي

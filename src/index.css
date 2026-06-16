@@ -2295,3 +2295,24 @@ html:not(.dark) {
   50% { transform: translateY(290px); }
   100% { transform: translateY(0); }
 }
+
+/* -------------------------------------
+ * Custom Luxury Gradient Scrollbar for Dashboard Sidebar
+ * ------------------------------------- */
+.premium-sidebar-scrollbar::-webkit-scrollbar {
+  width: 14px;
+  background-color: #020813;
+}
+.premium-sidebar-scrollbar::-webkit-scrollbar-track {
+  background: #020813;
+  border-left: 1px solid rgba(212, 175, 55, 0.1);
+}
+.premium-sidebar-scrollbar::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #D4AF37 0%, #B8860B 50%, #0c1a35 100%);
+  border-radius: 12px;
+  border: 3px solid #020813;
+  box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
+}
+.premium-sidebar-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #FDE047 0%, #D4AF37 50%, #1e3a8a 100%);
+}

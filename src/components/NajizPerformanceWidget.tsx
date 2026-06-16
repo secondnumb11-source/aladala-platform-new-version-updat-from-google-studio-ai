@@ -4,7 +4,7 @@ import { Activity, Clock, CheckCircle2, RefreshCw } from 'lucide-react';
 export default function NajizPerformanceWidget() {
   const [latency, setLatency] = useState(120);
   const [ops, setOps] = useState(482);
-  const [lastSync, setLastSync] = useState(new Date().toLocaleTimeString('ar-SA'));
+  const [last_sync_at, setLast_sync_at] = useState(new Date().toLocaleTimeString('ar-SA'));
   const [syncing, setSyncing] = useState(false);
 
   useEffect(() => {
@@ -12,7 +12,7 @@ export default function NajizPerformanceWidget() {
       setLatency(100 + Math.floor(Math.random() * 50));
       if (Math.random() > 0.7) {
         setOps(prev => prev + 1);
-        setLastSync(new Date().toLocaleTimeString('ar-SA'));
+        setLast_sync_at(new Date().toLocaleTimeString('ar-SA'));
       }
     }, 2000);
     return () => clearInterval(pulse);
@@ -23,7 +23,7 @@ export default function NajizPerformanceWidget() {
     setTimeout(() => {
       setSyncing(false);
       setOps(prev => prev + 3);
-      setLastSync(new Date().toLocaleTimeString('ar-SA'));
+      setLast_sync_at(new Date().toLocaleTimeString('ar-SA'));
     }, 1500);
   };
 
@@ -58,7 +58,7 @@ export default function NajizPerformanceWidget() {
 
         <div className="col-span-2 bg-emerald-500/10 p-3 rounded-xl border border-emerald-500/20 flex justify-between items-center">
           <span className="text-[10px] text-emerald-500 font-bold">آخر مزامنة تم تسجيلها:</span>
-          <span className="text-xs font-mono text-emerald-400 font-black">{lastSync}</span>
+          <span className="text-xs font-mono text-emerald-400 font-black">{last_sync_at}</span>
         </div>
       </div>
     </div>

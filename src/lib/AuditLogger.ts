@@ -28,7 +28,7 @@ export interface AuditLog {
 export const auditLogger = {
   async log(entry: Omit<AuditLog, 'timestamp'>) {
     try {
-      const { error } = await supabase.from('audit_logs').insert([{
+      const { error } = await supabase.from('audit_trails').insert([{
         ...entry,
         timestamp: new Date().toISOString()
       }]);
@@ -43,7 +43,7 @@ export const auditLogger = {
 
   async getLogs(limit = 100) {
     const { data, error } = await supabase
-      .from('audit_logs')
+      .from('audit_trails')
       .select('*')
       .order('timestamp', { ascending: false })
       .limit(limit);

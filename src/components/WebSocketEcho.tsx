@@ -59,9 +59,16 @@ export default function WebSocketEcho() {
     });
 
     return () => {
-      if (socket.readyState === WebSocket.OPEN || socket.readyState === WebSocket.CONNECTING) {
-        socket.close();
-      }
+      // Detach listeners to prevent state updates on unmounted component
+      socket.onopen = null;
+      socket.onmessage = null;
+      socket.onerror = null;
+      socket.onclose = null;
+      try {
+        if (socket.readyState === WebSocket.OPEN) {
+          socket.close();
+        }
+      } catch (e) {}
     };
   }, []);
 

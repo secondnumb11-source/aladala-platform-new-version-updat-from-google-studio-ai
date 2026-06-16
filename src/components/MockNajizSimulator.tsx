@@ -15,7 +15,7 @@ export default function MockNajizSimulator({
 }: MockNajizSimulatorProps) {
   const [isLogged, setIsLogged] = useState(true);
   const [syncState, setSyncState] = useState<"idle" | "scraping" | "sending" | "success" | "error">("idle");
-  const [activePortalTab, setActivePortalTab] = useState<"cases" | "poas" | "execution">("cases");
+  const [activePortalTab, setActivePortalTab] = useState<"cases" | "powers_of_attorney" | "execution">("cases");
   const [logText, setLogText] = useState<string[]>([]);
   const [importedCases, setImportedCases] = useState<any[]>([]);
 
@@ -203,9 +203,9 @@ export default function MockNajizSimulator({
                 دعاوى موكل النشطة ({mockNajizCases.length})
               </button>
               <button 
-                onClick={() => setActivePortalTab("poas")}
+                onClick={() => setActivePortalTab("powers_of_attorney")}
                 className={`py-2 px-4 text-xs font-bold border-b-2 transition-colors ${
-                  activePortalTab === "poas" ? "border-emerald-700 text-emerald-700 font-semibold" : "border-transparent text-slate-900 "
+                  activePortalTab === "powers_of_attorney" ? "border-emerald-700 text-emerald-700 font-semibold" : "border-transparent text-slate-900 "
                 } `}
               >
                 الوكالات المعتمدة ({mockNajizPoas.length})
@@ -242,7 +242,7 @@ export default function MockNajizSimulator({
               </div>
             )}
 
-            {activePortalTab === "poas" && (
+            {activePortalTab === "powers_of_attorney" && (
               <div className="space-y-3">
                 {mockNajizPoas.map((poa) => (
                   <div key={poa.number} className="bg-white border border-slate-800 rounded-xl p-4 shadow-sm text-right space-y-1">

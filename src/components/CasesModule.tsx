@@ -214,7 +214,7 @@ interface CasesModuleProps {
   cases: Case[];
   clients: Client[];
   selectedRole: string;
-  onUpdateState: (type: string, data: any) => void;
+  onUpdateState: (type: string, data: any) => any;
   onSelectCase: (caseObj: Case | null) => void;
   selectedCase: Case | null;
   archivedNotice?: { count: number; onRestore: () => void; onClose: () => void };
@@ -431,7 +431,7 @@ export default React.memo(function CasesModule({
     }
 
     // 4. Attachments logs if any
-    if (c.attachmentsCount && c.attachmentsCount > 0) {
+    if (c.attachments_count && c.attachments_count > 0) {
       timeline.push({
         date: '2026-05-28',
         time: '16:05 م',
@@ -1431,13 +1431,93 @@ export default React.memo(function CasesModule({
   const [isConfidential, setIsConfidential] = useState(false);
   const [hasContract, setHasContract] = useState(false);
 
+  // Validation & Undo mechanism
+  const [caseNumberError, setCaseNumberError] = useState('');
+  const [serverValidationError, setServerValidationError] = useState<{field: string, message: string} | null>(null);
+  const [lastActionState, setLastActionState] = useState<{field: string, value: string} | null>(() => {
+    const saved = localStorage.getItem('lastFormAction');
+    return saved ? JSON.parse(saved) : null;
+  });
+
+  const handleCaseNumberChange = (val: string) => {
+    const action = { field: 'newCaseNumber', value: newCaseNumber };
+    setLastActionState(action);
+    localStorage.setItem('lastFormAction', JSON.stringify(action));
+    setNewCaseNumber(val);
+    
+    // Validation: Case number should strictly match 10 digits as requested.
+    if (val.length > 0) {
+      if (!/^\d{10}$/.test(val)) {
+        setCaseNumberError('يجب أن يتكون رقم القضية من 10 أرقام صحيحة لتطابق التنسيق المطلوب');
+      } else {
+        setCaseNumberError('');
+      }
+    } else {
+      setCaseNumberError('');
+    }
+  };
+
+  const handleUndo = () => {
+    if (lastActionState) {
+      if (lastActionState.field === 'newCaseNumber') {
+        setNewCaseNumber(lastActionState.value);
+        setCaseNumberError('');
+      }
+      setLastActionState(null);
+      localStorage.removeItem('lastFormAction');
+    }
+  };
+
   // Expense Fields for active case file
   const [expDesc, setExpDesc] = useState('');
   const [expAmt, setExpAmt] = useState('');
 
-  const handleCreateCase = (e: React.FormEvent) => {
+  // Auto-Save Effect
+  useEffect(() => {
+    if (!isCreateOpen) return;
+    
+    // Attempt to load from localStorage once when modal opens
+    const savedData = localStorage.getItem('caseFormAutoSave');
+    if (savedData) {
+      try {
+        const parsed = JSON.parse(savedData);
+        if (parsed.newCaseNumber && !newCaseNumber) setNewCaseNumber(parsed.newCaseNumber);
+        if (parsed.newCaseName && !newCaseName) setNewCaseName(parsed.newCaseName);
+        if (parsed.newClientName && !newClientName) setNewClientName(parsed.newClientName);
+        if (parsed.newOpponent && !newOpponent) setNewOpponent(parsed.newOpponent);
+        if (parsed.newDetails && !newDetails) setNewDetails(parsed.newDetails);
+      } catch(e) {}
+    }
+  }, [isCreateOpen]);
+
+  useEffect(() => {
+    if (!isCreateOpen) return;
+    const dataToSave = {
+      newCaseNumber, newCaseName, newClientName, newOpponent, newDetails
+    };
+    
+    const interval = setInterval(() => {
+      if (newCaseNumber || newCaseName || newClientName || newOpponent || newDetails) {
+        localStorage.setItem('caseFormAutoSave', JSON.stringify(dataToSave));
+        
+        // Dispatch toast notification
+        window.dispatchEvent(
+          new CustomEvent('adalah_error_logged', {
+            detail: {
+              message: `تم حفظ المسودة للموكل ${newClientName || 'غير محدد'} في الذاكرة المؤقتة بنجاح`,
+              timestamp: new Date().toISOString()
+            }
+          })
+        );
+      }
+    }, 30000); // 30 seconds
+
+    return () => clearInterval(interval);
+  }, [isCreateOpen, newCaseNumber, newCaseName, newClientName, newOpponent, newDetails]);
+
+  const handleCreateCase = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newCaseNumber || !newCaseName || !newClientName) return;
+    if (!newCaseNumber || !newCaseName || !newClientName || caseNumberError) return;
 
     // Create a new client if does not exist to sync properly
     let linkedClient = clients.find(cl => cl.name === newClientName);
@@ -1455,7 +1535,7 @@ export default React.memo(function CasesModule({
         portalToken: `portal-${Date.now()}`,
         portalLink: `/portal?token=portal-${Date.now()}`
       };
-      onUpdateState('clients', linkedClient);
+      await onUpdateState('clients', linkedClient);
     } else {
       // Update the client casesCount in case it's an existing client
       const updatedClient = { ...linkedClient, casesCount: (linkedClient.casesCount || 0) + 1 };
@@ -1469,7 +1549,7 @@ export default React.memo(function CasesModule({
         if (newPlaintiffPhone) updatedClient.phone = newPlaintiffPhone;
       }
 
-      onUpdateState('clients', updatedClient);
+      await onUpdateState('clients', updatedClient);
     }
 
     const newCaseObj: Case = {
@@ -1495,13 +1575,19 @@ export default React.memo(function CasesModule({
       priority: newPriority,
       isConfidential: isConfidential,
       createdAt: new Date().toISOString().split('T')[0],
-      attachmentsCount: hasContract ? 2 : 1,
+      attachments_count: hasContract ? 2 : 1,
       attachments: hasContract ? [
         { id: 'contract-init', fileName: 'عقد_المحاماة_الموقع_رقمياً.pdf', fileSize: '2.4 MB', uploadDate: new Date().toISOString().split('T')[0], category: 'contract' }
       ] : []
     };
 
-    onUpdateState('cases', newCaseObj);
+    setServerValidationError(null);
+    const res = await onUpdateState('cases', newCaseObj);
+    if (res && res.success === false && res.errorType === 'validation') {
+       setServerValidationError({ field: res.field, message: res.message });
+       return;
+    }
+
     setIsCreateOpen(false);
 
     // Explicit Credential Generation & Automated Notification
@@ -1552,6 +1638,7 @@ export default React.memo(function CasesModule({
     setNewCaseName('');
     setNewOpponent('');
     setNewDetails('');
+    localStorage.removeItem('caseFormAutoSave');
     onSelectCase(newCaseObj);
   };
 
@@ -1665,7 +1752,7 @@ export default React.memo(function CasesModule({
 
           const updatedCase: Case = {
             ...c,
-            attachmentsCount: oldDocs.length + 1,
+            attachments_count: oldDocs.length + 1,
             attachments: [...oldDocs, newDoc]
           };
 
@@ -3421,9 +3508,12 @@ export default React.memo(function CasesModule({
 
       {isCreateOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#050e21]/80 backdrop-blur-md p-6 animate-in fade-in duration-500">
-          <div className="bg-[#050e21] border border-slate-800 rounded-[2.5rem] w-full max-w-5xl p-0 overflow-hidden shadow-2xl animate-in zoom-in-95 duration-500">
+          <div className="bg-[#050e21] border border-slate-800 rounded-[2.5rem] w-full max-w-5xl p-0 overflow-hidden shadow-2xl animate-in zoom-in-95 duration-500 relative">
             
-            <div className="bg-gradient-to-br from-[#050e21] to-[#0c1a35] p-10 flex items-center justify-between text-white border-b border-primary/20">
+            {/* Animated Luxury Gradient Vertical Bar */}
+            <div className="absolute top-0 right-0 w-6 h-full bg-gradient-to-b from-[#D4AF37] via-[#B8860B] to-[#020813] animate-pulse"></div>
+            
+            <div className="bg-gradient-to-br from-[#050e21] to-[#0c1a35] p-10 flex items-center justify-between text-white border-b border-primary/20 mr-6">
               <div className="flex items-center gap-6">
                 <div className="p-4 bg-primary/10 text-primary rounded-2xl border border-primary/20">
                   <ShieldAlert className="w-8 h-8" />
@@ -3441,21 +3531,30 @@ export default React.memo(function CasesModule({
               </button>
             </div>
 
-            <form onSubmit={handleCreateCase} className="p-8 pb-10">
+            <form onSubmit={handleCreateCase} className="p-8 pb-10 mr-6">
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 font-sans">
                 {/* Fieldset 1: الأساسيات */}
                 <fieldset className="border border-[#D4AF37]/40 rounded-3xl p-6 space-y-6 bg-[#0a1e3f]/50 relative overflow-hidden shadow-[0_12px_40px_rgba(0,0,0,0.6)]">
                   <legend className="text-sm font-black text-[#FFD700] px-4 py-1.5 bg-[#050e21] border-2 border-[#D4AF37]/70 rounded-xl shadow-[0_0_15px_rgba(212,175,55,0.4)]">البيانات الأساسية</legend>
                   
-                  <div className="space-y-2">
-                    <label className="text-sm font-black text-[#FFD700] uppercase tracking-wider block">رقم الدعوى</label>
-                    <input type="text" value={newCaseNumber} onChange={(e) => setNewCaseNumber(e.target.value)} placeholder="00000" required
-                      className="w-full bg-[#020813] border-2 border-[#D4AF37]/30 hover:border-[#FF7F00]/60 focus:border-[#FF7F00] rounded-xl py-3 px-4 text-base md:text-lg font-black text-[#FF7F00] placeholder-[#FF7F00]/40 focus:outline-none transition-all shadow-[inset_0_2px_8px_rgba(0,0,0,0.9)] focus:ring-1 focus:ring-[#FF7F00]" />
+                  <div className="space-y-2 relative">
+                    <div className="flex items-center justify-between">
+                      <label className="text-sm font-black text-[#FFD700] uppercase tracking-wider block">رقم الدعوى</label>
+                      {lastActionState?.field === 'newCaseNumber' && (
+                        <button type="button" onClick={handleUndo} className="text-xs text-blue-400 hover:text-blue-300 font-bold bg-blue-900/30 px-2 py-0.5 rounded transition-colors" title="تراجع عن الإجراء الأخير">
+                           تراجع
+                        </button>
+                      )}
+                    </div>
+                    <input type="text" value={newCaseNumber} onChange={(e) => handleCaseNumberChange(e.target.value)} placeholder="مثال: 450123" required
+                      className={`w-full bg-[#020813] border-2 ${caseNumberError || serverValidationError?.field === 'caseNumber' ? 'border-red-500 focus:border-red-600 focus:ring-red-500 text-red-500 hover:border-red-400' : 'border-[#D4AF37]/30 hover:border-[#FF7F00]/60 focus:border-[#FF7F00] text-[#FF7F00] focus:ring-[#FF7F00]'} rounded-xl py-3 px-4 text-base md:text-lg font-black placeholder-[#FF7F00]/40 focus:outline-none transition-all shadow-[inset_0_2px_8px_rgba(0,0,0,0.9)] focus:ring-1`} title={caseNumberError || "أدخل رقم القضية"} />
+                    {(caseNumberError || serverValidationError?.field === 'caseNumber') && <p className="text-red-400 text-xs font-bold mt-1 animate-pulse">{caseNumberError || serverValidationError?.message}</p>}
                   </div>
-                  <div className="space-y-2">
+                  <div className="space-y-2 relative">
                     <label className="text-sm font-black text-[#FFD700] uppercase tracking-wider block">مسمى الخصومة</label>
                     <input type="text" value={newCaseName} onChange={(e) => setNewCaseName(e.target.value)} placeholder="اسم الدعوى بالكامل" required
-                      className="w-full bg-[#020813] border-2 border-[#D4AF37]/30 hover:border-[#FF7F00]/60 focus:border-[#FF7F00] rounded-xl py-3 px-4 text-base md:text-lg font-black text-[#FF7F00] placeholder-[#FF7F00]/40 focus:outline-none transition-all shadow-[inset_0_2px_8px_rgba(0,0,0,0.9)] focus:ring-1 focus:ring-[#FF7F00]" />
+                      className={`w-full bg-[#020813] border-2 ${serverValidationError?.field === 'caseName' ? 'border-red-500 focus:border-red-600 text-red-500 hover:border-red-400' : 'border-[#D4AF37]/30 hover:border-[#FF7F00]/60 focus:border-[#FF7F00] text-[#FF7F00]'} rounded-xl py-3 px-4 text-base md:text-lg font-black placeholder-[#FF7F00]/40 focus:outline-none transition-all shadow-[inset_0_2px_8px_rgba(0,0,0,0.9)] focus:ring-1 focus:ring-[#FF7F00]`} />
+                    {serverValidationError?.field === 'caseName' && <p className="text-red-400 text-xs font-bold mt-1 animate-pulse">{serverValidationError.message}</p>}
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">

@@ -177,9 +177,9 @@ export default function Sidebar({
     try {
       const uid = currentUser?.id;
       if (uid) {
-        await supabase.from('users').update({ name: val }).eq('id', uid);
+        await supabase.from('profiles').update({ name: val }).eq('id', uid);
         if (onUpdateState) {
-          onUpdateState('users', { id: uid, name: val });
+          onUpdateState('profiles', { id: uid, name: val });
         }
       }
     } catch (err) {
@@ -240,6 +240,7 @@ export default function Sidebar({
     { id: 'court-map', name: 'دليل المحاكم', icon: Compass },
 
     { id: 'najiz', name: 'الربط المباشر مع ناجز', icon: Zap },
+    { id: 'failed-persistence', name: 'مراجعة مسودات الـ RLS السحابية', icon: ShieldAlert, isAdminOnly: true },
     { id: 'audit-logs', name: 'سجل العمليات', icon: FileText },
     { id: 'settings', name: 'الاعدادات', icon: Settings },
 
@@ -320,7 +321,7 @@ export default function Sidebar({
             </div>
           </div>
 
-          <div className="p-5 flex-1 overflow-y-auto space-y-8 sidebar-scrollbar relative w-full overflow-x-hidden">
+          <div className="p-5 flex-1 overflow-y-auto space-y-8 sidebar-scrollbar premium-sidebar-scrollbar relative w-full overflow-x-hidden">
             {/* ⏰ CUSTOMIZABLE COMPACT SIDEBAR CLOCK WITH WELCOME GREETING */}
             <div className="bg-slate-900/40 border border-slate-800 rounded-xl p-2.5 relative overflow-visible group/clock-card">
               <div className="absolute inset-0 bg-gradient-to-tr from-amber-500/5 to-transparent pointer-events-none rounded-xl"></div>
@@ -463,9 +464,9 @@ export default function Sidebar({
               },
               {
                 title: 'التكامل والإعدادات',
-                itemIds: ['najiz', 'audit-logs', 'settings']
+                itemIds: ['najiz', 'failed-persistence', 'audit-logs', 'settings']
               },
-            ].map((cat) => {
+            ].map((cat, catIdx) => {
               // Retrieve permitted modules for the current category based on user role
               const allowedItems = allItems.filter(item => {
                 if (!cat.itemIds.includes(item.id)) return false;
@@ -500,19 +501,45 @@ export default function Sidebar({
               if (allowedItems.length === 0) return null;
 
               return (
-                <div key={cat.title} className="space-y-1 pt-1.5 border-t border-slate-900/40">
+                <motion.div 
+                  key={cat.title} 
+                  className="space-y-1 pt-1.5 border-t border-slate-900/40"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4, delay: catIdx * 0.08, ease: "easeOut" }}
+                >
                   <div className="px-3 flex items-center gap-2 mb-2 group cursor-default">
-                    <span className="w-1.5 h-3 bg-gradient-to-b from-sky-400 to-blue-600 rounded-full"></span>
-                    <h3 className="text-[10px] font-black text-white font-black uppercase tracking-widest">{cat.title}</h3>
+                    <motion.span 
+                      className="w-1.5 h-3 bg-gradient-to-b from-sky-400 to-blue-600 rounded-full"
+                      whileHover={{ scale: 1.5, rotate: 180 }}
+                      transition={{ duration: 0.3 }}
+                    ></motion.span>
+                    <h3 className="text-[10px] font-black text-white uppercase tracking-widest drop-shadow-[0_1px_2px_rgba(0,0,0,1)]">{cat.title}</h3>
                   </div>
                   <div className="space-y-1">
-                    {allowedItems.map((item) => {
+                    {allowedItems.map((item, itemIdx) => {
                       const Icon = item.icon;
                       const isActive = currentTab === item.id || (item.children && item.children.some(child => currentTab === child.id));
                       const isItemExpanded = item.id === 'ai' ? aiExpanded : false;
 
                       return (
-                        <div key={item.id} className={`relative nav-item-no-group font-bold ${isActive ? 'active-nav-item' : ''}`}>
+                        <motion.div 
+                          key={item.id} 
+                          className={`relative nav-item-no-group font-bold ${isActive ? 'active-nav-item' : 'group'}`}
+                          whileHover={{ scale: 1.01, x: -3 }}
+                          whileTap={{ scale: 0.98 }}
+                          initial={{ opacity: 0, x: 20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ type: "spring", stiffness: 400, damping: 25, delay: (catIdx * 0.08) + (itemIdx * 0.03) }}
+                        >
+                          {isActive && (
+                            <motion.div
+                              layoutId="active-nav-bg"
+                              className="absolute inset-0 bg-amber-500/20 border border-amber-400 rounded-xl shadow-[0_0_15px_rgba(251,191,36,0.3)] pointer-events-none"
+                              initial={false}
+                              transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                            />
+                          )}
                           <button
                             onClick={(e) => {
                               if (item.children) {
@@ -537,15 +564,15 @@ export default function Sidebar({
                                 });
                               }
                             }}
-                            className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-[12px] relative overflow-hidden select-none border ${
+                            className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-[12px] relative overflow-hidden select-none transition-all duration-300 z-10 ${
                               isActive 
-                                ? 'text-white font-black border-amber-500 bg-amber-500/20' 
-                                : 'text-neutral-50 font-black border-transparent bg-transparent'
+                                ? 'text-white font-black drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]' 
+                                : 'text-slate-100 group-hover:text-white font-bold bg-transparent group-hover:bg-white/10 border border-transparent group-hover:border-white/20'
                             }`}
                           >
                             {/* Content */}
                             <div className="flex items-center gap-3 relative z-10 w-full overflow-hidden">
-                              <Icon className={`w-5 h-5 shrink-0 ${isActive ? 'text-white' : 'text-white'}`} />
+                              <Icon className={`w-5 h-5 shrink-0 ${isActive ? 'text-sky-400' : 'text-sky-400'}`} />
                               <div className="text-right leading-relaxed flex items-center gap-x-1.5 truncate">
                                 {item.name.includes('AI') ? (
                                   <div className="flex items-center gap-1.5 min-w-0">
@@ -699,12 +726,12 @@ export default function Sidebar({
                                         }}
                                       >
                                         {child.icon ? (
-                                          <child.icon className="w-5 h-5 shrink-0 transition-transform group-hover/ai-child:scale-110" style={{ color: '#fb923c' }} />
+                                          <child.icon className="w-5 h-5 shrink-0 transition-transform group-hover/ai-child:scale-110" style={{ color: '#38bdf8' }} />
                                         ) : (
-                                          <div className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: '#fb923c' }} />
+                                          <div className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: '#38bdf8' }} />
                                         )}
                                         <div className="flex flex-col items-start gap-0.5 text-right flex-1">
-                                          <span className="font-semibold select-none leading-relaxed" style={{ color: '#fb923c' }}>{child.name}</span>
+                                          <span className="font-semibold select-none leading-relaxed" style={{ color: '#38bdf8' }}>{child.name}</span>
                                           {(aiFontSize === 'md' || aiFontSize === 'lg') && (
                                             <span className="text-[11px] text-slate-700 font-bold group-hover/ai-child:text-amber-500/70 transition-colors line-clamp-1 opacity-0 group-hover/ai-child:opacity-100 transform -translate-y-1 group-hover/ai-child:translate-y-0 duration-300">
                                               {child.tooltip}
@@ -751,11 +778,11 @@ export default function Sidebar({
                               </motion.div>
                             )}
                           </AnimatePresence>
-                        </div>
+                        </motion.div>
                       );
                     })}
                   </div>
-                </div>
+                </motion.div>
               );
             })}
 

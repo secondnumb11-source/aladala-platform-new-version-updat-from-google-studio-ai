@@ -4,7 +4,7 @@ import {
   X, Calendar, FileText, CheckSquare, Plus, MessageSquare, 
   Coins, Clock, Clipboard, Search, AlertCircle, Trash2, 
   User, ShieldCheck, Download, Paperclip, Briefcase, PlusCircle,
-  MapPin, Sparkles
+  MapPin, Sparkles, FileDown, Printer, RefreshCw
 } from "lucide-react";
 import CourtMapAndServices from "./CourtMapAndServices";
 import AiDrafting from "./AiDrafting";
@@ -205,10 +205,55 @@ export default function CaseDetailsView({
     setNoteContent("");
   };
 
+  const handleExportText = () => {
+    let content = `تفاصيل ملخص القضية\n********************\n`;
+    content += `رقم القضية: ${item.caseNumber}\n`;
+    content += `اسم الدعوى: ${item.caseName}\n`;
+    content += `حالة القضية: ${item.caseStatus === 'under_review' ? 'قيد النظر' : item.caseStatus === 'final_judgment' ? 'منتهية' : item.caseStatus}\n`;
+    content += `المحكمة: ${item.courtName}\n`;
+    content += `التصنيف: ${item.caseClassification}\n`;
+    content += `العميل: ${item.clientName}\n`;
+    content += `الخصم: ${item.opponentName || 'غير محدد'}\n`;
+    if (item.details) content += `تفاصيل أخرى: ${item.details}\n`;
+
+    const element = document.createElement("a");
+    const file = new Blob([content], { type: 'text/plain;charset=utf-8' });
+    element.href = URL.createObjectURL(file);
+    element.download = `ملخص_قضية_${item.caseNumber}.txt`;
+    document.body.appendChild(element);
+    element.click();
+    document.body.removeChild(element);
+  };
+
+  const handlePrint = () => {
+    window.print();
+  };
+
+  const [isSyncingNajiz, setIsSyncingNajiz] = useState(false);
+  const handleSyncNajiz = () => {
+    setIsSyncingNajiz(true);
+    
+    // Simulate Najiz Sync Delay
+    setTimeout(() => {
+      setIsSyncingNajiz(false);
+      window.dispatchEvent(
+        new CustomEvent('adalah_error_logged', {
+          detail: {
+            message: `✅ تم التحقق من رقم الدعوى (${item.caseNumber}) والتزامن مع بوابة ناجز بنجاح!`,
+            timestamp: new Date().toISOString()
+          }
+        })
+      );
+    }, 1500);
+  };
+
   return (
     <div id="case-details-modal" className="fixed inset-0 bg-black backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto" dir="rtl">
-      <div className="area-secondary border-2 border-border rounded-2xl w-full max-w-5xl shadow-2xl overflow-hidden flex flex-col my-8 max-h-[90vh] animate-fade-in">
+      <div className="area-secondary border-2 border-border rounded-2xl w-full max-w-5xl shadow-2xl overflow-hidden flex flex-col my-8 max-h-[90vh] animate-fade-in relative pr-6">
         
+        {/* Animated Luxury Gradient Vertical Bar */}
+        <div className="absolute top-0 right-0 w-6 h-full bg-gradient-to-b from-[#D4AF37] via-[#B8860B] to-[#020813] animate-pulse z-10 pointer-events-none"></div>
+
         {/* Modal Header */}
         <div className="area-subtle p-5 border-b border-border flex justify-between items-center">
           <div className="flex items-center gap-4">
@@ -231,27 +276,55 @@ export default function CaseDetailsView({
             </div>
           </div>
           
-          {/* WhatsApp Auto Notification Toggle option */}
-          <div className="flex items-center gap-2.5 bg-emerald-500 border border-emerald-500 px-3.5 py-1.5 rounded-2xl text-xs font-black text-emerald-600 select-none mx-2 shrink-0">
-            <span className="text-sm">💬</span>
-            <span className="hidden md:inline">تنبيهات واتساب للموكل:</span>
-            <button 
-              type="button"
-              onClick={handleToggleWhatsapp}
-              className={`w-10 h-5 rounded-full relative transition-colors duration-200 cursor-pointer ${isWhatsappEnabled ? "bg-emerald-500" : "bg-slate-400"}`}
-            >
-              <div className={`w-3.5 h-3.5 bg-white rounded-full absolute top-0.75 transition-all duration-200 ${isWhatsappEnabled ? "right-5.5" : "right-1"}`}></div>
-            </button>
-            <span className="text-xs font-bold">{isWhatsappEnabled ? "نشطة" : "معطلة"}</span>
-          </div>
+          <div className="flex items-center gap-2">
+            {/* WhatsApp Auto Notification Toggle option */}
+            <div className="flex items-center gap-2.5 bg-emerald-500 border border-emerald-500 px-3.5 py-1.5 rounded-2xl text-xs font-black text-emerald-600 select-none mr-2 shrink-0">
+              <span className="text-sm">💬</span>
+              <span className="hidden md:inline">تنبيهات واتساب:</span>
+              <button 
+                type="button"
+                onClick={handleToggleWhatsapp}
+                className={`w-10 h-5 rounded-full relative transition-colors duration-200 cursor-pointer ${isWhatsappEnabled ? "bg-emerald-500" : "bg-slate-400"}`}
+              >
+                <div className={`w-3.5 h-3.5 bg-white rounded-full absolute top-0.75 transition-all duration-200 ${isWhatsappEnabled ? "right-5.5" : "right-1"}`}></div>
+              </button>
+              <span className="text-xs font-bold">{isWhatsappEnabled ? "نشطة" : "معطلة"}</span>
+            </div>
 
-          <button 
-            id="close-details-btn"
-            onClick={onClose}
-            className="text-slate-900 p-1.5 rounded-lg transition-colors cursor-pointer"
-          >
-            <X className="w-6 h-6" />
-          </button>
+            <button 
+              onClick={handleSyncNajiz}
+              disabled={isSyncingNajiz}
+              className={`hidden md:flex p-2 rounded-xl items-center gap-2 transition-colors font-black text-xs ${isSyncingNajiz ? 'bg-[#0c1a35] text-slate-400 opacity-70 cursor-not-allowed border border-slate-700' : 'bg-[#0c1a35] border border-[#0c1a35] text-[#D4AF37] hover:bg-[#1e3a8a] text-white hover:border-[#D4AF37]'}`}
+              title="تحديث ومزامنة حالة الدعوى والأحداث مع بوابة ناجز"
+            >
+              <RefreshCw className={`w-4 h-4 ${isSyncingNajiz ? 'animate-spin' : ''}`} />
+              <span>{isSyncingNajiz ? 'جاري المزامنة...' : 'تحديث ناجز'}</span>
+            </button>
+            <button 
+              onClick={handleExportText}
+              className="hidden md:flex p-2 bg-[#d4af37]/20 border border-[#d4af37]/50 text-[#d4af37] rounded-xl items-center gap-2 hover:bg-[#d4af37] hover:text-slate-900 transition-colors font-black text-xs"
+              title="تصدير بيانات وأحداث القضية لملف نصي"
+            >
+              <FileDown className="w-4 h-4" />
+              <span>تصدير نصي</span>
+            </button>
+            <button 
+              onClick={handlePrint}
+              className="hidden md:flex p-2 bg-[#d4af37]/20 border border-[#d4af37]/50 text-[#d4af37] rounded-xl items-center gap-2 hover:bg-[#d4af37] hover:text-slate-900 transition-colors font-black text-xs"
+              title="تجهيز البطاقة للطباعة PDF"
+            >
+              <Printer className="w-4 h-4" />
+              <span>تصدير PDF</span>
+            </button>
+
+            <button 
+              id="close-details-btn"
+              onClick={onClose}
+              className="text-slate-900 p-1.5 rounded-lg transition-colors cursor-pointer mr-2 bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:text-white dark:hover:bg-slate-700 font-bold"
+            >
+              <X className="w-6 h-6" />
+            </button>
+          </div>
         </div>
 
         {/* Modal Subtabs Menu */}

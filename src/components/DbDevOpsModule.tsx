@@ -23,6 +23,8 @@ import {
   ChevronRight
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+import { supabase } from '../lib/supabase';
+import PersistentErrorLogger from './PersistentErrorLogger';
 
 // Predefined SQL Templates for Platform Admins and Lawyers
 const SQL_PRESETS = [
@@ -49,8 +51,42 @@ const SQL_PRESETS = [
 ];
 
 export default function DbDevOpsModule() {
-  // Tabs: compose_gen, container_sim, connection_tester, sql_console, cloudbeaver_guide
-  const [activeSubTab, setActiveSubTab] = useState<'compose_gen' | 'container_sim' | 'connection_tester' | 'sql_console' | 'cloudbeaver_guide'>('compose_gen');
+  // Tabs: compose_gen, container_sim, connection_tester, sql_console, cloudbeaver_guide, supabase_diagnostic, sync_debug
+  const [activeSubTab, setActiveSubTab] = useState<'compose_gen' | 'container_sim' | 'connection_tester' | 'sql_console' | 'cloudbeaver_guide' | 'supabase_diagnostic' | 'sync_debug'>('compose_gen');
+
+  // Supabase RLS audit states
+  const [diagnosticResult, setDiagnosticResult] = useState<any>(() => {
+    try {
+      const cached = localStorage.getItem('boot_rls_diagnostic');
+      return cached ? JSON.parse(cached) : null;
+    } catch {
+      return null;
+    }
+  });
+  const [runningDiagnostic, setRunningDiagnostic] = useState(false);
+  const [diagnosticLogs, setDiagnosticLogs] = useState<string[]>(() => {
+    try {
+      const cached = localStorage.getItem('boot_rls_diagnostic');
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        return parsed.logs || ["[Diagnostic] تم تحميل نتائج التشخيص ومصفوفة الصلاحيات من تفعيل الـ Boot."];
+      }
+    } catch {}
+    return ["[Diagnostic] بانتظار تشغيل فحص صلاحيات الجداول واستعراض السياسات الأمانية..."];
+  });
+
+  useEffect(() => {
+    const handleBootCompleted = (e: any) => {
+      if (e.detail) {
+        setDiagnosticResult(e.detail);
+        if (e.detail.logs) {
+          setDiagnosticLogs(e.detail.logs);
+        }
+      }
+    };
+    window.addEventListener('boot_rls_diagnostic_completed', handleBootCompleted);
+    return () => window.removeEventListener('boot_rls_diagnostic_completed', handleBootCompleted);
+  }, []);
 
   // Interactive docker-compose parameters
   const [dbUser, setDbUser] = useState('aladalah_admin');
@@ -451,6 +487,30 @@ ON CONFLICT DO NOTHING;`;
         >
           <BookOpen className="w-4 h-4" />
           دليل الربط مع CloudBeaver
+        </button>
+
+        <button
+          onClick={() => setActiveSubTab('supabase_diagnostic')}
+          className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all duration-300 flex items-center gap-2 ${
+            activeSubTab === 'supabase_diagnostic'
+              ? 'bg-gradient-to-l from-orange-600 to-amber-600 text-white shadow-md'
+              : 'text-white font-bold'
+          }`}
+        >
+          <ShieldAlert className="w-4 h-4 text-orange-400" />
+          مختبر صلاحيات السحابية RLS Check
+        </button>
+
+        <button
+          onClick={() => setActiveSubTab('sync_debug')}
+          className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all duration-300 flex items-center gap-2 ${
+            activeSubTab === 'sync_debug'
+              ? 'bg-gradient-to-l from-red-600 to-orange-600 text-white shadow-md'
+              : 'text-white font-bold'
+          }`}
+        >
+          <AlertCircle className="w-4 h-4 text-red-400" />
+          مراقبة المزامنة Sync Debug
         </button>
       </div>
 
@@ -1384,6 +1444,441 @@ ON CONFLICT DO NOTHING;`;
                 تعد واجهة <b>CloudBeaver</b> واحدة من أقوى برمجيات استعراض قواعد البيانات لكونها خفيفة الوزن ومبنية على متصفح الويب. تتيح للمستشارين القانونيين وفريق DevOps مراجعة المخططات البيانية (Database ER Diagrams) وإدارة الأرشفة والتقارير المالية دون كتابة أوامر معقدة، وتعمل خلف جدران حماية معيارية لتأمين سرية عقود الموكلين وقضاياهم.
               </p>
             </div>
+          </motion.div>
+        )}
+
+        {/* VIEW 6: SUPABASE RLS SECURITY CHECK & DIAGNOSTICS */}
+        {activeSubTab === 'supabase_diagnostic' && (
+          <motion.div
+            key="supabase_diagnostic"
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -15 }}
+            className="space-y-6"
+          >
+            <div className="bg-gradient-to-r from-slate-900 to-slate-950 p-6 rounded-2xl border border-slate-800 space-y-4">
+              <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                <div className="space-y-1">
+                  <h3 className="text-lg font-bold text-white flex items-center gap-2">
+                    <ShieldAlert className="w-6 h-6 text-orange-400" />
+                    محلل سياسات أمان صفوف الجدول (Supabase RLS Audit Tool)
+                  </h3>
+                  <p className="text-slate-200 font-bold text-xs">
+                    يقوم هذا المختبر بإجراء عمليات CRUD حقيقية معزولة ومخففة في جلسة العميل الحالية للكشف عن موانع وسياسات Row-Level Security (RLS).
+                  </p>
+                </div>
+                <button
+                  onClick={async () => {
+                    setRunningDiagnostic(true);
+                    setDiagnosticLogs(["[Diagnostic] البدء في فحص صلاحيات الجداول واستعراض السياسات الأمانية..."]);
+                    
+                    const logs: string[] = [];
+                    const addLog = (msg: string) => {
+                      console.log(msg);
+                      logs.push(msg);
+                      setDiagnosticLogs([...logs]);
+                    };
+
+                    try {
+                      addLog("[Diagnostic] التحقق من الجلسة والصلاحيات والاتصال بـ Supabase...");
+                      const { data: { session }, error: sessionErr } = await supabase.auth.getSession();
+                      
+                      const userEmail = session?.user?.email || "جلسة مجهولة / زائر (Guest)";
+                      addLog(`[Diagnostic] الحساب المسجل حالياً: ${userEmail}`);
+                      if (sessionErr) {
+                        addLog(`[Warning] خطأ باسترجاع الجلسة: ${sessionErr.message}`);
+                      }
+
+                      const tables: ('cases' | 'clients' | 'tasks')[] = ['cases', 'clients', 'tasks'];
+                      const results: any = {};
+
+                      for (const table of tables) {
+                        addLog(`[Diagnostic] جاري فحص جدول: [${table}]`);
+                        results[table] = {
+                          select: { status: 'checking', message: '' },
+                          insert: { status: 'checking', message: '' },
+                          update: { status: 'checking', message: '' },
+                          delete: { status: 'checking', message: '' }
+                        };
+
+                        // 1. SELECT TEST
+                        try {
+                          addLog(`[SELECT] اختبار القراءة والاسترجاع من [${table}]...`);
+                          const { data, error } = await supabase.from(table).select('*').limit(1);
+                          if (error) {
+                            const isRls = error.code === '42501' || error.message?.includes('RLS') || error.message?.includes('policy') || error.message?.includes('permission');
+                            results[table].select = {
+                              status: isRls ? 'denied' : 'error',
+                              code: error?.code || '42501',
+                              message: error.message
+                            };
+                            addLog(`[FAIL] جدول ${table}: قراءة مرفوضة (RLS Policy Denied!) - كود: ${error?.code || 'N/A'}`);
+                          } else {
+                            results[table].select = { status: 'allowed', message: `مسموح - تم جلب ${data?.length || 0} سجل` };
+                            addLog(`[SUCCESS] تم قراءة البيانات من جدول '${table}' بنجاح`);
+                          }
+                        } catch (e: any) {
+                          results[table].select = { status: 'error', message: e.message };
+                        }
+
+                        // 2. INSERT TEST
+                        const dummyKey = table === 'cases' ? 'RLS-Test-' + Math.floor(Math.random() * 100000) : null;
+                        const dummyData = table === 'cases' ? { title: 'مستند فحص أمان RLS مؤقت', case_number: dummyKey } :
+                                          table === 'clients' ? { name: 'عميل فحص RLS مؤقت', phone: '0500000000' } :
+                                          { title: 'مهمة فحص RLS مؤقتة', status: 'pending', priority: 'low' };
+
+                        let insertedId: any = null;
+                        try {
+                          addLog(`[INSERT] اختبار الإضافة والتسجيل لصف مؤقت في [${table}]...`);
+                          const { data, error } = await supabase.from(table).insert([dummyData]).select();
+                          if (error) {
+                            const isRls = error.code === '42501' || error.message?.includes('RLS') || error.message?.includes('policy') || error.message?.includes('permission');
+                            results[table].insert = {
+                              status: isRls ? 'denied' : 'error',
+                              code: error?.code || '42501',
+                              message: error.message
+                            };
+                            addLog(`[FAIL] جدول ${table}: إضافة مرفوضة (RLS Insert Denied!)`);
+                          } else {
+                            insertedId = data?.[0]?.id;
+                            results[table].insert = { status: 'allowed', message: `مسموح - تم الإدراج بنجاح معرف ${insertedId}` };
+                            addLog(`[SUCCESS] تم إضافة سجل في جدول '${table}' بنجاح`);
+                          }
+                        } catch (e: any) {
+                          results[table].insert = { status: 'error', message: e.message };
+                        }
+
+                        // 3. UPDATE TEST
+                        try {
+                          let updateTargetId = insertedId;
+                          if (!updateTargetId) {
+                            const { data } = await supabase.from(table).select('id').limit(1);
+                            if (data && data.length > 0) {
+                              updateTargetId = data[0].id;
+                            }
+                          }
+
+                          if (updateTargetId) {
+                            addLog(`[UPDATE] اختبار تحديث السجل رقم [${updateTargetId}] في [${table}]...`);
+                            const updatePayload = table === 'cases' ? { title: 'مستند فحص أمان RLS مؤقت - مُحدث' } :
+                                                  table === 'clients' ? { name: 'عميل فحص RLS مؤقت - مُحدث' } :
+                                                  { title: 'مهمة فحص RLS مؤقتة - مُحدثة' };
+                            
+                            const { error } = await supabase.from(table).update(updatePayload).eq('id', updateTargetId);
+                            if (error) {
+                              const isRls = error.code === '42501' || error.message?.includes('RLS') || error.message?.includes('policy') || error.message?.includes('permission');
+                              results[table].update = {
+                                status: isRls ? 'denied' : 'error',
+                                code: error?.code || '42501',
+                                message: error.message
+                              };
+                              addLog(`[FAIL] جدول ${table}: تحديث مرفوض (RLS Update Denied!)`);
+                            } else {
+                              results[table].update = { status: 'allowed', message: `مسموح - تم التعديل بنجاح` };
+                              addLog(`[SUCCESS] تم التحديث لجدول '${table}' بنجاح`);
+                            }
+                          } else {
+                            results[table].update = { status: 'skipped', message: 'تم التخطي (لا يوجد سجلات للفحص)' };
+                            addLog(`[SKIPPED] اختبار التعديل لجدول ${table} تم تخطيه لعدم وجود سجلات.`);
+                          }
+                        } catch (e: any) {
+                          results[table].update = { status: 'error', message: e.message };
+                        }
+
+                        // 4. DELETE TEST
+                        try {
+                          if (insertedId) {
+                            addLog(`[DELETE] اختبار حذف السجل المؤقت رقم [${insertedId}] في [${table}] لتنظيف البيئة...`);
+                            const { error } = await supabase.from(table).delete().eq('id', insertedId);
+                            if (error) {
+                              const isRls = error.code === '42501' || error.message?.includes('RLS') || error.message?.includes('policy') || error.message?.includes('permission');
+                              results[table].delete = {
+                                status: isRls ? 'denied' : 'error',
+                                code: error?.code || '42501',
+                                message: error.message
+                              };
+                              addLog(`[FAIL] جدول ${table}: الحذف مرفوض (RLS Delete Denied!)`);
+                            } else {
+                              results[table].delete = { status: 'allowed', message: `مسموح - تم تنظيف وحذف السجل المؤقت` };
+                              addLog(`[SUCCESS] تم حذف السجل المؤقت من جدول '${table}' بنجاح`);
+                            }
+                          } else {
+                            results[table].delete = { status: 'skipped', message: 'تم التخطي (لم يتم إنشاء سجل فحص مؤقت)' };
+                            addLog(`[SKIPPED] اختبار الحذف لجدول ${table} تم تخطيه لعدم إنشاء سجل فحص.`);
+                          }
+                        } catch (e: any) {
+                          results[table].delete = { status: 'error', message: e.message };
+                        }
+                      }
+
+                      setDiagnosticResult({
+                        owner: userEmail,
+                        timestamp: new Date().toLocaleTimeString('ar-SA'),
+                        results
+                      });
+                      addLog("[SUCCESS] اكتمل فحص الأمان الشامل بنجاح!");
+                    } catch (err: any) {
+                      addLog(`[ERROR] فشل غير متوقع: ${err.message}`);
+                    } finally {
+                      setRunningDiagnostic(false);
+                    }
+                  }}
+                  disabled={runningDiagnostic}
+                  className="px-5 py-2.5 bg-orange-600 hover:bg-orange-500 rounded-xl text-xs font-bold font-bold text-white transition flex items-center gap-1.5 shrink-0"
+                >
+                  {runningDiagnostic ? (
+                    <>
+                      <RefreshCw className="w-4 h-4 animate-spin" /> جاري التشخيص...
+                    </>
+                  ) : (
+                    <>
+                      <Play className="w-4 h-4" /> بدء تشخيص سياسات الـ RLS وحالات الوصول
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+              {/* Matrix Column */}
+              <div className="lg:col-span-8 space-y-6">
+                {/* 42501 RLS Policy Violation systemic error panel */}
+                {(() => {
+                  if (!diagnosticResult) return null;
+                  const violations: { table: string; operation: string; message: string }[] = [];
+                  ['cases', 'clients', 'tasks'].forEach(table => {
+                    const tableRes = diagnosticResult.results[table];
+                    if (tableRes) {
+                      if (tableRes.insert?.status === 'denied') {
+                        violations.push({ table, operation: 'INSERT (إضافة)', message: tableRes.insert.message || 'Access Denied' });
+                      }
+                      if (tableRes.update?.status === 'denied') {
+                        violations.push({ table, operation: 'UPDATE (تعديل)', message: tableRes.update.message || 'Access Denied' });
+                      }
+                    }
+                  });
+
+                  if (violations.length === 0) {
+                    return (
+                      <div className="p-4 bg-emerald-500/10 border border-emerald-500/30 rounded-xl text-emerald-400 text-xs font-bold leading-relaxed flex items-center gap-2">
+                        <span>✔ لا توجد أية مخالفات لسياسات RLS (كود 42501) نشطة حالياً. جميع عمليات الإضافة والتعديل مصرح بها بشكل سليم في الجلسة!</span>
+                      </div>
+                    );
+                  }
+
+                  return (
+                    <div className="p-5 bg-red-950/40 border border-red-500/30 rounded-2xl space-y-3 text-right" dir="rtl">
+                      <div className="flex items-center gap-2 text-rose-400">
+                        <ShieldAlert className="w-5 h-5 shrink-0 animate-bounce" />
+                        <h4 className="text-sm font-black text-rose-300">
+                          عاجل: تم اكتشاف ({violations.length}) مخالفات نشطة لسياسة حماية الصفوف (RLS 42501 Violation)!
+                        </h4>
+                      </div>
+                      <p className="text-[11px] text-slate-300 leading-relaxed">
+                        يرفض خادم Supabase إجراء التعديلات أو الإضافات للمستخدم الحالي بسبب غياب سياسات التفويض الملائمة. تفاصيل المخالفات:
+                      </p>
+                      
+                      <div className="space-y-2 max-h-40 overflow-y-auto">
+                        {violations.map((v, i) => (
+                          <div key={i} className="bg-slate-950/80 border border-red-900/40 p-3 rounded-lg flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs font-mono text-rose-300">
+                            <div>
+                              <strong className="text-white">الجدول:</strong> <span className="bg-red-900/30 px-1.5 py-0.5 rounded text-[11px]">{v.table}</span>
+                              <strong className="text-white ml-3">العملية:</strong> <span className="text-yellow-400 font-bold">{v.operation}</span>
+                            </div>
+                            <div className="text-[10px] text-slate-400 truncate max-w-sm">
+                              {v.message}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+
+                      <div className="bg-slate-950 p-3 rounded-lg text-[10px] text-yellow-500/80 border border-slate-800 leading-relaxed">
+                        💡 <strong>التشخيص السريع:</strong> لحل هذه المشكلة، الرجاء تشغيل الأوامر المذكورة في لوحة المساعدة الجانبية لفتح أذونات الكتابة التلقائية لعملاء الجلسة المؤمنة.
+                      </div>
+                    </div>
+                  );
+                })()}
+
+                <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-4">
+                  <h4 className="text-sm font-bold text-white flex items-center gap-2">
+                    <Database className="w-4 h-4 text-orange-400" />
+                    مصفوفة سماحية الوصول الفعلي (Security Permission Matrix)
+                  </h4>
+
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-right text-xs">
+                      <thead>
+                        <tr className="border-b border-slate-800 text-slate-200 font-bold bg-slate-950/40">
+                          <th className="py-3 px-4">اسم الجدول (Table Name)</th>
+                          <th className="py-3 px-4">القراءة (SELECT)</th>
+                          <th className="py-3 px-4">الإضافة (INSERT)</th>
+                          <th className="py-3 px-4">التعديل (UPDATE)</th>
+                          <th className="py-3 px-4">الحذف (DELETE)</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {['cases', 'clients', 'tasks'].map((table) => {
+                          const tableRes = diagnosticResult?.results?.[table];
+                          return (
+                            <tr key={table} className="border-b border-slate-800/60 hover:bg-slate-900/40">
+                              <td className="py-3.5 px-4 font-mono font-bold text-white">{table}</td>
+                              
+                              {/* SELECT STATUS */}
+                              <td className="py-3.5 px-4">
+                                {tableRes ? (
+                                  <span className={`px-2 py-1 rounded text-[10px] font-bold ${
+                                    tableRes.select.status === 'allowed' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30' :
+                                    tableRes.select.status === 'denied' ? 'bg-rose-500/10 text-rose-400 border border-rose-500/30' :
+                                    'bg-slate-800 text-slate-400'
+                                  }`}>
+                                    {tableRes.select.status === 'allowed' ? 'مسموح ✔' : tableRes.select.status === 'denied' ? 'مرفوض RLS ✖' : 'غير مختبر'}
+                                  </span>
+                                ) : (
+                                  <span className="text-slate-200 font-bold text-[10px]">-</span>
+                                )}
+                              </td>
+
+                              {/* INSERT STATUS */}
+                              <td className="py-3.5 px-4">
+                                {tableRes ? (
+                                  <span className={`px-2 py-1 rounded text-[10px] font-bold ${
+                                    tableRes.insert.status === 'allowed' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30' :
+                                    tableRes.insert.status === 'denied' ? 'bg-rose-500/10 text-rose-400 border border-rose-500/30' :
+                                    'bg-slate-800 text-slate-400'
+                                  }`}>
+                                    {tableRes.insert.status === 'allowed' ? 'مسموح ✔' : tableRes.insert.status === 'denied' ? 'مرفوض RLS ✖' : 'غير مختبر'}
+                                  </span>
+                                ) : (
+                                  <span className="text-slate-200 font-bold text-[10px]">-</span>
+                                )}
+                              </td>
+
+                              {/* UPDATE STATUS */}
+                              <td className="py-3.5 px-4">
+                                {tableRes ? (
+                                  <span className={`px-2 py-1 rounded text-[10px] font-bold ${
+                                    tableRes.update.status === 'allowed' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30' :
+                                    tableRes.update.status === 'denied' ? 'bg-rose-500/10 text-rose-400 border border-rose-500/30' :
+                                    'bg-slate-800 text-slate-400'
+                                  }`}>
+                                    {tableRes.update.status === 'allowed' ? 'مسموح ✔' : tableRes.update.status === 'denied' ? 'مرفوض RLS ✖' : 'غير مختبر'}
+                                  </span>
+                                ) : (
+                                  <span className="text-slate-200 font-bold text-[10px]">-</span>
+                                )}
+                              </td>
+
+                              {/* DELETE STATUS */}
+                              <td className="py-3.5 px-4">
+                                {tableRes ? (
+                                  <span className={`px-2 py-1 rounded text-[10px] font-bold ${
+                                    tableRes.delete.status === 'allowed' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30' :
+                                    tableRes.delete.status === 'denied' ? 'bg-rose-500/10 text-rose-400 border border-rose-500/30' :
+                                    'bg-slate-800 text-slate-400'
+                                  }`}>
+                                    {tableRes.delete.status === 'allowed' ? 'مسموح ✔' : tableRes.delete.status === 'denied' ? 'مرفوض RLS ✖' : 'غير مختبر'}
+                                  </span>
+                                ) : (
+                                  <span className="text-slate-200 font-bold text-[10px]">-</span>
+                                )}
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                {/* Suggestions / Resolution Command Help */}
+                <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-4 text-right">
+                  <h4 className="text-sm font-bold text-white flex items-center gap-2">
+                    <Lock className="w-4 h-4 text-orange-400" />
+                    كيف تقوم بحل مشاكل رفض الصلاحيات (RLS Policy Fixes)؟
+                  </h4>
+                  <p className="text-slate-200 font-bold text-xs leading-relaxed">
+                    لتجاوز وتهيئة الـ RLS، يمكنك تشغيل أوامر SQL التالية في مفسر تفويض Supabase SQL Editor لتهيئة صلاحيات الوصول الكامل للمستخدمين المُسجلين:
+                  </p>
+
+                  <div className="bg-slate-950 rounded-xl overflow-hidden border border-slate-850">
+                    <div className="px-4 py-2 bg-slate-900 border-b border-slate-800 flex justify-between items-center text-[10px]">
+                      <span className="font-mono text-slate-200 font-bold">SQL Commands to enable authenticated access</span>
+                      <button
+                        onClick={() => {
+                          const sql = `ALTER TABLE cases ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Allow authenticatd users crud on cases" ON cases FOR ALL TO authenticated USING (true) WITH CHECK (true);
+
+ALTER TABLE clients ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Allow authenticatd users crud on clients" ON clients FOR ALL TO authenticated USING (true) WITH CHECK (true);
+
+ALTER TABLE tasks ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Allow authenticated users crud on tasks" ON tasks FOR ALL TO authenticated USING (true) WITH CHECK (true);`;
+                          navigator.clipboard.writeText(sql);
+                          alert('تم نسخ الأوامر بنجاح! الصقها بموجه تفويض Supabase في جهازك.');
+                        }}
+                        className="text-orange-400 font-sans"
+                      >
+                        نسخ الأوامر
+                      </button>
+                    </div>
+                    <pre className="p-4 font-mono text-[10px] text-emerald-400 overflow-x-auto text-left leading-5" style={{ direction: 'ltr' }}>
+{`-- تفويض مستخدم الجلسة للوصول لجدول القضايا (Cases)
+ALTER TABLE cases ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Allow authenticated users all on cases" ON cases 
+  FOR ALL TO authenticated USING (true) WITH CHECK (true);
+
+-- تفويض مستخدم الجلسة للوصول لجدول العملاء (Clients)
+ALTER TABLE clients ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Allow authenticated users all on clients" ON clients 
+  FOR ALL TO authenticated USING (true) WITH CHECK (true);`}
+                    </pre>
+                  </div>
+                </div>
+              </div>
+
+              {/* Log view Column */}
+              <div className="lg:col-span-4 space-y-6">
+                <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 flex flex-col h-full justify-between shadow-lg">
+                  <div className="space-y-4">
+                    <h4 className="text-sm font-bold text-white flex items-center gap-2">
+                      <TerminalIcon className="w-4.5 h-4.5 text-orange-400" />
+                      سجل مخرجات التحليل (Diagnostic Logger)
+                    </h4>
+
+                    <div className="p-4 bg-slate-950 text-slate-200 font-bold font-mono text-[11px] leading-relaxed select-text rounded-xl border border-slate-800 h-96 overflow-y-auto space-y-2 text-left" style={{ direction: 'ltr' }}>
+                      {diagnosticLogs.length > 0 ? (
+                        diagnosticLogs.map((log, i) => (
+                          <div key={i} className={
+                            log.includes('[SUCCESS]') ? 'text-emerald-400 font-bold' :
+                            log.includes('[FAIL]') || log.includes('[ERROR]') ? 'text-rose-500 font-bold' :
+                            log.includes('[Warning]') ? 'text-yellow-500 font-bold' :
+                            'text-slate-300 font-bold'
+                          }>
+                            {log}
+                          </div>
+                        ))
+                      ) : (
+                        <div className="text-slate-200 font-bold text-center py-20 text-slate-600 font-sans">
+                          اضغط على زر تشغيل التشخيص لبدء التحليل الفني لخدمات RLS.
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
+
+        {/* VIEW 7: SYNC ERROR DEBUG LOGGER TAB */}
+        {activeSubTab === 'sync_debug' && (
+          <motion.div
+            key="sync_debug"
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -15 }}
+          >
+            <PersistentErrorLogger />
           </motion.div>
         )}
       </AnimatePresence>

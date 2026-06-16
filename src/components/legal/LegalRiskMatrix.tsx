@@ -21,7 +21,7 @@ export default function LegalRiskMatrix({ cases, isHighContrast }: LegalRiskMatr
       let prob = 50;
       if (c.category === 'commercial') prob += 15;
       if (c.category === 'labor') prob -= 10;
-      if ((c.attachmentsCount || 0) > 5) prob += 10;
+      if ((c.attachments_count || 0) > 5) prob += 10;
       if (c.status === 'active') prob += 5;
       
       // Add some randomness/volatility

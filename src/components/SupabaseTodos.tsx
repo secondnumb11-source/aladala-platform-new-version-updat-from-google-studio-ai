@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { createClient } from '../utils/supabase/client';
+import { supabase } from '@/lib/supabase';
 import { motion } from 'motion/react';
 import { ListTodo, Loader2, AlertCircle } from 'lucide-react';
 
@@ -17,7 +17,6 @@ export const SupabaseTodos: React.FC = () => {
   useEffect(() => {
     const fetchTodos = async () => {
       try {
-        const supabase = createClient();
         const { data, error } = await supabase.from('todos').select();
         
         if (error) throw error;

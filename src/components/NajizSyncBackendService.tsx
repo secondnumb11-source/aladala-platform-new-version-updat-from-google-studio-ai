@@ -1,14 +1,10 @@
 import { useEffect, useState, useRef } from 'react';
-import { createClient } from '@supabase/supabase-js';
+import { supabase } from '@/lib/supabase';
 import { Settings, Clock, CheckCircle, AlertCircle, AlertTriangle, X, ChevronDown, List, Terminal, Activity, Download, RefreshCw, Volume2, Database } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveContainer, CartesianGrid, Cell } from 'recharts';
 
-// We'll simulate fetching if Supabase env vars are missing
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://mock-supabase-url.supabase.co';
-const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'mock-key';
-
-const supabase = createClient(supabaseUrl, supabaseKey);
+// Using singleton from @/lib/supabase
 
 interface SyncLog {
   id: string;
@@ -142,7 +138,7 @@ export default function NajizSyncBackendService() {
         });
 
         window.dispatchEvent(new CustomEvent('najiz-sync-update', {
-          detail: { lastSyncTime: new Date().toLocaleTimeString('ar-SA'), fullDataSync: true }
+          detail: { last_sync_at: new Date().toLocaleTimeString('ar-SA'), fullDataSync: true }
         }));
       } catch (err: any) {
         clearTimeout(timeoutId);

@@ -75,7 +75,7 @@ export default function DashboardStats({
                 </span>
               </div>
               <div className="text-indigo-900 text-sm font-mono font-black mt-0.5" dir="ltr">
-                {syncStatus.lastSync === "لا يوجد" || !syncStatus.lastSync ? "لم تتم بعد" : new Date(syncStatus.lastSync).toLocaleString("ar-SA")}
+                {syncStatus.last_sync_at === "لا يوجد" || !syncStatus.last_sync_at ? "لم تتم بعد" : new Date(syncStatus.last_sync_at).toLocaleString("ar-SA")}
               </div>
             </div>
           </div>

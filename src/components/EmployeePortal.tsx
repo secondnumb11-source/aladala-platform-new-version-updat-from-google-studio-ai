@@ -227,7 +227,11 @@ export default function EmployeePortal({
 
     const channel = supabase.channel('portal-employees-changes')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'employees' }, fetchEmployees)
-      .subscribe();
+      .subscribe((status, error) => {
+        if (error) {
+          console.warn('[Supabase Realtime] Subscribe error for portal employees:', error);
+        }
+      });
 
     return () => {
       supabase.removeChannel(channel);
@@ -391,7 +395,11 @@ export default function EmployeePortal({
         table: 'attendance', 
         filter: `employeeId=eq.${loggedInEmployee.id}` 
       }, fetchAttendance)
-      .subscribe();
+      .subscribe((status, error) => {
+        if (error) {
+          console.warn('[Supabase Realtime] Subscribe error for attendance:', error);
+        }
+      });
 
     // Leave Requests
     const fetchLeave = async () => {
@@ -412,7 +420,11 @@ export default function EmployeePortal({
         table: 'leave_requests', 
         filter: `employeeId=eq.${loggedInEmployee.id}` 
       }, fetchLeave)
-      .subscribe();
+      .subscribe((status, error) => {
+        if (error) {
+          console.warn('[Supabase Realtime] Subscribe error for leave requests:', error);
+        }
+      });
 
     return () => {
       supabase.removeChannel(attChannel);
@@ -593,7 +605,7 @@ export default function EmployeePortal({
         isNajizSync: true,
         priority: 'high',
         createdAt: new Date().toISOString().split('T')[0],
-        attachmentsCount: 1
+        attachments_count: 1
       };
 
       // Add to cases

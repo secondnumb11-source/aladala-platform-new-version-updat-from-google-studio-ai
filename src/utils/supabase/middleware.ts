@@ -1,32 +1,32 @@
-import { createServerClient, type CookieOptions } from "@supabase/ssr";
+import { supabase as sharedSupabase } from "@/lib/supabase";
 import { type Request, type Response, type NextFunction } from "express";
 
-const supabaseUrl = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || "https://sydcelofkzvtsfatxnka.supabase.co";
-const supabaseKey = process.env.SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || "sb_publishable_VW8gI2hAK_UzF8ApuoUUhA_KUmR1KYz";
-
 export const supabaseMiddleware = async (req: Request, res: Response, next: NextFunction) => {
-  const supabase = createServerClient(
-    supabaseUrl!,
-    supabaseKey!,
-    {
-      cookies: {
-        getAll() {
-           return Object.entries(req.cookies).map(([name, value]) => ({
-             name,
-             value: value as string,
-          }));
-        },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value, options }) => {
-             res.cookie(name, value, options as CookieOptions);
-          });
-        },
-      },
-    },
-  );
+  const supabase = sharedSupabase;
 
-  // This will refresh the session if it's expired
-  await supabase.auth.getUser();
+  // This will refresh the session if it's expired with graceful try-catch error handling
+  try {
+    const { data: { user }, error } = await supabase.auth.getUser();
+    if (error) {
+      console.warn('[Supabase Server Middleware] Session verification or token refresh failed safely:', error.message);
+      
+      // If the request is a direct navigation to a view page (not static or api), redirect to login page gracefully
+      if (req.method === 'GET' && !req.path.startsWith('/api') && !req.path.includes('.')) {
+        console.log('[Supabase Server Middleware] Redirecting to login/landing page...');
+        res.clearCookie('sb-access-token');
+        res.clearCookie('sb-refresh-token');
+        return res.redirect('/');
+      }
+    }
+  } catch (err: any) {
+    console.error('[Supabase Server Middleware] Expired or invalid session exception caught gracefully:', err?.message || err);
+    
+    if (req.method === 'GET' && !req.path.startsWith('/api') && !req.path.includes('.')) {
+      res.clearCookie('sb-access-token');
+      res.clearCookie('sb-refresh-token');
+      return res.redirect('/');
+    }
+  }
 
   next();
 };

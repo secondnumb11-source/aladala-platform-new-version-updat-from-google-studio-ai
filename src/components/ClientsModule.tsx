@@ -35,7 +35,7 @@ import { supabase } from '@/lib/supabase';
 interface ClientsModuleProps {
   clients: Client[];
   cases: Case[];
-  onUpdateState: (type: string, data: any) => void;
+  onUpdateState: (type: string, data: any) => any;
 }
 
 // Module-level in-memory cache for Google Access Token
@@ -133,7 +133,7 @@ export default function ClientsModule({
     alert('✅ تم حفظ التغييرات على القالب بنجاح.');
   };
 
-  const handleCreateClient = (e: React.FormEvent) => {
+  const handleCreateClient = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newName || !newNationalId) return;
 
@@ -157,7 +157,12 @@ export default function ClientsModule({
       portalLink: `/portal?token=${token}`
     };
 
-    onUpdateState('clients', newCl);
+    const res = await onUpdateState('clients', newCl);
+    if (res && res.success === false && res.errorType === 'validation') {
+       alert(`فشل التحقق من صحة البيانات: ${res.message}`);
+       return;
+    }
+
     setIsAdding(false);
     setNewName('');
     setNewNationalId('');

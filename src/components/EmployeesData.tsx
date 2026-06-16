@@ -261,7 +261,11 @@ export default function EmployeesData({ tasks }: { cases: Case[], tasks: Task[],
 
     const channel = supabase.channel('employees-changes')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'employees' }, fetchEmployees)
-      .subscribe();
+      .subscribe((status, error) => {
+        if (error) {
+          console.warn('[Supabase Realtime] Subscribe error for employees changes:', error);
+        }
+      });
 
     return () => {
       supabase.removeChannel(channel);
