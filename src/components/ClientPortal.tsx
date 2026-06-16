@@ -78,8 +78,6 @@ export default function ClientPortal({
       portalUsername: generatedUsername,
       portalPassword: generatedPassword,
       casesCount: selectedCaseToLink ? 1 : 0,
-      billingTotal: 0,
-      activePortal: true,
       portalToken: token,
       portalLink: `/portal?token=${token}`
     };
@@ -456,7 +454,6 @@ export default function ClientPortal({
                       ...clientSelected,
                       portalUsername: configUsername.trim(),
                       portalPassword: configPassword.trim(),
-                      activePortal: true,
                       permittedCases: configCheckedCases,
                       permittedCasePermissions: configPermissions
                     };
