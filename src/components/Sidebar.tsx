@@ -90,6 +90,18 @@ export default function Sidebar({
   const { preferences, updatePreference } = useUserPreferences();
   const { connectionStatus } = useSupabase();
 
+  const [logo, setLogo] = React.useState<string | null>(() => localStorage.getItem('office_logo'));
+  const [officeName, setOfficeName] = React.useState<string>(() => localStorage.getItem('office_name') || 'منصة العدالة');
+
+  React.useEffect(() => {
+    const handleStorageChange = () => {
+      setLogo(localStorage.getItem('office_logo'));
+      setOfficeName(localStorage.getItem('office_name') || 'منصة العدالة');
+    };
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
+
   const isNajizConnected = preferences?.najiz_api_connected === 'true';
   const [mobileOpen, setMobileOpen] = React.useState(false);
   const [sidebarWidth, setSidebarWidth] = React.useState(395);
@@ -281,13 +293,19 @@ export default function Sidebar({
             <div className="relative z-10 flex flex-col gap-4">
               <div className="flex items-start justify-between">
                 <div className="flex items-center gap-4">
-                  <div className="relative w-14 h-14 bg-amber-500/20 border-2 border-primary rounded-2xl flex items-center justify-center text-amber-400 shadow-[0_0_25px_rgba(251,191,36,0.5)] shrink-0">
-                    <Scale className="w-8 h-8 relative z-10 text-amber-400" />
-                    <div className="absolute inset-0 bg-amber-500/10 blur-md rounded-2xl"></div>
+                  <div className="relative w-14 h-14 bg-amber-500/20 border-2 border-primary rounded-2xl flex items-center justify-center text-amber-400 shadow-[0_0_25px_rgba(251,191,36,0.5)] shrink-0 overflow-hidden">
+                    {logo ? (
+                      <img src={logo} alt="شعار المكتب" className="w-full h-full object-cover" />
+                    ) : (
+                      <>
+                        <Scale className="w-8 h-8 relative z-10 text-amber-400" />
+                        <div className="absolute inset-0 bg-amber-500/10 blur-md rounded-2xl"></div>
+                      </>
+                    )}
                   </div>
                   <div className="flex flex-col">
                     <h2 className="font-display font-black text-amber-500 tracking-tight leading-tight text-base drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]">
-                      منصة العدالة
+                      {officeName}
                     </h2>
                     <h3 className="text-[11px] text-white font-extrabold tracking-wide mt-1 leading-normal uppercase">
                       لإدارة مكاتب المحاماة المعتمدة

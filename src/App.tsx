@@ -281,6 +281,16 @@ function AppContent() {
   const [selectedRole, setSelectedRole] = useState('admin');
   const [selectedCase, setSelectedCase] = useState<Case | null>(null);
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
+  
+  const [officeLogo, setOfficeLogo] = useState<string | null>(() => localStorage.getItem('office_logo'));
+
+  useEffect(() => {
+    const handleStorageChange = () => {
+      setOfficeLogo(localStorage.getItem('office_logo'));
+    };
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
 
   // Global Navigation Listener
   useEffect(() => {
@@ -1796,6 +1806,7 @@ function AppContent() {
                 auditTrails={auditTrails}
                 createRecord={createRecord}
                 viewMode="billing"
+                officeLogo={officeLogo}
               />
             );
           }
@@ -1811,6 +1822,7 @@ function AppContent() {
                 auditTrails={auditTrails}
                 createRecord={createRecord}
                 viewMode="calculator"
+                officeLogo={officeLogo}
               />
             );
           }
@@ -1865,6 +1877,7 @@ function AppContent() {
             onUpdateState={handleUpdateGlobalState}
             auditTrails={auditTrails}
             createRecord={createRecord}
+            officeLogo={officeLogo}
           />
         )}
 
@@ -2001,7 +2014,7 @@ function AppContent() {
         )}
 
         {currentTab === 'documentation' && (
-          <PlatformDocumentation />
+          <PlatformDocumentation onBack={() => setCurrentTab('smart-services')} />
         )}
 
         {currentTab === 'judicial-observatory' && (
@@ -2022,6 +2035,7 @@ function AppContent() {
             />
           </React.Suspense>
         )}
+
             </React.Suspense>
           </RouteGuard>
         ) : (
@@ -2030,43 +2044,59 @@ function AppContent() {
 
       </main>
 
-
       <FeedbackModal 
-      isOpen={showFeedbackModal} 
-      onClose={() => setShowFeedbackModal(false)} 
-      selectedRole={selectedRole} 
-    />
+        isOpen={showFeedbackModal} 
+        onClose={() => setShowFeedbackModal(false)} 
+        selectedRole={selectedRole} 
+      />
 
-    {supaDiagnosticAlert && (
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm" dir="rtl">
-        <div className="w-full max-w-lg bg-[#0c1427] border-2 border-amber-500/30 rounded-2xl p-6 shadow-2xl relative text-right">
-          <button 
-            onClick={() => setSupaDiagnosticAlert(null)}
-            className="absolute top-4 left-4 text-slate-400 hover:text-white transition-colors"
-          >
-            <X className="w-5 h-5" />
-          </button>
-          
-          <div className="flex items-center gap-3 mb-5 text-amber-500">
-            <AlertTriangle className="w-6 h-6 animate-bounce" />
-            <h3 className="text-lg font-black font-sans text-amber-400">تنبيه تشخيصي لقاعدة البيانات (Diagnostic Alert)</h3>
-          </div>
-
-          <div className="space-y-4 text-xs leading-relaxed text-slate-200">
-            <p className="bg-red-500/10 border border-red-500/20 p-3 rounded-lg text-[11px] text-red-400 font-bold">
-              تم كشف وحظر فشل في معاملة الحفظ بقاعدة البيانات السحابية Supabase بشكل آمن. تم تسجيل العملية في سجل الفشل المحتفظ به تلقائياً.
-            </p>
-
-            <div className="grid grid-cols-3 gap-2 bg-slate-900 border border-white/5 p-3.5 rounded-xl font-mono text-[11px] leading-relaxed text-slate-300">
-              <span className="text-slate-400 font-bold">الجدول الكيان:</span>
-              <span className="col-span-2 text-white font-black">{supaDiagnosticAlert.table}</span>
-
-              <span className="text-slate-400 font-bold">كود الخطأ:</span>
-              <span className="col-span-2 text-amber-400 font-black">{supaDiagnosticAlert.code}</span>
-
-              <span className="text-slate-400 font-bold">رسالة الخطأ:</span>
-              <span className="col-span-2 text-white break-words">{supaDiagnosticAlert.message}</span>
+      {supaDiagnosticAlert && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm" dir="rtl">
+          <div className="w-full max-w-lg bg-[#0c1427] border-2 border-amber-500/30 rounded-2xl p-6 shadow-2xl relative text-right">
+            <button 
+              onClick={() => setSupaDiagnosticAlert(null)}
+              className="absolute top-4 left-4 text-slate-400 hover:text-white transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+            
+            <div className="flex items-center gap-3 mb-5 text-amber-500">
+              <AlertTriangle className="w-6 h-6 animate-bounce" />
+              <h3 className="text-lg font-black font-sans text-amber-400">تنبيه المزامنة السحابية</h3>
             </div>
+
+            <div className="space-y-4">
+              <div className="bg-red-500/10 border border-red-500/20 p-3 rounded-xl text-xs text-red-200">
+                <span className="font-bold">الحالة: {supaDiagnosticAlert.code}</span> - {supaDiagnosticAlert.message}
+              </div>
+
+              {supaDiagnosticAlert.code === '42501' || String(supaDiagnosticAlert.message).toLowerCase().includes('security policy') || String(supaDiagnosticAlert.message).toLowerCase().includes('row-level security') ? (
+                <div className="bg-emerald-950/20 border border-emerald-500/20 p-4 rounded-xl space-y-3">
+                  <p className="text-[11px] text-emerald-400 font-black flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                    نظام التنبيه الاستباقي للـ RLS:
+                  </p>
+                  <p className="text-[10px] text-slate-300">
+                    لقد وجدنا أن سياسة الوصول تحظر الحفظ في جدول <code className="bg-[#050b14] px-1.5 py-0.5 rounded text-amber-400 font-mono font-bold">public.{supaDiagnosticAlert.table || 'cases'}</code>. لتخطي هذا الحظر، يمكنك لصق الأمر التالي في الـ SQL Console:
+                  </p>
+                  <div className="bg-[#050b14] border border-slate-800 p-2.5 rounded text-[11px] font-mono text-white flex justify-between items-center text-left" dir="ltr">
+                    <span className="overflow-x-auto whitespace-nowrap block max-w-[280px]">{`ALTER TABLE public.${supaDiagnosticAlert.table || 'cases'} DISABLE ROW LEVEL SECURITY;`}</span>
+                    <button 
+                      onClick={() => {
+                        navigator.clipboard.writeText(`ALTER TABLE public.${supaDiagnosticAlert.table || 'cases'} DISABLE ROW LEVEL SECURITY;`);
+                        alert('📋 تم نسخ كود كسر حظر حماية الصفوف للجدول بنجاح! توجه لقسم DevOps ولصقه في الـ SQL Console لتنفيذه.');
+                      }}
+                      className="mr-2 py-1 px-2.5 bg-emerald-500 text-slate-950 text-[9px] font-black rounded hover:bg-emerald-400 transition-colors cursor-pointer"
+                    >
+                      نسخ 📋
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="bg-amber-500/5 border border-amber-500/10 p-3 rounded-xl text-[10px] text-amber-400 font-bold leading-relaxed">
+                ℹ️ يمكن تلافي خطأ <strong>{supaDiagnosticAlert.code || 'RLS Violation'}</strong> بمراجعة سياسات Row-Level Security في لوحة إدارة الـ DevOps للتأكد من امتلاك المستخدم للصلاحية المناسبة للعملية.
+              </div>
+            )}
 
             {supaDiagnosticAlert.details && (
               <div className="bg-slate-900 border border-white/5 p-3 rounded-xl">
@@ -2076,13 +2106,18 @@ function AppContent() {
                 </pre>
               </div>
             )}
-
-            <div className="bg-amber-500/5 border border-amber-500/10 p-3 rounded-xl text-[10px] text-amber-400 font-bold leading-relaxed">
-              ℹ️ يمكن تلافي خطأ <strong>42501 (RLS Violation)</strong> بمراجعة سياسات Row-Level Security في لوحة إدارة الـ DevOps للتأكد من امتلاك المستخدم للصلاحية المناسبة للعملية.
-            </div>
           </div>
 
-          <div className="flex items-center gap-3 mt-6">
+          <div className="flex items-center gap-2 mt-6">
+            <button
+              onClick={() => {
+                setCurrentTab('database-devops');
+                setSupaDiagnosticAlert(null);
+              }}
+              className="flex-1 bg-amber-500 hover:bg-amber-600 text-slate-950 font-black text-xs py-2.5 px-4 rounded-xl transition-all shadow-lg shadow-amber-500/20 text-center cursor-pointer"
+            >
+              التوجه للـ DevOps لتشغيل كود الإصلاح
+            </button>
             <button
               onClick={() => {
                 setCurrentTab('settings');
@@ -2092,15 +2127,16 @@ function AppContent() {
                   if (el) el.click();
                 }, 100);
               }}
-              className="flex-1 bg-amber-500 hover:bg-amber-600 text-slate-950 font-black text-xs py-2.5 px-4 rounded-xl transition-all shadow-lg shadow-amber-500/20 text-center"
+              className="bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs py-2.5 px-4 rounded-xl transition-all cursor-pointer"
+              title="معاينة قاعة المشاكل والسجلات"
             >
-              معاينة قاعة المشاكل والسجلات (View issues)
+              السجلات التفصيلية
             </button>
             <button
               onClick={() => setSupaDiagnosticAlert(null)}
-              className="bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs py-2.5 px-4 rounded-xl transition-all"
+              className="bg-slate-900 border border-slate-800 hover:bg-slate-850 text-slate-400 font-bold text-xs py-2.5 px-3 rounded-xl transition-all cursor-pointer"
             >
-              حسناً، فهمت
+              إغلاق
             </button>
           </div>
         </div>

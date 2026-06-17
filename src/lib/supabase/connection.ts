@@ -41,6 +41,19 @@ export function useSupabaseConnection() {
     // Attempt a basic health check ping
     const checkPing = async () => {
       try {
+        // 1. Perform trial query on the main 'cases' table to check permissions
+        const { error: casesError } = await supabase.from('cases').select('id').limit(1);
+        if (casesError && (casesError.code === '42501' || casesError.message?.includes('row-level security') || casesError.message?.includes('policy'))) {
+          console.error('[Supabase RLS Error] 42501 Security Policy Violation:', casesError.message);
+          setIsValid(false);
+          setError(
+            `⚠️ خطأ في صلاحيات الوصول (RLS / 42501) للجدول الرئيسي 'cases':\n` +
+            `لقد تم رفض الاستعلام من قِبل قواعد مستوى حماية الصفوف (Row-Level Security).\n` +
+            `يرجى التأكد من الميزات الأمنية وتفعيل السياسات المناسبة (Policies) في لوحة تحكم Supabase لتمرير العمليات بنجاح، أو تعطيل RLS مؤقتاً للتجربة.`
+          );
+          return;
+        }
+
         // We do a simple limit(0) query just to test network and credentials
         const { error: pingError } = await supabase.from('audit_trails').select('id').limit(0);
         

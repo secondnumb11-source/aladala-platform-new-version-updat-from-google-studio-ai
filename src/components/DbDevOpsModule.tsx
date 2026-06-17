@@ -20,11 +20,20 @@ import {
   Activity,
   ArrowRight,
   ExternalLink,
-  ChevronRight
+  ChevronRight,
+  Webhook,
+  Zap,
+  Plug,
+  Code,
+  Globe,
+  Send,
+  Trash2,
+  Plus
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { supabase } from '@/lib/supabase';
 import PersistentErrorLogger from './PersistentErrorLogger';
+import SupabaseWebhooksManager from './SupabaseWebhooksManager';
 
 // Predefined SQL Templates for Platform Admins and Lawyers
 const SQL_PRESETS = [
@@ -51,8 +60,8 @@ const SQL_PRESETS = [
 ];
 
 export default function DbDevOpsModule() {
-  // Tabs: compose_gen, container_sim, connection_tester, sql_console, cloudbeaver_guide, supabase_diagnostic, sync_debug
-  const [activeSubTab, setActiveSubTab] = useState<'compose_gen' | 'container_sim' | 'connection_tester' | 'sql_console' | 'cloudbeaver_guide' | 'supabase_diagnostic' | 'sync_debug'>('compose_gen');
+  // Tabs: compose_gen, container_sim, connection_tester, sql_console, cloudbeaver_guide, supabase_diagnostic, sync_debug, supabase_webhooks
+  const [activeSubTab, setActiveSubTab] = useState<'compose_gen' | 'container_sim' | 'connection_tester' | 'sql_console' | 'cloudbeaver_guide' | 'supabase_diagnostic' | 'sync_debug' | 'supabase_webhooks'>('compose_gen');
 
   // Supabase RLS audit states
   const [diagnosticResult, setDiagnosticResult] = useState<any>(() => {
@@ -530,6 +539,18 @@ ON CONFLICT DO NOTHING;`;
         >
           <AlertCircle className="w-4 h-4 text-red-400" />
           مراقبة المزامنة Sync Debug
+        </button>
+
+        <button
+          onClick={() => setActiveSubTab('supabase_webhooks')}
+          className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all duration-300 flex items-center gap-2 ${
+            activeSubTab === 'supabase_webhooks'
+              ? 'bg-gradient-to-l from-indigo-600 to-blue-600 text-white shadow-md'
+              : 'text-white font-bold'
+          }`}
+        >
+          <Webhook className="w-4 h-4 text-indigo-400" />
+          مرسلات ويب Supabase Webhooks
         </button>
       </div>
 
@@ -1898,6 +1919,18 @@ CREATE POLICY "Allow authenticated users all on clients" ON clients
             exit={{ opacity: 0, y: -15 }}
           >
             <PersistentErrorLogger />
+          </motion.div>
+        )}
+
+        {/* VIEW 8: SUPABASE WEBHOOKS CONFIGURATION & SIMULATOR */}
+        {activeSubTab === 'supabase_webhooks' && (
+          <motion.div
+            key="supabase_webhooks"
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -15 }}
+          >
+            <SupabaseWebhooksManager />
           </motion.div>
         )}
       </AnimatePresence>

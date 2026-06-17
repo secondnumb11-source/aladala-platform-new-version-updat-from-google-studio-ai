@@ -108,6 +108,7 @@ interface FinanceModuleProps {
   auditTrails: any[];
   createRecord: (collection: string, data: any) => Promise<any>;
   viewMode?: 'billing' | 'calculator';
+  officeLogo?: string | null;
 }
 
 export default function FinanceModule({
@@ -118,7 +119,8 @@ export default function FinanceModule({
   onUpdateState,
   auditTrails,
   createRecord,
-  viewMode = 'billing'
+  viewMode = 'billing',
+  officeLogo: propOfficeLogo
 }: FinanceModuleProps) {
   
   const [themeTick, setThemeTick] = useState(Date.now());
@@ -167,7 +169,21 @@ export default function FinanceModule({
   const [invDesc, setInvDesc] = useState('');
   const [invSubtotal, setInvSubtotal] = useState('');
   const [printInvoice, setPrintInvoice] = useState<Invoice | null>(null);
-  const [officeLogo, setOfficeLogo] = useState<string | null>(localStorage.getItem('office_logo') || null);
+  const [officeLogo, setOfficeLogo] = useState<string | null>(propOfficeLogo || localStorage.getItem('office_logo') || null);
+
+  React.useEffect(() => {
+    if (propOfficeLogo !== undefined) {
+      setOfficeLogo(propOfficeLogo);
+    }
+  }, [propOfficeLogo]);
+
+  React.useEffect(() => {
+    const handleStorageChange = () => {
+      setOfficeLogo(propOfficeLogo || localStorage.getItem('office_logo') || null);
+    };
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, [propOfficeLogo]);
 
   // Contract Management State
   const [contractsToManage, setContractsToManage] = useState<{ id: string; title: string; client: string; date: string; status: 'unsigned' | 'signed' | 'sent'; caseId?: string }[]>(() => {
@@ -248,6 +264,7 @@ export default function FinanceModule({
             const processedBase64 = canvas.toDataURL('image/png', 0.9);
             setOfficeLogo(processedBase64);
             localStorage.setItem('office_logo', processedBase64);
+            window.dispatchEvent(new Event('storage'));
             alert("✅ تم معالجة الشعار برمجياً وضبط أبعاده وتنسيقه ليتناسب باحترافية مع الفواتير والتقارير.");
           }
         };
@@ -1388,6 +1405,7 @@ export default function FinanceModule({
                          onClick={() => {
                            setOfficeLogo(null);
                            localStorage.removeItem('office_logo');
+                           window.dispatchEvent(new Event('storage'));
                          }}
                          className="absolute -top-2 -left-2 bg-rose-500 text-white p-1 rounded-full opacity-0 group-hover/logo:opacity-100 transition-opacity shadow-lg"
                       >
@@ -2506,8 +2524,18 @@ export default function FinanceModule({
                             </head>
                             <body>
                               <div class="voucher">
-                                <h2>ســنــد قــبــض رســمــي</h2>
-                                <p style="font-size:11px; color:#777;">سند رقم: ${receiptVoucherPrint.id} | التاريخ: ${receiptVoucherPrint.date}</p>
+                                ${officeLogo ? `
+                                  <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #10b981; padding-bottom: 15px; margin-bottom: 20px;">
+                                    <div>
+                                      <h2 style="color: #065f46; margin: 0; padding: 0; border: none; font-size: 22px; font-weight: 900;">ســنــد قــبــض رســمــي</h2>
+                                      <p style="font-size:11px; color:#777; margin: 5px 0 0 0;">سند رقم: ${receiptVoucherPrint.id} | التاريخ: ${receiptVoucherPrint.date}</p>
+                                    </div>
+                                    <img src="${officeLogo}" style="max-height: 60px; max-width: 150px; object-fit: contain;" />
+                                  </div>
+                                ` : `
+                                  <h2>ســنــد قــبــض رســمــي</h2>
+                                  <p style="font-size:11px; color:#777;">سند رقم: ${receiptVoucherPrint.id} | التاريخ: ${receiptVoucherPrint.date}</p>
+                                `}
                                 <div class="row"><span class="label">استلمنا من المكرم:</span><span class="val">${receiptVoucherPrint.client}</span></div>
                                 <div class="row"><span class="label">مبلغاً وقدره:</span><span class="val" style="color:#059669; font-weight:900;">${parseFloat(receiptVoucherPrint.amount).toLocaleString()} ريال سعودي</span></div>
                                 <div class="row"><span class="label">وذلك كقيمة ومقابل:</span><span class="val">${receiptVoucherPrint.purpose}</span></div>
@@ -2715,8 +2743,18 @@ export default function FinanceModule({
                             </head>
                             <body>
                               <div class="voucher">
-                                <h2>ســنــد صــرف رســمــي</h2>
-                                <p style="font-size:11px; color:#777;">سند رقم: ${paymentVoucherPrint.id} | التاريخ: ${paymentVoucherPrint.date}</p>
+                                ${officeLogo ? `
+                                  <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #f43f5e; padding-bottom: 15px; margin-bottom: 20px;">
+                                    <div>
+                                      <h2 style="color: #9f1239; margin: 0; padding: 0; border: none; font-size: 22px; font-weight: 900;">ســنــد صــرف رســمــي</h2>
+                                      <p style="font-size:11px; color:#777; margin: 5px 0 0 0;">سند رقم: ${paymentVoucherPrint.id} | التاريخ: ${paymentVoucherPrint.date}</p>
+                                    </div>
+                                    <img src="${officeLogo}" style="max-height: 60px; max-width: 150px; object-fit: contain;" />
+                                  </div>
+                                ` : `
+                                  <h2>ســنــد صــرف رســمــي</h2>
+                                  <p style="font-size:11px; color:#777;">سند رقم: ${paymentVoucherPrint.id} | التاريخ: ${paymentVoucherPrint.date}</p>
+                                `}
                                 <div class="row"><span class="label">دفعنا وصرفنا للمكرم:</span><span class="val">${paymentVoucherPrint.payee}</span></div>
                                 <div class="row"><span class="label">مبلغاً وقدره:</span><span class="val" style="color:#e11d48; font-weight:900;">${parseFloat(paymentVoucherPrint.amount).toLocaleString()} ريال سعودي</span></div>
                                 <div class="row"><span class="label">وذلك كقيمة ومقابل:</span><span class="val">${paymentVoucherPrint.purpose}</span></div>

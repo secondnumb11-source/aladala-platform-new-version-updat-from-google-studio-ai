@@ -33,7 +33,7 @@ import {
   Camera
 } from 'lucide-react';
 import { Document, Client, Case } from '@/types';
-import { supabase } from '@/lib/supabase';
+import { supabase, uploadFileToStorage } from '@/lib/supabase';
 import { User } from '@supabase/supabase-js';
 import { generateUUID } from '@/lib/uuid';
 
@@ -999,17 +999,13 @@ export default function DocumentsModule({
     
     try {
       const fileName = `${Date.now()}_${file.name}`;
-      const { data, error } = await supabase.storage
-        .from('documents')
-        .upload(`documents/${fileName}`, file);
+      const { url, isFallback } = await uploadFileToStorage(
+        'documents',
+        `documents/${fileName}`,
+        file
+      );
 
-      if (error) throw error;
-
-      const { data: { publicUrl } } = supabase.storage
-        .from('documents')
-        .getPublicUrl(`documents/${fileName}`);
-      
-      const downloadURL = publicUrl;
+      const downloadURL = url;
       
       let category = 'العقود والاتفاقيات';
       const fileNameLower = file.name.toLowerCase();

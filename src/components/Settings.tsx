@@ -30,7 +30,8 @@ import {
   Image,
   Building2,
   ArrowUp,
-  ArrowDown
+  ArrowDown,
+  Trash2
 } from 'lucide-react';
 import { useSupabase } from '@/contexts/SupabaseContext';
 
@@ -985,35 +986,27 @@ export default function Settings({
                 <Building2 className="w-5 h-5" />
               </div>
               <div>
-                <h2 className="text-sm font-bold text-slate-900">الهوية المؤسسية وشعار المكتب</h2>
-                <p className="text-[11px] text-slate-700 mt-0.5">تخصيص شعار المكتب وبيانات الترويسة الموحدة لجميع الفواتير والتقارير والسندات الصادرة.</p>
+                <h2 className="text-sm font-bold text-slate-900" id="visual-identity-title">إعدادات الهوية البصرية</h2>
+                <p className="text-[11px] text-slate-700 mt-0.5">تخصيص شعار المكتب وبنية الهوية المرئية لجميع الفواتير والمطبوعات والتقارير والسندات في النظام.</p>
               </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
               <div className="space-y-4">
-                <label className="block text-xs font-black text-slate-900 uppercase tracking-widest">شعار المكتب (Office Logo)</label>
-                <div className="flex flex-col items-center gap-4 p-8 border-2 border-dashed border-slate-200 rounded-3xl bg-slate-50 transition-all group relative overflow-hidden h-64 justify-center">
+                <label className="block text-xs font-black text-slate-900 uppercase tracking-widest">تحميل شعار المكتب (Logo Uploader)</label>
+                <div className="flex flex-col items-center gap-4 p-8 border-2 border-dashed border-slate-200 rounded-3xl bg-slate-50 transition-all hover:bg-slate-100/50 group relative overflow-hidden h-64 justify-center">
                   {officeLogo ? (
-                    <div className="relative group/logo">
-                      <img src={officeLogo} alt="Office Logo" className="h-32 object-contain rounded-lg shadow-md" />
-                      <button 
-                         onClick={(e) => {
-                           e.preventDefault();
-                           e.stopPropagation();
-                           localStorage.removeItem('office_logo');
-                           setOfficeLogo(null);
-                           window.dispatchEvent(new Event('storage'));
-                         }}
-                         className="absolute -top-2 -left-2 bg-rose-500 text-white p-1 rounded-full opacity-0 group-hover/logo:opacity-100 transition-opacity shadow-lg"
-                      >
-                         ✕
-                      </button>
+                    <div className="relative group/logo flex flex-col items-center justify-center p-2">
+                      <img src={officeLogo} alt="شعار المكتب الحالي" className="max-h-36 object-contain rounded-lg shadow-md max-w-full" />
+                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/logo:opacity-100 transition-opacity flex items-center justify-center rounded-lg">
+                        <span className="text-white text-xs font-bold bg-slate-800/80 px-2.5 py-1 rounded-md">الشعار النشط ⚖️</span>
+                      </div>
                     </div>
                   ) : (
-                    <div className="flex flex-col items-center text-slate-200 font-bold">
-                      <Image className="w-10 h-10 mb-2 transition-transform" />
-                      <span className="text-[10px] font-black">اسحب الشعار هنا أو انقر للإرفاق</span>
+                    <div className="flex flex-col items-center text-slate-400 font-bold text-center">
+                      <Image className="w-12 h-12 mb-3 text-slate-400 group-hover:scale-110 transition-transform" />
+                      <span className="text-xs font-bold text-slate-600">اسحب الشعار هنا أو انقر للإصدار</span>
+                      <span className="text-[10px] text-slate-400 font-normal mt-1">يدعم PNG, SVG, JPG أو GIF</span>
                     </div>
                   )}
                   <input 
@@ -1028,15 +1021,34 @@ export default function Settings({
                           localStorage.setItem('office_logo', base64);
                           setOfficeLogo(base64);
                           window.dispatchEvent(new Event('storage'));
-                          alert('✅ تم معالجة ورفع شعار المكتب بنجاح وتحديث ترويسة النظام التلقائية.');
+                          alert('✅ تم معالجة ورفع شعار الهوية البصرية بنجاح وتحديث كافة السندات والفواتير.');
                         };
                         reader.readAsDataURL(file);
                       }
                     }}
-                    className="absolute inset-0 opacity-0 cursor-pointer"
+                    className="absolute inset-0 opacity-0 cursor-pointer z-10"
                   />
                 </div>
-                <p className="text-[10px] text-slate-200 font-bold font-bold text-center">يدعم PNG, SVG, JPG. سيتم تحجيم الصورة وتحسين جودتها برمجياً لتناسب التقارير الرسمية.</p>
+                {officeLogo ? (
+                  <button 
+                    type="button"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      localStorage.removeItem('office_logo');
+                      setOfficeLogo(null);
+                      window.dispatchEvent(new Event('storage'));
+                      alert('🔄 تم حذف الشعار المخصص واستعادة الرمز والرمز الافتراضي لمنصة العدالة.');
+                    }}
+                    className="flex items-center gap-2 px-4 py-2 bg-rose-50 text-rose-600 rounded-xl hover:bg-rose-100 transition-colors text-xs font-bold w-full justify-center border border-rose-200"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                    حذف الشعار الحالي وإعادة التعيين للشعار الافتراضي
+                  </button>
+                ) : (
+                  <p className="text-[10px] text-slate-500 font-medium text-center">
+                    ملاحظة: عند حذف الشعار، سيعود النظام تلقائياً لعرض الأيقونة الافتراضية لمنصة العدالة.
+                  </p>
+                )}
               </div>
 
               <form onSubmit={handleSaveOfficeProfile} className="space-y-4">

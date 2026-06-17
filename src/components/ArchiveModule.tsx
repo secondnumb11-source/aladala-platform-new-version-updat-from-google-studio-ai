@@ -20,7 +20,7 @@ import {
   Plus,
   Layers
 } from "lucide-react";
-import { supabase } from "@/lib/supabase";
+import { supabase, uploadFileToStorage } from "@/lib/supabase";
 
 interface DocumentRow {
   id: string;
@@ -237,21 +237,13 @@ export default function ArchiveModule() {
       const storageFileName = `docs_${Date.now()}_${Math.random().toString(36).substr(2, 9)}.${fileExt}`;
       const storagePath = `archive/${storageFileName}`;
 
-      // Upload file directly to Supabase storage bucket 'documents'
-      const { error: uploadError } = await supabase.storage
-        .from("documents")
-        .upload(storagePath, file);
+      const { url } = await uploadFileToStorage(
+        "documents",
+        storagePath,
+        file
+      );
 
-      if (uploadError) {
-        throw new Error(`خطأ في رفع الملف السحابي: ${uploadError.message}`);
-      }
-
-      // Get public accessible URL
-      const { data: publicUrlData } = supabase.storage
-        .from("documents")
-        .getPublicUrl(storagePath);
-      
-      const downloadUrl = publicUrlData?.publicUrl || "";
+      const downloadUrl = url;
 
       // Format size
       const sizeMb = file.size / (1024 * 1024);
@@ -319,21 +311,13 @@ export default function ArchiveModule() {
       const storageFileName = `atts_${Date.now()}_${Math.random().toString(36).substr(2, 9)}.${fileExt}`;
       const storagePath = `archive_attachments/${storageFileName}`;
 
-      // Upload file directly to Supabase storage bucket 'documents'
-      const { error: uploadError } = await supabase.storage
-        .from("documents")
-        .upload(storagePath, file);
+      const { url } = await uploadFileToStorage(
+        "documents",
+        storagePath,
+        file
+      );
 
-      if (uploadError) {
-        throw new Error(`خطأ في رفع الملف السحابي: ${uploadError.message}`);
-      }
-
-      // Get public URL
-      const { data: publicUrlData } = supabase.storage
-        .from("documents")
-        .getPublicUrl(storagePath);
-      
-      const downloadUrl = publicUrlData?.publicUrl || "";
+      const downloadUrl = url;
 
       // Format size
       const sizeMb = file.size / (1024 * 1024);

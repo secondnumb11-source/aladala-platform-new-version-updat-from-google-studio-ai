@@ -349,6 +349,7 @@ export default function UnifiedAuthLanding({ initialTab = "lawyer", language = "
       
     } catch (err: any) {
       logOAuthEvent("Google Auth Failed", "error", err);
+      logAuthError("Google Sign-In", err);
       
       let userFriendlyError = isEn 
         ? "Could not connect to Google right now. Please try again or use another login method." 

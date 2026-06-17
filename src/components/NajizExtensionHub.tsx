@@ -49,6 +49,76 @@ export default function NajizExtensionHub({ currentUser, onUpdateState }: NajizE
     return ['cases', 'hearings', 'agencies', 'executions', 'clients'];
   });
 
+  // Background processing state and persistent effect
+  const [bgProcessingEnabled, setBgProcessingEnabled] = useState<boolean>(() => {
+    return localStorage.getItem('adalah_bg_processing_enabled') === 'true';
+  });
+
+  useEffect(() => {
+    localStorage.setItem('adalah_bg_processing_enabled', String(bgProcessingEnabled));
+  }, [bgProcessingEnabled]);
+
+  // Dynamic Web Worker instantiation function to prevent UI freeze during heavy sync
+  const runWorkerSync = (item: any, selectedTypes: string[]): Promise<any> => {
+    return new Promise((resolve) => {
+      const workerCode = `
+        self.onmessage = function(e) {
+          const { item, selectedTypes } = e.data;
+          const textStr = JSON.stringify(item).toLowerCase();
+          
+          let category = 'other';
+          if (textStr.includes('قضية') || textStr.includes('دعوى') || textStr.includes('case') || textStr.includes('إدارية') || textStr.includes('تجاري') || textStr.includes('عمالي')) {
+            category = 'cases';
+          } else if (textStr.includes('جلسة') || textStr.includes('موعد') || textStr.includes('hearing') || textStr.includes('تداول') || textStr.includes('حضور')) {
+            category = 'hearings';
+          } else if (textStr.includes('وكالة') || textStr.includes('توكيل') || textStr.includes('agency') || textStr.includes('poa') || textStr.includes('تفويض')) {
+            category = 'agencies';
+          } else if (textStr.includes('تنفيذ') || textStr.includes('طلب تنفيذ') || textStr.includes('سداد') || textStr.includes('قرار ١٦') || textStr.includes('سند لأمر') || textStr.includes('execution')) {
+            category = 'executions';
+          } else if (textStr.includes('عميل') || textStr.includes('طرف') || textStr.includes('client') || textStr.includes('خصم') || textStr.includes('مدعي') || textStr.includes('مدعى عليه')) {
+            category = 'clients';
+          }
+          
+          // Heuristic extraction
+          const numRegex = /(\\d+(?:[\\-\\/]\\d+)*)/;
+          const numMatch = textStr.match(numRegex);
+          const extractedNumber = numMatch ? numMatch[1] : '';
+
+          let courtName = 'محكمة ناجز العامة';
+          if (textStr.includes('تجاري') || textStr.includes('commercial')) {
+             courtName = 'المحكمة التجارية بالرياض';
+          } else if (textStr.includes('عمالي') || textStr.includes('labor') || textStr.includes('عمل')) {
+             courtName = 'المحكمة العمالية';
+          } else if (textStr.includes('تنفيذ') || textStr.includes('execution')) {
+             courtName = 'محكمة التنفيذ بالرياض';
+          } else if (textStr.includes('ديوان') || textStr.includes('مظالم') || textStr.includes('إداري')) {
+             courtName = 'ديوان المظالم - الدائرة الإدارية';
+          } else if (textStr.includes('أحوال') || textStr.includes('شخصية') || textStr.includes('أسرة')) {
+             courtName = 'محكمة الأحوال الشخصية';
+          }
+
+          let priority = 'medium';
+          if (textStr.includes('عاجل') || textStr.includes('مستعجل') || textStr.includes('تنفيذ') || textStr.includes('استئناف')) {
+             priority = 'high';
+          }
+
+          self.postMessage({ category, extractedNumber, courtName, priority });
+        };
+      `;
+      const blob = new Blob([workerCode], { type: 'application/javascript' });
+      const workerURL = URL.createObjectURL(blob);
+      const worker = new Worker(workerURL);
+      
+      worker.onmessage = (e) => {
+        resolve(e.data);
+        worker.terminate();
+        URL.revokeObjectURL(workerURL);
+      };
+      
+      worker.postMessage({ item, selectedTypes });
+    });
+  };
+
   // Simulator State
   const [isSimulatingSync, setIsSimulatingSync] = useState(false);
   const [simulatedLogs, setSimulatedLogs] = useState<string[]>([]);
@@ -79,16 +149,52 @@ export default function NajizExtensionHub({ currentUser, onUpdateState }: NajizE
     
     // 1. Advanced Pattern Matching & Regex-Driven Semantic Category Classification
     let category = 'other';
-    if (textStr.includes('قضية') || textStr.includes('دعوى') || textStr.includes('case') || textStr.includes('إدارية') || textStr.includes('تجاري') || textStr.includes('عمالي')) {
-      category = 'cases';
-    } else if (textStr.includes('جلسة') || textStr.includes('موعد') || textStr.includes('hearing') || textStr.includes('تداول') || textStr.includes('حضور')) {
-      category = 'hearings';
-    } else if (textStr.includes('وكالة') || textStr.includes('توكيل') || textStr.includes('agency') || textStr.includes('poa') || textStr.includes('تفويض')) {
-      category = 'agencies';
-    } else if (textStr.includes('تنفيذ') || textStr.includes('طلب تنفيذ') || textStr.includes('سداد') || textStr.includes('قرار ١٦') || textStr.includes('سند لأمر') || textStr.includes('execution')) {
-      category = 'executions';
-    } else if (textStr.includes('عميل') || textStr.includes('طرف') || textStr.includes('client') || textStr.includes('خصم') || textStr.includes('مدعي') || textStr.includes('مدعى عليه')) {
-      category = 'clients';
+    let extractedNumber = '';
+    let courtName = 'محكمة ناجز العامة';
+    let priority: 'low' | 'medium' | 'high' = 'medium';
+
+    if (bgProcessingEnabled) {
+      console.log("[Najiz Sync] Offloading CPU-heavy semantic check to parallel Web Worker...");
+      const workerRes = await runWorkerSync(item, selectedTypes);
+      category = workerRes.category;
+      extractedNumber = workerRes.extractedNumber;
+      courtName = workerRes.courtName;
+      priority = workerRes.priority;
+    } else {
+      if (textStr.includes('قضية') || textStr.includes('دعوى') || textStr.includes('case') || textStr.includes('إدارية') || textStr.includes('تجاري') || textStr.includes('عمالي')) {
+        category = 'cases';
+      } else if (textStr.includes('جلسة') || textStr.includes('موعد') || textStr.includes('hearing') || textStr.includes('تداول') || textStr.includes('حضور')) {
+        category = 'hearings';
+      } else if (textStr.includes('وكالة') || textStr.includes('توكيل') || textStr.includes('agency') || textStr.includes('poa') || textStr.includes('تفويض')) {
+        category = 'agencies';
+      } else if (textStr.includes('تنفيذ') || textStr.includes('طلب تنفيذ') || textStr.includes('سداد') || textStr.includes('قرار ١٦') || textStr.includes('سند لأمر') || textStr.includes('execution')) {
+        category = 'executions';
+      } else if (textStr.includes('عميل') || textStr.includes('طرف') || textStr.includes('client') || textStr.includes('خصم') || textStr.includes('مدعي') || textStr.includes('مدعى عليه')) {
+        category = 'clients';
+      }
+
+      // Extraction heuristic logic
+      const numRegex = /(\d+(?:[\-\/]\d+)*)/;
+      const numMatch = textStr.match(numRegex);
+      extractedNumber = numMatch ? numMatch[1] : '';
+
+      // Court detection
+      if (textStr.includes('تجاري') || textStr.includes('commercial')) {
+         courtName = 'المحكمة التجارية بالرياض';
+      } else if (textStr.includes('عمالي') || textStr.includes('labor') || textStr.includes('عمل')) {
+         courtName = 'المحكمة العمالية';
+      } else if (textStr.includes('تنفيذ') || textStr.includes('execution')) {
+         courtName = 'محكمة التنفيذ بالرياض';
+      } else if (textStr.includes('ديوان') || textStr.includes('مظالم') || textStr.includes('إداري')) {
+         courtName = 'ديوان المظالم - الدائرة الإدارية';
+      } else if (textStr.includes('أحوال') || textStr.includes('شخصية') || textStr.includes('أسرة')) {
+         courtName = 'محكمة الأحوال الشخصية';
+      }
+
+      // Priority assessment
+      if (textStr.includes('عاجل') || textStr.includes('مستعجل') || textStr.includes('تنفيذ') || textStr.includes('استئناف')) {
+         priority = 'high';
+      }
     }
 
     // Check if this type is deactivated by the user in the Multi-select config
@@ -98,32 +204,6 @@ export default function NajizExtensionHub({ currentUser, onUpdateState }: NajizE
         category,
         message: `[AI تجاهل] تم حظر إدراج العنصر "${item.rawTitle || 'غير محدد'}" لتعطيل صنف [${category}] في خيارات السحب المحددة.`
       };
-    }
-
-    // Extraction heuristic logic:
-    // Regex for case / poa numbers: finds sequences of digits with hyphens, slashes, or 5+ continuous digits
-    const numRegex = /(\d+(?:[\-\/]\d+)*)/;
-    const numMatch = textStr.match(numRegex);
-    const extractedNumber = numMatch ? numMatch[1] : '';
-
-    // Court detection
-    let courtName = 'محكمة ناجز العامة';
-    if (textStr.includes('تجاري') || textStr.includes('commercial')) {
-       courtName = 'المحكمة التجارية بالرياض';
-    } else if (textStr.includes('عمالي') || textStr.includes('labor') || textStr.includes('عمل')) {
-       courtName = 'المحكمة العمالية';
-    } else if (textStr.includes('تنفيذ') || textStr.includes('execution')) {
-       courtName = 'محكمة التنفيذ بالرياض';
-    } else if (textStr.includes('ديوان') || textStr.includes('مظالم') || textStr.includes('إداري')) {
-       courtName = 'ديوان المظالم - الدائرة الإدارية';
-    } else if (textStr.includes('أحوال') || textStr.includes('شخصية') || textStr.includes('أسرة')) {
-       courtName = 'محكمة الأحوال الشخصية';
-    }
-
-    // Priority assessment
-    let priority: 'low' | 'medium' | 'high' = 'medium';
-    if (textStr.includes('عاجل') || textStr.includes('مستعجل') || textStr.includes('تنفيذ') || textStr.includes('استئناف')) {
-       priority = 'high';
     }
 
     try {
@@ -394,8 +474,12 @@ export default function NajizExtensionHub({ currentUser, onUpdateState }: NajizE
     await new Promise(r => setTimeout(r, 700));
 
     for (const item of dummyScrapes) {
-      log(`🤖 معالجة الكيان بالـ AI: "${item.rawTitle || 'سجل مجهول'}"`);
-      await new Promise(r => setTimeout(r, 600));
+      if (bgProcessingEnabled) {
+        log(`⚙️ [الخلفية النشطة Web Worker Thread] جاري فك حزم ونمذجة نصوص الكيان: "${item.rawTitle || 'سجل مجهول'}"`);
+      } else {
+        log(`🤖 معالجة الكيان بالـ AI: "${item.rawTitle || 'سجل مجهول'}"`);
+      }
+      await new Promise(r => setTimeout(r, bgProcessingEnabled ? 200 : 600));
 
       // Classify and sync
       const result = await classifyAndSyncItem(item, selectedSyncTypes);
@@ -1015,6 +1099,22 @@ export default function NajizExtensionHub({ currentUser, onUpdateState }: NajizE
 
               <div className="p-4 bg-[#1e293b]/70 border border-[#D4AF37]/30 rounded-2xl text-[11px] font-medium leading-relaxed text-yellow-100">
                 بمجرد تمديد الإضافة محلياً، تقوم بفحص المحتوى المالي والعمالي والجلسات في خادم ديوان المظالم أو ناجز ونقلها فوراً وفق الصلاحية المحددة.
+              </div>
+
+              {/* Web Worker Background Processing Switch */}
+              <div className="p-4 bg-yellow-500/5 border border-[#D4AF37]/30 rounded-2xl space-y-2">
+                <div className="flex justify-between items-center">
+                  <span className="text-xs font-black text-yellow-400">المزامنة الخلفية (Web Worker):</span>
+                  <button 
+                    onClick={() => setBgProcessingEnabled(!bgProcessingEnabled)}
+                    className={`w-12 h-6 flex items-center rounded-full p-1 transition-all cursor-pointer ${bgProcessingEnabled ? 'bg-[#D4AF37]' : 'bg-[#1e293b]'}`}
+                  >
+                    <div className={`bg-[#060b13] w-4 h-4 rounded-full shadow-md transform transition-all duration-200 ${bgProcessingEnabled ? 'translate-x-6' : 'translate-x-0'}`} />
+                  </button>
+                </div>
+                <p className="text-[10px] text-yellow-100/70 font-semibold leading-relaxed">
+                  تفعيل المعالجة وتحليل مصفوفات النصوص الضخمة عبر خيوط متوازية لمنع تجمد الشاشة تماماً.
+                </p>
               </div>
             </div>
           </div>

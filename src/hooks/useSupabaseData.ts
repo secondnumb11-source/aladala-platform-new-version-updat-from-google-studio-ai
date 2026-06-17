@@ -4,6 +4,7 @@ import { supabase } from '@/lib/supabase';
 import { Case, Client, Task, Hearing, Document, PowerOfAttorney, Invoice, Employee, AuditTrail } from '@/types';
 import { validatePayload } from '@/lib/persistenceManager';
 import { toCamel, toSnake } from '@/utils/schemaMapping';
+import { handleRlsPolicyFriction } from '@/lib/debug-supabase';
 
 // ======================================================
 // SCHEMA GUARD - الأعمدة المسموح بها فقط لكل جدول
@@ -450,8 +451,24 @@ export function useSupabaseData() {
       if (isValidationEligible) {
         const validation = validatePayload(table as any, data);
         if (!validation.isValid) {
-          const errMsg = validation.message || 'Validation error';
+          const errMsg = validation.message || 'خطأ في التحقق من صحة البيانات';
           console.error(`[Local Schema Validation] Table: ${table}, Field: ${validation.field}, Msg: ${errMsg}`);
+          
+          // Trigger UI focus for the invalid field
+          window.dispatchEvent(
+            new CustomEvent('adalah_error_logged', {
+              detail: {
+                message: errMsg,
+                timestamp: new Date().toISOString(),
+                entityType: table,
+                field: validation.field,
+              }
+            })
+          );
+          
+          // Show explicit detailed alert to prevent left waiting state
+          alert(`⚠️ تنبيه التحقق من صحة البيانات (المدخلات):\n\n- الجدول: ${table === 'cases' ? 'القضايا' : table === 'clients' ? 'الموكلين' : 'المهام'}\n- الحقل: ${validation.field}\n- السبب: ${errMsg}\n\nيرجى تصحيح الحقل المحدد والمحاولة مرة أخرى.`);
+          
           return { 
             success: false, 
             code: 'VALIDATION_FAILED', 
@@ -490,6 +507,7 @@ export function useSupabaseData() {
         }
 
         console.error(`[Supabase Insert Error] Table: ${mappedTable}`, error);
+        handleRlsPolicyFriction(mappedTable, error);
         const isNetworkError = !navigator.onLine || error.message?.includes('fetch') || error.message?.includes('network');
         if (isNetworkError) {
             handleOfflineFallback(table, 'CREATE', data, error.message);
@@ -502,11 +520,15 @@ export function useSupabaseData() {
         };
       }
       
-      const camelData = toCamel(insertedData);
+      let camelData = toCamel(insertedData) || toCamel(cleanData) || data;
+      if (Array.isArray(camelData)) {
+        camelData = camelData[0];
+      }
+      
       console.log(`[Supabase] Successfully inserted into ${mappedTable}`);
       
       const setter = getStateSetter(table);
-      if (setter) {
+      if (setter && camelData) {
         setter((prev: any[]) => [camelData, ...(prev || [])]);
       }
       
@@ -528,8 +550,24 @@ export function useSupabaseData() {
       if (isValidationEligible) {
         const validation = validatePayload(table as any, data, true);
         if (!validation.isValid) {
-          const errMsg = validation.message || 'Validation error';
+          const errMsg = validation.message || 'خطأ في التحقق من صحة البيانات';
           console.error(`[Local Schema Validation] Table: ${table}, Field: ${validation.field}, Msg: ${errMsg}`);
+          
+          // Trigger UI focus for the invalid field
+          window.dispatchEvent(
+            new CustomEvent('adalah_error_logged', {
+              detail: {
+                message: errMsg,
+                timestamp: new Date().toISOString(),
+                entityType: table,
+                field: validation.field,
+              }
+            })
+          );
+          
+          // Show explicit detailed alert to prevent left waiting state
+          alert(`⚠️ تنبيه التحقق من صحة البيانات (المدخلات):\n\n- الجدول: ${table === 'cases' ? 'القضايا' : table === 'clients' ? 'الموكلين' : 'المهام'}\n- الحقل: ${validation.field}\n- السبب: ${errMsg}\n\nيرجى تصحيح الحقل المحدد والمحاولة مرة أخرى.`);
+          
           return { 
             success: false, 
             code: 'VALIDATION_FAILED', 
@@ -567,6 +605,7 @@ export function useSupabaseData() {
           return { success: true, data: data };
         }
         console.error(`[Supabase Update Error] Table: ${mappedTable}, id=${id}`, error);
+        handleRlsPolicyFriction(mappedTable, error);
         const isNetworkError = !navigator.onLine || error.message?.includes('fetch') || error.message?.includes('network');
         if (isNetworkError) {
             handleOfflineFallback(table, 'UPDATE', { id, ...data }, error.message);
@@ -579,11 +618,15 @@ export function useSupabaseData() {
         };
       }
       
-      const camelData = toCamel(updatedData);
+      let camelData = toCamel(updatedData) || toCamel(cleanData) || data;
+      if (Array.isArray(camelData)) {
+        camelData = camelData[0];
+      }
+
       console.log(`[Supabase] Successfully updated ${mappedTable} id=${id}`);
       
       const setter = getStateSetter(table);
-      if (setter) {
+      if (setter && camelData) {
         setter((prev: any[]) => (prev || []).map(c => c.id === id ? { ...c, ...camelData } : c));
       }
       

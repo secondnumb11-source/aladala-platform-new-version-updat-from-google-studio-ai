@@ -290,22 +290,87 @@ export default function PersistentErrorLogger() {
                       </div>
 
                       {/* Diagnostic Hint Banner */}
-                      <div className="bg-slate-900 border border-slate-800 p-3 rounded-lg flex items-center justify-between gap-3 text-[11px] text-slate-300">
-                        <span>
+                      <div className="bg-slate-900 border border-slate-800 p-3 rounded-lg flex flex-col md:flex-row items-start md:items-center justify-between gap-3 text-[11px] text-slate-300">
+                        <div className="space-y-1">
                           {hasRlsViolation ? (
-                            <strong>توجيه الـ RLS 👑:</strong>
+                            <p className="text-red-400 font-bold flex items-center gap-1.5">
+                              <span className="w-1.5 h-1.5 rounded-full bg-red-400 animate-pulse"></span>
+                              توجيه الـ RLS 👑: تم الكشف عن حظر بسبب سياسات حماية مستوى الصف (Row-Level Security).
+                            </p>
                           ) : (
-                            <strong>توجيه المخطط 📚:</strong>
-                          )}{' '}
-                          {hasRlsViolation 
-                            ? 'تم رفض هذه العملية لأن سياسة row-level security تمنع التعديل على هذا الصف خارج قيود المالك (Owner) أو شريك الإدارة في لوحة النظام.'
-                            : 'يرجى مراجعة الحقول الإلزامية التي تم إقرانها وضمان مطابقة البيانات مع حقول قواعد البيانات السحابية.'
-                          }
-                        </span>
+                            <p className="text-amber-400 font-bold flex items-center gap-1.5">
+                              <span className="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
+                              توجيه المخطط 📚: يرجى مراجعة المدخلات الإلزامية التي تم إقرانها وضمان مطابقتها مع قواعد البيانات السحابية.
+                            </p>
+                          )}
+                          <p className="text-[10px] text-slate-400 leading-relaxed font-semibold">
+                            {hasRlsViolation 
+                              ? 'تمنع قواعد الحماية أي عملية إدراج أو تعديل مجهولة الهوية خارج قيود المالك الحالي للطلب.'
+                              : 'تأكد من مطابقة أسماء الأعمدة وقيم الحقول مع المخطط الرئيسي (Schema).'
+                            }
+                          </p>
+                        </div>
                         
-                        <span className="text-slate-500 font-mono text-[10px] shrink-0">
+                        <span className="text-slate-500 font-mono text-[10px] shrink-0 self-end">
                           Timestamp: {log.timestamp}
                         </span>
+                      </div>
+
+                      {/* PROACTIVE AUTO-FIX SUGGESTION CONTAINER */}
+                      <div className="bg-emerald-950/20 border border-emerald-500/20 rounded-xl p-4.5 space-y-3.5">
+                        <div className="flex items-center justify-between">
+                          <h5 className="text-xs font-black text-emerald-400 flex items-center gap-2">
+                            <span className="p-1 rounded bg-emerald-500/10 text-emerald-300 font-sans border border-emerald-500/20 font-black">إصلاح استباقي (Auto-fix Suggestion)</span>
+                            مقترح حل المشكلة تلقائياً
+                          </h5>
+                          <span className="text-[9px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/35 font-bold px-2 py-0.5 rounded">نظام مبرمج</span>
+                        </div>
+
+                        <div className="space-y-2 text-xs leading-relaxed font-semibold text-slate-200">
+                          <p>
+                            لتخطي هذا العطل المزعج وضمان سريان عمليات الحفظ والمزامنة السلاسة بشكل صحيح على جدول <code className="bg-slate-950 px-2 py-0.5 rounded text-amber-400 font-mono">public.{log.table || 'cases'}</code>، يمكنك تطبيق أحد الأوامر التصحيحية التالية مباشرة في منصة الاستعلامات الـ SQL Console:
+                          </p>
+
+                          {/* Interactive Fix Commands Options */}
+                          <div className="space-y-2 text-[11px] font-mono leading-relaxed bg-[#060b13] border border-slate-800 p-3 rounded-lg text-slate-300">
+                            <div className="pb-2 border-b border-slate-800/80">
+                              <span className="text-emerald-400 font-bold font-sans">الخيار أ (موصى به - فتح مؤقت كامل):</span>
+                              <pre className="text-xs text-white p-1.5 mt-1 overflow-x-auto text-left ltr-scroll bg-slate-950/60 rounded" dir="ltr">
+                                {`ALTER TABLE public.${log.table || 'cases'} DISABLE ROW LEVEL SECURITY;`}
+                              </pre>
+                            </div>
+                            <div className="pt-2">
+                              <span className="text-indigo-400 font-bold font-sans">الخيار ب (أكثر أماناً - تفعيل سياسة عامة مبسطة):</span>
+                              <pre className="text-xs text-white p-1.5 mt-1 overflow-x-auto text-left ltr-scroll bg-slate-950/60 rounded" dir="ltr">
+                                {`CREATE POLICY "Allow test-runs access" ON public.${log.table || 'cases'} FOR ALL USING (true) WITH CHECK (true);`}
+                              </pre>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="flex gap-2.5 pt-1">
+                          <button
+                            onClick={() => {
+                              const sql = `ALTER TABLE public.${log.table || 'cases'} DISABLE ROW LEVEL SECURITY;`;
+                              navigator.clipboard.writeText(sql);
+                              alert(`📋 تم نسخ كود الإصلاح بنجاح!\n\n${sql}\n\nيرجى التوجه لعلامة تبويب "منصة الاستعلامات SQL Console" ولصق الكود وتشغيله لحل العقبة.`);
+                            }}
+                            className="px-3.5 py-1.5 bg-emerald-500 text-slate-950 hover:bg-emerald-400 active:scale-95 transition-all rounded-lg text-[10px] font-black cursor-pointer shadow-md flex items-center gap-1.5"
+                          >
+                            <span>نسخ كود الإصلاح (الخيار أ) 📋</span>
+                          </button>
+                          
+                          <button
+                            onClick={() => {
+                              const sql = `CREATE POLICY "Allow test-runs access" ON public.${log.table || 'cases'} FOR ALL USING (true) WITH CHECK (true);`;
+                              navigator.clipboard.writeText(sql);
+                              alert(`📋 تم نسخ كود الإصلاح بنجاح!\n\n${sql}\n\nيرجى التوجه لعلامة تبويب "منصة الاستعلامات SQL Console" ولصق الكود وتشغيله لحل العقبة.`);
+                            }}
+                            className="px-3.5 py-1.5 bg-slate-800 text-slate-200 hover:bg-slate-700 active:scale-95 transition-all border border-slate-700 rounded-lg text-[10px] font-black cursor-pointer flex items-center gap-1.5"
+                          >
+                            <span>نسخ كود السياسة (الخيار ب) 📋</span>
+                          </button>
+                        </div>
                       </div>
                     </div>
                   )}
