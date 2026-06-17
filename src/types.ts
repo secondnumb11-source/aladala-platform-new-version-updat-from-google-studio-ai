@@ -20,6 +20,22 @@ export interface CaseHistoryEntry {
   notes?: string;
 }
 
+export interface Execution {
+  id: string;
+  execution_number: string;
+  case_number?: string;
+  requester_name?: string;
+  opponent_name?: string;
+  status?: string;
+  amount?: number;
+  court_name?: string;
+  issue_date?: string;
+  last_update?: string;
+  details?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
 export interface Case {
   id: string;
   caseNumber: string;

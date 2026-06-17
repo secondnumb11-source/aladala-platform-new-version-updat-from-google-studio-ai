@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { generateUUID } from '@/lib/uuid';
 import { supabase } from '@/lib/supabase';
-import { Case, Client, Task, Hearing, Document, PowerOfAttorney, Invoice, Employee, AuditTrail } from '@/types';
+import { Case, Client, Task, Hearing, Document, PowerOfAttorney, Invoice, Employee, AuditTrail, Execution } from '@/types';
 import { validatePayload } from '@/lib/persistenceManager';
 import { toCamel, toSnake } from '@/utils/schemaMapping';
 import { handleRlsPolicyFriction } from '@/lib/debug-supabase';
@@ -56,6 +56,11 @@ const DB_COLUMNS: Record<string, string[]> = {
     'payment_method', 'description', 'is_zatca_submitted',
     'zatca_timestamp', 'created_at', 'updated_at',
     'client_name', 'invoice_number'
+  ],
+  executions: [
+    'id', 'execution_number', 'case_number', 'requester_name', 'opponent_name', 
+    'status', 'amount', 'court_name', 'issue_date', 'last_update', 
+    'details', 'created_at', 'updated_at'
   ],
   employees: [
     'id', 'name', 'role', 'email', 'phone', 'status',
@@ -241,6 +246,7 @@ export function useSupabaseData() {
   const [powersOfAttorney, setPowersOfAttorney] = useState<PowerOfAttorney[]>([]);
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [employees, setEmployees] = useState<Employee[]>([]);
+  const [executions, setExecutions] = useState<Execution[]>([]);
   const [auditTrails, setAuditTrails] = useState<AuditTrail[]>([]);
   const [attachments, setAttachments] = useState<any[]>([]);
   const [clientPortal, setClientPortal] = useState<any[]>([]);
@@ -279,6 +285,7 @@ export function useSupabaseData() {
         poasRes, 
         invoicesRes, 
         employeesRes,
+        executionsRes,
         auditRes,
         attachmentsRes,
         clientPortalRes,
@@ -297,6 +304,7 @@ export function useSupabaseData() {
         supabase.from('powers_of_attorney').select('*').order('issue_date', { ascending: false }),
         supabase.from('invoices').select('*').order('created_at', { ascending: false }),
         supabase.from('employees').select('*').order('created_at', { ascending: false }),
+        supabase.from('executions').select('*').order('created_at', { ascending: false }).then(r => r, () => ({ data: [] } as any)),
         supabase.from('audit_trails').select('*').order('created_at', { ascending: false }).limit(10).then(r => r, () => ({ data: [] } as any)),
         supabase.from('attachments').select('*').order('file_name', { ascending: false }).then(r => r, () => ({ data: [] } as any)),
         supabase.from('client_portal').select('*').order('created_at', { ascending: false }).then(r => r, () => ({ data: [] } as any)),
@@ -323,6 +331,7 @@ export function useSupabaseData() {
       if (poasRes.data) setPowersOfAttorney(toCamel(poasRes.data) as PowerOfAttorney[]);
       if (invoicesRes.data) setInvoices(toCamel(invoicesRes.data) as Invoice[]);
       if (employeesRes.data) setEmployees(toCamel(employeesRes.data) as Employee[]);
+      if (executionsRes && 'data' in executionsRes && executionsRes.data) setExecutions(toCamel(executionsRes.data) as Execution[]);
       if (auditRes.data && 'data' in auditRes) setAuditTrails(toCamel(auditRes.data) as AuditTrail[]);
       if (attachmentsRes && 'data' in attachmentsRes && attachmentsRes.data) setAttachments(toCamel(attachmentsRes.data));
       if (clientPortalRes && 'data' in clientPortalRes && clientPortalRes.data) setClientPortal(toCamel(clientPortalRes.data));
@@ -789,6 +798,7 @@ export function useSupabaseData() {
     powersOfAttorney,
     invoices,
     employees,
+    executions,
     auditTrails,
     attachments,
     clientPortal,

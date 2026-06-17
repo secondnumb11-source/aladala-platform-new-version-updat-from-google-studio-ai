@@ -38,6 +38,8 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
              const json = JSON.parse(match[1]);
              if (json.cases) rawDataObjects.push({ type: 'cases', payload: json.cases });
              if (json.sessions) rawDataObjects.push({ type: 'sessions', payload: json.sessions });
+             if (json.agencies) rawDataObjects.push({ type: 'agencies', payload: json.agencies });
+             if (json.enforcements) rawDataObjects.push({ type: 'executions', payload: json.enforcements });
           }
         } catch(e) {}
       }
@@ -46,7 +48,16 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     // 2. Classify Data
     const classified = typeof AIClassifier !== 'undefined' 
        ? AIClassifier.classifyNajizData(rawDataObjects) 
-       : { cases: [], hearings: [], agencies: [], enforcement_requests: [], documents: [] };
+       : { 
+           cases: [], 
+           hearings: [], 
+           agencies: [], 
+           executions: [], 
+           case_requests: [],
+           minutes: [],
+           clients: [], 
+           documents: [] 
+         };
 
     // 3. Post to SaaS Backend
     fetch(request.apiUrl + '/api/sync-najiz', {

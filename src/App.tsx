@@ -39,6 +39,7 @@ const JudicialObservatory = React.lazy(() => import('@/components/JudicialObserv
 const AILegalSearch = React.lazy(() => import('@/components/AI/AILegalSearch'));
 const EmployeePortal = React.lazy(() => import('@/components/EmployeePortal'));
 const EmployeesData = React.lazy(() => import('@/components/EmployeesData'));
+const ExecutionsModule = React.lazy(() => import('@/components/ExecutionsModule'));
 const FeedbackModal = React.lazy(() => import('@/components/FeedbackModal'));
 const WscatModule = React.lazy(() => import('@/components/WscatModule'));
 const WebSocketEcho = React.lazy(() => import('@/components/WebSocketEcho'));
@@ -164,6 +165,7 @@ function AppContent() {
     retryQueueSync, 
     refresh,
     auditTrails,
+    executions,
     attachments,
     clientPortal,
     employeePortal,
@@ -1772,6 +1774,13 @@ function AppContent() {
                 onSelectCase={setSelectedCase}
                 selectedCase={selectedCase}
                 archivedNotice={showArchivedNotice ? { count: lastArchivedCount, onRestore: handleRestoreArchived, onClose: () => setShowArchivedNotice(false) } : undefined}
+              />
+            )}
+
+            {currentTab === 'executions' && (
+              <ExecutionsModule 
+                executions={executions}
+                onCreateExecution={(e) => createRecord('executions', e)}
               />
             )}
 

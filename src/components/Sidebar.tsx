@@ -213,6 +213,7 @@ export default function Sidebar({
   const allItems: SidebarItem[] = [
     { id: 'dashboard', name: 'لوحة المعلومات الرئيسية', icon: LayoutDashboard },
     { id: 'cases', name: 'إدارة القضايا', icon: Briefcase },
+    { id: 'executions', name: 'طلبات التنفيذ', icon: Scale },
     { id: 'calendar', name: 'تقويم مواعيد الجلسات', icon: BookOpen },
     { id: 'documents', name: 'أرشيف المستندات', icon: FileText },
     
@@ -440,7 +441,7 @@ export default function Sidebar({
             {[
               {
                 title: 'المنظومة القضائية وإدارة العمل',
-                itemIds: ['dashboard', 'cases', 'calendar', 'documents']
+                itemIds: ['dashboard', 'cases', 'executions', 'calendar', 'documents']
               },
               {
                 title: 'العملاء والشؤون الخارجية',

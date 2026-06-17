@@ -46,7 +46,7 @@ export default function NajizExtensionHub({ currentUser, onUpdateState }: NajizE
         // Fallback if parsing fails
       }
     }
-    return ['cases', 'hearings', 'agencies', 'executions', 'clients'];
+    return ['cases', 'hearings', 'agencies', 'executions', 'clients', 'case_requests', 'minutes'];
   });
 
   // Background processing state and persistent effect
@@ -77,6 +77,10 @@ export default function NajizExtensionHub({ currentUser, onUpdateState }: NajizE
             category = 'executions';
           } else if (textStr.includes('عميل') || textStr.includes('طرف') || textStr.includes('client') || textStr.includes('خصم') || textStr.includes('مدعي') || textStr.includes('مدعى عليه')) {
             category = 'clients';
+          } else if (textStr.includes('طلب على القضية') || textStr.includes('طلب عرض') || textStr.includes('طلب استفسار') || textStr.includes('case_request')) {
+            category = 'case_requests';
+          } else if (textStr.includes('محضر جلسة') || textStr.includes('محضر ضبط') || textStr.includes('minute') || textStr.includes('تقرير جلسة')) {
+            category = 'minutes';
           }
           
           // Heuristic extraction
@@ -171,6 +175,10 @@ export default function NajizExtensionHub({ currentUser, onUpdateState }: NajizE
         category = 'executions';
       } else if (textStr.includes('عميل') || textStr.includes('طرف') || textStr.includes('client') || textStr.includes('خصم') || textStr.includes('مدعي') || textStr.includes('مدعى عليه')) {
         category = 'clients';
+      } else if (textStr.includes('طلب على القضية') || textStr.includes('طلب عرض') || textStr.includes('طلب استفسار')) {
+        category = 'case_requests';
+      } else if (textStr.includes('محضر جلسة') || textStr.includes('محضر ضبط') || textStr.includes('تقرير جلسة')) {
+        category = 'minutes';
       }
 
       // Extraction heuristic logic
@@ -327,25 +335,28 @@ export default function NajizExtensionHub({ currentUser, onUpdateState }: NajizE
           message: `[مزامنة ناجحة] تم إيداع التوكيل والتحقق من سريان الوكالة رقم ${poaNo} للعميل "${principalStr}".`
         };
       } else if (category === 'executions') {
-        const titleText = `طلب تنفيذ رقم: ${extractedNumber || Math.floor(Math.random() * 9000000) + 1000000}`;
-        const dueDateStr = item.rawDate || new Date().toISOString().split('T')[0];
+        const execNo = extractedNumber || `E-${Math.floor(Math.random() * 9000000) + 1000000}`;
+        const issueDate = item.rawDate || new Date().toISOString().split('T')[0];
         
-        const taskRes = await createRecord('tasks', {
-          title: titleText,
-          dueDate: dueDateStr,
-          description: item.rawText || `سحب قرار تنفيذ مالي وإيداع السداد للموكل ${targetClientName}`,
-          status: 'todo',
-          priority: 'high'
+        const execRes = await createRecord('executions', {
+          execution_number: execNo,
+          requester_name: targetClientName,
+          opponent_name: item.opponent_name || 'خصم مستورد من ناجز',
+          status: item.status || 'قيد التنفيذ',
+          amount: item.amount || 0,
+          court_name: item.court_name || 'إدارة التنفيذ بالمحكمة المعنية',
+          issue_date: issueDate,
+          details: item.rawText || `تفاصيل طلب التنفيذ المسحوب آلياً من بوابة ناجز برقم ${execNo}`
         });
 
-        if (taskRes && !taskRes.success) {
-          throw new Error(taskRes.message || 'فشلت معايير التحقق المحلية للمهمة عارضة التنفيذ');
+        if (execRes && !execRes.success) {
+          throw new Error(execRes.message || 'فشلت معايير التحقق لطلب التنفيذ');
         }
 
         return {
           status: 'success',
           category,
-          message: `[مزامنة ناجحة] تم قيد طلب التنفيذ كأمر عاجل بجدول المهام للقسم المالي بموعد استحقاق ${dueDateStr}.`
+          message: `[مزامنة ناجحة] تم ترحيل طلب التنفيذ رقم ${execNo} إلى القسم القضائي المتخصص في النظام.`
         };
       } else if (category === 'clients') {
         const clientNameStr = item.rawTitle || 'عميل فردي مستورد';
@@ -368,6 +379,49 @@ export default function NajizExtensionHub({ currentUser, onUpdateState }: NajizE
           status: 'success',
           category,
           message: `[مزامنة ناجحة] تم إنشاء ملف المستفيد للعميل الموكل "${clientNameStr}" وتوريد هويته المصادق عليها.`
+        };
+      } else if (category === 'case_requests') {
+        const titleText = item.rawTitle || `طلب قضائي مستورد: ${extractedNumber}`;
+        const dueDateStr = item.rawDate || new Date().toISOString().split('T')[0];
+        
+        await createRecord('tasks', {
+          title: titleText,
+          dueDate: dueDateStr,
+          description: item.rawText || 'طلب مقدم على الدائرة القضائية مسحوب تلقائياً من ناجز للمتابعة',
+          status: 'todo',
+          priority: 'medium'
+        });
+
+        return {
+          status: 'success',
+          category,
+          message: `[مزامنة ناجحة] تم قيد الطلب القضائي كحلية متابعة في إدارة القضايا.`
+        };
+      } else if (category === 'minutes') {
+        const titleText = item.rawTitle || `محضر جلسة: ${extractedNumber}`;
+        const dateStr = item.rawDate || new Date().toISOString().split('T')[0];
+
+        // Link to a case if possible
+        let associatedCaseId = '';
+        const availableCases = cases || [];
+        if (availableCases.length > 0) associatedCaseId = availableCases[0].id;
+
+        await createRecord('archive_items', {
+          caseId: associatedCaseId,
+          type: 'pleading',
+          title: titleText,
+          description: item.rawText || 'محضر ضبط تم سحبه وتصنيفه تلقائياً من بوابة ناجز',
+          fileUrl: item.fileUrl || '#',
+          fileName: `minute_${dateStr}.pdf`,
+          fileType: 'pdf',
+          uploadedBy: 'Najiz AI Agent',
+          createdAt: new Date().toISOString()
+        });
+
+        return {
+          status: 'success',
+          category,
+          message: `[مزامنة ناجحة] تم أرشفة محضر الجلسة تلقائياً في مستندات القضية المعنية.`
         };
       } else {
         const titleText = item.rawTitle || 'طلب أو معاملة إضافية من ناجز';
@@ -506,9 +560,9 @@ export default function NajizExtensionHub({ currentUser, onUpdateState }: NajizE
       // Manifest V3
       const manifest = {
         manifest_version: 3,
-        name: "منصة العدالة لإدارة مكاتب المحاماة",
-        version: "2.6.0",
-        description: "مزامنة ذكية آمنة لبيانات ناجز وديوان المظالم إلى مساحة عملك بالـ AI.",
+        name: "منصة العدالة لإدارة مكاتب المحاماة - المزامنة المتقدمة",
+        version: "3.0.0",
+        description: "مزامنة ذكية وشاملة لكافة بيانات ناجز (قضايا، جلسات، وكالات، طلبات تنفيذ) بالـ AI.",
         permissions: ["activeTab", "scripting", "storage"],
         host_permissions: ["*://*.najiz.sa/*", "*://*.moj.gov.sa/*", "*://*/*"],
         action: { default_popup: "popup.html", default_title: "منصة العدالة" },
@@ -547,35 +601,46 @@ export default function NajizExtensionHub({ currentUser, onUpdateState }: NajizE
             <button id="adalah-sync-toggle" style="position:fixed; bottom:20px; right:20px; z-index:999999; background:#0b0f19; color:#FFFFFF; border:3px solid #D4AF37; padding:15px 30px; border-radius:30px; font-weight:900; box-shadow:0 10px 25px rgba(0,0,0,0.7); cursor:pointer; font-family:system-ui; direction:rtl; display:flex; align-items:center; gap:10px; font-size:16px;">
                ⚖️ خيارات المزامنة لـ "العدالة"
             </button>
-            <div id="adalah-sync-widget" style="display:none; position:fixed; bottom:85px; right:20px; z-index:999999; background:#0b0f19; color:#FFFFFF; border:3px solid #D4AF37; border-radius:24px; padding:25px; width:400px; box-shadow:0 15px 50px rgba(0,0,0,0.95); font-family:system-ui; direction:rtl;">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; border-bottom:1px solid rgba(212,175,55,0.4); padding-bottom:15px;">
-                   <strong style="color: #ffffff; font-size:19px; font-weight:900;">العدالة الذكية <span style="color:#FACC15;">| ناجز</span></strong>
-                   <button id="btn-sync-settings" style="background:transparent; border:1px solid #D4AF37; color:#FACC15; font-weight:900; border-radius:8px; padding:6px 12px; cursor:pointer;">الضبط ⚙️</button>
+            <div id="adalah-sync-widget" style="display:none; position:fixed; bottom:85px; right:20px; z-index:999999; background:#0b0f19; color:#FFFFFF; border:3px solid #fbbf24; border-radius:24px; padding:25px; width:450px; box-shadow:0 15px 50px rgba(0,0,0,0.95); font-family:system-ui; direction:rtl;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; border-bottom:1px solid rgba(251,191,36,0.4); padding-bottom:15px;">
+                   <strong style="color: #ffffff; font-size:19px; font-weight:900;">العدالة الذكية <span style="color:#fbbf24;">| خيارات المزامنة</span></strong>
+                   <button id="btn-sync-settings" style="background:transparent; border:1px solid #fbbf24; color:#fbbf24; font-weight:900; border-radius:8px; padding:6px 12px; cursor:pointer;">الضبط ⚙️</button>
                 </div>
                 
                 <div id="adalah-sync-menu">
-                    <p style="font-size:14px; color:#ffffff; font-weight:bold; margin-bottom:12px; line-height: 1.5;">حدد أنواع البيانات المقررة للمزامنة والفرز بالـ AI:</p>
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                       <p style="font-size:14px; color:#ffffff; font-weight:bold; margin:0;">حدد أنواع البيانات للمزامنة الفورية:</p>
+                       <label style="display:flex; align-items:center; gap:5px; cursor:pointer; color:#fbbf24; font-size:12px; font-weight:900;">
+                         <input type="checkbox" id="select-all-sync" checked style="accent-color:#fbbf24;"> تحديد الكل
+                       </label>
+                    </div>
                     
-                    <div style="background:rgba(255,255,255,0.05); border: 1px solid rgba(212,175,55,0.2); padding:15px; border-radius:12px; margin-bottom:20px; display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                    <div style="background:rgba(255,255,255,0.05); border: 1px solid rgba(251,191,36,0.2); padding:15px; border-radius:12px; margin-bottom:20px; display:grid; grid-template-columns:1fr 1fr; gap:12px;">
                        <label style="display:flex; align-items:center; gap:8px; cursor:pointer; color:#FFFFFF; font-weight:bold; font-size:13px;">
-                         <input type="checkbox" class="sync-check" value="cases" checked style="accent-color:#D4AF37; width:16px; height:16px;"> القضايا والدعاوى
+                         <input type="checkbox" class="sync-check" value="cases" checked style="accent-color:#fbbf24; width:16px; height:16px;"> بيانات القضايا
                        </label>
                        <label style="display:flex; align-items:center; gap:8px; cursor:pointer; color:#FFFFFF; font-weight:bold; font-size:13px;">
-                         <input type="checkbox" class="sync-check" value="hearings" checked style="accent-color:#D4AF37; width:16px; height:16px;"> الجلسات والمواعيد
+                         <input type="checkbox" class="sync-check" value="clients" checked style="accent-color:#fbbf24; width:16px; height:16px;"> العملاء وأطراف الدعوى
                        </label>
                        <label style="display:flex; align-items:center; gap:8px; cursor:pointer; color:#FFFFFF; font-weight:bold; font-size:13px;">
-                         <input type="checkbox" class="sync-check" value="agencies" checked style="accent-color:#D4AF37; width:16px; height:16px;"> الوكالات الشرعية
+                         <input type="checkbox" class="sync-check" value="hearings" checked style="accent-color:#fbbf24; width:16px; height:16px;"> مواعيد الجلسات
                        </label>
                        <label style="display:flex; align-items:center; gap:8px; cursor:pointer; color:#FFFFFF; font-weight:bold; font-size:13px;">
-                         <input type="checkbox" class="sync-check" value="executions" checked style="accent-color:#D4AF37; width:16px; height:16px;"> طلبات التنفيذ
+                         <input type="checkbox" class="sync-check" value="executions" checked style="accent-color:#fbbf24; width:16px; height:16px;"> طلبات التنفيذ
                        </label>
                        <label style="display:flex; align-items:center; gap:8px; cursor:pointer; color:#FFFFFF; font-weight:bold; font-size:13px;">
-                         <input type="checkbox" class="sync-check" value="clients" checked style="accent-color:#D4AF37; width:16px; height:16px;"> الموكلين والأطراف
+                         <input type="checkbox" class="sync-check" value="case_requests" checked style="accent-color:#fbbf24; width:16px; height:16px;"> الطلبات على القضايا
+                       </label>
+                       <label style="display:flex; align-items:center; gap:8px; cursor:pointer; color:#FFFFFF; font-weight:bold; font-size:13px;">
+                         <input type="checkbox" class="sync-check" value="minutes" checked style="accent-color:#fbbf24; width:16px; height:16px;"> محاضر ضبط الجلسات
+                       </label>
+                       <label style="display:flex; align-items:center; gap:8px; cursor:pointer; color:#FFFFFF; font-weight:bold; font-size:13px;">
+                         <input type="checkbox" class="sync-check" value="agencies" checked style="accent-color:#fbbf24; width:16px; height:16px;"> الوكالات الشرعية
                        </label>
                     </div>
 
-                    <button id="btn-sync-selected" style="width:100%;background:#D4AF37; color:#0b0f19; font-size:15px; font-weight:900; padding:16px; border-radius:12px; border:none; cursor:pointer; transition:0.2s; box-shadow: 0 4px 15px rgba(212,175,55,0.3);">
-                       🚀 ابدأ المزامنة والتوزيع بالـ AI
+                    <button id="btn-sync-selected" style="width:100%;background:#fbbf24; color:#0b0f19; font-size:16px; font-weight:900; padding:18px; border-radius:12px; border:none; cursor:pointer; transition:0.2s; box-shadow: 0 4px 20px rgba(251,191,36,0.3);">
+                       🚀 سحب ومزامنة البيانات المختارة
                     </button>
                     
                     <div style="margin-top:15px; padding-top:10px; font-size:12px; color:#FACC15; text-align:center; font-weight:bold; border-top: 1px dashed rgba(212,175,55,0.3);">
@@ -627,6 +692,14 @@ export default function NajizExtensionHub({ currentUser, onUpdateState }: NajizE
           const checkApiKey = document.getElementById('ext-toggle-apikey');
           if (checkApiKey) {
             checkApiKey.addEventListener('change', toggleSettingsLink);
+          }
+
+          const selectAllBtn = document.getElementById('select-all-sync');
+          if (selectAllBtn) {
+            selectAllBtn.addEventListener('change', (e) => {
+               const checks = document.querySelectorAll('.sync-check');
+               checks.forEach(c => c.checked = e.target.checked);
+            });
           }
 
           const syncToggle = document.getElementById('adalah-sync-toggle');
@@ -691,7 +764,9 @@ export default function NajizExtensionHub({ currentUser, onUpdateState }: NajizE
               { rawTitle: "قضية عمالية رقم 123", rawText: "تأخر الرواتب والتعويض المقابل بمقر الدفاع المدني", rawDate: "2026-06-15" },
               { rawTitle: "جلسة تداول عاجلة للدائرة الإدارية", rawText: "سماع أقوال المدعي بمقر المحكمة الأولى", rawDate: "2026-06-25", time: "10:30" },
               { rawTitle: "وكالة شرعية رسمية شاملة للتنازل", principal: "خالد صابر عياش", agent: "مجموعة محامي مكتب العدالة", rawDate: "2026-05-20" },
-              { rawTitle: "طلب تنفيذ قرار السداد المتبقي", rawText: "رقم 9987162 عاجل", rawDate: "2026-06-05" }
+              { rawTitle: "طلب تنفيذ قرار السداد المتبقي", rawText: "رقم 9987162 عاجل", rawDate: "2026-06-05", amount: 150000, opponent_name: "شركة التطوير العقاري", status: "قيد التنفيذ (محجوز)" },
+              { rawTitle: "طلب عرض القضية على اللجنة العليا", rawText: "طلب رقم 1120288 بمحتوى مراجعة صك الجلسة", rawDate: "2026-06-18" },
+              { rawTitle: "محضر جلسة الدائرة التجارية الثانية", rawText: "تم إرفاق محضر ضبط الجلسة والقرارات التحضيرية", rawDate: "2026-05-30" }
            ];
         }
 
@@ -710,6 +785,10 @@ export default function NajizExtensionHub({ currentUser, onUpdateState }: NajizE
                  category = 'executions';
               } else if (textStr.includes('عميل') || textStr.includes('طرف')) {
                  category = 'clients';
+              } else if (textStr.includes('طلب على القضية') || textStr.includes('طلب عرض')) {
+                 category = 'case_requests';
+              } else if (textStr.includes('محضر جلسة') || textStr.includes('محضر ضبط')) {
+                 category = 'minutes';
               }
 
               return {
