@@ -99,6 +99,7 @@ export interface Client {
   phone: string;
   email: string;
   casesCount: number;
+  billingTotal: number;
   portalToken: string;
   portalLink: string;
   portalUsername?: string;

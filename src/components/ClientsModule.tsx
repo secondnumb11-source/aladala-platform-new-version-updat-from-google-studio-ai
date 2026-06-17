@@ -251,7 +251,6 @@ export default function ClientsModule({
               portalUsername: genUser,
               portalPassword: genPass,
               casesCount: 0,
-              billingTotal: 0,
               portalToken: token,
               portalLink: `/portal?token=${token}`
             };
