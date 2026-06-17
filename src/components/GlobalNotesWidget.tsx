@@ -41,7 +41,8 @@ export default function GlobalNotesWidget() {
 
     fetchNotes();
 
-    const channel = supabase.channel('notes_channel')
+    const chId = `notes_channel_${Math.random().toString(36).substring(7)}`;
+    const channel = supabase.channel(chId)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'notes' }, () => fetchNotes())
       .subscribe();
 

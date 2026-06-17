@@ -262,7 +262,8 @@ export function useSupabaseData() {
 
     const triggers = ['cases', 'clients', 'tasks', 'hearings', 'documents', 'powers_of_attorney', 'invoices', 'employees', 'attachments', 'client_portal', 'employee_portal', 'attendance', 'leave_requests', 'payments', 'notifications', 'audit_trails', 'system_errors'];
     const channels = triggers.map(tbl => {
-      return supabase.channel(`public:${tbl}`)
+      const channelId = `public:${tbl}_${Math.random().toString(36).substring(7)}`;
+      return supabase.channel(channelId)
         .on('postgres_changes', { event: '*', schema: 'public', table: tbl }, fetchData)
         .subscribe(handleStatus(tbl));
     });

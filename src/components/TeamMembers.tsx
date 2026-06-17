@@ -77,8 +77,9 @@ export default function TeamMembers({ customRoles }: TeamMembersProps = {}) {
     fetchEmployees();
 
     // Establish realtime channel directly bonded to the employees table
+    const chId = `employees-realtime-sync-${Math.random().toString(36).substring(7)}`;
     const channel = supabase
-      .channel("employees-realtime-sync")
+      .channel(chId)
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "employees" },

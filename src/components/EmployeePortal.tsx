@@ -225,7 +225,8 @@ export default function EmployeePortal({
 
     fetchEmployees();
 
-    const channel = supabase.channel('portal-employees-changes')
+    const channelId = `portal-employees-changes-${Math.random().toString(36).substring(7)}`;
+    const channel = supabase.channel(channelId)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'employees' }, fetchEmployees)
       .subscribe((status, error) => {
         if (error) {
@@ -388,7 +389,8 @@ export default function EmployeePortal({
     };
 
     fetchAttendance();
-    const attChannel = supabase.channel(`attendance-${loggedInEmployee.id}`)
+    const attChannelId = `attendance-${loggedInEmployee.id}-${Math.random().toString(36).substring(7)}`;
+    const attChannel = supabase.channel(attChannelId)
       .on('postgres_changes', { 
         event: '*', 
         schema: 'public', 
@@ -413,7 +415,8 @@ export default function EmployeePortal({
     };
 
     fetchLeave();
-    const leaveChannel = supabase.channel(`leave-${loggedInEmployee.id}`)
+    const leaveChannelId = `leave-${loggedInEmployee.id}-${Math.random().toString(36).substring(7)}`;
+    const leaveChannel = supabase.channel(leaveChannelId)
       .on('postgres_changes', { 
         event: '*', 
         schema: 'public', 

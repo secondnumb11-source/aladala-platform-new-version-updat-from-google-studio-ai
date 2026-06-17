@@ -74,7 +74,8 @@ export default function FailedPersistenceLogsDashboard({ onUpdateState }: Failed
     fetchLogs();
     
     // Subscribe to changes in system_errors
-    const channel = supabase.channel('system_errors_channel')
+    const chId = `system_errors_channel_${Math.random().toString(36).substring(7)}`;
+    const channel = supabase.channel(chId)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'system_errors' }, fetchLogs)
       .subscribe();
 

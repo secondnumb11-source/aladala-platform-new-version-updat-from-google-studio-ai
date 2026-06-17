@@ -179,8 +179,9 @@ export default function ArchiveModule() {
     fetchMetaOptions();
 
     // Listen to real-time events on documents table
+    const docChannelId = `documents-rt-${Math.random().toString(36).substring(7)}`;
     const docChannel = supabase
-      .channel("documents-realtime-changes")
+      .channel(docChannelId)
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "documents" },
@@ -191,8 +192,9 @@ export default function ArchiveModule() {
       .subscribe();
 
     // Listen to real-time events on attachments table
+    const attChannelId = `attachments-rt-${Math.random().toString(36).substring(7)}`;
     const attChannel = supabase
-      .channel("attachments-realtime-changes")
+      .channel(attChannelId)
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "attachments" },

@@ -418,7 +418,8 @@ const Dashboard = function Dashboard({
 
     fetchDashboardData();
 
-    const empSub = supabase.channel('dashboard-employees')
+    const empChannelId = `dashboard-employees-${Math.random().toString(36).substring(7)}`;
+    const empSub = supabase.channel(empChannelId)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'employees' }, fetchDashboardData)
       .subscribe((status, error) => {
         if (error) {
@@ -426,7 +427,8 @@ const Dashboard = function Dashboard({
         }
       });
 
-    const poaSub = supabase.channel('dashboard-powers_of_attorney')
+    const poaChannelId = `dashboard-powers_of_attorney-${Math.random().toString(36).substring(7)}`;
+    const poaSub = supabase.channel(poaChannelId)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'powers_of_attorney' }, fetchDashboardData)
       .subscribe((status, error) => {
         if (error) {

@@ -259,7 +259,8 @@ export default function EmployeesData({ tasks }: { cases: Case[], tasks: Task[],
 
     fetchEmployees();
 
-    const channel = supabase.channel('employees-changes')
+    const channelId = `employees-changes-${Math.random().toString(36).substring(7)}`;
+    const channel = supabase.channel(channelId)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'employees' }, fetchEmployees)
       .subscribe((status, error) => {
         if (error) {

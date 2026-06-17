@@ -8,8 +8,9 @@ export function useAppState() {
     useEffect(() => {
         fetchStates();
 
-        // Subscribe to realtime changes
-        const channel = supabase.channel('user_states_channel')
+        // Use a unique channel name or store it in a cleanup to avoid duplicate sub errors
+        const channelName = `user_states_${Math.random().toString(36).substring(7)}`;
+        const channel = supabase.channel(channelName)
             .on('postgres_changes', { event: '*', schema: 'public', table: 'user_states' }, () => {
                 fetchStates();
             })

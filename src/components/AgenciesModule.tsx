@@ -45,7 +45,8 @@ export default function AgenciesModule({ clients, onUpdateState }: AgenciesModul
 
   useEffect(() => {
     fetchAgencies();
-    const sub = supabase.channel('powers_of_attorney-changes')
+    const chId = `poa-changes-${Math.random().toString(36).substring(7)}`;
+    const sub = supabase.channel(chId)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'powers_of_attorney' }, () => {
         fetchAgencies();
       })
