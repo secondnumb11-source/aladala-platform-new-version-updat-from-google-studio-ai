@@ -19,7 +19,7 @@ export default function NajizExtensionHub({ currentUser, onUpdateState }: NajizE
   const [downloading, setDownloading] = useState(false);
   const [activeTab, setActiveTab] = useState<'instructions' | 'features' | 'keys'>('instructions');
   const [copiedKey, setCopiedKey] = useState(false);
-  const { createRecord, clients, cases } = useSupabaseData();
+  const { createRecord, upsertRecord, clients, cases } = useSupabaseData();
 
   // Settings Modal & Options with persistent LocalStorage
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -338,7 +338,7 @@ export default function NajizExtensionHub({ currentUser, onUpdateState }: NajizE
         const execNo = extractedNumber || `E-${Math.floor(Math.random() * 9000000) + 1000000}`;
         const issueDate = item.rawDate || new Date().toISOString().split('T')[0];
         
-        const execRes = await createRecord('executions', {
+        const execRes = await upsertRecord('executions', {
           execution_number: execNo,
           requester_name: targetClientName,
           opponent_name: item.opponent_name || 'خصم مستورد من ناجز',
@@ -347,7 +347,7 @@ export default function NajizExtensionHub({ currentUser, onUpdateState }: NajizE
           court_name: item.court_name || 'إدارة التنفيذ بالمحكمة المعنية',
           issue_date: issueDate,
           details: item.rawText || `تفاصيل طلب التنفيذ المسحوب آلياً من بوابة ناجز برقم ${execNo}`
-        });
+        }, 'execution_number');
 
         if (execRes && !execRes.success) {
           throw new Error(execRes.message || 'فشلت معايير التحقق لطلب التنفيذ');

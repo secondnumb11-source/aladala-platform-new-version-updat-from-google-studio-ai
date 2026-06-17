@@ -1781,6 +1781,8 @@ function AppContent() {
               <ExecutionsModule 
                 executions={executions}
                 onCreateExecution={(e) => createRecord('executions', e)}
+                onUpdateExecution={(id, data) => updateRecord('executions', id, data)}
+                onDeleteExecution={(id) => deleteRecord('executions', id)}
               />
             )}
 

@@ -196,11 +196,11 @@ export const mapDatabaseCaseToFrontend = (dbCase: any, clientsList: Client[]): C
   // 3. sessionDates: last_session_at and next_session_at in DB
   // need to convert back to YYYY-MM-DD strings for lastSessionDate and nextSessionDate
   let lastSessionDate = camel.lastSessionDate || '';
-  if (camel.lastSessionAt) {
+  if (camel.lastSessionAt && typeof camel.lastSessionAt === 'string') {
     lastSessionDate = camel.lastSessionAt.includes('T') ? camel.lastSessionAt.split('T')[0] : camel.lastSessionAt;
   }
   let nextSessionDate = camel.nextSessionDate || '';
-  if (camel.nextSessionAt) {
+  if (camel.nextSessionAt && typeof camel.nextSessionAt === 'string') {
     nextSessionDate = camel.nextSessionAt.includes('T') ? camel.nextSessionAt.split('T')[0] : camel.nextSessionAt;
   }
 
@@ -525,6 +525,7 @@ export function useSupabaseData() {
       'audit_trails': 'audit_trails',
       'systemErrors': 'system_errors',
       'system_errors': 'system_errors',
+      'executions': 'executions',
     };
     return tableMap[table] || table;
   };
@@ -658,6 +659,32 @@ export function useSupabaseData() {
         message: err?.message || String(err), 
         details: err?.stack || err?.details || String(err) 
       };
+    }
+  };
+
+  const upsertRecord = async (table: string, data: any, onConflict: string) => {
+    try {
+      const mappedTable = getSupabaseTableName(table);
+      const cleanData = sanitizePayload(mappedTable, data);
+      
+      console.log(`[Supabase] Upserting into ${mappedTable} on conflict ${onConflict}:`, cleanData);
+      
+      const { data: upsertedData, error } = await supabase
+        .from(mappedTable)
+        .upsert(cleanData, { onConflict })
+        .select()
+        .single();
+        
+      if (error) {
+        console.error(`[Supabase Upsert Error] Table: ${mappedTable}`, error);
+        return { success: false, code: error.code, message: error.message };
+      }
+      
+      await fetchData();
+      return { success: true, data: upsertedData ? toCamel(upsertedData) : null };
+    } catch (err: any) {
+      console.error(`[Supabase Upsert Exception] Table: ${table}`, err);
+      return { success: false, message: err.message };
     }
   };
 
@@ -810,6 +837,7 @@ export function useSupabaseData() {
     systemErrors,
     loading,
     createRecord,
+    upsertRecord,
     updateRecord,
     deleteRecord,
     retryQueueSync,
