@@ -151,6 +151,8 @@ export default function ClientsModule({
       portalUsername: newUsername || genUser,
       portalPassword: newPassword || genPass,
       casesCount: 0,
+      billingTotal: 0,
+      activePortal: true,
       portalToken: token,
       portalLink: `/portal?token=${token}`
     };
@@ -251,6 +253,8 @@ export default function ClientsModule({
               portalUsername: genUser,
               portalPassword: genPass,
               casesCount: 0,
+              billingTotal: 0,
+              activePortal: true,
               portalToken: token,
               portalLink: `/portal?token=${token}`
             };

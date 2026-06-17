@@ -1530,6 +1530,8 @@ export default React.memo(function CasesModule({
         phone: newPlaintiffPhone || "+9665" + Math.floor(Math.random() * 100000000),
         email: "contact@domain.sa",
         casesCount: 1,
+        billingTotal: 0,
+        activePortal: true,
         portalToken: `portal-${Date.now()}`,
         portalLink: `/portal?token=portal-${Date.now()}`
       };

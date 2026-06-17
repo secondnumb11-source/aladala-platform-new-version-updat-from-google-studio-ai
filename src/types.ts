@@ -100,6 +100,7 @@ export interface Client {
   email: string;
   casesCount: number;
   billingTotal: number;
+  activePortal: boolean;
   portalToken: string;
   portalLink: string;
   portalUsername?: string;

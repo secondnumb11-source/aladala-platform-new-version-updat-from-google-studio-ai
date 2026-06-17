@@ -1155,4 +1155,3 @@ export default function ArchiveModule() {
     </div>
   );
 }
-', Overwrite: true, TargetFile: '/src/components/ArchiveModule.tsx', toolAction: 'Updating ArchiveModule.tsx component', toolSummary: 'File creation' }
