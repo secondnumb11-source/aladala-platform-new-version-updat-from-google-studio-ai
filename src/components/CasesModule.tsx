@@ -5,6 +5,8 @@
 
 import { List } from 'react-window';
 import React, { useState, useEffect } from 'react';
+import { useAppState } from '@/hooks/useAppState';
+import { useUserPreferences } from '@/hooks/useUserPreferences';
 import { 
   Plus, 
   Search, 
@@ -231,6 +233,8 @@ export default React.memo(function CasesModule({
   selectedCase,
   archivedNotice
 }: CasesModuleProps) {
+  const { state, setStateData } = useAppState();
+  const draft = state.case_form_draft;
   useRenderPerformance('CasesModule', 25);
 
   
@@ -664,37 +668,34 @@ export default React.memo(function CasesModule({
   const [priorityFilter, setPriorityFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
   const [lawyerFilter, setLawyerFilter] = useState('all');
-  const [viewMode, setViewMode] = useState<'grid' | 'table'>(() => {
-    return (localStorage.getItem('adalah-cases-view-mode') as 'grid' | 'table') || 'grid';
-  });
-
-  const [cardScale, setCardScale] = useState(() => {
-    return parseFloat(localStorage.getItem('adalah-card-scale') || '1');
-  });
-
-  const [gridDensity, setGridDensity] = useState<'compact' | 'relaxed'>(() => {
-    return (localStorage.getItem('adalah-grid-density') as 'compact' | 'relaxed') || 'relaxed';
-  });
-
-  const [cardTransitionSpeed, setCardTransitionSpeed] = useState(() => {
-    return parseFloat(typeof window !== 'undefined' ? (localStorage.getItem('adalah-card-transition-duration') || '0.4') : '0.4');
-  });
+  const { preferences, updatePreference, loading } = useUserPreferences();
+  const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
+  const [cardScale, setCardScale] = useState(1);
+  const [gridDensity, setGridDensity] = useState<'compact' | 'relaxed'>('relaxed');
 
   useEffect(() => {
-    const handleTransitionUpdate = () => {
-      setCardTransitionSpeed(parseFloat(localStorage.getItem('adalah-card-transition-duration') || '0.4'));
-    };
-    window.addEventListener('adalah-card-transition-updated', handleTransitionUpdate);
-    return () => {
-      window.removeEventListener('adalah-card-transition-updated', handleTransitionUpdate);
-    };
-  }, []);
+    if (!loading && preferences) {
+      if (preferences.cases_view_mode) setViewMode(preferences.cases_view_mode);
+      if (preferences.card_scale !== undefined) setCardScale(preferences.card_scale);
+      if (preferences.grid_density) setGridDensity(preferences.grid_density);
+    }
+  }, [loading, preferences]);
+
+  const [cardTransitionSpeed, setCardTransitionSpeed] = useState(0.4);
 
   useEffect(() => {
-    localStorage.setItem('adalah-cases-view-mode', viewMode);
-    localStorage.setItem('adalah-card-scale', cardScale.toString());
-    localStorage.setItem('adalah-grid-density', gridDensity);
-  }, [viewMode, cardScale, gridDensity]);
+    if (!loading && preferences?.card_transition_duration !== undefined) {
+      setCardTransitionSpeed(preferences.card_transition_duration);
+    }
+  }, [loading, preferences?.card_transition_duration]);
+
+  useEffect(() => {
+    if (!loading) {
+      updatePreference('cases_view_mode', viewMode);
+      updatePreference('card_scale', cardScale);
+      updatePreference('grid_density', gridDensity);
+    }
+  }, [viewMode, cardScale, gridDensity, loading]);
 
   const categories = [
     { id: 'all', label: 'الكل', icon: Layers },
@@ -707,27 +708,28 @@ export default React.memo(function CasesModule({
     { id: 'archived', label: 'الأرشيف', icon: Archive },
   ];
 
-  const SummaryCharts = ({ cases }: { cases: Case[] }) => {
+  const SummaryCharts = ({ cases, preferences, updatePreference }: { cases: Case[], preferences: any, updatePreference: any }) => {
     // Control States for customized layout, sizes, positions and shapes
-    const [chartSize, setChartSize] = useState<'tiny' | 'shrunk' | 'regular'>(() => {
-      return (localStorage.getItem('adalah-charts-card-size') as any) || 'shrunk';
-    });
-    const [chartOrder, setChartOrder] = useState<'donut-first' | 'bar-first'>(() => {
-      return (localStorage.getItem('adalah-charts-order') as any) || 'donut-first';
-    });
-    const [chartColorTheme, setChartColorTheme] = useState<'gold' | 'cyber' | 'emerald'>(() => {
-      return (localStorage.getItem('adalah-charts-theme') as any) || 'gold';
-    });
-    const [chartVizType, setChartVizType] = useState<'bar' | 'area' | 'line'>(() => {
-      return (localStorage.getItem('adalah-charts-viz-type') as any) || 'bar';
-    });
+    const [chartSize, setChartSize] = useState<'tiny' | 'shrunk' | 'regular'>('shrunk');
+    const [chartOrder, setChartOrder] = useState<'donut-first' | 'bar-first'>('donut-first');
+    const [chartColorTheme, setChartColorTheme] = useState<'gold' | 'cyber' | 'emerald'>('gold');
+    const [chartVizType, setChartVizType] = useState<'bar' | 'area' | 'line'>('bar');
 
     useEffect(() => {
-      localStorage.setItem('adalah-charts-card-size', chartSize);
-      localStorage.setItem('adalah-charts-order', chartOrder);
-      localStorage.setItem('adalah-charts-theme', chartColorTheme);
-      localStorage.setItem('adalah-charts-viz-type', chartVizType);
-    }, [chartSize, chartOrder, chartColorTheme, chartVizType]);
+      if (preferences) {
+        if (preferences.charts_card_size) setChartSize(preferences.charts_card_size);
+        if (preferences.charts_order) setChartOrder(preferences.charts_order);
+        if (preferences.charts_theme) setChartColorTheme(preferences.charts_theme);
+        if (preferences.charts_viz_type) setChartVizType(preferences.charts_viz_type);
+      }
+    }, [preferences]);
+
+    useEffect(() => {
+      updatePreference('charts_card_size', chartSize);
+      updatePreference('charts_order', chartOrder);
+      updatePreference('charts_theme', chartColorTheme);
+      updatePreference('charts_viz_type', chartVizType);
+    }, [chartSize, chartOrder, chartColorTheme, chartVizType, updatePreference]);
 
     // Stable memoized data to prevent any dynamic automatic dynamic reloading
     const data = React.useMemo(() => {
@@ -1116,13 +1118,12 @@ export default React.memo(function CasesModule({
   };
 
   // Virtual scrolling / Infinite scroll loading state with skeletal loading indicator
-  const [visibleCount, setVisibleCount] = useState(() => {
-    try {
-      return parseInt(localStorage.getItem('adalah-visible-cases-count') || '6', 10);
-    } catch (e) {
-      return 6;
+  const [visibleCount, setVisibleCount] = useState(6);
+  useEffect(() => {
+    if (!loading && preferences?.visible_cases_count !== undefined) {
+      setVisibleCount(preferences.visible_cases_count);
     }
-  });
+  }, [loading, preferences?.visible_cases_count]);
   const [isVirtualLoading, setIsVirtualLoading] = useState(false);
   const loadMoreRef = React.useRef<HTMLDivElement | null>(null);
   const [courtFilter, setCourtFilter] = useState('all');
@@ -1215,11 +1216,11 @@ export default React.memo(function CasesModule({
   // Reload saved summary when selectedCase shifts
   React.useEffect(() => {
     if (selectedCase) {
-      setCaseDocumentMemo(localStorage.getItem(`adalah-case-summary-${selectedCase.id}`) || '');
+      setCaseDocumentMemo(selectedCase.summary || '');
       setCaseDocumentText('');
       setCaseSummarizeError('');
     }
-  }, [selectedCase?.id]);
+  }, [selectedCase?.id, selectedCase?.summary]);
 
   const handleCaseSummarize = async () => {
     if (!caseDocumentText.trim() || !selectedCase) return;
@@ -1239,7 +1240,7 @@ export default React.memo(function CasesModule({
       const data = await res.json();
       if (data.success) {
         setCaseDocumentMemo(data.summary);
-        localStorage.setItem(`adalah-case-summary-${selectedCase.id}`, data.summary);
+        onUpdateState('cases', { ...selectedCase, summary: data.summary });
       } else {
         setCaseSummarizeError(data.error || 'عذراً، فشلت عملية التحليل.');
       }
@@ -1435,14 +1436,18 @@ export default React.memo(function CasesModule({
   const [caseNumberError, setCaseNumberError] = useState('');
   const [serverValidationError, setServerValidationError] = useState<{field: string, message: string} | null>(null);
   const [lastActionState, setLastActionState] = useState<{field: string, value: string} | null>(() => {
-    const saved = localStorage.getItem('lastFormAction');
-    return saved ? JSON.parse(saved) : null;
+    return state.last_form_action || null;
   });
+
+  const handleLastAction = (action: {field: string, value: string} | null) => {
+    setLastActionState(action);
+    setStateData('last_form_action', action);
+  };
 
   const handleCaseNumberChange = (val: string) => {
     const action = { field: 'newCaseNumber', value: newCaseNumber };
     setLastActionState(action);
-    localStorage.setItem('lastFormAction', JSON.stringify(action));
+    handleLastAction(action);
     setNewCaseNumber(val);
     
     // Validation: Case number should strictly match 10 digits as requested.
@@ -1464,7 +1469,7 @@ export default React.memo(function CasesModule({
         setCaseNumberError('');
       }
       setLastActionState(null);
-      localStorage.removeItem('lastFormAction');
+      handleLastAction(null);
     }
   };
 
@@ -1476,16 +1481,14 @@ export default React.memo(function CasesModule({
   useEffect(() => {
     if (!isCreateOpen) return;
     
-    // Attempt to load from localStorage once when modal opens
-    const savedData = localStorage.getItem('caseFormAutoSave');
-    if (savedData) {
+    // Load from Supabase draft when modal opens
+    if (draft) {
       try {
-        const parsed = JSON.parse(savedData);
-        if (parsed.newCaseNumber && !newCaseNumber) setNewCaseNumber(parsed.newCaseNumber);
-        if (parsed.newCaseName && !newCaseName) setNewCaseName(parsed.newCaseName);
-        if (parsed.newClientName && !newClientName) setNewClientName(parsed.newClientName);
-        if (parsed.newOpponent && !newOpponent) setNewOpponent(parsed.newOpponent);
-        if (parsed.newDetails && !newDetails) setNewDetails(parsed.newDetails);
+        if (draft.newCaseNumber && !newCaseNumber) setNewCaseNumber(draft.newCaseNumber);
+        if (draft.newCaseName && !newCaseName) setNewCaseName(draft.newCaseName);
+        if (draft.newClientName && !newClientName) setNewClientName(draft.newClientName);
+        if (draft.newOpponent && !newOpponent) setNewOpponent(draft.newOpponent);
+        if (draft.newDetails && !newDetails) setNewDetails(draft.newDetails);
       } catch(e) {}
     }
   }, [isCreateOpen]);
@@ -1498,13 +1501,13 @@ export default React.memo(function CasesModule({
     
     const interval = setInterval(() => {
       if (newCaseNumber || newCaseName || newClientName || newOpponent || newDetails) {
-        localStorage.setItem('caseFormAutoSave', JSON.stringify(dataToSave));
+        setStateData('case_form_draft', dataToSave);
         
         // Dispatch toast notification
         window.dispatchEvent(
           new CustomEvent('adalah_error_logged', {
             detail: {
-              message: `تم حفظ المسودة للموكل ${newClientName || 'غير محدد'} في الذاكرة المؤقتة بنجاح`,
+              message: `تم حفظ المسودة للموكل ${newClientName || 'غير محدد'} في قاعدة البيانات بنجاح`,
               timestamp: new Date().toISOString()
             }
           })
@@ -1632,7 +1635,7 @@ export default React.memo(function CasesModule({
     setNewCaseName('');
     setNewOpponent('');
     setNewDetails('');
-    localStorage.removeItem('caseFormAutoSave');
+    setStateData('case_form_draft', null);
     onSelectCase(newCaseObj);
   };
 
@@ -2142,7 +2145,7 @@ export default React.memo(function CasesModule({
                     exit={{ height: 0, opacity: 0 }}
                     className="overflow-hidden mb-10"
                   >
-                    <SummaryCharts cases={cases} />
+                    <SummaryCharts cases={cases} preferences={preferences} updatePreference={updatePreference} />
                   </motion.div>
                 )}
               </AnimatePresence>
@@ -2503,7 +2506,7 @@ export default React.memo(function CasesModule({
                     onClick={() => {
                       if (confirm('هل أنت متأكد من رغبتك في إزالة الموجز الحالي وإعادة التحليل؟')) {
                         setCaseDocumentMemo('');
-                        localStorage.removeItem(`adalah-case-summary-${selectedCase.id}`);
+                        onUpdateState('cases', { ...selectedCase, summary: '' });
                       }
                     }}
                     className="w-full bg-rose-950/40 border border-rose-500/30 text-rose-300 text-[10px] font-black py-2 rounded-xl text-center"

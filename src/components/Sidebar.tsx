@@ -53,6 +53,7 @@ import {
 import ThemeToggle from './ThemeToggle';
 import { Case } from '@/types';
 import { supabase } from '@/lib/supabase';
+import { useUserPreferences } from '@/hooks/useUserPreferences';
 
 interface SidebarProps {
   currentTab: string;
@@ -86,8 +87,10 @@ export default function Sidebar({
   customRoles,
   currentUser
 }: SidebarProps) {
+  const { preferences, updatePreference } = useUserPreferences();
   const { connectionStatus } = useSupabase();
-  const isNajizConnected = localStorage.getItem('najiz_api_connected') === 'true';
+
+  const isNajizConnected = preferences?.najiz_api_connected === 'true';
   const [mobileOpen, setMobileOpen] = React.useState(false);
   const [sidebarWidth, setSidebarWidth] = React.useState(395);
   const [isResizing, setIsResizing] = React.useState(false);
@@ -123,15 +126,10 @@ export default function Sidebar({
   const [isGeneratingPlan, setIsGeneratingPlan] = React.useState(false);
   const [isExporting, setIsExporting] = React.useState(false);
 
-  const [isHijri, setIsHijri] = React.useState(() => {
-    const saved = localStorage.getItem('adalah-clock-hijri');
-    return saved ? JSON.parse(saved) : true;
-  });
+  const isHijri = preferences?.['adalah-clock-hijri'] !== false;
 
   const toggleCalendar = () => {
-    const nextHijri = !isHijri;
-    setIsHijri(nextHijri);
-    localStorage.setItem('adalah-clock-hijri', JSON.stringify(nextHijri));
+    updatePreference('adalah-clock-hijri', !isHijri);
   };
 
   const [showClockSettings, setShowClockSettings] = React.useState(false);
@@ -143,36 +141,17 @@ export default function Sidebar({
     return () => clearInterval(timer);
   }, []);
 
-  const [userName, setUserName] = React.useState(() => {
-    try {
-      return localStorage.getItem('adalah-dashboard-username') || 'المستخدم';
-    } catch {
-      return 'المستخدم';
-    }
-  });
+  const [userName, setUserName] = React.useState(currentUser?.name || 'المستخدم');
   const [isEditingUserName, setIsEditingUserName] = React.useState(false);
-
-  React.useEffect(() => {
-    const handleUsernameChange = () => {
-      try {
-        setUserName(localStorage.getItem('adalah-dashboard-username') || 'المستخدم');
-      } catch {}
-    };
-    window.addEventListener('adalah-username-changed', handleUsernameChange);
-    return () => window.removeEventListener('adalah-username-changed', handleUsernameChange);
-  }, []);
 
   React.useEffect(() => {
     if (currentUser?.name) {
       setUserName(currentUser.name);
-      localStorage.setItem('adalah-dashboard-username', currentUser.name);
     }
   }, [currentUser]);
 
   const handleSaveUserName = async (val: string) => {
     setUserName(val);
-    localStorage.setItem('adalah-dashboard-username', val);
-    window.dispatchEvent(new Event('adalah-username-changed'));
 
     try {
       const uid = currentUser?.id;
@@ -471,9 +450,9 @@ export default function Sidebar({
               const allowedItems = allItems.filter(item => {
                 if (!cat.itemIds.includes(item.id)) return false;
 
-                const showCases = localStorage.getItem('adalah-show-cases-module') !== 'false';
-                const showFinance = localStorage.getItem('adalah-show-finance-module') !== 'false';
-                const showAppointments = localStorage.getItem('adalah-show-appointments-module') !== 'false';
+                const showCases = preferences?.['adalah-show-cases-module'] !== false;
+                const showFinance = preferences?.['adalah-show-finance-module'] !== false;
+                const showAppointments = preferences?.['adalah-show-appointments-module'] !== false;
 
                 if (item.id === 'cases' && !showCases) return false;
                 if (item.id === 'finance' && !showFinance) return false;

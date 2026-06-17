@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Edit3, X, Sun, Moon, Maximize2, Minimize2, Save, Check, Plus, Trash2, ChevronRight } from 'lucide-react';
+import { supabase } from '@/lib/supabase';
 
 const COLORS = [
   { id: 'yellow', bg: 'bg-yellow-200', text: 'text-yellow-950', border: 'border-yellow-300' },
@@ -14,53 +15,75 @@ const COLORS = [
 
 interface Note {
   id: string;
-  text: string;
-  date: string;
+  user_id: string;
+  note_text: string;
+  created_at: string;
+  updated_at: string;
 }
 
 export default function GlobalNotesWidget() {
   const [isOpen, setIsOpen] = useState(false);
-  const [notes, setNotes] = useState<Note[]>(() => {
-    const saved = localStorage.getItem('adalah-global-notes-list');
-    if (saved) return JSON.parse(saved);
-    const legacy = localStorage.getItem('adalah-global-notes');
-    if (legacy) return [{ id: Date.now().toString(), text: legacy, date: new Date().toLocaleDateString() }];
-    return [];
-  });
+  const [notes, setNotes] = useState<Note[]>([]);
   
+  useEffect(() => {
+    const fetchNotes = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data, error } = await supabase
+        .from('notes')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+      
+      if (data) setNotes(data);
+    };
+
+    fetchNotes();
+
+    const channel = supabase.channel('notes_channel')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'notes' }, () => fetchNotes())
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
+  
+  const [currentText, setCurrentText] = useState('');
   const [activeNoteId, setActiveNoteId] = useState<string | null>(notes.length > 0 ? notes[0].id : null);
-  const [currentText, setCurrentText] = useState(() => {
-    if (notes.length > 0) return notes[0].text;
-    return '';
-  });
-  
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [selectedColor, setSelectedColor] = useState(COLORS[0]);
   const [width, setWidth] = useState(320);
   const [height, setHeight] = useState(380);
   const [isSaved, setIsSaved] = useState(false);
   const [showList, setShowList] = useState(notes.length === 0);
-
+  
   useEffect(() => {
     if (activeNoteId) {
       const n = notes.find(n => n.id === activeNoteId);
-      if (n) setCurrentText(n.text);
+      if (n) setCurrentText(n.note_text);
     } else {
       setCurrentText('');
     }
-  }, [activeNoteId]);
+  }, [activeNoteId, notes]);
 
-  const handleSave = () => {
-    let updatedNotes = [...notes];
+  const handleSave = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
     if (activeNoteId) {
-      updatedNotes = updatedNotes.map(n => n.id === activeNoteId ? { ...n, text: currentText } : n);
+      await supabase.from('notes').update({ 
+        note_text: currentText,
+        updated_at: new Date().toISOString()
+      }).eq('id', activeNoteId);
     } else {
-      const newNote = { id: Date.now().toString(), text: currentText, date: new Date().toLocaleDateString() };
-      updatedNotes.unshift(newNote);
-      setActiveNoteId(newNote.id);
+      const { data } = await supabase.from('notes').insert({
+        user_id: user.id,
+        note_text: currentText,
+      }).select().single();
+      if (data) setActiveNoteId(data.id);
     }
-    setNotes(updatedNotes);
-    localStorage.setItem('adalah-global-notes-list', JSON.stringify(updatedNotes));
     setIsSaved(true);
     setTimeout(() => setIsSaved(false), 2000);
   };
@@ -71,14 +94,8 @@ export default function GlobalNotesWidget() {
     setShowList(false);
   };
 
-  const handleDelete = (id: string) => {
-    const updated = notes.filter(n => n.id !== id);
-    setNotes(updated);
-    localStorage.setItem('adalah-global-notes-list', JSON.stringify(updated));
-    if (activeNoteId === id) {
-      setActiveNoteId(updated.length > 0 ? updated[0].id : null);
-      if (updated.length === 0) setShowList(true);
-    }
+  const handleDelete = async (id: string) => {
+    await supabase.from('notes').delete().eq('id', id);
   };
 
   const activeTheme = isDarkMode ? COLORS.find(c => c.id === 'dark')! : selectedColor;
@@ -153,8 +170,8 @@ export default function GlobalNotesWidget() {
                           setShowList(false);
                         }}
                       >
-                        <p className="text-xs font-bold line-clamp-2">{note.text || 'ملاحظة فارغة...'}</p>
-                        <span className="text-[11px] opacity-60 mt-1 block">{note.date}</span>
+                        <p className="text-xs font-bold line-clamp-2">{note.note_text || 'ملاحظة فارغة...'}</p>
+                        <span className="text-[11px] opacity-60 mt-1 block">{new Date(note.updated_at).toLocaleDateString()}</span>
                       </div>
                       <button 
                         onClick={(e) => { e.stopPropagation(); handleDelete(note.id); }}

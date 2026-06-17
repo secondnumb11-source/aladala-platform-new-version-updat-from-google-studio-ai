@@ -3,6 +3,9 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+import 'dotenv/config';
+process.on('uncaughtException', (err) => console.error('!!! UNCAUGHT EXCEPTION !!!', err));
+process.on('unhandledRejection', (reason) => console.error('!!! UNHANDLED REJECTION !!!', reason));
 import express from 'express';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
@@ -4082,7 +4085,7 @@ async function initializeDatabaseTables() {
     const { Client } = await import('pg');
     const client = new Client({
       connectionString: activeUrl,
-      connectionTimeoutMillis: 10000,
+      connectionTimeoutMillis: 60000,
       ssl: activeUrl.includes('localhost') || activeUrl.includes('127.0.0.1') ? false : { rejectUnauthorized: false }
     });
 
@@ -4090,6 +4093,27 @@ async function initializeDatabaseTables() {
     
     // Extensions
     await client.query('CREATE EXTENSION IF NOT EXISTS "uuid-ossp";');
+
+    // 0. user_preferences
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS public.user_preferences (
+        id TEXT PRIMARY KEY DEFAULT uuid_generate_v4(),
+        user_id UUID NOT NULL,
+        preferences JSONB DEFAULT '{}'::jsonb,
+        updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now())
+      );
+    `);
+
+    // 0. user_states
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS public.user_states (
+        id TEXT PRIMARY KEY DEFAULT uuid_generate_v4(),
+        user_id UUID NOT NULL,
+        state_key TEXT NOT NULL,
+        state_value JSONB,
+        updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now())
+      );
+    `);
 
     // 1. profiles
     await client.query(`

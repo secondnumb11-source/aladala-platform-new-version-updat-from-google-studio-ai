@@ -16,9 +16,6 @@ interface NajizExtensionHubProps {
 
 export default function NajizExtensionHub({ currentUser, onUpdateState }: NajizExtensionHubProps) {
   const [downloading, setDownloading] = useState(false);
-  const [copiedKey, setCopiedKey] = useState('');
-  const [showSettings, setShowSettings] = useState(false);
-  const [settingsTab, setSettingsTab] = useState<'general' | 'advanced'>('general');
   const [activeTab, setActiveTab] = useState<'instructions' | 'features'>('instructions');
 
   const handleDownload = async () => {
@@ -85,31 +82,41 @@ export default function NajizExtensionHub({ currentUser, onUpdateState }: NajizE
 
       const contentHtmlText = `
         <div id="adalah-sync-widget-container">
-           <button id="adalah-sync-toggle" style="position:fixed; bottom:20px; right:20px; z-index:999999; background:#D4AF37; color:#0c2461; border:none; padding:15px 25px; border-radius:30px; font-weight:900; box-shadow:0 10px 20px rgba(0,0,0,0.5); cursor:pointer; font-family:system-ui; direction:rtl; display:flex; align-items:center; gap:8px;">
-              ⚖️ خيارات الربط المباشر مع ناجز
+           <button id="adalah-sync-toggle" style="position:fixed; bottom:20px; right:20px; z-index:999999; background:#0c2461; color:#FACC15; border:2px solid #D4AF37; padding:15px 30px; border-radius:30px; font-weight:900; box-shadow:0 10px 25px rgba(0,0,0,0.7); cursor:pointer; font-family:system-ui; direction:rtl; display:flex; align-items:center; gap:10px; font-size:16px;">
+              ⚖️ خيارات الربط والمزامنة
            </button>
-           <div id="adalah-sync-widget" style="display:none; position:fixed; bottom:80px; right:20px; z-index:999999; background:#0c2461; color:#fff; border:2px solid #D4AF37; border-radius:20px; padding:20px; width:340px; box-shadow:0 15px 40px rgba(0,0,0,0.6); font-family:system-ui; direction:rtl;">
-               <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; border-bottom:1px solid rgba(212,175,55,0.3); padding-bottom:10px;">
-                  <strong style="color: #D4AF37; font-size:16px;">الربط والمزامنة - منصة العدالة</strong>
-                  <span style="font-size:11px; background:rgba(74,222,128,0.1); color:#4ade80; padding:4px 8px; border-radius:6px; font-weight:bold;">● نشط</span>
+           <div id="adalah-sync-widget" style="display:none; position:fixed; bottom:85px; right:20px; z-index:999999; background:#0b1329; color:#FFFFFF; border:2px solid #D4AF37; border-radius:24px; padding:25px; width:360px; box-shadow:0 15px 40px rgba(0,0,0,0.8); font-family:system-ui; direction:rtl;">
+               <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; border-bottom:1px solid rgba(212,175,55,0.4); padding-bottom:15px;">
+                  <strong style="color: #FACC15; font-size:18px; font-weight:900;">منصة العدالة - ناجز</strong>
+                  <div style="display:flex; gap:8px;">
+                     <button id="btn-sync-settings" style="background:transparent; border:none; color:#FFFFFF; cursor:pointer;" title="إعدادات">⚙️</button>
+                     <span style="font-size:12px; background:rgba(74,222,128,0.15); color:#4ade80; padding:4px 10px; border-radius:8px; font-weight:900;">متصل</span>
+                  </div>
                </div>
-               <button class="ad-btn primary" id="btn-sync-all" style="margin-bottom:10px;">سحب ومزامنة جميع البيانات</button>
-               <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
-                  <button class="ad-btn" id="btn-sync-cases">مزامنة بيانات القضايا</button>
-                  <button class="ad-btn" id="btn-sync-clients">مزامنة العملاء</button>
-                  <button class="ad-btn" id="btn-sync-parties">مزامنة أطراف القضايا</button>
-                  <button class="ad-btn" id="btn-sync-hearings">مزامنة مواعيد الجلسات</button>
-                  <button class="ad-btn" id="btn-sync-minutes">مزامنة محاضر الجلسات</button>
-                  <button class="ad-btn" id="btn-sync-executions">مزامنة طلبات التنفيذ</button>
-                  <button class="ad-btn" id="btn-sync-requests">مزامنة الطلبات</button>
-                  <button class="ad-btn" id="btn-sync-agencies">مزامنة الوكالات</button>
-                  <button class="ad-btn" id="btn-sync-notifications">مزامنة الإشعارات</button>
-                  <button class="ad-btn" id="btn-sync-documents">مزامنة المستندات</button>
-                  <button class="ad-btn" id="btn-sync-appointments">مزامنة المواعيد</button>
-                  <button class="ad-btn" id="btn-sync-tasks">مزامنة المهام</button>
+               
+               <div id="adalah-sync-menu">
+                   <button class="ad-btn primary" id="btn-sync-all" style="margin-bottom:15px; font-size:14px; padding:12px;">سحب ومزامنة جميع البيانات</button>
+                   <div style="display: grid; grid-template-columns: 1fr; gap: 8px;">
+                      <button class="ad-btn" id="btn-sync-cases">مزامنة بيانات القضايا</button>
+                      <button class="ad-btn" id="btn-sync-clients">مزامنة بيانات العملاء وأطراف القضايا</button>
+                      <button class="ad-btn" id="btn-sync-hearings">مزامنة مواعيد الجلسات</button>
+                      <button class="ad-btn" id="btn-sync-executions">مزامنة طلبات التنفيذ</button>
+                      <button class="ad-btn" id="btn-sync-requests">مزامنة الطلبات علي القضايا</button>
+                      <button class="ad-btn" id="btn-sync-minutes">مزامنة محاضر ضبط الجلسات</button>
+                      <button class="ad-btn" id="btn-sync-agencies">مزامنة الوكالات</button>
+                      <button class="ad-btn" id="btn-sync-other">مزامنة البيانات الأخرى</button>
+                   </div>
+                   <div style="margin-top:15px; font-size:11px; color:#FFFFFF; opacity:0.8; text-align:center; line-height:1.6; font-weight:bold;">
+                      يعمل مساعد الذكاء الاصطناعي (AI) على تحليل وترتيب البيانات في أقسام النظام تلقائياً وبدقة عالية.
+                   </div>
                </div>
-               <div style="margin-top:10px; font-size:10px; color:#94a3b8; text-align:center;">
-                  يعمل المدقق الآلي (AI) على تحليل وترتيب البيانات في أقسام النظام تلقائياً.
+               
+               <div id="adalah-sync-settings-menu" style="display:none;">
+                   <h4 style="color:#FACC15; margin-top:0; margin-bottom:15px;">الإعدادات (اختياري)</h4>
+                   <p style="font-size:11px; color:#FFFFFF; margin-bottom:15px;">الربط يعمل تلقائياً، يمكنك إدخال المفاتيح هنا للربط المخصص.</p>
+                   <input type="password" id="ext-api-key" placeholder="API Key (اختياري)" style="width:100%; padding:10px; border-radius:8px; border:1px solid #D4AF37; background:rgba(0,0,0,0.3); color:#FFF; margin-bottom:15px; box-sizing:border-box;">
+                   <input type="text" id="ext-api-url" placeholder="API URL (اختياري)" style="width:100%; padding:10px; border-radius:8px; border:1px solid #D4AF37; background:rgba(0,0,0,0.3); color:#FFF; margin-bottom:15px; box-sizing:border-box;">
+                   <button class="ad-btn primary" id="btn-sync-save-settings">حفظ الرجوع</button>
                </div>
            </div>
         </div>
@@ -126,8 +133,33 @@ export default function NajizExtensionHub({ currentUser, onUpdateState }: NajizE
              const w = document.getElementById('adalah-sync-widget');
              w.style.display = w.style.display === 'none' ? 'block' : 'none';
           });
+          
+          document.getElementById('btn-sync-settings').addEventListener('click', () => {
+             const menu = document.getElementById('adalah-sync-menu');
+             const settings = document.getElementById('adalah-sync-settings-menu');
+             if(menu.style.display !== 'none') {
+                 menu.style.display = 'none';
+                 settings.style.display = 'block';
+                 chrome.storage.local.get(['apiUrl', 'apiKey'], (data) => {
+                     if(data.apiUrl) document.getElementById('ext-api-url').value = data.apiUrl;
+                     if(data.apiKey) document.getElementById('ext-api-key').value = data.apiKey;
+                 });
+             } else {
+                 menu.style.display = 'block';
+                 settings.style.display = 'none';
+             }
+          });
+          
+          document.getElementById('btn-sync-save-settings').addEventListener('click', () => {
+               const apiUrl = document.getElementById('ext-api-url').value;
+               const apiKey = document.getElementById('ext-api-key').value;
+               chrome.storage.local.set({ apiUrl, apiKey }, () => {
+                  document.getElementById('adalah-sync-menu').style.display = 'block';
+                  document.getElementById('adalah-sync-settings-menu').style.display = 'none';
+               });
+          });
 
-          const buttons = ['all', 'cases', 'clients', 'parties', 'hearings', 'minutes', 'executions', 'requests', 'agencies', 'notifications', 'documents', 'appointments', 'tasks'];
+          const buttons = ['all', 'cases', 'clients', 'hearings', 'executions', 'requests', 'minutes', 'agencies', 'other'];
           buttons.forEach(id => {
              const btn = document.getElementById('btn-sync-' + id);
              if (btn) btn.addEventListener('click', () => handleSync(id));
@@ -342,21 +374,6 @@ export default function NajizExtensionHub({ currentUser, onUpdateState }: NajizE
     }
   };
 
-  const copyToClipboard = (text: string, type: string) => {
-    navigator.clipboard.writeText(text);
-    setCopiedKey(type);
-    setTimeout(() => setCopiedKey(''), 2000);
-  };
-
-  const [customApiUrl, setCustomApiUrl] = useState(() => localStorage.getItem('najizCustomApiUrl') || `https://${window.location.hostname}/api/v1/najiz-sync`);
-  const [customApiKey, setCustomApiKey] = useState(() => localStorage.getItem('najizCustomApiKey') || currentUser?.najizApiKey || `sk_live_${currentUser?.id || 'emp_0'}_${Date.now().toString().slice(0, 5)}`);
-
-  const saveSettings = () => {
-    localStorage.setItem('najizCustomApiUrl', customApiUrl);
-    localStorage.setItem('najizCustomApiKey', customApiKey);
-    setShowSettings(false);
-  };
-
   return (
     <div className="p-8 max-w-7xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 min-h-screen" dir="rtl">
       
@@ -383,7 +400,7 @@ export default function NajizExtensionHub({ currentUser, onUpdateState }: NajizE
               <button 
                 onClick={handleDownload}
                 disabled={downloading}
-                className="bg-[#D4AF37] hover:bg-[#e5c358] text-white font-black text-lg px-10 py-5 rounded-2xl shadow-[0_10px_30px_rgba(212,175,55,0.3)] transition-all flex items-center gap-3 active:scale-95 disabled:opacity-50"
+                className="bg-[#D4AF37] hover:bg-[#e5c358] text-[#0b1329] font-black text-lg px-10 py-5 rounded-2xl shadow-[0_10px_30px_rgba(212,175,55,0.3)] transition-all flex items-center gap-3 active:scale-95 disabled:opacity-50"
               >
                 {downloading ? (
                    <span className="flex items-center gap-2">جارِ تجميع الحزمة... ⏳</span>
@@ -393,14 +410,6 @@ export default function NajizExtensionHub({ currentUser, onUpdateState }: NajizE
                      تحميل إضافة جوجل كروم (جاهزة)
                    </>
                 )}
-              </button>
-              
-              <button 
-                onClick={() => setShowSettings(true)}
-                className="bg-[#0b1329] hover:bg-slate-900 border-2 border-[#D4AF37] text-white font-black text-lg px-8 py-5 rounded-2xl shadow-xl transition-all flex items-center gap-3 active:scale-95"
-              >
-                <Settings className="w-6 h-6 text-[#FACC15] font-black" />
-                مفاتيح ربط API (إختياري)
               </button>
             </div>
           </div>
@@ -533,97 +542,7 @@ export default function NajizExtensionHub({ currentUser, onUpdateState }: NajizE
         </div>
       </div>
 
-      {/* Settings Modal - API Keys */}
-      <AnimatePresence>
-        {showSettings && (
-           <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 backdrop-blur-md bg-black/70 settings-container najiz-settings-panel">
-              <motion.div 
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.95 }}
-                className="bg-[#0b1329] border-2 border-[#D4AF37] rounded-[3rem] w-full max-w-xl shadow-[0_20px_50px_rgba(0,0,0,0.8)] overflow-hidden text-[#FFFFFF]"
-              >
-                 <div className="p-8 border-b border-[#D4AF37]/30 flex justify-between items-center bg-[#090f20]">
-                    <div className="flex items-center gap-3">
-                       <div className="p-2 bg-[#D4AF37] rounded-xl text-white">
-                         <Settings className="w-5 h-5" />
-                       </div>
-                       <h3 className="font-black text-[#FFFFFF] text-xl">إعدادات الربط بواسطة المفاتيح</h3>
-                    </div>
-                    <button onClick={() => setShowSettings(false)} className="p-2 hover:bg-white/10 rounded-full transition-colors text-[#FFFFFF]">
-                       <X className="w-6 h-6" />
-                    </button>
-                 </div>
-                 
-                 <div className="p-10 space-y-8 bg-[#0b1329] najiz-settings-panel settings-container">
-                    <div className="bg-[#D4AF37]/10 p-5 rounded-2xl border border-[#D4AF37]/30">
-                       <h4 className="flex items-center gap-2 text-sm font-black text-[#FACC15] mb-2">
-                          <ShieldCheck className="w-5 h-5 text-[#FACC15]" />
-                          الربط محمي وتلقائي
-                       </h4>
-                       <p className="text-sm text-[#FFFFFF] font-bold leading-relaxed">
-                          بشكل افتراضي تعمل المزامنة عبر الاتصال الآمن مع المنصة بمجرد تسجيل الدخول في ناجز وتثبيت الإضافة. لا حاجة لأي إعدادات إضافية.
-                       </p>
-                    </div>
-
-                    <details className="group bg-[#090f20] rounded-2xl border border-[#D4AF37]/30 overflow-hidden">
-                      <summary className="flex items-center justify-between p-5 cursor-pointer text-[#FACC15] font-black hover:bg-[#D4AF37]/10 transition-colors">
-                        <div className="flex items-center gap-2">
-                          <Settings className="w-5 h-5 text-[#FACC15]" />
-                          <span>Advanced Settings (إعدادات متقدمة)</span>
-                        </div>
-                        <span className="text-xs bg-[#FACC15] text-[#0b1329] px-2 py-1 rounded font-black group-open:hidden">إظهار</span>
-                        <span className="text-xs bg-[#FACC15] text-[#0b1329] px-2 py-1 rounded font-black hidden group-open:inline-block">إخفاء</span>
-                      </summary>
-                      
-                      <div className="p-6 space-y-6 border-t border-[#D4AF37]/30 bg-[#090f20]">
-                         <div className="space-y-3">
-                           <label className="text-sm font-black text-[#FACC15]">API URL (رابط الواجهة البرمجية)</label>
-                           <div className="flex gap-2">
-                              <input 
-                                type="text" 
-                                value={customApiUrl} 
-                                onChange={(e) => setCustomApiUrl(e.target.value)}
-                                className="flex-1 bg-[#0b1329] p-4 rounded-xl font-mono text-sm text-[#FFFFFF] focus:outline-none focus:ring-2 focus:ring-[#D4AF37] focus:border-transparent border border-[#FFFFFF]/20 transition-all placeholder-[#FFFFFF]/50" 
-                                dir="ltr" 
-                              />
-                              <button onClick={() => copyToClipboard(customApiUrl, 'url')} className="bg-[#0b1329] p-4 rounded-xl text-[#FFFFFF] hover:bg-[#D4AF37] hover:text-[#0b1329] border border-[#FFFFFF]/20 transition-all">
-                                 {copiedKey === 'url' ? <CheckCircle2 className="w-5 h-5" /> : <Copy className="w-5 h-5" />}
-                              </button>
-                           </div>
-                         </div>
-
-                         <div className="space-y-3">
-                           <label className="text-sm font-black text-[#FACC15]">API Key (مفتاح الوصول السري)</label>
-                           <div className="flex gap-2">
-                              <input 
-                                type="password" 
-                                value={customApiKey}
-                                onChange={(e) => setCustomApiKey(e.target.value)}
-                                className="flex-1 bg-[#0b1329] p-4 rounded-xl font-mono text-sm text-[#FFFFFF] focus:outline-none focus:ring-2 focus:ring-[#D4AF37] focus:border-transparent border border-[#FFFFFF]/20 transition-all placeholder-[#FFFFFF]/50" 
-                                dir="ltr" 
-                              />
-                              <button onClick={() => copyToClipboard(customApiKey, 'key')} className="bg-[#0b1329] p-4 rounded-xl text-[#FFFFFF] hover:bg-[#D4AF37] hover:text-[#0b1329] border border-[#FFFFFF]/20 transition-all">
-                                 {copiedKey === 'key' ? <CheckCircle2 className="w-5 h-5" /> : <Copy className="w-5 h-5" />}
-                              </button>
-                           </div>
-                         </div>
-                      </div>
-                    </details>
-                    
-                    <div className="pt-6 border-t border-[#D4AF37]/20">
-                       <button 
-                         onClick={saveSettings}
-                         className="w-full bg-[#D4AF37] text-[#0b1329] hover:bg-[#FACC15] hover:text-[#0b1329] font-black py-4 rounded-2xl shadow-lg shadow-[#D4AF37]/20 transition-all active:scale-95 text-base"
-                       >
-                          حفظ وتأمين الإعدادات
-                       </button>
-                    </div>
-                 </div>
-              </motion.div>
-           </div>
-        )}
-      </AnimatePresence>
+      {/* The Settings Modal has been removed per instructions. The API keys are entered directly in the Extension widget now. */}
 
     </div>
   );

@@ -15,7 +15,9 @@
     "validate": "tsc --noEmit",
     "lint": "tsc --noEmit --skipLibCheck",
     "lint:css": "stylelint 'src/**/*.css'",
+    "test:install": "npx playwright install --with-deps chromium",
     "test:visual": "npx playwright test src/tests/visual.spec.ts",
+
     "start": "node dist/server.cjs"
   },
   "dependencies": {

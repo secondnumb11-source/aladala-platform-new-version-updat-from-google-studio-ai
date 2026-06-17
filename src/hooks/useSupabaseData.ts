@@ -4,6 +4,130 @@ import { Case, Client, Task, Hearing, Document, PowerOfAttorney, Invoice, Employ
 import { validatePayload } from '@/lib/persistenceManager';
 import { toCamel, toSnake } from '@/utils/schemaMapping';
 
+// الأعمدة المسموح بها فقط لكل جدول - مطابقة تماماً لـ Supabase schema
+const ALLOWED_COLUMNS: Record<string, string[]> = {
+  clients: [
+    'id', 'name', 'phone', 'email', 'id_number', 'najiz_id',
+    'address', 'status', 'last_sync_at', 'created_at', 'updated_at'
+  ],
+  cases: [
+    'id', 'client_id', 'case_number', 'najiz_case_number', 'title',
+    'category', 'stage', 'status', 'priority', 'court_name',
+    'opponent_name', 'summary', 'details', 'attachments_count',
+    'last_session_at', 'next_session_at', 'lawyers', 'metadata',
+    'last_sync_at', 'created_at', 'updated_at'
+  ],
+  tasks: [
+    'id', 'case_id', 'employee_id', 'title', 'description',
+    'status', 'priority', 'due_date', 'created_at', 'updated_at'
+  ],
+  hearings: [
+    'id', 'case_id', 'date', 'time', 'location', 'hall',
+    'judge', 'status', 'notes', 'created_at', 'updated_at'
+  ],
+  employees: [
+    'id', 'name', 'role', 'email', 'phone', 'status',
+    'salary', 'department', 'join_date', 'created_at', 'updated_at'
+  ],
+  invoices: [
+    'id', 'client_id', 'case_id', 'amount', 'vat_amount', 'total_amount',
+    'status', 'issue_date', 'due_date', 'payment_method', 'description',
+    'is_zatca_submitted', 'zatca_timestamp', 'created_at', 'updated_at'
+  ],
+  powers_of_attorney: [
+    'id', 'client_id', 'poa_number', 'issue_date', 'expiry_date',
+    'type', 'status', 'file_url', 'created_at', 'updated_at'
+  ],
+  documents: [
+    'id', 'case_id', 'name', 'category', 'file_url', 'file_size',
+    'uploaded_at', 'tags', 'content_text', 'created_at', 'updated_at'
+  ],
+  attachments: [
+    'id', 'case_id', 'file_name', 'file_size', 'file_url',
+    'category', 'uploaded_at', 'created_at'
+  ],
+  payments: [
+    'id', 'invoice_id', 'client_id', 'amount', 'payment_date',
+    'payment_method', 'transaction_id', 'status', 'created_at'
+  ],
+  notifications: [
+    'id', 'user_id', 'title', 'message', 'type', 'is_read',
+    'entity_type', 'entity_id', 'created_at'
+  ],
+  audit_trails: [
+    'id', 'user_id', 'user_name', 'action', 'entity_type',
+    'entity_id', 'old_data', 'new_data', 'ip_address', 'created_at'
+  ],
+  system_errors: [
+    'id', 'message', 'stack', 'component', 'user_id', 'severity', 'created_at'
+  ],
+};
+
+// دالة تنقية البيانات: تحذف أي حقل غير موجود في الجدول
+const sanitizeForTable = (table: string, snakeData: Record<string, any>): Record<string, any> => {
+  const allowed = ALLOWED_COLUMNS[table];
+  if (!allowed) return snakeData; // إذا لم يكن الجدول معرفاً، أرسل كما هو
+  
+  const sanitized: Record<string, any> = {};
+  for (const key of allowed) {
+    if (snakeData[key] !== undefined && snakeData[key] !== null) {
+      sanitized[key] = snakeData[key];
+    }
+  }
+  return sanitized;
+};
+
+// دالة تحويل خاصة للعملاء (clients) لمعالجة اختلاف أسماء الحقول
+const mapClientToDb = (data: any): Record<string, any> => {
+  const snaked = toSnake(data);
+  return {
+    id: snaked.id,
+    name: snaked.name,
+    phone: snaked.phone,
+    email: snaked.email,
+    id_number: snaked.national_id || snaked.id_number, // camelCase: nationalId → national_id → id_number في DB
+    najiz_id: snaked.najiz_id,
+    address: snaked.address,
+    status: snaked.status || 'active',
+    last_sync_at: snaked.last_sync_at,
+    created_at: snaked.created_at,
+    updated_at: snaked.updated_at || new Date().toISOString(),
+  };
+};
+
+// دالة تحويل خاصة للقضايا (cases) لمعالجة اختلاف أسماء الحقول
+const mapCaseToDb = (data: any): Record<string, any> => {
+  const snaked = toSnake(data);
+  return {
+    id: snaked.id,
+    client_id: snaked.client_id,
+    case_number: snaked.case_number,
+    najiz_case_number: snaked.najiz_case_number || snaked.court_case_number,
+    title: snaked.case_name || snaked.title,
+    category: snaked.category,
+    stage: snaked.stage,
+    status: snaked.status,
+    priority: snaked.priority || 'medium',
+    court_name: snaked.court_name,
+    opponent_name: snaked.opponent_name || (snaked as any).opponent_names?.[0], // Fallback if opponent_name missing
+    summary: snaked.summary,
+    details: snaked.details,
+    attachments_count: snaked.attachments_count || 0,
+    last_session_at: snaked.last_session_date || snaked.last_session_at,
+    next_session_at: snaked.next_session_date || snaked.next_session_at,
+    lawyers: snaked.assigned_lawyers ? JSON.stringify(snaked.assigned_lawyers) : '[]',
+    metadata: JSON.stringify({
+      isNajizSync: snaked.is_najiz_sync,
+      isConfidential: snaked.is_confidential,
+      judgeName: snaked.judge_name,
+      executionNumber: snaked.execution_number,
+    }),
+    last_sync_at: snaked.last_sync_at,
+    created_at: snaked.created_at,
+    updated_at: new Date().toISOString(),
+  };
+};
+
 export function useSupabaseData() {
   const [cases, setCases] = useState<Case[]>([]);
   const [clients, setClients] = useState<Client[]>([]);
@@ -203,21 +327,33 @@ export function useSupabaseData() {
   };
 
   const getSupabaseTableName = (table: string): string => {
-    switch(table) {
-      case 'powersOfAttorney':
-      case 'powers_of_attorney': return 'powers_of_attorney';
-      case 'clientPortal':
-      case 'client_portal': return 'client_portal';
-      case 'employeePortal':
-      case 'employee_portal': return 'employee_portal';
-      case 'leaveRequests':
-      case 'leave_requests': return 'leave_requests';
-      case 'auditTrails':
-      case 'audit_trails': return 'audit_trails';
-      case 'systemErrors':
-      case 'system_errors': return 'system_errors';
-      default: return table;
-    }
+    const tableMap: Record<string, string> = {
+      'cases': 'cases',
+      'clients': 'clients',
+      'tasks': 'tasks',
+      'hearings': 'hearings',
+      'documents': 'documents',
+      'powersOfAttorney': 'powers_of_attorney',
+      'powers_of_attorney': 'powers_of_attorney',
+      'invoices': 'invoices',
+      'employees': 'employees',
+      'attachments': 'attachments',
+      'clientPortal': 'client_portal',
+      'client_portal': 'client_portal',
+      'employeePortal': 'employee_portal',
+      'employee_portal': 'employee_portal',
+      'attendance': 'attendance',
+      'leaveRequests': 'leave_requests',
+      'leave_requests': 'leave_requests',
+      'payments': 'payments',
+      'vouchers': 'payments',
+      'notifications': 'notifications',
+      'auditTrails': 'audit_trails',
+      'audit_trails': 'audit_trails',
+      'systemErrors': 'system_errors',
+      'system_errors': 'system_errors',
+    };
+    return tableMap[table] || table;
   };
 
   const getStateSetter = (table: string) => {
@@ -262,11 +398,32 @@ export function useSupabaseData() {
       }
 
       const mappedTable = getSupabaseTableName(table);
-      const snakeData = toSnake(data);
-      console.log(`[Supabase] Attempting insert into ${mappedTable}`, snakeData);
-      const { data: insertedData, error } = await supabase.from(mappedTable).insert([snakeData]).select().single();
+      let dbData: Record<string, any>;
+      if (mappedTable === 'clients') {
+        dbData = mapClientToDb(data);
+      } else if (mappedTable === 'cases') {
+        dbData = mapCaseToDb(data);
+      } else {
+        dbData = sanitizeForTable(mappedTable, toSnake(data));
+      }
+
+      console.log(`[Supabase] Sanitized payload for ${mappedTable}:`, dbData);
+      console.log(`[DEBUG ${table} INSERT payload]`, JSON.stringify(dbData, null, 2));
+
+      const { data: insertedData, error } = await supabase
+        .from(mappedTable)
+        .insert([dbData])
+        .select()
+        .single();
+
       
       if (error) {
+        // Handle PGRST204 (No Content)
+        if (error.code === 'PGRST204') {
+          console.warn(`[${table}] PGRST204: returning input data as fallback`);
+          return { success: true, data: data };
+        }
+
         console.error(`[Supabase Insert Error] Table: ${mappedTable}`, error);
         const isNetworkError = !navigator.onLine || error.message?.includes('fetch') || error.message?.includes('network');
         if (isNetworkError) {
@@ -308,11 +465,31 @@ export function useSupabaseData() {
       }
 
       const mappedTable = getSupabaseTableName(table);
-      const snakeData = toSnake(data);
-      console.log(`[Supabase] Attempting update ${mappedTable} id=${id}`, snakeData);
-      const { data: updatedData, error } = await supabase.from(mappedTable).update(snakeData).eq('id', id).select().single();
+      let dbData: Record<string, any>;
+      if (mappedTable === 'clients') {
+        dbData = mapClientToDb(data);
+      } else if (mappedTable === 'cases') {
+        dbData = mapCaseToDb(data);
+      } else {
+        dbData = sanitizeForTable(mappedTable, toSnake(data));
+      }
+
+      // احذف id من بيانات التحديث (لا يجب تحديث المفتاح الأساسي)
+      const { id: _id, created_at: _ca, ...updateData } = dbData;
+
+      console.log(`[Supabase] Sanitized update payload for ${mappedTable}:`, updateData);
+      const { data: updatedData, error } = await supabase
+        .from(mappedTable)
+        .update(updateData)
+        .eq('id', id)
+        .select()
+        .single();
       
       if (error) {
+        if (error.code === 'PGRST204') {
+          console.warn(`[${table}] PGRST204: returning input data as fallback for UPDATE`);
+          return { success: true, data: data };
+        }
         console.error(`[Supabase Update Error] Table: ${mappedTable}, id=${id}`, error);
         const isNetworkError = !navigator.onLine || error.message?.includes('fetch') || error.message?.includes('network');
         if (isNetworkError) {

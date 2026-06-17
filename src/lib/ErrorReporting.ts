@@ -40,18 +40,11 @@ export const ErrorReporting = {
         timestamp: new Date().toISOString()
       };
 
-      // 1. Log locally for immediate session recovery
-      const localLogs = JSON.parse(localStorage.getItem('adalah-error-logs') || '[]');
-      localLogs.push(errorPayload);
-      // Keep only last 20 errors to prevent storage bloat
-      if (localLogs.length > 20) localLogs.shift();
-      localStorage.setItem('adalah-error-logs', JSON.stringify(localLogs));
-
       if (typeof window !== 'undefined') {
         window.dispatchEvent(new CustomEvent('adalah_error_logged', { detail: errorPayload }));
       }
 
-      // 2. Transmit to Supabase for remote auditing and compliance
+      // Transmit to Supabase for remote auditing and compliance
       try {
         if (supabase) {
           await supabase.from('system_errors').insert([{
@@ -70,12 +63,23 @@ export const ErrorReporting = {
     }
   },
   
-  getErrorLogs: () => {
-    return JSON.parse(localStorage.getItem('adalah-error-logs') || '[]');
+  getErrorLogs: async () => {
+    if (!supabase) return [];
+    const { data, error } = await supabase
+      .from('system_errors')
+      .select('*')
+      .order('timestamp', { ascending: false })
+      .limit(20);
+    if (error) {
+      console.error("[ErrorReporting] Failed to fetch logs:", error);
+      return [];
+    }
+    return data || [];
   },
 
-  clearLogs: () => {
-    localStorage.removeItem('adalah-error-logs');
+  clearLogs: async () => {
+    if (!supabase) return;
+    await supabase.from('system_errors').delete().neq('id', '00000000-0000-0000-0000-000000000000');
   }
 };
 

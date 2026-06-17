@@ -13,8 +13,10 @@ import {
   Server
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+import { supabase } from '@/lib/supabase';
 
 interface FailedLogEntry {
+  id: string; // Add id
   timestamp: string;
   type: string;  // e.g., 'cases', 'clients'
   action?: string; // e.g., 'INSERT', 'UPDATE', 'DELETE'
@@ -34,75 +36,70 @@ export default function FailedPersistenceLogsDashboard({ onUpdateState }: Failed
   const [bulkSyncLoading, setBulkSyncLoading] = useState(false);
   const [actionMessage, setActionMessage] = useState<{ text: string; success: boolean } | null>(null);
 
-  // Load and clean logs from localStorage
-  const loadLogs = () => {
+  // Fetch logs from Supabase
+  const fetchLogs = async () => {
     try {
-      const stored = localStorage.getItem('failed_persistence_logs');
-      if (stored) {
-        const parsed = JSON.parse(stored) as any[];
-        // Filter out init_test logs as we only want to review failed JSON payloads for Cases and Clients
-        const filtered = parsed.filter(item => 
-          item && 
-          item.type !== 'init_test' && 
-          item.table !== 'init_test' &&
-          (item.type === 'cases' || item.type === 'clients' || item.table === 'cases' || item.table === 'clients')
-        ).map(item => {
-          // Standardize 'type' and 'table' fields
-          const type = item.type || item.table || 'unknown';
-          return {
-            timestamp: item.timestamp || new Date().toISOString(),
-            type,
-            action: item.action || 'INSERT',
-            data: item.data || {},
-            error: item.error || 'N/A'
-          };
-        });
-        setLogs(filtered);
-      } else {
-        setLogs([]);
+      const { data, error } = await supabase
+        .from('system_errors')
+        .select('*')
+        .order('created_at', { ascending: false });
+        
+      if (error) {
+        throw error;
       }
+
+      // Filter and map to FailedLogEntry format
+      const filtered = (data || []).filter(item => 
+        item.event_data && 
+        (item.event_data.type === 'cases' || item.event_data.type === 'clients' || item.event_data.table === 'cases' || item.event_data.table === 'clients')
+      ).map(item => {
+        const type = item.event_data.type || item.event_data.table || 'unknown';
+        return {
+          id: item.id, // Include id
+          timestamp: item.created_at || new Date().toISOString(),
+          type,
+          action: item.event_data.action || 'INSERT',
+          data: item.event_data.data || {},
+          error: item.event_data.error || 'N/A'
+        };
+      });
+      setLogs(filtered);
     } catch (e) {
-      console.error('Failed to read failed_persistence_logs:', e);
+      console.error('Failed to fetch logs from system_errors:', e);
       setLogs([]);
     }
   };
 
   useEffect(() => {
-    loadLogs();
+    fetchLogs();
     
-    // Set up a quick interval to poll for updates as actions might log failures asynchronously
-    const interval = setInterval(loadLogs, 2000);
-
-    // Also listen to storage events
-    window.addEventListener('storage', loadLogs);
-    // Custom triggers
-    window.addEventListener('failed_persistence_logs_updated', loadLogs);
+    // Subscribe to changes in system_errors
+    const channel = supabase.channel('system_errors_channel')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'system_errors' }, fetchLogs)
+      .subscribe();
 
     return () => {
-      clearInterval(interval);
-      window.removeEventListener('storage', loadLogs);
-      window.removeEventListener('failed_persistence_logs_updated', loadLogs);
+      supabase.removeChannel(channel);
     };
   }, []);
 
-  const handleClearLogs = () => {
+  const handleClearLogs = async () => {
     if (confirm('هل أنت متأكد من رغبتك في تفريغ قائمة الأخطاء والمسودات المعلقة؟')) {
       try {
-        const stored = localStorage.getItem('failed_persistence_logs');
-        let remaining = [];
-        if (stored) {
-          const parsed = JSON.parse(stored) as any[];
-          // Keep only non-case/non-client or init_test entries
-          remaining = parsed.filter(item => 
-            item && (item.type === 'init_test' || item.table === 'init_test' || (item.type !== 'cases' && item.type !== 'clients'))
-          );
-        }
-        localStorage.setItem('failed_persistence_logs', JSON.stringify(remaining));
+        const idsToDelete = logs.map(l => l.id);
+        const { error } = await supabase
+          .from('system_errors')
+          .delete()
+          .in('id', idsToDelete);
+        
+        if (error) throw error;
+
         setLogs([]);
         setSelectedLog(null);
         showToast('تم تفريغ السجلات بنجاح.', true);
-      } catch (e) {
+      } catch (e: any) {
         console.error(e);
+        showToast(`فشل تفريغ السجلات: ${e.message}`, false);
       }
     }
   };
@@ -128,12 +125,18 @@ export default function FailedPersistenceLogsDashboard({ onUpdateState }: Failed
 
       setSyncStatus(prev => ({ ...prev, [index]: 'success' }));
       
-      // Successfully synchronized, now remove from localStorage
-      removeEntryFromStorage(entry);
+      // Successfully synchronized, now remove from system_errors
+      const { error } = await supabase
+        .from('system_errors')
+        .delete()
+        .eq('id', entry.id);
+        
+      if (error) throw error;
+
       showToast(`تم مزامنة العنصر [${entry.type === 'cases' ? 'القضية' : 'العميل'}] بنجاح!`, true);
       
       // Reload logs
-      setTimeout(loadLogs, 800);
+      setTimeout(fetchLogs, 800);
     } catch (err: any) {
       console.error('[Single Retry Failed]:', err);
       setSyncStatus(prev => ({ ...prev, [index]: 'failed' }));
@@ -148,7 +151,7 @@ export default function FailedPersistenceLogsDashboard({ onUpdateState }: Failed
     let successCount = 0;
     let failedCount = 0;
 
-    const remainingLogsInStorage = [...logs];
+    const successfulIds = [];
 
     for (let i = 0; i < logs.length; i++) {
       const entry = logs[i];
@@ -161,15 +164,7 @@ export default function FailedPersistenceLogsDashboard({ onUpdateState }: Failed
         
         setSyncStatus(prev => ({ ...prev, [i]: 'success' }));
         successCount++;
-        
-        // Remove from memory queue copy
-        const idx = remainingLogsInStorage.findIndex(item => 
-          item.timestamp === entry.timestamp && 
-          JSON.stringify(item.data) === JSON.stringify(entry.data)
-        );
-        if (idx !== -1) {
-          remainingLogsInStorage.splice(idx, 1);
-        }
+        successfulIds.push(entry.id);
       } catch (err) {
         console.warn(`Bulk sync item index ${i} failed:`, err);
         setSyncStatus(prev => ({ ...prev, [i]: 'failed' }));
@@ -177,50 +172,18 @@ export default function FailedPersistenceLogsDashboard({ onUpdateState }: Failed
       }
     }
 
-    // Save remaining back to localStorage
-    try {
-      const stored = localStorage.getItem('failed_persistence_logs');
-      let otherTypes = [];
-      if (stored) {
-        const parsed = JSON.parse(stored) as any[];
-        // Keep non-cases and non-clients or init_tests
-        otherTypes = parsed.filter(item => 
-          !item || 
-          item.type === 'init_test' || 
-          item.table === 'init_test' || 
-          (item.type !== 'cases' && item.type !== 'clients' && item.table !== 'cases' && item.table !== 'clients')
-        );
-      }
-      localStorage.setItem('failed_persistence_logs', JSON.stringify([...otherTypes, ...remainingLogsInStorage]));
-    } catch (e) {
-      console.error(e);
+    if (successfulIds.length > 0) {
+      await supabase
+        .from('system_errors')
+        .delete()
+        .in('id', successfulIds);
     }
 
     setBulkSyncLoading(false);
-    loadLogs();
+    fetchLogs();
     showToast(`اكتملت المزامنة الجماعية: نجح (${successCount})، وفشل (${failedCount})`, successCount > 0);
   };
 
-  const removeEntryFromStorage = (entry: FailedLogEntry) => {
-    try {
-      const stored = localStorage.getItem('failed_persistence_logs');
-      if (stored) {
-        const parsed = JSON.parse(stored) as any[];
-        // Filter out this specific entry based on timestamp and data content to avoid duplicates
-        const updated = parsed.filter(item => {
-          if (!item) return false;
-          const itemType = item.type || item.table;
-          const match = item.timestamp === entry.timestamp && 
-                        itemType === entry.type &&
-                        JSON.stringify(item.data) === JSON.stringify(entry.data);
-          return !match;
-        });
-        localStorage.setItem('failed_persistence_logs', JSON.stringify(updated));
-      }
-    } catch (e) {
-      console.error(e);
-    }
-  };
 
   const filteredLogs = logs.filter(log => {
     if (activeFilter === 'all') return true;

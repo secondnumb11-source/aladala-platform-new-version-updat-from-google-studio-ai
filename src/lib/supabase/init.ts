@@ -153,8 +153,12 @@ export async function runBootRlsDiagnostics() {
       logs
     };
 
-    localStorage.setItem('boot_rls_diagnostic', JSON.stringify(payload));
-    addLog('[Boot Diagnostic ✅] Security Check Completed & cached successfully.');
+        await supabase.from('audit_trails').insert({
+          event_type: 'boot_rls_diagnostic',
+          event_data: payload,
+          created_at: new Date().toISOString()
+        });
+        addLog('[Boot Diagnostic ✅] Security Check Completed & logged to audit_trails.');
     
     // Dispatch custom event to notify listeners
     window.dispatchEvent(new CustomEvent('boot_rls_diagnostic_completed', { detail: payload }));

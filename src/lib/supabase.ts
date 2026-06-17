@@ -6,29 +6,29 @@ import { createClient } from "@supabase/supabase-js";
  * must import the client from this file.
  */
 
-const getEnvVar = (key: string) => {
-  // Check process.env (Node.js/Express)
+const getViteEnv = (key: string): string => {
   if (typeof process !== 'undefined' && process.env && process.env[key]) {
-    return process.env[key];
+    return process.env[key] as string;
   }
-  // Check import.meta.env (Vite/Browser)
-  if (typeof import.meta !== 'undefined' && (import.meta as any).env && (import.meta as any).env[key]) {
-    return (import.meta as any).env[key];
+  try {
+    return (import.meta as any).env?.[key] || '';
+  } catch {
+    return '';
   }
-  return "";
 };
 
-let rawUrl = getEnvVar('VITE_SUPABASE_URL') || getEnvVar('NEXT_PUBLIC_SUPABASE_URL') || getEnvVar('SUPABASE_URL') || "https://sydcelofkzvtsfatxnka.supabase.co";
-if (rawUrl && !rawUrl.match(/^https?:\/\//i)) {
-  rawUrl = `https://${rawUrl}`;
+const supabaseUrl = getViteEnv('VITE_SUPABASE_URL');
+const supabaseAnonKey = getViteEnv('VITE_SUPABASE_ANON_KEY');
+
+if (!supabaseUrl || !supabaseAnonKey) {
+  console.warn('Missing Supabase environment variables. API calls will fail.');
 }
-const supabaseUrl = rawUrl;
-const supabaseAnonKey = getEnvVar('VITE_SUPABASE_ANON_KEY') || getEnvVar('NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY') || getEnvVar('SUPABASE_ANON_KEY') || "sb_publishable_VW8gI2hAK_UzF8ApuoUUhA_KUmR1KYz";
 
 export const isSupabaseConfigured = !!supabaseUrl && !!supabaseAnonKey;
 
 // Primary Singleton Instance
-export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+export const supabase = createClient(supabaseUrl || 'https://placeholder.supabase.co', supabaseAnonKey || 'placeholder', {
+
   auth: {
     persistSession: typeof window !== 'undefined', // Only persist in browser
     autoRefreshToken: true,

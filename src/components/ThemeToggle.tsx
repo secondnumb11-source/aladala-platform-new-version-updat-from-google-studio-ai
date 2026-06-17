@@ -1,30 +1,30 @@
 import React, { useEffect, useState } from 'react';
 import { Moon, Sun } from 'lucide-react';
+import { useUserPreferences } from '@/hooks/useUserPreferences';
 
 export default function ThemeToggle() {
+  const { preferences, updatePreference, loading } = useUserPreferences();
   const [isDark, setIsDark] = useState(false);
 
   useEffect(() => {
-    // Check saved preference or system preference on load
-    const savedTheme = localStorage.getItem('adalah-theme');
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    
-    if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
-      document.documentElement.classList.add('dark');
-      setIsDark(true);
+    if (!loading && preferences?.theme) {
+      const isDarkMode = preferences.theme === 'dark';
+      setIsDark(isDarkMode);
+      document.documentElement.classList.toggle('dark', isDarkMode);
+    } else if (!loading) {
+      // Fallback to system preference if no user preference
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      setIsDark(prefersDark);
+      document.documentElement.classList.toggle('dark', prefersDark);
     }
-  }, []);
+  }, [loading, preferences?.theme]);
 
   const toggleTheme = () => {
-    if (isDark) {
-      document.documentElement.classList.remove('dark');
-      localStorage.setItem('adalah-theme', 'light');
-      setIsDark(false);
-    } else {
-      document.documentElement.classList.add('dark');
-      localStorage.setItem('adalah-theme', 'dark');
-      setIsDark(true);
-    }
+    const newDark = !isDark;
+    const themeToSave = newDark ? 'dark' : 'light';
+    setIsDark(newDark);
+    document.documentElement.classList.toggle('dark', newDark);
+    updatePreference('theme', themeToSave);
   };
 
   return (

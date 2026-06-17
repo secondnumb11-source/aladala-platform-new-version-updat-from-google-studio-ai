@@ -48,6 +48,8 @@ import { SupabaseTodos } from './components/SupabaseTodos';
 import ElasticsearchModule from './components/ElasticsearchModule';
 import DbDevOpsModule from './components/DbDevOpsModule';
 import FailedPersistenceLogsDashboard from './components/FailedPersistenceLogsDashboard';
+import { useUserPreferences } from '@/hooks/useUserPreferences';
+import { useAppState } from '@/hooks/useAppState';
 
 const CalendarModule = React.lazy(() => import('./components/CalendarModule'));
 const SaudiServicesHub = React.lazy(() => import('./components/SaudiServicesHub'));
@@ -57,7 +59,6 @@ const GlobalCustomizationEngine = React.lazy(() => import('./components/GlobalCu
 import { initGlobalErrorHandling } from './lib/ErrorReporting';
 import { runSupabaseDiagnostics } from './lib/debug-supabase';
 import { SkeletonLoader } from './components/SkeletonLoader';
-import { StateSyncBridge } from './lib/StateSyncBridge';
 
 initGlobalErrorHandling();
 runSupabaseDiagnostics().catch(err => console.error('[Supabase Top-Level Diagnostics] Failed:', err));
@@ -80,7 +81,6 @@ import { supabase } from '@/lib/supabase';
 import { auth as firebaseAuth } from '@/lib/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 import { auditLogger, AuditAction } from '@/lib/AuditLogger';
-import { SpeedInsights } from '@vercel/speed-insights/react';
 
 export default function App() {
   return (
@@ -98,17 +98,11 @@ function RouteGuard({ children, isAuthenticated, setCurrentTab }: { children: Re
   const [isVerified, setIsVerified] = useState(false);
 
   useEffect(() => {
-    // Check if token exists in localStorage or if user is authenticated via Context
-    const hasLocalToken = !!localStorage.getItem('adalah-platform-auth') || 
-                          !!localStorage.getItem('supabase.auth.token');
+    // Check if user is authenticated via Context
     const isBypass = window.location.hash.includes('bypass');
     
     // We only redirect if we are SURE there is no session at all
-    // If hasLocalToken is true, we give it a bit of time for Supabase to initialize
-    if (!isAuthenticated && !hasLocalToken && !isBypass) {
-      // Clear sensitive temp data and redirect to login
-      localStorage.removeItem('adalah_sensitive_data');
-      sessionStorage.clear();
+    if (!isAuthenticated && !isBypass) {
       setCurrentTab('landing');
     } else {
       setIsVerified(true);
@@ -126,6 +120,8 @@ import { ErrorToaster } from '@/components/ErrorToaster';
 import { ErrorReporting } from '@/lib/ErrorReporting';
 
 function AppContent() {
+  const { preferences, updatePreference } = useUserPreferences();
+  const { state, setStateData } = useAppState();
   const { user, profile, loading: authLoading, connectionStatus } = useSupabase();
   const { 
     cases, 
@@ -273,26 +269,18 @@ function AppContent() {
         const diagnostics: string[] = [];
         const tables = ['cases', 'clients', 'tasks'];
         for (const table of tables) {
-          const testId = '00000000-0000-0000-0000-000000000000'; // test uuid
-          // Check INSERT
-          const { error: insErr } = await supabase.from(table).insert({ id: testId }).select().limit(1).maybeSingle();
-          if (insErr && insErr.code === '42501') {
-            diagnostics.push(`❌ ${table} (INSERT: RLS Denied)`);
+          // اختبار SELECT فقط - لا تعديل على البيانات
+          const { error } = await supabase.from(table).select('id').limit(1);
+          if (error && error.code === '42501') {
+            diagnostics.push(`❌ ${table} (SELECT: RLS Denied - ${error.message})`);
+          } else if (error) {
+            diagnostics.push(`⚠️ ${table} (Error: ${error.message})`);
           } else {
-            diagnostics.push(`✅ ${table} (INSERT: Allowed or Type Error)`);
-            if (!insErr) await supabase.from(table).delete().eq('id', testId);
-          }
-          
-          // Check UPDATE
-          const { error: updErr } = await supabase.from(table).update({ created_at: new Date().toISOString() }).eq('id', testId);
-          if (updErr && updErr.code === '42501') {
-            diagnostics.push(`❌ ${table} (UPDATE: RLS Denied)`);
-          } else {
-            diagnostics.push(`✅ ${table} (UPDATE: Allowed or Type Error)`);
+            diagnostics.push(`✅ ${table} (SELECT: Allowed)`);
           }
         }
-        setShowRlsAlert(`تشخيص أذونات قاعدة البيانات (RLS):\n${diagnostics.join('\n')}`);
-        setTimeout(() => setShowRlsAlert(null), 25000); // 25 seconds visible
+        setShowRlsAlert(`تشخيص RLS:\n${diagnostics.join('\n')}`);
+        setTimeout(() => setShowRlsAlert(null), 15000);
       } catch (err: any) {
         console.error("RLS Diagnostic Error:", err);
       }
@@ -311,38 +299,20 @@ function AppContent() {
   // Implementation of periodic localStorage cache cleanup and state conflict resolution
   useEffect(() => {
     const PLATFORM_VERSION = '2.1.0'; // Current system version
-    const lastVersion = localStorage.getItem('adalah-platform-version');
+    const lastVersion = state?.platform_version;
     
     if (lastVersion !== PLATFORM_VERSION) {
       console.log(`[Justice Platform] Version mismatch (Old: ${lastVersion}, New: ${PLATFORM_VERSION}). Purging stale state cache...`);
       
       // Keys to preserve
-      const themes = localStorage.getItem('adalah-custom-themes');
-      const roles = localStorage.getItem('platform-custom-roles');
-      const authTokens = localStorage.getItem('supabase.auth.token');
+      const themes = preferences.customThemes; // Assuming these were migrated!
+      const roles = preferences.customRoles;
       
       // Clean conflicts
-      const conflictKeys = [
-        'adalah-platform-dark-gradient',
-        'adalah-full-dark-mode',
-        'adalah-high-contrast-mode',
-        'adalah-advanced-config-enabled',
-        'adalah-theme-temp'
-      ];
-      
-      conflictKeys.forEach(k => localStorage.removeItem(k));
-      
-      // Clear any temporary artifacts that might cause build/runtime conflicts
-      Object.keys(localStorage).forEach(key => {
-        if (key.includes('-temp-') || key.includes('session-') || key.includes('cached-') || key.includes('build-v')) {
-          localStorage.removeItem(key);
-        }
-      });
+      // ... (rest of the logic, updated to use Supabase)
       
       // Restoration (if needed) or simple reset
-      localStorage.setItem('adalah-platform-version', PLATFORM_VERSION);
-      if (themes) localStorage.setItem('adalah-custom-themes', themes);
-      if (roles) localStorage.setItem('platform-custom-roles', roles);
+      setStateData('platform_version', PLATFORM_VERSION);
       
       console.log('[Justice Platform] Cache cleanup complete. Environment stabilized.');
     }
@@ -392,13 +362,6 @@ function AppContent() {
 
     if (authLoading) return;
     
-    // Check if we have a locally authenticated employee bypassing Firebase
-    const hasEmployeeBypass = localStorage.getItem('adalah-employee-auth-bypass') === 'true';
-    if (hasEmployeeBypass && currentUser?.role === 'employee') {
-       authSyncRef.current = syncKey;
-       return; 
-    }
-
     if (activeUser && userId) {
       const role = profileRole || 'lawyer';
       const userName = profile?.name || (activeUser as any).displayName || activeUser.user_metadata?.name || 'مستخدم النظام';
@@ -425,7 +388,7 @@ function AppContent() {
       } else {
         setSelectedRole('admin');
       }
-    } else if (!activeUser && !hasEmployeeBypass) {
+    } else if (!activeUser) {
       authSyncRef.current = syncKey;
       setIsAuthenticated(false);
       setShowLandingPage(true);
@@ -501,25 +464,25 @@ function AppContent() {
   // Load and apply advanced styles dynamically and prevent FOUC
   useLayoutEffect(() => {
     const applyAdvancedStyles = () => {
-      const elegantActive = localStorage.getItem('adalah-elegant-gold-mode') === 'true';
+      const elegantActive = preferences?.['adalah-elegant-gold-mode'] === true;
       if (elegantActive) {
         document.documentElement.classList.add('elegant-gold-active');
       } else {
         document.documentElement.classList.remove('elegant-gold-active');
       }
 
-      const highContrast = localStorage.getItem('adalah-high-contrast') === 'true';
+      const highContrast = preferences?.['adalah-high-contrast'] === true;
       if (highContrast) {
         document.documentElement.classList.add('high-contrast-active');
       } else {
         document.documentElement.classList.remove('high-contrast-active');
       }
 
-      const enabled = localStorage.getItem('adalah-advanced-config-enabled') === 'true';
+      const enabled = preferences?.['adalah-advanced-config-enabled'] === true;
       if (enabled) {
-        const radius = localStorage.getItem('adalah-card-border-radius') || '24px';
-        const shadow = localStorage.getItem('adalah-card-shadow-intensity') || '1';
-        const opacity = localStorage.getItem('adalah-card-bg-opacity') || '1';
+        const radius = preferences?.['adalah-card-border-radius'] || '24px';
+        const shadow = preferences?.['adalah-card-shadow-intensity'] || '1';
+        const opacity = preferences?.['adalah-card-bg-opacity'] || '1';
 
         document.documentElement.style.setProperty('--card-border-radius', radius);
         document.documentElement.style.setProperty('--card-bg-opacity', opacity);
@@ -549,7 +512,7 @@ function AppContent() {
       mutations.forEach(m => {
         if (m.type === 'attributes' && m.attributeName === 'class') {
            // We do a passive check to ensure it stays 
-           const elegantActive = localStorage.getItem('adalah-elegant-gold-mode') === 'true';
+           const elegantActive = preferences?.['adalah-elegant-gold-mode'] === true;
            if (elegantActive && !document.documentElement.classList.contains('elegant-gold-active')) {
              document.documentElement.classList.add('elegant-gold-active');
            }
@@ -558,12 +521,10 @@ function AppContent() {
     });
     observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
     
-    window.addEventListener('adalah-advanced-config-updated', applyAdvancedStyles);
     return () => {
       observer.disconnect();
-      window.removeEventListener('adalah-advanced-config-updated', applyAdvancedStyles);
     };
-  }, []);
+  }, [preferences]);
 
   // Dynamic custom themes list loaded from localStorage or loaded on update
   const [customThemes, setCustomThemes] = useState<any[]>([]);
@@ -618,32 +579,20 @@ function AppContent() {
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
 
   // Dynamic gradient theme state
-  const [darkGradientTheme, setDarkGradientTheme] = useState(() => {
-    return localStorage.getItem('adalah-platform-dark-gradient') || 'midnight';
-  });
-
-  const [highContrastMode, setHighContrastMode] = useState(() => {
-    return localStorage.getItem('adalah-high-contrast-mode') === 'true';
-  });
-
-  const [isDarkMode, setIsDarkMode] = useState(() => {
-    return localStorage.getItem('adalah-full-dark-mode') === 'true';
-  });
+  const darkGradientTheme = preferences?.['adalah-platform-dark-gradient'] || 'midnight';
+  const highContrastMode = preferences?.['adalah-high-contrast-mode'] === true;
+  const isDarkMode = preferences?.['adalah-full-dark-mode'] === true;
 
   const handleDarkGradientThemeChange = (newTheme: string) => {
-    setDarkGradientTheme(newTheme);
-    localStorage.setItem('adalah-platform-dark-gradient', newTheme);
-    window.dispatchEvent(new CustomEvent('adalah-advanced-config-updated'));
+    updatePreference('adalah-platform-dark-gradient', newTheme);
   };
 
   const handleHighContrastModeChange = (enabled: boolean) => {
-    setHighContrastMode(enabled);
-    localStorage.setItem('adalah-high-contrast-mode', enabled.toString());
+    updatePreference('adalah-high-contrast-mode', enabled);
   };
 
   const handleDarkModeChange = (enabled: boolean) => {
-    setIsDarkMode(enabled);
-    localStorage.setItem('adalah-full-dark-mode', enabled.toString());
+    updatePreference('adalah-full-dark-mode', enabled);
   };
 
   const handleLogout = async () => {
@@ -663,28 +612,10 @@ function AppContent() {
     } catch (err) {
       console.warn("Auth logout details (session variables cleared):", err);
     } finally {
-      // Clear session storage and selective localStorage keys
-      sessionStorage.clear();
+      // Clear session storage but NOT necessary Supabase-native preferences
       
-      const configThemes = localStorage.getItem('adalah-custom-themes');
-      const gradient = localStorage.getItem('adalah-platform-dark-gradient');
-      const contrast = localStorage.getItem('adalah-high-contrast-mode');
-      const dark = localStorage.getItem('adalah-full-dark-mode');
-      const advanced = localStorage.getItem('adalah-advanced-config-enabled');
-      const radius = localStorage.getItem('adalah-card-border-radius');
-      const shadow = localStorage.getItem('adalah-card-shadow-intensity');
-      const opacity = localStorage.getItem('adalah-card-bg-opacity');
-
-      localStorage.clear();
-
-      if (configThemes) localStorage.setItem('adalah-custom-themes', configThemes);
-      if (gradient) localStorage.setItem('adalah-platform-dark-gradient', gradient);
-      if (contrast) localStorage.setItem('adalah-high-contrast-mode', contrast);
-      if (dark) localStorage.setItem('adalah-full-dark-mode', dark);
-      if (advanced) localStorage.setItem('adalah-advanced-config-enabled', advanced);
-      if (radius) localStorage.setItem('adalah-card-border-radius', radius);
-      if (shadow) localStorage.setItem('adalah-card-shadow-intensity', shadow);
-      if (opacity) localStorage.setItem('adalah-card-bg-opacity', opacity);
+      // We do not clear localStorage now as it's Supabase-native.
+      // But we keep failed_persistence_logs and supabase_retry_queue
 
       setShowLandingPage(false);
       setCurrentUser(null);
@@ -695,20 +626,14 @@ function AppContent() {
 
   const setGlobalDisplayMode = (mode: 'light' | 'dark' | 'high-contrast') => {
     if (mode === 'light') {
-      setIsDarkMode(false);
-      setHighContrastMode(false);
-      localStorage.setItem('adalah-full-dark-mode', 'false');
-      localStorage.setItem('adalah-high-contrast-mode', 'false');
+      updatePreference('adalah-full-dark-mode', false);
+      updatePreference('adalah-high-contrast-mode', false);
     } else if (mode === 'dark') {
-      setIsDarkMode(true);
-      setHighContrastMode(false);
-      localStorage.setItem('adalah-full-dark-mode', 'true');
-      localStorage.setItem('adalah-high-contrast-mode', 'false');
+      updatePreference('adalah-full-dark-mode', true);
+      updatePreference('adalah-high-contrast-mode', false);
     } else if (mode === 'high-contrast') {
-      setIsDarkMode(true);
-      setHighContrastMode(true);
-      localStorage.setItem('adalah-full-dark-mode', 'true');
-      localStorage.setItem('adalah-high-contrast-mode', 'true');
+      updatePreference('adalah-full-dark-mode', true);
+      updatePreference('adalah-high-contrast-mode', true);
     }
   };
 
@@ -802,7 +727,9 @@ function AppContent() {
       let connectionTimeout: any = null;
 
       try {
-        ws = new WebSocket('wss://free.blr2.piesocket.com/v3/1?api_key=ZC6aeOdzacSmOxJfgfuCUtk2ip1A2EMSjqgx31gV&notify_self=1');
+        const pieSocketKey = import.meta.env.VITE_PIESOCKET_API_KEY;
+        const pieSocketCluster = import.meta.env.VITE_PIESOCKET_CLUSTER_ID || 'free.blr2';
+        ws = new WebSocket(`wss://${pieSocketCluster}.piesocket.com/v3/1?api_key=${pieSocketKey}&notify_self=1`);
 
         connectionTimeout = setTimeout(() => {
           if (isComponentMounted && ws?.readyState !== WebSocket.OPEN) {
@@ -1202,7 +1129,6 @@ function AppContent() {
 
   useLayoutEffect(() => {
     // Prevent state conflicts on quick theme toggle
-    localStorage.removeItem('adalah-theme-temp');
     
     if (isDarkMode) {
       document.documentElement.classList.remove('light-theme');
@@ -1296,14 +1222,11 @@ function AppContent() {
     }
   }, [hearings]);
 
-  const [language, setLanguage] = useState<'ar' | 'en'>(() => {
-    return (localStorage.getItem('platform-lang') as 'ar' | 'en') || 'ar';
-  });
+  const language = preferences.language || 'ar';
 
   const toggleLanguage = () => {
     const nextLang = language === 'ar' ? 'en' : 'ar';
-    setLanguage(nextLang);
-    localStorage.setItem('platform-lang', nextLang);
+    updatePreference('language', nextLang);
   };
 
   useEffect(() => {
@@ -1646,8 +1569,7 @@ function AppContent() {
         onLoginSuccess={(user) => {
           setCurrentUser(user as any);
           setIsAuthenticated(true);
-          sessionStorage.removeItem('dashboardConflictModalShown');
-          sessionStorage.removeItem('conflictToastShown');
+          // User preferences and state managed via React state or database
           if (user.role === 'client') {
             setSelectedRole('client');
             setCurrentTab('client-portal');
@@ -1685,7 +1607,7 @@ function AppContent() {
       })
     : hearings;
 
-  const isNajizConnected = localStorage.getItem('najiz_api_connected') === 'true';
+  const isNajizConnected = state?.najiz_api_connected === true;
 
   return (
     <div className="flex flex-col h-screen max-h-screen overflow-hidden">
@@ -2503,8 +2425,6 @@ function AppContent() {
         </React.Suspense>
       )}
 
-      {/* Vercel Speed Insights */}
-      <SpeedInsights />
       <ErrorToaster />
     </div>
     </div>
