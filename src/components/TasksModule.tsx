@@ -959,14 +959,14 @@ export default function TasksModule({
               <Layout className="w-6 h-6 text-amber-500" />
             </div>
             <div>
-              <h3 className="font-black text-white text-lg font-display">توزيع المهام اليومي والعبء الوظيفي (Daily Task Distribution)</h3>
-              <p className="text-xs text-slate-200 font-bold mt-1 font-bold">
+              <h3 className="font-black text-[#ffd700] text-xl font-display tracking-tight drop-shadow-[0_2px_4px_rgba(0,0,0,0.6)]">توزيع المهام اليومي والعبء الوظيفي (Daily Task Distribution)</h3>
+              <p className="text-xs text-slate-200 mt-1.5 font-bold leading-relaxed">
                 تخطيط مجهري ومتابعة لتوزيع ملفات القضايا والأعمال القضائية على الهيكل التكليفي بالمرصد. اسحب أي مهمة من "مخزن المهام" وأفلتها على بطاقة الموظف لإعادة التوزيع الفوري!
               </p>
             </div>
           </div>
           
-          <div className="flex items-center gap-2 bg-slate-800/80 px-4 py-2 rounded-xl text-[10px] text-amber-400 font-mono border border-slate-705 animate-pulse">
+          <div className="flex items-center gap-2 bg-slate-950/80 px-4 py-2.5 rounded-xl text-xs text-[#ffd700] font-black border border-amber-500/30 shadow-lg shadow-amber-500/5 animate-pulse">
             <span>● نظام الربط المتكامل مع الكادر التكليفي نشط</span>
           </div>
         </div>
@@ -986,7 +986,7 @@ export default function TasksModule({
             const isOverloaded = count >= m.maxTasks;
             const barColor = isOverloaded ? 'bg-rose-500' : percentage >= 70 ? 'bg-amber-500' : 'bg-emerald-500';
             const statusText = isOverloaded ? 'ممتد للطاقة القصوى ⚠️' : percentage >= 70 ? 'عبء مرتفع 📈' : 'متزن ومتاح للمهام ✅';
-            const statusColor = isOverloaded ? 'text-rose-400 bg-rose-500/10' : percentage >= 70 ? 'text-amber-400 bg-amber-500/10' : 'text-emerald-400 bg-emerald-500/10';
+            const statusColor = isOverloaded ? 'text-rose-200 bg-rose-950 border border-rose-800' : percentage >= 70 ? 'text-amber-200 bg-amber-950 border border-amber-800' : 'text-emerald-205 bg-emerald-950 border border-emerald-800';
 
             return (
               <div 
@@ -1006,42 +1006,42 @@ export default function TasksModule({
                     handleQuickReassign(taskId, m.name);
                   }
                 }}
-                className="bg-slate-950/60 border border-slate-800 rounded-3xl p-5 transition-all duration-300 flex flex-col justify-between space-y-4 shadow-xl"
+                className="bg-slate-950/80 border border-slate-800 rounded-3xl p-5 hover:border-[#D4AF37]/40 transition-all duration-300 flex flex-col justify-between space-y-4 shadow-xl"
               >
                 {/* Employee Info Header */}
                 <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 rounded-2xl bg-slate-800/50 flex items-center justify-center text-2xl border border-slate-700 font-black shrink-0 shadow-inner">
+                  <div className="w-12 h-12 rounded-2xl bg-slate-900/90 flex items-center justify-center text-2xl border border-slate-750 font-black shrink-0 shadow-inner">
                     {m.avatar}
                   </div>
                   <div className="flex-1 min-w-0 text-right">
-                    <h4 className="font-black text-slate-100 text-sm truncate leading-snug">{m.name}</h4>
-                    <p className="text-[10px] text-[#b8860b] truncate mt-0.5 font-bold">{m.role}</p>
+                    <h4 className="font-extrabold text-white text-base truncate leading-snug">{m.name}</h4>
+                    <p className="text-[11px] text-[#ffd700] truncate mt-0.5 font-black">{m.role}</p>
                   </div>
                 </div>
 
                 {/* Workload Progress Bar */}
                 <div className="space-y-1.5 text-right">
-                  <div className="flex justify-between items-center text-xs font-bold font-sans">
-                    <span className="text-slate-200 font-bold">عبء العمل الموكل:</span>
-                    <span className="text-white">{count} / {m.maxTasks} مهام ({percentage}%)</span>
+                  <div className="flex justify-between items-center text-xs font-black">
+                    <span className="text-slate-205">عبء العمل الموكل:</span>
+                    <span className="text-amber-400">{count} / {m.maxTasks} مهام ({percentage}%)</span>
                   </div>
                   
                   {/* Visual gauge chart */}
-                  <div className="h-2 bg-slate-800/80 rounded-full overflow-hidden border border-slate-700 shadow-inner flex">
-                    <div className={`h-full ${barColor} rounded-full transition-all duration-500`} style={{ width: `${percentage}%` }}></div>
+                  <div className="h-2.5 bg-slate-900 border border-slate-800 rounded-full overflow-hidden shadow-inner flex">
+                    <div className={`h-full ${barColor} rounded-full transition-all duration-500 shadow-[0_0_8px_rgba(255,255,255,0.2)]`} style={{ width: `${percentage}%` }}></div>
                   </div>
                 </div>
 
                 {/* Status indicator */}
-                <div className="flex justify-between items-center pt-2 border-t border-slate-800 text-[10px] font-black">
+                <div className="flex justify-between items-center pt-2.5 border-t border-slate-800/80 text-[11px] font-black">
                   <span className={`px-2.5 py-1 rounded-lg ${statusColor}`}>
                     {statusText}
                   </span>
-                  <span className="text-slate-700 font-sans">{memberTasks.length} مهام نشطة</span>
+                  <span className="text-slate-205 font-bold">{memberTasks.length} مهام نشطة</span>
                 </div>
 
                 {/* Drop Zone Call to Action */}
-                <div className="border border-dashed border-slate-800 p-2 text-center text-[10px] text-slate-700 font-bold bg-slate-950/30">
+                <div className="border border-dashed border-amber-500/30 p-2.5 rounded-xl text-center text-[11px] text-slate-205 font-black bg-slate-900/50 hover:bg-amber-500/5 transition-all">
                   📥 اسحب البطاقات هنا للتكليف
                 </div>
               </div>
@@ -1050,22 +1050,22 @@ export default function TasksModule({
         </div>
 
         {/* 2. Drag Pool / Task Bank */}
-        <div className="space-y-3 bg-slate-950/40 p-5 rounded-3xl border border-slate-800 text-right" dir="rtl">
+        <div className="space-y-3 bg-slate-950/60 p-6 rounded-[2rem] border border-slate-800 text-right" dir="rtl">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
-            <h4 className="text-xs text-white font-bold font-black flex items-center gap-1.5 font-display">
+            <h4 className="text-sm text-[#ffd700] font-black flex items-center gap-1.5 font-display">
               <span className="w-1.5 h-3 bg-amber-500 rounded-full"></span>
               مخزن المهام الحالي المتاح للتمرير وإعادة التوزيع (Workspace Task Pool)
             </h4>
-            <span className="text-[10px] bg-slate-800 text-slate-200 font-bold px-3 py-1 rounded-full font-bold border border-slate-700 select-none">
+            <span className="text-xs bg-amber-550/10 text-[#ffd700] px-3.5 py-1.5 rounded-full font-black border border-amber-500/30 select-none shadow">
               سحب مرن متاح لكافة العناصر أدناه 🖱️
             </span>
           </div>
 
-          <p className="text-[10px] text-slate-200 font-bold font-bold">
+          <p className="text-xs text-slate-205 font-bold leading-relaxed">
             يمكنك إمساك أي مهمة من البطاقات أدناه وسحبها وإفلاتها مباشرة على أي من كروت المحامين بالأعلى لتنفيذ إعادة توزيع سريع للجهد الوظيفي اليومي.
           </p>
 
-          <div className="flex gap-3 overflow-x-auto py-2 max-h-48 pr-1 scrollbar-thin">
+          <div className="flex gap-3 overflow-x-auto py-2 max-h-52 pr-1 scrollbar-thin">
             {internalTasks.slice(0, 10).map((t) => (
               <div
                 key={t.id}
@@ -1077,31 +1077,31 @@ export default function TasksModule({
                 onDragEnd={(e) => {
                   e.currentTarget.classList.remove("opacity-50");
                 }}
-                className={`bg-slate-900 border rounded-2xl p-4 flex flex-col justify-between w-64 min-w-[16rem] transition-all relative shrink-0 ${
-                  t.priority === 'high' ? 'border-rose-900/40' : 
-                  t.priority === 'medium' ? 'border-amber-900/40' : 'border-emerald-900/40'
+                className={`bg-slate-900 border rounded-2xl p-4 flex flex-col justify-between w-64 min-w-[16rem] transition-all relative shrink-0 hover:border-amber-500/50 ${
+                  t.priority === 'high' ? 'border-rose-800' : 
+                  t.priority === 'medium' ? 'border-amber-800' : 'border-emerald-800'
                 }`}
               >
                 <div>
                   <div className="flex justify-between items-center mb-2">
                     <span className={`text-[11px] font-black px-2 py-0.5 rounded border ${
-                      t.priority === 'high' ? 'bg-rose-500/10 border border-rose-500/30 text-rose-400 font-bold border-rose-500/20' :
-                      t.priority === 'medium' ? 'bg-amber-500/10 border border-amber-500/30 text-amber-400 font-bold border-amber-500/20' : 'bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-bold border-emerald-500/20'
+                      t.priority === 'high' ? 'bg-rose-500/10 border-rose-500/30 text-rose-400' :
+                      t.priority === 'medium' ? 'bg-amber-500/10 border-amber-500/30 text-amber-400' : 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400'
                     }`}>
                       {t.priority === 'high' ? 'عاجلة' : t.priority === 'medium' ? 'متوسطة' : 'عادية'}
                     </span>
-                    <span className="text-[11px] text-[#b8860b] font-bold">المكلف: {t.assignedTo || 'غير محدد'}</span>
+                    <span className="text-[11px] text-amber-300 font-extrabold bg-slate-950/80 px-2.5 py-0.5 rounded border border-slate-800">المكلف: {t.assignedTo || 'غير محدد'}</span>
                   </div>
                   
-                  <h5 className="font-black text-[#ffd700] drop-shadow-[0_0_10px_rgba(255,215,0,0.8)] text-xs leading-relaxed truncate">{t.title}</h5>
+                  <h5 className="font-black text-white text-sm leading-relaxed mb-1 truncate">{t.title}</h5>
                   {t.description && (
-                    <p className="text-[10px] text-slate-200 font-bold truncate mt-1 leading-normal">{t.description}</p>
+                    <p className="text-[11px] text-slate-300 font-bold truncate mt-1 leading-normal">{t.description}</p>
                   )}
                 </div>
 
-                <div className="flex justify-between items-center pt-3 border-t border-slate-850 mt-3 text-[11px] text-slate-700">
-                  <span className="font-sans">الأجل: {t.dueDate}</span>
-                  <span className="font-black text-amber-400/80 animate-pulse">✊ اسحبني الآن</span>
+                <div className="flex justify-between items-center pt-3 border-t border-slate-800/80 mt-3 text-[11px]">
+                  <span className="text-slate-300 font-black">الأجل: {t.dueDate}</span>
+                  <span className="font-extrabold text-amber-400 animate-pulse bg-amber-500/5 px-2 py-1 rounded border border-amber-500/10">✊ اسحبني الآن</span>
                 </div>
               </div>
             ))}

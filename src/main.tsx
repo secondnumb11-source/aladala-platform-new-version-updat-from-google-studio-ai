@@ -5,11 +5,19 @@ import {createRoot} from 'react-dom/client';
 const originalConsoleError = console.error;
 const originalConsoleWarn = console.warn;
 console.error = (...args) => {
-  if (typeof args[0] === 'string' && args[0].includes('failed to connect to websocket')) return;
+  if (typeof args[0] === 'string' && (
+    args[0].includes('failed to connect to websocket') ||
+    args[0].includes('[Supabase Realtime]') ||
+    args[0].includes('Channel Error on')
+  )) return;
   originalConsoleError.apply(console, args);
 };
 console.warn = (...args) => {
-  if (typeof args[0] === 'string' && args[0].includes('WebSocket closed without opened')) return;
+  if (typeof args[0] === 'string' && (
+    args[0].includes('WebSocket closed without opened') ||
+    args[0].includes('[Supabase Realtime]') ||
+    args[0].includes('Channel Error on')
+  )) return;
   originalConsoleWarn.apply(console, args);
 };
 

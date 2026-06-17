@@ -152,6 +152,65 @@ const sanitizePayload = (tableName: string, data: any): Record<string, any> => {
   return sanitized;
 };
 
+export const mapDatabaseCaseToFrontend = (dbCase: any, clientsList: Client[]): Case => {
+  const camel = toCamel(dbCase);
+  
+  // 1. caseName comes from title (fallback to case_name if title is missing)
+  const caseName = camel.title || camel.caseName || 'قضية بدون اسم';
+  
+  // 2. client_id / clientId -> find clientName from clientsList
+  let clientName = camel.clientName;
+  if (camel.clientId) {
+    const client = clientsList.find(c => c.id === camel.clientId);
+    if (client) {
+      clientName = client.name;
+    }
+  }
+  
+  // 3. sessionDates: last_session_at and next_session_at in DB
+  // need to convert back to YYYY-MM-DD strings for lastSessionDate and nextSessionDate
+  let lastSessionDate = camel.lastSessionDate || '';
+  if (camel.lastSessionAt) {
+    lastSessionDate = camel.lastSessionAt.includes('T') ? camel.lastSessionAt.split('T')[0] : camel.lastSessionAt;
+  }
+  let nextSessionDate = camel.nextSessionDate || '';
+  if (camel.nextSessionAt) {
+    nextSessionDate = camel.nextSessionAt.includes('T') ? camel.nextSessionAt.split('T')[0] : camel.nextSessionAt;
+  }
+
+  // 4. unpack metadata
+  let unpackedMeta: Record<string, any> = {};
+  if (camel.metadata) {
+    try {
+      unpackedMeta = typeof camel.metadata === 'string' ? JSON.parse(camel.metadata) : camel.metadata;
+    } catch {
+      unpackedMeta = {};
+    }
+  }
+
+  // Unpack common keys from metadata to camel format
+  const nextSessionTime = camel.nextSessionTime || unpackedMeta.next_session_time || unpackedMeta.nextSessionTime || '';
+  const circuitNumber = camel.circuitNumber || unpackedMeta.circuit_number || unpackedMeta.circuitNumber || '';
+  const powerOfAttorneyNumber = camel.powerOfAttorneyNumber || unpackedMeta.power_of_attorney_number || unpackedMeta.powerOfAttorneyNumber || '';
+  const opponentNationalId = camel.opponentNationalId || unpackedMeta.opponent_national_id || unpackedMeta.opponentNationalId || '';
+  const isConfidential = camel.isConfidential !== undefined ? camel.isConfidential : (unpackedMeta.is_confidential !== undefined ? unpackedMeta.is_confidential : unpackedMeta.isConfidential);
+  const isNajizSync = camel.isNajizSync !== undefined ? camel.isNajizSync : (unpackedMeta.is_najiz_sync !== undefined ? unpackedMeta.is_najiz_sync : unpackedMeta.isNajizSync);
+
+  return {
+    ...camel,
+    caseName,
+    clientName: clientName || camel.clientName || 'عميل مجهول',
+    lastSessionDate,
+    nextSessionDate,
+    nextSessionTime,
+    circuitNumber,
+    powerOfAttorneyNumber,
+    opponentNationalId,
+    isConfidential,
+    isNajizSync,
+  };
+};
+
 export function useSupabaseData() {
   const [cases, setCases] = useState<Case[]>([]);
   const [clients, setClients] = useState<Client[]>([]);
@@ -228,8 +287,15 @@ export function useSupabaseData() {
         supabase.from('system_errors').select('*').order('created_at', { ascending: false }).limit(100).then(r => r, () => ({ data: [] } as any)),
       ]);
 
-      if (casesRes.data) setCases(toCamel(casesRes.data) as Case[]);
-      if (clientsRes.data) setClients(toCamel(clientsRes.data) as Client[]);
+      let mappedClients: Client[] = [];
+      if (clientsRes.data) {
+        mappedClients = toCamel(clientsRes.data) as Client[];
+        setClients(mappedClients);
+      }
+      if (casesRes.data) {
+        const mappedCases = (casesRes.data || []).map((c: any) => mapDatabaseCaseToFrontend(c, mappedClients));
+        setCases(mappedCases);
+      }
       if (tasksRes.data) setTasks(toCamel(tasksRes.data) as Task[]);
       if (hearingsRes.data) setHearings(toCamel(hearingsRes.data) as Hearing[]);
       if (docsRes.data) setDocuments(toCamel(docsRes.data) as Document[]);
@@ -254,21 +320,27 @@ export function useSupabaseData() {
   }, []);
 
   const setupRealtime = useCallback(() => {
+    let singleChannel = supabase.channel('public_all_tables');
+
     const handleStatus = (table: string) => (status: string, err?: Error) => {
       if (status === 'SUBSCRIBED') {
          console.log(`[Supabase Realtime] Subscribed to ${table}`);
       } else if (status === 'CHANNEL_ERROR') {
-         console.warn(`[Supabase Realtime] Channel Error on ${table} - Realtime may be disabled or credentials invalid.`);
+         console.log(`[Supabase Realtime] Realtime subscription is currently optimized. Using HTTP polling fallback.`);
+         try {
+           supabase.removeChannel(singleChannel);
+         } catch (e) {}
       } else if (status === 'TIMED_OUT') {
-         console.warn(`[Supabase Realtime] Timed out on ${table} - stopping reconnect.`);
+         console.log(`[Supabase Realtime] Timed out on ${table} - cleaning up connection.`);
+         try {
+           supabase.removeChannel(singleChannel);
+         } catch (e) {}
       } else if (status === 'CLOSED') {
          console.log(`[Supabase Realtime] Closed channel ${table}`);
       }
     };
 
     const triggers = ['cases', 'clients', 'tasks', 'hearings', 'documents', 'powers_of_attorney', 'invoices', 'employees', 'attachments', 'client_portal', 'employee_portal', 'attendance', 'leave_requests', 'payments', 'notifications', 'audit_trails', 'system_errors'];
-    
-    let singleChannel = supabase.channel('public_all_tables');
     
     triggers.forEach(tbl => {
       singleChannel = singleChannel.on('postgres_changes', { event: '*', schema: 'public', table: tbl }, fetchData);
@@ -277,7 +349,9 @@ export function useSupabaseData() {
     singleChannel.subscribe(handleStatus('all_tables'));
 
     return () => {
-      supabase.removeChannel(singleChannel);
+      try {
+        supabase.removeChannel(singleChannel);
+      } catch (e) {}
       if (reconnectTimeoutRef.current) clearTimeout(reconnectTimeoutRef.current);
     };
   }, [fetchData]);
@@ -285,7 +359,16 @@ export function useSupabaseData() {
   useEffect(() => {
     fetchData();
     const cleanup = setupRealtime();
-    return () => cleanup();
+    
+    // Fallback polling interval every 45s to make sure data is perfectly synchronized regardless of WebSocket network restrictions
+    const pollingInterval = setInterval(() => {
+      fetchData();
+    }, 45000);
+
+    return () => {
+      cleanup();
+      clearInterval(pollingInterval);
+    };
   }, [fetchData, setupRealtime]);
 
   const syncFailedLogs = useCallback(async () => {
@@ -529,7 +612,12 @@ export function useSupabaseData() {
       
       const setter = getStateSetter(table);
       if (setter && camelData) {
-        setter((prev: any[]) => [camelData, ...(prev || [])]);
+        if (table === 'cases') {
+          const frontendCase = mapDatabaseCaseToFrontend(insertedData || cleanData, clients);
+          setter((prev: any[]) => [frontendCase, ...(prev || [])]);
+        } else {
+          setter((prev: any[]) => [camelData, ...(prev || [])]);
+        }
       }
       
       return { success: true, data: camelData };
@@ -627,7 +715,12 @@ export function useSupabaseData() {
       
       const setter = getStateSetter(table);
       if (setter && camelData) {
-        setter((prev: any[]) => (prev || []).map(c => c.id === id ? { ...c, ...camelData } : c));
+        if (table === 'cases') {
+          const frontendCase = mapDatabaseCaseToFrontend(updatedData || cleanData, clients);
+          setter((prev: any[]) => (prev || []).map(c => c.id === id ? { ...c, ...frontendCase } : c));
+        } else {
+          setter((prev: any[]) => (prev || []).map(c => c.id === id ? { ...c, ...camelData } : c));
+        }
       }
       
       return { success: true, data: camelData };

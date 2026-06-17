@@ -16,6 +16,7 @@ import {
 import { motion, AnimatePresence } from 'motion/react';
 import { QRCodeSVG } from 'qrcode.react';
 import { supabase } from '@/lib/supabase';
+import { generateUUID } from '@/lib/uuid';
 import { auditLogger, AuditAction } from '@/lib/AuditLogger';
 import { Case, Client, Task, Employee, LeaveRequest, AttendanceRecord } from '@/types';
 
@@ -590,29 +591,33 @@ export default function EmployeePortal({
     try {
       // Create fresh simulated cases & client in Firestore linked directly back to this logged employee!
       const randomId = Math.floor(Math.random() * 900000000) + 100000000;
+      const clientNameSim = `شركة ${['النهدي التجارية', 'المراعي القابضة', 'الرياض الفندقية', 'الخليج الرقمية'][Math.floor(Math.random() * 4)]}`;
+      const caseIdSim = generateUUID();
       
-      const newSimCase: Partial<Case> = {
-        caseNumber: `1447-${randomId}`,
-        caseName: `قضية ناجز: منازعة تجارية متعلقة بعقد ${['توريد', 'مقاولة وشراكة', 'امتياز تجاري', 'خدمات استشارية'][Math.floor(Math.random() * 4)]}`,
+      const sqlSimCase = {
+        id: caseIdSim,
+        case_number: `1447-${randomId}`,
+        title: `قضية ناجز: منازعة تجارية متعلقة بعقد ${['توريد', 'مقاولة وشراكة', 'امتياز تجاري', 'خدمات استشارية'][Math.floor(Math.random() * 4)]}`,
         category: 'commercial',
         stage: 'litigation',
         status: 'active',
-        clientName: `شركة ${['النهدي التجارية', 'المراعي القابضة', 'الرياض الفندقية', 'الخليج الرقمية'][Math.floor(Math.random() * 4)]}`,
-        opponentName: 'مؤسسة مساندة الأعمال للتجارة والمقاولات',
-        courtName: 'المحكمة التجارية بالرياض - الدائرة الخامسة',
-        lastSessionDate: new Date().toISOString().split('T')[0],
-        nextSessionDate: new Date(Date.now() + 86400000 * 14).toISOString().split('T')[0],
-        nextSessionTime: '10:15 صباحاً',
+        court_name: 'المحكمة التجارية بالرياض - الدائرة الخامسة',
+        opponent_name: 'مؤسسة مساندة الأعمال للتجارة والمقاولات',
         summary: 'طلب إلزام بسداد المستحقات المالية عن الدفعة الختامية المبرمة طبقاً للنظام التجاري الجديد.',
         details: 'تم جمع البيانات ومزامنتها بنجاح عن طريق أداة السحب من بوابة ناجز للموظف.',
-        isNajizSync: true,
+        attachments_count: 1,
         priority: 'high',
-        createdAt: new Date().toISOString().split('T')[0],
-        attachments_count: 1
+        metadata: JSON.stringify({
+          clientName: clientNameSim,
+          lastSessionDate: new Date().toISOString().split('T')[0],
+          nextSessionDate: new Date(Date.now() + 86400000 * 14).toISOString().split('T')[0],
+          nextSessionTime: '10:15 صباحاً',
+          isNajizSync: true
+        })
       };
 
-      // Add to cases
-      const { data: caseDoc, error: caseErr } = await supabase.from('cases').insert(newSimCase).select().single();
+      // Add to cases using SQL schema compliant model
+      const { data: caseDoc, error: caseErr } = await supabase.from('cases').insert(sqlSimCase).select().single();
       
       if (caseErr) throw caseErr;
 
@@ -632,20 +637,22 @@ export default function EmployeePortal({
         sessionStorage.setItem('active-logged-in-employee-v2', JSON.stringify(freshEmp));
       }
 
+      const simCaseNumber = `1447-${randomId}`;
+
       // Add task to follow up on this new synchronized case
       const testTask: Partial<Task> = {
-        title: `دراسة المذكرات والمستندات المسحوبة لقضية ${newSimCase.caseNumber}`,
+        title: `دراسة المذكرات والمستندات المسحوبة لقضية ${simCaseNumber}`,
         description: 'مراجعة الملحقات المستلمة من ناجز وكتابة التقرير الأولي للمدير العام.',
         status: 'todo',
         priority: 'high',
         assignedTo: loggedInEmployee?.name || 'محامي البوابة',
         dueDate: new Date(Date.now() + 86400000 * 2).toISOString(),
-        caseNumber: `1447-${randomId}`
+        caseNumber: simCaseNumber
       };
       await supabase.from('tasks').insert(testTask);
 
       // Audit logs
-      await writeAuditLog('مزامنة ناجز', `تم سحب الدعوى التجارية رقم ${newSimCase.caseNumber} وتعيينها للموظف بنجاح`, loggedInEmployee!);
+      await writeAuditLog('مزامنة ناجز', `تم سحب الدعوى التجارية رقم ${simCaseNumber} وتعيينها للموظف بنجاح`, loggedInEmployee!);
 
       setNajizResult('اكتملت المزامنة وحقن البيانات بنجاح!');
       setShowSyncSuccess(true);

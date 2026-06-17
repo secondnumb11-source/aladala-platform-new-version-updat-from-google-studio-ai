@@ -125,17 +125,17 @@ export default function AIContractAuditTool() {
         <div className="bg-slate-900 border border-slate-800 p-1.5 rounded-2xl flex items-center gap-1 shadow-2xl">
           <button 
             onClick={() => setActiveTab('drafting')}
-            className={`px-8 py-3 rounded-xl text-xs font-black transition-all flex items-center gap-2 ${activeTab === 'drafting' ? 'bg-amber-500 text-slate-950 shadow-[0_0_15px_rgba(251,191,36,0.4)]' : 'text-slate-200 font-bold'}`}
+            className={`px-8 py-3 rounded-xl text-xs font-black transition-all flex items-center gap-2 ${activeTab === 'drafting' ? 'bg-amber-500 text-slate-950 shadow-[0_0_15px_rgba(251,191,36,0.4)]' : 'text-zinc-300 hover:text-white hover:bg-slate-800/40'}`}
           >
             <PenTool className="w-4 h-4" />
             صياغة العقود الذكية
           </button>
           <button 
             onClick={() => setActiveTab('audit')}
-            className={`px-8 py-3 rounded-xl text-xs font-black transition-all flex items-center gap-2 ${activeTab === 'audit' ? 'bg-indigo-500 text-white shadow-[0_0_15px_rgba(99,102,241,0.4)]' : 'text-slate-200 font-bold'}`}
+            className={`px-8 py-3 rounded-xl text-xs font-black transition-all flex items-center gap-2 ${activeTab === 'audit' ? 'bg-amber-500 text-slate-950 shadow-[0_0_15px_rgba(251,191,36,0.4)]' : 'text-zinc-300 hover:text-white hover:bg-slate-800/40'}`}
           >
             <FileCheck className="w-4 h-4" />
-            مدقق العقود (المسح الضوئي)
+            مدقق العقود (المسح القانوني)
           </button>
         </div>
       </div>
@@ -339,7 +339,7 @@ export default function AIContractAuditTool() {
                     </div>
                     <div>
                       <h4 className="text-white font-black text-sm mb-2">مؤشر الامتثال النظامي</h4>
-                      <p className="text-slate-200 font-bold text-[10px] font-bold leading-relaxed">{auditResult.summary}</p>
+                      <p className="text-zinc-300 font-extrabold text-[11px] leading-relaxed">{auditResult.summary}</p>
                     </div>
                     <button className="w-full bg-white text-slate-950 py-3 rounded-2xl text-xs font-black shadow-lg transition-all">تحميل تقرير التوافق (PDF)</button>
                   </div>

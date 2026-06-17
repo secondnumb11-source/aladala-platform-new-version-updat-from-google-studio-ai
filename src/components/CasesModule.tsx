@@ -1805,10 +1805,15 @@ export default React.memo(function CasesModule({
 
   // Filters
   const filteredCases = cases.filter(c => {
-    const matchesSearch = c.caseName.includes(searchTerm) || 
-                          c.caseNumber.includes(searchTerm) || 
-                          c.clientName.includes(searchTerm) ||
-                          c.courtName.includes(searchTerm);
+    const caseNameSafe = c.caseName || '';
+    const caseNumberSafe = c.caseNumber || '';
+    const clientNameSafe = c.clientName || '';
+    const courtNameSafe = c.courtName || '';
+
+    const matchesSearch = caseNameSafe.includes(searchTerm) || 
+                          caseNumberSafe.includes(searchTerm) || 
+                          clientNameSafe.includes(searchTerm) ||
+                          courtNameSafe.includes(searchTerm);
     
     // Auto-archive filter logic:
     // If 'archived' category is selected, show only archived cases.
@@ -1824,7 +1829,7 @@ export default React.memo(function CasesModule({
 
     const matchesCategory = categoryFilter.length === 0 || categoryFilter.includes(c.category) || (isArchivedRequested && categoryFilter.length === 1);
     const matchesStage = stageFilter === 'all' || c.stage === stageFilter;
-    const matchesCourt = courtFilter === 'all' || c.courtName.includes(courtFilter);
+    const matchesCourt = courtFilter === 'all' || courtNameSafe.includes(courtFilter);
     
     // Automated Document Tags Filter
     const matchesDocTag = selectedDocTag === 'all' || getCaseDocumentTags(c).includes(selectedDocTag);
