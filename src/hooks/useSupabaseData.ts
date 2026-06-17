@@ -526,6 +526,7 @@ export function useSupabaseData() {
       'systemErrors': 'system_errors',
       'system_errors': 'system_errors',
       'executions': 'executions',
+      'archive_items': 'archive_items',
     };
     return tableMap[table] || table;
   };
@@ -559,7 +560,7 @@ export function useSupabaseData() {
     }
   };
 
-  const createRecord = async (table: string, data: any) => {
+  const createRecord = useCallback(async (table: string, data: any) => {
     try {
       const isValidationEligible = ['cases', 'clients', 'tasks'].includes(table);
       if (isValidationEligible) {
@@ -660,9 +661,9 @@ export function useSupabaseData() {
         details: err?.stack || err?.details || String(err) 
       };
     }
-  };
+  }, [fetchData, clients]);
 
-  const upsertRecord = async (table: string, data: any, onConflict: string) => {
+  const upsertRecord = useCallback(async (table: string, data: any, onConflict: string) => {
     try {
       const mappedTable = getSupabaseTableName(table);
       const cleanData = sanitizePayload(mappedTable, data);
@@ -686,9 +687,9 @@ export function useSupabaseData() {
       console.error(`[Supabase Upsert Exception] Table: ${table}`, err);
       return { success: false, message: err.message };
     }
-  };
+  }, [fetchData]);
 
-  const updateRecord = async (table: string, id: string | number, data: any) => {
+  const updateRecord = useCallback(async (table: string, id: string | number, data: any) => {
     try {
       const isValidationEligible = ['cases', 'clients', 'tasks'].includes(table);
       if (isValidationEligible) {
@@ -788,7 +789,7 @@ export function useSupabaseData() {
         details: err?.stack || err?.details || String(err) 
       };
     }
-  };
+  }, [fetchData, clients]);
 
   const deleteRecord = async (table: string, id: string | number) => {
     try {

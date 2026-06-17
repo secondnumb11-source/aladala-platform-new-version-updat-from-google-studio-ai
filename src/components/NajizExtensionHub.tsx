@@ -148,7 +148,7 @@ export default function NajizExtensionHub({ currentUser, onUpdateState }: NajizE
   }, [selectedSyncTypes]);
 
   // AI Classification and Database Routing Function (for both extension messages and simulated demo)
-  const classifyAndSyncItem = async (item: any, selectedTypes: string[]) => {
+  const classifyAndSyncItem = useCallback(async (item: any, selectedTypes: string[]) => {
     const textStr = JSON.stringify(item).toLowerCase();
     
     // 1. Advanced Pattern Matching & Regex-Driven Semantic Category Classification
@@ -448,7 +448,7 @@ export default function NajizExtensionHub({ currentUser, onUpdateState }: NajizE
         message: `[خطأ مزامنة] الكيان "${item.rawTitle || 'سجل'}" لم يكتمل: ${error?.message || 'خطأ في التنسيق البنيوي للربط بـ Supabase'}`
       };
     }
-  };
+  }, [createRecord, upsertRecord, clients, cases, bgProcessingEnabled]);
 
   // Real-time Extension PostMessage Event Listener (with AI Routing)
   useEffect(() => {
@@ -479,7 +479,7 @@ export default function NajizExtensionHub({ currentUser, onUpdateState }: NajizE
     
     window.addEventListener('message', handleNajizSyncEvent);
     return () => window.removeEventListener('message', handleNajizSyncEvent);
-  }, [createRecord, selectedSyncTypes, clients, cases]);
+  }, [classifyAndSyncItem, selectedSyncTypes]);
 
   const handleCopyKey = () => {
     navigator.clipboard.writeText("sk_adalah_workspace_" + (currentUser?.workspace_id || 'demo1234'));
@@ -868,7 +868,29 @@ export default function NajizExtensionHub({ currentUser, onUpdateState }: NajizE
             label { display: block; font-size: 12px; font-weight: bold; margin-top: 15px; margin-bottom: 5px; color: #FACC15; }
             input { width: 100%; padding: 10px; background: rgba(0,0,0,0.2); border: 1px solid #D4AF37; color: #FFFFFF; border-radius: 8px; box-sizing: border-box; font-weight: bold; }
             input::placeholder { color: #FFFFFF; opacity: 0.6; }
-            input:focus { outline: none; border-col             <button class="primary" id="saveBtn">حفظ التأمين للربط الإضافي</button>
+            input:focus { outline: none; border-color: #FACC15; }
+            button.primary { width: 100%; background: #D4AF37; color: #060b13; padding: 12px; border: none; border-radius: 8px; font-weight: 900; margin-top: 20px; cursor: pointer; }
+         </style>
+      </head>
+      <body>
+          <div class="header">
+             <h2>العدالة | المزامنة</h2>
+          </div>
+          <div class="tabs">
+             <div class="tab active" data-target="config">الضبط</div>
+             <div class="tab" data-target="logs">السجلات</div>
+          </div>
+          <div id="config" class="content active">
+             <label>مفتاح الربط API Key</label>
+             <input type="password" id="popup-api-key" placeholder="sk_...">
+             <label>رابط الخادم</label>
+             <input type="text" id="popup-api-url" placeholder="https://...">
+             
+             <label style="display:flex; align-items:center; gap:8px; margin-top:15px;">
+                <input type="checkbox" id="popup-toggle-apikey" style="width:16px;"> تفعيل المفتاح
+             </label>
+
+             <button class="primary" id="saveBtn">حفظ التأمين للربط الإضافي</button>
           </div>
           
           <script src="popup.js"></script>

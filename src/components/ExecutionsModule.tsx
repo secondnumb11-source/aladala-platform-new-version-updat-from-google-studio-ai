@@ -127,7 +127,7 @@ export default function ExecutionsModule({
       {/* Manual Creation / Edit Modal */}
       <AnimatePresence>
         {(isAdding || editingExec) && (
-          <div className="fixed inset-0 z-[999] flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4">
             <motion.div 
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -255,7 +255,7 @@ export default function ExecutionsModule({
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         {[
           { label: 'إجمالي الطلبات', value: executions.length, color: 'text-blue-400', bg: 'bg-blue-400/10', icon: Scale },
-          { label: 'قيد التنفيذ', value: executions.filter(e => e.status?.includes('قيد')).length, color: 'text-amber-400', bg: 'bg-amber-400/10', icon: Activity },
+          { label: 'قيد التنفيذ', value: executions.filter(e => e.status?.includes('قيد')).length, color: 'text-[#facc15]', bg: 'bg-[#facc15]/10', icon: Activity },
           { label: 'طلبات مكتملة', value: executions.filter(e => e.status?.includes('منتهي') || e.status?.includes('مكتمل')).length, color: 'text-emerald-400', bg: 'bg-emerald-400/10', icon: ShieldCheck },
           { label: 'إجمالي المبالغ', value: executions.reduce((acc, curr) => acc + (curr.amount || 0), 0).toLocaleString() + ' ر.س', color: 'text-purple-400', bg: 'bg-purple-400/10', icon: DollarSign }
         ].map((stat, i) => (
@@ -286,7 +286,7 @@ export default function ExecutionsModule({
             <tbody className="divide-y divide-slate-800/50">
               {filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-8 py-20 text-center text-yellow-400 italic font-black">لا يوجد نتائج للبحث...</td>
+                  <td colSpan={6} className="px-8 py-20 text-center text-[#facc15] italic font-black text-lg">لا يوجد نتائج للبحث...</td>
                 </tr>
               ) : (
                 filtered.map((ex) => (

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
 import { Activity, Clock, CheckCircle2, TrendingUp, AlertTriangle, ShieldCheck } from 'lucide-react';
 import { InteractiveCard } from './InteractiveCard';
 

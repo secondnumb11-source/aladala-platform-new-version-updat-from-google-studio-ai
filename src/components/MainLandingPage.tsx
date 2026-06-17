@@ -999,8 +999,9 @@ export default function MainLandingPage({ onSignInSelect, onTrialSelect }: MainL
             </table>
           </div>
 
-          <div className="mt-8 p-6 rounded-2xl bg-[#0c2461]/5 border border-slate-300 text-center shadow-sm">
-            <p className="text-sm md:text-base font-black !text-[#0c2461]" style={{ fontWeight: 900, textShadow: '0 0 10px rgba(59, 130, 246, 0.45), 0 0 20px rgba(59, 130, 246, 0.2)' }}>
+          <div className="mt-8 p-8 rounded-2xl bg-[#002855] border-2 border-[#D4AF37]/50 text-center shadow-[0_20px_50px_rgba(0,0,0,0.3)] relative overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-[#D4AF37]/5 to-transparent animate-pulse pointer-events-none" />
+            <p className="text-sm md:text-xl font-black text-white relative z-10" style={{ fontWeight: 900, textShadow: '0 0 20px rgba(255, 120, 0, 0.8), 0 0 40px rgba(255, 120, 0, 0.4)' }}>
               💡 {isEn 
                 ? "Al-Adalah achieves S-Tier efficiency. Optimize operating costs and win cases securely. Activate the Trial version on any device instantly."
                 : "الانتقال إلى منصة العدالة يضمن لك الكفاءة الكاملة وحلولا متفوقة خالية من التعقيد لإدارة مئات المكاتب وتفاصيل القضايا بكل سرية وتنظيم احترافي."}
