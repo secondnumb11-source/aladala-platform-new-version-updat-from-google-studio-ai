@@ -77,9 +77,6 @@ export default function ClientPortal({
       email: newClientEmail,
       portalUsername: generatedUsername,
       portalPassword: generatedPassword,
-      casesCount: selectedCaseToLink ? 1 : 0,
-      billingTotal: 0,
-      activePortal: true,
       portalToken: token,
       portalLink: `/portal?token=${token}`
     };

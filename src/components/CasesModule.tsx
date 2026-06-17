@@ -1529,16 +1529,13 @@ export default React.memo(function CasesModule({
         nationalId: newClientType === 'company' ? newCompanyCR : (newPlaintiffNationalId || "100" + Math.floor(Math.random() * 10000000)),
         phone: newPlaintiffPhone || "+9665" + Math.floor(Math.random() * 100000000),
         email: "contact@domain.sa",
-        casesCount: 1,
-        billingTotal: 0,
-        activePortal: true,
         portalToken: `portal-${Date.now()}`,
         portalLink: `/portal?token=portal-${Date.now()}`
       };
       await onUpdateState('clients', linkedClient);
     } else {
-      // Update the client casesCount in case it's an existing client
-      const updatedClient = { ...linkedClient, casesCount: (linkedClient.casesCount || 0) + 1 };
+      // Update the client information
+      const updatedClient = { ...linkedClient };
       
       if (newClientType === 'company') {
         updatedClient.isCompany = true;
@@ -1575,10 +1572,7 @@ export default React.memo(function CasesModule({
       priority: newPriority,
       isConfidential: isConfidential,
       createdAt: new Date().toISOString().split('T')[0],
-      attachments_count: hasContract ? 2 : 1,
-      attachments: hasContract ? [
-        { id: 'contract-init', fileName: 'عقد_المحاماة_الموقع_رقمياً.pdf', fileSize: '2.4 MB', uploadDate: new Date().toISOString().split('T')[0], category: 'contract' }
-      ] : []
+      attachments_count: hasContract ? 1 : 0
     };
 
     setServerValidationError(null);
@@ -1752,8 +1746,7 @@ export default React.memo(function CasesModule({
 
           const updatedCase: Case = {
             ...c,
-            attachments_count: oldDocs.length + 1,
-            attachments: [...oldDocs, newDoc]
+        attachments_count: oldDocs.length + 1,
           };
 
           onUpdateState('cases', updatedCase);
