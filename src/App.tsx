@@ -55,11 +55,9 @@ const SaudiServicesHub = React.lazy(() => import('@/components/SaudiServicesHub'
 const CourtMapAndServices = React.lazy(() => import('@/components/CourtMapAndServices'));
 
 const GlobalCustomizationEngine = React.lazy(() => import('@/components/GlobalCustomizationEngine'));
-import { initGlobalErrorHandling } from '@/lib/ErrorReporting';
 import { runSupabaseDiagnostics } from '@/lib/debug-supabase';
 import { SkeletonLoader } from '@/components/SkeletonLoader';
 
-initGlobalErrorHandling();
 runSupabaseDiagnostics().catch(err => console.error('[Supabase Top-Level Diagnostics] Failed:', err));
 import '@/lib/supabase/init';
 

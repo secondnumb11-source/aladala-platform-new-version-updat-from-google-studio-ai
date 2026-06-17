@@ -29,6 +29,7 @@ export default defineConfig(() => {
       sourcemap: false, 
       minify: 'esbuild' as const,
       rollupOptions: {
+        external: ['ws'],
         output: {
           manualChunks: undefined
         }
