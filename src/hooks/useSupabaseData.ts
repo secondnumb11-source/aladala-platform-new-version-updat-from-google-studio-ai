@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { generateUUID } from '@/lib/uuid';
 import { supabase } from '@/lib/supabase';
 import { Case, Client, Task, Hearing, Document, PowerOfAttorney, Invoice, Employee, AuditTrail } from '@/types';
 import { validatePayload } from '@/lib/persistenceManager';
@@ -293,6 +294,14 @@ export function useSupabaseData() {
         const { table, type, action, data } = log;
         const targetTable = table || type;
         const mappedTable = getSupabaseTableName(targetTable);
+
+        // تجاهل أي سجل يحتوي على ID تالف (غير UUID)
+        if (data?.id && typeof data.id === 'string' && 
+            !data.id.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)) {
+          console.warn(`[Background Sync] Skipping record with invalid UUID: ${data.id}`);
+          // لا تضفه لـ remainingLogs — تجاهله نهائياً
+          continue;
+        }
 
         // ✅ الإصلاح الجوهري: نقّ البيانات قبل الإرسال
         const cleanPayload = sanitizePayload(mappedTable, data);

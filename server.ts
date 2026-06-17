@@ -4450,6 +4450,10 @@ async function bootApp() {
   }
 }
 
-bootApp().catch(err => {
-  console.error("Critical server boot exception:", err);
-});
+if (process.env.VERCEL !== '1') {
+  bootApp().catch(err => {
+    console.error("Critical server boot exception:", err);
+  });
+}
+
+export default app;
