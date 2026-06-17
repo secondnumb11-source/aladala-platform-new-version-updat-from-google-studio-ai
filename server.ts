@@ -3945,6 +3945,41 @@ async function initializeDatabaseTables() {
       );
     `);
 
+    // Ensure all custom camelCase and snake_case columns exist on employees table
+    const employeeAlters = [
+      'ALTER TABLE public.employees ADD COLUMN IF NOT EXISTS "nationalId" TEXT',
+      'ALTER TABLE public.employees ADD COLUMN IF NOT EXISTS national_id TEXT',
+      'ALTER TABLE public.employees ADD COLUMN IF NOT EXISTS username TEXT',
+      'ALTER TABLE public.employees ADD COLUMN IF NOT EXISTS password TEXT',
+      'ALTER TABLE public.employees ADD COLUMN IF NOT EXISTS "customLoginToken" TEXT',
+      'ALTER TABLE public.employees ADD COLUMN IF NOT EXISTS custom_login_token TEXT',
+      'ALTER TABLE public.employees ADD COLUMN IF NOT EXISTS "portalLink" TEXT',
+      'ALTER TABLE public.employees ADD COLUMN IF NOT EXISTS portal_link TEXT',
+      'ALTER TABLE public.employees ADD COLUMN IF NOT EXISTS qualification TEXT',
+      'ALTER TABLE public.employees ADD COLUMN IF NOT EXISTS "birthDate" TEXT',
+      'ALTER TABLE public.employees ADD COLUMN IF NOT EXISTS birth_date TEXT',
+      'ALTER TABLE public.employees ADD COLUMN IF NOT EXISTS manager TEXT',
+      'ALTER TABLE public.employees ADD COLUMN IF NOT EXISTS nationality TEXT',
+      'ALTER TABLE public.employees ADD COLUMN IF NOT EXISTS "nationalIdExpiry" TEXT',
+      'ALTER TABLE public.employees ADD COLUMN IF NOT EXISTS national_id_expiry TEXT',
+      'ALTER TABLE public.employees ADD COLUMN IF NOT EXISTS "startDate" TEXT',
+      'ALTER TABLE public.employees ADD COLUMN IF NOT EXISTS start_date TEXT',
+      'ALTER TABLE public.employees ADD COLUMN IF NOT EXISTS "endDate" TEXT',
+      'ALTER TABLE public.employees ADD COLUMN IF NOT EXISTS end_date TEXT',
+      'ALTER TABLE public.employees ADD COLUMN IF NOT EXISTS branch TEXT',
+      'ALTER TABLE public.employees ADD COLUMN IF NOT EXISTS allowances NUMERIC',
+      'ALTER TABLE public.employees ADD COLUMN IF NOT EXISTS deductions NUMERIC',
+      'ALTER TABLE public.employees ADD COLUMN IF NOT EXISTS "baseSalary" NUMERIC',
+      'ALTER TABLE public.employees ADD COLUMN IF NOT EXISTS base_salary NUMERIC'
+    ];
+    for (const sql of employeeAlters) {
+      try {
+        await client.query(sql);
+      } catch (e) {
+        console.error("Error executing employees alter:", sql, e);
+      }
+    }
+
     // 3. clients
     await client.query(`
       CREATE TABLE IF NOT EXISTS public.clients (

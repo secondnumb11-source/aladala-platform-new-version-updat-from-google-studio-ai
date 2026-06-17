@@ -167,6 +167,9 @@ export interface Employee {
   status?: string;
   avatarUrl?: string;
   employeeCode?: string;
+  role?: string;
+  department?: string;
+  salary?: number;
 }
 
 export interface DocumentVersion {

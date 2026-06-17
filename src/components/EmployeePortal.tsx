@@ -202,12 +202,44 @@ export default function EmployeePortal({
     if (!isAdmin) return;
     
     // 1. Immediately load from shared local backup
+    const normalizeEmployee = (emp: any): Employee => {
+      if (!emp) return {} as Employee;
+      return {
+        ...emp,
+        id: emp.id,
+        name: emp.name || '',
+        role: emp.role || '',
+        email: emp.email || '',
+        phone: emp.phone || '',
+        status: emp.status || 'نشط',
+        department: emp.department || '',
+        joinDate: emp.joinDate || emp.join_date || '',
+        nationalId: emp.nationalId || emp.national_id || '',
+        nationalIdExpiry: emp.nationalIdExpiry || emp.national_id_expiry || '',
+        username: emp.username || '',
+        password: emp.password || '',
+        customLoginToken: emp.customLoginToken || emp.custom_login_token || '',
+        portalLink: emp.portalLink || emp.portal_link || '',
+        qualification: emp.qualification || '',
+        birthDate: emp.birthDate || emp.birth_date || '',
+        manager: emp.manager || '',
+        nationality: emp.nationality || '',
+        startDate: emp.startDate || emp.start_date || '',
+        endDate: emp.endDate || emp.end_date || '',
+        branch: emp.branch || '',
+        allowances: Number(emp.allowances || 0),
+        deductions: Number(emp.deductions || 0),
+        baseSalary: emp.baseSalary !== undefined ? Number(emp.baseSalary) : (emp.base_salary !== undefined ? Number(emp.base_salary) : 0),
+        salary: emp.salary !== undefined ? Number(emp.salary) : (emp.baseSalary !== undefined ? Number(emp.baseSalary) : (emp.base_salary !== undefined ? Number(emp.base_salary) : 0))
+      };
+    };
+
     const backup = localStorage.getItem('employees_backup');
     if (backup) {
       try {
         const parsed = JSON.parse(backup);
         if (Array.isArray(parsed) && parsed.length > 0) {
-          setEmployees(parsed);
+          setEmployees(parsed.map(normalizeEmployee));
         }
       } catch (e) {
         console.error("Error reading shared backup:", e);
@@ -217,7 +249,7 @@ export default function EmployeePortal({
     const fetchEmployees = async () => {
       const { data, error } = await supabase.from('employees').select('*');
       if (data) {
-        const emps = data as Employee[];
+        const emps = (data as any[]).map(normalizeEmployee);
         emps.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
         setEmployees(emps);
         localStorage.setItem('employees_backup', JSON.stringify(emps));

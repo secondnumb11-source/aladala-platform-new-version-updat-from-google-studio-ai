@@ -131,7 +131,7 @@ export default function TasksModule({
   const [taskPriority, setTaskPriority] = useState<'low' | 'medium' | 'high'>('high');
   const [taskAssigned, setTaskAssigned] = useState('');
   const [taskCase, setTaskCase] = useState('');
-  const [taskDueDate, setTaskDueDate] = useState('');
+  const [taskDueDate, setTaskDueDate] = useState(new Date().toISOString().split('T')[0]);
   const [taskDueTime, setTaskDueTime] = useState('09:00');
   const [taskReminderEnabled, setTaskReminderEnabled] = useState(false);
   const [taskReminderTime, setTaskReminderTime] = useState('09:00');
@@ -681,6 +681,15 @@ export default function TasksModule({
     e.preventDefault();
     if (!taskTitle) return;
 
+    if (!taskDueDate) {
+      triggerToast(
+        "تنبيه: حقل مطلوب", 
+        "يرجى اختيار تاريخ استحقاق للمهمة لضمان دقة مواعيد المهل القضائية وعدم فوات المواعيد النظامية.", 
+        "warning"
+      );
+      return;
+    }
+
     const newTask: Task = {
       id: generateUUID(),
       title: taskTitle,
@@ -708,7 +717,7 @@ export default function TasksModule({
     // reset
     setTaskTitle('');
     setTaskDesc('');
-    setTaskDueDate('2026-06-15');
+    setTaskDueDate(new Date().toISOString().split('T')[0]);
     setTaskReminderEnabled(false);
     setTaskReminderTime('');
   };
@@ -1440,6 +1449,7 @@ export default function TasksModule({
                       type="date"
                       value={taskDueDate}
                       onChange={(e) => setTaskDueDate(e.target.value)}
+                      required
                       className="w-full bg-slate-800 border border-slate-700 rounded-xl py-2 px-3 text-xs text-white font-sans font-bold focus:outline-none"
                     />
                     <input 

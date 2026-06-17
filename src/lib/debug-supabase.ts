@@ -115,37 +115,18 @@ GRANT ALL ON TABLE public.${table} TO anon, authenticated, service_role;
     detail: {
       table,
       error,
+      message: `لم تتمكن المنصة من حفظ البيانات في جدول "${table}" بسبب قيود سياسة RLS 42501. يرجى تنفيذ كود الإصلاح المجهز أدناه.`,
       sqlCode,
-      consoleUrl: 'https://supabase.com/dashboard/project/_/sql'
+      consoleUrl: 'https://supabase.com/dashboard/project/_/sql',
+      source: 'Supabase RLS Guard'
     }
   }));
 
-  // Also trigger a detailed prompt fallback so the user is directly warned and has the SQL ready
-  const promptMessage = `⚠️ تم اكتشاف تقييد في صلاحيات الوصول (RLS 42501) للجدول "${table}".
-
-لقد قمنا بتجهيز كود SQL اللازم لإصلاح هذا الخلل فوراً.
-
-خطوات الحل:
-1. انقر فوق زر "موافق" لنسخ الكود والانتقال لصفحة Supabase SQL Console.
-2. الصق الكود واضغط Run لتفعيل سياسة المرور الآمنة.
-
-كود الـ SQL المجهز:
-------------------------------------------
-${sqlCode}
-------------------------------------------`;
-
   if (typeof window !== 'undefined') {
-    // Copy sqlCode to clipboard
-    navigator.clipboard.writeText(sqlCode).then(() => {
-      console.log('[RLS Policy Analyzer] SQL script successfully copied to clipboard.');
-    }).catch(err => {
+    // Copy sqlCode to clipboard automatically
+    navigator.clipboard.writeText(sqlCode).catch(err => {
       console.error('[RLS Policy Analyzer] Clipboard write failed:', err);
     });
-
-    const confirmRedirect = confirm(promptMessage + '\n\nهل تريد فتح Supabase SQL Console الآن لاستعراض وحل الصلاحيات؟ (الكود تم نسخه مؤقتاً في جهازك)');
-    if (confirmRedirect) {
-      window.open('https://supabase.com/dashboard/project/_/sql', '_blank');
-    }
   }
 }
 

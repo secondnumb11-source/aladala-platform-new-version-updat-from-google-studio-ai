@@ -13,6 +13,47 @@ import { supabase } from '@/lib/supabase';
 import { useSupabase } from '@/contexts/SupabaseContext';
 import { Case, Task, Employee, Client } from '@/types';
 
+// Procedural UUID Generator matching standard RFC4122 v4
+const generateUUID = () => {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+    const r = Math.random() * 16 | 0;
+    const v = c === 'x' ? r : (r & 0x3 | 0x8);
+    return v.toString(16);
+  });
+};
+
+const normalizeEmployee = (emp: any): Employee => {
+  if (!emp) return {} as Employee;
+  return {
+    ...emp,
+    id: emp.id,
+    name: emp.name || '',
+    role: emp.role || '',
+    email: emp.email || '',
+    phone: emp.phone || '',
+    status: emp.status || 'نشط',
+    department: emp.department || '',
+    joinDate: emp.joinDate || emp.join_date || '',
+    nationalId: emp.nationalId || emp.national_id || '',
+    nationalIdExpiry: emp.nationalIdExpiry || emp.national_id_expiry || '',
+    username: emp.username || '',
+    password: emp.password || '',
+    customLoginToken: emp.customLoginToken || emp.custom_login_token || '',
+    portalLink: emp.portalLink || emp.portal_link || '',
+    qualification: emp.qualification || '',
+    birthDate: emp.birthDate || emp.birth_date || '',
+    manager: emp.manager || '',
+    nationality: emp.nationality || '',
+    startDate: emp.startDate || emp.start_date || '',
+    endDate: emp.endDate || emp.end_date || '',
+    branch: emp.branch || '',
+    allowances: Number(emp.allowances || 0),
+    deductions: Number(emp.deductions || 0),
+    baseSalary: emp.baseSalary !== undefined ? Number(emp.baseSalary) : (emp.base_salary !== undefined ? Number(emp.base_salary) : 0),
+    salary: emp.salary !== undefined ? Number(emp.salary) : (emp.baseSalary !== undefined ? Number(emp.baseSalary) : (emp.base_salary !== undefined ? Number(emp.base_salary) : 0))
+  };
+};
+
 export default function EmployeesData({ tasks }: { cases: Case[], tasks: Task[], clients?: Client[], onUpdateState?: (t: string, d: any) => void }) {
   const { user, profile } = useSupabase();
   const [employees, setEmployees] = useState<Employee[]>([]);
@@ -238,7 +279,10 @@ export default function EmployeesData({ tasks }: { cases: Case[], tasks: Task[],
     const backup = localStorage.getItem('employees_backup');
     if (backup) {
       try {
-        setEmployees(JSON.parse(backup));
+        const parsed = JSON.parse(backup);
+        if (Array.isArray(parsed)) {
+          setEmployees(parsed.map(normalizeEmployee));
+        }
       } catch (e) {
         console.error("Error parsing backup data:", e);
       }
@@ -249,7 +293,7 @@ export default function EmployeesData({ tasks }: { cases: Case[], tasks: Task[],
       if (error) {
         console.error("Error fetching employees from Supabase:", error);
       } else if (data) {
-        const emps = data as Employee[];
+        const emps = (data as any[]).map(normalizeEmployee);
         emps.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
         setEmployees(emps);
         localStorage.setItem('employees_backup', JSON.stringify(emps));
@@ -325,22 +369,59 @@ export default function EmployeesData({ tasks }: { cases: Case[], tasks: Task[],
     }
 
     const isNew = !formData.id;
-    const tempId = formData.id || `EMP-${Date.now().toString().slice(-4)}`;
+    const tempId = formData.id || generateUUID();
 
     const empData: any = {
       ...formData,
-      nationalId: nid,
       id: tempId,
-      username: formData.username || `emp_${tempId.toLowerCase()}`,
-      password: formData.password || `pass_${Math.random().toString(36).substring(2, 6)}`,
-      customLoginToken: formData.customLoginToken || btoa(`${tempId}-${Math.random().toString(36).substring(2, 10)}`),
+      name: formData.name || '',
+      role: formData.role || '',
+      email: formData.email || '',
+      phone: formData.phone || '',
       status: formData.status || 'نشط',
-      baseSalary: Number(formData.baseSalary) || 0,
+      department: formData.department || '',
+      
+      // both casing options to ensure database compatibility
+      nationalId: nid,
+      national_id: nid,
+      
+      username: formData.username || `emp_${tempId.substring(0, 8)}`,
+      password: formData.password || `pass_${Math.random().toString(36).substring(2, 6)}`,
+      
+      customLoginToken: formData.customLoginToken || btoa(`${tempId}-${Math.random().toString(36).substring(2, 10)}`),
+      custom_login_token: formData.customLoginToken || btoa(`${tempId}-${Math.random().toString(36).substring(2, 10)}`),
+      
+      qualification: formData.qualification || '',
+      
+      birthDate: formData.birthDate || '',
+      birth_date: formData.birthDate || '',
+      
+      manager: formData.manager || '',
+      nationality: formData.nationality || '',
+      
+      nationalIdExpiry: formData.nationalIdExpiry || '',
+      national_id_expiry: formData.nationalIdExpiry || '',
+      
+      startDate: formData.startDate || '',
+      start_date: formData.startDate || '',
+      
+      endDate: formData.endDate || '',
+      end_date: formData.endDate || '',
+      
+      branch: formData.branch || 'الفرع الرئيسي',
+      
       allowances: Number(formData.allowances) || 0,
-      deductions: Number(formData.deductions) || 0
+      deductions: Number(formData.deductions) || 0,
+      
+      baseSalary: Number(formData.baseSalary) || 0,
+      base_salary: Number(formData.baseSalary) || 0,
+      
+      salary: Number(formData.salary || formData.baseSalary) || 0,
+      salary_val: Number(formData.salary || formData.baseSalary) || 0
     };
     
     empData.portalLink = `${window.location.origin}/employee-portal?user=${empData.username}&token=${empData.customLoginToken}`;
+    empData.portal_link = empData.portalLink;
 
     // Ensure no undefined values are sent to Firestore
     Object.keys(empData).forEach(key => {
@@ -361,8 +442,8 @@ export default function EmployeesData({ tasks }: { cases: Case[], tasks: Task[],
       } else {
         currentBackupList = currentBackupList.map((e: any) => e.id === empData.id ? { ...e, ...empData } : e);
       }
-      localStorage.setItem('employees_backup', JSON.stringify(currentBackupList));
-      setEmployees(currentBackupList);
+      localStorage.setItem('employees_backup', JSON.stringify(currentBackupList.map(normalizeEmployee)));
+      setEmployees(currentBackupList.map(normalizeEmployee));
 
       // 2. Try persisting to Supabase
       if (isNew) {
@@ -376,7 +457,8 @@ export default function EmployeesData({ tasks }: { cases: Case[], tasks: Task[],
           console.warn("Supabase insert failed, relying on local sync:", insertError);
         } else if (insertResult) {
           // Re-update local list with the newly confirmed server ID if different
-          const updatedBackup = currentBackupList.map((item: any) => item.id === tempId ? { ...item, id: insertResult.id } : item);
+          const normResult = normalizeEmployee(insertResult);
+          const updatedBackup = currentBackupList.map((item: any) => item.id === tempId ? normResult : item).map(normalizeEmployee);
           localStorage.setItem('employees_backup', JSON.stringify(updatedBackup));
           setEmployees(updatedBackup);
         }

@@ -789,62 +789,13 @@ export default function NajizExtensionHub({ currentUser, onUpdateState }: NajizE
             label { display: block; font-size: 12px; font-weight: bold; margin-top: 15px; margin-bottom: 5px; color: #FACC15; }
             input { width: 100%; padding: 10px; background: rgba(0,0,0,0.2); border: 1px solid #D4AF37; color: #FFFFFF; border-radius: 8px; box-sizing: border-box; font-weight: bold; }
             input::placeholder { color: #FFFFFF; opacity: 0.6; }
-            input:focus { outline: none; border-color: #FACC15; background: rgba(0,0,0,0.4); }
-            
-            button.primary { width: 100%; margin-top: 20px; background: #D4AF37; color: #0b0f19; border: none; padding: 12px; font-weight: 900; border-radius: 8px; cursor: pointer; transition: 0.2s;}
-            button.primary:hover { background: #FACC15; transform: translateY(-1px); }
-            
-            .info { font-size: 12px; font-weight: bold; margin-top: 15px; background: rgba(255,255,255,0.05); padding: 12px; border-radius: 8px; color: #FFFFFF; line-height: 1.6; border: 1px solid rgba(255,255,255,0.05); }
-            .status-badge { display: inline-flex; align-items: center; gap: 5px; background: rgba(16, 185, 129, 0.1); color: #10b981; padding: 4px 8px; border-radius: 4px; font-size: 10px; font-weight: bold; }
-            .dot { width: 6px; height: 6px; background: #10b981; border-radius: 50%; box-shadow: 0 0 5px #10b981; }
-         </style>
-      </head>
-      <body>
-         <div class="header">
-            <h2>العدالة الذكية</h2>
-            <div class="status-badge"><div class="dot"></div> نشط وجاهز</div>
-         </div>
-         
-         <div class="tabs">
-            <div class="tab active" data-target="main">الرئيسية</div>
-            <div class="tab" data-target="settings">إعدادات API</div>
-         </div>
-
-         <div id="main" class="content active">
-            <div style="text-align: center; margin-bottom: 20px;">
-               <div style="font-size: 40px; margin-bottom: 10px;">⚖️</div>
-               <h3 style="margin: 0 0 5px 0; color: #FACC15; font-weight: 900;">المزامنة بالذكاء الاصطناعي مهيأة</h3>
-               <p style="margin: 0; font-size: 12px; color: #FFFFFF; font-weight:bold;">الذكاء الاصطناعي يراقب جاهزية نقل البيانات.</p>
-            </div>
-            
-            <div class="info" style="color:#ffffff; font-weight:bold;">
-               الربط يعمل الآن تلقائياً بمجرد تسجيل دخولك لناجز. انقر الزر العائم في أي وقت لمزامنة وتحويل القضايا، الجلسات، الوكالات، والتنفيذ إلى النظام مباشرة. يعمل الذكاء الاصطناعي على ترتيب البيانات آلياً.
-            </div>
-         </div>
-
-         <div id="settings" class="content">
-            <label style="display:flex; align-items:flex-start; gap:8px; cursor:pointer; margin-bottom:20px; background:rgba(212,175,55,0.15); padding:10px; border-radius:8px; border:1px solid rgba(212,175,55,0.5);">
-               <input type="checkbox" id="popup-toggle-apikey" style="accent-color:#D4AF37; width:16px; height:16px; margin-top:2px;"> 
-               <span style="font-size:12px; color:#FFFFFF; font-weight:900;">
-                 استخدام الـ API KEY بدلاً من الوضع الافتراضي (بدون مفتاح)
-               </span>
-            </label>
-
-            <div id="popup-api-container" style="opacity:0.4; pointer-events:none; transition:0.3s;">
-               <label>رابط الاستقبال (Webhook/API URL)</label>
-               <input type="text" id="apiUrl" placeholder="https://api.yourdomain.com/v1/sync" />
-               
-               <label>مفتاح الربط السري (API Key)</label>
-               <input type="password" id="apiKey" placeholder="sk_live_..." />
-            </div>
-            
-            <button class="primary" id="saveBtn">حفظ التأمين للربط الإضافي</button>
-         </div>
-         
-         <script src="popup.js"></script>
-      </body>
-      </html>
-      `;
+            input:focus { outline: none; border-col             <button class="primary" id="saveBtn">حفظ التأمين للربط الإضافي</button>
+          </div>
+          
+          <script src="popup.js"></script>
+       </body>
+       </html>
+       `;
 
       const popupJsText = `
         document.addEventListener('DOMContentLoaded', () => {
@@ -937,17 +888,17 @@ export default function NajizExtensionHub({ currentUser, onUpdateState }: NajizE
               </div>
               <div>
                 <h1 className="text-4xl md:text-5xl font-black text-[#ffffff] tracking-tight drop-shadow-md">
-                  الربط المباشر مع ناجز <span className="text-[#FACC15] underline decoration-[#D4AF37] decoration-4 underline-offset-8">بالـ AI الذكي</span>
+                   الربط المباشر مع ناجز <span className="text-[#FACC15] underline decoration-[#D4AF37] decoration-4 underline-offset-8">بالـ AI الذكي</span>
                 </h1>
-                <p className="text-sm text-yellow-100 font-bold mt-2 opacity-90">مزامنة وترتيب ملفات القضايا والجلسات تلقائياً بضغطة زر واحدة وهيبة بصرية متناسقة.</p>
+                <p className="text-sm text-yellow-300 font-extrabold mt-2 tracking-wide block drop-shadow">مزامنة وترتيب ملفات القضايا والجلسات تلقائياً بضغطة زر واحدة وهيبة بصرية متناسقة.</p>
               </div>
             </div>
 
             {/* Interactive Visual Step Roadmap & Tooltips */}
             <div className="bg-[#0f172a] border border-[#D4AF37]/50 rounded-[2rem] p-6 lg:p-8 shadow-inner relative">
               <div className="absolute top-3 left-6">
-                <span className="inline-flex items-center gap-1.5 bg-[#D4AF37]/20 border border-[#D4AF37] text-[#FACC15] text-[11px] px-3 py-1 rounded-full font-black animate-pulse shadow-md">
-                  <SparklesIcon className="w-3.5 h-3.5" />
+                <span className="inline-flex items-center gap-1.5 bg-[#D4AF37]/25 border border-[#D4AF37] text-yellow-300 text-[11px] px-3 py-1 rounded-full font-black animate-pulse shadow-md">
+                  <SparklesIcon className="w-3.5 h-3.5 text-[#FACC15]" />
                   بروتوكول السحب الآمن
                 </span>
               </div>
@@ -962,10 +913,10 @@ export default function NajizExtensionHub({ currentUser, onUpdateState }: NajizE
                   onMouseLeave={() => setHoveredStep(null)}
                 >
                   <div className="flex items-center gap-3 mb-2">
-                    <span className="w-8 h-8 rounded-full bg-[#D4AF37] text-[#060b13] font-black text-sm flex items-center justify-center shadow-md">1</span>
-                    <h4 className="font-black text-[#ffffff] text-sm">تسجيل دخول ناجز الكلاسيكي</h4>
+                    <span className="w-8 h-8 rounded-full bg-[#FACC15] text-[#060b13] font-black text-sm flex items-center justify-center shadow-md">1</span>
+                    <h4 className="font-bold text-[#FACC15] text-sm tracking-wide">تسجيل دخول ناجز الكلاسيكي</h4>
                   </div>
-                  <p className="text-xs text-yellow-100/80 font-bold leading-relaxed">سجل بمصادقة نفاذ الوطني لدخول ناجز الاعتيادي بمستعرض الويب.</p>
+                  <p className="text-xs text-white font-black leading-relaxed mt-1">سجل بمصادقة نفاذ الوطني لدخول ناجز الاعتيادي بمستعرض الويب.</p>
 
                   <AnimatePresence>
                     {hoveredStep === 1 && (
@@ -989,10 +940,10 @@ export default function NajizExtensionHub({ currentUser, onUpdateState }: NajizE
                   onMouseLeave={() => setHoveredStep(null)}
                 >
                   <div className="flex items-center gap-3 mb-2">
-                    <span className="w-8 h-8 rounded-full bg-[#D4AF37] text-[#060b13] font-black text-sm flex items-center justify-center shadow-md">2</span>
-                    <h4 className="font-black text-[#ffffff] text-sm">بروز زر "العدالة" بالأسفل</h4>
+                    <span className="w-8 h-8 rounded-full bg-[#FACC15] text-[#060b13] font-black text-sm flex items-center justify-center shadow-md">2</span>
+                    <h4 className="font-bold text-[#FACC15] text-sm tracking-wide">بروز زر "العدالة" بالأسفل</h4>
                   </div>
-                  <p className="text-xs text-yellow-100/80 font-bold leading-relaxed">سيظهر الزر الذهبي بشكل أنيق في ركن بوابة ناجز الأيمن السفلي.</p>
+                  <p className="text-xs text-white font-black leading-relaxed mt-1">سيظهر الزر الذهبي بشكل أنيق في ركن بوابة ناجز الأيمن السفلي.</p>
 
                   <AnimatePresence>
                     {hoveredStep === 2 && (
@@ -1016,10 +967,10 @@ export default function NajizExtensionHub({ currentUser, onUpdateState }: NajizE
                   onMouseLeave={() => setHoveredStep(null)}
                 >
                   <div className="flex items-center gap-3 mb-2">
-                    <span className="w-8 h-8 rounded-full bg-[#D4AF37] text-[#060b13] font-black text-sm flex items-center justify-center shadow-md">3</span>
-                    <h4 className="font-black text-[#ffffff] text-sm">كبسة سحب واحدة بالـ AI</h4>
+                    <span className="w-8 h-8 rounded-full bg-[#FACC15] text-[#060b13] font-black text-sm flex items-center justify-center shadow-md">3</span>
+                    <h4 className="font-bold text-[#FACC15] text-sm tracking-wide">كبسة سحب واحدة بالـ AI</h4>
                   </div>
-                  <p className="text-xs text-yellow-100/80 font-bold leading-relaxed">توليد المزامنة الفورية للمكاتب والعملاء المصنفين تلقائياً بالذكاء الاصطناعي.</p>
+                  <p className="text-xs text-white font-black leading-relaxed mt-1">توليد المزامنة الفورية للمكاتب والعملاء المصنفين تلقائياً بالذكاء الاصطناعي.</p>
 
                   <AnimatePresence>
                     {hoveredStep === 3 && (
@@ -1058,7 +1009,7 @@ export default function NajizExtensionHub({ currentUser, onUpdateState }: NajizE
                 onClick={() => setIsSettingsOpen(true)}
                 className="bg-transparent hover:bg-white/10 text-white border-2 border-[#D4AF37] font-black text-lg px-6 py-5 rounded-2xl shadow-lg transition-all flex items-center gap-2 active:scale-95"
               >
-                <Settings className="w-5 h-5 text-[#FACC15] animate-spin-slow" />
+                <Settings className="w-5 h-5 text-[#FACC15]" />
                 خيارات الاتصال والـ API
               </button>
             </div>
@@ -1066,10 +1017,10 @@ export default function NajizExtensionHub({ currentUser, onUpdateState }: NajizE
           
           <div className="hidden lg:flex flex-col items-center gap-4 p-8 bg-[#0b0f19] backdrop-blur-md border-2 border-[#D4AF37] rounded-[2.5rem] shadow-2xl shrink-0">
              <div className="flex items-center gap-2">
-                <span className="text-xs font-black uppercase tracking-wider text-[#FACC15] drop-shadow">ربط المزامنة بالخيار الهجين</span>
+                <span className="text-sm font-black uppercase tracking-wider text-[#FACC15] drop-shadow font-sans">ربط المزامنة بالخيار الهجين</span>
              </div>
-             <div className="text-5xl font-black text-white drop-shadow-md">AI Sync</div>
-             <p className="text-[11px] font-bold text-white text-center w-48 bg-[#D4AF37]/20 py-2 rounded-xl border border-[#D4AF37]/40 shadow-inner">الفرز التلقائي الفوري دون تداخل السجلات</p>
+             <div className="text-5xl font-black text-[#FACC15] drop-shadow-[0_4px_10px_rgba(212,175,55,0.4)] font-mono">AI Sync</div>
+             <p className="text-xs font-black text-white text-center w-48 bg-[#D4AF37]/35 py-2.5 rounded-xl border-2 border-[#D4AF37] shadow-lg">الفرز التلقائي الفوري دون تداخل السجلات</p>
           </div>
         </div>
       </div>
@@ -1097,7 +1048,7 @@ export default function NajizExtensionHub({ currentUser, onUpdateState }: NajizE
                 </p>
               </div>
 
-              <div className="p-4 bg-[#1e293b]/70 border border-[#D4AF37]/30 rounded-2xl text-[11px] font-medium leading-relaxed text-yellow-100">
+              <div className="p-4 bg-[#1e293b]/70 border border-[#D4AF37]/30 rounded-2xl text-[11px] font-black leading-relaxed text-yellow-300">
                 بمجرد تمديد الإضافة محلياً، تقوم بفحص المحتوى المالي والعمالي والجلسات في خادم ديوان المظالم أو ناجز ونقلها فوراً وفق الصلاحية المحددة.
               </div>
 
@@ -1112,7 +1063,7 @@ export default function NajizExtensionHub({ currentUser, onUpdateState }: NajizE
                     <div className={`bg-[#060b13] w-4 h-4 rounded-full shadow-md transform transition-all duration-200 ${bgProcessingEnabled ? 'translate-x-6' : 'translate-x-0'}`} />
                   </button>
                 </div>
-                <p className="text-[10px] text-yellow-100/70 font-semibold leading-relaxed">
+                <p className="text-[10px] text-white font-black leading-relaxed">
                   تفعيل المعالجة وتحليل مصفوفات النصوص الضخمة عبر خيوط متوازية لمنع تجمد الشاشة تماماً.
                 </p>
               </div>
@@ -1142,13 +1093,13 @@ export default function NajizExtensionHub({ currentUser, onUpdateState }: NajizE
                     <button
                       key={item.value}
                       onClick={() => handleToggleSyncType(item.value)}
-                      className={`w-full flex items-center justify-between p-3.5 rounded-xl border text-right font-bold text-xs transition-all ${isChecked ? 'bg-[#D4AF37]/10 border-[#D4AF37] text-white shadow-md' : 'bg-[#1e293b]/40 border-white/10 text-white/50'}`}
+                      className={`w-full flex items-center justify-between p-3.5 rounded-xl border text-right font-bold text-xs transition-all ${isChecked ? 'bg-[#D4AF37]/10 border-[#D4AF37] text-white shadow-md' : 'bg-[#1e293b]/40 border-white/10 text-white/80 hover:text-white hover:bg-[#1e293b]/60'}`}
                     >
                       <div className="flex items-center gap-3">
-                        <item.icon className={`w-4 h-4 ${isChecked ? 'text-[#FACC15]' : 'text-white/30'}`} />
+                        <item.icon className={`w-4 h-4 ${isChecked ? 'text-[#FACC15]' : 'text-white/60'}`} />
                         <span>{item.label}</span>
                       </div>
-                      <div className={`w-4 h-4 rounded flex items-center justify-center border ${isChecked ? 'bg-[#D4AF37] border-[#D4AF37]' : 'border-white/30'}`}>
+                      <div className={`w-4 h-4 rounded flex items-center justify-center border ${isChecked ? 'bg-[#D4AF37] border-[#D4AF37]' : 'border-white/40'}`}>
                         {isChecked && <CheckCircle2 className="w-3 h-3 text-[#060b13] stroke-[3]" />}
                       </div>
                     </button>

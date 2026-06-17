@@ -14,37 +14,58 @@ const DB_COLUMNS: Record<string, string[]> = {
   clients: [
     'id', 'name', 'phone', 'email',
     'id_number', 'najiz_id', 'address',
-    'status', 'last_sync_at', 'created_at', 'updated_at'
+    'status', 'last_sync_at', 'created_at', 'updated_at',
+    'is_company', 'portal_token', 'portal_link', 'portal_username',
+    'portal_password', 'active_portal', 'permitted_cases',
+    'permitted_case_permissions'
   ],
   cases: [
     'id', 'client_id', 'case_number', 'najiz_case_number',
     'title', 'category', 'stage', 'status', 'priority',
     'court_name', 'opponent_name', 'summary', 'details',
     'attachments_count', 'last_session_at', 'next_session_at',
-    'lawyers', 'metadata', 'last_sync_at', 'created_at', 'updated_at'
+    'lawyers', 'metadata', 'last_sync_at', 'created_at', 'updated_at',
+    'najiz_case_id', 'subject', 'case_classification', 'case_status',
+    'opponent_id', 'opponent_national_id', 'circuit_number',
+    'power_of_attorney_number', 'next_session_time', 'is_najiz_sync',
+    'is_confidential', 'confidentiality', 'archived', 'last_activity_at',
+    'start_date', 'lead_lawyer_id', 'judge_name', 'judgment_summary',
+    'judgment_date', 'appeal_deadline', 'execution_number',
+    'execution_status', 'execution_amount', 'agreed_fees',
+    'collected_fees', 'expenses'
   ],
   tasks: [
     'id', 'case_id', 'employee_id', 'title', 'description',
-    'status', 'priority', 'due_date', 'created_at', 'updated_at'
+    'status', 'priority', 'due_date', 'created_at', 'updated_at',
+    'assigned_to', 'case_number', 'timer_active', 'timer_duration',
+    'target_completion_time'
   ],
   hearings: [
     'id', 'case_id', 'date', 'time', 'location',
     'hall', 'judge', 'status', 'notes', 'created_at', 'updated_at'
   ],
   documents: [
-    'id', 'case_id', 'name', 'category', 'file_url',
-    'file_size', 'uploaded_at', 'tags', 'content_text',
-    'created_at', 'updated_at'
+    'id', 'case_id', 'client_id', 'name', 'category', 'file_url',
+    'file_size', 'size', 'storage_path', 'uploaded_at', 'tags',
+    'content_text', 'versions', 'current_version', 'color_code',
+    'ai_classification', 'created_at', 'updated_at'
   ],
   invoices: [
     'id', 'client_id', 'case_id', 'amount', 'vat_amount',
     'total_amount', 'status', 'issue_date', 'due_date',
     'payment_method', 'description', 'is_zatca_submitted',
-    'zatca_timestamp', 'created_at', 'updated_at'
+    'zatca_timestamp', 'created_at', 'updated_at',
+    'client_name', 'invoice_number'
   ],
   employees: [
     'id', 'name', 'role', 'email', 'phone', 'status',
-    'salary', 'department', 'join_date', 'created_at', 'updated_at'
+    'salary', 'department', 'join_date', 'created_at', 'updated_at',
+    'national_id', 'username', 'password', 'custom_login_token',
+    'portal_link', 'qualification', 'birth_date', 'manager', 'nationality',
+    'national_id_expiry', 'start_date', 'end_date', 'branch', 'allowances', 'deductions', 'base_salary',
+    'job_title', 'notes', 'najiz_api_key', 'assigned_cases',
+    'assigned_clients', 'permissions', 'feature_access',
+    'sidebar_config', 'avatar_url', 'employee_code'
   ],
   powers_of_attorney: [
     'id', 'client_id', 'poa_number', 'issue_date', 'expiry_date',
@@ -537,20 +558,19 @@ export function useSupabaseData() {
           const errMsg = validation.message || 'خطأ في التحقق من صحة البيانات';
           console.error(`[Local Schema Validation] Table: ${table}, Field: ${validation.field}, Msg: ${errMsg}`);
           
-          // Trigger UI focus for the invalid field
+          const detailedMsg = `⚠️ تنبيه التحقق من صحة البيانات (المدخلات):\n\n- الجدول: ${table === 'cases' ? 'القضايا' : table === 'clients' ? 'الموكلين' : 'المهام'}\n- الحقل: ${validation.field}\n- السبب: ${errMsg}\n\nيرجى تصحيح الحقل المحدد والمحاولة مرة أخرى.`;
+          
+          // Trigger UI focus and toast for the invalid field
           window.dispatchEvent(
             new CustomEvent('adalah_error_logged', {
               detail: {
-                message: errMsg,
+                message: detailedMsg,
                 timestamp: new Date().toISOString(),
                 entityType: table,
                 field: validation.field,
               }
             })
           );
-          
-          // Show explicit detailed alert to prevent left waiting state
-          alert(`⚠️ تنبيه التحقق من صحة البيانات (المدخلات):\n\n- الجدول: ${table === 'cases' ? 'القضايا' : table === 'clients' ? 'الموكلين' : 'المهام'}\n- الحقل: ${validation.field}\n- السبب: ${errMsg}\n\nيرجى تصحيح الحقل المحدد والمحاولة مرة أخرى.`);
           
           return { 
             success: false, 
@@ -641,20 +661,19 @@ export function useSupabaseData() {
           const errMsg = validation.message || 'خطأ في التحقق من صحة البيانات';
           console.error(`[Local Schema Validation] Table: ${table}, Field: ${validation.field}, Msg: ${errMsg}`);
           
-          // Trigger UI focus for the invalid field
+          const detailedMsg = `⚠️ تنبيه التحقق من صحة البيانات (المدخلات):\n\n- الجدول: ${table === 'cases' ? 'القضايا' : table === 'clients' ? 'الموكلين' : 'المهام'}\n- الحقل: ${validation.field}\n- السبب: ${errMsg}\n\nيرجى تصحيح الحقل المحدد والمحاولة مرة أخرى.`;
+          
+          // Trigger UI focus and toast for the invalid field
           window.dispatchEvent(
             new CustomEvent('adalah_error_logged', {
               detail: {
-                message: errMsg,
+                message: detailedMsg,
                 timestamp: new Date().toISOString(),
                 entityType: table,
                 field: validation.field,
               }
             })
           );
-          
-          // Show explicit detailed alert to prevent left waiting state
-          alert(`⚠️ تنبيه التحقق من صحة البيانات (المدخلات):\n\n- الجدول: ${table === 'cases' ? 'القضايا' : table === 'clients' ? 'الموكلين' : 'المهام'}\n- الحقل: ${validation.field}\n- السبب: ${errMsg}\n\nيرجى تصحيح الحقل المحدد والمحاولة مرة أخرى.`);
           
           return { 
             success: false, 
