@@ -14,7 +14,6 @@ import NotificationsBell from '@/components/NotificationsBell';
 import GlobalNotesWidget from '@/components/GlobalNotesWidget';
 import DateConverterWidget from '@/components/DateConverterWidget';
 import AiDrafting from '@/components/AiDrafting';
-import NajizSyncBackendService from '@/components/NajizSyncBackendService';
 
 // Lazy load large modules using relative paths to avoid resolution issues in some environments
 const CasesModule = React.lazy(() => import('@/components/CasesModule'));
@@ -139,11 +138,18 @@ function RouteGuard({ children, isAuthenticated, setCurrentTab }: { children: Re
 import { ErrorToaster } from '@/components/ErrorToaster';
 import { ErrorReporting } from '@/lib/ErrorReporting';
 import { generateUUID } from '@/lib/uuid';
+import { cleanCorruptedAuth } from '@/lib/auth-utils';
 
 function AppContent() {
   const { preferences, updatePreference } = useUserPreferences();
   const { state, setStateData } = useAppState();
   const { user, profile, loading: authLoading, connectionStatus } = useSupabase();
+
+  // Try to clean up any corrupt auth session hashes or flags on app load
+  useEffect(() => {
+    cleanCorruptedAuth();
+  }, []);
+
   const { 
     cases, 
     clients, 
@@ -454,6 +460,7 @@ function AppContent() {
   const [alertMessages, setAlertMessages] = useState<string[]>([]);
   const [dismissedAlerts, setDismissedAlerts] = useState<string[]>([]);
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
+  const [supaDiagnosticAlert, setSupaDiagnosticAlert] = useState<{ table: string; code: string; message: string; details: string } | null>(null);
 
   // Dynamic gradient theme state
   const darkGradientTheme = preferences?.['adalah-platform-dark-gradient'] || 'midnight';
@@ -1307,9 +1314,24 @@ function AppContent() {
         }
 
         if (res === undefined || res?.success === false) {
+          const errorObj = {
+            success: false,
+            code: res?.code || 'DATABASE_ERROR',
+            message: res?.message || 'A database error occurred during persistence.',
+            details: res?.details || 'Database transaction rejected.'
+          };
+
           const queue = JSON.parse(localStorage.getItem('failed_persistence_logs') || '[]');
-          queue.push({ timestamp: new Date().toISOString(), type, data, error: res });
+          queue.push({ timestamp: new Date().toISOString(), type, data, error: errorObj });
           localStorage.setItem('failed_persistence_logs', JSON.stringify(queue));
+
+          setSupaDiagnosticAlert({
+            table: type,
+            code: errorObj.code,
+            message: errorObj.message,
+            details: errorObj.details
+          });
+
           return res; 
         }
 
@@ -1318,10 +1340,25 @@ function AppContent() {
         return res;
 
       } catch (err: any) {
+        const errorObj = {
+          success: false,
+          code: err?.code || 'UNHANDLED_EXCEPTION',
+          message: err?.message || String(err),
+          details: err?.stack || err?.details || 'An unexpected exception occurred.'
+        };
+
         const queue = JSON.parse(localStorage.getItem('failed_persistence_logs') || '[]');
-        queue.push({ timestamp: new Date().toISOString(), type, action: 'UNKNOWN', data, error: err?.message || String(err) });
+        queue.push({ timestamp: new Date().toISOString(), type, action: 'UNKNOWN', data, error: errorObj });
         localStorage.setItem('failed_persistence_logs', JSON.stringify(queue));
-        return { success: false, error: err };
+
+        setSupaDiagnosticAlert({
+          table: type,
+          code: errorObj.code,
+          message: errorObj.message,
+          details: errorObj.details
+        });
+
+        return errorObj;
       }
     }
 
@@ -1520,33 +1557,7 @@ function AppContent() {
           {/* Universal Notification Bell (Global scope) */}
           <NotificationsBell />
 
-          {/* Supabase Retry Sync Banner */}
-          {/* Search Analytics Bar */}
-          <div className="fixed top-8 left-1/2 -translate-x-1/2 z-50 flex flex-col gap-3 pointer-events-none w-full max-w-lg">
-            {alertMessages
-              .filter(msg => {
-                const isConflict = msg.includes('تعارض') || msg.includes('تضارب') || msg.includes('تداخل') || msg.toLowerCase().includes('conflict') || msg.toLowerCase().includes('clash');
-                if (isConflict) {
-                  // Only keep session conflicts inside calendar/meetings page
-                  return currentTab === 'calendar';
-                }
-                return true;
-              })
-              .filter(msg => !dismissedAlerts.includes(msg))
-              .map((msg, i) => (
-                <div key={i} className="pointer-events-auto bg-rose-500 text-white px-6 py-4 rounded-2xl shadow-2xl flex items-center justify-between gap-4 animate-fade-in border border-rose-400">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center animate-pulse">
-                      <span className="font-bold text-lg">!</span>
-                    </div>
-                    <span className="font-bold text-sm leading-relaxed">{msg}</span>
-                  </div>
-                  <button onClick={() => setDismissedAlerts(prev => [...prev, msg])} className="text-white transition-colors p-2 bg-slate-800 rounded-xl">
-                    ✕
-                  </button>
-                </div>
-              ))}
-          </div>
+          {/* Notification bar area removed for clean UI */}
 
           {/* Dedicated Header for Clients vs. Global Controls for Attorney and Staff */}
           {currentUser?.role === 'client' ? (
@@ -1927,6 +1938,8 @@ function AppContent() {
 
         {currentTab === 'settings' && (
           <Settings 
+            createRecord={createRecord}
+            updateRecord={updateRecord}
             customRoles={customRoles}
             onCustomRolesChange={handleCustomRolesChange}
             darkGradientTheme={darkGradientTheme}
@@ -2019,16 +2032,84 @@ function AppContent() {
 
       </main>
 
-      {/* Persistent Background Sync Service Widget */}
-      <NajizSyncBackendService />
 
       <FeedbackModal 
-        isOpen={showFeedbackModal} 
-        onClose={() => setShowFeedbackModal(false)} 
-        selectedRole={selectedRole} 
-      />
+      isOpen={showFeedbackModal} 
+      onClose={() => setShowFeedbackModal(false)} 
+      selectedRole={selectedRole} 
+    />
 
-      {showDiagnosticModal && (
+    {supaDiagnosticAlert && (
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm" dir="rtl">
+        <div className="w-full max-w-lg bg-[#0c1427] border-2 border-amber-500/30 rounded-2xl p-6 shadow-2xl relative text-right">
+          <button 
+            onClick={() => setSupaDiagnosticAlert(null)}
+            className="absolute top-4 left-4 text-slate-400 hover:text-white transition-colors"
+          >
+            <X className="w-5 h-5" />
+          </button>
+          
+          <div className="flex items-center gap-3 mb-5 text-amber-500">
+            <AlertTriangle className="w-6 h-6 animate-bounce" />
+            <h3 className="text-lg font-black font-sans text-amber-400">تنبيه تشخيصي لقاعدة البيانات (Diagnostic Alert)</h3>
+          </div>
+
+          <div className="space-y-4 text-xs leading-relaxed text-slate-200">
+            <p className="bg-red-500/10 border border-red-500/20 p-3 rounded-lg text-[11px] text-red-400 font-bold">
+              تم كشف وحظر فشل في معاملة الحفظ بقاعدة البيانات السحابية Supabase بشكل آمن. تم تسجيل العملية في سجل الفشل المحتفظ به تلقائياً.
+            </p>
+
+            <div className="grid grid-cols-3 gap-2 bg-slate-900 border border-white/5 p-3.5 rounded-xl font-mono text-[11px] leading-relaxed text-slate-300">
+              <span className="text-slate-400 font-bold">الجدول الكيان:</span>
+              <span className="col-span-2 text-white font-black">{supaDiagnosticAlert.table}</span>
+
+              <span className="text-slate-400 font-bold">كود الخطأ:</span>
+              <span className="col-span-2 text-amber-400 font-black">{supaDiagnosticAlert.code}</span>
+
+              <span className="text-slate-400 font-bold">رسالة الخطأ:</span>
+              <span className="col-span-2 text-white break-words">{supaDiagnosticAlert.message}</span>
+            </div>
+
+            {supaDiagnosticAlert.details && (
+              <div className="bg-slate-900 border border-white/5 p-3 rounded-xl">
+                <span className="text-slate-400 text-[10px] block font-bold mb-1">تفاصيل تشخيصية تقنية (SQL / Auth):</span>
+                <pre className="text-[10px] font-mono text-slate-300 whitespace-pre-wrap break-all max-h-[120px] overflow-y-auto">
+                  {supaDiagnosticAlert.details}
+                </pre>
+              </div>
+            )}
+
+            <div className="bg-amber-500/5 border border-amber-500/10 p-3 rounded-xl text-[10px] text-amber-400 font-bold leading-relaxed">
+              ℹ️ يمكن تلافي خطأ <strong>42501 (RLS Violation)</strong> بمراجعة سياسات Row-Level Security في لوحة إدارة الـ DevOps للتأكد من امتلاك المستخدم للصلاحية المناسبة للعملية.
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3 mt-6">
+            <button
+              onClick={() => {
+                setCurrentTab('settings');
+                setSupaDiagnosticAlert(null);
+                setTimeout(() => {
+                  const el = document.getElementById('database-issues-tab-btn');
+                  if (el) el.click();
+                }, 100);
+              }}
+              className="flex-1 bg-amber-500 hover:bg-amber-600 text-slate-950 font-black text-xs py-2.5 px-4 rounded-xl transition-all shadow-lg shadow-amber-500/20 text-center"
+            >
+              معاينة قاعة المشاكل والسجلات (View issues)
+            </button>
+            <button
+              onClick={() => setSupaDiagnosticAlert(null)}
+              className="bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs py-2.5 px-4 rounded-xl transition-all"
+            >
+              حسناً، فهمت
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
+
+    {showDiagnosticModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm" dir="rtl">
           <div className="w-full max-w-lg bg-[#0c1427] border border-white/10 rounded-2xl p-6 shadow-2xl relative">
             <button 

@@ -88,6 +88,25 @@ export default function DbDevOpsModule() {
     return () => window.removeEventListener('boot_rls_diagnostic_completed', handleBootCompleted);
   }, []);
 
+  const [diagHistoryLogs, setDiagHistoryLogs] = useState<any[]>([]);
+
+  const loadDiagHistoryLogs = () => {
+    const data = localStorage.getItem('db_diag_logs');
+    if (data) {
+      try {
+        setDiagHistoryLogs(JSON.parse(data));
+      } catch {
+        setDiagHistoryLogs([]);
+      }
+    } else {
+      setDiagHistoryLogs([]);
+    }
+  };
+
+  useEffect(() => {
+    loadDiagHistoryLogs();
+  }, []);
+
   // Interactive docker-compose parameters
   const [dbUser, setDbUser] = useState('aladalah_admin');
   const [dbPassword, setDbPassword] = useState('AlAdalahSecurePass2026!');

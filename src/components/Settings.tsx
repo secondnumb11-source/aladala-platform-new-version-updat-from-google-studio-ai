@@ -58,6 +58,8 @@ interface SettingsProps {
   onHighContrastModeChange?: (enabled: boolean) => void;
   isDarkMode?: boolean;
   onDarkModeChange?: (enabled: boolean) => void;
+  createRecord?: (table: string, data: any) => Promise<any>;
+  updateRecord?: (table: string, id: string | number, data: any) => Promise<any>;
 }
 
 export const STATIC_GRADIENT_THEMES = [
@@ -95,9 +97,37 @@ export default function Settings({
   highContrastMode = false,
   onHighContrastModeChange,
   isDarkMode = false,
-  onDarkModeChange
+  onDarkModeChange,
+  createRecord,
+  updateRecord
 }: SettingsProps) {
   const { profile } = useSupabase();
+  
+  const [activeSettingsTab, setActiveSettingsTab] = useState<'general' | 'db-issues'>('general');
+  const [failedLogs, setFailedLogs] = useState<any[]>([]);
+  const [resubmittingId, setResubmittingId] = useState<string | null>(null);
+  const [resubmitStatus, setResubmitStatus] = useState<Record<string, { success: boolean; message: string }>>({});
+
+  const loadLogs = () => {
+    const data = localStorage.getItem('failed_persistence_logs');
+    if (data) {
+      try {
+        setFailedLogs(JSON.parse(data));
+      } catch (e) {
+        setFailedLogs([]);
+      }
+    } else {
+      setFailedLogs([]);
+    }
+  };
+
+  useEffect(() => {
+    loadLogs();
+    const handleStorageUpdate = () => loadLogs();
+    window.addEventListener('storage', handleStorageUpdate);
+    return () => window.removeEventListener('storage', handleStorageUpdate);
+  }, []);
+
   // Sync config
   const [apiKey, setApiKey] = useState('');
   const [webhookUrl, setWebhookUrl] = useState('');
@@ -733,10 +763,220 @@ export default function Settings({
         )}
       </div>
 
+      {/* Settings Navigation Tabs */}
+      <div className="flex border-b border-slate-200 mt-6" dir="rtl">
+        <button
+          type="button"
+          onClick={() => setActiveSettingsTab('general')}
+          className={`px-6 py-3 text-xs font-black transition-all border-b-2 ${
+            activeSettingsTab === 'general' 
+              ? 'border-primary text-primary font-extrabold' 
+              : 'border-transparent text-slate-500 hover:text-slate-800'
+          }`}
+        >
+          ⚙️ الإعدادات العامة والنظام
+        </button>
+        <button
+          type="button"
+          id="database-issues-tab-btn"
+          onClick={() => setActiveSettingsTab('db-issues')}
+          className={`px-6 py-3 text-xs font-black transition-all border-b-2 flex items-center gap-2 ${
+            activeSettingsTab === 'db-issues' 
+              ? 'border-indigo-600 text-indigo-500 font-extrabold' 
+              : 'border-transparent text-slate-500 hover:text-slate-800'
+          }`}
+        >
+          <span>🚨 قاعة مشاكل ومرتجعات قاعدة البيانات</span>
+          {failedLogs.length > 0 && (
+            <span className="bg-red-500 text-white font-mono text-[10px] px-2 py-0.5 rounded-full font-black animate-pulse">
+              {failedLogs.length}
+            </span>
+          )}
+        </button>
+      </div>
+
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         
-        {/* RIGHT SIDE: Configurations Forms */}
-        <div className="lg:col-span-8 space-y-6">
+        {activeSettingsTab === 'db-issues' ? (
+          <div className="lg:col-span-12 space-y-6 text-right" dir="rtl">
+            <div className="bg-white border border-slate-800 rounded-3xl p-6 shadow-sm space-y-6">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-4">
+                <div className="flex items-center gap-3">
+                  <div className="p-2.5 bg-red-500/10 text-red-600 border border-red-500/20 rounded-xl">
+                    <Lock className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h2 className="text-base font-black text-slate-900">سجل فواتير ومعاملات الحفظ المعلقة (Database Persistence Failures)</h2>
+                    <p className="text-xs text-slate-700 mt-1">تتبع وعالج المعاملات التي فشلت السحابة في استقبالها لأسباب تتعلق بالـ RLS أو انقطاع الشبكة.</p>
+                  </div>
+                </div>
+                
+                {failedLogs.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (confirm("هل أنت متأكد من رغبتك في مسح كافة سجلات الأخطاء بشكل نهائي؟")) {
+                        localStorage.removeItem('failed_persistence_logs');
+                        loadLogs();
+                        window.dispatchEvent(new Event('storage'));
+                      }
+                    }}
+                    className="bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 font-bold text-xs py-2 px-4 rounded-xl transition-all self-start sm:self-center"
+                  >
+                    مسح السجلات بالكامل 🗑️
+                  </button>
+                )}
+              </div>
+
+              {failedLogs.length === 0 ? (
+                <div className="text-center py-12 bg-slate-50 border border-slate-100 rounded-2xl min-h-[250px] flex flex-col justify-center items-center gap-3">
+                  <span className="text-3xl text-amber-500">✨</span>
+                  <h3 className="text-sm font-black text-slate-950">قاعة البيانات خالية من العثرات وسجلات الفشل!</h3>
+                  <p className="text-xs text-slate-700 max-w-sm leading-relaxed text-center">كافة البيانات المتزامنة تم نقلها ومطابقتها بنجاح مع خوادم السجل الموحد (Supabase).</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <div className="bg-amber-500/5 border border-amber-500/20 p-4 rounded-xl text-xs text-amber-800 leading-relaxed font-bold">
+                    💡 كيف تحل العوائق؟ عاين تفاصيل الكيان والمسار المتأثر، وتأكد من ملائمة جدول السكيما لخيارات النشر، ثم انقر على <strong>"إعادة إرسال المعاملة"</strong>. في حال تلافي السبب (مثلاً RLS 42501), سيتم إيداع المعاملة تلقائياً في السجل الموحد وحذفها من هنا.
+                  </div>
+
+                  <div className="space-y-4">
+                    {failedLogs.map((log, index) => {
+                      const logId = `${log.timestamp}-${index}`;
+                      const status = resubmitStatus[logId];
+                      const isSubmitting = resubmittingId === logId;
+                      const isUpdate = !!(log.data && log.data.id);
+
+                      const handleLocalResubmit = async () => {
+                        setResubmittingId(logId);
+                        try {
+                          let result;
+                          if (isUpdate) {
+                            if (updateRecord) {
+                              result = await updateRecord(log.type, log.data.id, log.data);
+                            } else {
+                              throw new Error("تحديث الكائن غير متوفر حالياً.");
+                            }
+                          } else {
+                            if (createRecord) {
+                              result = await createRecord(log.type, log.data);
+                            } else {
+                              throw new Error("إنشاء الكائن غير متوفر حالياً.");
+                            }
+                          }
+
+                          if (result && result.success !== false) {
+                            const currentLogs = JSON.parse(localStorage.getItem('failed_persistence_logs') || '[]');
+                            currentLogs.splice(index, 1);
+                            localStorage.setItem('failed_persistence_logs', JSON.stringify(currentLogs));
+                            window.dispatchEvent(new Event('storage'));
+                            loadLogs();
+                            setResubmitStatus(prev => ({
+                              ...prev,
+                              [logId]: { success: true, message: 'تمت إعادة الإرسال وقبول البيانات بنجاح! 🎉' }
+                            }));
+                          } else {
+                            const errMsg = result?.message || 'فشلت المعاملة مجدداً بقيد التحقق أو صلاحيات RLS.';
+                            setResubmitStatus(prev => ({
+                              ...prev,
+                              [logId]: { success: false, message: errMsg }
+                            }));
+                          }
+                        } catch (err: any) {
+                          setResubmitStatus(prev => ({
+                            ...prev,
+                            [logId]: { success: false, message: err?.message || 'خطأ غير متوقع أثناء معالجة البيانات.' }
+                          }));
+                        } finally {
+                          setResubmittingId(null);
+                        }
+                      };
+
+                      return (
+                        <div key={logId} className="bg-[#0c1427] border border-white/10 rounded-2xl p-5 shadow-sm space-y-4 text-slate-200">
+                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/5 pb-3">
+                            <div className="flex items-center gap-2.5">
+                              <span className="text-xs font-black font-semibold uppercase tracking-wider bg-red-500/20 text-red-400 border border-red-500/30 px-3 py-1 rounded-full">
+                                {isUpdate ? 'تحديث كائن (UPDATE)' : 'إنشاء كائن جديد (CREATE)'}
+                              </span>
+                              <span className="text-xs font-mono font-bold bg-white/5 text-slate-300 px-3 py-1 rounded-full">
+                                الجدول: {log.type}
+                              </span>
+                            </div>
+
+                            <div className="text-xs font-mono text-slate-400">
+                              {new Date(log.timestamp).toLocaleString('ar-SA')}
+                            </div>
+                          </div>
+
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="space-y-2 bg-red-950/20 border border-red-500/20 p-4 rounded-xl">
+                              <div className="text-xs text-red-400 font-black flex items-center gap-1.5 leading-none">
+                                <span>⚠️ تفاصيل الخطأ المسترجع:</span>
+                              </div>
+                              <div className="space-y-1.5 text-xs text-slate-300 font-medium">
+                                <p><span className="text-slate-400 font-bold">رمز الخطأ:</span> <code className="bg-black/45 px-1.5 py-0.5 rounded text-amber-300 font-black font-mono text-[10px]">{log.error?.code || 'DATABASE_ERROR'}</code></p>
+                                <p className="break-words leading-relaxed"><span className="text-slate-400 font-bold">الرسالة:</span> {log.error?.message || 'Unknown persistence error.'}</p>
+                                {log.error?.details && (
+                                  <div className="mt-2 text-[10px] text-slate-400 bg-black/25 p-2 rounded max-h-[80px] overflow-y-auto font-mono whitespace-pre-wrap break-all">
+                                    {log.error.details}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+
+                            <div className="space-y-2 bg-slate-900 border border-white/5 p-4 rounded-xl">
+                              <div className="text-xs text-sky-400 font-black leading-none">
+                                <span>📦 حزمة البيانات (Payload Data):</span>
+                              </div>
+                              <div className="text-[10px] font-mono text-slate-300 bg-black/35 p-3 rounded-lg max-h-[145px] overflow-y-auto whitespace-pre-wrap break-all leading-normal">
+                                {JSON.stringify(log.data, null, 2)}
+                              </div>
+                            </div>
+                          </div>
+
+                          {status && (
+                            <div className={`p-3 rounded-xl text-xs font-bold font-sans flex items-center gap-2 ${
+                              status.success 
+                                ? 'bg-emerald-500/10 border border-emerald-500/20 text-emerald-400' 
+                                : 'bg-red-500/10 border border-red-500/20 text-red-400'
+                            }`}>
+                              <span>{status.success ? '✅' : '❌'}</span>
+                              <span className="break-words">{status.message}</span>
+                            </div>
+                          )}
+
+                          <div className="flex justify-end pt-1">
+                            <button
+                              type="button"
+                              onClick={handleLocalResubmit}
+                              disabled={isSubmitting}
+                              className="bg-[#eab308] hover:bg-[#ca8a04] text-slate-950 text-xs font-black py-2.5 px-6 rounded-xl transition-all shadow-md shadow-amber-500/10 flex items-center gap-2 disabled:opacity-50"
+                            >
+                              {isSubmitting ? (
+                                <>
+                                  <span className="animate-spin text-sm">🔄</span>
+                                  <span>جاري إعادة المخاطبة آلياً...</span>
+                                </>
+                              ) : (
+                                <>
+                                  <span>⚡ إعادة إرسال المعاملة (Resubmit)</span>
+                                </>
+                              )}
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        ) : (
+          <>
+            {/* RIGHT SIDE: Configurations Forms */}
+            <div className="lg:col-span-8 space-y-6">
 
           {/* Office Identity & Logo Management Section - New Interface */}
           <div className="bg-white border border-slate-800 rounded-2xl p-6 space-y-6 shadow-sm" id="office-identity-settings">
@@ -2365,7 +2605,9 @@ export default function Settings({
 
         </div>
 
-      </div>
+      </>)}
+
+    </div>
 
     </div>
   );

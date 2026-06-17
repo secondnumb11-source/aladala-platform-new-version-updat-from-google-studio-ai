@@ -452,7 +452,12 @@ export function useSupabaseData() {
         if (!validation.isValid) {
           const errMsg = validation.message || 'Validation error';
           console.error(`[Local Schema Validation] Table: ${table}, Field: ${validation.field}, Msg: ${errMsg}`);
-          return { success: false, errorType: 'validation', message: errMsg, field: validation.field };
+          return { 
+            success: false, 
+            code: 'VALIDATION_FAILED', 
+            message: errMsg, 
+            details: `Validation failed on field: ${validation.field}` 
+          };
         }
       }
 
@@ -462,12 +467,20 @@ export function useSupabaseData() {
       console.log(`[Supabase] Sanitized payload for ${mappedTable}:`, cleanData);
       console.log(`[DEBUG ${table} INSERT payload]`, JSON.stringify(cleanData, null, 2));
 
-      const { data: insertedData, error } = await supabase
-        .from(mappedTable)
-        .insert([cleanData])
-        .select()
-        .single();
+      // Wrap supabase promise to explicitly catch rejection
+      let response;
+      try {
+        response = await supabase
+          .from(mappedTable)
+          .insert([cleanData])
+          .select()
+          .single();
+      } catch (rej: any) {
+        console.error(`[Supabase Insert Promise Rejection] Table: ${mappedTable}`, rej);
+        response = { data: null, error: { code: rej?.code || 'PROMISE_REJECTION', message: rej?.message || String(rej), details: rej?.details || rej?.stack || '' } };
+      }
 
+      const { data: insertedData, error } = response as { data: any, error: any };
       
       if (error) {
         // Handle PGRST204 (No Content)
@@ -479,13 +492,13 @@ export function useSupabaseData() {
         console.error(`[Supabase Insert Error] Table: ${mappedTable}`, error);
         const isNetworkError = !navigator.onLine || error.message?.includes('fetch') || error.message?.includes('network');
         if (isNetworkError) {
-           handleOfflineFallback(table, 'CREATE', data, error.message);
+            handleOfflineFallback(table, 'CREATE', data, error.message);
         }
         return { 
           success: false, 
-          errorType: isNetworkError ? 'network' : 'database',
-          message: error.message,
-          error
+          code: error.code || 'DATABASE_ERROR',
+          message: error.message || 'Unknown database error occurred',
+          details: error.details || (isNetworkError ? 'Network connectivity offline fallback triggered' : 'Database operation failed under RLS or schema constraint')
         };
       }
       
@@ -500,7 +513,12 @@ export function useSupabaseData() {
       return { success: true, data: camelData };
     } catch (err: any) {
       console.error(`[Supabase Outer Create Exception] Table: ${table}`, err);
-      return { success: false, errorType: 'exception', message: err?.message, error: err };
+      return { 
+        success: false, 
+        code: err?.code || 'UNHANDLED_EXCEPTION', 
+        message: err?.message || String(err), 
+        details: err?.stack || err?.details || String(err) 
+      };
     }
   };
 
@@ -512,7 +530,12 @@ export function useSupabaseData() {
         if (!validation.isValid) {
           const errMsg = validation.message || 'Validation error';
           console.error(`[Local Schema Validation] Table: ${table}, Field: ${validation.field}, Msg: ${errMsg}`);
-          return { success: false, errorType: 'validation', message: errMsg, field: validation.field };
+          return { 
+            success: false, 
+            code: 'VALIDATION_FAILED', 
+            message: errMsg, 
+            details: `Validation failed on field: ${validation.field}` 
+          };
         }
       }
 
@@ -521,12 +544,22 @@ export function useSupabaseData() {
       const { id: _removeId, created_at: _removeCa, ...updatePayload } = cleanData;
 
       console.log(`[Supabase] Sanitized update payload for ${mappedTable}:`, updatePayload);
-      const { data: updatedData, error } = await supabase
-        .from(mappedTable)
-        .update(updatePayload)
-        .eq('id', id)
-        .select()
-        .single();
+      
+      // Wrap supabase promise to explicitly catch rejection
+      let response;
+      try {
+        response = await supabase
+          .from(mappedTable)
+          .update(updatePayload)
+          .eq('id', id)
+          .select()
+          .single();
+      } catch (rej: any) {
+        console.error(`[Supabase Update Promise Rejection] Table: ${mappedTable}, id=${id}`, rej);
+        response = { data: null, error: { code: rej?.code || 'PROMISE_REJECTION', message: rej?.message || String(rej), details: rej?.details || rej?.stack || '' } };
+      }
+
+      const { data: updatedData, error } = response as { data: any, error: any };
       
       if (error) {
         if (error.code === 'PGRST204') {
@@ -536,13 +569,13 @@ export function useSupabaseData() {
         console.error(`[Supabase Update Error] Table: ${mappedTable}, id=${id}`, error);
         const isNetworkError = !navigator.onLine || error.message?.includes('fetch') || error.message?.includes('network');
         if (isNetworkError) {
-           handleOfflineFallback(table, 'UPDATE', { id, ...data }, error.message);
+            handleOfflineFallback(table, 'UPDATE', { id, ...data }, error.message);
         }
         return { 
           success: false, 
-          errorType: isNetworkError ? 'network' : 'database',
-          message: error.message,
-          error
+          code: error.code || 'DATABASE_ERROR',
+          message: error.message || 'Unknown database error occurred',
+          details: error.details || (isNetworkError ? 'Network connectivity offline fallback triggered' : 'Database operation failed under RLS or schema constraint')
         };
       }
       
@@ -557,7 +590,12 @@ export function useSupabaseData() {
       return { success: true, data: camelData };
     } catch (err: any) {
       console.error(`[Supabase Outer Update Exception] Table: ${table}, id=${id}`, err);
-      return { success: false, errorType: 'exception', message: err?.message, error: err };
+      return { 
+        success: false, 
+        code: err?.code || 'UNHANDLED_EXCEPTION', 
+        message: err?.message || String(err), 
+        details: err?.stack || err?.details || String(err) 
+      };
     }
   };
 
