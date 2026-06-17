@@ -286,7 +286,7 @@ export default function ExecutionsModule({
             <tbody className="divide-y divide-slate-800/50">
               {filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-8 py-20 text-center opacity-30 italic font-bold">لا يوجد نتائج للبحث...</td>
+                  <td colSpan={6} className="px-8 py-20 text-center text-yellow-400 italic font-black">لا يوجد نتائج للبحث...</td>
                 </tr>
               ) : (
                 filtered.map((ex) => (
