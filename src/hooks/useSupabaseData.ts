@@ -4,43 +4,49 @@ import { Case, Client, Task, Hearing, Document, PowerOfAttorney, Invoice, Employ
 import { validatePayload } from '@/lib/persistenceManager';
 import { toCamel, toSnake } from '@/utils/schemaMapping';
 
-// الأعمدة المسموح بها فقط لكل جدول - مطابقة تماماً لـ Supabase schema
-const ALLOWED_COLUMNS: Record<string, string[]> = {
+// ======================================================
+// SCHEMA GUARD - الأعمدة المسموح بها فقط لكل جدول
+// مطابقة تماماً لـ supabase_schema_final.sql
+// ======================================================
+const DB_COLUMNS: Record<string, string[]> = {
   clients: [
-    'id', 'name', 'phone', 'email', 'id_number', 'najiz_id',
-    'address', 'status', 'last_sync_at', 'created_at', 'updated_at'
+    'id', 'name', 'phone', 'email',
+    'id_number', 'najiz_id', 'address',
+    'status', 'last_sync_at', 'created_at', 'updated_at'
   ],
   cases: [
-    'id', 'client_id', 'case_number', 'najiz_case_number', 'title',
-    'category', 'stage', 'status', 'priority', 'court_name',
-    'opponent_name', 'summary', 'details', 'attachments_count',
-    'last_session_at', 'next_session_at', 'lawyers', 'metadata',
-    'last_sync_at', 'created_at', 'updated_at'
+    'id', 'client_id', 'case_number', 'najiz_case_number',
+    'title', 'category', 'stage', 'status', 'priority',
+    'court_name', 'opponent_name', 'summary', 'details',
+    'attachments_count', 'last_session_at', 'next_session_at',
+    'lawyers', 'metadata', 'last_sync_at', 'created_at', 'updated_at'
   ],
   tasks: [
     'id', 'case_id', 'employee_id', 'title', 'description',
     'status', 'priority', 'due_date', 'created_at', 'updated_at'
   ],
   hearings: [
-    'id', 'case_id', 'date', 'time', 'location', 'hall',
-    'judge', 'status', 'notes', 'created_at', 'updated_at'
+    'id', 'case_id', 'date', 'time', 'location',
+    'hall', 'judge', 'status', 'notes', 'created_at', 'updated_at'
+  ],
+  documents: [
+    'id', 'case_id', 'name', 'category', 'file_url',
+    'file_size', 'uploaded_at', 'tags', 'content_text',
+    'created_at', 'updated_at'
+  ],
+  invoices: [
+    'id', 'client_id', 'case_id', 'amount', 'vat_amount',
+    'total_amount', 'status', 'issue_date', 'due_date',
+    'payment_method', 'description', 'is_zatca_submitted',
+    'zatca_timestamp', 'created_at', 'updated_at'
   ],
   employees: [
     'id', 'name', 'role', 'email', 'phone', 'status',
     'salary', 'department', 'join_date', 'created_at', 'updated_at'
   ],
-  invoices: [
-    'id', 'client_id', 'case_id', 'amount', 'vat_amount', 'total_amount',
-    'status', 'issue_date', 'due_date', 'payment_method', 'description',
-    'is_zatca_submitted', 'zatca_timestamp', 'created_at', 'updated_at'
-  ],
   powers_of_attorney: [
     'id', 'client_id', 'poa_number', 'issue_date', 'expiry_date',
     'type', 'status', 'file_url', 'created_at', 'updated_at'
-  ],
-  documents: [
-    'id', 'case_id', 'name', 'category', 'file_url', 'file_size',
-    'uploaded_at', 'tags', 'content_text', 'created_at', 'updated_at'
   ],
   attachments: [
     'id', 'case_id', 'file_name', 'file_size', 'file_url',
@@ -51,81 +57,95 @@ const ALLOWED_COLUMNS: Record<string, string[]> = {
     'payment_method', 'transaction_id', 'status', 'created_at'
   ],
   notifications: [
-    'id', 'user_id', 'title', 'message', 'type', 'is_read',
-    'entity_type', 'entity_id', 'created_at'
+    'id', 'user_id', 'title', 'message', 'type',
+    'is_read', 'entity_type', 'entity_id', 'created_at'
   ],
   audit_trails: [
     'id', 'user_id', 'user_name', 'action', 'entity_type',
     'entity_id', 'old_data', 'new_data', 'ip_address', 'created_at'
   ],
   system_errors: [
-    'id', 'message', 'stack', 'component', 'user_id', 'severity', 'created_at'
+    'id', 'message', 'stack', 'component',
+    'user_id', 'severity', 'created_at'
   ],
 };
 
-// دالة تنقية البيانات: تحذف أي حقل غير موجود في الجدول
-const sanitizeForTable = (table: string, snakeData: Record<string, any>): Record<string, any> => {
-  const allowed = ALLOWED_COLUMNS[table];
-  if (!allowed) return snakeData; // إذا لم يكن الجدول معرفاً، أرسل كما هو
-  
-  const sanitized: Record<string, any> = {};
-  for (const key of allowed) {
-    if (snakeData[key] !== undefined && snakeData[key] !== null) {
-      sanitized[key] = snakeData[key];
+/**
+ * يحوّل البيانات إلى snake_case ثم يحذف كل حقل
+ * غير موجود في جدول Supabase الفعلي.
+ * هذا يمنع خطأ PGRST204 نهائياً.
+ */
+const sanitizePayload = (tableName: string, data: any): Record<string, any> => {
+  // أولاً: حوّل camelCase إلى snake_case
+  const snaked = toSnake(data);
+
+  // ثانياً: معالجة خاصة لحقول مختلفة الاسم بين الكود وقاعدة البيانات
+  if (tableName === 'clients') {
+    // nationalId في الكود → id_number في قاعدة البيانات
+    if (snaked.national_id && !snaked.id_number) {
+      snaked.id_number = snaked.national_id;
     }
   }
+
+  if (tableName === 'cases') {
+    // caseName في الكود → title في قاعدة البيانات
+    if (snaked.case_name && !snaked.title) {
+      snaked.title = snaked.case_name;
+    }
+    // nextSessionDate → next_session_at
+    if (snaked.next_session_date && !snaked.next_session_at) {
+      snaked.next_session_at = snaked.next_session_date;
+    }
+    // lastSessionDate → last_session_at
+    if (snaked.last_session_date && !snaked.last_session_at) {
+      snaked.last_session_at = snaked.last_session_date;
+    }
+    // clientId → client_id
+    if (snaked.client_id === undefined && snaked.client_name) {
+      // client_id مطلوب - إذا لم يكن موجوداً نضع null
+      snaked.client_id = snaked.client_id || null;
+    }
+    // تأكد أن attachments_count رقم وليس مصفوفة
+    if (Array.isArray(snaked.attachments)) {
+      snaked.attachments_count = snaked.attachments.length;
+      delete snaked.attachments;
+    }
+    // حوّل المصفوفات المعقدة إلى JSONB
+    if (Array.isArray(snaked.assigned_lawyers)) {
+      snaked.lawyers = JSON.stringify(snaked.assigned_lawyers);
+    }
+    // احفظ الحقول الإضافية في metadata بدلاً من رفضها
+    const extraFields: Record<string, any> = {};
+    const allowedCols = DB_COLUMNS['cases'] || [];
+    Object.keys(snaked).forEach(key => {
+      if (!allowedCols.includes(key)) {
+        extraFields[key] = snaked[key];
+      }
+    });
+    if (Object.keys(extraFields).length > 0) {
+      snaked.metadata = JSON.stringify({
+        ...(snaked.metadata ? JSON.parse(typeof snaked.metadata === 'string' ? snaked.metadata : JSON.stringify(snaked.metadata)) : {}),
+        ...extraFields
+      });
+    }
+  }
+
+  // ثالثاً: احتفظ فقط بالأعمدة المسموح بها
+  const allowedColumns = DB_COLUMNS[tableName];
+  if (!allowedColumns) {
+    // جدول غير معروف — أرسل كما هو مع تحذير
+    console.warn(`[sanitizePayload] Unknown table: ${tableName}. Sending raw data.`);
+    return snaked;
+  }
+
+  const sanitized: Record<string, any> = {};
+  for (const col of allowedColumns) {
+    if (snaked[col] !== undefined) {
+      sanitized[col] = snaked[col];
+    }
+  }
+
   return sanitized;
-};
-
-// دالة تحويل خاصة للعملاء (clients) لمعالجة اختلاف أسماء الحقول
-const mapClientToDb = (data: any): Record<string, any> => {
-  const snaked = toSnake(data);
-  return {
-    id: snaked.id,
-    name: snaked.name,
-    phone: snaked.phone,
-    email: snaked.email,
-    id_number: snaked.national_id || snaked.id_number, // camelCase: nationalId → national_id → id_number في DB
-    najiz_id: snaked.najiz_id,
-    address: snaked.address,
-    status: snaked.status || 'active',
-    last_sync_at: snaked.last_sync_at,
-    created_at: snaked.created_at,
-    updated_at: snaked.updated_at || new Date().toISOString(),
-  };
-};
-
-// دالة تحويل خاصة للقضايا (cases) لمعالجة اختلاف أسماء الحقول
-const mapCaseToDb = (data: any): Record<string, any> => {
-  const snaked = toSnake(data);
-  return {
-    id: snaked.id,
-    client_id: snaked.client_id,
-    case_number: snaked.case_number,
-    najiz_case_number: snaked.najiz_case_number || snaked.court_case_number,
-    title: snaked.case_name || snaked.title,
-    category: snaked.category,
-    stage: snaked.stage,
-    status: snaked.status,
-    priority: snaked.priority || 'medium',
-    court_name: snaked.court_name,
-    opponent_name: snaked.opponent_name || (snaked as any).opponent_names?.[0], // Fallback if opponent_name missing
-    summary: snaked.summary,
-    details: snaked.details,
-    attachments_count: snaked.attachments_count || 0,
-    last_session_at: snaked.last_session_date || snaked.last_session_at,
-    next_session_at: snaked.next_session_date || snaked.next_session_at,
-    lawyers: snaked.assigned_lawyers ? JSON.stringify(snaked.assigned_lawyers) : '[]',
-    metadata: JSON.stringify({
-      isNajizSync: snaked.is_najiz_sync,
-      isConfidential: snaked.is_confidential,
-      judgeName: snaked.judge_name,
-      executionNumber: snaked.execution_number,
-    }),
-    last_sync_at: snaked.last_sync_at,
-    created_at: snaked.created_at,
-    updated_at: new Date().toISOString(),
-  };
 };
 
 export function useSupabaseData() {
@@ -272,36 +292,46 @@ export function useSupabaseData() {
         const { table, type, action, data } = log;
         const targetTable = table || type;
         const mappedTable = getSupabaseTableName(targetTable);
-        
+
+        // ✅ الإصلاح الجوهري: نقّ البيانات قبل الإرسال
+        const cleanPayload = sanitizePayload(mappedTable, data);
+
         let errorObj = null;
         if (data?.id) {
-          const { id, ...payload } = data;
-          const { error } = await supabase.from(mappedTable).update(toSnake(payload)).eq('id', id);
+          // عملية UPDATE: احذف id و created_at من الـ payload
+          const { id, created_at, ...updatePayload } = cleanPayload;
+          const { error } = await supabase
+            .from(mappedTable)
+            .update(updatePayload)
+            .eq('id', data.id);
           if (error) errorObj = error;
         } else {
-          const { error } = await supabase.from(mappedTable).insert([toSnake(data)]);
+          // عملية INSERT
+          const { error } = await supabase
+            .from(mappedTable)
+            .insert([cleanPayload]);
           if (error) errorObj = error;
         }
-        
+
         if (errorObj) {
           console.error(`[Background Sync Error] table: ${mappedTable}`, errorObj);
           remainingLogs.push(log);
         } else {
-          console.log(`[Background Sync] successfully processed ${mappedTable}`);
+          console.log(`[Background Sync] ✅ successfully processed ${mappedTable}`);
           anySuccess = true;
           processed++;
         }
       } catch (e) {
-         console.error(`[Background Sync Exception]`, e);
-         remainingLogs.push(log);
+        console.error(`[Background Sync Exception]`, e);
+        remainingLogs.push(log);
       }
     }
 
     if (remainingLogs.length !== logs.length) {
-       localStorage.setItem('failed_persistence_logs', JSON.stringify(remainingLogs));
-       if (anySuccess) fetchData();
+      localStorage.setItem('failed_persistence_logs', JSON.stringify(remainingLogs));
+      if (anySuccess) fetchData();
     }
-    
+
     return { processed, failed: remainingLogs.length };
   }, [fetchData]);
 
@@ -398,21 +428,14 @@ export function useSupabaseData() {
       }
 
       const mappedTable = getSupabaseTableName(table);
-      let dbData: Record<string, any>;
-      if (mappedTable === 'clients') {
-        dbData = mapClientToDb(data);
-      } else if (mappedTable === 'cases') {
-        dbData = mapCaseToDb(data);
-      } else {
-        dbData = sanitizeForTable(mappedTable, toSnake(data));
-      }
+      const cleanData = sanitizePayload(mappedTable, data);
 
-      console.log(`[Supabase] Sanitized payload for ${mappedTable}:`, dbData);
-      console.log(`[DEBUG ${table} INSERT payload]`, JSON.stringify(dbData, null, 2));
+      console.log(`[Supabase] Sanitized payload for ${mappedTable}:`, cleanData);
+      console.log(`[DEBUG ${table} INSERT payload]`, JSON.stringify(cleanData, null, 2));
 
       const { data: insertedData, error } = await supabase
         .from(mappedTable)
-        .insert([dbData])
+        .insert([cleanData])
         .select()
         .single();
 
@@ -465,22 +488,13 @@ export function useSupabaseData() {
       }
 
       const mappedTable = getSupabaseTableName(table);
-      let dbData: Record<string, any>;
-      if (mappedTable === 'clients') {
-        dbData = mapClientToDb(data);
-      } else if (mappedTable === 'cases') {
-        dbData = mapCaseToDb(data);
-      } else {
-        dbData = sanitizeForTable(mappedTable, toSnake(data));
-      }
+      const cleanData = sanitizePayload(mappedTable, data);
+      const { id: _removeId, created_at: _removeCa, ...updatePayload } = cleanData;
 
-      // احذف id من بيانات التحديث (لا يجب تحديث المفتاح الأساسي)
-      const { id: _id, created_at: _ca, ...updateData } = dbData;
-
-      console.log(`[Supabase] Sanitized update payload for ${mappedTable}:`, updateData);
+      console.log(`[Supabase] Sanitized update payload for ${mappedTable}:`, updatePayload);
       const { data: updatedData, error } = await supabase
         .from(mappedTable)
-        .update(updateData)
+        .update(updatePayload)
         .eq('id', id)
         .select()
         .single();
