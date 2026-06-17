@@ -200,19 +200,37 @@ export default function DocumentsModule({
   const handleGoogleSignIn = async () => {
     setIsGdriveLoading(true);
     setGdriveError(null);
+
+    const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    if (!isLocalhost) {
+      alert(`[تنبيه بيئة المعاينة] لكي ينجح الربط مع Google، تأكد من إضافة الرابط (${window.location.origin}) إلى Redirect URLs في إعدادات Supabase الخاصة بك، وإلا ستحصل على خطأ اتصال بـ localhost.`);
+    }
+
     try {
-      const { error } = await supabase.auth.signInWithOAuth({
+      const { data, error } = await supabase.auth.linkIdentity({
         provider: 'google',
         options: {
           scopes: 'https://www.googleapis.com/auth/drive.readonly',
-          redirectTo: window.location.origin
+          redirectTo: window.location.origin,
+          skipBrowserRedirect: true
         }
       });
       if (error) throw error;
+      
+      if (data?.url) {
+        const popup = window.open(data.url, 'oauth_popup', 'width=600,height=700');
+        if (!popup) {
+          throw new Error('Popup blocked. Please allow popups.');
+        }
+      }
+      setGdriveError('الرجاء إكمال مصادقة Google في النافذة المنبثقة.');
     } catch (err: any) {
       console.error('[Google Drive] Authentication failed:', err);
       // Give a friendly message if popup blocked or cancelled
-      if (err.code === 'auth/popup-blocked') {
+      if (err.message && err.message.includes('Popup blocked')) {
+        alert("الرجاء السماح للنوافذ المنبثقة للاتصال بـ Google.");
+        setGdriveError("تم حظر النافذة المنبثقة.");
+      } else if (err.code === 'auth/popup-blocked') {
         setGdriveError('تم حظر النافذة المنبثقة لمصادقة Google بواسطة المتصفح. يرجى تفعيل النوافذ المنبثقة وإعادة المحاولة.');
       } else if (err.code === 'auth/popup-closed-by-user') {
         // User cancelled, we just silently clear loading state

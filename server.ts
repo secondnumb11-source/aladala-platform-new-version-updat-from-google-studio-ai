@@ -13,8 +13,6 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { GoogleGenAI } from '@google/genai';
 import { supabase as sharedSupabase } from './src/lib/supabase.js';
-import { initializeApp, cert } from 'firebase-admin/app';
-import { getFirestore } from 'firebase-admin/firestore';
 import { Client as ElasticClient } from '@elastic/elasticsearch';
 import dotenv from 'dotenv';
 
@@ -28,55 +26,7 @@ import JSZip from 'jszip';
 
 // Supabase integration (Next-style helpers adapted for Express)
 import { supabaseMiddleware } from './src/utils/supabase/middleware.js';
-import { createClient as createSupabaseServerClient } from './src/utils/supabase/server.js';
 import { query } from './src/lib/db.js';
-
-let adminApp: any = null;
-let adminDb: any = null;
-
-// Initialize Firebase Admin if service account is available
-try {
-  const saPath = path.resolve(process.cwd(), 'serviceAccountKey.json');
-  if (fs.existsSync(saPath)) {
-    const serviceAccount = JSON.parse(fs.readFileSync(saPath, 'utf8'));
-    if (serviceAccount && typeof serviceAccount.private_key === 'string') {
-      serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, '\n');
-    }
-    adminApp = initializeApp({
-      credential: cert(serviceAccount)
-    });
-    adminDb = getFirestore(adminApp);
-    console.log('[Firebase Admin] Initialized successfully from serviceAccountKey.json');
-  } else if (process.env.FIREBASE_SERVICE_ACCOUNT && process.env.FIREBASE_SERVICE_ACCOUNT.trim().length > 0) {
-    try {
-      const saRaw = process.env.FIREBASE_SERVICE_ACCOUNT;
-      // Normalize common env var escaping issues
-      const saProcessed = saRaw.includes('\\n') ? saRaw.replace(/\\n/g, '\n') : saRaw;
-      const serviceAccount = JSON.parse(saProcessed);
-      adminApp = initializeApp({
-        credential: cert(serviceAccount)
-      });
-      adminDb = getFirestore(adminApp);
-      console.log('[Firebase Admin] Initialized successfully from environment variable');
-    } catch (parseErr: any) {
-      console.warn('[Firebase Admin] Primary parse failed, trying direct JSON.parse:', parseErr.message);
-      try {
-        const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
-        adminApp = initializeApp({
-          credential: cert(serviceAccount)
-        });
-        adminDb = getFirestore(adminApp);
-        console.log('[Firebase Admin] Initialized successfully (raw)');
-      } catch (finalErr: any) {
-        console.error('[Firebase Admin] Critical JSON Parse error for FIREBASE_SERVICE_ACCOUNT:', finalErr.message);
-      }
-    }
-  } else {
-    console.log('[Firebase Admin] No service account found. Firestore features will be disabled.');
-  }
-} catch (err: any) {
-  console.error('[Firebase Admin] Initialization error:', err.message);
-}
 
 // AI Configuration and Client Factory
 const getAIProvider = () => {
@@ -368,7 +318,7 @@ app.use('/api/supabase', supabaseMiddleware);
 
 // Sample Supabase TODOs endpoint
 app.get('/api/supabase/todos', async (req, res) => {
-  const supabase = createSupabaseServerClient(req, res);
+  const supabase = getSupabaseClient();
   // @ts-ignore - 'todos' might not be defined in types yet
   const { data: todos, error } = await supabase.from('todos').select();
   if (error) return res.status(500).json({ error: error.message });
@@ -1286,27 +1236,6 @@ let extensionConfigStore = {
 // --- API ENDPOINTS ---
 
 async function fetchAllPlatformState() {
-  if (adminDb) {
-    try {
-      const collections = ['cases', 'clients', 'hearings', 'tasks', 'documents', 'invoices', 'expenses', 'messages', 'lawyers', 'powersOfAttorney', 'contracts'];
-      const results: any = {};
-      
-      for (const colName of collections) {
-        const snapshot = await adminDb.collection(colName).get();
-        results[colName] = snapshot.docs.map((doc: any) => ({ ...doc.data() }));
-      }
-      
-      // Merge with in-memory defaults if Firestore is empty (for first run)
-      if (results.cases.length === 0 && results.clients.length === 0) {
-        return stateOfPlatform;
-      }
-      
-      return { ...stateOfPlatform, ...results };
-    } catch (e) {
-      console.warn('[Firestore Admin] Failed to fetch state, falling back to in-memory:', e);
-      return stateOfPlatform;
-    }
-  }
   return stateOfPlatform;
 }
 
@@ -1385,16 +1314,6 @@ app.get('/api/state', async (req, res) => {
 app.post('/api/state/update', async (req, res) => {
   const { type, data } = req.body;
   
-  // Persist to Firestore if available
-  if (adminDb && data && data.id) {
-    try {
-      await adminDb.collection(type).doc(data.id.toString()).set(data, { merge: true });
-      console.log(`[Firestore Admin] Persisted ${type}/${data.id}`);
-    } catch (e) {
-      console.warn(`[Firestore Admin] Failed to persist ${type}/${data.id}:`, e);
-    }
-  }
-
   if (type === 'cases') {
     const idx = stateOfPlatform.cases.findIndex(item => item.id === data.id);
     if (idx !== -1) {
@@ -2070,35 +1989,8 @@ app.post('/api/najiz-sync', async (req, res) => {
     if (addedInvoicesCount > 0) logsText += `✓ تم جدولة عدد (${addedInvoicesCount}) مطالبات مالية ورسوم تنفيذية في النظام المالي.\n`;
   }
 
-  // PERSIST EVERYTHING TO FIRESTORE IN REAL-TIME IF INITIALIZED!
-  if (adminDb) {
-    try {
-      console.log('[Firestore Admin Najiz Sync] Commencing live persistence sequence...');
-      
-      for (const item of stateOfPlatform.cases) {
-        await adminDb.collection('cases').doc(item.id.toString()).set(item, { merge: true });
-      }
-      for (const item of stateOfPlatform.hearings) {
-        await adminDb.collection('hearings').doc(item.id.toString()).set(item, { merge: true });
-      }
-      for (const item of stateOfPlatform.powersOfAttorney) {
-        await adminDb.collection('powersOfAttorney').doc(item.id.toString()).set(item, { merge: true });
-      }
-      for (const item of stateOfPlatform.clients) {
-        await adminDb.collection('clients').doc(item.id.toString()).set(item, { merge: true });
-      }
-      for (const item of stateOfPlatform.tasks) {
-        await adminDb.collection('tasks').doc(item.id.toString()).set(item, { merge: true });
-      }
-      for (const item of stateOfPlatform.invoices) {
-        await adminDb.collection('invoices').doc(item.id.toString()).set(item, { merge: true });
-      }
-      console.log('[Firestore Admin Najiz Sync] Direct persistence succeeded completely! 🟢');
-    } catch (saveErr) {
-      console.error('[Firestore Admin Najiz Sync] Failure persisting to collections:', saveErr);
-    }
-  }
-
+  // NOTE: In-line persistence to Firestore has been removed in favor of Supabase Sync in useSupabaseData hook.
+  
   res.json({
     success: true,
     message: logsText,
@@ -2724,11 +2616,6 @@ app.post('/api/trial-request', async (req, res) => {
   };
 
   try {
-    if (adminDb) {
-      await adminDb.collection('leads').doc(id).set(leadData);
-      console.log(`[Firestore Admin] Persisted lead/${id}`);
-    }
-
     const accountSid = process.env.TWILIO_ACCOUNT_SID;
     const authToken = process.env.TWILIO_AUTH_TOKEN;
     const messagingServiceSid = process.env.TWILIO_MESSAGING_SERVICE_SID;
@@ -2857,93 +2744,6 @@ app.post('/api/backup/trigger', (req, res) => {
   const user = req.body.user || 'المدير العام (Super Admin)';
   const newSnap = performCloudBackupAndSync(`محاكاة يدوية بواسطة (${user})`);
   res.json({ success: true, latest: newSnap, history: backupHistory });
-});
-
-// POST: Trigger Migration from Firebase to Supabase
-app.post('/api/sync/firebase-to-supabase', async (req, res) => {
-  try {
-    console.log('[Sync Service] Triggering migration from Firebase to Supabase...');
-    const result: any = {
-      firebaseConnected: !!adminDb,
-      supabaseConnected: false,
-      syncedCollections: [],
-      error: null
-    };
-    
-    // Fetch all collections from Firebase
-    let fbState: any = { ...stateOfPlatform };
-    if (adminDb) {
-      const collections = ['cases', 'clients', 'hearings', 'tasks', 'documents', 'invoices', 'expenses', 'messages', 'lawyers', 'powersOfAttorney', 'contracts'];
-      for (const colName of collections) {
-        try {
-          const snapshot = await adminDb.collection(colName).get();
-          if (snapshot && !snapshot.empty) {
-            fbState[colName] = snapshot.docs.map((doc: any) => ({ ...doc.data() }));
-            result.syncedCollections.push(colName);
-          }
-        } catch (colErr: any) {
-          console.warn(`[Sync Service] Failed to fetch collection ${colName}:`, colErr.message);
-        }
-      }
-      stateOfPlatform = { ...stateOfPlatform, ...fbState };
-    } else {
-      console.log('[Sync Service] Firebase Admin DB not connected. Syncing fallback in-memory state.');
-    }
-
-    // Now write to Supabase
-    const supabase = getSupabaseClient();
-    if (supabase) {
-      result.supabaseConnected = true;
-      const datasetPlain = JSON.stringify(stateOfPlatform);
-      const sizeKb = (datasetPlain.length / 1024).toFixed(2) + " KB";
-      
-      // 1. Upload JSON backup snapshot to Supabase Storage
-      try {
-        const { error: storageErr } = await supabase.storage
-          .from('legal-backups')
-          .upload(`migrations/firebase-migration-${Date.now()}.json`, datasetPlain, {
-            contentType: 'application/json',
-            upsert: true
-          });
-        if (storageErr) {
-          console.warn('[Sync Service] Supabase storage upload failed:', storageErr.message);
-        } else {
-          console.log('[Sync Service] Uploaded migration backup snapshot directly to Supabase storage.');
-        }
-      } catch (storeEx: any) {
-        console.warn('[Sync Service] Supabase storage exception:', storeEx.message);
-      }
-
-      // 2. Also try writing user state or collections into Supabase database if any tables are available
-      try {
-        // Log migration success in activity logs
-        await supabase.from('audit_trails').insert({
-          action: 'MIGRATION',
-          details: `Migrated ${result.syncedCollections.length} collections from Firebase to Supabase. Size: ${sizeKb}`,
-          timestamp: new Date().toISOString()
-        }).select();
-      } catch (dbEx: any) {
-        console.warn('[Sync Service] Supabase db write deferred:', dbEx.message);
-      }
-      
-      // Also add to backup history
-      const syncJob = {
-        id: `migration-job-${Date.now()}`,
-        timestamp: new Date().toISOString(),
-        status: "completed",
-        databaseSize: sizeKb,
-        tablesCount: result.syncedCollections.length || Object.keys(stateOfPlatform).length,
-        destination: "Supabase cloud bucket & database audit_trails",
-        triggeredBy: "Firebase to Supabase Migration Tool"
-      };
-      backupHistory.unshift(syncJob);
-    }
-    
-    res.json({ success: true, result });
-  } catch (err: any) {
-    console.error('[Sync Service] Migration failed:', err);
-    res.status(500).json({ success: false, error: err.message });
-  }
 });
 
 // POST: Scan hearings array and dispatch simulated email notifications for trials in next 48 hours
@@ -3910,17 +3710,8 @@ app.post('/api/ai/store-feedback', async (req, res) => {
     timestamp: timestamp || new Date().toISOString()
   };
 
-  let savedToFirestore = false;
-  try {
-    if (adminDb) {
-      // Use Firebase Admin to save the feedback document!
-      await adminDb.collection('ai_feedback').add(record);
-      savedToFirestore = true;
-      console.log('[AI Feedback Service] Successfully persisted feedback to Firestore db.');
-    }
-  } catch (error: any) {
-    console.error('[AI Feedback Service] Error writing to Firestore:', error.message);
-  }
+  let savedToSupabase = false;
+  // TODO: Add Supabase insertion or logic here instead if needed
 
   // Also maintain an in-memory/JSON local log of feedback for maximum reliability
   try {
@@ -3929,13 +3720,13 @@ app.post('/api/ai/store-feedback', async (req, res) => {
     if (fs.existsSync(feedbackListPath)) {
       existing = JSON.parse(fs.readFileSync(feedbackListPath, 'utf8'));
     }
-    existing.push({ ...record, savedToFirestore });
+    existing.push({ ...record, savedToSupabase });
     fs.writeFileSync(feedbackListPath, JSON.stringify(existing, null, 2));
   } catch (fileErr: any) {
     console.warn('[AI Feedback Service] Failed to write feedback to local json file:', fileErr.message);
   }
 
-  return res.json({ success: true, savedToFirestore, data: record });
+  return res.json({ success: true, savedToSupabase, data: record });
 });
 
 app.get('/api/global-search', (req, res) => {
@@ -4079,13 +3870,18 @@ app.post('/api/ai/predict-win', async (req, res) => {
 });
 
 async function initializeDatabaseTables() {
-  const activeUrl = process.env.POSTGRES_URL || "postgresql://postgres:Allah%40100200Allah@db.sydcelofkzvtsfatxnka.supabase.co:5432/postgres";
+  const activeUrl = process.env.POSTGRES_URL;
+  if (!activeUrl) {
+    console.log('[Schema Auto-Init] No POSTGRES_URL provided. Skipping schema auto-initialization.');
+    return;
+  }
+  
   console.log('[Schema Auto-Init] Checking and creating default schemas on Supabase DB...');
   try {
     const { Client } = await import('pg');
     const client = new Client({
       connectionString: activeUrl,
-      connectionTimeoutMillis: 60000,
+      connectionTimeoutMillis: 10000,
       ssl: activeUrl.includes('localhost') || activeUrl.includes('127.0.0.1') ? false : { rejectUnauthorized: false }
     });
 
@@ -4383,7 +4179,11 @@ async function initializeDatabaseTables() {
 
     await client.end();
   } catch (err: any) {
-    console.error('[Schema Auto-Init ERROR] Failed schema check/creation:', err);
+    if (err.code === 'ECONNREFUSED' || err.message?.includes('ECONNREFUSED')) {
+      console.warn('[Schema Auto-Init] PostgreSQL direct connection failed (IPv6 not supported or pooler required). Skipping native schema init, relying on Supabase REST.');
+    } else {
+      console.error('[Schema Auto-Init ERROR] Failed schema check/creation:', err);
+    }
   }
 }
 
@@ -4396,16 +4196,6 @@ async function bootApp() {
   initializeDatabaseTables().catch(err => {
     console.error('[bootApp] initializeDatabaseTables rejected:', err);
   });
-  
-  if (adminDb) {
-    // Non-blocking verification to avoid delaying the listen() call
-    adminDb.collection('_test_probe_').limit(1).get()
-      .then(() => console.log('[Firebase Admin] Firestore remote db connected successfully!'))
-      .catch((e: any) => {
-        console.info('[Firebase Admin] Sandbox Mode: Running in decoupled environment. The platform is running smoothly using the high-performance local memory engine.');
-        adminDb = null;
-      });
-  }
   
   const isProduction = process.env.NODE_ENV === 'production' || 
                       (process.argv[1] && process.argv[1].includes('dist')) || 

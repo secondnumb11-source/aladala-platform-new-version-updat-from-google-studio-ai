@@ -182,20 +182,38 @@ export default function ClientsModule({
   const handleGoogleSignIn = async () => {
     setIsSyncing(true);
     setSyncError(null);
+
+    const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    if (!isLocalhost) {
+      alert(`[تنبيه بيئة المعاينة] لكي ينجح الربط مع Google، تأكد من إضافة الرابط (${window.location.origin}) إلى Redirect URLs في إعدادات Supabase الخاصة بك، وإلا ستحصل على خطأ اتصال بـ localhost.`);
+    }
+
     try {
-      const { data, error } = await supabase.auth.signInWithOAuth({
+      const { data, error } = await supabase.auth.linkIdentity({
         provider: 'google',
         options: {
           scopes: 'https://www.googleapis.com/auth/contacts.readonly',
-          redirectTo: window.location.origin
+          redirectTo: window.location.origin,
+          skipBrowserRedirect: true
         }
       });
       if (error) throw error;
-      // Note: Full contact sync will require redirection.
-      setSyncError('ميزة مزامنة جهات الاتصال تتطلب إعادة توجيه الصفحة، قد يكون ذلك محدوداً في بيئة المعاينة.');
+      
+      if (data?.url) {
+        const popup = window.open(data.url, 'oauth_popup', 'width=600,height=700');
+        if (!popup) {
+          throw new Error('Popup blocked. Please allow popups.');
+        }
+      }
+      setSyncError('الرجاء إكمال تسجيل الدخول في النافذة المنبثقة.');
     } catch (err: any) {
       console.error('[Google Contacts] Auth error:', err);
-      setSyncError(err.message || 'فشلت عملية المصادقة الرقمية مع حساب Google');
+      if (err.message?.includes('Popup blocked')) {
+        alert("الرجاء السماح للنوافذ المنبثقة للاتصال بـ Google.");
+        setSyncError("تم حظر النافذة المنبثقة.");
+      } else {
+        setSyncError(err.message || 'فشلت عملية المصادقة الرقمية مع حساب Google');
+      }
     } finally {
       setIsSyncing(false);
     }

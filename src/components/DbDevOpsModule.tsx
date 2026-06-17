@@ -23,7 +23,7 @@ import {
   ChevronRight
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-import { supabase } from '../lib/supabase';
+import { supabase } from '@/lib/supabase';
 import PersistentErrorLogger from './PersistentErrorLogger';
 
 // Predefined SQL Templates for Platform Admins and Lawyers

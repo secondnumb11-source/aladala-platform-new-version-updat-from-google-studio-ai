@@ -21,6 +21,7 @@
       "@/*": ["src/*"]
     },
     "baseUrl": ".",
+    "types": ["vite/client"],
     "noEmit": true
   },
   "include": ["src/**/*", "server.ts"],

@@ -17,8 +17,9 @@ const getViteEnv = (key: string): string => {
   }
 };
 
-const supabaseUrl = getViteEnv('VITE_SUPABASE_URL');
-const supabaseAnonKey = getViteEnv('VITE_SUPABASE_ANON_KEY');
+const rawSupabaseUrl = getViteEnv('VITE_SUPABASE_URL') || getViteEnv('NEXT_PUBLIC_SUPABASE_URL') || 'https://sydcelofkzvtsfatxnka.supabase.co';
+const supabaseUrl = rawSupabaseUrl.startsWith('http') ? rawSupabaseUrl : `https://${rawSupabaseUrl}`;
+const supabaseAnonKey = getViteEnv('VITE_SUPABASE_ANON_KEY') || getViteEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY') || getViteEnv('VITE_SUPABASE_PUBLISHABLE_KEY') || getViteEnv('NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY') || 'sb_publishable_VW8gI2hAK_UzF8ApuoUUhA_KUmR1KYz';
 
 if (!supabaseUrl || !supabaseAnonKey) {
   console.warn('Missing Supabase environment variables. API calls will fail.');

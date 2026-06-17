@@ -1,4 +1,4 @@
-import { supabase } from '../supabase';
+import { supabase } from '@/lib/supabase';
 
 export interface RlsCheckResult {
   status: 'allowed' | 'denied' | 'error' | 'skipped' | 'checking';
@@ -170,6 +170,15 @@ export async function runBootRlsDiagnostics() {
 // Automatically trigger connectivity test & RLS check on application boot
 export async function checkSupabaseConnection() {
   console.log('[Supabase Init] Running startup connectivity test...');
+  
+  const rawUrl = (import.meta as any).env?.VITE_SUPABASE_URL || (import.meta as any).env?.NEXT_PUBLIC_SUPABASE_URL;
+  const rawKey = (import.meta as any).env?.VITE_SUPABASE_ANON_KEY || (import.meta as any).env?.VITE_SUPABASE_PUBLISHABLE_KEY || (import.meta as any).env?.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
+  
+  if (!rawUrl || !rawKey) {
+    console.error('[Supabase Init] ❌ Critical Error: Supabase environment variables are missing! Ensure VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY/VITE_SUPABASE_PUBLISHABLE_KEY are set.');
+    return;
+  }
+
   try {
     const { error } = await supabase.from('cases').select('id').limit(1);
     if (error) {

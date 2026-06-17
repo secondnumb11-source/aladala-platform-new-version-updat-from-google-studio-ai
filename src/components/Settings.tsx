@@ -564,31 +564,7 @@ export default function Settings({
     }
   };
 
-  const handleTriggerSync = async () => {
-    setIsSyncing(true);
-    setSyncSuccess(null);
-    try {
-      const res = await fetch('/api/sync/firebase-to-supabase', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' }
-      });
-      if (res.ok) {
-        const result = await res.json();
-        setSyncSuccess(result.result);
-        alert('✅ تم ترحيل ومزامنة كامل بيانات Firebase القديمة بمشروعك السحابي إلى Supabase بنجاح!');
-        if (result.result && result.result.history) {
-          setBackupHistoryList(result.result.history);
-        }
-      } else {
-        alert('❌ فشل نقل البيانات. يرجى التحقق من خطأ الاتصال وسجلات المزامنة.');
-      }
-    } catch (err) {
-      console.error('Migration failed:', err);
-      alert('❌ فشل نقل البيانات. يرجى التحقق من الخادم وسجلات المزامنة.');
-    } finally {
-      setIsSyncing(false);
-    }
-  };
+  // Migration from Firebase function has been removed.
 
   const handleSaveSMTP = (e: React.FormEvent) => {
     e.preventDefault();
@@ -1890,21 +1866,8 @@ export default function Settings({
                     ⚡ جاري رفع السيرفر وتشفير الجداول...
                   </span>
                 )}
-                {isSyncing && (
-                  <span className="text-amber-400 font-black text-xs font-bold animate-pulse">
-                    🔄 جاري ترحيل وتأمين كامل بيانات Firebase القديمة إلى Supabase...
-                  </span>
-                )}
               </div>
               <div className="flex flex-wrap gap-2">
-                <button
-                  type="button"
-                  disabled={isSyncing}
-                  onClick={handleTriggerSync}
-                  className="bg-amber-600 hover:bg-amber-750 text-white font-bold text-xs py-2.5 px-4 rounded-xl transition-all shadow-md active:scale-90 disabled:opacity-50"
-                >
-                  🚀 ترحيل ومزامنة Firebase ➔ Supabase
-                </button>
                 <button
                   type="button"
                   onClick={() => setIsBackupConfOpen(true)}

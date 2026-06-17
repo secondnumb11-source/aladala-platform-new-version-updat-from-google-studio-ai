@@ -212,6 +212,446 @@ export const getLeadLawyerName = (c: Case): string => {
   return lawyers[hash % lawyers.length];
 };
 
+      {/* Case Stage Progress Bar Component */}
+      const CaseProgressBar = ({ caseObj }: { caseObj: Case }) => {
+        const stages = [
+          { id: 'litigation', label: 'التحضير' },
+          { id: 'active', label: 'الترافع' },
+          { id: 'judgment_issued', label: 'الحكم' },
+          { id: 'execution', label: 'التنفيذ' }
+        ];
+        
+        const currentIdx = stages.findIndex(s => s.id === caseObj.stage || s.id === caseObj.status);
+        const progress = Math.max(0, (currentIdx + 1) * (100 / stages.length));
+
+        return (
+          <div className="space-y-2 mt-4 px-2">
+            <div className="flex justify-between items-center text-[11px] font-extrabold uppercase tracking-widest text-slate-100 transition-colors">
+              <span>المرحلة الحالية: {stages[currentIdx]?.label || 'قيد المراجعة'}</span>
+              <span className="text-yellow-300 font-black">{Math.round(progress)}%</span>
+            </div>
+            <div className="h-3 w-full bg-slate-900 border border-slate-700 rounded-full overflow-hidden border border-slate-700/30 transition-all shadow-inner">
+              <motion.div 
+                initial={{ width: 0 }}
+                animate={{ width: `${progress}%` }}
+                className="h-full bg-emerald-500 transition-all"
+              />
+            </div>
+          </div>
+        );
+      };
+
+
+  const SummaryCharts = ({ cases, preferences, updatePreference, themeTick }: { cases: Case[], preferences: any, updatePreference: any, themeTick: number }) => {
+    // Control States for customized layout, sizes, positions and shapes
+    const [chartSize, setChartSize] = useState<'tiny' | 'shrunk' | 'regular'>('shrunk');
+    const [chartOrder, setChartOrder] = useState<'donut-first' | 'bar-first'>('donut-first');
+    const [chartColorTheme, setChartColorTheme] = useState<'gold' | 'cyber' | 'emerald'>('gold');
+    const [chartVizType, setChartVizType] = useState<'bar' | 'area' | 'line'>('bar');
+
+    useEffect(() => {
+      if (preferences) {
+        if (preferences.charts_card_size) setChartSize(preferences.charts_card_size);
+        if (preferences.charts_order) setChartOrder(preferences.charts_order);
+        if (preferences.charts_theme) setChartColorTheme(preferences.charts_theme);
+        if (preferences.charts_viz_type) setChartVizType(preferences.charts_viz_type);
+      }
+    }, [preferences]);
+
+    useEffect(() => {
+      updatePreference('charts_card_size', chartSize);
+      updatePreference('charts_order', chartOrder);
+      updatePreference('charts_theme', chartColorTheme);
+      updatePreference('charts_viz_type', chartVizType);
+    }, [chartSize, chartOrder, chartColorTheme, chartVizType, updatePreference]);
+
+    // Stable memoized data to prevent any dynamic automatic dynamic reloading
+    const data = React.useMemo(() => {
+      const categoriesList = ['commercial', 'labor', 'civil', 'criminal', 'personal_status', 'administrative', 'financial', 'execution', 'other'];
+      return categoriesList.map(cat => {
+        const catCases = cases.filter(c => c.category === cat && !c.archived);
+        const catClosed = cases.filter(c => c.category === cat && (c.status === 'closed' || c.archived)).length;
+        return {
+          name: cat,
+          active: catCases.filter(c => c.status !== 'closed' && !c.archived).length,
+          closed: catClosed,
+          total: catCases.length + catClosed
+        };
+      }).filter(d => d.total > 0);
+    }, [cases]);
+
+    const activeTotal = React.useMemo(() => cases.filter(c => c.status !== 'closed' && !c.archived).length, [cases]);
+    const closedTotal = React.useMemo(() => cases.filter(c => c.status === 'closed' || c.archived).length, [cases]);
+
+    // Style colors based on Selected Theme to guarantee high contrast and vivid beauty
+    const colors = React.useMemo(() => {
+      if (chartColorTheme === 'cyber') {
+        return {
+          active: '#38bdf8', // Neon cyan
+          closed: '#f43f5e', // Neon pink/red
+          bgGlow: 'from-cyan-500/10 to-rose-500/10',
+          border: 'border-cyan-500/30'
+        };
+      } else if (chartColorTheme === 'emerald') {
+        return {
+          active: '#10b981', // Neon Emerald
+          closed: '#a78bfa', // Bright Violet
+          bgGlow: 'from-emerald-500/10 to-purple-500/10',
+          border: 'border-emerald-500/30'
+        };
+      } else { // 'gold'
+        return {
+          active: '#ffff00', // Sizzling bright yellow
+          closed: '#ff9f1c', // Vivid safety orange
+          bgGlow: 'from-amber-500/10 to-orange-500/10',
+          border: 'border-amber-500/30'
+        };
+      }
+    }, [chartColorTheme]);
+
+    const donutData = React.useMemo(() => [
+      { name: 'نشطة', value: activeTotal, color: colors.active },
+      { name: 'مغلقة/مؤرشفة', value: closedTotal, color: colors.closed }
+    ], [activeTotal, closedTotal, colors]);
+
+    if (activeTotal === 0 && closedTotal === 0) return null;
+
+    // Responsive container height map
+    const vizHeight = chartSize === 'tiny' ? 75 : chartSize === 'shrunk' ? 110 : 180;
+
+    const renderDonutCard = () => (
+      <div key="donut" className="bg-[#050e21]/90 backdrop-blur-xl p-4 rounded-3xl border border-slate-700 shadow-2xl flex flex-col items-center justify-center relative overflow-hidden transition-all duration-300">
+        <h3 className="text-xs font-black text-white mb-2 uppercase tracking-widest relative z-10 flex items-center gap-2 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
+          <TrendingUp className="w-4 h-4 text-amber-400" />
+          توزيع النزاعات
+        </h3>
+        <div style={{ height: `${vizHeight}px`, width: '100%', minWidth: 0 }} className="relative z-10 transition-all duration-300">
+          <div style={{ width: '100%', height: '100%', minWidth: 0 }}>
+            <ResponsiveContainer width="100%" height="100%" key={themeTick}>
+              <PieChart>
+                <Pie
+                  data={donutData}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={chartSize === 'tiny' ? 20 : chartSize === 'shrunk' ? 32 : 55}
+                  outerRadius={chartSize === 'tiny' ? 32 : chartSize === 'shrunk' ? 50 : 75}
+                  paddingAngle={4}
+                  dataKey="value"
+                  isAnimationActive={false} // Prevents repeated dynamic reloads
+                  stroke="rgba(255,255,255,0.08)"
+                  strokeWidth={1.5}
+                >
+                  {donutData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.color} />
+                  ))}
+                </Pie>
+                <Tooltip 
+                  contentStyle={{ backgroundColor: '#050e21', border: '1px solid #1e293b', borderRadius: '12px', fontSize: '11px', fontWeight: '900', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.5)', color: '#fff' }}
+                  itemStyle={{ color: '#fff', fontWeight: 'bold' }}
+                />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+        <div className="flex gap-4 mt-2 relative z-10 p-1.5 px-3 bg-black/40 rounded-xl border border-white/5">
+          <div className="flex items-center gap-1.5">
+            <span className="text-[10px] font-black text-white">نشطة</span>
+            <span className="text-sm font-extrabold" style={{ color: colors.active }}>{activeTotal}</span>
+          </div>
+          <div className="w-px h-4 bg-slate-700"></div>
+          <div className="flex items-center gap-1.5">
+            <span className="text-[10px] font-black text-white">مؤرشفة</span>
+            <span className="text-sm font-extrabold" style={{ color: colors.closed }}>{closedTotal}</span>
+          </div>
+        </div>
+      </div>
+    );
+
+    const lawyerPerformanceData = [
+      { name: 'أحمد البقمي', cases: 14, win: 12 },
+      { name: 'سارة العتيبي', cases: 10, win: 8 },
+      { name: 'فهد القحطاني', cases: 8, win: 7 },
+      { name: 'ليلى الحربي', cases: 12, win: 10 }
+    ];
+
+
+
+    const financialData = [
+      { month: 'يناير', income: 45000 },
+      { month: 'فبراير', income: 52000 },
+      { month: 'مارس', income: 49000 },
+      { month: 'أبريل', income: 68000 },
+      { month: 'مايو', income: 72000 }
+    ];
+
+    const renderFinancialChart = () => (
+      <div key="finance" className="lg:col-span-1 bg-[#050e21]/90 backdrop-blur-xl p-4 rounded-3xl border border-slate-700 shadow-2xl relative overflow-hidden transition-all duration-300">
+        <h3 className="text-xs font-black text-white mb-2 uppercase tracking-widest relative z-10 flex items-center gap-2 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
+          <DollarSign className="w-4 h-4 text-emerald-400" />
+          التدفق النقدي والنمو المالي
+        </h3>
+        <div style={{ height: `${vizHeight}px`, width: '100%', minWidth: 0 }} className="relative z-10 transition-all duration-300">
+          <div style={{ width: '100%', height: '100%', minWidth: 0 }}>
+            <ResponsiveContainer width="100%" height="100%" key={themeTick}>
+              <AreaChart data={financialData} margin={{ left: -30, right: 10 }}>
+                <defs>
+                  <linearGradient id="colorIncome" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#10b981" stopOpacity={0.3}/>
+                    <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
+                  </linearGradient>
+                </defs>
+                <XAxis dataKey="month" stroke="#fff" fontSize={8} fontWeight="900" axisLine={false} tickLine={false} />
+                <Tooltip contentStyle={{ backgroundColor: '#050e21', border: '1px solid #1e293b', color: '#fff', borderRadius: '8px' }} />
+                <Area type="monotone" dataKey="income" stroke="#10b981" fillOpacity={1} fill="url(#colorIncome)" isAnimationActive={false} />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+      </div>
+    );
+
+    const renderBarCard = () => (
+      <div key="bar" className="lg:col-span-2 bg-[#050e21]/90 backdrop-blur-xl p-4 rounded-3xl border border-slate-700 shadow-2xl relative overflow-hidden transition-all duration-300">
+        <h3 className="text-xs font-black text-white mb-2 uppercase tracking-widest relative z-10 flex items-center gap-2 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
+          <Layers className="w-4 h-4 text-indigo-400" />
+          تحليل النزاعات حسب التصنيف
+        </h3>
+        <div style={{ height: `${vizHeight}px`, width: '100%', minWidth: 0 }} className="relative z-10 transition-all duration-300">
+          <div style={{ width: '100%', height: '100%', minWidth: 0 }}>
+            <ResponsiveContainer width="100%" height="100%" key={themeTick}>
+              {chartVizType === 'area' ? (
+                <AreaChart data={data} margin={{ top: 5, right: 10, left: -25, bottom: 0 }}>
+                  <defs>
+                    <linearGradient id="colorActive" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor={colors.active} stopOpacity={0.4}/>
+                      <stop offset="95%" stopColor={colors.active} stopOpacity={0}/>
+                    </linearGradient>
+                    <linearGradient id="colorClosed" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor={colors.closed} stopOpacity={0.4}/>
+                      <stop offset="95%" stopColor={colors.closed} stopOpacity={0}/>
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#334155" vertical={false} strokeOpacity={0.3} />
+                  <XAxis 
+                    dataKey="name" 
+                    stroke="#ffffff" 
+                    fontSize={10} 
+                    fontWeight="900"
+                    axisLine={false}
+                    tickLine={false}
+                    tickFormatter={(val) => {
+                      const map: any = { commercial: 'تجاري', labor: 'عمالي', civil: 'مدني', criminal: 'جنائي', personal_status: 'أحوال', administrative: 'إداري', financial: 'مالي', execution: 'تنفيذ', other: 'آخر' };
+                      return map[val] || val;
+                    }}
+                  />
+                  <YAxis stroke="#ffffff" fontSize={10} fontWeight="900" axisLine={false} tickLine={false} tickCount={3} />
+                  <Tooltip 
+                    contentStyle={{ backgroundColor: '#050e21', border: '1px solid #1e293b', borderRadius: '12px', fontSize: '11px', fontWeight: '900', color: '#fff' }}
+                    itemStyle={{ color: '#fff', fontWeight: 'bold' }}
+                  />
+                  <Area name="نشطة" type="monotone" dataKey="active" stroke={colors.active} fillOpacity={1} fill="url(#colorActive)" isAnimationActive={false} />
+                  <Area name="مغلق" type="monotone" dataKey="closed" stroke={colors.closed} fillOpacity={1} fill="url(#colorClosed)" isAnimationActive={false} />
+                </AreaChart>
+              ) : chartVizType === 'line' ? (
+                <LineChart data={data} margin={{ top: 5, right: 10, left: -25, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#334155" vertical={false} strokeOpacity={0.3} />
+                  <XAxis 
+                    dataKey="name" 
+                    stroke="#ffffff" 
+                    fontSize={10} 
+                    fontWeight="900"
+                    axisLine={false}
+                    tickLine={false}
+                    tickFormatter={(val) => {
+                      const map: any = { commercial: 'تجاري', labor: 'عمالي', civil: 'مدني', criminal: 'جنائي', personal_status: 'أحوال', administrative: 'إداري', financial: 'مالي', execution: 'تنفيذ', other: 'آخر' };
+                      return map[val] || val;
+                    }}
+                  />
+                  <YAxis stroke="#ffffff" fontSize={10} fontWeight="900" axisLine={false} tickLine={false} tickCount={3} />
+                  <Tooltip 
+                    contentStyle={{ backgroundColor: '#050e21', border: '1px solid #1e293b', borderRadius: '12px', fontSize: '11px', fontWeight: '900', color: '#fff' }}
+                    itemStyle={{ color: '#fff', fontWeight: 'bold' }}
+                  />
+                  <Line name="نشطة" type="monotone" dataKey="active" stroke={colors.active} strokeWidth={2.5} dot={{ r: 3 }} isAnimationActive={false} />
+                  <Line name="مغلق" type="monotone" dataKey="closed" stroke={colors.closed} strokeWidth={2.5} dot={{ r: 3 }} isAnimationActive={false} />
+                </LineChart>
+              ) : (
+                <BarChart data={data} margin={{ top: 5, right: 10, left: -25, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#334155" vertical={false} strokeOpacity={0.3} />
+                  <XAxis 
+                    dataKey="name" 
+                    stroke="#ffffff" 
+                    fontSize={10} 
+                    fontWeight="900"
+                    axisLine={false}
+                    tickLine={false}
+                    tickFormatter={(val) => {
+                      const map: any = { commercial: 'تجاري', labor: 'عمالي', civil: 'مدني', criminal: 'جنائي', personal_status: 'أحوال', administrative: 'إداري', financial: 'مالي', execution: 'تنفيذ', other: 'آخر' };
+                      return map[val] || val;
+                    }}
+                  />
+                  <YAxis stroke="#ffffff" fontSize={10} fontWeight="900" axisLine={false} tickLine={false} tickCount={3} />
+                  <Tooltip 
+                    contentStyle={{ backgroundColor: '#050e21', border: '1px solid #1e293b', borderRadius: '12px', fontSize: '11px', fontWeight: '900', color: '#fff' }}
+                    itemStyle={{ color: '#fff', fontWeight: 'bold' }}
+                    cursor={{ fill: 'rgba(255,255,255,0.03)' }}
+                  />
+                  <Legend 
+                    verticalAlign="top" 
+                    align="right"
+                    height={18} 
+                    iconType="circle" 
+                    iconSize={6}
+                    wrapperStyle={{ fontSize: '10px', fontWeight: '900', color: '#fff' }} 
+                  />
+                  <Bar name="نشطة" dataKey="active" fill={colors.active} radius={[3, 3, 0, 0]} barSize={chartSize === 'tiny' ? 10 : chartSize === 'shrunk' ? 16 : 26} isAnimationActive={false} />
+                  <Bar name="مغلق" dataKey="closed" fill={colors.closed} radius={[3, 3, 0, 0]} barSize={chartSize === 'tiny' ? 10 : chartSize === 'shrunk' ? 16 : 26} isAnimationActive={false} />
+                </BarChart>
+              )}
+            </ResponsiveContainer>
+          </div>
+        </div>
+      </div>
+    );
+
+    const orderedCards = chartOrder === 'donut-first' 
+      ? [renderDonutCard(), renderBarCard(), renderFinancialChart()]
+      : [renderBarCard(), renderDonutCard(), renderFinancialChart()];
+
+    const handleExportPDF = () => {
+       const printWindow = window.open('', '_blank');
+       if (!printWindow) return;
+       const htmlContent = `
+         <!DOCTYPE html>
+         <html lang="ar" dir="rtl">
+         <head>
+           <meta charset="UTF-8">
+           <title>تقرير مؤشرات الأداء والتحليل القضائي للمكتب</title>
+           <style>
+             @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap');
+             body { font-family: 'Cairo', sans-serif; padding: 40px; color: #1e293b; line-height: 1.6; }
+             .header { text-align: center; border-bottom: 2px solid #b8860b; padding-bottom: 20px; margin-bottom: 30px; }
+             .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-top: 30px; }
+             .card { border: 1px solid #e2e8f0; padding: 20px; border-radius: 12px; background: #f8fafc; }
+             .val { font-size: 24px; font-weight: 900; color: #b8860b; }
+             table { width: 100%; border-collapse: collapse; margin-top: 30px; }
+             th, td { border: 1px solid #e2e8f0; padding: 12px; text-align: right; font-size: 13px; }
+             th { background: #f1f5f9; font-weight: 900; }
+             @media print { .no-print { display: none; } }
+           </style>
+         </head>
+         <body>
+           <div class="no-print">
+             <button onclick="window.print()" style="background:#b8860b; color:white; border:none; padding:12px 25px; border-radius:10px; cursor:pointer; font-weight:900; font-family:'Cairo';">طـباعة التقرير الفني الشامل (PDF) 🏛️</button>
+           </div>
+           <div class="header">
+             <h1 style="color:#b8860b; margin:0;">تقرير مؤشرات الأداء والتحليل القضائي</h1>
+             <p>مركز ذكاء الأعمال بمكتب العدالة - تاريخ السحب: ${new Date().toLocaleDateString('ar-SA')}</p>
+           </div>
+           <div class="grid">
+             <div class="card">
+               <h4>إجمالي النزاعات النشطة</h4>
+               <div class="val">${activeTotal} قضية جارية</div>
+             </div>
+             <div class="card">
+               <h4>إجمالي النزاعات المغلـقة</h4>
+               <div class="val">${closedTotal} ملف مؤرشف</div>
+             </div>
+           </div>
+           
+           <h3>تحليل النزاعات حسب التصنيف النظامي</h3>
+           <table>
+             <thead>
+               <tr>
+                 <th>مسمى التصنيف القضائي</th>
+                 <th>نشطة</th>
+                 <th>مغلـقة</th>
+                 <th>الإجمالي</th>
+               </tr>
+             </thead>
+             <tbody>
+               ${data.map(d => `
+                 <tr>
+                   <td>${d.name}</td>
+                   <td>${d.active}</td>
+                   <td>${d.closed}</td>
+                   <td>${d.total}</td>
+                 </tr>
+               `).join('')}
+             </tbody>
+           </table>
+
+           <div style="margin-top: 60px; text-align: center; font-size: 11px; color: #94a3b8; border-top: 1px solid #e2e8f0; padding-top: 20px;">
+             تم توليد هذا التقرير آلياً وفق معايير الحوكمة والتحول الرقمي القضائي لعام 2026.
+           </div>
+         </body>
+         </html>
+       `;
+       printWindow.document.write(htmlContent);
+       printWindow.document.close();
+    };
+
+    return (
+      <div className="space-y-4 mb-8">
+        {/* Customized User Control Bar to change sizes, positions, themes and shapes dynamically */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 p-3 bg-[#050e21]/90 rounded-2xl border border-slate-800 text-xs text-white font-bold shadow-xl relative z-25">
+          <div className="flex flex-wrap items-center gap-3 lg:col-span-2">
+            <div className="flex items-center gap-1.5">
+              <span className="font-sans font-black text-white text-[10px]">مظهر ولون البيانات:</span>
+              <div className="flex gap-1 bg-black/40 p-0.5 rounded border border-slate-750">
+                <button type="button" onClick={() => setChartColorTheme('gold')} className={`px-2 py-0.5 rounded text-[9.5px] font-black cursor-pointer transition-all ${chartColorTheme === 'gold' ? 'bg-[#ffff00] text-slate-950' : 'text-white font-bold'}`}>ذهبي</button>
+                <button type="button" onClick={() => setChartColorTheme('cyber')} className={`px-2 py-0.5 rounded text-[9.5px] font-black cursor-pointer transition-all ${chartColorTheme === 'cyber' ? 'bg-cyan-500 text-slate-950' : 'text-white font-bold'}`}>نيون</button>
+                <button type="button" onClick={() => setChartColorTheme('emerald')} className={`px-2 py-0.5 rounded text-[9.5px] font-black cursor-pointer transition-all ${chartColorTheme === 'emerald' ? 'bg-emerald-500 text-slate-950' : 'text-white font-bold'}`}>زمردي</button>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-1.5">
+              <span className="font-sans font-black text-white text-[10px]">شكل المخطط:</span>
+              <div className="flex gap-1 bg-black/40 p-0.5 rounded border border-slate-750">
+                <button type="button" onClick={() => setChartVizType('bar')} className={`px-2 py-0.5 rounded text-[9.5px] font-black cursor-pointer transition-all ${chartVizType === 'bar' ? 'bg-indigo-600 text-white' : 'text-white font-bold'}`}>شريطي</button>
+                <button type="button" onClick={() => setChartVizType('area')} className={`px-2 py-0.5 rounded text-[9.5px] font-black cursor-pointer transition-all ${chartVizType === 'area' ? 'bg-purple-600 text-white' : 'text-white font-bold'}`}>مساحي</button>
+                <button type="button" onClick={() => setChartVizType('line')} className={`px-2 py-0.5 rounded text-[9.5px] font-black cursor-pointer transition-all ${chartVizType === 'line' ? 'bg-rose-600 text-white' : 'text-white font-bold'}`}>خطي</button>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-3">
+            <button
+              type="button"
+              onClick={() => setChartOrder(prev => prev === 'donut-first' ? 'bar-first' : 'donut-first')}
+              className="px-2 py-1 bg-amber-500/10 text-[#ffff00] border border-amber-500/20 rounded text-[9.5px] font-black flex items-center gap-1 cursor-pointer transition-all"
+            >
+              <span>⇆</span>
+              <span>تبديل الموضع</span>
+            </button>
+
+            <div className="flex items-center gap-1.5">
+              <span className="font-sans font-black text-white text-[10px]">حجم الكارت:</span>
+              <div className="flex gap-1 bg-black/40 p-0.5 rounded border border-slate-750">
+                <button type="button" onClick={() => setChartSize('tiny')} className={`px-1.5 py-0.5 rounded text-[9.5px] font-black cursor-pointer transition-all ${chartSize === 'tiny' ? 'bg-slate-700 text-white' : 'text-white font-black font-bold'}`}>صغير جداً</button>
+                <button type="button" onClick={() => setChartSize('shrunk')} className={`px-1.5 py-0.5 rounded text-[9.5px] font-black cursor-pointer transition-all ${chartSize === 'shrunk' ? 'bg-slate-700 text-white' : 'text-white font-black font-bold'}`}>صغير</button>
+                <button type="button" onClick={() => setChartSize('regular')} className={`px-1.5 py-0.5 rounded text-[9.5px] font-black cursor-pointer transition-all ${chartSize === 'regular' ? 'bg-slate-700 text-white' : 'text-white font-black font-bold'}`}>افتراضي</button>
+              </div>
+            </div>
+
+            <button 
+              onClick={handleExportPDF}
+              className="px-3 py-1 bg-amber-500 text-slate-950 font-black rounded-lg text-[10px] transition-all flex items-center gap-2 shadow-lg cursor-pointer"
+            >
+              <FileDown className="w-3 h-3" />
+              <span>تصدير PDF 🖨️</span>
+            </button>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {orderedCards}
+        </div>
+      </div>
+    );
+  };
+
+
 interface CasesModuleProps {
   cases: Case[];
   clients: Client[];
@@ -709,415 +1149,6 @@ export default React.memo(function CasesModule({
     { id: 'archived', label: 'الأرشيف', icon: Archive },
   ];
 
-  const SummaryCharts = ({ cases, preferences, updatePreference }: { cases: Case[], preferences: any, updatePreference: any }) => {
-    // Control States for customized layout, sizes, positions and shapes
-    const [chartSize, setChartSize] = useState<'tiny' | 'shrunk' | 'regular'>('shrunk');
-    const [chartOrder, setChartOrder] = useState<'donut-first' | 'bar-first'>('donut-first');
-    const [chartColorTheme, setChartColorTheme] = useState<'gold' | 'cyber' | 'emerald'>('gold');
-    const [chartVizType, setChartVizType] = useState<'bar' | 'area' | 'line'>('bar');
-
-    useEffect(() => {
-      if (preferences) {
-        if (preferences.charts_card_size) setChartSize(preferences.charts_card_size);
-        if (preferences.charts_order) setChartOrder(preferences.charts_order);
-        if (preferences.charts_theme) setChartColorTheme(preferences.charts_theme);
-        if (preferences.charts_viz_type) setChartVizType(preferences.charts_viz_type);
-      }
-    }, [preferences]);
-
-    useEffect(() => {
-      updatePreference('charts_card_size', chartSize);
-      updatePreference('charts_order', chartOrder);
-      updatePreference('charts_theme', chartColorTheme);
-      updatePreference('charts_viz_type', chartVizType);
-    }, [chartSize, chartOrder, chartColorTheme, chartVizType, updatePreference]);
-
-    // Stable memoized data to prevent any dynamic automatic dynamic reloading
-    const data = React.useMemo(() => {
-      const categoriesList = ['commercial', 'labor', 'civil', 'criminal', 'personal_status', 'administrative', 'financial', 'execution', 'other'];
-      return categoriesList.map(cat => {
-        const catCases = cases.filter(c => c.category === cat && !c.archived);
-        const catClosed = cases.filter(c => c.category === cat && (c.status === 'closed' || c.archived)).length;
-        return {
-          name: cat,
-          active: catCases.filter(c => c.status !== 'closed' && !c.archived).length,
-          closed: catClosed,
-          total: catCases.length + catClosed
-        };
-      }).filter(d => d.total > 0);
-    }, [cases]);
-
-    const activeTotal = React.useMemo(() => cases.filter(c => c.status !== 'closed' && !c.archived).length, [cases]);
-    const closedTotal = React.useMemo(() => cases.filter(c => c.status === 'closed' || c.archived).length, [cases]);
-
-    // Style colors based on Selected Theme to guarantee high contrast and vivid beauty
-    const colors = React.useMemo(() => {
-      if (chartColorTheme === 'cyber') {
-        return {
-          active: '#38bdf8', // Neon cyan
-          closed: '#f43f5e', // Neon pink/red
-          bgGlow: 'from-cyan-500/10 to-rose-500/10',
-          border: 'border-cyan-500/30'
-        };
-      } else if (chartColorTheme === 'emerald') {
-        return {
-          active: '#10b981', // Neon Emerald
-          closed: '#a78bfa', // Bright Violet
-          bgGlow: 'from-emerald-500/10 to-purple-500/10',
-          border: 'border-emerald-500/30'
-        };
-      } else { // 'gold'
-        return {
-          active: '#ffff00', // Sizzling bright yellow
-          closed: '#ff9f1c', // Vivid safety orange
-          bgGlow: 'from-amber-500/10 to-orange-500/10',
-          border: 'border-amber-500/30'
-        };
-      }
-    }, [chartColorTheme]);
-
-    const donutData = React.useMemo(() => [
-      { name: 'نشطة', value: activeTotal, color: colors.active },
-      { name: 'مغلقة/مؤرشفة', value: closedTotal, color: colors.closed }
-    ], [activeTotal, closedTotal, colors]);
-
-    if (activeTotal === 0 && closedTotal === 0) return null;
-
-    // Responsive container height map
-    const vizHeight = chartSize === 'tiny' ? 75 : chartSize === 'shrunk' ? 110 : 180;
-
-    const renderDonutCard = () => (
-      <div key="donut" className="bg-[#050e21]/90 backdrop-blur-xl p-4 rounded-3xl border border-slate-700 shadow-2xl flex flex-col items-center justify-center relative overflow-hidden transition-all duration-300">
-        <h3 className="text-xs font-black text-white mb-2 uppercase tracking-widest relative z-10 flex items-center gap-2 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
-          <TrendingUp className="w-4 h-4 text-amber-400" />
-          توزيع النزاعات
-        </h3>
-        <div style={{ height: `${vizHeight}px`, width: '100%', minWidth: 0 }} className="relative z-10 transition-all duration-300">
-          <div style={{ width: '100%', height: '100%', minWidth: 0 }}>
-            <ResponsiveContainer width="100%" height="100%" key={themeTick}>
-              <PieChart>
-                <Pie
-                  data={donutData}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={chartSize === 'tiny' ? 20 : chartSize === 'shrunk' ? 32 : 55}
-                  outerRadius={chartSize === 'tiny' ? 32 : chartSize === 'shrunk' ? 50 : 75}
-                  paddingAngle={4}
-                  dataKey="value"
-                  isAnimationActive={false} // Prevents repeated dynamic reloads
-                  stroke="rgba(255,255,255,0.08)"
-                  strokeWidth={1.5}
-                >
-                  {donutData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
-                  ))}
-                </Pie>
-                <Tooltip 
-                  contentStyle={{ backgroundColor: '#050e21', border: '1px solid #1e293b', borderRadius: '12px', fontSize: '11px', fontWeight: '900', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.5)', color: '#fff' }}
-                  itemStyle={{ color: '#fff', fontWeight: 'bold' }}
-                />
-              </PieChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-        <div className="flex gap-4 mt-2 relative z-10 p-1.5 px-3 bg-black/40 rounded-xl border border-white/5">
-          <div className="flex items-center gap-1.5">
-            <span className="text-[10px] font-black text-white">نشطة</span>
-            <span className="text-sm font-extrabold" style={{ color: colors.active }}>{activeTotal}</span>
-          </div>
-          <div className="w-px h-4 bg-slate-700"></div>
-          <div className="flex items-center gap-1.5">
-            <span className="text-[10px] font-black text-white">مؤرشفة</span>
-            <span className="text-sm font-extrabold" style={{ color: colors.closed }}>{closedTotal}</span>
-          </div>
-        </div>
-      </div>
-    );
-
-    const lawyerPerformanceData = [
-      { name: 'أحمد البقمي', cases: 14, win: 12 },
-      { name: 'سارة العتيبي', cases: 10, win: 8 },
-      { name: 'فهد القحطاني', cases: 8, win: 7 },
-      { name: 'ليلى الحربي', cases: 12, win: 10 }
-    ];
-
-
-
-    const financialData = [
-      { month: 'يناير', income: 45000 },
-      { month: 'فبراير', income: 52000 },
-      { month: 'مارس', income: 49000 },
-      { month: 'أبريل', income: 68000 },
-      { month: 'مايو', income: 72000 }
-    ];
-
-    const renderFinancialChart = () => (
-      <div key="finance" className="lg:col-span-1 bg-[#050e21]/90 backdrop-blur-xl p-4 rounded-3xl border border-slate-700 shadow-2xl relative overflow-hidden transition-all duration-300">
-        <h3 className="text-xs font-black text-white mb-2 uppercase tracking-widest relative z-10 flex items-center gap-2 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
-          <DollarSign className="w-4 h-4 text-emerald-400" />
-          التدفق النقدي والنمو المالي
-        </h3>
-        <div style={{ height: `${vizHeight}px`, width: '100%', minWidth: 0 }} className="relative z-10 transition-all duration-300">
-          <div style={{ width: '100%', height: '100%', minWidth: 0 }}>
-            <ResponsiveContainer width="100%" height="100%" key={themeTick}>
-              <AreaChart data={financialData} margin={{ left: -30, right: 10 }}>
-                <defs>
-                  <linearGradient id="colorIncome" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#10b981" stopOpacity={0.3}/>
-                    <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
-                  </linearGradient>
-                </defs>
-                <XAxis dataKey="month" stroke="#fff" fontSize={8} fontWeight="900" axisLine={false} tickLine={false} />
-                <Tooltip contentStyle={{ backgroundColor: '#050e21', border: '1px solid #1e293b', color: '#fff', borderRadius: '8px' }} />
-                <Area type="monotone" dataKey="income" stroke="#10b981" fillOpacity={1} fill="url(#colorIncome)" isAnimationActive={false} />
-              </AreaChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-      </div>
-    );
-
-    const renderBarCard = () => (
-      <div key="bar" className="lg:col-span-2 bg-[#050e21]/90 backdrop-blur-xl p-4 rounded-3xl border border-slate-700 shadow-2xl relative overflow-hidden transition-all duration-300">
-        <h3 className="text-xs font-black text-white mb-2 uppercase tracking-widest relative z-10 flex items-center gap-2 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
-          <Layers className="w-4 h-4 text-indigo-400" />
-          تحليل النزاعات حسب التصنيف
-        </h3>
-        <div style={{ height: `${vizHeight}px`, width: '100%', minWidth: 0 }} className="relative z-10 transition-all duration-300">
-          <div style={{ width: '100%', height: '100%', minWidth: 0 }}>
-            <ResponsiveContainer width="100%" height="100%" key={themeTick}>
-              {chartVizType === 'area' ? (
-                <AreaChart data={data} margin={{ top: 5, right: 10, left: -25, bottom: 0 }}>
-                  <defs>
-                    <linearGradient id="colorActive" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor={colors.active} stopOpacity={0.4}/>
-                      <stop offset="95%" stopColor={colors.active} stopOpacity={0}/>
-                    </linearGradient>
-                    <linearGradient id="colorClosed" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor={colors.closed} stopOpacity={0.4}/>
-                      <stop offset="95%" stopColor={colors.closed} stopOpacity={0}/>
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#334155" vertical={false} strokeOpacity={0.3} />
-                  <XAxis 
-                    dataKey="name" 
-                    stroke="#ffffff" 
-                    fontSize={10} 
-                    fontWeight="900"
-                    axisLine={false}
-                    tickLine={false}
-                    tickFormatter={(val) => {
-                      const map: any = { commercial: 'تجاري', labor: 'عمالي', civil: 'مدني', criminal: 'جنائي', personal_status: 'أحوال', administrative: 'إداري', financial: 'مالي', execution: 'تنفيذ', other: 'آخر' };
-                      return map[val] || val;
-                    }}
-                  />
-                  <YAxis stroke="#ffffff" fontSize={10} fontWeight="900" axisLine={false} tickLine={false} tickCount={3} />
-                  <Tooltip 
-                    contentStyle={{ backgroundColor: '#050e21', border: '1px solid #1e293b', borderRadius: '12px', fontSize: '11px', fontWeight: '900', color: '#fff' }}
-                    itemStyle={{ color: '#fff', fontWeight: 'bold' }}
-                  />
-                  <Area name="نشطة" type="monotone" dataKey="active" stroke={colors.active} fillOpacity={1} fill="url(#colorActive)" isAnimationActive={false} />
-                  <Area name="مغلق" type="monotone" dataKey="closed" stroke={colors.closed} fillOpacity={1} fill="url(#colorClosed)" isAnimationActive={false} />
-                </AreaChart>
-              ) : chartVizType === 'line' ? (
-                <LineChart data={data} margin={{ top: 5, right: 10, left: -25, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#334155" vertical={false} strokeOpacity={0.3} />
-                  <XAxis 
-                    dataKey="name" 
-                    stroke="#ffffff" 
-                    fontSize={10} 
-                    fontWeight="900"
-                    axisLine={false}
-                    tickLine={false}
-                    tickFormatter={(val) => {
-                      const map: any = { commercial: 'تجاري', labor: 'عمالي', civil: 'مدني', criminal: 'جنائي', personal_status: 'أحوال', administrative: 'إداري', financial: 'مالي', execution: 'تنفيذ', other: 'آخر' };
-                      return map[val] || val;
-                    }}
-                  />
-                  <YAxis stroke="#ffffff" fontSize={10} fontWeight="900" axisLine={false} tickLine={false} tickCount={3} />
-                  <Tooltip 
-                    contentStyle={{ backgroundColor: '#050e21', border: '1px solid #1e293b', borderRadius: '12px', fontSize: '11px', fontWeight: '900', color: '#fff' }}
-                    itemStyle={{ color: '#fff', fontWeight: 'bold' }}
-                  />
-                  <Line name="نشطة" type="monotone" dataKey="active" stroke={colors.active} strokeWidth={2.5} dot={{ r: 3 }} isAnimationActive={false} />
-                  <Line name="مغلق" type="monotone" dataKey="closed" stroke={colors.closed} strokeWidth={2.5} dot={{ r: 3 }} isAnimationActive={false} />
-                </LineChart>
-              ) : (
-                <BarChart data={data} margin={{ top: 5, right: 10, left: -25, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#334155" vertical={false} strokeOpacity={0.3} />
-                  <XAxis 
-                    dataKey="name" 
-                    stroke="#ffffff" 
-                    fontSize={10} 
-                    fontWeight="900"
-                    axisLine={false}
-                    tickLine={false}
-                    tickFormatter={(val) => {
-                      const map: any = { commercial: 'تجاري', labor: 'عمالي', civil: 'مدني', criminal: 'جنائي', personal_status: 'أحوال', administrative: 'إداري', financial: 'مالي', execution: 'تنفيذ', other: 'آخر' };
-                      return map[val] || val;
-                    }}
-                  />
-                  <YAxis stroke="#ffffff" fontSize={10} fontWeight="900" axisLine={false} tickLine={false} tickCount={3} />
-                  <Tooltip 
-                    contentStyle={{ backgroundColor: '#050e21', border: '1px solid #1e293b', borderRadius: '12px', fontSize: '11px', fontWeight: '900', color: '#fff' }}
-                    itemStyle={{ color: '#fff', fontWeight: 'bold' }}
-                    cursor={{ fill: 'rgba(255,255,255,0.03)' }}
-                  />
-                  <Legend 
-                    verticalAlign="top" 
-                    align="right"
-                    height={18} 
-                    iconType="circle" 
-                    iconSize={6}
-                    wrapperStyle={{ fontSize: '10px', fontWeight: '900', color: '#fff' }} 
-                  />
-                  <Bar name="نشطة" dataKey="active" fill={colors.active} radius={[3, 3, 0, 0]} barSize={chartSize === 'tiny' ? 10 : chartSize === 'shrunk' ? 16 : 26} isAnimationActive={false} />
-                  <Bar name="مغلق" dataKey="closed" fill={colors.closed} radius={[3, 3, 0, 0]} barSize={chartSize === 'tiny' ? 10 : chartSize === 'shrunk' ? 16 : 26} isAnimationActive={false} />
-                </BarChart>
-              )}
-            </ResponsiveContainer>
-          </div>
-        </div>
-      </div>
-    );
-
-    const orderedCards = chartOrder === 'donut-first' 
-      ? [renderDonutCard(), renderBarCard(), renderFinancialChart()]
-      : [renderBarCard(), renderDonutCard(), renderFinancialChart()];
-
-    const handleExportPDF = () => {
-       const printWindow = window.open('', '_blank');
-       if (!printWindow) return;
-       const htmlContent = `
-         <!DOCTYPE html>
-         <html lang="ar" dir="rtl">
-         <head>
-           <meta charset="UTF-8">
-           <title>تقرير مؤشرات الأداء والتحليل القضائي للمكتب</title>
-           <style>
-             @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap');
-             body { font-family: 'Cairo', sans-serif; padding: 40px; color: #1e293b; line-height: 1.6; }
-             .header { text-align: center; border-bottom: 2px solid #b8860b; padding-bottom: 20px; margin-bottom: 30px; }
-             .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-top: 30px; }
-             .card { border: 1px solid #e2e8f0; padding: 20px; border-radius: 12px; background: #f8fafc; }
-             .val { font-size: 24px; font-weight: 900; color: #b8860b; }
-             table { width: 100%; border-collapse: collapse; margin-top: 30px; }
-             th, td { border: 1px solid #e2e8f0; padding: 12px; text-align: right; font-size: 13px; }
-             th { background: #f1f5f9; font-weight: 900; }
-             @media print { .no-print { display: none; } }
-           </style>
-         </head>
-         <body>
-           <div class="no-print">
-             <button onclick="window.print()" style="background:#b8860b; color:white; border:none; padding:12px 25px; border-radius:10px; cursor:pointer; font-weight:900; font-family:'Cairo';">طـباعة التقرير الفني الشامل (PDF) 🏛️</button>
-           </div>
-           <div class="header">
-             <h1 style="color:#b8860b; margin:0;">تقرير مؤشرات الأداء والتحليل القضائي</h1>
-             <p>مركز ذكاء الأعمال بمكتب العدالة - تاريخ السحب: ${new Date().toLocaleDateString('ar-SA')}</p>
-           </div>
-           <div class="grid">
-             <div class="card">
-               <h4>إجمالي النزاعات النشطة</h4>
-               <div class="val">${activeTotal} قضية جارية</div>
-             </div>
-             <div class="card">
-               <h4>إجمالي النزاعات المغلـقة</h4>
-               <div class="val">${closedTotal} ملف مؤرشف</div>
-             </div>
-           </div>
-           
-           <h3>تحليل النزاعات حسب التصنيف النظامي</h3>
-           <table>
-             <thead>
-               <tr>
-                 <th>مسمى التصنيف القضائي</th>
-                 <th>نشطة</th>
-                 <th>مغلـقة</th>
-                 <th>الإجمالي</th>
-               </tr>
-             </thead>
-             <tbody>
-               ${data.map(d => `
-                 <tr>
-                   <td>${d.name}</td>
-                   <td>${d.active}</td>
-                   <td>${d.closed}</td>
-                   <td>${d.total}</td>
-                 </tr>
-               `).join('')}
-             </tbody>
-           </table>
-
-           <div style="margin-top: 60px; text-align: center; font-size: 11px; color: #94a3b8; border-top: 1px solid #e2e8f0; padding-top: 20px;">
-             تم توليد هذا التقرير آلياً وفق معايير الحوكمة والتحول الرقمي القضائي لعام 2026.
-           </div>
-         </body>
-         </html>
-       `;
-       printWindow.document.write(htmlContent);
-       printWindow.document.close();
-    };
-
-    return (
-      <div className="space-y-4 mb-8">
-        {/* Customized User Control Bar to change sizes, positions, themes and shapes dynamically */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 p-3 bg-[#050e21]/90 rounded-2xl border border-slate-800 text-xs text-white font-bold shadow-xl relative z-25">
-          <div className="flex flex-wrap items-center gap-3 lg:col-span-2">
-            <div className="flex items-center gap-1.5">
-              <span className="font-sans font-black text-white text-[10px]">مظهر ولون البيانات:</span>
-              <div className="flex gap-1 bg-black/40 p-0.5 rounded border border-slate-750">
-                <button type="button" onClick={() => setChartColorTheme('gold')} className={`px-2 py-0.5 rounded text-[9.5px] font-black cursor-pointer transition-all ${chartColorTheme === 'gold' ? 'bg-[#ffff00] text-slate-950' : 'text-white font-bold'}`}>ذهبي</button>
-                <button type="button" onClick={() => setChartColorTheme('cyber')} className={`px-2 py-0.5 rounded text-[9.5px] font-black cursor-pointer transition-all ${chartColorTheme === 'cyber' ? 'bg-cyan-500 text-slate-950' : 'text-white font-bold'}`}>نيون</button>
-                <button type="button" onClick={() => setChartColorTheme('emerald')} className={`px-2 py-0.5 rounded text-[9.5px] font-black cursor-pointer transition-all ${chartColorTheme === 'emerald' ? 'bg-emerald-500 text-slate-950' : 'text-white font-bold'}`}>زمردي</button>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-1.5">
-              <span className="font-sans font-black text-white text-[10px]">شكل المخطط:</span>
-              <div className="flex gap-1 bg-black/40 p-0.5 rounded border border-slate-750">
-                <button type="button" onClick={() => setChartVizType('bar')} className={`px-2 py-0.5 rounded text-[9.5px] font-black cursor-pointer transition-all ${chartVizType === 'bar' ? 'bg-indigo-600 text-white' : 'text-white font-bold'}`}>شريطي</button>
-                <button type="button" onClick={() => setChartVizType('area')} className={`px-2 py-0.5 rounded text-[9.5px] font-black cursor-pointer transition-all ${chartVizType === 'area' ? 'bg-purple-600 text-white' : 'text-white font-bold'}`}>مساحي</button>
-                <button type="button" onClick={() => setChartVizType('line')} className={`px-2 py-0.5 rounded text-[9.5px] font-black cursor-pointer transition-all ${chartVizType === 'line' ? 'bg-rose-600 text-white' : 'text-white font-bold'}`}>خطي</button>
-              </div>
-            </div>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-3">
-            <button
-              type="button"
-              onClick={() => setChartOrder(prev => prev === 'donut-first' ? 'bar-first' : 'donut-first')}
-              className="px-2 py-1 bg-amber-500/10 text-[#ffff00] border border-amber-500/20 rounded text-[9.5px] font-black flex items-center gap-1 cursor-pointer transition-all"
-            >
-              <span>⇆</span>
-              <span>تبديل الموضع</span>
-            </button>
-
-            <div className="flex items-center gap-1.5">
-              <span className="font-sans font-black text-white text-[10px]">حجم الكارت:</span>
-              <div className="flex gap-1 bg-black/40 p-0.5 rounded border border-slate-750">
-                <button type="button" onClick={() => setChartSize('tiny')} className={`px-1.5 py-0.5 rounded text-[9.5px] font-black cursor-pointer transition-all ${chartSize === 'tiny' ? 'bg-slate-700 text-white' : 'text-white font-black font-bold'}`}>صغير جداً</button>
-                <button type="button" onClick={() => setChartSize('shrunk')} className={`px-1.5 py-0.5 rounded text-[9.5px] font-black cursor-pointer transition-all ${chartSize === 'shrunk' ? 'bg-slate-700 text-white' : 'text-white font-black font-bold'}`}>صغير</button>
-                <button type="button" onClick={() => setChartSize('regular')} className={`px-1.5 py-0.5 rounded text-[9.5px] font-black cursor-pointer transition-all ${chartSize === 'regular' ? 'bg-slate-700 text-white' : 'text-white font-black font-bold'}`}>افتراضي</button>
-              </div>
-            </div>
-
-            <button 
-              onClick={handleExportPDF}
-              className="px-3 py-1 bg-amber-500 text-slate-950 font-black rounded-lg text-[10px] transition-all flex items-center gap-2 shadow-lg cursor-pointer"
-            >
-              <FileDown className="w-3 h-3" />
-              <span>تصدير PDF 🖨️</span>
-            </button>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {orderedCards}
-        </div>
-      </div>
-    );
-  };
-
   // Virtual scrolling / Infinite scroll loading state with skeletal loading indicator
   const [visibleCount, setVisibleCount] = useState(6);
   useEffect(() => {
@@ -1592,7 +1623,7 @@ export default React.memo(function CasesModule({
     const clientForSms = linkedClient || clients.find(cl => cl.id === newCaseObj.clientId);
     if (clientForSms) {
       // Generate credentials if not existing
-      const generatedUsername = clientForSms.portalUsername || `asil-${clientForSms.nationalId.slice(-4)}`;
+      const generatedUsername = clientForSms.portalUsername || `asil-${(clientForSms.nationalId || "1234").slice(-4)}`;
       const generatedPassword = clientForSms.portalPassword || `P@ss${Math.floor(1000 + Math.random() * 9000)}`;
       
       // Update client with credentials if needed
@@ -1899,35 +1930,6 @@ export default React.memo(function CasesModule({
     document.body.removeChild(link);
   };
 
-      {/* Case Stage Progress Bar Component */}
-      const CaseProgressBar = ({ caseObj }: { caseObj: Case }) => {
-        const stages = [
-          { id: 'litigation', label: 'التحضير' },
-          { id: 'active', label: 'الترافع' },
-          { id: 'judgment_issued', label: 'الحكم' },
-          { id: 'execution', label: 'التنفيذ' }
-        ];
-        
-        const currentIdx = stages.findIndex(s => s.id === caseObj.stage || s.id === caseObj.status);
-        const progress = Math.max(0, (currentIdx + 1) * (100 / stages.length));
-
-        return (
-          <div className="space-y-2 mt-4 px-2">
-            <div className="flex justify-between items-center text-[11px] font-extrabold uppercase tracking-widest text-slate-100 transition-colors">
-              <span>المرحلة الحالية: {stages[currentIdx]?.label || 'قيد المراجعة'}</span>
-              <span className="text-yellow-300 font-black">{Math.round(progress)}%</span>
-            </div>
-            <div className="h-3 w-full bg-slate-900 border border-slate-700 rounded-full overflow-hidden border border-slate-700/30 transition-all shadow-inner">
-              <motion.div 
-                initial={{ width: 0 }}
-                animate={{ width: `${progress}%` }}
-                className="h-full bg-emerald-500 transition-all"
-              />
-            </div>
-          </div>
-        );
-      };
-
       const filterBarMarkup = (
         <div className="bg-[#050e21] p-8 rounded-[2.5rem] border border-slate-800 shadow-2xl mb-10 relative z-20 space-y-6">
           <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
@@ -2146,7 +2148,7 @@ export default React.memo(function CasesModule({
                     exit={{ height: 0, opacity: 0 }}
                     className="overflow-hidden mb-10"
                   >
-                    <SummaryCharts cases={cases} preferences={preferences} updatePreference={updatePreference} />
+                    <SummaryCharts cases={cases} preferences={preferences} updatePreference={updatePreference} themeTick={themeTick} />
                   </motion.div>
                 )}
               </AnimatePresence>

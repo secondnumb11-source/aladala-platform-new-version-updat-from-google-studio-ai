@@ -14,51 +14,51 @@ import NotificationsBell from '@/components/NotificationsBell';
 import GlobalNotesWidget from '@/components/GlobalNotesWidget';
 import DateConverterWidget from '@/components/DateConverterWidget';
 import AiDrafting from '@/components/AiDrafting';
-import NajizSyncBackendService from './components/NajizSyncBackendService';
+import NajizSyncBackendService from '@/components/NajizSyncBackendService';
 
 // Lazy load large modules using relative paths to avoid resolution issues in some environments
-const CasesModule = React.lazy(() => import('./components/CasesModule'));
-const ClientsModule = React.lazy(() => import('./components/ClientsModule'));
-const AgenciesModule = React.lazy(() => import('./components/AgenciesModule'));
-const AIModule = React.lazy(() => import('./components/AIModule'));
-const TasksModule = React.lazy(() => import('./components/TasksModule'));
-const DocumentsModule = React.lazy(() => import('./components/DocumentsModule'));
-const FinanceModule = React.lazy(() => import('./components/FinanceModule'));
-const WorkspaceSync = React.lazy(() => import('./components/WorkspaceSync'));
-const NajizExtensionHub = React.lazy(() => import('./components/NajizExtensionHub'));
-const ClientPortal = React.lazy(() => import('./components/ClientPortal'));
-const AuditLogs = React.lazy(() => import('./components/AuditLogs'));
-const Settings = React.lazy(() => import('./components/Settings'));
-const GCalSyncSettings = React.lazy(() => import('./components/GCalSyncSettings'));
-const WhatsappTemplates = React.lazy(() => import('./components/WhatsappTemplates'));
-const LawyerPerformance = React.lazy(() => import('./components/LawyerPerformance'));
-const TeamMembers = React.lazy(() => import('./components/TeamMembers'));
-const MockNajizSimulator = React.lazy(() => import('./components/MockNajizSimulator'));
-const UnifiedAuthLanding = React.lazy(() => import('./components/UnifiedAuthLanding'));
-const PlatformDocumentation = React.lazy(() => import('./components/PlatformDocumentation'));
-const JudicialObservatory = React.lazy(() => import('./components/JudicialObservatory'));
-const AILegalSearch = React.lazy(() => import('./components/AI/AILegalSearch'));
-const EmployeePortal = React.lazy(() => import('./components/EmployeePortal'));
-const EmployeesData = React.lazy(() => import('./components/EmployeesData'));
-const FeedbackModal = React.lazy(() => import('./components/FeedbackModal'));
-const WscatModule = React.lazy(() => import('./components/WscatModule'));
-const WebSocketEcho = React.lazy(() => import('./components/WebSocketEcho'));
+const CasesModule = React.lazy(() => import('@/components/CasesModule'));
+const ClientsModule = React.lazy(() => import('@/components/ClientsModule'));
+const AgenciesModule = React.lazy(() => import('@/components/AgenciesModule'));
+const AIModule = React.lazy(() => import('@/components/AIModule'));
+const TasksModule = React.lazy(() => import('@/components/TasksModule'));
+const DocumentsModule = React.lazy(() => import('@/components/DocumentsModule'));
+const FinanceModule = React.lazy(() => import('@/components/FinanceModule'));
+const WorkspaceSync = React.lazy(() => import('@/components/WorkspaceSync'));
+const NajizExtensionHub = React.lazy(() => import('@/components/NajizExtensionHub'));
+const ClientPortal = React.lazy(() => import('@/components/ClientPortal'));
+const AuditLogs = React.lazy(() => import('@/components/AuditLogs'));
+const Settings = React.lazy(() => import('@/components/Settings'));
+const GCalSyncSettings = React.lazy(() => import('@/components/GCalSyncSettings'));
+const WhatsappTemplates = React.lazy(() => import('@/components/WhatsappTemplates'));
+const LawyerPerformance = React.lazy(() => import('@/components/LawyerPerformance'));
+const TeamMembers = React.lazy(() => import('@/components/TeamMembers'));
+const MockNajizSimulator = React.lazy(() => import('@/components/MockNajizSimulator'));
+const UnifiedAuthLanding = React.lazy(() => import('@/components/UnifiedAuthLanding'));
+const PlatformDocumentation = React.lazy(() => import('@/components/PlatformDocumentation'));
+const JudicialObservatory = React.lazy(() => import('@/components/JudicialObservatory'));
+const AILegalSearch = React.lazy(() => import('@/components/AI/AILegalSearch'));
+const EmployeePortal = React.lazy(() => import('@/components/EmployeePortal'));
+const EmployeesData = React.lazy(() => import('@/components/EmployeesData'));
+const FeedbackModal = React.lazy(() => import('@/components/FeedbackModal'));
+const WscatModule = React.lazy(() => import('@/components/WscatModule'));
+const WebSocketEcho = React.lazy(() => import('@/components/WebSocketEcho'));
 
-import { SupabaseTodos } from './components/SupabaseTodos';
-import ElasticsearchModule from './components/ElasticsearchModule';
-import DbDevOpsModule from './components/DbDevOpsModule';
-import FailedPersistenceLogsDashboard from './components/FailedPersistenceLogsDashboard';
+import { SupabaseTodos } from '@/components/SupabaseTodos';
+import ElasticsearchModule from '@/components/ElasticsearchModule';
+import DbDevOpsModule from '@/components/DbDevOpsModule';
+import FailedPersistenceLogsDashboard from '@/components/FailedPersistenceLogsDashboard';
 import { useUserPreferences } from '@/hooks/useUserPreferences';
 import { useAppState } from '@/hooks/useAppState';
 
-const CalendarModule = React.lazy(() => import('./components/CalendarModule'));
-const SaudiServicesHub = React.lazy(() => import('./components/SaudiServicesHub'));
-const CourtMapAndServices = React.lazy(() => import('./components/CourtMapAndServices'));
+const CalendarModule = React.lazy(() => import('@/components/CalendarModule'));
+const SaudiServicesHub = React.lazy(() => import('@/components/SaudiServicesHub'));
+const CourtMapAndServices = React.lazy(() => import('@/components/CourtMapAndServices'));
 
-const GlobalCustomizationEngine = React.lazy(() => import('./components/GlobalCustomizationEngine'));
-import { initGlobalErrorHandling } from './lib/ErrorReporting';
-import { runSupabaseDiagnostics } from './lib/debug-supabase';
-import { SkeletonLoader } from './components/SkeletonLoader';
+const GlobalCustomizationEngine = React.lazy(() => import('@/components/GlobalCustomizationEngine'));
+import { initGlobalErrorHandling } from '@/lib/ErrorReporting';
+import { runSupabaseDiagnostics } from '@/lib/debug-supabase';
+import { SkeletonLoader } from '@/components/SkeletonLoader';
 
 initGlobalErrorHandling();
 runSupabaseDiagnostics().catch(err => console.error('[Supabase Top-Level Diagnostics] Failed:', err));
@@ -78,11 +78,31 @@ import {
 import { SupabaseProvider, useSupabase } from '@/contexts/SupabaseContext';
 import { useSupabaseData } from '@/hooks/useSupabaseData';
 import { supabase } from '@/lib/supabase';
-import { auth as firebaseAuth } from '@/lib/firebase';
-import { onAuthStateChanged } from 'firebase/auth';
 import { auditLogger, AuditAction } from '@/lib/AuditLogger';
 
+import { useSupabaseConnection } from '@/lib/supabase/connection';
+
 export default function App() {
+  const { isValid, error } = useSupabaseConnection();
+
+  if (isValid === false) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen p-8 text-center bg-red-50" style={{ direction: 'rtl' }}>
+        <h1 className="text-3xl font-bold text-red-600 mb-4">⚠️ خطأ في الاتصال بقاعدة البيانات (Supabase)</h1>
+        <p className="text-gray-700 max-w-2xl bg-white p-6 rounded-xl shadow-sm border border-red-200">
+           القيمة المطلوبة لمتغيرات البيئة للاتصال غير صحيحة أو مفقودة.
+           <br /><br />
+           الرجاء التأكد من إضافة <code className="bg-gray-100 px-1 py-0.5 rounded text-red-500">VITE_SUPABASE_URL</code> و <code className="bg-gray-100 px-1 py-0.5 rounded text-red-500">VITE_SUPABASE_PUBLISHABLE_KEY</code> إلى ملف <code className="bg-gray-100 px-1 py-0.5 rounded">.env</code> لديك، وإعادة تشغيل التطبيق.
+        </p>
+        {error && (
+          <pre className="mt-6 p-4 bg-gray-900 text-red-400 text-left rounded-xl w-full max-w-2xl overflow-x-auto text-sm">
+            {error}
+          </pre>
+        )}
+      </div>
+    );
+  }
+
   return (
     <SupabaseProvider>
       <React.Suspense fallback={<SkeletonLoader />}>
@@ -156,141 +176,6 @@ function AppContent() {
 
   const powersOfAttorney = agencies;
 
-  const [retryQueueCount, setRetryQueueCount] = useState(0);
-  const [syncingQueue, setSyncingQueue] = useState(false);
-
-  const [pendingLogsCount, setPendingLogsCount] = useState(0);
-  const [syncingPendingLogs, setSyncingPendingLogs] = useState(false);
-
-  const handleSyncPendingLogs = async () => {
-    setSyncingPendingLogs(true);
-    try {
-      const logs = JSON.parse(localStorage.getItem('failed_persistence_logs') || '[]');
-      const realLogs = logs.filter((item: any) => item.type !== 'init_test' && item.table !== 'init_test' && (item.table || item.type));
-
-      if (realLogs.length === 0) {
-        setPendingLogsCount(0);
-        return;
-      }
-
-      let successCount = 0;
-      let failedCount = 0;
-      const remainingLogs: any[] = [];
-
-      for (const log of realLogs) {
-        const table = log.table || log.type;
-        const action = log.action;
-        const data = log.data;
-
-        try {
-          let res;
-          if (action === 'CREATE' || action === 'INSERT') {
-            res = await createRecord(table as any, data);
-          } else if (action === 'UPDATE') {
-            res = await updateRecord(table as any, data.id, data);
-          } else {
-            res = await handleUpdateGlobalState(table, data);
-          }
-
-          if (res && res.success !== false) {
-            successCount++;
-          } else {
-            failedCount++;
-            remainingLogs.push(log);
-          }
-        } catch (err) {
-          console.error(`Error syncing record for table ${table}:`, err);
-          failedCount++;
-          remainingLogs.push(log);
-        }
-      }
-
-      const originalLogs = JSON.parse(localStorage.getItem('failed_persistence_logs') || '[]');
-      const testLogs = originalLogs.filter((item: any) => item.type === 'init_test' || item.table === 'init_test');
-
-      localStorage.setItem('failed_persistence_logs', JSON.stringify([...testLogs, ...remainingLogs]));
-      setPendingLogsCount(remainingLogs.length);
-    } catch (err: any) {
-      console.error("Failed to sync pending logs:", err);
-    } finally {
-      setSyncingPendingLogs(false);
-    }
-  };
-
-  const handleManualRetrySync = async () => {
-    setSyncingQueue(true);
-    try {
-      await retryQueueSync();
-    } catch(err) {
-      console.error("Queue sync crash:", err);
-    } finally {
-      setSyncingQueue(false);
-    }
-  };
-
-  useEffect(() => {
-    const checkQueue = () => {
-      try {
-        const queue = JSON.parse(localStorage.getItem('supabase_retry_queue') || '[]');
-        setRetryQueueCount(queue.length);
-      } catch (e) {
-        setRetryQueueCount(0);
-      }
-    };
-    const checkPendingLogs = () => {
-      try {
-        const logs = JSON.parse(localStorage.getItem('failed_persistence_logs') || '[]');
-        const realLogs = logs.filter((item: any) => item.type !== 'init_test' && item.table !== 'init_test' && (item.table || item.type));
-        setPendingLogsCount(realLogs.length);
-      } catch (e) {
-        setPendingLogsCount(0);
-      }
-    };
-
-    checkQueue();
-    checkPendingLogs();
-
-    window.addEventListener('supabase_retry_queue_changed', checkQueue);
-    window.addEventListener('adalah_error_logged', checkPendingLogs);
-    window.addEventListener('storage', checkPendingLogs);
-
-    return () => {
-      window.removeEventListener('supabase_retry_queue_changed', checkQueue);
-      window.removeEventListener('adalah_error_logged', checkPendingLogs);
-      window.removeEventListener('storage', checkPendingLogs);
-    };
-  }, []);
-
-  const [showRlsAlert, setShowRlsAlert] = useState<string | null>(null);
-
-  // RLS Diagnostic Utility
-  useEffect(() => {
-    const checkRlsPermissions = async () => {
-      try {
-        const diagnostics: string[] = [];
-        const tables = ['cases', 'clients', 'tasks'];
-        for (const table of tables) {
-          // اختبار SELECT فقط - لا تعديل على البيانات
-          const { error } = await supabase.from(table).select('id').limit(1);
-          if (error && error.code === '42501') {
-            diagnostics.push(`❌ ${table} (SELECT: RLS Denied - ${error.message})`);
-          } else if (error) {
-            diagnostics.push(`⚠️ ${table} (Error: ${error.message})`);
-          } else {
-            diagnostics.push(`✅ ${table} (SELECT: Allowed)`);
-          }
-        }
-        setShowRlsAlert(`تشخيص RLS:\n${diagnostics.join('\n')}`);
-        setTimeout(() => setShowRlsAlert(null), 15000);
-      } catch (err: any) {
-        console.error("RLS Diagnostic Error:", err);
-      }
-    };
-    if (user) {
-      checkRlsPermissions();
-    }
-  }, [user]);
-
   useEffect(() => {
     if (user) {
       ErrorReporting.setGlobalContext({ user: user.id });
@@ -341,21 +226,12 @@ function AppContent() {
   const [authMode, setAuthMode] = useState<"lawyer" | "trial">("lawyer");
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [currentUser, setCurrentUser] = useState<any | null>(null);
-  const [firebaseUser, setFirebaseUser] = useState<any>(null);
   const authSyncRef = React.useRef<string | null>(null);
 
-  // Monitor Firebase Auth changes
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(firebaseAuth, (user) => {
-      setFirebaseUser(user);
-    });
-    return () => unsubscribe();
-  }, []);
-
-  useEffect(() => {
-    const activeUser = user || firebaseUser;
-    const userId = activeUser?.id || (activeUser as any)?.uid || null;
-    const profileRole = profile?.role || (activeUser as any)?.role || (userId ? 'lawyer' : null);
+    const activeUser = user;
+    const userId = activeUser?.id || null;
+    const profileRole = profile?.role || (userId ? 'lawyer' : null);
     
     // Check if we already stabilized for this user/role combination
     const syncKey = `${userId}-${profileRole}-${authLoading}`;
@@ -365,7 +241,7 @@ function AppContent() {
     
     if (activeUser && userId) {
       const role = profileRole || 'lawyer';
-      const userName = profile?.name || (activeUser as any).displayName || activeUser.user_metadata?.name || 'مستخدم النظام';
+      const userName = profile?.name || activeUser.user_metadata?.name || 'مستخدم النظام';
 
       authSyncRef.current = syncKey;
       setIsAuthenticated(true);
@@ -395,7 +271,7 @@ function AppContent() {
       setShowLandingPage(true);
       setCurrentUser(null);
     }
-  }, [user, profile, firebaseUser, authLoading, currentUser?.id, currentUser?.role, isAuthenticated]);
+  }, [user, profile, authLoading, currentUser?.id, currentUser?.role, isAuthenticated]);
 
   const [currentTab, setCurrentTab] = useState('dashboard');
   const [selectedRole, setSelectedRole] = useState('admin');
@@ -609,7 +485,6 @@ function AppContent() {
         });
       }
       await supabase.auth.signOut();
-      await firebaseAuth.signOut();
     } catch (err) {
       console.warn("Auth logout details (session variables cleared):", err);
     } finally {
@@ -728,8 +603,8 @@ function AppContent() {
       let connectionTimeout: any = null;
 
       try {
-        const pieSocketKey = import.meta.env.VITE_PIESOCKET_API_KEY;
-        const pieSocketCluster = import.meta.env.VITE_PIESOCKET_CLUSTER_ID || 'free.blr2';
+        const pieSocketKey = (import.meta as any).env?.VITE_PIESOCKET_API_KEY;
+        const pieSocketCluster = (import.meta as any).env?.VITE_PIESOCKET_CLUSTER_ID || 'free.blr2';
         ws = new WebSocket(`wss://${pieSocketCluster}.piesocket.com/v3/1?api_key=${pieSocketKey}&notify_self=1`);
 
         connectionTimeout = setTimeout(() => {
@@ -1646,36 +1521,7 @@ function AppContent() {
           <NotificationsBell />
 
           {/* Supabase Retry Sync Banner */}
-          {retryQueueCount > 0 && (
-            <div className="bg-amber-500/5 border border-amber-500/30 p-4 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-4 animate-pulse shadow-md mb-4" dir="rtl">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg bg-amber-500/15 text-amber-500 flex items-center justify-center">
-                  <RefreshCw className="w-5 h-5 animate-spin" />
-                </div>
-                <div>
-                  <h4 className="text-sm font-bold text-amber-800">توجد مسودات معلقة بانتظار المزامنة السحابية ({retryQueueCount})</h4>
-                  <p className="text-xs text-amber-700 font-bold mt-1">تأثر حفظ البيانات بخلل في الاتصال بالإنترنت أو قيود الصلاحيات الـ RLS. يمكنك إعادة دفعها الآن.</p>
-                </div>
-              </div>
-              <button
-                onClick={handleManualRetrySync}
-                disabled={syncingQueue}
-                className="px-4 py-2 bg-gradient-to-l from-amber-600 to-amber-700 text-white font-bold rounded-xl text-xs hover:scale-105 active:scale-95 transition-all flex items-center gap-1.5 shadow-md shrink-0 cursor-pointer"
-              >
-                {syncingQueue ? (
-                  <>
-                    <RefreshCw className="w-3.5 h-3.5 animate-spin" /> جاري المزامنة...
-                  </>
-                ) : (
-                  <>
-                    <RefreshCw className="w-3.5 h-3.5" /> مزامنة وتحديث السحابة الآن (Retry Sync)
-                  </>
-                )}
-              </button>
-            </div>
-          )}
-
-          {/* Toast Notifications */}
+          {/* Search Analytics Bar */}
           <div className="fixed top-8 left-1/2 -translate-x-1/2 z-50 flex flex-col gap-3 pointer-events-none w-full max-w-lg">
             {alertMessages
               .filter(msg => {
@@ -1762,17 +1608,6 @@ function AppContent() {
                   <span>🌐</span>
                   <span>{language === 'ar' ? 'EN' : 'AR'}</span>
                 </button>
-                {pendingLogsCount > 0 && (
-                  <button
-                    onClick={handleSyncPendingLogs}
-                    disabled={syncingPendingLogs}
-                    className="flex items-center gap-1.5 px-3 py-2 text-[10px] bg-amber-500 hover:bg-amber-600 border border-amber-600 text-slate-950 font-black rounded-xl transition-all shadow-sm cursor-pointer animate-pulse shrink-0"
-                    title="مزامنة العمليات معلقة الحفظ بملف الأخطاء"
-                  >
-                    <span>🔄</span>
-                    <span>{syncingPendingLogs ? "جاري المزامنة..." : `مزامنة معلقات الأخطاء (${pendingLogsCount})`}</span>
-                  </button>
-                )}
                 <button
                   onClick={handleLogout}
                   className="flex items-center gap-2 px-5 py-3 text-xs font-black rounded-xl bg-rose-650 text-white transition-all shadow-md cursor-pointer"
@@ -1842,17 +1677,6 @@ function AppContent() {
                    <span className="uppercase tracking-widest">{language === 'ar' ? 'EN' : 'AR'}</span>
                 </button>
 
-                {pendingLogsCount > 0 && (
-                  <button
-                    onClick={handleSyncPendingLogs}
-                    disabled={syncingPendingLogs}
-                    className="flex items-center gap-1.5 px-3 py-2 text-[10px] bg-amber-500 hover:bg-amber-600 border border-amber-600 text-slate-950 font-black rounded-xl transition-all shadow-sm cursor-pointer animate-pulse shrink-0"
-                    title="مزامنة العمليات معلقة الحفظ بملف الأخطاء"
-                  >
-                    <span>🔄</span>
-                    <span>{syncingPendingLogs ? "جاري المزامنة..." : `مزامنة معلقات الأخطاء (${pendingLogsCount})`}</span>
-                  </button>
-                )}
                 <button
                    onClick={() => {
                      if (window.confirm('هل أنت متأكد من رغبتك في إنهاء الجلسة بشكل نهائي والخروج من النظام؟')) {
@@ -2147,10 +1971,6 @@ function AppContent() {
           <DbDevOpsModule />
         )}
 
-        {currentTab === 'failed-persistence' && (
-          <FailedPersistenceLogsDashboard onUpdateState={handleUpdateGlobalState} />
-        )}
-
         {currentTab === 'saudi-hub' && (
           <React.Suspense fallback={<SkeletonLoader />}>
             <SaudiServicesHub theme="dark" initialTab="portals" cases={employeeFilteredCases} language={language} />
@@ -2198,14 +2018,6 @@ function AppContent() {
         )}
 
       </main>
-
-      {showRlsAlert && (
-          <div className="fixed top-20 right-5 z-50 bg-slate-900 overflow-hidden border border-red-500/50 text-white p-4 rounded-xl shadow-[0_10px_40px_rgba(239,68,68,0.2)] max-w-sm animate-in slide-in-from-right fade-in" dir="ltr">
-            <h3 className="font-bold mb-2 text-red-400">RLS Settings Diagnostic:</h3>
-            <pre className="text-xs font-mono whitespace-pre-wrap bg-slate-950 p-2 rounded-lg border border-slate-800">{showRlsAlert}</pre>
-            <button onClick={() => setShowRlsAlert(null)} className="mt-3 w-full text-xs font-bold bg-slate-800 px-2 py-1.5 border border-slate-700 rounded-lg hover:bg-slate-700 transition-colors">Dismiss</button>
-          </div>
-      )}
 
       {/* Persistent Background Sync Service Widget */}
       <NajizSyncBackendService />

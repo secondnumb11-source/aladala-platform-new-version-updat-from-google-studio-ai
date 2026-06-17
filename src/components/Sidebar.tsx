@@ -219,7 +219,6 @@ export default function Sidebar({
     { id: 'court-map', name: 'دليل المحاكم', icon: Compass },
 
     { id: 'najiz', name: 'الربط المباشر مع ناجز', icon: Zap },
-    { id: 'failed-persistence', name: 'مراجعة مسودات الـ RLS السحابية', icon: ShieldAlert, isAdminOnly: true },
     { id: 'audit-logs', name: 'سجل العمليات', icon: FileText },
     { id: 'settings', name: 'الاعدادات', icon: Settings },
 
@@ -443,7 +442,7 @@ export default function Sidebar({
               },
               {
                 title: 'التكامل والإعدادات',
-                itemIds: ['najiz', 'failed-persistence', 'audit-logs', 'settings']
+                itemIds: ['najiz', 'audit-logs', 'settings']
               },
             ].map((cat, catIdx) => {
               // Retrieve permitted modules for the current category based on user role

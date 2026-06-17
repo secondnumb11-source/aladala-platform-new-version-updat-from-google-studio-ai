@@ -178,8 +178,10 @@ export function useSupabaseData() {
       if (event) {
         event.preventDefault();
       }
-      const err = event.reason;
-      console.warn("[Supabase] Unhandled Promise Rejection Caught and Gracefully Handled:", err);
+      const errStr = String(event.reason || "").toLowerCase();
+      if (!errStr.includes("websocket") && !errStr.includes("wss://")) {
+        console.warn("[Supabase] Unhandled Promise Rejection Caught and Gracefully Handled:", event.reason);
+      }
     };
     window.addEventListener("unhandledrejection", handleUnhandledRejection);
     return () => window.removeEventListener("unhandledrejection", handleUnhandledRejection);
@@ -296,6 +298,13 @@ export function useSupabaseData() {
     for (const log of logs) {
       try {
         const { table, type, action, data } = log;
+        
+        // Drop diagnostic connectivity logs
+        if (type === 'init_test' || table === 'init_test') {
+          // Do not push to remainingLogs so they get deleted
+          continue;
+        }
+        
         const targetTable = table || type;
         const mappedTable = getSupabaseTableName(targetTable);
 
@@ -485,7 +494,7 @@ export function useSupabaseData() {
       
       const setter = getStateSetter(table);
       if (setter) {
-        setter((prev: any[]) => [camelData, ...prev]);
+        setter((prev: any[]) => [camelData, ...(prev || [])]);
       }
       
       return { success: true, data: camelData };
@@ -542,7 +551,7 @@ export function useSupabaseData() {
       
       const setter = getStateSetter(table);
       if (setter) {
-        setter((prev: any[]) => prev.map(c => c.id === id ? { ...c, ...camelData } : c));
+        setter((prev: any[]) => (prev || []).map(c => c.id === id ? { ...c, ...camelData } : c));
       }
       
       return { success: true, data: camelData };
@@ -564,7 +573,7 @@ export function useSupabaseData() {
       
       const setter = getStateSetter(table);
       if (setter) {
-        setter((prev: any[]) => prev.filter(c => c.id !== id));
+        setter((prev: any[]) => (prev || []).filter(c => c.id !== id));
       }
       
       return { success: true };

@@ -4,22 +4,23 @@ import path from 'path';
 import { defineConfig } from 'vite';
 
 export default defineConfig(() => {
-  const assetResolutionLogger = () => ({
-    name: 'asset-resolution-logger',
-    resolveId(source: string) {
-      if (source.includes('.css') || source.includes('.svg') || source.includes('.png')) {
-        console.log('[Vite Asset Resolve]', source);
-      }
-      return null;
-    }
-  });
-
   return {
-    plugins: [react(), tailwindcss(), assetResolutionLogger()],
+    plugins: [react(), tailwindcss()],
     resolve: {
       alias: {
         '@': path.resolve(process.cwd(), './src'),
       },
+    },
+    esbuild: {
+      drop: process.env.NODE_ENV === 'production' ? ['console', 'debugger'] : [],
+    },
+    define: {
+      'process.env.VITE_SUPABASE_URL': JSON.stringify(process.env.VITE_SUPABASE_URL || ''),
+      'process.env.VITE_SUPABASE_ANON_KEY': JSON.stringify(process.env.VITE_SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_PUBLISHABLE_KEY || ''),
+      'process.env.VITE_SUPABASE_PUBLISHABLE_KEY': JSON.stringify(process.env.VITE_SUPABASE_PUBLISHABLE_KEY || process.env.VITE_SUPABASE_ANON_KEY || ''),
+      'process.env.NEXT_PUBLIC_SUPABASE_URL': JSON.stringify(process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.VITE_SUPABASE_URL || ''),
+      'process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY': JSON.stringify(process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY || ''),
+      'process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY': JSON.stringify(process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || process.env.VITE_SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_PUBLISHABLE_KEY || '')
     },
     build: {
       outDir: 'dist',
@@ -29,19 +30,7 @@ export default defineConfig(() => {
       minify: 'esbuild' as const,
       rollupOptions: {
         output: {
-          manualChunks(id) {
-            if (id.includes('node_modules')) {
-              if (id.includes('firebase')) {
-                return 'vendor-firebase';
-              }
-              if (id.includes('recharts') || id.includes('d3')) {
-                return 'vendor-charts';
-              }
-              if (id.includes('lucide-react')) {
-                return 'vendor-lucide';
-              }
-            }
-          }
+          manualChunks: undefined
         }
       }
     },
@@ -54,6 +43,7 @@ export default defineConfig(() => {
         // Auto-detect protocol and host in the browser
         clientPort: process.env.HMR_PORT ? parseInt(process.env.HMR_PORT) : 443,
         path: '/@vite/hmr',
+        overlay: false,
       },
       cors: true,
     },

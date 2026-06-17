@@ -1,4 +1,4 @@
-import { supabase } from './supabase';
+import { supabase } from '@/lib/supabase';
 
 let globalAppContext: Record<string, any> = {};
 
@@ -118,6 +118,7 @@ export const initGlobalErrorHandling = () => {
         rStr.includes('failed to connect') ||
         rStr.includes('connection')
       ) {
+        event.preventDefault();
         return; // Ignore benign web service client errors representing connection timeouts in development / sandboxes
       }
 
