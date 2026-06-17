@@ -1,3 +1,4 @@
+import { generateUUID } from '@/lib/uuid';
 import React, { useState, useEffect } from "react";
 import { CourtCase, Task, Note, Hearing, Judgment, ExecutionRequest, PowerOfAttorney, Document } from "@/types";
 import { 
@@ -135,7 +136,7 @@ export default function CaseDetailsView({
     e.preventDefault();
     if (!assetName.trim() || !assetValue) return;
     const newAsset = {
-      id: `asset-${Date.now()}`,
+      id: generateUUID(),
       name: assetName,
       value: parseFloat(assetValue),
       status: assetStatus,
@@ -159,7 +160,7 @@ export default function CaseDetailsView({
 
   const handleAddCustomDoc = (title: string, fileType: string, sizeStr: string = "2.1 MB") => {
     const newDoc = {
-      id: `doc-${Date.now()}`,
+      id: generateUUID(),
       title,
       fileType: fileType.toUpperCase(),
       uploadedAt: new Date().toISOString().substring(0, 10),
@@ -178,7 +179,7 @@ export default function CaseDetailsView({
     e.preventDefault();
     if (!taskTitle.trim()) return;
     const newTask: Task = {
-      id: `task-${Date.now()}`,
+      id: generateUUID(),
       title: taskTitle,
       assignedTo: taskAssignee || "غير محدد",
       dueDate: taskDueDate || new Date().toISOString().substring(0, 10),
@@ -196,7 +197,7 @@ export default function CaseDetailsView({
     e.preventDefault();
     if (!noteContent.trim()) return;
     const newNote: Note = {
-      id: `note-${Date.now()}`,
+      id: generateUUID(),
       author: "أنا (المحامي الحالي)",
       content: noteContent,
       createdAt: new Date().toISOString()
@@ -1498,7 +1499,7 @@ export function HearingTimer({ hearing, caseId, onAddNote }: { hearing: Hearing;
     const text = `⏱️ [توثيق المرافعة بقاعة المحكمة]: تم رصد وتوثيق مدة الجلسة القضائية المنعقدة بتاريخ ${hearing.date || 'اليوم'} بشكل تلقائي عبر عداد الجلسة. المدة الإجمالية للمرافعة الفعلية أمام الدائرة القضائية بلغت: ${timeStr}.`;
     
     const newNote: Note = {
-      id: "note-" + Date.now(),
+      id: generateUUID(),
       content: text,
       author: "عداد جلسات المحكمة",
       createdAt: new Date().toLocaleDateString('ar-SA') + ' ' + new Date().toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' })

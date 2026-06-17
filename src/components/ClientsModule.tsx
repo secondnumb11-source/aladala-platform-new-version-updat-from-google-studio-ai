@@ -31,6 +31,7 @@ import {
 import { Client, Case } from '@/types';
 import { generateUsername, generatePassword } from '@/utils/credentials';
 import { supabase } from '@/lib/supabase';
+import { generateUUID } from '@/lib/uuid';
 
 interface ClientsModuleProps {
   clients: Client[];
@@ -137,12 +138,12 @@ export default function ClientsModule({
     e.preventDefault();
     if (!newName || !newNationalId) return;
 
-    const token = `portal-${Date.now()}`;
+    const token = generateUUID();
     const genUser = generateUsername(newName, newNationalId);
     const genPass = generatePassword();
 
     const newCl: Client = {
-      id: `client-${Date.now()}`,
+      id: generateUUID(),
       name: newName,
       isCompany: newIsCompany,
       nationalId: newNationalId,
@@ -236,7 +237,7 @@ export default function ClientsModule({
           const exists = clients.some(c => c.phone === phone);
           if (!exists) {
             const token = `portal-${Date.now()}-${Math.random()}`;
-            const id = `client-google-${Date.now()}-${Math.random()}`;
+            const id = generateUUID();
             const genUser = generateUsername(name, phone.slice(-4));
             const genPass = generatePassword();
 

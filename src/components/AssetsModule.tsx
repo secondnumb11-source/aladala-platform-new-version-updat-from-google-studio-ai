@@ -33,6 +33,7 @@ import {
   Treemap
 } from 'recharts';
 import { Case, Client } from '@/types';
+import { generateUUID } from '@/lib/uuid';
 
 interface LegalAsset {
   id: string;
@@ -160,11 +161,11 @@ export default function AssetsModule({
     const selectedCaseObj = cases.find(cs => cs.caseNumber === newLinkedCase);
 
     const newAsset: LegalAsset = {
-      id: `asset-${Date.now()}`,
+      id: generateUUID(),
       name: newName,
       category: newCategory,
       clientName: newClientName,
-      clientId: selectedClientObj ? selectedClientObj.id : `client-${Date.now()}`,
+      clientId: selectedClientObj ? selectedClientObj.id : generateUUID(),
       value: parseFloat(newValue),
       acquisitionDate: newAcqDate,
       expiryDate: newExpiryDate || undefined,

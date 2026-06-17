@@ -35,6 +35,7 @@ import {
 import { Document, Client, Case } from '@/types';
 import { supabase } from '@/lib/supabase';
 import { User } from '@supabase/supabase-js';
+import { generateUUID } from '@/lib/uuid';
 
 export const getDocColorStyles = (doc: Document) => {
   const code = doc.colorCode;
@@ -541,7 +542,7 @@ export default function DocumentsModule({
     const categoryType = matchedTemplate ? matchedTemplate.category : 'contracts';
 
     const newDoc: Document = {
-      id: `doc-${Date.now()}`,
+      id: generateUUID(),
       name: `${filledDocName || 'مستند ممتلئ تلقائياً'}.pdf`,
       category: categoryType as any,
       uploadedAt: new Date().toISOString().split('T')[0],
@@ -903,7 +904,7 @@ export default function DocumentsModule({
     const nextVerNum = existingVersions.length + 1;
     
     const newVer = {
-      id: `v${Date.now()}`,
+      id: generateUUID(),
       version: nextVerNum,
       name: selectedDocForOcr.name,
       size: `${(newVersionText.length / 1024).toFixed(1)} KB`,
@@ -1042,7 +1043,7 @@ export default function DocumentsModule({
       const smartFileName = `${category} - ${extractedCaseName} - ${new Date().getFullYear()}.pdf`;
 
       const newDoc: Document = {
-        id: `doc-${Date.now()}`,
+        id: generateUUID(),
         name: smartFileName,
         category: category as any,
         uploadedAt: new Date().toISOString().split('T')[0],
@@ -1114,7 +1115,7 @@ export default function DocumentsModule({
     
     const clientObj = (clients || []).find(c => c.id === contractClient);
     const newContract = {
-      id: `contract-${Date.now()}`,
+      id: generateUUID(),
       clientName: clientObj ? clientObj.name : "عميل المكتب المشترك",
       clientId: contractClient,
       title: contractTitle,

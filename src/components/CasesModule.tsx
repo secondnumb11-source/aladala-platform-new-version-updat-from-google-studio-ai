@@ -223,6 +223,7 @@ interface CasesModuleProps {
 }
 
 import { useRenderPerformance } from '../lib/PerformanceOptimizer';
+import { generateUUID } from '@/lib/uuid';
 
 export default React.memo(function CasesModule({
   cases,
@@ -1317,7 +1318,7 @@ export default React.memo(function CasesModule({
 
     // Create history entry
     const historyEntry: any = {
-      id: `hist-${Date.now()}`,
+      id: generateUUID(),
       timestamp: new Date().toISOString(),
       userId: 'system',
       userName: 'نظام العدالة',
@@ -1365,7 +1366,7 @@ export default React.memo(function CasesModule({
         if (result.success) {
           setWhatsAppLogs(prev => [
             {
-              id: `log-${Date.now()}`,
+              id: generateUUID(),
               caseNumber: c.caseNumber,
               status: 'success',
               type: newStatus === 'closed' ? 'تنبيه إغلاق ملف' : 'تنبيه حكم قضائي صادر',
@@ -1378,7 +1379,7 @@ export default React.memo(function CasesModule({
         } else {
           setWhatsAppLogs(prev => [
             {
-              id: `log-${Date.now()}`,
+              id: generateUUID(),
               caseNumber: c.caseNumber,
               status: 'failed',
               type: newStatus === 'closed' ? 'فشل إغلاق' : 'فشل حكم صادر',
@@ -1392,7 +1393,7 @@ export default React.memo(function CasesModule({
       } catch (err: any) {
         setWhatsAppLogs(prev => [
           {
-            id: `log-${Date.now()}`,
+            id: generateUUID(),
             caseNumber: c.caseNumber,
             status: 'failed',
             type: 'خطأ اتصال بالشبكة',
@@ -1526,14 +1527,14 @@ export default React.memo(function CasesModule({
     let linkedClient = clients.find(cl => cl.name === newClientName);
     if (!linkedClient) {
       linkedClient = {
-        id: `client-${Date.now()}`,
+        id: generateUUID(),
         name: newClientName,
         isCompany: newClientType === 'company',
         nationalId: newClientType === 'company' ? newCompanyCR : (newPlaintiffNationalId || "100" + Math.floor(Math.random() * 10000000)),
         phone: newPlaintiffPhone || "+9665" + Math.floor(Math.random() * 100000000),
         email: "contact@domain.sa",
-        portalToken: `portal-${Date.now()}`,
-        portalLink: `/portal?token=portal-${Date.now()}`
+        portalToken: generateUUID(),
+        portalLink: `/portal?token=${generateUUID()}`
       };
       await onUpdateState('clients', linkedClient);
     } else {
@@ -1553,7 +1554,7 @@ export default React.memo(function CasesModule({
     }
 
     const newCaseObj: Case = {
-      id: `case-${Date.now()}`,
+      id: generateUUID(),
       caseNumber: newCaseNumber,
       caseName: newCaseName,
       category: newCategory as any,
@@ -1617,7 +1618,7 @@ export default React.memo(function CasesModule({
       setIsSendingWhatsApp(true);
       setTimeout(() => {
         setWhatsAppLogs(prev => [{
-          id: `wa-link-${Date.now()}`,
+          id: generateUUID(),
           caseNumber: newCaseNumber,
           status: 'success',
           type: 'ربط دعوى وإنشاء بيانات نفاذ',
@@ -1676,7 +1677,7 @@ export default React.memo(function CasesModule({
     onUpdateState('stateOfPlatform', {
       type: 'expenses',
       data: {
-        id: `exp-${Date.now()}`,
+        id: generateUUID(),
         description: expDesc,
         amount: parseFloat(expAmt),
         category: 'court_fees',
@@ -1735,7 +1736,7 @@ export default React.memo(function CasesModule({
           clearInterval(interval);
           
           const newDoc: Attachment = {
-            id: `doc-${Date.now()}`,
+            id: generateUUID(),
             fileName: attachFileName.endsWith('.pdf') || attachFileName.endsWith('.docx') ? attachFileName : `${attachFileName}.${attachFileType}`,
             fileSize: attachFileSize || '1.5 MB',
             uploadDate: new Date().toISOString().split('T')[0],
@@ -2793,7 +2794,7 @@ export default React.memo(function CasesModule({
                               notes: [
                                 ...((selectedCase as any).notes || []),
                                 {
-                                  id: "note-" + Date.now(),
+                                  id: generateUUID(),
                                   author: "عداد جلسات المحكمة",
                                   content: newEventText,
                                   createdAt: new Date().toLocaleDateString('ar-SA') + ' ' + new Date().toLocaleTimeString('ar-SA')

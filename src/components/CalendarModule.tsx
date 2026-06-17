@@ -16,6 +16,7 @@ import {
 import { motion } from 'motion/react';
 import { Case, Hearing, Task, Invoice } from '@/types';
 import HearingCustomTimer from './HearingCustomTimer';
+import { generateUUID } from '@/lib/uuid';
 
 interface CalendarModuleProps {
   cases: Case[];
@@ -106,7 +107,7 @@ export default function CalendarModule({ cases, hearings, tasks, invoices = [], 
     if (onUpdateState) {
       if (newCommType === "hearing") {
         const newHearing: Hearing = {
-          id: `h-cal-${Date.now()}`,
+          id: generateUUID(),
           caseNumber: `SA-CAL-${Math.floor(1000 + Math.random() * 9000)}`,
           caseName: newTitle + (newClient ? ` (العميل: ${newClient})` : ""),
           date: newDate,
@@ -119,7 +120,7 @@ export default function CalendarModule({ cases, hearings, tasks, invoices = [], 
         onUpdateState('hearings', newHearing);
       } else {
         const newTask: Task = {
-          id: `t-cal-${Date.now()}`,
+          id: generateUUID(),
           caseNumber: `SA-CAL-${Math.floor(1000 + Math.random() * 9000)}`,
           title: `التزام: ${newTitle}` + (newClient ? ` للموكل ${newClient}` : ""),
           description: `التزام خارجي للمحامي ${newLawyer || 'شريك أول'} بخصوص الدائرة ${newCourt || 'العامة'}.`,

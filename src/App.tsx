@@ -118,6 +118,7 @@ function RouteGuard({ children, isAuthenticated, setCurrentTab }: { children: Re
 
 import { ErrorToaster } from '@/components/ErrorToaster';
 import { ErrorReporting } from '@/lib/ErrorReporting';
+import { generateUUID } from '@/lib/uuid';
 
 function AppContent() {
   const { preferences, updatePreference } = useUserPreferences();
@@ -1418,7 +1419,7 @@ function AppContent() {
           res = await createRecord(type, data);
           if (type === 'cases' && res?.success !== false && data.nextSessionDate) {
             const newHearing: Hearing = {
-              id: `h-${Date.now()}`,
+              id: generateUUID(),
               caseNumber: data.caseNumber,
               caseName: data.caseName,
               date: data.nextSessionDate,

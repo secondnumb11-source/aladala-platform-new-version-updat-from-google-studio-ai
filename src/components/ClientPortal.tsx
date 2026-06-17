@@ -21,6 +21,7 @@ import {
   ShieldAlert
 } from 'lucide-react';
 import { Case, Client, Invoice, Message, Hearing, Contract, Document } from '@/types';
+import { generateUUID } from '@/lib/uuid';
 
 interface ClientPortalProps {
   clients: Client[];
@@ -63,10 +64,10 @@ export default function ClientPortal({
       return;
     }
 
-    const clientId = `client-${Date.now()}`;
+    const clientId = generateUUID();
     const generatedUsername = `user_${newClientNationalId}`;
     const generatedPassword = `Pass@${Math.floor(1000 + Math.random() * 9000)}`;
-    const token = `portal-${Date.now()}`;
+    const token = generateUUID();
 
     const newCl: Client = {
       id: clientId,
@@ -251,7 +252,7 @@ export default function ClientPortal({
     if (!clientMessageInput) return;
 
     const newMsg: Message = {
-      id: `msg-${Date.now()}`,
+      id: generateUUID(),
       sender: 'client',
       senderName: viewingClient?.name || 'عميل',
       text: clientMessageInput,

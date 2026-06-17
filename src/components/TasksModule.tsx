@@ -50,6 +50,7 @@ import {
 import { CSS } from '@dnd-kit/utilities';
 import { InteractiveCard } from './InteractiveCard';
 import { SortableWidgetWrapper } from './SortableWidgetWrapper';
+import { generateUUID } from '@/lib/uuid';
 
 
 interface TasksModuleProps {
@@ -681,7 +682,7 @@ export default function TasksModule({
     if (!taskTitle) return;
 
     const newTask: Task = {
-      id: `task-${Date.now()}`,
+      id: generateUUID(),
       title: taskTitle,
       description: taskDesc,
       status: 'todo',
