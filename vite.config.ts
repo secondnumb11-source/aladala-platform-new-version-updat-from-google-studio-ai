@@ -1,7 +1,7 @@
 import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
-import { defineConfig, splitVendorChunkPlugin } from 'vite';
+import { defineConfig } from 'vite';
 
 export default defineConfig(() => {
   const assetResolutionLogger = () => ({
@@ -15,7 +15,7 @@ export default defineConfig(() => {
   });
 
   return {
-    plugins: [react(), tailwindcss(), splitVendorChunkPlugin(), assetResolutionLogger()],
+    plugins: [react(), tailwindcss(), assetResolutionLogger()],
     resolve: {
       alias: {
         '@': path.resolve(process.cwd(), './src'),

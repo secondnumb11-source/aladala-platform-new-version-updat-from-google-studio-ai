@@ -77,8 +77,10 @@ const DB_COLUMNS: Record<string, string[]> = {
  * هذا يمنع خطأ PGRST204 نهائياً.
  */
 const sanitizePayload = (tableName: string, data: any): Record<string, any> => {
+  if (!data) return {};
+
   // أولاً: حوّل camelCase إلى snake_case
-  const snaked = toSnake(data);
+  const snaked = toSnake(data) || {};
 
   // ثانياً: معالجة خاصة لحقول مختلفة الاسم بين الكود وقاعدة البيانات
   if (tableName === 'clients') {
