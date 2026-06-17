@@ -315,8 +315,14 @@ export function useSupabaseData() {
         }
 
         if (errorObj) {
-          console.error(`[Background Sync Error] table: ${mappedTable}`, errorObj);
-          remainingLogs.push(log);
+          // If error is 22P02 (invalid uuid) or 400 (bad request), do NOT retry
+          if (errorObj.code === '22P02' || errorObj.code === 'PGRST204' || (errorObj.status && errorObj.status >= 400 && errorObj.status < 500)) {
+            console.error(`[Background Sync Discarding Invalid Payload] table: ${mappedTable}`, errorObj);
+            // Do not push to remainingLogs, effectively dropping this invalid record
+          } else {
+            console.error(`[Background Sync Error - Retrying] table: ${mappedTable}`, errorObj);
+            remainingLogs.push(log);
+          }
         } else {
           console.log(`[Background Sync] ✅ successfully processed ${mappedTable}`);
           anySuccess = true;
