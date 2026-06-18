@@ -247,7 +247,7 @@ export default function EmployeePortal({
     }
 
     const fetchEmployees = async () => {
-      const { data, error } = await supabase.from('employees').select('*');
+      const { data, error } = await supabase.from('employees').select('id, name, username, password, employee_code, job_title, assigned_cases, assigned_clients, sidebar_config, status, najiz_api_key');
       if (data) {
         const emps = (data as any[]).map(normalizeEmployee);
         emps.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
@@ -414,7 +414,7 @@ export default function EmployeePortal({
     const fetchAttendance = async () => {
       const { data, error } = await supabase
         .from('attendance')
-        .select('*')
+        .select('id, employeeId, date, checkIn, checkOut, location, method, status')
         .eq('employeeId', loggedInEmployee.id)
         .order('date', { ascending: false });
       
@@ -440,7 +440,7 @@ export default function EmployeePortal({
     const fetchLeave = async () => {
       const { data, error } = await supabase
         .from('leave_requests')
-        .select('*')
+        .select('id, employeeId, type, startDate, endDate, reason, status, requestedAt')
         .eq('employeeId', loggedInEmployee.id)
         .order('requestedAt', { ascending: false });
       
@@ -719,7 +719,7 @@ export default function EmployeePortal({
     try {
       const { data: employees, error } = await supabase
         .from('employees')
-        .select('*')
+        .select('id, name, username, password, employee_code, job_title, assigned_cases, assigned_clients, sidebar_config, status, najiz_api_key')
         .eq('username', loginUsername.trim());
       
       if (error) throw error;
@@ -754,7 +754,33 @@ export default function EmployeePortal({
         setLoginError('اسم المستخدم غير مسجل بنظام الموظفين. يرجى التواصل مع الشريك الإداري لتوفير صلاحية دخول.');
       }
     } catch (err: any) {
-      setLoginError('فشل الاتصال الآمن بالخادم. يرجى إعادة المحاولة.');
+      console.warn('فشل الاتصال بـ Supabase، جاري استخدام النسخة المحلية (Offline Mode)...');
+      try {
+        const cached = localStorage.getItem('adalah_employees_cache') || localStorage.getItem('employees_backup');
+        if (cached) {
+          const cachedEmps = JSON.parse(cached);
+          const matchedEmp = cachedEmps.find((e: any) => e.username === loginUsername.trim() && e.password === loginPassword);
+          if (matchedEmp) {
+             const empData = matchedEmp as Employee;
+             setLoggedInEmployee(empData);
+             setSimulatedNajizKey(empData.najizApiKey || '');
+             sessionStorage.setItem('active-logged-in-employee-v2', JSON.stringify(empData));
+             if (empData.sidebarConfig && empData.sidebarConfig.length > 0) {
+               setActivePortalTab(empData.sidebarConfig[0]);
+             } else {
+               setActivePortalTab('dashboard');
+             }
+             setIsLoading(false);
+             return;
+          } else {
+             setLoginError('فشل تسجيل الدخول: المستخدم غير موجود أو كلمة المرور خاطئة (حالة الأوفلاين).');
+          }
+        } else {
+          setLoginError('فشل الاتصال الآمن بالخادم، ولا توجد نسخة احتياطية محلية.');
+        }
+      } catch (e) {
+        setLoginError('فشل الاتصال الآمن بالخادم. يرجى إعادة المحاولة.');
+      }
     } finally {
       setIsLoading(false);
     }

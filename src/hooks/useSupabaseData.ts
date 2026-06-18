@@ -11,15 +11,6 @@ import { handleRlsPolicyFriction } from '@/lib/debug-supabase';
 // مطابقة تماماً لـ supabase_schema_final.sql
 // ======================================================
 const DB_COLUMNS: Record<string, string[]> = {
-  expenses: [
-    'id', 'description', 'amount', 'category', 'date', 'case_number', 'created_at'
-  ],
-  messages: [
-    'id', 'sender', 'sender_name', 'text', 'timestamp', 'case_number', 'created_at'
-  ],
-  contracts: [
-    'id', 'client_name', 'client_id', 'title', 'content', 'status', 'otp_code', 'otp_status', 'signed_at', 'signer_name', 'phone', 'created_at'
-  ],
   clients: [
     'id', 'name', 'phone', 'email',
     'id_number', 'najiz_id', 'address',
@@ -104,6 +95,16 @@ const DB_COLUMNS: Record<string, string[]> = {
   system_errors: [
     'id', 'message', 'stack', 'component',
     'user_id', 'severity', 'created_at'
+  ],
+  expenses: [
+    'id', 'description', 'amount', 'category', 'date', 'case_number', 'created_at'
+  ],
+  messages: [
+    'id', 'sender', 'sender_name', 'text', 'timestamp', 'case_number', 'created_at'
+  ],
+  contracts: [
+    'id', 'client_name', 'client_id', 'title', 'content', 'status', 
+    'otp_code', 'otp_status', 'signed_at', 'signer_name', 'phone', 'created_at'
   ],
 };
 
@@ -265,8 +266,8 @@ export function useSupabaseData() {
   const [payments, setPayments] = useState<any[]>([]);
   const [notifications, setNotifications] = useState<any[]>([]);
   const [systemErrors, setSystemErrors] = useState<any[]>([]);
-  const [expenses, setExpenses] = useState<any[]>([]);
-  const [messages, setMessages] = useState<any[]>([]);
+  const [expenses, setExpenses] = useState<Expense[]>([]);
+  const [messages, setMessages] = useState<Message[]>([]);
   const [contracts, setContracts] = useState<any[]>([]);
   
   const [loading, setLoading] = useState(true);
@@ -311,27 +312,27 @@ export function useSupabaseData() {
         messagesRes,
         contractsRes
       ] = await Promise.all([
-        supabase.from('cases').select('*').order('created_at', { ascending: false }),
-        supabase.from('clients').select('*').order('created_at', { ascending: false }),
-        supabase.from('tasks').select('*').order('created_at', { ascending: false }),
-        supabase.from('hearings').select('*').order('date', { ascending: true }),
-        supabase.from('documents').select('*').order('uploaded_at', { ascending: false }),
-        supabase.from('powers_of_attorney').select('*').order('issue_date', { ascending: false }),
-        supabase.from('invoices').select('*').order('created_at', { ascending: false }),
-        supabase.from('employees').select('*').order('created_at', { ascending: false }),
-        supabase.from('expenses').select('*').order('created_at', { ascending: false }),
-        supabase.from('messages').select('*').order('created_at', { ascending: false }),
-        supabase.from('contracts').select('*').order('created_at', { ascending: false }),
-        supabase.from('executions').select('*').order('created_at', { ascending: false }).then(r => r, () => ({ data: [] } as any)),
-        supabase.from('audit_trails').select('*').order('created_at', { ascending: false }).limit(10).then(r => r, () => ({ data: [] } as any)),
-        supabase.from('attachments').select('*').order('file_name', { ascending: false }).then(r => r, () => ({ data: [] } as any)),
-        supabase.from('client_portal').select('*').order('created_at', { ascending: false }).then(r => r, () => ({ data: [] } as any)),
-        supabase.from('employee_portal').select('*').order('created_at', { ascending: false }).then(r => r, () => ({ data: [] } as any)),
-        supabase.from('attendance').select('*').order('date', { ascending: false }).then(r => r, () => ({ data: [] } as any)),
-        supabase.from('leave_requests').select('*').order('created_at', { ascending: false }).then(r => r, () => ({ data: [] } as any)),
-        supabase.from('payments').select('*').order('payment_date', { ascending: false }).then(r => r, () => ({ data: [] } as any)),
-        supabase.from('notifications').select('*').order('created_at', { ascending: false }).then(r => r, () => ({ data: [] } as any)),
-        supabase.from('system_errors').select('*').order('created_at', { ascending: false }).limit(100).then(r => r, () => ({ data: [] } as any)),
+        supabase.from('cases').select('id, case_number, court_case_number, najiz_case_id, case_name, title, subject, category, case_classification, stage, status, client_name, client_id, opponent_name, opponent_id, opponent_national_id, court_name, circuit_number, power_of_attorney_number, last_session_date, next_session_date, next_session_time, summary, details, is_najiz_sync, priority, is_confidential, confidentiality, archived, last_activity_at, created_at, start_date, lead_lawyer_id, assigned_lawyers, judge_name, judgment_summary, judgment_date, appeal_deadline, execution_number, execution_status, execution_amount, agreed_fees, collected_fees, expenses, attachments_count').order('created_at', { ascending: false }),
+        supabase.from('clients').select('id, name, is_company, national_id, phone, email, portal_token, portal_link, portal_username, portal_password, permitted_cases, permitted_case_permissions').order('created_at', { ascending: false }),
+        supabase.from('tasks').select('id, title, description, status, priority, assigned_to, due_date, case_number, timer_active, timer_duration, target_completion_time').order('created_at', { ascending: false }),
+        supabase.from('hearings').select('id, case_number, case_name, date, time, court_name, status, judge_name, notes, hearing_status, hall_number, decision').order('date', { ascending: true }),
+        supabase.from('documents').select('id, name, category, uploaded_at, size, content_text, tags, current_version, color_code, ai_classification').order('uploaded_at', { ascending: false }),
+        supabase.from('powers_of_attorney').select('id, poa_number, issue_date, expiry_date, lawyer_name, client_name, status, client_id, scope, clauses, parties, is_najiz_sync').order('issue_date', { ascending: false }),
+        supabase.from('invoices').select('id, client_name, client_id, amount, vat_amount, total_amount, status, issue_date, due_date, payment_method, description, client_vat, is_zatca_submitted, zatca_timestamp').order('created_at', { ascending: false }),
+        supabase.from('employees').select('id, name, nationality, national_id, national_id_expiry, phone, job_title, manager, qualification, start_date, end_date, email, branch, notes, birth_date, username, password, najiz_api_key, base_salary, allowances, deductions, assigned_cases, assigned_clients, permissions, feature_access, sidebar_config, portal_link, custom_login_token, status, avatar_url, employee_code, role, department, salary').order('created_at', { ascending: false }),
+        supabase.from('executions').select('id, execution_number, case_number, requester_name, opponent_name, status, amount, court_name, issue_date, last_update, details, created_at, updated_at').order('created_at', { ascending: false }).then(r => r, () => ({ data: [] } as any)),
+        supabase.from('audit_trails').select('id, user_id, user_name, action, entity_type, entity_id, ip_address, user_agent, created_at').order('created_at', { ascending: false }).limit(10).then(r => r, () => ({ data: [] } as any)),
+        supabase.from('attachments').select('id, file_name, file_size, upload_date, category').order('file_name', { ascending: false }).then(r => r, () => ({ data: [] } as any)),
+        supabase.from('client_portal').select('id, client_id, portal_token, portal_link').order('created_at', { ascending: false }).then(r => r, () => ({ data: [] } as any)),
+        supabase.from('employee_portal').select('id, employee_id, custom_login_token, portal_link').order('created_at', { ascending: false }).then(r => r, () => ({ data: [] } as any)),
+        supabase.from('attendance').select('id, employee_id, date, check_in, check_out, location, method, status').order('date', { ascending: false }).then(r => r, () => ({ data: [] } as any)),
+        supabase.from('leave_requests').select('id, employee_id, employee_name, type, start_date, end_date, reason, status, requested_at, reviewed_by, reviewed_at, comment').order('created_at', { ascending: false }).then(r => r, () => ({ data: [] } as any)),
+        supabase.from('payments').select('id, case_id, client_id, amount, description, status, link, created_at').order('payment_date', { ascending: false }).then(r => r, () => ({ data: [] } as any)),
+        supabase.from('notifications').select('id, message, is_read, type, created_at, user_id').order('created_at', { ascending: false }).then(r => r, () => ({ data: [] } as any)),
+        supabase.from('system_errors').select('id, error_message, error_stack, created_at, context').order('created_at', { ascending: false }).limit(100).then(r => r, () => ({ data: [] } as any)),
+        supabase.from('expenses').select('id, description, amount, category, date, case_number').order('date', { ascending: false }).then(r => r, () => ({ data: [] } as any)),
+        supabase.from('messages').select('id, sender, sender_name, text, timestamp, case_number').order('timestamp', { ascending: true }).then(r => r, () => ({ data: [] } as any)),
+        supabase.from('contracts').select('id, client_name, client_id, title, content, status, otp_code, otp_status, signed_at, signer_name, phone').order('created_at', { ascending: false }).then(r => r, () => ({ data: [] } as any)),
       ]);
 
       let mappedClients: Client[] = [];
@@ -359,8 +360,8 @@ export function useSupabaseData() {
       if (paymentsRes && 'data' in paymentsRes && paymentsRes.data) setPayments(toCamel(paymentsRes.data));
       if (notificationsRes && 'data' in notificationsRes && notificationsRes.data) setNotifications(toCamel(notificationsRes.data));
       if (systemErrorsRes && 'data' in systemErrorsRes && systemErrorsRes.data) setSystemErrors(toCamel(systemErrorsRes.data));
-      if (expensesRes && 'data' in expensesRes && expensesRes.data) setExpenses(toCamel(expensesRes.data));
-      if (messagesRes && 'data' in messagesRes && messagesRes.data) setMessages(toCamel(messagesRes.data));
+      if (expensesRes && 'data' in expensesRes && expensesRes.data) setExpenses(toCamel(expensesRes.data) as Expense[]);
+      if (messagesRes && 'data' in messagesRes && messagesRes.data) setMessages(toCamel(messagesRes.data) as Message[]);
       if (contractsRes && 'data' in contractsRes && contractsRes.data) setContracts(toCamel(contractsRes.data));
 
     } catch (error) {
@@ -391,7 +392,7 @@ export function useSupabaseData() {
       }
     };
 
-    const triggers = ['cases', 'clients', 'tasks', 'hearings', 'documents', 'powers_of_attorney', 'invoices', 'employees', 'attachments', 'client_portal', 'employee_portal', 'attendance', 'leave_requests', 'payments', 'notifications', 'audit_trails', 'system_errors', 'expenses', 'messages', 'contracts', 'executions'];
+    const triggers = ['cases', 'clients', 'tasks', 'hearings', 'documents', 'powers_of_attorney', 'invoices', 'employees', 'attachments', 'client_portal', 'employee_portal', 'attendance', 'leave_requests', 'payments', 'notifications', 'audit_trails', 'system_errors', 'executions', 'expenses', 'messages', 'contracts'];
     
     triggers.forEach(tbl => {
       singleChannel = singleChannel.on('postgres_changes', { event: '*', schema: 'public', table: tbl }, fetchData);
@@ -547,6 +548,9 @@ export function useSupabaseData() {
       'systemErrors': 'system_errors',
       'system_errors': 'system_errors',
       'executions': 'executions',
+      'expenses': 'expenses',
+      'messages': 'messages',
+      'contracts': 'contracts',
       'archive_items': 'archive_items',
     };
     return tableMap[table] || table;
@@ -563,6 +567,10 @@ export function useSupabaseData() {
       case 'powersOfAttorney': return setPowersOfAttorney;
       case 'invoices': return setInvoices;
       case 'employees': return setEmployees;
+      case 'executions': return setExecutions;
+      case 'expenses': return setExpenses;
+      case 'messages': return setMessages;
+      case 'contracts': return setContracts;
       case 'audit_trails':
       case 'auditTrails': return setAuditTrails;
       case 'attachments': return setAttachments;
@@ -848,9 +856,6 @@ export function useSupabaseData() {
     invoices,
     employees,
     executions,
-    expenses,
-    messages,
-    contracts,
     auditTrails,
     attachments,
     clientPortal,
@@ -860,6 +865,12 @@ export function useSupabaseData() {
     payments,
     notifications,
     systemErrors,
+    expenses,
+    setExpenses,
+    messages,
+    setMessages,
+    contracts,
+    setContracts,
     loading,
     createRecord,
     upsertRecord,

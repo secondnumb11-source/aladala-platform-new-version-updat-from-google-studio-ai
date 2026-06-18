@@ -85,7 +85,7 @@ import SystemErrorRecovery from './SystemErrorRecovery';
 import InteractionGuideComponent from './InteractionGuideComponent';
 import DashboardCardSkeleton from './DashboardCardSkeleton';
 import TimelineView from './TimelineView';
-import TimelineD3 from './TimelineD3';
+const TimelineD3 = React.lazy(() => import('./TimelineD3'));
 import LegalRiskMatrix from './legal/LegalRiskMatrix';
 import MiniChart from './charts/MiniChart';
 import { RadialBarChart, RadialBar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, PieChart, Pie, Cell, Tooltip as RechartsTooltip, ResponsiveContainer, Legend, BarChart, Bar, XAxis, YAxis, CartesianGrid, AreaChart, Area, LineChart, Line } from 'recharts';
@@ -397,8 +397,8 @@ const Dashboard = function Dashboard({
     const fetchDashboardData = async () => {
       try {
         const [empRes, poaRes] = await Promise.all([
-          supabase.from('employees').select('*'),
-          supabase.from('powers_of_attorney').select('*')
+          supabase.from('employees').select('id, name, nationality, national_id, national_id_expiry, phone, job_title, manager, qualification, start_date, end_date, email, branch, notes, birth_date, username, password, najiz_api_key, base_salary, allowances, deductions, assigned_cases, assigned_clients, permissions, feature_access, sidebar_config, portal_link, custom_login_token, status, avatar_url, employee_code, role, department, salary'),
+          supabase.from('powers_of_attorney').select('id, poa_number, issue_date, expiry_date, lawyer_name, client_name, status, client_id, scope, clauses, parties, is_najiz_sync')
         ]);
         
         if (empRes.data) {
@@ -1270,7 +1270,9 @@ const Dashboard = function Dashboard({
           animate={{ opacity: 1, y: 0 }}
           className="w-full relative z-10"
         >
-          <TimelineD3 hearings={hearings} tasks={tasks} />
+          <React.Suspense fallback={<div className="h-64 flex items-center justify-center bg-slate-900 rounded-3xl animate-pulse text-white">جاري تحميل لوحة الخط الزمني...</div>}>
+            <TimelineD3 hearings={hearings} tasks={tasks} />
+          </React.Suspense>
         </motion.div>
       )}
 
@@ -2365,7 +2367,9 @@ const Dashboard = function Dashboard({
                         <GripVertical className="w-8 h-8 text-amber-500 animate-pulse" />
                       </div>
                     )}
-                    <TimelineD3 hearings={hearings} tasks={tasks} />
+                    <React.Suspense fallback={<div className="h-64 flex items-center justify-center bg-slate-900 rounded-3xl animate-pulse text-white">جاري تحميل الخط الزمني...</div>}>
+                      <TimelineD3 hearings={hearings} tasks={tasks} />
+                    </React.Suspense>
                   </div>
                 </EnhancedSortableWidgetWrapper>
               );

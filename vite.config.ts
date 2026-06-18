@@ -27,9 +27,24 @@ export default defineConfig(() => {
       emptyOutDir: true,
       chunkSizeWarningLimit: 1000,
       sourcemap: false, 
-      minify: 'esbuild' as const,
+      minify: 'terser',
+      terserOptions: {
+        compress: {
+          drop_console: true,
+          drop_debugger: true
+        }
+      },
+      assetsInlineLimit: 4096,
       rollupOptions: {
-        external: ['ws']
+        external: ['ws'],
+        output: {
+          manualChunks: {
+            'react-core': ['react', 'react-dom'],
+            'framer-motion': ['framer-motion'],
+            'charts': ['recharts', 'd3'],
+            'supabase': ['@supabase/supabase-js']
+          }
+        }
       }
     },
     base: '/',
