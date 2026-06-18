@@ -3,6 +3,7 @@ import { AlertTriangle, RefreshCw, Home } from "lucide-react";
 
 interface Props {
   children?: ReactNode;
+  fallback?: ReactNode;
 }
 
 interface State {
@@ -64,6 +65,9 @@ class ErrorBoundary extends Component<Props, State> {
 
   public render() {
     if (this.state.hasError) {
+      if (this.props.fallback) {
+        return this.props.fallback;
+      }
       return (
         <div className="min-h-screen bg-slate-950 flex items-center justify-center p-6 text-right" dir="rtl">
           <div className="max-w-xl w-full bg-slate-900 border border-white/10 rounded-[2.5rem] p-10 space-y-6 shadow-2xl relative overflow-hidden">

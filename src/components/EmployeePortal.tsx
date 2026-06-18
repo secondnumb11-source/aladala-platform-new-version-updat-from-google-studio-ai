@@ -717,44 +717,61 @@ export default function EmployeePortal({
     setLoginError('');
 
     try {
-      const { data: employees, error } = await supabase
-        .from('employees')
-        .select('*')
-        .eq('username', loginUsername.trim());
-      
-      if (error) throw error;
-      
-      if (employees && employees.length > 0) {
-        const matchedEmp = employees.find(e => e.password === loginPassword);
-        if (matchedEmp) {
-          const empData = matchedEmp as Employee;
-          
-          const currentLoginCount = (empData as any).loginCount || 0;
-          await supabase.from('employees').update({
-            loginCount: currentLoginCount + 1,
-            lastLoginAt: new Date().toISOString()
-          }).eq('id', matchedEmp.id);
-          
-          (empData as any).loginCount = currentLoginCount + 1;
+      const response = await fetch('/api/employee-portal/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          username: loginUsername.trim(),
+          password: loginPassword,
+        }),
+      });
 
-          setLoggedInEmployee(empData);
-          setSimulatedNajizKey(empData.najizApiKey || '');
-          sessionStorage.setItem('active-logged-in-employee-v2', JSON.stringify(empData));
-          
-          if (empData.sidebarConfig && empData.sidebarConfig.length > 0) {
-            setActivePortalTab(empData.sidebarConfig[0]);
-          } else {
-            setActivePortalTab('dashboard');
-          }
-          await writeAuditLog('تسجيل دخول', 'دخل الموظف إلى البوابة الفرعية المخصصة', empData);
-        } else {
-          setLoginError('كلمة المرور غير صحيحة. يرجى التحقق من الرسالة المرسلة إليك.');
-        }
-      } else {
-        setLoginError('اسم المستخدم غير مسجل بنظام الموظفين. يرجى التواصل مع الشريك الإداري لتوفير صلاحية دخول.');
+      const resData = await response.json();
+      if (!response.ok || !resData.success) {
+        setLoginError(resData.message || 'اسم المستخدم أو كلمة المرور غير صحيحة.');
+        return;
       }
+
+      const { token, employee } = resData;
+      
+      // حفظ التوكن في sessionStorage
+      sessionStorage.setItem('employee-portal-token', token);
+      
+      // جلب تفاصيل الموظف والجلسة الكاملة
+      const sessionResponse = await fetch('/api/employee-portal/session', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      const sessionData = await sessionResponse.json();
+      const empData = sessionData.success ? sessionData.employee : employee;
+
+      const currentLoginCount = (empData as any).loginCount || 0;
+      // تحديث عدد تسجيلات الدخول بمرونة
+      try {
+        await supabase.from('employees').update({
+          loginCount: currentLoginCount + 1,
+          lastLoginAt: new Date().toISOString()
+        }).eq('id', empData.id);
+      } catch (dbErr) {}
+
+      (empData as any).loginCount = currentLoginCount + 1;
+
+      setLoggedInEmployee(empData);
+      setSimulatedNajizKey(empData.najizApiKey || '');
+      sessionStorage.setItem('active-logged-in-employee-v2', JSON.stringify(empData));
+      
+      if (empData.sidebarConfig && empData.sidebarConfig.length > 0) {
+        setActivePortalTab(empData.sidebarConfig[0]);
+      } else {
+        setActivePortalTab('dashboard');
+      }
+      await writeAuditLog('تسجيل دخول', 'دخل الموظف إلى البوابة الفرعية المخصصة بمصادقة آمنة', empData);
     } catch (err: any) {
-      setLoginError('فشل الاتصال الآمن بالخادم. يرجى إعادة المحاولة.');
+      console.error('[EmployeePortal Login Exception]', err);
+      setLoginError('فشل الاتصال الآمن بالخادم الموحد للعدالة. يرجى إعادة المحاولة.');
     } finally {
       setIsLoading(false);
     }
@@ -769,6 +786,7 @@ export default function EmployeePortal({
   const handleLogoutPortal = () => {
     setLoggedInEmployee(null);
     sessionStorage.removeItem('active-logged-in-employee-v2');
+    sessionStorage.removeItem('employee-portal-token');
     setLoginPassword('');
   };
 
@@ -1522,12 +1540,29 @@ export default function EmployeePortal({
               { id: 'ai-search', name: 'البحث والاستعلام الذكي', icon: Search },
               { id: 'najiz', name: 'مزامنة بوابة ناجز', icon: RefreshCw },
               { id: 'hr', name: 'الشؤون الإدارية (HR)', icon: UserCheck },
-            ].filter(item => 
-              !loggedInEmployee.sidebarConfig || 
-              loggedInEmployee.sidebarConfig.length === 0 || 
-              loggedInEmployee.sidebarConfig.includes(item.id) ||
-              item.id === 'hr' // HR self-service is always available
-            ).map(item => (
+            ].filter(item => {
+              // 1. التحقق من أقسام لوحة القيادة الجانبية المفوضة للموظف
+              const inSidebar = !loggedInEmployee.sidebarConfig || 
+                                loggedInEmployee.sidebarConfig.length === 0 || 
+                                loggedInEmployee.sidebarConfig.includes(item.id) ||
+                                item.id === 'hr'; // الشؤون الإدارية دائماً متاحة
+              
+              if (!inSidebar) return false;
+
+              // 2. التحقق من الصلاحيات الإجرائية المحددة للموظف
+              const userPerms = loggedInEmployee.permissions || [];
+              const isManagerial = userPerms.includes('view_all') || userPerms.includes('edit_all');
+
+              if (item.id === 'najiz') {
+                return isManagerial || userPerms.includes('najiz_sync');
+              }
+              if (item.id === 'clients') {
+                // قسم الموكلين يتطلب صلاحية الاطلاع على بيانات المكتب أو الصلاحية الإدارية الشاملة
+                return isManagerial || userPerms.includes('view_all');
+              }
+              
+              return true;
+            }).map(item => (
               <button
                 key={item.id}
                 onClick={() => setActivePortalTab(item.id)}

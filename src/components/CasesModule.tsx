@@ -1611,10 +1611,13 @@ export default React.memo(function CasesModule({
     };
 
     setServerValidationError(null);
-    const res = await onUpdateState('cases', newCaseObj);
-    if (res && res.success === false && res.errorType === 'validation') {
-       setServerValidationError({ field: res.field, message: res.message });
-       return;
+    const result = await onUpdateState('cases', newCaseObj);
+    if (!result || result.success === false) {
+      if (result && result.errorType === 'validation') {
+         setServerValidationError({ field: result.field, message: result.message });
+      }
+      alert('حدث خطأ في حفظ القضية: ' + (result?.message || 'خطأ غير معروف'));
+      return;
     }
 
     setIsCreateOpen(false);

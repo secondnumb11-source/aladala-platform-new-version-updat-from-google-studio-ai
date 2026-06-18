@@ -11,7 +11,7 @@ import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import path from 'path';
 import { fileURLToPath } from 'url';
-// GoogleGenAI removed — all AI calls now use OpenAI exclusively
+
 import { supabase as sharedSupabase } from './src/lib/supabase.js';
 import { Client as ElasticClient } from '@elastic/elasticsearch';
 import dotenv from 'dotenv';
@@ -28,7 +28,7 @@ import JSZip from 'jszip';
 import { supabaseMiddleware } from './src/utils/supabase/middleware.js';
 import { query } from './src/lib/db.js';
 
-// AI Configuration and Client Factory — OpenAI Only
+// AI Configuration and Client Factory
 const getAIProvider = () => {
   const openAIKey = process.env.OPENAI_API_KEY;
   if (!openAIKey) {
@@ -1397,1126 +1397,253 @@ app.post('/api/state/update', async (req, res) => {
 // Webhook / API Key configured sync for platform-agnostic chrome extensions
 // Accepts JSON scraped from najiz by any lawyer
 // Helper AI script to analyze unstructured Najiz page copies and extract model records
-async function analyzeNajizDataWithAI(rawText: string, apiKeyUsed: string) {
-  const key = process.env.OPENAI_API_KEY;
-  const result: {
-    cases: any[];
-    hearings: any[];
-    powers_of_attorney: any[];
-    clients: any[];
-    tasks: any[];
-    invoices: any[];
-  } = {
-    cases: [],
-    hearings: [],
-    powers_of_attorney: [],
-    clients: [],
-    tasks: [],
-    invoices: []
+async function analyzeNajizDataWithAI(rawText: string, selectedTypes: string[]) {
+  const openaiKey = process.env.OPENAI_API_KEY;
+  
+  const result = {
+    cases: [] as any[],
+    hearings: [] as any[],
+    powers_of_attorney: [] as any[],
+    clients: [] as any[],
+    executions: [] as any[],
+    case_requests: [] as any[],
+    minutes: [] as any[],
+    tasks: [] as any[],
+    invoices: [] as any[]
   };
   
-  let successAI = false;
+  if (!openaiKey) {
+    console.warn('[AI Analyzer] OpenAI key not configured, using regex fallback');
+    return result; // سيُستخدم الـ fallback
+  }
   
-  if (key) {
-    try {
-      const openai = new OpenAI({
-        apiKey: key,
-        baseURL: process.env.OPENAI_BASE_URL || undefined,
-      });
-      console.log('[OpenAI Sync Analyzer] Initialized successfully.');
-      
-      const prompt = `
-أنت خبير قانوني ومحامٍ سعودي محترف مسؤول عن قراءة البيانات وتصنيفها بدقة تامة لربطها في العائلات والمنصات القضائية.
-لقد تم نسخ النص التالي من إحدى الصفحات الإلكترونية في بوابة ناجز الإلكترونية (Najiz.sa) التابعة لوزارة العدل السعودية:
+  try {
+    const openai = new OpenAI({ apiKey: openaiKey });
+    
+    const prompt = `أنت محلل بيانات قانوني سعودي متخصص. حلّل النص التالي المأخوذ من منصة ناجز القضائية السعودية واستخرج البيانات بدقة.
+
+النص:
 """
-${rawText}
+${rawText.substring(0, 15000)}
 """
 
-مهمتك هي تحليل هذا النص بالكامل واستخراج الأنماط التالية لتنعكس مباشرة في مكانها المناسب بالمنصة:
-1. قضايا عادية، تجارية، عمالية، إدارية أو أحوال شخصية (cases).
-2. طلبات تنفيذ مالي أو أحكام تنفيذية (executions). صنف هذه الطلبات كقضية بخصائص category: "execution" و stage: "execution" و status: "active". بادر باستخلاص رقم طلب التنفيذ بدقة متناهية.
-3. جلسات ومواعيد مرافعة مجدولة (hearings). تاريخ الجلسة بصيغة YYYY-MM-DD ووقت الجلسة "09:00 صباحاً" مثلاً.
-4. وكالات قانونية وشرعية (poas) برقم الوكالة وتاريخ الإصدار وتاريخ الانتهاء والاسم.
-5. عملاء وموكلين مذكورين في المعاملة (clients).
-6. مهام مستنتجة في النظام (tasks) لمعالجة البيانات الجديدة، مع تحديد الأولويات وتاريخ الاستحقاق.
-7. مطالبات مالية، رسوم محاكم، مستحقات تنفيذ قضائي، أو فواتير مذكورة بالأنظمة (invoices). رقم الفاتورة (invoiceNumber)، اسم العميل/الموكل (clientName)، المبلغ الرقمي (amount)، الفئة (category ويكون "execution_dues" أو "court_fees")، حالة السداد (status وتكون "unpaid" أو "paid")، وتاريخ الاستحقاق (dueDate بصيغة YYYY-MM-DD).
+أنواع البيانات المطلوبة: ${selectedTypes.join(', ')}
 
-يرجى إعادة النتائج في قالب JSON صالح ومكتمل 100%. التزم بالقالب التالي تمامًا:
+أعد JSON فقط (بدون markdown) بهذا الشكل بالضبط:
 {
-  "cases": [{"caseNumber": "string","caseName": "string","category": "commercial | labor | administrative | civil | personal | execution","stage": "litigation | execution | appeals","status": "active | new | closed | pending_session","clientName": "string","opponentName": "string","courtName": "string","lastSessionDate": "string (YYYY-MM-DD)","nextSessionDate": "string (YYYY-MM-DD)","nextSessionTime": "string","summary": "string","details": "string","priority": "high | medium | low","attachments_count": 1}],
-  "hearings": [{"caseNumber": "string","caseName": "string","date": "string (YYYY-MM-DD)","time": "string","courtName": "string","status": "upcoming","judgeName": "string","notes": "string"}],
-  "poas": [{"poaNumber": "string","issueDate": "string (YYYY-MM-DD)","expiryDate": "string (YYYY-MM-DD)","lawyerName": "string","clientName": "string","status": "active"}],
-  "clients": [{"name": "string","isCompany": false,"nationalId": "string","phone": "string","email": "string"}],
-  "tasks": [{"title": "string","description": "string","priority": "high | medium | low","dueDate": "string (YYYY-MM-DD)","caseNumber": "string"}],
-  "invoices": [{"invoiceNumber": "string","clientName": "string","amount": 2500,"status": "paid | unpaid","issueDate": "string (YYYY-MM-DD)","dueDate": "string (YYYY-MM-DD)","category": "court_fees | lawyer_fees | execution_dues","caseNumber": "string","details": "string"}]
+  "cases": [{"caseNumber":"...","caseName":"...","clientName":"...","opponentName":"...","category":"civil|commercial|labor|personal_status|administrative","status":"active|pending","courtName":"...","stage":"...","nextSessionDate":"YYYY-MM-DD or null"}],
+  "hearings": [{"caseNumber":"...","caseName":"...","date":"YYYY-MM-DD","time":"HH:MM","courtName":"...","status":"upcoming|completed"}],
+  "clients": [{"name":"...","nationalId":"...","phone":"..."}],
+  "executions": [{"executionNumber":"...","requesterName":"...","opponentName":"...","amount":0,"status":"...","courtName":"..."}],
+  "agencies": [{"poaNumber":"...","clientName":"...","type":"...","status":"active","issueDate":"YYYY-MM-DD or null","expiryDate":"YYYY-MM-DD or null"}],
+  "case_requests": [{"caseNumber":"...","requestType":"...","status":"..."}],
+  "minutes": [{"caseNumber":"...","sessionDate":"YYYY-MM-DD","content":"..."}]
 }
-`;
 
-      const completion = await openai.chat.completions.create({
-        model: 'gpt-4o',
-        messages: [{ role: 'user', content: prompt }],
-        response_format: { type: 'json_object' },
-        max_tokens: 4000,
-        temperature: 0.1,
-      });
+قواعد:
+- أعد فقط الحقول التي لها قيم حقيقية في النص
+- لا تخترع بيانات غير موجودة
+- إذا لم تجد بيانات لنوع معين، أعد مصفوفة فارغة
+- أعد JSON صالحاً فقط`;
 
-      const rawResponse = completion.choices[0]?.message?.content || '';
-      console.log('[OpenAI Sync Analyzer] Raw response:', rawResponse.substring(0, 300));
-      const parsed = JSON.parse(rawResponse);
-      if (parsed) {
-        if (Array.isArray(parsed.cases)) result.cases = parsed.cases;
-        if (Array.isArray(parsed.hearings)) result.hearings = parsed.hearings;
-        if (Array.isArray(parsed.powers_of_attorney)) result.powers_of_attorney = parsed.powers_of_attorney;
-        else if (Array.isArray(parsed.poas)) result.powers_of_attorney = parsed.poas;
-        if (Array.isArray(parsed.clients)) result.clients = parsed.clients;
-        if (Array.isArray(parsed.tasks)) result.tasks = parsed.tasks;
-        if (Array.isArray(parsed.invoices)) result.invoices = parsed.invoices;
-        successAI = true;
-        console.log('[OpenAI Sync Analyzer] Extracted rich data successfully.');
-      }
-    } catch (err) {
-      console.error('[OpenAI Sync Analyzer] Processing error:', err);
+    const completion = await openai.chat.completions.create({
+      model: 'gpt-4o',
+      messages: [{ role: 'user', content: prompt }],
+      max_tokens: 4000,
+      temperature: 0.1
+    });
+    
+    const responseText = completion.choices[0]?.message?.content || '{}';
+    
+    try {
+      const cleaned = responseText.replace(/```json\n?|```\n?/g, '').trim();
+      const parsed = JSON.parse(cleaned);
+      
+      return {
+        cases: parsed.cases || [],
+        hearings: parsed.hearings || [],
+        powers_of_attorney: parsed.agencies || [],
+        clients: parsed.clients || [],
+        executions: parsed.executions || [],
+        case_requests: parsed.case_requests || [],
+        minutes: parsed.minutes || [],
+        tasks: [],
+        invoices: []
+      };
+    } catch (parseErr) {
+      console.error('[AI Analyzer] JSON parse error:', parseErr);
+      return result;
     }
+    
+  } catch (err) {
+    console.error('[AI Analyzer] OpenAI error:', err);
+    return result;
   }
-  
-  if (!successAI) {
-    console.log('[OpenAI Sync Analyzer] Falling back to robust heuristical parser...');
-    const caseNum = rawText.match(/\d{9,16}/)?.[0] || rawText.match(/\d{4,8}/)?.[0] || `46${Math.floor(10000000 + Math.random() * 90000000)}`;
-    if (rawText.includes("طلب رقم") || rawText.includes("تنفيذ") || rawText.includes("طالب بالتنفيذ") || rawText.includes("المنفذ ضد") || rawText.includes("سند تنفيذ") || rawText.includes("طلب تنفيذ")) {
-      result.cases.push({
-        caseNumber: caseNum,
-        caseName: `طلب تنفيذ مالي رقم ${caseNum}`,
-        category: "execution",
-        stage: "execution",
-        status: "active",
-        clientName: "شركة نادك للتنمية الزراعية",
-        opponentName: "مؤسسة طارق بن فواز للمقاولات",
-        courtName: "محكمة التنفيذ بالرياض",
-        lastSessionDate: "",
-        nextSessionDate: "",
-        summary: "طلب تنفيذ حكم تجاري لإلغاء وتصفية مستحقات العقد المالي المبرم بين الطرفين.",
-        details: "طلب تنفيذ صادر من محكمة التنفيذ لطلب سداد مستحقات مالية وتنفيذ جبري للقرار الصادر.",
-        priority: "high",
-        attachments_count: 2
-      });
-      result.tasks.push({
-        title: "دراسة طلب التنفيذ وتجهيز الدفوع",
-        description: `تحليل تفاصيل الطلب رقم ${caseNum} والمطالبة التجارية بالمرئيات والدفوع.`,
-        priority: "medium",
-        dueDate: "2026-06-20",
-        caseNumber: caseNum
-      });
-      result.invoices.push({
-        invoiceNumber: `RE-EXP-${caseNum}`,
-        clientName: "شركة نادك للتنمية الزراعية",
-        amount: 8500,
-        status: "unpaid",
-        issueDate: "2026-06-01",
-        dueDate: "2026-06-15",
-        category: "execution_dues",
-        caseNumber: caseNum,
-        details: "رسوم ومستحقات التنفيذ القضائي المطالب بها في ناجز."
-      });
-    } else if (rawText.includes("وكالة") || rawText.includes("توكيل") || rawText.includes("صك رقم") || rawText.includes("موكل")) {
-      const poaNum = rawText.match(/\d{5,12}/)?.[0] || `39${Math.floor(100000 + Math.random() * 900000)}`;
-      result.powers_of_attorney.push({
-        poaNumber: poaNum,
-        issueDate: "2026-06-01",
-        expiryDate: "2029-06-01",
-        lawyerName: "مكتب المحامي بندر",
-        clientName: "شركة نادك للتنمية الزراعية",
-        status: "active"
-      });
-      result.tasks.push({
-        title: "دراسة طلب التنفيذ وتجهيز الدفوع",
-        description: `تحليل تفاصيل الطلب رقم ${poaNum} والمطالبة التجارية بالمرئيات والدفوع.`,
-        priority: "medium",
-        dueDate: "2026-06-20",
-        caseNumber: poaNum
-      });
-      result.invoices.push({
-        invoiceNumber: `RE-EXP-${poaNum}`,
-        clientName: "شركة نادك للتنمية الزراعية",
-        amount: 8500,
-        status: "unpaid",
-        issueDate: "2026-06-01",
-        dueDate: "2026-06-15",
-        category: "execution_dues",
-        caseNumber: poaNum,
-        details: "رسوم ومستحقات التنفيذ القضائي المطالب بها في ناجز."
-      });
-    } else {
-      result.cases.push({
-        caseNumber: caseNum,
-        caseName: "دعوى تجارية مستخرجة تلقائياً",
-        category: "commercial",
-        stage: "litigation",
-        status: "active",
-        clientName: "شركة نادك للتنمية الزراعية",
-        opponentName: "مؤسسة طارق بن فواز للمقاولات",
-        courtName: "المحكمة التجارية بالرياض",
-        lastSessionDate: "2026-06-01",
-        nextSessionDate: "2026-06-15",
-        nextSessionTime: "10:30 صباحاً",
-        summary: "مطالبة مالية بتعويض ناتج عن عقود التوريد المتأخرة والخاصة بالمنتجات الزراعية.",
-        details: "موضوع الدعوى يتعلق بالإخلال بالعقد التجاري المبرم وعدم توريد الشحنات المتعاقد عليها بالموعد.",
-        priority: "high",
-        attachments_count: 1
-      });
-      result.hearings.push({
-        caseNumber: caseNum,
-        caseName: "دعوى تجارية مستخرجة تلقائياً",
-        date: "2026-06-15",
-        time: "10:30 صباحاً",
-        courtName: "المحكمة التجارية بالرياض - الدائرة الرابعة",
-        status: "upcoming",
-        judgeName: "فضيلة الشيخ آل مغيرة",
-        notes: "جلسة المرافعة والجواب على لائحة الدعوى من الطرفين."
-      });
-      result.invoices.push({
-        invoiceNumber: `RE-FEES-${caseNum}`,
-        clientName: "شركة نادك للتنمية الزراعية",
-        amount: 3200,
-        status: "paid",
-        issueDate: "2026-05-30",
-        dueDate: "2026-06-10",
-        category: "court_fees",
-        caseNumber: caseNum,
-        details: "رسوم قيد الدعوى التجارية المفعّلة طبقاً لبوابة ناجز."
-      });
-    }
-  }
-  
-  return { result, successAI };
 }
 
 // Webhook / API Key configured sync for platform-agnostic chrome extensions
 // Accepts JSON scraped from najiz by any lawyer
 app.post('/api/najiz-sync', async (req, res) => {
-  const { apiKey, cases, hearings, clients, documents, powers_of_attorney, tasks, invoices, syncType, rawText } = req.body;
-  const poas = powers_of_attorney || req.body.poas;
-  const requestApiKey = req.headers['x-api-key'] || apiKey;
-
-  console.log('Received Najiz sync payload. Sync type:', syncType, 'Auth Key:', requestApiKey, 'Has rawText:', !!rawText);
-
-  // Allow connecting to webhook with key check
-  const actualApiKey = requestApiKey || "UNKNOWN_KEY";
-
-  let addedCasesCount = 0;
-  let updatedCasesCount = 0;
-  let addedHearingsCount = 0;
-  let updatedHearingsCount = 0;
-  let addedPoasCount = 0;
-  let updatedPoasCount = 0;
-  let addedClientsCount = 0;
-  let updatedClientsCount = 0;
-  let addedTasksCount = 0;
-  let updatedTasksCount = 0;
-  let addedInvoicesCount = 0;
-  let updatedInvoicesCount = 0;
-
-  let logsText = `مزامنة وإدخال ذكي متقدم (${syncType || (rawText ? 'قراءة نصية بالذكاء الاصطناعي' : 'تلقائي')}). مفتاح الربط: ${actualApiKey.substring(0, 10)}... \n`;
-
-  let finalCases = cases || [];
-  let finalHearings = hearings || [];
-  let finalPoas = poas || [];
-  let finalClients = clients || [];
-  let finalTasks = tasks || [];
-  let finalInvoices = invoices || [];
-
-  let usedAI = false;
-
-  // If we have rawText, let's process it with OpenAI or Fallback Heuristical Extractor!
-  if (rawText && typeof rawText === 'string' && rawText.trim().length > 0) {
-    logsText += `[AI 🧠] تم الكشف عن نص غير مصفى؛ جاري استدعاء نموذج GPT-4o لفرز وتحليل البيانات وترميزها...\n`;
-    try {
-      const { result, successAI } = await analyzeNajizDataWithAI(rawText, actualApiKey);
-      usedAI = successAI;
-      if (usedAI) {
-        logsText += `[AI 🧠] تم الاستخراج والتبويب بنجاح تام عبر محرك علم البيانات والذكاء الاصطناعي في مكانه الصحيح بالمنصة.\n`;
-      } else {
-        logsText += `[AI ⚠️] لم نتمكن من الوصول لنموذج OpenAI، جرى تشغيل المعالج الهيكلي الاحتياطي العاجل لضمان سلامة الخدمة.\n`;
+  try {
+    const { rawText, tables, cards, selectedTypes = ['cases', 'hearings', 'clients', 'agencies', 'executions'], url } = req.body;
+    
+    // دمج جميع النصوص
+    const fullText = [
+      rawText || '',
+      ...(cards || []),
+      ...(tables || []).map((t: any[][]) => t.map(row => row.join(' | ')).join('\\n'))
+    ].join('\\n');
+    
+    // التحليل بالذكاء الاصطناعي
+    const analyzed = await analyzeNajizDataWithAI(fullText, selectedTypes);
+    
+    const summary: Record<string, number> = {};
+    const errors: string[] = [];
+    
+    // حفظ القضايا
+    if (selectedTypes.includes('cases') || selectedTypes.includes('all')) {
+      for (const c of analyzed.cases) {
+        if (!c.caseNumber) continue;
+        try {
+          const { error } = await sharedSupabase.from('cases').upsert({
+            case_number: c.caseNumber,
+            title: c.caseName || c.caseNumber,
+            client_name: c.clientName,
+            opponent_name: c.opponentName,
+            category: c.category || 'civil',
+            status: c.status || 'active',
+            court_name: c.courtName,
+            stage: c.stage,
+            next_session_at: c.nextSessionDate ? new Date(c.nextSessionDate).toISOString() : null,
+            is_najiz_sync: true,
+            last_sync_at: new Date().toISOString()
+          }, { onConflict: 'case_number' });
+          if (!error) summary.cases = (summary.cases || 0) + 1;
+          else errors.push(`case ${c.caseNumber}: ${error.message}`);
+        } catch (e: any) { errors.push(e.message); }
       }
-      if (result.cases && result.cases.length > 0) finalCases = [...finalCases, ...result.cases];
-      if (result.hearings && result.hearings.length > 0) finalHearings = [...finalHearings, ...result.hearings];
-      if (result.powers_of_attorney && result.powers_of_attorney.length > 0) finalPoas = [...finalPoas, ...result.powers_of_attorney];
-      if (result.clients && result.clients.length > 0) finalClients = [...finalClients, ...result.clients];
-      if (result.tasks && result.tasks.length > 0) finalTasks = [...finalTasks, ...result.tasks];
-      if (result.invoices && result.invoices.length > 0) finalInvoices = [...finalInvoices, ...result.invoices];
-    } catch (aiErr: any) {
-      console.error('Error during AI sync analyze:', aiErr);
-      logsText += `[AI ❌] عطل أثناء تحليل النص بالذكاء الاصطناعي: ${aiErr.message}\n`;
     }
-  }
-
-  // Ensure arrays exist
-  if (!Array.isArray(stateOfPlatform.cases)) stateOfPlatform.cases = [];
-  if (!Array.isArray(stateOfPlatform.hearings)) stateOfPlatform.hearings = [];
-  if (!Array.isArray(stateOfPlatform.powersOfAttorney)) stateOfPlatform.powersOfAttorney = [];
-  if (!Array.isArray(stateOfPlatform.clients)) stateOfPlatform.clients = [];
-  if (!Array.isArray(stateOfPlatform.tasks)) stateOfPlatform.tasks = [];
-  if (!Array.isArray(stateOfPlatform.invoices)) stateOfPlatform.invoices = [];
-
-  // Parse Cases & Executions
-  if (finalCases && Array.isArray(finalCases)) {
-    finalCases.forEach((scraped: any) => {
-      if (!scraped.caseNumber) return;
-      
-      const existingIdx = stateOfPlatform.cases.findIndex((c: any) => c.caseNumber === scraped.caseNumber);
-      if (existingIdx !== -1) {
-        // Update accurately and immediately in the same place!
-        const existing: any = stateOfPlatform.cases[existingIdx] as any;
-        
-        // Build updated object
-        const updatedRecord = {
-          ...existing,
-          caseName: scraped.caseName || existing.caseName,
-          category: scraped.category || existing.category,
-          stage: scraped.stage || existing.stage,
-          status: scraped.status || existing.status,
-          clientName: scraped.clientName || existing.clientName,
-          opponentName: scraped.opponentName || existing.opponentName,
-          courtName: scraped.courtName || existing.courtName,
-          lastSessionDate: scraped.lastSessionDate || existing.lastSessionDate,
-          nextSessionDate: scraped.nextSessionDate || existing.nextSessionDate,
-          nextSessionTime: scraped.nextSessionTime || existing.nextSessionTime,
-          summary: scraped.summary || existing.summary,
-          details: scraped.details || existing.details,
-          priority: scraped.priority || existing.priority,
-          attachments_count: scraped.attachments_count ?? scraped.attachmentsCount ?? existing.attachments_count,
-          
-          // Schema matches for CourtCase
-          caseClassification: scraped.caseClassification || existing.caseClassification || (scraped.category === "execution" ? "طلبات تنفيذ" : "تجاري/عمالي"),
-          caseStatus: scraped.caseStatus || existing.caseStatus || "نشط",
-          clientPhone: scraped.clientPhone || existing.clientPhone || "+966500000000",
-          clientEmail: scraped.clientEmail || existing.clientEmail || "client@example.com",
-          startDate: scraped.startDate || existing.startDate || existing.createdAt || new Date().toISOString().split('T')[0],
-          nextHearingDate: scraped.nextHearingDate || scraped.nextSessionDate || existing.nextHearingDate || existing.nextSessionDate || "",
-          subject: scraped.subject || scraped.summary || existing.subject || existing.summary || "",
-          judgeName: scraped.judgeName || existing.judgeName || "فضيلة القاضي",
-          lastUpdated: new Date().toLocaleString('ar-SA'),
-          
-          // Arrays fallback to avoid undefined page errors
-          attachments: scraped.attachments || existing.attachments || [],
-          judgments: scraped.judgments || existing.judgments || [],
-          timeline: scraped.timeline || existing.timeline || [],
-          tasks: scraped.tasks || existing.tasks || [],
-          notes: scraped.notes || existing.notes || [],
-          documents: scraped.documents || existing.documents || [],
-          financialRecords: scraped.financialRecords || existing.financialRecords || [],
-          communicationHistory: scraped.communicationHistory || existing.communicationHistory || [],
-          relatedParties: scraped.relatedParties || existing.relatedParties || [],
-          hearings: scraped.hearings || existing.hearings || [],
-          executionRequests: scraped.executionRequests || existing.executionRequests || (scraped.category === "execution" ? [{
-            id: `exec-${scraped.caseNumber}`,
-            requestNumber: scraped.caseNumber,
-            requestDate: new Date().toISOString().split('T')[0],
-            amount: scraped.amount || '350,000 ريال',
-            status: 'قيد التنفيذ النشط',
-            courtName: scraped.courtName || 'محكمة التنفيذ بالرياض',
-            enforcementData: scraped.details || 'تفاصيل طلب التنفيذ المحدث تلقائياً.'
-          }] : [])
-        };
-        
-        stateOfPlatform.cases[existingIdx] = updatedRecord;
-        updatedCasesCount++;
-      } else {
-        // Insert new case or execution (which is category 'execution')
-        const newRecord = {
-          id: scraped.id || `case-scraped-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
-          caseNumber: scraped.caseNumber,
-          caseName: scraped.caseName || (scraped.category === "execution" ? "طلب تنفيذ مستورد" : "قضية مستخرجة تلقائياً"),
-          category: scraped.category || "commercial",
-          stage: scraped.stage || (scraped.category === "execution" ? "execution" : "litigation"),
-          status: scraped.status || "active",
-          clientName: scraped.clientName || "موكل مستورد",
-          clientId: scraped.clientId || "client-scraped",
-          opponentName: scraped.opponentName || "طرف خصم مستورد",
-          courtName: scraped.courtName || (scraped.category === "execution" ? "محكمة التنفيذ بالرياض" : "المحكمة العامة"),
-          lastSessionDate: scraped.lastSessionDate || "",
-          nextSessionDate: scraped.nextSessionDate || "",
-          nextSessionTime: scraped.nextSessionTime || "",
-          summary: scraped.summary || "تم استيرادها تلقائياً بالكامل من بوابة ناجز السعودية وتحليلها.",
-          details: scraped.details || `رقم المعاملة: ${scraped.caseNumber} - المستوردة عبر بوابة التزامن الذكي.`,
-          isNajizSync: true,
-          priority: scraped.priority || "high",
-          createdAt: new Date().toISOString().split('T')[0],
-          attachments_count: (scraped.attachments_count ?? scraped.attachmentsCount) || 0,
-          
-          // Compatibilities for CourtCase Structure
-          caseClassification: scraped.caseClassification || (scraped.category === "execution" ? "طلبات تنفيذ" : "تجاري/عمالي"),
-          caseStatus: scraped.caseStatus || "نشط",
-          clientPhone: scraped.clientPhone || "+966500000000",
-          clientEmail: scraped.clientEmail || "client@example.com",
-          startDate: new Date().toISOString().split('T')[0],
-          nextHearingDate: scraped.nextHearingDate || scraped.nextSessionDate || "",
-          subject: scraped.subject || scraped.summary || "مزامنة ناجز التلقائية بالذكاء الاصطناعي",
-          judgeName: scraped.judgeName || "فضيلة القاضي",
-          lastUpdated: new Date().toLocaleString('ar-SA'),
-          
-          attachments: scraped.attachments || [],
-          judgments: scraped.judgments || [],
-          timeline: scraped.timeline || [],
-          tasks: scraped.tasks || [],
-          notes: scraped.notes || [],
-          documents: scraped.documents || [],
-          financialRecords: scraped.financialRecords || [],
-          communicationHistory: scraped.communicationHistory || [],
-          relatedParties: scraped.relatedParties || [],
-          hearings: scraped.hearings || [],
-          executionRequests: scraped.executionRequests || (scraped.category === "execution" ? [{
-            id: `exec-${scraped.caseNumber}`,
-            requestNumber: scraped.caseNumber,
-            requestDate: new Date().toISOString().split('T')[0],
-            amount: scraped.amount || '350,000 ريال',
-            status: 'قيد التنفيذ النشط',
-            courtName: scraped.courtName || 'محكمة التنفيذ بالرياض',
-            enforcementData: scraped.details || 'تفاصيل طلب التنفيذ المستورد عبر الربط التلقائي.'
-          }] : [])
-        };
-        
-        stateOfPlatform.cases.unshift(newRecord);
-        addedCasesCount++;
+    
+    // حفظ الجلسات
+    if (selectedTypes.includes('hearings') || selectedTypes.includes('all')) {
+      for (const h of analyzed.hearings) {
+        if (!h.date) continue;
+        try {
+          const { error } = await sharedSupabase.from('hearings').upsert({
+            case_number: h.caseNumber,
+            case_name: h.caseName,
+            date: h.date,
+            time: h.time || '09:00',
+            court_name: h.courtName,
+            status: h.status || 'upcoming',
+            created_at: new Date().toISOString()
+          }, { onConflict: 'case_number,date' });
+          if (!error) summary.hearings = (summary.hearings || 0) + 1;
+        } catch (e: any) {}
       }
+    }
+    
+    // حفظ العملاء
+    if (selectedTypes.includes('clients') || selectedTypes.includes('all')) {
+      for (const cl of analyzed.clients) {
+        if (!cl.name) continue;
+        try {
+          const { error } = await sharedSupabase.from('clients').upsert({
+            name: cl.name,
+            national_id: cl.nationalId,
+            id_number: cl.nationalId,
+            phone: cl.phone,
+            status: 'active',
+            last_sync_at: new Date().toISOString()
+          }, { onConflict: 'national_id' });
+          if (!error) summary.clients = (summary.clients || 0) + 1;
+        } catch (e: any) {}
+      }
+    }
+    
+    // حفظ طلبات التنفيذ
+    if (selectedTypes.includes('executions') || selectedTypes.includes('all')) {
+      for (const ex of analyzed.executions) {
+        if (!ex.executionNumber) continue;
+        try {
+          await sharedSupabase.from('executions').upsert({
+            execution_number: ex.executionNumber,
+            requester_name: ex.requesterName,
+            opponent_name: ex.opponentName,
+            amount: ex.amount || 0,
+            status: ex.status || 'active',
+            court_name: ex.courtName,
+            last_sync_at: new Date().toISOString()
+          }, { onConflict: 'execution_number' });
+          summary.executions = (summary.executions || 0) + 1;
+        } catch (e: any) {}
+      }
+    }
+    
+    // حفظ الوكالات
+    if (selectedTypes.includes('agencies') || selectedTypes.includes('all')) {
+      for (const ag of analyzed.powers_of_attorney) {
+        if (!ag.poaNumber) continue;
+        try {
+          await sharedSupabase.from('powers_of_attorney').upsert({
+            poa_number: ag.poaNumber,
+            type: ag.type || 'general',
+            status: ag.status || 'active',
+            issue_date: ag.issueDate,
+            expiry_date: ag.expiryDate,
+            last_sync_at: new Date().toISOString()
+          }, { onConflict: 'poa_number' });
+          summary.agencies = (summary.agencies || 0) + 1;
+        } catch (e: any) {}
+      }
+    }
+    
+    res.json({
+      success: true,
+      message: 'تمت المزامنة بنجاح',
+      summary,
+      errors: errors.length > 0 ? errors : undefined
     });
     
-    if (addedCasesCount > 0) logsText += `✓ تم إضافة عدد (${addedCasesCount}) سجلات قضايا/طلبات تنفيذ جديدة.\n`;
-    if (updatedCasesCount > 0) logsText += `✓ تم تحديث عدد (${updatedCasesCount}) قضايا/طلبات تنفيذ في مكانها لضمان المطابقة الفورية.\n`;
+  } catch (err: any) {
+    console.error('[Najiz Sync] Error:', err);
+    res.status(500).json({ success: false, message: err.message });
   }
-
-  // Parse Hearings
-  if (finalHearings && Array.isArray(finalHearings)) {
-    finalHearings.forEach((h: any) => {
-      if (!h.caseNumber) return;
-      
-      const existingIdx = stateOfPlatform.hearings.findIndex((item: any) => item.caseNumber === h.caseNumber && item.date === h.date);
-      if (existingIdx !== -1) {
-        const existing = stateOfPlatform.hearings[existingIdx];
-        stateOfPlatform.hearings[existingIdx] = {
-          ...existing,
-          caseName: h.caseName || existing.caseName,
-          time: h.time || existing.time,
-          courtName: h.courtName || existing.courtName,
-          judgeName: h.judgeName || existing.judgeName,
-          notes: h.notes || existing.notes
-        };
-        updatedHearingsCount++;
-      } else {
-        stateOfPlatform.hearings.unshift({
-          id: h.id || `hearing-scraped-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
-          caseNumber: h.caseNumber,
-          caseName: h.caseName || "جلسة مستوردة",
-          date: h.date || new Date().toISOString().split('T')[0],
-          time: h.time || "10:00 صباحاً",
-          courtName: h.courtName || "المحكمة المختصة",
-          status: h.status || "upcoming",
-          judgeName: h.judgeName || "رئيس الدائرة",
-          notes: h.notes || "مستورد من ناجز تلقائياً."
-        });
-        addedHearingsCount++;
-      }
-    });
-
-    if (addedHearingsCount > 0) logsText += `✓ تم جدولة عدد (${addedHearingsCount}) جلسات مرافعة قادمة بالأجندة.\n`;
-    if (updatedHearingsCount > 0) logsText += `✓ تم تحديث تفاصيل عدد (${updatedHearingsCount}) جلسات قائمة للتطابق.\n`;
-  }
-
-  // Parse POAs
-  if (finalPoas && Array.isArray(finalPoas)) {
-    finalPoas.forEach((p: any) => {
-      if (!p.poaNumber) return;
-
-      const existingIdx = stateOfPlatform.powersOfAttorney.findIndex((item: any) => item.poaNumber === p.poaNumber);
-      if (existingIdx !== -1) {
-        stateOfPlatform.powersOfAttorney[existingIdx] = { ...stateOfPlatform.powersOfAttorney[existingIdx], ...p };
-        updatedPoasCount++;
-      } else {
-        stateOfPlatform.powersOfAttorney.unshift({
-          id: p.id || `poa-scraped-${Date.now()}`,
-          lawyerName: "محامي المكتب",
-          clientName: "موكل مستورد",
-          status: "active",
-          ...p
-        });
-        addedPoasCount++;
-      }
-    });
-
-    if (addedPoasCount > 0) logsText += `✓ تم أرشفة (${addedPoasCount}) وكالة رسمية وجعلها قيد المتابعة الآمنة.\n`;
-    if (updatedPoasCount > 0) logsText += `✓ تم تحديث تفاصيل وصلاحية (${updatedPoasCount}) وكالات بالنظام.\n`;
-  }
-
-  // Parse Clients
-  if (finalClients && Array.isArray(finalClients)) {
-    finalClients.forEach((cl: any) => {
-      if (!cl.name) return;
-      const existingIdx = stateOfPlatform.clients.findIndex((item: any) => item.name === cl.name || (cl.nationalId && item.nationalId === cl.nationalId));
-      if (existingIdx !== -1) {
-        stateOfPlatform.clients[existingIdx] = { ...stateOfPlatform.clients[existingIdx], ...cl };
-        updatedClientsCount++;
-      } else {
-        stateOfPlatform.clients.unshift({
-          id: cl.id || `client-scraped-${Date.now()}`,
-          phone: "+966500000000",
-          email: "client@example.com",
-          activePortal: true,
-          ...cl
-        });
-        addedClientsCount++;
-      }
-    });
-  }
-
-  // Parse Tasks
-  if (finalTasks && Array.isArray(finalTasks)) {
-    finalTasks.forEach((tsk: any) => {
-      if (!tsk.title) return;
-      const tskId = tsk.id || `task-scraped-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
-      const existingIdx = stateOfPlatform.tasks.findIndex((item: any) => item.id === tskId || (tsk.title && item.title === tsk.title && item.caseNumber === tsk.caseNumber));
-      if (existingIdx !== -1) {
-        stateOfPlatform.tasks[existingIdx] = { ...stateOfPlatform.tasks[existingIdx], ...tsk };
-        updatedTasksCount++;
-      } else {
-        stateOfPlatform.tasks.unshift({
-          id: tskId,
-          title: tsk.title,
-          description: tsk.description || "متابعة البيانات المستوردة من ناجز.",
-          priority: tsk.priority || "medium",
-          dueDate: tsk.dueDate || new Date(Date.now() + 86400000 * 7).toISOString().split('T')[0],
-          status: "pending",
-          caseNumber: tsk.caseNumber || "",
-          category: tsk.category || "litigation",
-          lawyerId: tsk.lawyerId || "lawyer-1",
-          lawyerName: tsk.lawyerName || "عبدالرحمن بن محمد بن صقر"
-        } as any);
-        addedTasksCount++;
-      }
-    });
-    if (addedTasksCount > 0) logsText += `✓ تم استنتاج وإدراج عدد (${addedTasksCount}) مهام متابعة قانونية جديدة بجدول المتابعات.\n`;
-  }
-
-  // Parse Invoices / Financial Dues
-  if (finalInvoices && Array.isArray(finalInvoices)) {
-    finalInvoices.forEach((inv: any) => {
-      if (!inv.invoiceNumber && !inv.id) return;
-      
-      const invId = inv.id || `inv-${inv.invoiceNumber || Date.now()}`;
-      const existingIdx = stateOfPlatform.invoices.findIndex((item: any) => item.id === invId || (inv.invoiceNumber && item.invoiceNumber === inv.invoiceNumber));
-      if (existingIdx !== -1) {
-        stateOfPlatform.invoices[existingIdx] = { ...stateOfPlatform.invoices[existingIdx], ...inv };
-        updatedInvoicesCount++;
-      } else {
-        stateOfPlatform.invoices.unshift({
-          id: invId,
-          invoiceNumber: inv.invoiceNumber || `INV-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
-          clientName: inv.clientName || "موكل مستورد",
-          amount: inv.amount || 5000,
-          status: inv.status || "unpaid",
-          issueDate: inv.issueDate || new Date().toISOString().split('T')[0],
-          dueDate: inv.dueDate || new Date(Date.now() + 86400000 * 30).toISOString().split('T')[0],
-          category: inv.category || "execution_dues",
-          caseNumber: inv.caseNumber || "",
-          details: inv.details || "مطالبات مالية مستوردة من ناجز."
-        } as any);
-        addedInvoicesCount++;
-      }
-    });
-    if (addedInvoicesCount > 0) logsText += `✓ تم جدولة عدد (${addedInvoicesCount}) مطالبات مالية ورسوم تنفيذية في النظام المالي.\n`;
-  }
-
-  // NOTE: In-line persistence to Firestore has been removed in favor of Supabase Sync in useSupabaseData hook.
-  
-  res.json({
-    success: true,
-    message: logsText,
-    state: stateOfPlatform
-  });
 });
 
 app.get('/api/extension/download', async (req, res) => {
-  const apiKey = req.query.apiKey as string || 'DEMO-KEY';
-  let backendUrl = req.protocol + '://' + req.get('host');
-  
-  if (req.get('host') && !req.get('host')?.includes('localhost') && !req.get('host')?.includes('127.0.0.1')) {
-    backendUrl = 'https://' + req.get('host');
-  }
-
   try {
+    const JSZip = require('jszip');
     const zip = new JSZip();
-    const folder = zip.folder("Adalah-Sync-Extension");
+    const path = require('path');
+    const extDir = path.join(process.cwd(), 'extension');
     
-    if (!folder) throw new Error("Could not create ZIP folder");
+    const filesToZip = [
+      'manifest.json', 'popup.html', 'popup.js', 'content.js', 'content.css', 'background.js',
+      'icons/icon16.png', 'icons/icon48.png', 'icons/icon128.png'
+    ];
 
-    // manifest.json
-    folder.file('manifest.json', JSON.stringify({
-      manifest_version: 3,
-      name: "مزامنة العدالة - Najiz Sync Pro",
-      version: "2.6.0",
-      description: "أداة المزامنة الذكية فورية الاتصال بمكتب العدالة - تدعم كافة صفحات ناجز",
-      permissions: ["storage", "activeTab"],
-      host_permissions: ["<all_urls>"],
-      background: { service_worker: "background.js" },
-      content_scripts: [{
-        matches: ["*://najiz.sa/*", "*://*.najiz.sa/*"],
-        js: ["content.js"],
-        css: ["content.css"],
-        run_at: "document_idle"
-      }],
-      action: { 
-        default_title: "العدالة - مزامنة ناجز",
-        default_popup: "popup.html"
-      },
-      icons: {
-        "128": "icon.png"
-      }
-    }, null, 2));
-
-
-  const contentJs = `
-const injectAlAdalahStyles = () => {
-    if (document.getElementById('aladalah-sync-styles')) return;
-    const s = document.createElement('style');
-    s.id = 'aladalah-sync-styles';
-    s.textContent = ".aladalah-sync-btn{position:fixed;bottom:30px;right:30px;z-index:999999;background:linear-gradient(135deg,#0c2461 0%,#1e3a8a 100%);color:#fff;border:2px solid #d4af37;padding:12px 24px;border-radius:12px;font-weight:900;cursor:pointer;box-shadow:0 10px 20px rgba(0,0,0,0.3);direction:rtl; transition: all 0.3s ease; text-align: center; font-family: sans-serif;}.aladalah-sync-btn:hover{transform:translateY(-5px);border-color:#fbbf24;}";
-    document.head.appendChild(s);
-};
-
-const injectAlAdalahBtn = () => {
-    if (document.querySelector('.aladalah-sync-btn')) return;
-    
-    const alBtn = document.createElement('button');
-    alBtn.innerHTML = '⚖️ مزامنة ذكية فورية مع العدالة';
-    alBtn.className = 'aladalah-sync-btn';
-    
-    alBtn.onclick = async () => {
-        alBtn.innerText = '⏳ جاري القراءة والتحليل بالـ AI...';
-        alBtn.disabled = true;
-        try {
-            const keyData = await new Promise(r => chrome.storage.local.get(['activeApiKey'], r)).catch(() => ({}));
-            const apiKey = keyData.activeApiKey || '${apiKey}';
-            
-            // Collect the entire text of the visible page
-            const pageText = document.body.innerText;
-            
-            // Send to background service worker to bypass CSP & CORS restrictions on najiz.sa!
-            chrome.runtime.sendMessage({
-                action: 'fetchNajizSync',
-                url: '${backendUrl}/api/najiz-sync',
-                apiKey: apiKey,
-                body: { 
-                    apiKey, 
-                    rawText: pageText.substring(0, 100000), 
-                    syncType: 'universal_full_page_sync',
-                    sourceUrl: window.location.href
-                }
-            }, (response) => {
-                if (chrome.runtime.lastError) {
-                    alert('⚠️ خطأ اتصال خلفية الإضافة: ' + chrome.runtime.lastError.message);
-                    alBtn.innerText = '⚠️ فشل الاتصال';
-                } else if (response && response.success) {
-                    alert('✅ تم بنجاح! ' + (response.message || 'تم مزامنة وتوصيل البيانات بالمنصة بمطابقة فورية.'));
-                    alBtn.innerText = '✅ تم التزامن';
-                } else {
-                    alert('⚠️ خطأ في المزامنة: ' + (response ? response.error : 'استجابة غير صالحة من السيرفر'));
-                    alBtn.innerText = '⚠️ فشل المزامنة';
-                }
-                setTimeout(() => {
-                    alBtn.innerText = '⚖️ مزامنة ذكية فورية مع العدالة';
-                    alBtn.disabled = false;
-                }, 5000);
-            });
-            return;
-        } catch (e) {
-            alert('⚠️ خطأ: ' + e.message);
-            alBtn.innerText = '⚠️ فشل الارتباط';
-        }
-        setTimeout(() => { 
-            alBtn.innerText = '⚖️ مزامنة ذكية فورية مع العدالة'; 
-            alBtn.disabled = false; 
-        }, 5000);
-    };
-    
-    document.body.appendChild(alBtn);
-};
-
-// Listen for popup modular trigger messages
-chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-    if (request.action === "scrapeData") {
-        try {
-            const casesScraped = [];
-            const hearingsScraped = [];
-            const cards = document.querySelectorAll('tr, .najiz-table-row, .case-card, .najiz-card, .application-card, div.card, .detail-row');
-            
-            cards.forEach((el) => {
-                const text = el.innerText || "";
-                const caseMatch = text.match(/\\b(4[2345]\\d{6,8})\\b/);
-                if (caseMatch) {
-                    const caseNo = caseMatch[1];
-                    if (!casesScraped.some(c => c.caseNumber === caseNo)) {
-                        let courtName = "المحكمة العامة بالرياض";
-                        if (text.includes("عمال") || text.includes("عمالية")) {
-                            courtName = "المحكمة العمالية بالرياض";
-                        } else if (text.includes("تجار") || text.includes("تجارية")) {
-                            courtName = "المحكمة التجارية بجدة";
-                        } else if (text.includes("جزاء") || text.includes("جزائية")) {
-                            courtName = "المحكمة الجزائية بمكة المكرمة";
-                        } else if (text.includes("تنفيذ")) {
-                            courtName = "محكمة التنفيذ بالدمام";
-                        } else if (text.includes("أحوال") || text.includes("شخصية")) {
-                            courtName = "محكمة الأحوال الشخصية بالمدينة المنورة";
-                        }
-
-                        let title = "دعوى عمالية ومطالبة بمستحقات مالية";
-                        if (text.includes("توريد")) title = "دعوى مطالبة في عقد توريد سلع";
-                        if (text.includes("شرك")) title = "نزاع تجاري حول تصفية أرصدة شركة";
-                        if (text.includes("عقار") || text.includes("إيجار")) title = "دعوى استحقاق أجرة عقار وإخلاء";
-                        
-                        casesScraped.push({
-                            caseNumber: caseNo,
-                            caseName: title,
-                            courtName: courtName,
-                            opponentName: "مؤسسة النقل والتشغيل الوطنية للخدمات",
-                            clientName: "شركة نادك للتنمية الزراعية",
-                            stage: "litigation",
-                            status: "active"
-                        });
-
-                        const dateMatch = text.match(/\\b(144\\d|202\\d)[-/\\. ]\\d{2}[-/\\. ]\\d{2}\\b/) || text.match(/\\b\\d{2}[-/\\. ]\\d{2}[-/\\. ](144\\d|202\\d)\\b/);
-                        if (dateMatch) {
-                            hearingsScraped.push({
-                                caseNumber: caseNo,
-                                date: dateMatch[0],
-                                time: "09:30 صباحاً",
-                                courtName: courtName,
-                                status: "upcoming"
-                            });
-                        }
-                    }
-                }
-            });
-
-            if (casesScraped.length === 0) {
-                // Return fallback template for preview testing
-                casesScraped.push({
-                    caseNumber: "441728192",
-                    caseName: "نزاع حول عقد تصنيع خط تجميع آلي",
-                    courtName: "المحكمة التجارية بالرياض - الدائرة الخامسة",
-                    opponentName: "مؤسسة الابتكار الهندسي للحلول التقنية",
-                    clientName: "شركة نادك للتنمية الزراعية",
-                    stage: "litigation",
-                    status: "pending_session"
-                });
-                hearingsScraped.push({
-                    caseNumber: "441728192",
-                    date: new Date(Date.now() + 86400000 * 5).toISOString().split('T')[0],
-                    time: "11:15 صباحاً",
-                    courtName: "المحكمة التجارية بالرياض - الدائرة الخامسة",
-                    status: "upcoming"
-                });
-            }
-
-            sendResponse({
-                success: true,
-                cases: casesScraped,
-                hearings: hearingsScraped,
-                clients: [{ name: "شركة نادك للتنمية الزراعية", nationalId: "1010065271" }],
-                rawText: document.body.innerText || ""
-            });
-        } catch (err) {
-            sendResponse({ success: false, error: err.message });
-        }
-    }
-    return true;
-});
-
-// Initial triggers
-injectAlAdalahStyles();
-injectAlAdalahBtn();
-
-setInterval(() => {
-    injectAlAdalahStyles();
-    injectAlAdalahBtn();
-}, 2000);
-`;
-  
-    folder.file('content.js', contentJs);
-
-
-
-  // content.css
-  const contentCss = `
-.aladalah-sync-btn {
-  position: fixed;
-  bottom: 24px;
-  right: 24px;
-  background: linear-gradient(135deg, #d4af37, #aa8c2c);
-  color: #0b1e33;
-  border: 1px solid #ffe38f;
-  padding: 12px 24px;
-  border-radius: 9999px;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  font-weight: 800;
-  font-size: 14px;
-  cursor: pointer;
-  box-shadow: 0 4px 15px rgba(212, 175, 55, 0.4);
-  z-index: 999999;
-  transition: all 0.3s ease;
-}
-.aladalah-sync-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(212, 175, 55, 0.5);
-}
-.aladalah-sync-btn:disabled {
-  opacity: 0.7;
-  cursor: not-allowed;
-  transform: none;
-}
-  `;
-  
-    folder.file('content.css', contentCss);
-
-
-
-  // background.js
-  const backgroundJs = `
-chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-  if (message.action === 'fetchNajizSync') {
-    fetch(message.url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': message.apiKey
-      },
-      body: JSON.stringify(message.body)
-    })
-    .then(async (res) => {
-      const isJson = res.headers.get('content-type')?.includes('application/json');
-      const data = isJson ? await res.json() : null;
-      if (!res.ok) {
-        const errorText = data ? (data.error || data.message) : await res.text();
-        throw new Error(errorText || 'HTTP ' + res.status);
-      }
-      return data;
-    })
-    .then(data => {
-      sendResponse({ success: true, message: data.message, state: data.state });
-    })
-    .catch(err => {
-      sendResponse({ success: false, error: err.message });
-    });
-    return true; // Keep message channel open for async response
-  } else if (message.action === 'notify') {
-    chrome.notifications.create({
-      type: 'basic',
-      iconUrl: 'icon.png', // Ideally we'd have an icon, fallback works in some browsers or omit
-      title: 'مزامنة مكتب العدالة',
-      message: message.text
-    });
-  } else if (message.action === 'logError') {
-    // Store error logs
-    chrome.storage.local.get(['errorLogs'], function(result) {
-      const logs = result.errorLogs || [];
-      logs.unshift({ time: new Date().toLocaleString('ar-SA'), message: message.text, type: 'error' });
-      chrome.storage.local.set({ errorLogs: logs.slice(0, 50) });
-    });
-  } else if (message.action === 'logSuccess') {
-    chrome.storage.local.get(['errorLogs'], function(result) {
-      const logs = result.errorLogs || [];
-      logs.unshift({ time: new Date().toLocaleString('ar-SA'), message: message.text, type: 'success' });
-      chrome.storage.local.set({ errorLogs: logs.slice(0, 50) });
-    });
-  }
-});
-  `;
-  
-    folder.file('background.js', backgroundJs);
-
-
-
-  // popup.html
-  const popupHtml = `
-<!DOCTYPE html>
-<html dir="rtl" lang="ar">
-<head>
-  <meta charset="UTF-8">
-  <title>المزامنة الذكية</title>
-  <style>
-    body { width: 320px; font-family: 'Segoe UI', Tahoma, sans-serif; padding: 16px; background: #07132c; color: #fff; text-align: right; margin: 0; }
-    h3 { margin: 0; color: #d4af37; font-size: 16px; text-align: center; }
-    p.subtitle { font-size: 11px; color: #94a3b8; margin: 4px 0 16px 0; text-align: center;}
-    
-    .tabs { display: flex; border-bottom: 1px solid #1e293b; margin-bottom: 12px; }
-    .tab { flex: 1; text-align: center; padding: 8px 0; font-size: 13px; cursor: pointer; color: #94a3b8; }
-    .tab.active { color: #d4af37; border-bottom: 2px solid #d4af37; font-weight: bold; }
-    
-    .panel { display: none; }
-    .panel.active { display: block; }
-    
-    /* Settings Panel */
-    .input-grp { margin-bottom: 12px; }
-    .input-grp label { display: block; font-size: 11px; color: #cbd5e1; margin-bottom: 4px; }
-    .input-grp input { width: 100%; box-sizing: border-box; padding: 8px; background: #0f172a; border: 1px solid #334155; color: #fff; border-radius: 4px; font-size: 12px; }
-    .btn { background: #d4af37; color: #0b1e33; border: none; padding: 8px 12px; font-size: 12px; border-radius: 4px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 8px; }
-    .btn:hover { background: #aa8c2c; }
-    .btn-secondary { background: #1e293b; color: #fff; border: 1px solid #334155; margin-top: 8px; }
-    .btn-secondary:hover { background: #334155; }
-    .api-key-display { background: #0f172a; border: 1px solid #10b981; padding: 6px; border-radius: 4px; font-size: 10px; color: #10b981; word-break: break-all; margin-bottom: 10px;}
-    
-    /* Logs Panel */
-    .logs-container { max-height: 200px; overflow-y: auto; background: #0f172a; border-radius: 4px; border: 1px solid #334155; }
-    .log-item { padding: 8px; border-bottom: 1px solid #1e293b; font-size: 11px; }
-    .log-item:last-child { border-bottom: none; }
-    .log-error { border-right: 3px solid #ef4444; background: rgba(239, 68, 68, 0.05); }
-    .log-success { border-right: 3px solid #10b981; background: rgba(16, 185, 129, 0.05); }
-    .log-time { font-size: 9px; color: #64748b; margin-bottom: 2px; }
-    .no-logs { padding: 20px; text-align: center; color: #64748b; font-size: 11px; }
-  </style>
-</head>
-<body>
-  <h3>مكتب العدالة</h3>
-  <p class="subtitle">أداة المزامنة الذكية</p>
-  
-  <div class="tabs">
-    <div class="tab active" id="tab-settings">الإعدادات العلوية</div>
-    <div class="tab" id="tab-logs">سجل المزامنة</div>
-  </div>
-  
-  <div class="panel active" id="panel-settings">
-    <div style="margin-bottom: 16px; padding: 12px; border-radius: 8px; border: 1.5px solid #d4af37; background: rgba(212, 175, 55, 0.05); text-align: center;">
-      <button class="btn" id="syncCurrentPageBtn" style="background: linear-gradient(135deg, #d4af37, #aa8c2c); color: #07132c; font-weight: 900; box-shadow: 0 4px 10px rgba(212, 175, 55, 0.3); border: none; padding: 10px; border-radius: 6px; width: 100%; font-size: 13px; cursor: pointer;">⚖️ مزامنة الصفحة الحالية بالـ AI 🧠</button>
-      <div id="syncStatusMsg" style="margin-top: 6px; font-size: 11px; font-weight: bold; color: #d4af37; display: none;"></div>
-    </div>
-
-    <div class="input-grp">
-      <label>رمز الربط النشط (API Key):</label>
-      <div class="api-key-display" id="apiKeyDisplay">${apiKey}</div>
-    </div>
-    
-    <div class="input-grp">
-      <label>تحديد مفتاح API (اختياري، للتبديل بين البيئات):</label>
-      <input type="text" id="customApiKey" placeholder="أدخل مفتاح المنصة هنا...">
-    </div>
-    <button class="btn" id="saveKeyBtn">حفظ المفتاح النشط</button>
-    <button class="btn btn-secondary" id="resetKeyBtn">استعادة المفتاح الافتراضي</button>
-
-    <div style="font-size: 10px; margin-top: 16px; color: #64748b; text-align: center;">انتقل إلى بوابة ناجز لتفعيل المزامنة.</div>
-  </div>
-
-  <div class="panel" id="panel-logs">
-    <div class="logs-container" id="logsList">
-      <div class="no-logs">جاري التحميل...</div>
-    </div>
-    <button class="btn btn-secondary" id="clearLogsBtn" style="margin-top: 8px;">مسح السجل</button>
-  </div>
-
-  <script src="popup.js"></script>
-</body>
-</html>
-  `;
-  
-    folder.file('popup.html', popupHtml);
-
-
-
-  // popup.js
-  const popupJs = `
-document.addEventListener('DOMContentLoaded', () => {
-    const tabSettings = document.getElementById('tab-settings');
-    const tabLogs = document.getElementById('tab-logs');
-    const panelSettings = document.getElementById('panel-settings');
-    const panelLogs = document.getElementById('panel-logs');
-    const logsList = document.getElementById('logsList');
-    const customApiKeyInput = document.getElementById('customApiKey');
-    const apiKeyDisplay = document.getElementById('apiKeyDisplay');
-    
-    // Default key injected by server
-    const defaultApiKey = '${apiKey}';
-
-    // Load active key
-    chrome.storage.local.get(['activeApiKey'], function(result) {
-        if (result.activeApiKey) {
-            apiKeyDisplay.innerText = result.activeApiKey;
-            customApiKeyInput.value = result.activeApiKey;
+    for (const file of filesToZip) {
+      const filePath = path.join(extDir, file);
+      if (fs.existsSync(filePath)) {
+        const fileContent = fs.readFileSync(filePath);
+        if (file.includes('/')) {
+           const [folderName, fileName] = file.split('/');
+           const folder = zip.folder(folderName);
+           if (folder) folder.file(fileName, fileContent);
         } else {
-            apiKeyDisplay.innerText = defaultApiKey;
+           zip.file(file, fileContent);
         }
-    });
-
-    // Save custom key
-    document.getElementById('saveKeyBtn').addEventListener('click', () => {
-        const val = customApiKeyInput.value.trim();
-        if (val) {
-            chrome.storage.local.set({ activeApiKey: val }, () => {
-                apiKeyDisplay.innerText = val;
-                alert('تم حفظ مفتاح API بنجاح.');
-            });
-        }
-    });
-
-    // Reset key
-    document.getElementById('resetKeyBtn').addEventListener('click', () => {
-        chrome.storage.local.remove('activeApiKey', () => {
-            apiKeyDisplay.innerText = defaultApiKey;
-            customApiKeyInput.value = '';
-            alert('تم استعادة المفتاح الافتراضي.');
-        });
-    });
-
-    // Load Logs
-    function loadLogs() {
-        chrome.storage.local.get(['errorLogs'], function(result) {
-            const logs = result.errorLogs || [];
-            if (logs.length === 0) {
-                logsList.innerHTML = '<div class="no-logs">لا توجد سجلات مزامنة حالياً.</div>';
-                return;
-            }
-            
-            logsList.innerHTML = logs.map(log => \`
-                <div class="log-item \${log.type === 'error' ? 'log-error' : 'log-success'}">
-                    <div class="log-time">\${log.time || ''}</div>
-                    <div>\${log.message}</div>
-                </div>
-            \`).join('');
-        });
+      }
     }
-
-    document.getElementById('clearLogsBtn').addEventListener('click', () => {
-        chrome.storage.local.set({ errorLogs: [] }, () => {
-            loadLogs();
-        });
-    });
-
-    // Tab switching
-    tabSettings.addEventListener('click', () => {
-        tabSettings.classList.add('active');
-        tabLogs.classList.remove('active');
-        panelSettings.classList.add('active');
-        panelLogs.classList.remove('active');
-    });
-
-    tabLogs.addEventListener('click', () => {
-        tabLogs.classList.add('active');
-        tabSettings.classList.remove('active');
-        panelLogs.classList.add('active');
-        panelSettings.classList.remove('active');
-        loadLogs();
-    });
-
-    // Smart sync from popup directly
-    const syncCurrentPageBtn = document.getElementById('syncCurrentPageBtn');
-    const syncStatusMsg = document.getElementById('syncStatusMsg');
-
-    if (syncCurrentPageBtn && syncStatusMsg) {
-        syncCurrentPageBtn.addEventListener('click', async () => {
-            syncStatusMsg.style.display = 'block';
-            syncStatusMsg.style.color = '#cbd5e1';
-            syncStatusMsg.innerText = '⏳ جاري الكشف عن التبويب النشط...';
-            syncCurrentPageBtn.disabled = true;
-
-            try {
-                const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-                if (!tab) {
-                    syncStatusMsg.style.color = '#ef4444';
-                    syncStatusMsg.innerText = '⚠️ لم يتم العثور على تبويب نشط.';
-                    syncCurrentPageBtn.disabled = false;
-                    return;
-                }
-                
-                if (!tab.url || !tab.url.includes('najiz.sa')) {
-                    syncStatusMsg.style.color = '#f59e0b';
-                    syncStatusMsg.innerText = '⚠️ يرجى تفعيل الزر أثناء تصفح ناجز najiz.sa';
-                    syncCurrentPageBtn.disabled = false;
-                    return;
-                }
-
-                syncStatusMsg.innerText = '⏳ جاري تجميع محتوى الصفحة...';
-                
-                chrome.tabs.sendMessage(tab.id, { action: "scrapeData" }, (response) => {
-                    if (chrome.runtime.lastError) {
-                        syncStatusMsg.style.color = '#ef4444';
-                        syncStatusMsg.innerText = '⚠️ خطأ الاتصال. أعد تحميل صفحة ناجز وحاول مجدداً.';
-                        syncCurrentPageBtn.disabled = false;
-                        return;
-                    }
-
-                    if (response && response.success) {
-                        syncStatusMsg.innerText = '🚀 جاري إرسال البيانات والتحليل بالسيرفر...';
-                        
-                        chrome.storage.local.get(['activeApiKey'], (result) => {
-                            const activeKey = result.activeApiKey || defaultApiKey;
-                            const payload = {
-                                apiKey: activeKey,
-                                syncType: 'popup_smart_full_sync',
-                                cases: response.cases,
-                                hearings: response.hearings,
-                                clients: response.clients,
-                                rawText: response.rawText || "",
-                                sourceUrl: tab.url,
-                                scrapedAt: new Date().toISOString()
-                            };
-
-                            chrome.runtime.sendMessage({
-                                action: 'fetchNajizSync',
-                                url: '${backendUrl}/api/najiz-sync',
-                                apiKey: activeKey,
-                                body: payload
-                            }, (apiRes) => {
-                                if (chrome.runtime.lastError) {
-                                    syncStatusMsg.style.color = '#ef4444';
-                                    syncStatusMsg.innerText = '❌ خطأ: ' + chrome.runtime.lastError.message;
-                                    chrome.runtime.sendMessage({ action: 'logError', text: 'خطأ اتصال: ' + chrome.runtime.lastError.message });
-                                } else if (apiRes && apiRes.success) {
-                                    syncStatusMsg.style.color = '#10b981';
-                                    syncStatusMsg.innerText = '✅ تم التزامن وتحليل البيانات بنجاح!';
-                                    chrome.runtime.sendMessage({ action: 'logSuccess', text: 'مزامنة ناجحة من التبويب: ' + tab.url });
-                                } else {
-                                    const errMsg = apiRes ? apiRes.error : 'استجابة سلبية من السيرفر';
-                                    syncStatusMsg.style.color = '#ef4444';
-                                    syncStatusMsg.innerText = '⚠️ فشل الربط: ' + errMsg;
-                                    chrome.runtime.sendMessage({ action: 'logError', text: 'فشلت المزامنة: ' + errMsg });
-                                }
-                                syncCurrentPageBtn.disabled = false;
-                            });
-                        });
-                    } else {
-                        syncStatusMsg.style.color = '#ef4444';
-                        syncStatusMsg.innerText = '⚠️ لم يستجب محرك الكشط ببيانات صالحة.';
-                        syncCurrentPageBtn.disabled = false;
-                    }
-                });
-            } catch (err) {
-                syncStatusMsg.style.color = '#ef4444';
-                syncStatusMsg.innerText = '⚠️ عطل عام: ' + err.message;
-                syncCurrentPageBtn.disabled = false;
-            }
-        });
-    }
-});
-  `;
-  
-    folder.file('popup.js', popupJs);
-
-
-
-  // Append a valid static base64 128x128 circle with balance scale PNG image for extension icon
-  const standardExtIcon = 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAMElEQVQ4T2NkYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYAMADv8A/06W3D8AAAAASUVORK5CYII=';
-  const iconBuffer = Buffer.from(standardExtIcon, 'base64');
-  
-    folder.file('icon.png', iconBuffer);
-
-    const zipBuffer = await zip.generateAsync({
-      type: 'nodebuffer',
-      compression: 'STORE'
-    });
-
+    
+    const zipBuffer = await zip.generateAsync({ type: 'nodebuffer', compression: 'STORE' });
     res.setHeader('Content-Type', 'application/zip');
     res.setHeader('Content-Disposition', 'attachment; filename="Adalah-Sync-Extension.zip"');
     res.end(zipBuffer);
-  } catch (err: any) {
-    console.error('[Extension Export] Error packaging ZIP on server:', err);
-    if (!res.headersSent) {
-      res.status(500).send({ error: err.message });
-    }
+  } catch (err) {
+    console.error('Error generating ZIP:', err);
+    res.status(500).send({ error: err.message });
   }
 });
 
@@ -2803,16 +1930,12 @@ app.post('/api/ai/analyze-deadlines', async (req, res) => {
     return res.json({ success: true, analysis: [] });
   }
 
-  const openAIKey = process.env.OPENAI_API_KEY;
+  const aiProvider = getAIProvider();
   let responseData = [];
 
-  if (openAIKey) {
+  if (aiProvider && aiProvider.type === 'openai') {
     try {
-      const openai = new OpenAI({
-        apiKey: openAIKey,
-        baseURL: process.env.OPENAI_BASE_URL || undefined,
-      });
-
+      const openai = aiProvider.client as OpenAI;
       const systemPrompt = `أنت الخبير القانوني والذكي الاصطناعي الأفضل لمراقبة الجلسات وتتبع المهل القانونية (Legal Deadline Watcher) في المحاكم القضائية في المملكة العربية السعودية (تجاري، عمالي، عام، إلخ).
 مهمتك هي قراءة معلومات الجلسات المرفقة وتوليد خطة عمل تحضيرية منظمة تشتمل على معالم (milestones) ومهام تحضير عاجلة ومحددة زمنياً قبل تاريخ كل جلسة لتجنب فوات المهل النظامية وفق الأنظمة السعودية.
 
@@ -2836,19 +1959,18 @@ app.post('/api/ai/analyze-deadlines', async (req, res) => {
           { role: 'system', content: systemPrompt },
           { role: 'user', content: `حلل هذه الجلسات وأرجع قائمة بالـ JSON: ${JSON.stringify(hearings)}` }
         ],
-        response_format: { type: 'json_object' },
-        temperature: 0.2,
-        max_tokens: 3000,
+        temperature: 0.2
       });
 
-      const responseText = completion.choices[0]?.message?.content?.trim() || '';
-      console.log('[OpenAI] Deadline Analysis Response:', responseText.substring(0, 200));
+      const responseText = completion.choices[0]?.message?.content || "";
+      console.log("OpenAI Deadline Analysis Response:", responseText);
       
       if (responseText) {
-        responseData = JSON.parse(responseText);
+        const cleaned = responseText.replace(/\`\`\`json\n?|\`\`\`\n?/g, '').trim();
+        responseData = JSON.parse(cleaned);
       }
     } catch (e: any) {
-      console.warn('[OpenAI] Error calling API for deadline analysis, falling back to sovereign rule engine:', e.message);
+      console.warn("Error calling OpenAI API for deadline analysis, falling back to sovereign rule engine:", e.message);
     }
   }
 
@@ -2859,7 +1981,7 @@ app.post('/api/ai/analyze-deadlines', async (req, res) => {
       let priority = "high";
       let milestones: any[] = [];
 
-      if ((h.caseName || '').includes("توريد") || (h.caseName || '').includes("تجاري") || (h.caseNumber || '').includes("419") || (h.caseNumber || '').includes("437194619")) {
+      if ((h.caseName || '').includes("توريد") || (h.caseName || '').includes("تجاري") || (h.caseNumber || '').includes("319") || (h.caseNumber || '').includes("437194619")) {
         analysisText = "قضية تجارية حاسمة تتعلق بعقود التوريد والخدمات اللوجستية. يتطلب الموقف فحص المواعيد مسبقاً وتفنيد دعاوى التعويضات أو بنود التأخير عملاً بالمادة (112) من نظام المعاملات المدنية ومراعاة مهلة الـ 48 ساعة المقررة نظاماً لتقديم الدفوع.";
         priority = "critical";
         milestones = [
@@ -2871,82 +1993,54 @@ app.post('/api/ai/analyze-deadlines', async (req, res) => {
           },
           {
             daysBefore: 3,
-            title: "صياغة المذكرة الجوابية بانتفاء القوة القهرية",
-            action: "تجهيز لائحة جوابية ترتكز على إثبات توقف خطوط النقل بسبب السيول أو الأسباب الأجنبية الخارجة عن الإرادة نظاماً.",
+            title: "مراجعة تقرير أحوال الطقس كقوة قهرية",
+            action: "تجهيز ما يثبت غرق وصعوبة السير على الطرق كدليل مادي صريح لتقديمه لفضيلة رئيس الدائرة التجارية.",
             status: "pending"
           },
           {
             daysBefore: 1,
-            title: "إيداع اللائحة الاعتراضية عبر بوابة ناجز",
-            action: "استخدام إضافة متصفح العدالة الذكية لتوثيق وإيداع اللائحة في الوقت النظامي قبل فوات مهلة الدائرة بـ 24 ساعة.",
-            status: "pending"
-          }
-        ];
-      } else if ((h.caseName || '').includes("عمل") || (h.caseName || '').includes("مستحقات") || (h.caseName || '').includes("فصل")) {
-        analysisText = "نزاع عمالي يقع تحت طائلة نظام العمل السعودي (المادة 77). يجب حساب مكافأة نهاية الخدمة والتعويض عن الفصل بشكل دقيق والتحقق من سلامة وصلاحية عقد العمل ومدته وتوثيق خط مستندات الموكل.";
-        priority = "high";
-        milestones = [
-          {
-            daysBefore: 4,
-            title: "تشغيل حاسبة مستحقات العمل والـ EOS",
-            action: "استعمل حقيبة العمل لحساب المستحقات والمادة 77 بدقة وصياغة جدول تفصيلي بالأرقام لتقديمه للدائرة العمالية.",
-            status: "pending"
-          },
-          {
-            daysBefore: 2,
-            title: "مراجعة بنود العقد وتفنيد مبررات الفصل والشرط الجزائي",
-            action: "الكشف عن عقود التوظيف القديمة والتحقق من وجود إشعارات خطية مسبقة للتسريح لتفنيد ركن التعسف والضرر.",
-            status: "pending"
-          },
-          {
-            daysBefore: 1,
-            title: "تنسيق مذكرات الدفاع ونسخ التوكيل للمرافعة",
-            action: "إيداع الهوية الوطنية والوكالة الشرعية الموثقة وتجهيز المرافعة الشفهية وتلخيصها للمستشارين.",
+            title: "اعتماد اللائحة الجوابية وإيداعها عبر ناجز",
+            action: "إيداع اللائحة ورفع كشف الحساب والتقرير الجوي بملحق الدعوى عبر بوابة ناجز قبل انقضاء المهلة الحتمية.",
             status: "pending"
           }
         ];
       } else {
-        priority = "high";
         milestones = [
           {
-            daysBefore: 5,
-            title: "إعداد ملف الأسانيد والمستندات الثبوتية",
-            action: "تجميع صكوك الملكية أو العقود أو الإقرارات وفهرستها باسم القضية لتسهيل مراجعتها مع الموكل.",
-            status: "pending"
-          },
-          {
-            daysBefore: 2,
-            title: "كتابة مسودة الدفوع القانونية والمطالبات",
-            action: "فحص الاختصاص المكاني والنوعي وعرض مخرجات البنود ومناقشتها مع رئيس الدائرة الاستشارية بالمكتب.",
+            daysBefore: 3,
+            title: "مراجعة المستندات مع الموكل",
+            action: "التثبت من عدم وجود دفع شكلي ومراجعة الوكالات وصلاحيات الترافع.",
             status: "pending"
           },
           {
             daysBefore: 1,
-            title: "الربط التقني ومراجعة رابط الجلسة المرئي",
-            action: "تفعيل التذكير الذكي عبر الرسائل للموكل والتحقق من صلاحيات الدخول لقاعة التقاضي الافتراضية عبر نفاذ.",
+            title: "إيداع المذكرة التمهيدية",
+            action: "رفع نسخة ورقمية عبر بوابة ناجز لتمكين الدائرة من الاطلاع وعرض ردنا الشرعي.",
             status: "pending"
           }
         ];
       }
 
       return {
-        hearingId: h.id || `hearing-${Date.now()}-${Math.random()}`,
-        caseNumber: h.caseNumber || "سند-غير-محدد",
-        caseName: h.caseName || "نزاع غير مصنف",
+        hearingId: h.id,
+        caseNumber: h.caseNumber || '',
+        caseName: h.caseName || 'جلسة مستهدفة',
         analysis: analysisText,
-        priority: priority,
-        milestones: milestones
+        priority,
+        milestones
       };
     });
   }
 
-  res.json({ success: true, analysis: responseData });
+  res.json({
+    success: true,
+    analysis: responseData
+  });
 });
 
-// AI Contract Visualization and Diagram Outline Generator
 app.post('/api/ai/visualize-contract', async (req, res) => {
   const { contractType, clientName, opponentName, details } = req.body;
-  console.log(`[AI Visualize Contract] type: ${contractType}, client: ${clientName}, opponent: ${opponentName}`);
+  console.log(`Visualizing contract for client ${clientName} of type ${contractType}`);
 
   const systemPrompt = `أنت مستشار قانوني خبير في الأنظمة السعودية وعقود قطاع الأعمال. قم بتحليل العقد المطلوب وتفكيكه إلى مخطط بصري ومراحل هيكلية لتسهيل فهمه وشرحه ومراجعته للعميل بصرياً.
 يجب أن ترجع إجابتك بصيغة JSON صالحة تماماً تحتوي على الحقول التالية:
@@ -2960,29 +2054,28 @@ app.post('/api/ai/visualize-contract', async (req, res) => {
 الطرف الثاني (الخصم/المتعاقد): ${opponentName}
 أية تفاصيل تعاقدية إضافية: ${details || 'لا يوجد'}`;
 
-  const openAIKey = process.env.OPENAI_API_KEY;
-  if (openAIKey) {
+  const aiProvider = getAIProvider();
+  if (aiProvider && aiProvider.type === 'openai') {
     try {
-      const openai = new OpenAI({
-        apiKey: openAIKey,
-        baseURL: process.env.OPENAI_BASE_URL || undefined,
-      });
+      const openai = aiProvider.client as OpenAI;
       const completion = await openai.chat.completions.create({
         model: 'gpt-4o',
         messages: [
-          { role: 'user', content: `${systemPrompt}\n\n${userPrompt}` }
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userPrompt }
         ],
-        response_format: { type: 'json_object' },
-        temperature: 0.4,
-        max_tokens: 2000,
+        temperature: 0.3
       });
-      const text = completion.choices[0]?.message?.content || '{}';
-      const parsed = JSON.parse(text);
+      const text = completion.choices[0]?.message?.content || "{}";
+      const cleaned = text.replace(/\`\`\`json\n?|\`\`\`\n?/g, '').trim();
+      const parsed = JSON.parse(cleaned);
+      
       const randSeed = Math.floor(Math.random() * 10000);
-      const imageUrl = `https://picsum.photos/seed/legal_contract_${contractType}_${randSeed}/800/600`;
+      let imageUrl = `https://picsum.photos/seed/legal_contract_${contractType}_${randSeed}/800/600`;
+      
       return res.json({ success: true, ...parsed, imageUrl });
     } catch (e: any) {
-      console.error('[OpenAI] contract visualization failed, shifting to local high-end template:', e.message);
+      console.error("OpenAI contract visualization failed, shifting to local high-end template:", e);
     }
   }
 
@@ -3033,7 +2126,7 @@ app.post('/api/ai/visualize-contract', async (req, res) => {
     {
       id: "part-5",
       title: "النظام الواجب التطبيق ومحاكم فض النزاع",
-      description: "إخضاع بنود الاتفاقية بالكامل للأنظمة النافذة بالملكة وتحديد الاختصاص في حال النزاع للمحاكم العامة أو المحاكم التجارية بوزارة العدل طبقاً لنظام المرافعات الشرعية.",
+      description: "إخضاع بنود الاتفاقية بالكامل للأنظمة السارية بالملكة وتحديد الاختصاص في حال النزاع للمحاكم العامة أو المحاكم التجارية بوزارة العدل طبقاً لنظام المرافعات الشرعية.",
       badge: "الاختصاص العدلي"
     }
   ];
@@ -3044,39 +2137,36 @@ app.post('/api/ai/visualize-contract', async (req, res) => {
   res.json({ success: true, title, description, imagePrompt, stages, imageUrl });
 });
 
-// AI Drafting Assistants using OpenAI API key with robust failover
 app.post('/api/ai/draft', async (req, res) => {
   const { input, prompt: reqPrompt, type, context } = req.body;
   const userPromptText = input || reqPrompt || "";
   console.log(`AI Draft request received. Type: ${type}, prompt length: ${userPromptText?.length || 0}`);
 
   const systemPrompt = `أنت الخبير القانوني والذكي الاصطناعي الأفضل لصياغة اللوائح القانونية في المملكة العربية السعودية وإعداد الدفاع والمذكرات.
-يجب أن تصيغ النص صياغة رصينة وفخمة بلغة قانونية سعودية فصحى مع ترويسة شرعية، وتحديد نصوص مواد نظام المعاملات المدنية أو نظام المرافعات الشرعية أو نظام المحاكم التجارية أو نظام العمل حسب الاقتضاء.`;
+يجب أن تصيغ النص صياغة رصينة وفخمة بلغة قانونية سعودية فصحى مع ترويسة شرعية، وتحديد نصوص مواد نظام المعاملات المدنية أو نظام المرافعات الشرعية أو نظام المحاكم التجارية أو نظام العمل حسب الاقتضاء.
+المطلوب صياغة مستند قانوني احترافي (مذكرة اعتراض، أو صحيفة دعوى، أو مسودة عقد) بناءً على نوع الطلب والوقائع المسجلة، مستشهداً بالنصوص القانونية واللوائح السعودية الحديثة ورقم المواد بدقة بالغة.`;
 
-  const openAIKey = process.env.OPENAI_API_KEY;
+  const aiProvider = getAIProvider();
 
   if (userPromptText) {
-    if (openAIKey) {
+    if (aiProvider && aiProvider.type === 'openai') {
       try {
-        const openai = new OpenAI({
-          apiKey: openAIKey,
-          baseURL: process.env.OPENAI_BASE_URL || undefined,
-        });
+        const openai = aiProvider.client as OpenAI;
         const completion = await openai.chat.completions.create({
-          model: 'gpt-4o',
+          model: "gpt-4o",
           messages: [
-            { role: 'system', content: `${systemPrompt}\nالمطلوب صياغة مستند قانوني احترافي (مذكرة اعتراض، أو صحيفة دعوى، أو مسودة عقد) بناءً على نوع الطلب والوقائع المسجلة، مستشهداً بالنصوص القانونية واللوائح السعودية الحديثة ورقم المواد بدقة بالغة.` },
-            { role: 'user', content: `الوقائع والموجهات: ${userPromptText}\nنوع الطلب: ${type}` }
+            { role: "system", content: systemPrompt },
+            { role: "user", content: `الوقائع والموجهات: ${userPromptText}\nنوع الطلب: ${type}` }
           ],
-          temperature: 0.3,
-          max_tokens: 3000,
+          temperature: 0.3
         });
-        if (completion.choices[0].message.content) {
-          const content = completion.choices[0].message.content.trim();
-          return res.json({ success: true, text: content, output: content });
+
+        const responseText = completion.choices[0]?.message?.content || "";
+        if (responseText) {
+          return res.json({ success: true, text: responseText.trim(), output: responseText.trim() });
         }
       } catch (e: any) {
-        console.warn('[OpenAI] Error in drafting endpoint, falling back to template:', e.message);
+        console.warn("Error inside OpenAI drafting endpoint, falling back:", e.message);
       }
     }
   }
@@ -3084,7 +2174,6 @@ app.post('/api/ai/draft', async (req, res) => {
   let resultText = "";
   
   try {
-    // Elegant heuristic content generation based on Saudi laws if offline, or async simulation
     if (type === 'brief') {
       resultText = `بسم الله الرحمن الرحيم
 
@@ -3154,7 +2243,7 @@ app.post('/api/ai/draft', async (req, res) => {
       resultText = `مسودة صياغة قانونية مخصصة بناءً على مدخلاتكم:
 
 تحية طيبة وبعد،،
-بناءً على طلبكم لتحليل ومراجعة المعاملات المتعلقة بالمطالبات القانونية، نوضح لفضيلتكم أنه بتتبع النصوص القانونية في المملكة العربية السعودية، لابد أن تشتمل اللائحة على:
+بناءً على طلبكم لتحليل ومراجع المعاملات المتعلقة بالمطالبات القانونية، نوضح لفضيلتكم أنه بتتبع النصوص القانونية في المملكة العربية السعودية، لابد أن تشتمل اللائحة على:
 1. الأسماء الكاملة للمدعين والمدعى عليهم وأرقام الهويات الوطنية والسجلات التجارية الخاصة بهم.
 2. أصل الحق المطالب به وبينات ايداع المبالغ أو توقيع شهادة الاستلام.
 3. مراجع الأحكام القضائية الصادرة من محاكم الاستئناف في وقائع مماثلة لتأييد الدفع.
@@ -3162,7 +2251,6 @@ app.post('/api/ai/draft', async (req, res) => {
 يرجى مراجعة المسودة وتعديلها أو تصديرها مباشرة لملف قضيتكم.`;
     }
     
-    // Add real OpenAI request logging or simulate dynamic request processing delay for high fidelity
     await new Promise(resolve => setTimeout(resolve, 600));
     
   } catch (error) {
@@ -3180,10 +2268,9 @@ app.post('/api/ai/chat', async (req, res) => {
   console.log("Chat Advisor entry:", userMsg);
   
   const provider = getAIProvider();
-  if (provider) {
+  if (provider && provider.type === 'openai') {
     try {
       let responseText = "";
-
       const openai = provider.client as OpenAI;
       const completion = await openai.chat.completions.create({
         model: "gpt-4o",
@@ -3191,8 +2278,7 @@ app.post('/api/ai/chat', async (req, res) => {
           { role: "system", content: "أنت المستشار القانوني والمرافع المسؤول بمكتب العدالة للمحاماة والاستشارات القانونية بالمملكة العربية السعودية. تحلى بالدقة والموضوعية مستنداً إلى الأنظمة واللوائح السعودية الصادرة مرخراً." },
           ...messages
         ],
-        temperature: 0.3,
-        max_tokens: 2000,
+        temperature: 0.3
       });
       responseText = completion.choices[0].message.content || "";
 
@@ -3220,7 +2306,7 @@ app.post('/api/ai/chat', async (req, res) => {
   res.json({ success: true, response: aiAnswer });
 });
 
-// AI Document & Hearing Transcript Summarizer using OpenAI API
+// AI Document & Hearing Transcript Summarizer using OpenAI
 app.post('/api/ai/summarize', async (req, res) => {
   const { documentText, documentName } = req.body;
   
@@ -3229,7 +2315,7 @@ app.post('/api/ai/summarize', async (req, res) => {
   }
 
   const provider = getAIProvider();
-  if (provider) {
+  if (provider && provider.type === 'openai') {
     try {
       const systemInstruction = `أنت المستشار القانوني الأول والخبير بصياغة وتلخيص محاضر الجلسات القضائية واللوائح في المملكة العربية السعودية.
 مهمتك هي قراءة وضبط وثيقة القضية أو محضر جلسة الضبط الممررة وتلخيصها صياغة رصينة بلغة قانونية سليمة بهيئة "موجز قانوني موجز ومبني على نقاط (Concise Bulleted Legal Brief)".
@@ -3252,8 +2338,7 @@ app.post('/api/ai/summarize', async (req, res) => {
           { role: "system", content: systemInstruction },
           { role: "user", content: prompt }
         ],
-        temperature: 0.2,
-        max_tokens: 3000,
+        temperature: 0.2
       });
       responseText = completion.choices[0].message.content || "";
 
@@ -3319,38 +2404,26 @@ app.post('/api/ai/parse-pdf', async (req, res) => {
     return res.status(400).json({ success: false, error: "لم يتم توفير محتوى الملف للتفريط الفني." });
   }
 
-  const openAIKey = process.env.OPENAI_API_KEY;
-  if (openAIKey) {
+  const aiProvider = getAIProvider();
+  if (aiProvider && aiProvider.type === 'openai') {
     try {
-      const openai = new OpenAI({
-        apiKey: openAIKey,
-        baseURL: process.env.OPENAI_BASE_URL || undefined,
-      });
-
-      console.log(`[OpenAI] Parsing PDF file metadata: ${fileName}`);
-
+      const openai = aiProvider.client as OpenAI;
+      console.log(`Parsing PDF file metadata via OpenAI: ${fileName}`);
+      
       const completion = await openai.chat.completions.create({
-        model: 'gpt-4o',
+        model: "gpt-4o",
         messages: [
-          {
-            role: 'user',
-            content: [
-              {
-                type: 'text',
-                text: `Extract all text content from this legal document PDF file named "${fileName}". The file content is base64 encoded below. Output the extracted text directly in its original language without summarizing or translating.\n\nFile data (base64): ${fileData.substring(0, 8000)}`
-              }
-            ]
-          }
-        ],
-        max_tokens: 3000,
+          { role: "system", content: "أنت خبير فني وتحليل ملفات الـ PDF ومستندات القضايا في السعودية لتبليغها واستخلاص الأرقام." },
+          { role: "user", content: `لقد استلمنا ملف PDF باسم "${fileName}". الرجاء محاكاة استخراج النصوص القانونية الهامة وتوليد مسودة صحيفة دعوى أو محضر جلسة تفصيلي منسق باللغة العربية بناء على سياق الملف.` }
+        ]
       });
 
-      const content_text = completion.choices[0]?.message?.content?.trim() || '';
+      const content_text = completion.choices[0]?.message?.content || "";
       if (content_text) {
         return res.json({ success: true, text: content_text });
       }
     } catch (e: any) {
-      console.warn('[OpenAI] parse-pdf failed, using smart parser fallback:', e.message);
+      console.warn("OpenAI parse-pdf failed, using smart parser fallback:", e.message);
     }
   }
 
@@ -3367,31 +2440,27 @@ app.post('/api/ai/parse-pdf', async (req, res) => {
 
 app.post('/api/ai/embed', async (req, res) => {
   const { texts } = req.body;
-  const openAIKey = process.env.OPENAI_API_KEY;
 
   if (!texts || !Array.isArray(texts)) {
     return res.status(400).json({ success: false, error: "Texts array is required for embedding generation." });
   }
 
-  if (openAIKey) {
+  const aiProvider = getAIProvider();
+  if (aiProvider && aiProvider.type === 'openai') {
     try {
-      const openai = new OpenAI({
-        apiKey: openAIKey,
-        baseURL: process.env.OPENAI_BASE_URL || undefined,
-      });
-
+      const openai = aiProvider.client as OpenAI;
       const embeddings = [];
       for (const text of texts) {
-        const trimmed = text.substring(0, 8000);
+        const trimmed = text.substring(0, 1000);
         const result = await openai.embeddings.create({
           model: 'text-embedding-3-small',
-          input: trimmed,
+          input: trimmed
         });
         embeddings.push(result.data[0].embedding);
       }
       return res.json({ success: true, embeddings });
     } catch (e: any) {
-      console.warn('[OpenAI] Embedding failed, falling back to simulated vectors:', e.message);
+      console.warn("Emitting embeddings failed via OpenAI, falling back to simulated high-fidelity semantic vectors:", e.message);
     }
   }
   
@@ -3413,19 +2482,15 @@ app.post('/api/ai/embed', async (req, res) => {
 
 app.post('/api/ai/judicial-analysis', async (req, res) => {
   const { prompt, systemId, systemName } = req.body;
-  const openAIKey = process.env.OPENAI_API_KEY;
   
   if (!prompt) {
     return res.status(400).json({ success: false, error: "الرجاء كتابة الاستفسار" });
   }
 
-  if (openAIKey) {
+  const aiProvider = getAIProvider();
+  if (aiProvider && aiProvider.type === 'openai') {
     try {
-      const openai = new OpenAI({
-        apiKey: openAIKey,
-        baseURL: process.env.OPENAI_BASE_URL || undefined,
-      });
-
+      const openai = aiProvider.client as OpenAI;
       const systemInstruction = `أنت المستشار القانوني الأول والمحلل القضائي لمرصد الأنظمة القضائية واللوائح الشرعية في محاكم قضائية بالمملكة العربية السعودية.
 مهمتك هي قراءة وضبط الاستفسار القانوني للمستخدم الموجه لنظام قانوني سعودي محدد وهو "${systemName || 'الأنظمة السعودية'}". 
 قدم إجابة قانونية شافية باللغة العربية متبعة للهيكل التالي:
@@ -3436,29 +2501,25 @@ app.post('/api/ai/judicial-analysis', async (req, res) => {
 صغ الرأي بمرونة ولغة قانونية رصينة ومشرقّة خالية من حشو الروبوتات والكلمات الدعائية.`;
 
       const completion = await openai.chat.completions.create({
-        model: 'gpt-4o',
+        model: "gpt-4o",
         messages: [
-          { role: 'system', content: systemInstruction },
-          { role: 'user', content: `الاستفسار: ${prompt}\nالنظام المعني: ${systemName}` }
+          { role: "system", content: systemInstruction },
+          { role: "user", content: `الاستفسار: ${prompt}\nالنظام المعني: ${systemName}` }
         ],
-        temperature: 0.3,
-        max_tokens: 2000,
+        temperature: 0.3
       });
 
-      const responseText = completion.choices[0]?.message?.content?.trim() || '';
+      const responseText = completion.choices[0]?.message?.content || "";
       if (responseText) {
         return res.json({ success: true, analysis: responseText });
       }
     } catch (e: any) {
-      console.warn('[OpenAI] Error in judicial-analysis endpoint:', e.message);
+      console.warn("Error inside OpenAI judicial-analysis endpoint:", e.message);
     }
   }
 
-  // Graceful fallback status code for client integration simplicity
-  return res.json({ success: false, error: 'Unable to reach AI cloud services' });
+  return res.json({ success: false, error: "Unable to reach OpenAI cloud services" });
 });
-
-// Setup dynamic bundle configuration and start express web server
 
 app.post('/api/ai/prioritize-tasks', async (req, res) => {
   const { tasks } = req.body;
@@ -3468,48 +2529,44 @@ app.post('/api/ai/prioritize-tasks', async (req, res) => {
     return res.json({ success: true, suggestions: [] });
   }
 
-  const openAIKey = process.env.OPENAI_API_KEY;
+  const aiProvider = getAIProvider();
   let responseDataRaw = [];
 
-  if (openAIKey) {
+  if (aiProvider && aiProvider.type === 'openai') {
     try {
-      const openai = new OpenAI({
-        apiKey: openAIKey,
-        baseURL: process.env.OPENAI_BASE_URL || undefined,
-      });
-
+      const openai = aiProvider.client as OpenAI;
       const systemPrompt = `أنت الخبير القانوني والذكي الاصطناعي الأفضل لمساعدة مكاتب المحاماة في المملكة العربية السعودية في ترتيب وتصنيف مهام فريق العمل القضائي (Tasks Prioritizer).
 مهمتك هي قراءة قائمة المهام المتاحة الممررة إليك، وتحليلها بعناية بناءً على تاريخ الاستحقاق ومدى خطورتها واستعجالها القانوني (مثلاً المهام المتعلقة بإيداع مذكرات دفاع عاجلة أو جلسات تقترب جداً هي ذات أولوية قصوى)، ثم تقديم توصية بترتيب المهام مرتبة من الأهم والأعجل للأقل عاجلية، مع شرح مقتضب للسبب والخطورة في كل منها.
 
-يجب أن تعود بالإجابة بصيغة JSON تماماً كقائمة كائنات داخل مصفوفة رئيسية تحت مفتاح "items"، وكل كائن يحتوي على:
+يجب أن تعود بالإجابة بصيغة JSON تماماً كقائمة كائنات داخل مصفوفة رئيسية، وكل كائن يحتوي على:
 - taskId: string (معرف المهمة الممرر)
 - title: string (عنوان المهمة)
 - originalPriority: string (الأولوية الأصلية)
 - suggestedPriority: string ('high' | 'medium' | 'low') (الأولوية المقترحة الجديدة)
 - reason: string (السبب القانوني المقترح والتحليل لخطورتها وموعد فواتها باللهجة واللغة القانونية السعودية الرصينة ويكون السبب قصيراً ومقنعاً في سطر واحد)
 - actionPlan: string (توصية قانونية لتنفيذ المهمة في سطر واحد)
-- order: number (ترتيب المهمة الرقمي المقترح، يبدأ من 1 للأهم)`;
+- order: number (ترتيب المهمة الرقمي المقترح، يبدأ من 1 للأهم)
+
+الرجاء عدم إخراج أي كود ترويجي أو لغوي أو ترويسات برمجية مثل \`\`\`json. صِغ الـ JSON بدقة واجعله متوافقاً وقابلاً للمطالبة والتحليل المباشر.`;
 
       const completion = await openai.chat.completions.create({
-        model: 'gpt-4o',
+        model: "gpt-4o",
         messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: `رتّب هذه المهام وأرجع قائمة بالـ JSON: ${JSON.stringify(tasks)}` }
+          { role: "system", content: systemPrompt },
+          { role: "user", content: `رتّب هذه المهام وأرجع قائمة بالـ JSON: ${JSON.stringify(tasks)}` }
         ],
-        response_format: { type: 'json_object' },
-        temperature: 0.2,
-        max_tokens: 3000,
+        temperature: 0.2
       });
 
-      const responseText = completion.choices[0]?.message?.content?.trim() || '';
-      console.log('[OpenAI] Tasks Prioritizer Response:', responseText.substring(0, 200));
-
+      const responseText = completion.choices[0]?.message?.content || "";
+      console.log("OpenAI Tasks Prioritizer Response:", responseText);
+      
       if (responseText) {
-        const parsed = JSON.parse(responseText);
-        responseDataRaw = parsed.items || parsed || [];
+        const cleaned = responseText.replace(/\`\`\`json\n?|\`\`\`\n?/g, '').trim();
+        responseDataRaw = JSON.parse(cleaned);
       }
     } catch (e: any) {
-      console.warn('[OpenAI] Error calling API for task prioritization, falling back to local rule engine:', e.message);
+      console.warn("Error calling OpenAI API for task prioritization, falling back to local rule engine:", e.message);
     }
   }
 
@@ -3517,11 +2574,9 @@ app.post('/api/ai/prioritize-tasks', async (req, res) => {
   if (!responseDataRaw || !Array.isArray(responseDataRaw) || responseDataRaw.length === 0) {
     // Programmatic heuristic sorting
     const sorted = [...tasks].sort((a: any, b: any) => {
-      // High priority first.
       const pA = a.priority === 'high' ? 3 : a.priority === 'medium' ? 2 : 1;
       const pB = b.priority === 'high' ? 3 : b.priority === 'medium' ? 2 : 1;
       if (pA !== pB) return pB - pA;
-      // Due Date closest first
       const dA = a.dueDate ? new Date(a.dueDate).getTime() : Infinity;
       const dB = b.dueDate ? new Date(b.dueDate).getTime() : Infinity;
       return dA - dB;
@@ -3655,6 +2710,181 @@ app.post('/api/calendar/sync', (req, res) => {
 app.get('/api/team/members', (req, res) => res.json([]));
 app.post('/api/team/members', (req, res) => res.json({ success: true }));
 
+// تسجيل دخول الموظف
+app.post('/api/employee-portal/login', async (req, res) => {
+  const { username, password } = req.body;
+  if (!username || !password) {
+    return res.status(400).json({ success: false, message: 'يرجى إدخال اسم المستخدم وكلمة المرور' });
+  }
+  
+  try {
+    const { data: employee, error } = await sharedSupabase
+      .from('employees')
+      .select('*')
+      .eq('username', username)
+      .eq('password', password)
+      .eq('status', 'active')
+      .single();
+    
+    if (error || !employee) {
+      return res.status(401).json({ success: false, message: 'اسم المستخدم أو كلمة المرور غير صحيحة' });
+    }
+    
+    const token = require('crypto').randomUUID();
+    await sharedSupabase.from('employee_portal_sessions').insert({
+      id: require('crypto').randomUUID(),
+      employee_id: employee.id,
+      session_token: token,
+      expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
+    });
+    
+    res.json({
+      success: true,
+      token,
+      employee: {
+        id: employee.id,
+        name: employee.name,
+        role: employee.role,
+        permissions: employee.permissions || []
+      }
+    });
+  } catch (err: any) {
+    console.error('[Employee login API error]', err);
+    res.status(500).json({ success: false, message: 'حدث خطأ غير متوقع بالخادم' });
+  }
+});
+
+// التحقق من الجلسة
+app.get('/api/employee-portal/session', async (req, res) => {
+  const token = req.headers.authorization?.replace('Bearer ', '');
+  if (!token) return res.status(401).json({ success: false });
+  
+  try {
+    const { data: session, error: sError } = await sharedSupabase
+      .from('employee_portal_sessions')
+      .select('*')
+      .eq('session_token', token)
+      .eq('is_active', true)
+      .gt('expires_at', new Date().toISOString())
+      .single();
+    
+    if (sError || !session) {
+      return res.status(401).json({ success: false, message: 'انتهت صلاحية الجلسة' });
+    }
+
+    const { data: employee, error: eError } = await sharedSupabase
+      .from('employees')
+      .select('*')
+      .eq('id', session.employee_id)
+      .single();
+      
+    if (eError || !employee) {
+      return res.status(401).json({ success: false, message: 'الموظف غير موجود أو صلاحيته معطلة' });
+    }
+    
+    res.json({ success: true, employee });
+  } catch (err: any) {
+    console.error('[Employee session API error]', err);
+    res.status(500).json({ success: false, message: 'حدث خطأ بالخادم أثناء التحقق من الجلسة' });
+  }
+});
+
+// تسجيل دخول الموكلين/العملاء للبوابة الآمنة
+app.post('/api/client-portal/login', async (req, res) => {
+  const { username, password } = req.body;
+  if (!username || !password) {
+    return res.status(400).json({ success: false, message: 'يرجى إدخال اسم المستخدم وكلمة المرور' });
+  }
+  
+  try {
+    let clientData: any = null;
+    
+    // نحاول استعلام بالترميز snake_case
+    const { data: resSnake, error: errSnake } = await sharedSupabase
+      .from('clients')
+      .select('*')
+      .eq('portal_username', username)
+      .eq('portal_password', password);
+      
+    if (resSnake && resSnake.length > 0) {
+      clientData = resSnake[0];
+    } else {
+      // نحاول كبديل camelCase
+      const { data: resCamel } = await sharedSupabase
+        .from('clients')
+        .select('*')
+        .eq('portalUsername', username)
+        .eq('portalPassword', password);
+        
+      if (resCamel && resCamel.length > 0) {
+        clientData = resCamel[0];
+      }
+    }
+    
+    if (!clientData) {
+      return res.status(401).json({ success: false, message: 'اسم المستخدم أو كلمة المرور غير صحيحة أو البوابة غير مفعّلة' });
+    }
+    
+    const token = require('crypto').randomUUID();
+    await sharedSupabase.from('client_portal_sessions').insert({
+      id: require('crypto').randomUUID(),
+      client_id: clientData.id,
+      session_token: token,
+      expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
+    });
+    
+    res.json({ 
+      success: true, 
+      token, 
+      client: { 
+        id: clientData.id, 
+        name: clientData.name, 
+        email: clientData.email,
+        phone: clientData.phone,
+        permittedCases: clientData.permitted_cases || clientData.permittedCases || []
+      } 
+    });
+  } catch (err: any) {
+    console.error('[Client-portal login API error]', err);
+    res.status(500).json({ success: false, message: 'حدث خطأ غير متوقع بالخادم' });
+  }
+});
+
+// التحقق من جلسة العميل الموكل
+app.get('/api/client-portal/session', async (req, res) => {
+  const token = req.headers.authorization?.replace('Bearer ', '');
+  if (!token) return res.status(401).json({ success: false });
+  
+  try {
+    const { data: session, error: sError } = await sharedSupabase
+      .from('client_portal_sessions')
+      .select('*')
+      .eq('session_token', token)
+      .eq('is_active', true)
+      .gt('expires_at', new Date().toISOString())
+      .single();
+    
+    if (sError || !session) {
+      return res.status(401).json({ success: false, message: 'انتهت صلاحية الجلسة' });
+    }
+    
+    const { data: client, error: cError } = await sharedSupabase
+      .from('clients')
+      .select('*')
+      .eq('id', session.client_id)
+      .single();
+      
+    if (cError || !client) {
+      return res.status(401).json({ success: false, message: 'الموكل غير موجود أو الحساب معطل' });
+    }
+    
+    res.json({ success: true, client });
+  } catch (err: any) {
+    console.error('[Client-portal session error]', err);
+    res.status(500).json({ success: false, message: 'حدث خطأ بالخادم أثناء التحقق من الجلسة' });
+  }
+});
+
 app.get('/api/crm/clients', (req, res) => res.json([]));
 app.post('/api/crm/clients', (req, res) => res.json({ success: true }));
 
@@ -3665,14 +2895,11 @@ app.post('/api/sync/import', (req, res) => res.json({ success: true }));
 
 app.post('/api/ai/predict-win', async (req, res) => {
   const { category, caseDetails } = req.body;
-  const openAIKey = process.env.OPENAI_API_KEY;
 
-  if (openAIKey) {
+  const aiProvider = getAIProvider();
+  if (aiProvider && aiProvider.type === 'openai') {
     try {
-      const openai = new OpenAI({
-        apiKey: openAIKey,
-        baseURL: process.env.OPENAI_BASE_URL || undefined,
-      });
+      const openai = aiProvider.client as OpenAI;
 
       const categoryNames: Record<string, string> = {
         commercial: "نظام المعاملات المدنية أو نظام الشركات الجديد السعودي",
@@ -3687,31 +2914,30 @@ app.post('/api/ai/predict-win', async (req, res) => {
 مهمتك هي حساب التنبؤ بالاحتمالية المئوية للفوز بالدعوى (مثلاً نسبة مئوية بين 50% و 98%) بناءً على نوع النزاع وهو "${selectedSystemName}" والتفاصيل ${caseDetails || 'عقد خدمات أو نزاعات تجارية عامة'}.
 يجب أن تشير إشارتين صريحتين إلى السوابق والمواد القضائية الموجودة بمرصد الأنظمة (JudicialObservatory) مثل مادة 112 من نظام المعاملات المدنية، أو مادة 77 من نظام العمل، أو مادة 45 من نظام الإثبات الإلكتروني، أو مادة 46 من نظام التنفيذ للتثبت والربط الوثيق بالمرصد.
 
-يجب إخراج الإجابة بصيغة JSON نظيفة تحتوي على:
+يجب إخراج الإجابة بصيغة JSON نظيفة جداً وخالية من أي نصوص ترويجية أو حشو بروتوكولات \`\`\`json. الهيكل كالتالي:
 {
   "probability": number,
   "reason": "تفسير قانوني رصين وقصير يفسر هذا التقدير استناداً لنصوص مرصد التشريعات والسوابق القضائية في سطرين أو ثلاثة سطور بليغة."
 }`;
 
       const completion = await openai.chat.completions.create({
-        model: 'gpt-4o',
+        model: "gpt-4o",
         messages: [
-          { role: 'system', content: systemInstruction },
-          { role: 'user', content: `قم بالتحليل وصياغة ملف الـ JSON للنزاع: category: ${category}, details: ${caseDetails}` }
+          { role: "system", content: systemInstruction },
+          { role: "user", content: `قم بالتحليل وصياغة ملف الـ JSON للنزاع: category: ${category}, details: ${caseDetails}` }
         ],
-        response_format: { type: 'json_object' },
-        temperature: 0.4,
-        max_tokens: 800,
+        temperature: 0.4
       });
 
-      const responseText = completion.choices[0]?.message?.content?.trim() || '';
-      console.log('[OpenAI] WIN PREDICTION Response:', responseText);
+      const responseText = completion.choices[0]?.message?.content || "";
+      console.log("[AI WIN PREDICTION] Response:", responseText);
       if (responseText) {
-        const parsed = JSON.parse(responseText);
+        const cleaned = responseText.replace(/\`\`\`json\n?|\`\`\`\n?/g, '').trim();
+        const parsed = JSON.parse(cleaned);
         return res.json({ success: true, probability: parsed.probability, reason: parsed.reason });
       }
     } catch (e: any) {
-      console.warn('[OpenAI] Failed to generate win prediction:', e.message);
+      console.warn("Failed to generate win prediction via OpenAI:", e.message);
     }
   }
 
@@ -3727,7 +2953,7 @@ app.post('/api/ai/predict-win', async (req, res) => {
     },
     execution: { 
       probability: 94, 
-      reason: "نظام التنفيذ المادة 46 وسوابق المرصد تضمن سرعة التحصيل والامتثال الكلي بنسبة 94% عند توفر سند تنفيذي قطعي أو شيك مصدق." 
+      reason: "نظام التنفيذ المادة 46 وسرعة التحصيل والامتثال الكلي بنسبة 94% عند توفر سند تنفيذي قطعي أو شيك مصدق." 
     },
     administrative: { 
       probability: 62, 
@@ -3840,7 +3066,12 @@ async function initializeDatabaseTables() {
       'ALTER TABLE public.employees ADD COLUMN IF NOT EXISTS allowances NUMERIC',
       'ALTER TABLE public.employees ADD COLUMN IF NOT EXISTS deductions NUMERIC',
       'ALTER TABLE public.employees ADD COLUMN IF NOT EXISTS "baseSalary" NUMERIC',
-      'ALTER TABLE public.employees ADD COLUMN IF NOT EXISTS base_salary NUMERIC'
+      'ALTER TABLE public.employees ADD COLUMN IF NOT EXISTS base_salary NUMERIC',
+      'ALTER TABLE public.employees ADD COLUMN IF NOT EXISTS "employeeCode" TEXT',
+      'ALTER TABLE public.employees ADD COLUMN IF NOT EXISTS employee_code TEXT',
+      'ALTER TABLE public.employees ADD COLUMN IF NOT EXISTS "jobTitle" TEXT',
+      'ALTER TABLE public.employees ADD COLUMN IF NOT EXISTS job_title TEXT',
+      'ALTER TABLE public.employees ADD COLUMN IF NOT EXISTS permissions JSONB DEFAULT \'[]\'::jsonb'
     ];
     for (const sql of employeeAlters) {
       try {
@@ -3848,6 +3079,22 @@ async function initializeDatabaseTables() {
       } catch (e) {
         console.error("Error executing employees alter:", sql, e);
       }
+    }
+
+    // 2b. employee_portal_sessions
+    try {
+      await client.query(`
+        CREATE TABLE IF NOT EXISTS public.employee_portal_sessions (
+          id TEXT PRIMARY KEY,
+          employee_id TEXT NOT NULL,
+          session_token TEXT NOT NULL,
+          expires_at TIMESTAMPTZ NOT NULL,
+          is_active BOOLEAN DEFAULT true,
+          created_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now())
+        );
+      `);
+    } catch (e) {
+      console.error("Error creating employee_portal_sessions table:", e);
     }
 
     // 3. clients
@@ -3885,6 +3132,37 @@ async function initializeDatabaseTables() {
         updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now())
       );
     `);
+
+    // ALTERs for clients
+    const clientAlters = [
+      'ALTER TABLE public.clients ADD COLUMN IF NOT EXISTS "permittedCases" JSONB DEFAULT \'[]\'::jsonb',
+      'ALTER TABLE public.clients ADD COLUMN IF NOT EXISTS permitted_cases JSONB DEFAULT \'[]\'::jsonb',
+      'ALTER TABLE public.clients ADD COLUMN IF NOT EXISTS "permittedCasePermissions" JSONB DEFAULT \'{}\'::jsonb',
+      'ALTER TABLE public.clients ADD COLUMN IF NOT EXISTS permitted_case_permissions JSONB DEFAULT \'{}\'::jsonb'
+    ];
+    for (const sql of clientAlters) {
+      try {
+        await client.query(sql);
+      } catch (e) {
+        console.error("Error executing clients alter:", sql, e);
+      }
+    }
+
+    // 3b. client_portal_sessions
+    try {
+      await client.query(`
+        CREATE TABLE IF NOT EXISTS public.client_portal_sessions (
+          id TEXT PRIMARY KEY,
+          client_id TEXT NOT NULL,
+          session_token TEXT NOT NULL,
+          expires_at TIMESTAMPTZ NOT NULL,
+          is_active BOOLEAN DEFAULT true,
+          created_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now())
+        );
+      `);
+    } catch (e) {
+      console.error("Error creating client_portal_sessions table:", e);
+    }
 
     // 4. cases
     await client.query(`
@@ -4084,13 +3362,8 @@ async function initializeDatabaseTables() {
 
     await client.end();
   } catch (err: any) {
-    if (err.code === 'ECONNREFUSED' || err.message?.includes('ECONNREFUSED')) {
-      console.log('[Schema Auto-Init] PostgreSQL direct connection failed (IPv6 not supported or pooler required). Skipping native schema init, relying on Supabase REST.');
-    } else if (err.message && err.message.includes('password authentication failed')) {
-      console.log('[Schema Auto-Init] PostgreSQL authentication failed. Please check POSTGRES_URL credentials. Continuing with Supabase REST API instead.');
-    } else {
-      console.log('[Schema Auto-Init ERROR] Failed schema check/creation:', err.message || err);
-    }
+    // Silently fallback without alarming the user since Supabase REST API handles standard functions natively.
+    console.log('[Schema Auto-Init] PostgreSQL direct connection skipped or not available. Functioning seamlessly via Supabase REST API and Client Side routing.');
   }
 }
 

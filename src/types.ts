@@ -214,6 +214,8 @@ export interface Document {
     detectedAt: string;
     type: string;
   };
+  fileUrl?: string;
+  storagePath?: string;
 }
 
 export interface Invoice {

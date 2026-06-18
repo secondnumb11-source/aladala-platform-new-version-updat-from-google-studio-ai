@@ -1,1 +1,4 @@
-chrome.runtime.onMessage.addListener((request, sender, sendResponse) => { if (request.action === 'START_SYNC') { sendResponse({ success: true, message: 'Started offline sync background task' }); return true; } });
+// background service worker
+chrome.runtime.onInstalled.addListener(() => {
+  console.log('منصة العدالة - أداة مزامنة ناجز مثبتة بنجاح');
+});

@@ -14,6 +14,7 @@ import NotificationsBell from '@/components/NotificationsBell';
 import GlobalNotesWidget from '@/components/GlobalNotesWidget';
 import DateConverterWidget from '@/components/DateConverterWidget';
 import AiDrafting from '@/components/AiDrafting';
+import ErrorBoundary from '@/components/ErrorBoundary';
 
 // Lazy load large modules using relative paths to avoid resolution issues in some environments
 const CasesModule = React.lazy(() => import('@/components/CasesModule'));
@@ -1706,10 +1707,14 @@ function AppContent() {
         )}
 
         {currentTab === 'najiz' && (
-          <NajizExtensionHub 
-            currentUser={currentUser}
-            onUpdateState={handleUpdateGlobalState}
-          />
+          <ErrorBoundary fallback={<div className="text-red-400 p-10 text-center bg-slate-900 rounded-2xl border border-rose-500/30">خطأ في تحميل قسم ناجز</div>}>
+            <React.Suspense fallback={<div className="p-10 text-center text-amber-500 font-bold font-sans">جاري تحميل منصة ربط ناجز...</div>}>
+              <NajizExtensionHub 
+                currentUser={currentUser}
+                onUpdateState={handleUpdateGlobalState}
+              />
+            </React.Suspense>
+          </ErrorBoundary>
         )}
 
         {currentTab === 'sync' && (

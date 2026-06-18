@@ -49,6 +49,91 @@ export default function ClientPortal({
   onNavigate
 }: ClientPortalProps) {
   
+  // Real Client Portal Auth States
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [portalClient, setPortalClient] = useState<Client | null>(null);
+  const [loginUsername, setLoginUsername] = useState('');
+  const [loginPassword, setLoginPassword] = useState('');
+  const [loginError, setLoginError] = useState('');
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
+
+  // Restore or check Client Portal session
+  React.useEffect(() => {
+    const token = sessionStorage.getItem('client_portal_token');
+    if (token) {
+      setIsLoggingIn(true);
+      fetch('/api/client-portal/session', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success && data.client) {
+          // Find standard client from matching state client
+          const found = clients.find(c => c.id === data.client.id);
+          setPortalClient(found || data.client);
+          setIsLoggedIn(true);
+        } else {
+          sessionStorage.removeItem('client_portal_token');
+        }
+      })
+      .catch(console.error)
+      .finally(() => setIsLoggingIn(false));
+      return;
+    }
+
+    // Check URL parameters for direct simulation/credentials
+    const searchParams = new URLSearchParams(window.location.search);
+    const userParam = searchParams.get('user');
+    const passParam = searchParams.get('pass');
+    if (userParam && passParam) {
+      setLoginUsername(userParam);
+      setLoginPassword(passParam);
+    }
+  }, [clients]);
+
+  // Handle Client Login Submission to API
+  const handleClientLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoggingIn(true);
+    setLoginError('');
+    
+    try {
+      const response = await fetch('/api/client-portal/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          username: loginUsername.trim(),
+          password: loginPassword,
+        }),
+      });
+      
+      const data = await response.json();
+      if (!response.ok || !data.success) {
+        setLoginError(data.message || 'بيانات الدخول غير صحيحة أو البوابة غير مفعّلة');
+        return;
+      }
+      
+      sessionStorage.setItem('client_portal_token', data.token);
+      
+      // Look up full client details from app state
+      const matchingClient = clients.find(cl => cl.id === data.client.id);
+      setPortalClient(matchingClient || data.client);
+      setIsLoggedIn(true);
+    } catch (err: any) {
+      console.error('[Client login exception]', err);
+      setLoginError('خطأ بالاتصال الموحد بالخادم. يرجى المحاولة لاحقاً.');
+    } finally {
+      setIsLoggingIn(false);
+    }
+  };
+
+  const handleClientLogout = () => {
+    sessionStorage.removeItem('client_portal_token');
+    setPortalClient(null);
+    setIsLoggedIn(false);
+    setLoginPassword('');
+  };
+
   // Lawyer-side Client Creation and Case Linking States
   const [isAddingClient, setIsAddingClient] = useState(false);
   const [newClientName, setNewClientName] = useState('');
@@ -166,17 +251,22 @@ export default function ClientPortal({
   };
   
   // Strict isolation logic for Client Portal
+  const isOfficeStaff = currentUser && currentUser.role !== 'client';
+
   const actualClient = (currentUser?.role === 'client' || currentUser?.role === 'subscriber')
     ? clients.find(c => (c.id === currentUser.id || c.email === currentUser.id || c.portalUsername === currentUser.id))
     : null;
 
-  // If role is client/subscriber, they MUST only see their own data. No simulation allowed.
-  const viewingClient = (currentUser?.role === 'client' || currentUser?.role === 'subscriber')
-    ? (actualClient || {} as Client)
-    : selectedSimulatedClient;
+  // If role is office staff, they simulate any client. Otherwise, we use logged in client or standard inferred client.
+  const viewingClient = isOfficeStaff
+    ? selectedSimulatedClient
+    : (portalClient || actualClient || {} as Client);
+
+  // If both standard and database login profiles are missing, they should log in
+  const showLoginForm = !isOfficeStaff && !isLoggedIn && !actualClient;
 
   // If we are a client but couldn't find our own record, we should show nothing or an error
-  const isUnauthorizedClient = (currentUser?.role === 'client' || currentUser?.role === 'subscriber') && !actualClient;
+  const isUnauthorizedClient = (currentUser?.role === 'client' || currentUser?.role === 'subscriber') && !actualClient && !isLoggedIn;
 
   const [isSigned, setIsSigned] = useState(false);
   const [clientMessageInput, setClientMessageInput] = useState('');
@@ -341,6 +431,81 @@ export default function ClientPortal({
     onUpdateState('contracts', updatedContract);
     alert("✅ تم التوقيع والمصادقة الإلكترونية بنجاح عبر رمز OTP الواتساب!");
   };
+
+  if (showLoginForm) {
+    return (
+      <div id="client-portal-login-screen" className="min-h-[80vh] bg-slate-950 flex items-center justify-center p-4 rounded-3xl" dir="rtl">
+        <div id="client-login-card font-sans" className="bg-slate-900 border border-amber-500/30 rounded-3xl p-8 w-full max-w-md shadow-2xl space-y-6">
+          <div className="text-center space-y-2">
+            <div className="inline-flex p-3 bg-amber-500/10 border border-amber-500/20 text-amber-500 rounded-2xl mb-2">
+              <Lock className="w-8 h-8" />
+            </div>
+            <h2 id="client-portal-login-title" className="text-2xl font-black text-white">بوابة الموكلين الآمنة ⚖️</h2>
+            <p className="text-slate-400 text-sm">منصة العدالة لإدارة مكاتب المحاماة والمستندات</p>
+          </div>
+          
+          <form id="client-login-form" onSubmit={handleClientLogin} className="space-y-4">
+            <div className="space-y-1">
+              <label className="text-amber-400 text-xs font-bold block">اسم المستخدم أو الجوال</label>
+              <div className="relative">
+                <input 
+                  id="client-login-username-input"
+                  type="text" 
+                  value={loginUsername} 
+                  onChange={e => setLoginUsername(e.target.value)}
+                  className="w-full bg-slate-800/80 border border-slate-700 focus:border-amber-500/50 text-white rounded-xl p-3 pr-10 text-sm outline-none transition-all font-sans"
+                  placeholder="أدخل اسم المستخدم المعتمد" 
+                  required 
+                />
+                <User className="w-4 h-4 text-slate-500 absolute left-3 top-3.5" />
+              </div>
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-amber-400 text-xs font-bold block">كلمة المرور المؤقتة</label>
+              <div className="relative">
+                <input 
+                  id="client-login-password-input"
+                  type="password" 
+                  value={loginPassword} 
+                  onChange={e => setLoginPassword(e.target.value)}
+                  className="w-full bg-slate-800/80 border border-slate-700 focus:border-amber-500/50 text-white rounded-xl p-3 pr-10 text-sm outline-none transition-all font-sans"
+                  placeholder="أدخل كلمة المرور الخاصة بك" 
+                  required 
+                />
+                <Lock className="w-4 h-4 text-slate-500 absolute left-3 top-3.5" />
+              </div>
+            </div>
+
+            {loginError && (
+              <p id="client-login-error" className="text-rose-400 text-xs font-bold bg-rose-500/10 border border-rose-500/20 p-2.5 rounded-lg text-right">
+                ⚠️ {loginError}
+              </p>
+            )}
+
+            <button 
+              id="client-login-submit-button"
+              type="submit" 
+              disabled={isLoggingIn}
+              className="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black rounded-xl p-3 text-sm shadow-md cursor-pointer transition-all disabled:opacity-50 flex items-center justify-center gap-2 font-display uppercase"
+            >
+              {isLoggingIn ? (
+                <>فحص الجلسة والاعتمادات...</>
+              ) : (
+                <>تسجيل دخول آمن للبوابة 🔐</>
+              )}
+            </button>
+          </form>
+
+          <div className="text-center pt-2 border-t border-slate-800">
+            <p className="text-[11px] text-slate-500">
+              في حال عدم امتلاككم لبيانات الدخول، يرجى التواصل مع مكتب المحاماة الممثل لكم لإصدار الروابط والاعتمادات الفورية وتفعيل حسابكم بنجاح.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (isUnauthorizedClient || !viewingClient) {
     return (
@@ -745,6 +910,34 @@ export default function ClientPortal({
               )}
             </div>
           )}
+
+      {/* Logged in Welcome and Logout Header */}
+      {(isLoggedIn || (currentUser?.role === 'client' || currentUser?.role === 'subscriber')) && (
+        <div id="client-welcome-header" className="bg-gradient-to-r from-indigo-900 to-slate-900 border border-indigo-500/20 rounded-2xl p-6 text-white flex flex-col sm:flex-row justify-between items-center gap-4 shadow-lg animate-fade-in" dir="rtl">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 bg-indigo-500/20 text-indigo-300 rounded-full flex items-center justify-center border border-indigo-500/30">
+              <User className="w-6 h-6" />
+            </div>
+            <div>
+              <p className="text-xs text-indigo-300 font-bold">بوابة الموكلين النشطة • مرحباً بك</p>
+              <h2 className="text-lg font-black">{viewingClient.name || 'موكل كريم'}</h2>
+            </div>
+          </div>
+          
+          <div className="flex items-center gap-3">
+            {isLoggedIn && (
+              <button
+                id="client-logout-button"
+                onClick={handleClientLogout}
+                className="bg-rose-600/20 hover:bg-rose-600 border border-rose-500/30 text-rose-200 hover:text-white text-xs font-bold px-4 py-2.5 rounded-xl transition-all cursor-pointer"
+              >
+                تسجيل الخروج الآمن 🔓
+              </button>
+            )}
+            <span className="text-xs text-slate-400 font-sans">آخر تحديث: {new Date().toLocaleDateString('ar-SA')}</span>
+          </div>
+        </div>
+      )}
 
       {/* Dynamic Cases Filter Dropdown List for Client Portal View */}
       {clientCases.length > 0 && (

@@ -127,27 +127,31 @@ const sanitizePayload = (tableName: string, data: any): Record<string, any> => {
   }
 
   if (tableName === 'cases') {
-    // caseName في الكود → title في قاعدة البيانات
+    // caseName → title
     if (snaked.case_name && !snaked.title) {
       snaked.title = snaked.case_name;
     }
+    // اسم العميل المباشر
+    if (snaked.client_name && !snaked.client_id) {
+      // نترك client_id كـ null إذا لم يوجد
+      snaked.client_id = snaked.client_id || null;
+    }
     // nextSessionDate → next_session_at
     if (snaked.next_session_date && !snaked.next_session_at) {
-      snaked.next_session_at = snaked.next_session_date;
+      snaked.next_session_at = new Date(snaked.next_session_date).toISOString();
     }
     // lastSessionDate → last_session_at
     if (snaked.last_session_date && !snaked.last_session_at) {
-      snaked.last_session_at = snaked.last_session_date;
+      snaked.last_session_at = new Date(snaked.last_session_date).toISOString();
     }
-    // clientId → client_id
-    if (snaked.client_id === undefined && snaked.client_name) {
-      // client_id مطلوب - إذا لم يكن موجوداً نضع null
-      snaked.client_id = snaked.client_id || null;
-    }
-    // تأكد أن attachments_count رقم وليس مصفوفة
+    // تحويل الـ attachments إلى عدد
     if (Array.isArray(snaked.attachments)) {
       snaked.attachments_count = snaked.attachments.length;
       delete snaked.attachments;
+    }
+    // إضافة client_name كحقل مباشر
+    if (!snaked.client_name && snaked.client_name !== undefined) {
+      snaked.client_name = '';
     }
     // حوّل المصفوفات المعقدة إلى JSONB
     if (Array.isArray(snaked.assigned_lawyers)) {

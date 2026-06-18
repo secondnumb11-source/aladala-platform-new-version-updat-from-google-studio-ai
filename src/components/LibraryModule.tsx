@@ -67,6 +67,26 @@ export default function LibraryModule() {
   const [selectedLaw, setSelectedLaw] = useState<typeof SAUDI_LAWS[0] | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
 
+  const getLawUrl = (lawId: string): string => {
+    if (lawId === 'civil-transactions') {
+      return localStorage.getItem('law_link_civil_transactions') || 'https://laws.boe.gov.sa/SaudiLaws/Laws/LawDetails/6968fd0a-115f-4bf2-abb9-b01600c01fa1';
+    } else if (lawId === 'companies-new') {
+      return localStorage.getItem('law_link_companies_new') || 'https://laws.boe.gov.sa/SaudiLaws/Laws/LawDetails/2585f9ea-b97c-40ad-9b8d-ae7b00bef027';
+    } else if (lawId === 'labor-law') {
+      return localStorage.getItem('law_link_labor_law') || 'https://laws.boe.gov.sa/SaudiLaws/Laws/LawDetails/f7648348-18e4-4d10-8277-ae7b00bef20b';
+    }
+    return 'https://laws.boe.gov.sa';
+  };
+
+  const handleLawClick = (law: typeof SAUDI_LAWS[0]) => {
+    const targetUrl = getLawUrl(law.id);
+    if (targetUrl) {
+      window.open(targetUrl, '_blank', 'noopener,noreferrer');
+    } else {
+      setSelectedLaw(law);
+    }
+  };
+
   const filteredLaws = SAUDI_LAWS.filter(l => 
     l.title.includes(searchTerm) || l.category.includes(searchTerm)
   );
@@ -157,7 +177,7 @@ export default function LibraryModule() {
               <motion.div
                 key={law.id}
                 className="bg-white border border-slate-200 p-6 rounded-3xl shadow-lg transition-all cursor-pointer group"
-                onClick={() => setSelectedLaw(law)}
+                onClick={() => handleLawClick(law)}
               >
                 <div className="flex items-start justify-between mb-4">
                   <div className="w-12 h-12 bg-amber-500/10 rounded-2xl flex items-center justify-center text-amber-400 font-black group- group- transition-all">
@@ -167,7 +187,10 @@ export default function LibraryModule() {
                     {law.category}
                   </span>
                 </div>
-                <h4 className="text-lg font-black text-slate-900 group- transition-colors">{law.title}</h4>
+                <h4 className="text-lg font-black text-slate-900 group-hover:text-amber-500 transition-colors flex items-center justify-between gap-2">
+                  <span>{law.title}</span>
+                  <ExternalLink className="w-4 h-4 text-slate-400 group-hover:text-amber-500 transition-colors shrink-0" />
+                </h4>
                 <p className="text-slate-200 font-bold text-xs mt-2 line-clamp-2 font-bold leading-relaxed">{law.desc}</p>
                 <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between">
                   <span className="text-[10px] text-slate-200 font-bold font-bold">تحديث: {law.lastUpdated}</span>

@@ -2,72 +2,87 @@
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
-  <title>Najiz Sync</title>
+  <title>منصة العدالة - مزامنة ناجز</title>
   <style>
-    body {
-      width: 300px;
-      padding: 16px;
-      font-family: Arial, sans-serif;
-      background-color: #0b1329;
-      color: #FFFFFF;
-      margin: 0;
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { width: 320px; padding: 0; font-family: 'Cairo', Arial, sans-serif; background: #0b1329; color: #fff; }
+    .header { background: linear-gradient(135deg, #D4AF37, #B8960C); padding: 16px; text-align: center; }
+    .header h2 { color: #0b1329; font-size: 16px; font-weight: 900; }
+    .header p { color: #0b132990; font-size: 11px; }
+    .content { padding: 16px; }
+    .section { background: #1a2540; border-radius: 12px; padding: 14px; margin-bottom: 12px; }
+    .section-title { color: #D4AF37; font-size: 12px; font-weight: 900; margin-bottom: 10px; }
+    label { color: #94a3b8; font-size: 11px; display: block; margin-bottom: 4px; }
+    input[type="text"], input[type="url"], input[type="password"] {
+      width: 100%; background: #0b1329; border: 1px solid #2d3a55; color: #fff;
+      padding: 8px 10px; border-radius: 8px; font-size: 12px; font-family: inherit;
     }
-    h2 {
-      color: #FACC15;
-      font-size: 16px;
-      margin-top: 0;
-      border-bottom: 1px solid #D4AF37;
-      padding-bottom: 8px;
-    }
-    .btn {
-      background-color: #D4AF37;
-      color: #0b1329;
-      border: none;
-      padding: 10px;
-      width: 100%;
-      border-radius: 8px;
-      font-weight: bold;
-      cursor: pointer;
-      margin-top: 10px;
-    }
-    .btn:hover {
-      background-color: #FACC15;
-    }
-    .status {
-      margin-top: 12px;
-      font-size: 12px;
-      color: #FFFFFF;
-    }
-    label {
-      color: #FACC15;
-      font-size: 12px;
-      font-weight: bold;
-      display: block;
-      margin-top: 10px;
-    }
-    input {
-      width: 100%;
-      box-sizing: border-box;
-      background-color: #090f20;
-      border: 1px solid #D4AF37;
-      color: #FFFFFF;
-      padding: 8px;
-      border-radius: 6px;
-      margin-top: 4px;
-    }
+    input:focus { outline: none; border-color: #D4AF37; }
+    .sync-options { display: flex; flex-direction: column; gap: 6px; }
+    .sync-opt { display: flex; align-items: center; gap: 8px; font-size: 12px; color: #e2e8f0; cursor: pointer; }
+    .sync-opt input { accent-color: #D4AF37; }
+    .btn { width: 100%; background: linear-gradient(135deg, #D4AF37, #F59E0B); color: #0b1329;
+      border: none; padding: 12px; border-radius: 10px; font-weight: 900; font-size: 14px;
+      cursor: pointer; font-family: inherit; margin-top: 4px; }
+    .btn:hover { background: linear-gradient(135deg, #F59E0B, #D4AF37); }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .status { margin-top: 10px; font-size: 11px; color: #94a3b8; text-align: center; min-height: 16px; padding: 6px; background: #0b1329; border-radius: 8px; }
+    .status.success { color: #10b981; }
+    .status.error { color: #ef4444; }
+    .mode-tabs { display: flex; gap: 6px; margin-bottom: 10px; }
+    .mode-tab { flex: 1; padding: 6px; border-radius: 8px; border: 1px solid #2d3a55; background: transparent; color: #94a3b8; cursor: pointer; font-size: 11px; font-family: inherit; }
+    .mode-tab.active { background: #D4AF37; color: #0b1329; font-weight: 900; border-color: #D4AF37; }
   </style>
 </head>
 <body>
-  <h2>مزامنة بيانات ناجز</h2>
+  <div class="header">
+    <h2>⚖️ منصة العدالة</h2>
+    <p>مزامنة ناجز التلقائية</p>
+  </div>
   
-  <label>API URL</label>
-  <input type="text" id="apiUrl" placeholder="رابط الواجهة البرمجية">
+  <div class="content">
+    <div class="section">
+      <div class="section-title">🔗 إعدادات الاتصال</div>
+      
+      <div class="mode-tabs">
+        <button class="mode-tab active" id="tab-browser">متصفح (بدون مفتاح)</button>
+        <button class="mode-tab" id="tab-apikey">مفتاح API</button>
+      </div>
+      
+      <div id="browser-mode">
+        <p style="color:#94a3b8;font-size:11px;line-height:1.5">
+          سجّل دخولك في ناجز، ثم اضغط زر المزامنة الذي سيظهر أسفل الصفحة. لا تحتاج مفتاح API.
+        </p>
+      </div>
+      
+      <div id="apikey-mode" style="display:none">
+        <label>رابط المنصة (API URL)</label>
+        <input type="url" id="apiUrl" placeholder="https://adalah.cloud أو http://localhost:5000">
+        <div style="margin-top: 8px">
+          <label>مفتاح الموظف (API Key) — اختياري</label>
+          <input type="password" id="apiKey" placeholder="sk_adalah_...">
+        </div>
+      </div>
+    </div>
+    
+    <div class="section">
+      <div class="section-title">📦 اختر البيانات للمزامنة</div>
+      <div class="sync-options">
+        <label class="sync-opt"><input type="checkbox" value="all" id="opt-all" checked> 📦 جميع البيانات</label>
+        <label class="sync-opt"><input type="checkbox" value="cases" checked> ⚖️ القضايا</label>
+        <label class="sync-opt"><input type="checkbox" value="clients" checked> 👥 العملاء والأطراف</label>
+        <label class="sync-opt"><input type="checkbox" value="hearings" checked> 📅 مواعيد الجلسات</label>
+        <label class="sync-opt"><input type="checkbox" value="executions" checked> 💰 طلبات التنفيذ</label>
+        <label class="sync-opt"><input type="checkbox" value="case_requests" checked> 📋 الطلبات على القضايا</label>
+        <label class="sync-opt"><input type="checkbox" value="minutes" checked> 📝 محاضر الجلسات</label>
+        <label class="sync-opt"><input type="checkbox" value="agencies" checked> 📜 الوكالات</label>
+      </div>
+    </div>
+    
+    <button class="btn" id="syncBtn">🚀 مزامنة الصفحة الحالية</button>
+    <div class="status" id="statusMessage">جاهز للمزامنة</div>
+  </div>
   
-  <label>API Key</label>
-  <input type="password" id="apiKey" placeholder="مفتاح الوصول">
-  
-  <button class="btn" id="syncBtn">مزامنة الآن</button>
-  <div class="status" id="statusMessage"></div>
   <script src="popup.js"></script>
 </body>
 </html>

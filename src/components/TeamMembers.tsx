@@ -96,61 +96,68 @@ export default function TeamMembers({ customRoles }: TeamMembersProps = {}) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name || !role) return;
-
-    setErrorMsg("");
-    setSuccessMsg("");
-
-    const commissionNum = commissionRate ? parseFloat(commissionRate) : 0;
-    const payload = {
-      name,
+    if (!name.trim()) {
+      setErrorMsg('اسم الموظف مطلوب');
+      return;
+    }
+    
+    setErrorMsg('');
+    setSuccessMsg('');
+    
+    // توليد بيانات الدخول
+    const username = email ? email.split('@')[0] : `emp_${Date.now()}`;
+    const password = editingId ? undefined : `Pass@${Math.floor(1000 + Math.random() * 9000)}`;
+    const employeeCode = `EMP-${Date.now().toString(36).toUpperCase()}`;
+    
+    const payload: any = {
+      name: name.trim(),
       role,
-      phone,
-      email,
+      phone: phone.trim(),
+      email: email.trim(),
       status,
-      salary: commissionNum,
-      updated_at: new Date().toISOString()
+      salary: parseFloat(commissionRate) || 0,
+      job_title: role,
+      updated_at: new Date().toISOString(),
     };
-
+    
+    if (!editingId) {
+      payload.username = username;
+      payload.password = password;
+      payload.employee_code = employeeCode;
+      payload.join_date = new Date().toISOString().split('T')[0];
+    }
+    
     try {
       if (editingId) {
-        // SQL UPDATE Operation
         const { error } = await supabase
-          .from("employees")
+          .from('employees')
           .update(payload)
-          .eq("id", editingId);
+          .eq('id', editingId);
         if (error) throw error;
-        setSuccessMsg("تم تعديث سجل الموظف وصلاحياته بنجاح!");
+        setSuccessMsg('تم تعديل سجل الموظف وصلاحياته بنجاح!');
       } else {
-        // SQL INSERT Operation
-        const { error } = await supabase
-          .from("employees")
-          .insert([
-            {
-              ...payload,
-              join_date: new Date().toISOString().split("T")[0]
-            }
-          ]);
+        const { data: inserted, error } = await supabase
+          .from('employees')
+          .insert([payload])
+          .select()
+          .single();
         if (error) throw error;
-        setSuccessMsg("تم ترخيص وتقييد الموظف بنجاح للفريق الميداني!");
+        setSuccessMsg(`تم إضافة الموظف بنجاح! اسم المستخدم: ${username} | كلمة المرور: ${payload.password}`);
       }
-
-      // Reset Form State
-      setName("");
-      setPhone("");
-      setEmail("");
-      setCommissionRate("35");
-      setStatus("active");
+      
+      setName('');
+      setPhone('');
+      setEmail('');
+      setCommissionRate('35');
+      setStatus('active');
       setEditingId(null);
       setShowAddForm(false);
       fetchEmployees();
-
-      setTimeout(() => {
-        setSuccessMsg("");
-      }, 3000);
+      
+      setTimeout(() => setSuccessMsg(''), 5000);
     } catch (err: any) {
-      console.error("[TeamMembers] Save Exception:", err);
-      setErrorMsg(err.message || "فشلت عملية المزامنة مع خادم قاعدة البيانات.");
+      console.error('[TeamMembers] Save Error:', err);
+      setErrorMsg('فشل الحفظ: ' + (err.message || 'خطأ غير معروف'));
     }
   };
 

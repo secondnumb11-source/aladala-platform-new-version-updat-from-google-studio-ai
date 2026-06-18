@@ -31,7 +31,8 @@ import {
   Building2,
   ArrowUp,
   ArrowDown,
-  Trash2
+  Trash2,
+  BookOpen
 } from 'lucide-react';
 import { useSupabase } from '@/contexts/SupabaseContext';
 
@@ -361,6 +362,26 @@ export default function Settings({
     localStorage.setItem('adalah-whatsapp-template', whatsappTemplate);
     localStorage.setItem('adalah-whatsapp-apikey', whatsappApiKey);
     alert('تم حفظ إعدادات إشعارات الواتساب بنجاح');
+  };
+
+  // Systems Library custom card links states and save handler
+  const [lawLinkCivilTransactions, setLawLinkCivilTransactions] = useState(() => {
+    return localStorage.getItem('law_link_civil_transactions') || '';
+  });
+  const [lawLinkCompaniesNew, setLawLinkCompaniesNew] = useState(() => {
+    return localStorage.getItem('law_link_companies_new') || '';
+  });
+  const [lawLinkLaborLaw, setLawLinkLaborLaw] = useState(() => {
+    return localStorage.getItem('law_link_labor_law') || '';
+  });
+
+  const handleSaveLawLinks = (e: React.FormEvent) => {
+    e.preventDefault();
+    localStorage.setItem('law_link_civil_transactions', lawLinkCivilTransactions);
+    localStorage.setItem('law_link_companies_new', lawLinkCompaniesNew);
+    localStorage.setItem('law_link_labor_law', lawLinkLaborLaw);
+    window.dispatchEvent(new Event('adalah-law-links-updated'));
+    alert('تم حفظ روابط كروت الأنظمة بنجاح ⚖️');
   };
 
   // Dashboard Modules Visibility & Clean Clutter states
@@ -1087,6 +1108,65 @@ export default function Settings({
                 </button>
               </form>
             </div>
+          </div>
+
+          {/* Digital Systems Library URL Config - Dedicated Card */}
+          <div className="bg-white border border-slate-800 rounded-2xl p-6 space-y-6 shadow-sm" id="legal-library-links-settings">
+            <div className="flex items-center gap-3 border-b border-slate-800 pb-4">
+              <div className="p-2.5 bg-amber-500/10 border border-amber-500/30 text-amber-500 rounded-xl">
+                <BookOpen className="w-5 h-5" />
+              </div>
+              <div>
+                <h2 className="text-sm font-bold text-slate-900">إعدادات روابط كروت الأنظمة (مكتبة الأنظمة والبحث الذكي)</h2>
+                <p className="text-[11px] text-slate-700 mt-0.5">تخصيص الروابط الخارجية التي يتم فتحها عند النقر على كروت الأنظمة واللوائح في المكتبة القانونية.</p>
+              </div>
+            </div>
+
+            <form onSubmit={handleSaveLawLinks} className="space-y-4">
+              <div className="space-y-1.5">
+                <label className="text-xs font-black text-slate-900 flex items-center gap-1.5">
+                  📁 رابط كارت (نظام المعاملات المدنية):
+                </label>
+                <input 
+                  type="url" 
+                  value={lawLinkCivilTransactions}
+                  onChange={e => setLawLinkCivilTransactions(e.target.value)}
+                  className="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl text-xs font-bold focus:border-amber-500 outline-none font-sans"
+                  placeholder="https://example.com/civil-transactions-law-link..."
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-black text-slate-900 flex items-center gap-1.5">
+                  📁 رابط كارت (نظام الشركات الجديد):
+                </label>
+                <input 
+                  type="url" 
+                  value={lawLinkCompaniesNew}
+                  onChange={e => setLawLinkCompaniesNew(e.target.value)}
+                  className="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl text-xs font-bold focus:border-amber-500 outline-none font-sans"
+                  placeholder="https://example.com/companies-law-link..."
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-black text-slate-900 flex items-center gap-1.5">
+                  📁 رابط كارت (نظام العمل السعودي):
+                </label>
+                <input 
+                  type="url" 
+                  value={lawLinkLaborLaw}
+                  onChange={e => setLawLinkLaborLaw(e.target.value)}
+                  className="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl text-xs font-bold focus:border-amber-500 outline-none font-sans"
+                  placeholder="https://example.com/labor-law-link..."
+                />
+              </div>
+
+              <button type="submit" className="w-full py-3 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-black transition-all shadow-lg flex items-center justify-center gap-2">
+                <Save className="w-4 h-4" />
+                حفظ روابط كروت الأنظمة واللوائح
+              </button>
+            </form>
           </div>
           
           {/* Custom Theme Color & Gradient Config for Dark Cards & Backgrounds with Live Preview */}

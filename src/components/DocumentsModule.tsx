@@ -30,7 +30,8 @@ import {
   LogOut,
   Lock,
   Landmark,
-  Camera
+  Camera,
+  Trash2
 } from 'lucide-react';
 import { Document, Client, Case } from '@/types';
 import { supabase, uploadFileToStorage } from '@/lib/supabase';
@@ -784,6 +785,28 @@ export default function DocumentsModule({
 
   // OCR Simulator
   const [selectedDocForOcr, setSelectedDocForOcr] = useState<Document | null>(documents[0]);
+  const selectedDocument = selectedDocForOcr;
+
+  const handleDeleteDocument = async (docId: string, storagePath?: string) => {
+    if (!window.confirm('هل تريد حذف هذا المستند نهائياً؟')) return;
+    
+    try {
+      // حذف من Storage إذا كان هناك مسار
+      if (storagePath) {
+        await supabase.storage.from('documents').remove([storagePath]);
+      }
+      
+      // حذف من قاعدة البيانات
+      const { error } = await supabase.from('documents').delete().eq('id', docId);
+      if (error) throw error;
+      
+      // تحديث الحالة المحلية
+      onUpdateState('documents', { id: docId, _deleted: true });
+      alert('تم حذف المستند بنجاح');
+    } catch (err: any) {
+      alert('فشل الحذف: ' + err.message);
+    }
+  };
   const [isOcrLoading, setIsOcrLoading] = useState(false);
   const [ocrResult, setOcrResult] = useState<string | null>(documents[0]?.content_text || null);
 
@@ -993,15 +1016,16 @@ export default function DocumentsModule({
 
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
-  const processUploadedFile = async (file: File) => {
+  const handleFileUpload = async (file: File) => {
     setIsUploading(true);
     const ext = file.name.split('.').pop()?.toLowerCase() || 'pdf';
     
     try {
-      const fileName = `${Date.now()}_${file.name}`;
+      const fileName = `${generateUUID()}.${ext}`;
+      const uploadPath = `documents/${fileName}`;
       const { url, isFallback } = await uploadFileToStorage(
         'documents',
-        `documents/${fileName}`,
+        uploadPath,
         file
       );
 
@@ -1042,7 +1066,7 @@ export default function DocumentsModule({
       if (simulatedPDFContent.includes('أحكام') || simulatedPDFContent.includes('صك')) contentBasedTags.push('أحكام');
       
       aiTags.push(...contentBasedTags);
-
+ 
       // NLP Metadata Extraction Simulation - NEW FEATURE
       const extractedCaseName = fileNameLower.includes('نورة') ? 'قضية نورة الفوزان' : 
                                 fileNameLower.includes('الراجحي') ? 'مجموعة الراجحي العقارية' : 
@@ -1055,10 +1079,12 @@ export default function DocumentsModule({
       if (fileNameLower.includes('حكم')) aiTags.push('صك حكم');
       
       const smartFileName = `${category} - ${extractedCaseName} - ${new Date().getFullYear()}.pdf`;
-
+ 
       const newDoc: Document = {
         id: generateUUID(),
-        name: smartFileName,
+        name: file.name, // Use actual file.name or smartFileName
+        fileUrl: downloadURL,
+        storagePath: isFallback ? '' : uploadPath,
         category: category as any,
         uploadedAt: new Date().toISOString().split('T')[0],
         size: sizeStr,
@@ -1067,31 +1093,29 @@ export default function DocumentsModule({
 - اسم القضية المستنبط: ${extractedCaseName}
 - التاريخ المستخرج من المتن: ${extractedDate}
 - التصنيف الذاتي المعتمد: ${category}
-
+ 
 رابط الملف السحابي الآمن: ${downloadURL}
 نوع وتمديد المستند: ${ext.toUpperCase()}
 `,
         tags: [...aiTags, 'مفهرس_آلياً', extractedCaseName, 'NLP_Processed']
       };
-
-      onUpdateState('documents', newDoc);
+ 
+      await onUpdateState('documents', newDoc);
       setIsUploading(false);
       setSelectedDocForOcr(newDoc);
       setOcrResult(newDoc.content_text || null);
-      alert(`✅ تمت عملية الرفع بنجاح!
-      قامت تقنيات ذكاء الأعمال (NLP) بتحليل الملف النصي، وتصنيفه كـ "${category}" وتسميته تلقائياً بـ "${smartFileName}".
-      يمكنك الآن البحث في محتوى هذا المستند باستخدام البحث العميق (NLP Content Search).`);
+      alert('تم رفع المستند بنجاح!');
     } catch (err: any) {
-      console.error("Firebase Storage upload exception: ", err);
+      console.error("Storage upload exception: ", err);
       setIsUploading(false);
-      alert(`❌ فشل رفع الملف إلى Firebase Storage: ${err?.message || err || "خطأ غير معروف"}. يرجى التحقق من لوائح الإتصال وصلاحيات أمان التخزين السحابي للمنصة.`);
+      alert(`❌ فشل رفع الملف: ${err?.message || err || "خطأ غير معروف"}.`);
     }
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      processUploadedFile(file);
+      handleFileUpload(file);
     }
   };
 
@@ -1103,7 +1127,7 @@ export default function DocumentsModule({
     e.preventDefault();
     const files = Array.from(e.dataTransfer.files);
     if (files.length > 0) {
-      processUploadedFile(files[0] as any);
+      handleFileUpload(files[0] as any);
     }
   };
 
@@ -1607,12 +1631,49 @@ export default function DocumentsModule({
                       >
                         <span>⏱️ الإصدارات</span>
                       </button>
+                      <button 
+                        onClick={(e) => { e.stopPropagation(); handleDeleteDocument(doc.id, doc.storagePath); }}
+                        className="text-red-500 hover:text-red-700 p-1 mr-1"
+                        title="حذف المستند"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
                     </div>
                   </div>
                 </motion.div>
               );
             })}
           </div>
+
+          {selectedDocument && (
+            <div className="bg-slate-900 border border-slate-700 rounded-3xl p-6 mt-6 space-y-4 shadow-xl text-right">
+              <h3 className="text-white font-bold mb-3">عرض المستند</h3>
+              {selectedDocument.fileUrl ? (
+                selectedDocument.fileUrl.match(/\.(pdf)$/i) ? (
+                  <iframe
+                    src={selectedDocument.fileUrl}
+                    className="w-full h-96 rounded-lg border border-slate-600"
+                    title={selectedDocument.name}
+                  />
+                ) : selectedDocument.fileUrl.match(/\.(jpg|jpeg|png|gif|webp)$/i) ? (
+                  <img
+                    src={selectedDocument.fileUrl}
+                    alt={selectedDocument.name}
+                    className="w-full max-h-96 object-contain rounded-lg mx-auto"
+                  />
+                ) : (
+                  <div className="flex flex-col items-center justify-center h-48 bg-slate-800 rounded-lg">
+                    <FileText className="w-12 h-12 text-amber-400 mb-2" />
+                    <p className="text-slate-300 text-sm">لا يمكن عرض هذا النوع من الملفات مباشرة</p>
+                    <a href={selectedDocument.fileUrl} target="_blank" rel="noopener noreferrer"
+                      className="mt-2 text-amber-400 underline text-sm">فتح الملف</a>
+                  </div>
+                )
+              ) : (
+                <p className="text-slate-400 text-sm">لا يوجد ملف مرتبط بهذا المستند</p>
+              )}
+            </div>
+          )}
         </div>
         )}
 
