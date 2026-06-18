@@ -11,7 +11,9 @@ import {
   Info,
   Layers,
   Sparkles,
-  ExternalLink
+  ExternalLink,
+  Edit2,
+  Trash2
 } from 'lucide-react';
 import { motion } from 'motion/react';
 import { Case, Hearing, Task, Invoice } from '@/types';
@@ -24,9 +26,10 @@ interface CalendarModuleProps {
   tasks: Task[];
   invoices?: Invoice[];
   onUpdateState?: (type: string, data: any) => void;
+  onDeleteState?: (type: string, id: string) => void;
 }
 
-export default function CalendarModule({ cases, hearings, tasks, invoices = [], onUpdateState }: CalendarModuleProps) {
+export default function CalendarModule({ cases, hearings, tasks, invoices = [], onUpdateState, onDeleteState }: CalendarModuleProps) {
   const [selectedDate, setSelectedDate] = useState<string>("2026-06-12");
   const [syncGoogle, setSyncGoogle] = useState(false);
   const [syncOutlook, setSyncOutlook] = useState(false);
@@ -43,6 +46,7 @@ export default function CalendarModule({ cases, hearings, tasks, invoices = [], 
   const [newClient, setNewClient] = useState("");
   const [newLawyer, setNewLawyer] = useState("");
   const [addingSuccess, setAddingSuccess] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
 
   // Real-time conflict inspector for proposed input before submission
   const checkInstantConflict = () => {
@@ -50,6 +54,7 @@ export default function CalendarModule({ cases, hearings, tasks, invoices = [], 
     
     // Check conflicts against existing hearings
     for (const h of hearings) {
+      if (editingId && h.id === editingId) continue;
       if (h.date === newDate && h.status !== 'canceled' && h.hearingStatus !== 'canceled') {
         const sameTime = h.time.replace(/\s+/g, '') === newTime.replace(/\s+/g, '');
         const sameClient = newClient.trim() && (
@@ -106,18 +111,29 @@ export default function CalendarModule({ cases, hearings, tasks, invoices = [], 
 
     if (onUpdateState) {
       if (newCommType === "hearing") {
-        const newHearing: Hearing = {
-          id: generateUUID(),
-          caseNumber: `SA-CAL-${Math.floor(1000 + Math.random() * 9000)}`,
-          caseName: newTitle + (newClient ? ` (العميل: ${newClient})` : ""),
+        const hearingData = {
+          caseName: newTitle + (newClient && !newTitle.includes(newClient) ? ` (العميل: ${newClient})` : ""),
           date: newDate,
           time: newTime,
           courtName: newCourt || "المحكمة التجارية بالرياض",
-          status: 'upcoming',
           judgeName: newLawyer || "محامي المكتب",
           notes: `تم الإضافة يدوياً للأجندة كالتزام قضائي. العميل: ${newClient || 'غير محدد'}`
         };
-        onUpdateState('hearings', newHearing);
+
+        if (editingId) {
+          const existing = hearings.find(h => h.id === editingId);
+          if (existing) {
+            onUpdateState('hearings', { ...existing, ...hearingData });
+          }
+        } else {
+          const newHearing: Hearing = {
+            id: generateUUID(),
+            caseNumber: `SA-CAL-${Math.floor(1000 + Math.random() * 9000)}`,
+            status: 'upcoming',
+            ...hearingData
+          };
+          onUpdateState('hearings', newHearing);
+        }
       } else {
         const newTask: Task = {
           id: generateUUID(),
@@ -136,9 +152,28 @@ export default function CalendarModule({ cases, hearings, tasks, invoices = [], 
       setNewTitle("");
       setNewCourt("");
       setNewClient("");
+      setEditingId(null);
       setTimeout(() => setAddingSuccess(false), 3000);
     } else {
       alert("خدمة الحفظ غير متصلة مؤقتاً.");
+    }
+  };
+
+  const handleEditHearing = (hearing: Hearing) => {
+    setNewCommType("hearing");
+    setNewTitle(hearing.caseName.replace(/\s*\(العميل:.*?\)/, ''));
+    setNewDate(hearing.date);
+    setNewTime(hearing.time);
+    setNewCourt(hearing.courtName);
+    setNewLawyer(hearing.judgeName || "");
+    setEditingId(hearing.id);
+    
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleDeleteHearing = (id: string) => {
+    if (window.confirm("هل أنت متأكد من حذف الجلسة بشكل نهائي؟")) {
+      if (onDeleteState) onDeleteState('hearings', id);
     }
   };
 
@@ -554,12 +589,29 @@ export default function CalendarModule({ cases, hearings, tasks, invoices = [], 
               <div className="space-y-4">
                 {/* Hearings */}
                 {juneDays.find(d => d.dateStr === selectedDate)?.hearings.map((hearing) => (
-                  <div key={hearing.id} className="bg-[#4c0519] border-2 border-[#b91c1c] p-4 rounded-xl flex flex-col gap-3 shadow-lg">
+                  <div key={hearing.id} className="bg-[#4c0519] border-2 border-[#b91c1c] p-4 rounded-xl flex flex-col gap-3 shadow-lg relative group/hearing">
+                    <div className="absolute top-3 left-3 flex gap-2 opacity-0 group-hover/hearing:opacity-100 transition-opacity z-10 bg-[#4c0519]/80 px-2 py-1 rounded-lg backdrop-blur-sm shadow-md border border-[#dc2626]/40">
+                      <button 
+                        onClick={(e) => { e.stopPropagation(); handleEditHearing(hearing); }} 
+                        className="p-1.5 bg-blue-500/20 hover:bg-blue-500 text-blue-300 hover:text-white rounded-md transition-all shadow-[0_0_10px_rgba(59,130,246,0.3)]" 
+                        title="تعديل الجلسة"
+                      >
+                        <Edit2 size={13} />
+                      </button>
+                      <button 
+                        onClick={(e) => { e.stopPropagation(); handleDeleteHearing(hearing.id); }} 
+                        className="p-1.5 bg-red-500/20 hover:bg-red-500 text-red-300 hover:text-white rounded-md transition-all shadow-[0_0_10px_rgba(239,68,68,0.3)]" 
+                        title="حذف الجلسة"
+                      >
+                        <Trash2 size={13} />
+                      </button>
+                    </div>
+
                     <div className="flex justify-between items-start">
                       <div className="space-y-2 text-right">
                         <div className="flex items-center gap-2">
                           <span className="text-[10px] bg-[#991B1B] text-white px-2 py-0.5 rounded font-black border border-red-500/30" style={{ textShadow: 'none' }}>جلسة قضائية</span>
-                          <h4 className="text-xs font-black" style={{ color: '#FFFFFF', textShadow: 'none' }}>{hearing.caseName}</h4>
+                          <h4 className="text-xs font-black pl-16" style={{ color: '#FFFFFF', textShadow: 'none' }}>{hearing.caseName}</h4>
                         </div>
                         <div className="text-sm font-black space-y-1">
                           <div style={{ color: '#FFFFFF', textShadow: 'none' }}>🏛️ المحكمة: <strong style={{ color: '#FACC15', textShadow: 'none' }} className="font-black">{hearing.courtName}</strong></div>
@@ -1004,13 +1056,29 @@ export default function CalendarModule({ cases, hearings, tasks, invoices = [], 
                 </div>
               )}
 
-              <button
-                type="submit"
-                className="w-full bg-yellow-500 text-slate-950 font-black py-2 rounded-xl text-xs transition-all shadow flex items-center justify-center gap-1 cursor-pointer"
-              >
-                <span>➕</span>
-                <span>تأكيد الإضافة والجدولة بالأجندة</span>
-              </button>
+              <div className="flex gap-2">
+                <button
+                  type="submit"
+                  className="flex-1 bg-yellow-500 hover:bg-yellow-400 text-slate-950 font-black py-2.5 rounded-xl text-xs transition-all shadow flex items-center justify-center gap-1 cursor-pointer"
+                >
+                  <span>{editingId ? '💾' : '➕'}</span>
+                  <span>{editingId ? 'حفظ التعديلات' : 'تأكيد الإضافة والجدولة بالأجندة'}</span>
+                </button>
+                {editingId && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEditingId(null);
+                      setNewTitle("");
+                      setNewCourt("");
+                      setNewClient("");
+                    }}
+                    className="bg-slate-200 hover:bg-slate-300 text-slate-900 font-black px-4 py-2.5 rounded-xl text-xs transition-all flex items-center justify-center cursor-pointer"
+                  >
+                    إلغاء التعديل
+                  </button>
+                )}
+              </div>
             </form>
           </div>
 

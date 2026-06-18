@@ -268,6 +268,7 @@ export default function AILegalSearch() {
   const [isLoading, setIsLoading] = useState(false);
   const [answer, setAnswer] = useState('');
   const [sources, setSources] = useState<{ title: string; link: string; category: string }[]>([]);
+  const [searchError, setSearchError] = useState<string | null>(null);
 
   // Tab 2: Sovereign Library Observatory
   const [librarySearchTerm, setLibrarySearchTerm] = useState('');
@@ -363,39 +364,31 @@ export default function AILegalSearch() {
     setIsLoading(true);
     setAnswer('');
     setSources([]);
+    setSearchError(null);
 
     try {
-      const res = await fetch('/api/ai/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          messages: [{
-            role: 'user',
-            content: `بصفتك باحثاً قانونياً خبيراً في الأنظمة السعودية، أجب عن التساؤل التالي بدقة واستشهد بالأنظمة واللوائح والقرارات ذات العلاقة (مثل نظام المعاملات المدنية، نظام الشركات، قرارات مجلس الوزراء):
-            
-            ${query}
-            
-            التنسيق المطلوب ليكون بدقة عالية ويسهل قراءته:
-            - ملخص الإجابة القانونية الأساسية.
-            - السند القانوني النظامي الدقيق (المواد والأبواب).
-            - أي استثناءات، قيود، أو غرامات مقررة بالمرسوم.
-            - مراجع وطنية رسمية للاستفادة منها.`
-          }]
-        })
-      });
+      const prompt = `بصفتك باحثاً قانونياً خبيراً في الأنظمة السعودية، أجب عن التساؤل التالي بدقة واستشهد بالأنظمة واللوائح والقرارات ذات العلاقة (مثل نظام المعاملات المدنية، نظام الشركات، قرارات مجلس الوزراء):
+      
+      ${query}
+      
+      التنسيق المطلوب ليكون بدقة عالية ويسهل قراءته:
+      - ملخص الإجابة القانونية الأساسية.
+      - السند القانوني النظامي الدقيق (المواد والأبواب).
+      - أي استثناءات، قيود، أو غرامات مقررة بالمرسوم.
+      - مراجع وطنية رسمية للاستفادة منها.`;
 
-      const data = await res.json();
-      if (data.success) {
-        setAnswer(data.response);
-        setSources([
-          { title: 'نظام المعاملات المدنية الموحد', link: 'https://laws.boe.gov.sa', category: 'الأنظمة الأساسية' },
-          { title: 'بوابة الأنظمة واللوائح - هيئة الخبراء', link: 'https://laws.boe.gov.sa', category: 'البوابة الملكية' },
-          { title: 'منصة الاستشارات والأنظمة السعودية', link: 'https://laws.boe.gov.sa', category: 'لوائح قضائية' }
-        ]);
-      }
-    } catch (e) {
+      const { callAnthropicAPI } = await import('@/lib/anthropic');
+      const responseText = await callAnthropicAPI(prompt);
+      
+      setAnswer(responseText);
+      setSources([
+        { title: 'نظام المعاملات المدنية الموحد', link: 'https://laws.boe.gov.sa', category: 'الأنظمة الأساسية' },
+        { title: 'بوابة الأنظمة واللوائح - هيئة الخبراء', link: 'https://laws.boe.gov.sa', category: 'البوابة الملكية' },
+        { title: 'منصة الاستشارات والأنظمة السعودية', link: 'https://laws.boe.gov.sa', category: 'لوائح قضائية' }
+      ]);
+    } catch (e: any) {
       console.error(e);
-      setAnswer('فشل البحث القانوني الذكي بسبب جدار الحماية أو انقطاع الجلسة.');
+      setSearchError(e.message || 'فشل البحث القانوني الذكي.');
     } finally {
       setIsLoading(false);
     }
@@ -410,23 +403,14 @@ export default function AILegalSearch() {
     setObsAiResult(null);
 
     try {
-      const response = await fetch('/api/ai/judicial-analysis', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          prompt: userPromptText,
-          systemId: selectedSystem.id,
-          systemName: selectedSystem.name 
-        })
-      });
+      const prompt = `أنت خبير قانوني في النظام السعودي: ${selectedSystem.name}.
+المطلوب تحليل أو استفسار بخصوص: ${userPromptText}
+أجب بصيغة استشارية دقيقة ومستندة لمواد النظام.`;
 
-      const data = await response.json();
-      if (data.success && data.analysis) {
-        setObsAiResult(data.analysis);
-      } else {
-        throw new Error("Invalid response schema");
-      }
-    } catch (err) {
+      const { callAnthropicAPI } = await import('@/lib/anthropic');
+      const responseText = await callAnthropicAPI(prompt);
+      setObsAiResult(responseText);
+    } catch (err: any) {
       console.warn("API direct call error, deploying premium sovereign rule engine analysis:", err);
       
       setTimeout(() => {
@@ -484,37 +468,25 @@ export default function AILegalSearch() {
 
     try {
       const activeSystem = SAUDI_SYSTEMS_DATA.find(s => s.id === editedMemoSystemId)?.name || 'الأنظمة السعودية السارية';
-      const res = await fetch('/api/ai/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          messages: [{
-            role: 'user',
-            content: `بصفتك مستشاراً ومحامياً خبيراً ممتثلاً للهيئات القضائية السعودية، قم بالتدقيق القانوني واللغوي للمذكرة القانونية التالية بالربط مع (${activeSystem}):
-            
-            عنوان المذكرة: ${editedMemoTitle}
-            النص الحالي:
-            ---
-            ${editedMemoText}
-            ---
+      const prompt = `بصفتك مستشاراً ومحامياً خبيراً ممتثلاً للهيئات القضائية السعودية، قم بالتدقيق القانوني واللغوي للمذكرة القانونية التالية بالربط مع (${activeSystem}):
+      
+      عنوان المذكرة: ${editedMemoTitle}
+      النص الحالي:
+      ---
+      ${editedMemoText}
+      ---
 
-            المطلوب:
-            1. تقييم دقة الصياغة وقوة الحجج النظامية والشرعية مقارنة بالعمل الاستثماري وتكييف الدعاوى بالمملكة.
-            2. رصد الثغرات الواردة بالمذكرة واقتراح نصوص نظامية بديلة (مثلاً تحديد مواد نظام الإثبات، العمل، أو المعاملات المدنية).
-            3. تقديم اقتراحات صياغة صريحة لتحسين فرصة كسب الدعوى واقترح نصاً محسناً لفقرة من الفقرات.`
-          }]
-        })
-      });
+      المطلوب:
+      1. تقييم دقة الصياغة وقوة الحجج النظامية والشرعية مقارنة بالعمل الاستثماري وتكييف الدعاوى بالمملكة.
+      2. رصد الثغرات الواردة بالمذكرة واقتراح نصوص نظامية بديلة (مثلاً تحديد مواد نظام الإثبات، العمل، أو المعاملات المدنية).
+      3. تقديم اقتراحات صياغة صريحة لتحسين فرصة كسب الدعوى واقترح نصاً محسناً لفقرة من الفقرات.`;
 
-      const data = await res.json();
-      if (data.success) {
-        setAuditResult(data.response);
-      } else {
-        setAuditResult('فشل في استلام تقرير التدقيق؛ يرجى المحاولة مرة أخرى.');
-      }
-    } catch (e) {
+      const { callAnthropicAPI } = await import('@/lib/anthropic');
+      const responseText = await callAnthropicAPI(prompt);
+      setAuditResult(responseText);
+    } catch (e: any) {
       console.error(e);
-      setAuditResult('حدث خطأ أثناء إرسال المذكرة للتدقيق الذكي.');
+      setAuditResult(e.message || 'حدث خطأ أثناء إرسال المذكرة للتدقيق الذكي.');
     } finally {
       setIsAuditing(false);
     }
@@ -616,7 +588,17 @@ export default function AILegalSearch() {
               </div>
             )}
 
-            {answer && !isLoading && (
+            {searchError && !isLoading && (
+              <div className="bg-red-50 border border-red-200 text-red-700 p-6 rounded-[2.5rem] flex flex-col items-center justify-center text-center space-y-4 shadow-xl">
+                <AlertCircle className="w-12 h-12 text-red-500" />
+                <div>
+                  <h3 className="text-lg font-black mb-2">تعذر إكمال البحث</h3>
+                  <p className="text-sm font-bold">{searchError}</p>
+                </div>
+              </div>
+            )}
+
+            {answer && !isLoading && !searchError && (
               <motion.div 
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}

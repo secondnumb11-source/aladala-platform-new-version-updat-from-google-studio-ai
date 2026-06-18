@@ -19,17 +19,32 @@ export default function AIFinanceTool({ invoices = [] }: { invoices?: Invoice[] 
   const [query, setQuery] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
   const [analysisResult, setAnalysisResult] = useState('');
+  const [error, setError] = useState<string | null>(null);
 
-  const handleAskAccountant = () => {
+  const handleAskAccountant = async () => {
     if (!query) return;
     setIsProcessing(true);
-    setTimeout(() => {
-      setAnalysisResult(`بناءً على طلبك، قمت بمسح الفواتير واستخراج التالي:
-- إجمالي الإيرادات للفترة المحددة: ${(invoices.reduce((acc, curr) => acc + curr.totalAmount, 0)).toLocaleString()} ر.س
-- إجمالي ضريبة القيمة المضافة المستحقة الكلية ر.س: ${(invoices.reduce((acc, curr) => acc + curr.vatAmount, 0)).toLocaleString()} ر.س
-- ملاحظة نظامية: الفواتير الصادرة تتوافق بالكامل مع المرحلة الثانية لهيئة الزكاة والدخل والجمارك (ZATCA).`);
+    setError(null);
+    try {
+      const invoiceData = invoices.map(i => `مبلغ: ${i.totalAmount}ريال, حالة: ${i.status}`).join('\n');
+      const prompt = `أنت محاسب قانوني آلي ذكي (AI Auditor).
+البيانات المالية الحالية:
+${invoiceData}
+
+استفسار المستخدم:
+${query}
+
+أجب بدقة ومباشرة وفق الأنظمة المالية السعودية (ZATCA).`;
+
+      const { callAnthropicAPI } = await import('@/lib/anthropic');
+      const responseText = await callAnthropicAPI(prompt);
+      setAnalysisResult(responseText);
+    } catch (e: any) {
+      console.error(e);
+      setError(e.message || 'فشل الاتصال بالمحاسب الآلي.');
+    } finally {
       setIsProcessing(false);
-    }, 1500);
+    }
   };
 
   return (
@@ -60,6 +75,10 @@ export default function AIFinanceTool({ invoices = [] }: { invoices?: Invoice[] 
                   <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent w-full h-full animate-[shimmer_2s_infinite]"></div>
                   <div className="w-8 h-8 rounded-full border-t-2 border-r-2 border-blue-400 animate-spin relative z-10"></div>
                   <p className="text-xs font-black relative z-10 text-white font-bold">جاري مسح قواعد البيانات وحساب القوائم المالية...</p>
+                </div>
+              ) : error ? (
+                <div className="bg-red-500/10 border border-red-500/30 p-6 rounded-2xl shadow-sm text-center">
+                  <p className="text-sm font-bold text-red-400">{error}</p>
                 </div>
               ) : analysisResult ? (
                 <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl shadow-sm relative overflow-hidden flex flex-col gap-3">

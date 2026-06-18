@@ -1639,6 +1639,7 @@ function AppContent() {
             clients={employeeFilteredClients}
             cases={employeeFilteredCases}
             onUpdateState={handleUpdateGlobalState}
+            onDeleteState={(type, id) => deleteRecord(type, id)}
           />
         )}
 
@@ -1769,6 +1770,7 @@ function AppContent() {
               tasks={tasks}
               invoices={invoices}
               onUpdateState={handleUpdateGlobalState}
+              onDeleteState={(type, id) => deleteRecord(type, id)}
             />
           </React.Suspense>
         )}

@@ -79,45 +79,38 @@ export default function AIDraftingTool({ onDraftGenerated, cases = [] }: AIDraft
     }
   };
 
+  const [error, setError] = useState<string | null>(null);
+
   const handleDraft = async () => {
     if (!facts.trim()) return;
     setIsLoading(true);
     setOutput('');
+    setError(null);
 
     try {
-      const res = await fetch('/api/ai/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          messages: [{
-            role: 'user',
-            content: `بصفتك مستشاراً قانونياً خبيراً بالأنظمة السعودية (نظام المرافعات الشرعية، نظام المعاملات المدنية، نظام الشركات الجديد)، قم بصياغة ${
-              draftType === 'pleading' ? 'صحيفة دعوى أولية' :
-              draftType === 'appeal' ? 'لائحة اعتراضية (استئناف)' :
-              draftType === 'defense' ? 'مذكرة دفاع جوابية' :
-              draftType === 'contract' ? 'مسودة عقد نظامي' :
-              'إنذار عدلي / خطاب تذكير'
-            } بناءً على الوقائع التالية:
-            
-            ${facts}
-            
-            المطلوب:
-            - صياغة احترافية بلغة قانونية رصينة.
-            - الاستناد إلى المواد النظامية ذات العلاقة.
-            - التنسيق المناسب للتقديم عبر منصة ناجز.
-            - ذكر الأسانيد والطلبات بوضوح.`
-          }]
-        })
-      });
+      const prompt = `بصفتك مستشاراً قانونياً خبيراً بالأنظمة السعودية (نظام المرافعات الشرعية، نظام المعاملات المدنية، نظام الشركات الجديد)، قم بصياغة ${
+        draftType === 'pleading' ? 'صحيفة دعوى أولية' :
+        draftType === 'appeal' ? 'لائحة اعتراضية (استئناف)' :
+        draftType === 'defense' ? 'مذكرة دفاع جوابية' :
+        draftType === 'contract' ? 'مسودة عقد نظامي' :
+        'إنذار عدلي / خطاب تذكير'
+      } بناءً على الوقائع التالية:
+      
+      ${facts}
+      
+      المطلوب:
+      - صياغة احترافية بلغة قانونية رصينة.
+      - الاستناد إلى المواد النظامية ذات العلاقة.
+      - التنسيق المناسب للتقديم عبر منصة ناجز.
+      - ذكر الأسانيد والطلبات بوضوح.`;
 
-      const data = await res.json();
-      if (data.success) {
-        setOutput(data.response);
-        onDraftGenerated?.(data.response);
-      }
-    } catch (e) {
+      const { callAnthropicAPI } = await import('@/lib/anthropic');
+      const responseText = await callAnthropicAPI(prompt);
+      setOutput(responseText);
+      onDraftGenerated?.(responseText);
+    } catch (e: any) {
       console.error(e);
-      setOutput('حدث خطأ أثناء الصياغة. يرجى المحاولة لاحقاً.');
+      setError(e.message || 'حدث خطأ أثناء الصياغة. يرجى المحاولة لاحقاً.');
     } finally {
       setIsLoading(false);
     }
@@ -286,7 +279,15 @@ export default function AIDraftingTool({ onDraftGenerated, cases = [] }: AIDraft
             </div>
             
             <div className="flex-1 p-8 overflow-y-auto max-h-[600px] bg-slate-50/30">
-              {output ? (
+              {error ? (
+                <div className="bg-red-50 border border-red-200 text-red-700 p-6 rounded-2xl flex flex-col items-center justify-center text-center space-y-4">
+                  <AlertTriangle className="w-12 h-12 text-red-500" />
+                  <div>
+                    <h3 className="text-lg font-black mb-2">تعذر إكمال الصياغة</h3>
+                    <p className="text-sm font-bold">{error}</p>
+                  </div>
+                </div>
+              ) : output ? (
                 <div className="text-slate-800 text-sm font-bold leading-loose whitespace-pre-line text-justify font-sans">
                   {output}
                 </div>
