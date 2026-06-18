@@ -2378,10 +2378,10 @@ export default React.memo(function CasesModule({
                         <div className={`p-2 rounded-lg bg-slate-900 border border-slate-800 ${cat.color}`}>
                           <cat.icon className="w-5 h-5" />
                         </div>
-                        <span className="text-[11px] font-black text-[#FACC15] uppercase" style={{ textShadow: 'none' }}>{cat.count} ملفات</span>
+                        <span className="text-[11px] font-black text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.8)] uppercase brightness-150" style={{ textShadow: 'none' }}>{cat.count} ملفات</span>
                       </div>
-                      <h4 className="text-sm font-black text-[#FFFFFF]" style={{ textShadow: 'none' }}>{cat.label}</h4>
-                      <div className="mt-4 flex items-center justify-between text-[10px] font-black text-[#FFFFFF]/80 border-t border-slate-800 pt-3">
+                      <h4 className="text-sm font-black text-yellow-300 drop-shadow-[0_0_12px_rgba(253,224,71,0.8)]" style={{ textShadow: 'none' }}>{cat.label}</h4>
+                      <div className="mt-4 flex items-center justify-between text-[10px] font-black text-white drop-shadow-md brightness-150 border-t border-slate-800 pt-3">
                         <span style={{ textShadow: 'none' }}>آخر تحديث: قبل يومين</span>
                       </div>
                     </div>
@@ -2400,17 +2400,17 @@ export default React.memo(function CasesModule({
                 </div>
                 
                 <div className="bg-[#0c1a35] p-8 rounded-[2rem] border-2 border-slate-700">
-                  <p className="text-sm md:text-base text-[#FFFFFF] leading-loose font-black text-justify" style={{ textShadow: 'none' }}>
+                  <p className="text-sm md:text-base text-white drop-shadow-md brightness-150 leading-loose font-black text-justify" style={{ textShadow: 'none' }}>
                     {selectedCase.details}
                   </p>
                 </div>
 
                 <div className="bg-primary/5 p-6 rounded-2xl border-2 border-slate-700 flex flex-col md:flex-row gap-6">
                   <div className="flex flex-col gap-1 min-w-[140px]">
-                    <span className="text-xs text-[#FACC15] font-black uppercase tracking-[0.2em] mb-1" style={{ textShadow: 'none' }}>ملخص النزاع السريع:</span>
+                    <span className="text-xs text-yellow-300 drop-shadow-[0_0_10px_rgba(253,224,71,0.8)] font-black uppercase tracking-[0.2em] mb-1" style={{ textShadow: 'none' }}>ملخص النزاع السريع:</span>
                     <div className="w-10 h-1 bg-amber-500 rounded-full"></div>
                   </div>
-                  <p className="text-xs text-[#FFFFFF] font-black leading-relaxed" style={{ textShadow: 'none' }}>{selectedCase.summary}</p>
+                  <p className="text-xs text-white drop-shadow-md brightness-150 font-black leading-relaxed" style={{ textShadow: 'none' }}>{selectedCase.summary}</p>
                 </div>
               </div>
 

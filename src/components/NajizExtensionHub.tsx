@@ -1004,7 +1004,7 @@ export default function NajizExtensionHub({ currentUser, onUpdateState }: NajizE
                 </span>
               </div>
               
-              <h3 className="text-lg font-black text-[#FACC15] mb-5">خريطة خطوات التوجيه الذاتي (مرر لحقائق إضافية)</h3>
+              <h3 className="text-xl font-black text-yellow-300 drop-shadow-[0_0_12px_rgba(253,224,71,0.8)] mb-5">خريطة خطوات التوجيه الذاتي (مرر لحقائق إضافية)</h3>
               
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 relative">
                 {/* Step 1 */}
@@ -1015,9 +1015,9 @@ export default function NajizExtensionHub({ currentUser, onUpdateState }: NajizE
                 >
                   <div className="flex items-center gap-3 mb-2">
                     <span className="w-8 h-8 rounded-full bg-[#FACC15] text-[#060b13] font-black text-sm flex items-center justify-center shadow-md">1</span>
-                    <h4 className="font-bold text-[#FACC15] text-sm tracking-wide">تسجيل دخول ناجز الكلاسيكي</h4>
+                    <h4 className="font-black text-yellow-300 text-sm tracking-wide drop-shadow-[0_0_8px_rgba(253,224,71,0.6)]">تسجيل دخول ناجز الكلاسيكي</h4>
                   </div>
-                  <p className="text-xs text-white font-black leading-relaxed mt-1">سجل بمصادقة نفاذ الوطني لدخول ناجز الاعتيادي بمستعرض الويب.</p>
+                  <p className="text-xs text-white font-black leading-relaxed mt-1 drop-shadow-md brightness-125">سجل بمصادقة نفاذ الوطني لدخول ناجز الاعتيادي بمستعرض الويب.</p>
 
                   <AnimatePresence>
                     {hoveredStep === 1 && (
@@ -1042,9 +1042,9 @@ export default function NajizExtensionHub({ currentUser, onUpdateState }: NajizE
                 >
                   <div className="flex items-center gap-3 mb-2">
                     <span className="w-8 h-8 rounded-full bg-[#FACC15] text-[#060b13] font-black text-sm flex items-center justify-center shadow-md">2</span>
-                    <h4 className="font-bold text-[#FACC15] text-sm tracking-wide">بروز زر "العدالة" بالأسفل</h4>
+                    <h4 className="font-black text-yellow-300 text-sm tracking-wide drop-shadow-[0_0_8px_rgba(253,224,71,0.6)]">بروز زر "العدالة" بالأسفل</h4>
                   </div>
-                  <p className="text-xs text-white font-black leading-relaxed mt-1">سيظهر الزر الذهبي بشكل أنيق في ركن بوابة ناجز الأيمن السفلي.</p>
+                  <p className="text-xs text-white font-black leading-relaxed mt-1 drop-shadow-md brightness-125">سيظهر الزر الذهبي بشكل أنيق في ركن بوابة ناجز الأيمن السفلي.</p>
 
                   <AnimatePresence>
                     {hoveredStep === 2 && (
@@ -1069,9 +1069,9 @@ export default function NajizExtensionHub({ currentUser, onUpdateState }: NajizE
                 >
                   <div className="flex items-center gap-3 mb-2">
                     <span className="w-8 h-8 rounded-full bg-[#FACC15] text-[#060b13] font-black text-sm flex items-center justify-center shadow-md">3</span>
-                    <h4 className="font-bold text-[#FACC15] text-sm tracking-wide">كبسة سحب واحدة بالـ AI</h4>
+                    <h4 className="font-black text-yellow-300 text-sm tracking-wide drop-shadow-[0_0_8px_rgba(253,224,71,0.6)]">كبسة سحب واحدة بالـ AI</h4>
                   </div>
-                  <p className="text-xs text-white font-black leading-relaxed mt-1">توليد المزامنة الفورية للمكاتب والعملاء المصنفين تلقائياً بالذكاء الاصطناعي.</p>
+                  <p className="text-xs text-white font-black leading-relaxed mt-1 drop-shadow-md brightness-125">توليد المزامنة الفورية للمكاتب والعملاء المصنفين تلقائياً بالذكاء الاصطناعي.</p>
 
                   <AnimatePresence>
                     {hoveredStep === 3 && (
@@ -1245,32 +1245,32 @@ export default function NajizExtensionHub({ currentUser, onUpdateState }: NajizE
                    <div className="flex gap-5 bg-[#1e293b] p-6 rounded-3xl border border-[#D4AF37]/20 hover:border-[#D4AF37] transition-colors shadow-lg">
                       <div className="w-12 h-12 rounded-xl bg-[#D4AF37] flex items-center justify-center shrink-0 font-black text-[#010610] text-xl shadow-lg">1</div>
                       <div className="space-y-2">
-                        <h4 className="font-black text-[#FACC15] text-lg">تحميل الأداة وفك المجلد</h4>
-                        <p className="text-sm text-white font-bold leading-relaxed">قم بضغط زر التحميل بالأعلى لحفظ ملف <code className="bg-[#060b13]/60 px-2 py-0.5 rounded text-[#FACC15] border border-[#D4AF37]/30 font-mono">ZIP</code> المستعد، ثم قم باستخراجه في مجلد فارغ بقرصك الصلب.</p>
+                        <h4 className="font-black text-yellow-300 text-lg drop-shadow-[0_0_8px_rgba(253,224,71,0.6)]">تحميل الأداة وفك المجلد</h4>
+                        <p className="text-sm text-white font-black leading-relaxed drop-shadow-md brightness-125">قم بضغط زر التحميل بالأعلى لحفظ ملف <code className="bg-[#060b13]/60 px-2 py-0.5 rounded text-yellow-300 border border-[#D4AF37]/30 font-mono">ZIP</code> المستعد، ثم قم باستخراجه في مجلد فارغ بقرصك الصلب.</p>
                       </div>
                    </div>
 
                    <div className="flex gap-5 bg-[#1e293b] p-6 rounded-3xl border border-[#D4AF37]/20 hover:border-[#D4AF37] transition-colors shadow-lg">
                       <div className="w-12 h-12 rounded-xl bg-[#D4AF37] flex items-center justify-center shrink-0 font-black text-[#010610] text-xl shadow-lg">2</div>
                       <div className="space-y-2">
-                        <h4 className="font-black text-[#FACC15] text-lg">تحميل إضافات المطور (Chrome)</h4>
-                        <p className="text-sm text-white font-bold leading-relaxed">اذهب إلى <code className="bg-[#060b13]/60 px-2.5 py-0.5 rounded text-[#FACC15] border border-[#D4AF37]/30 font-mono">chrome://extensions</code>، فّعل (وضع المطور) بأعلى الشاشة، ثم اختر مجلد الإضافة لدمج الأداة.</p>
+                        <h4 className="font-black text-yellow-300 text-lg drop-shadow-[0_0_8px_rgba(253,224,71,0.6)]">تحميل إضافات المطور (Chrome)</h4>
+                        <p className="text-sm text-white font-black leading-relaxed drop-shadow-md brightness-125">اذهب إلى <code className="bg-[#060b13]/60 px-2.5 py-0.5 rounded text-yellow-300 border border-[#D4AF37]/30 font-mono">chrome://extensions</code>، فّعل (وضع المطور) بأعلى الشاشة، ثم اختر مجلد الإضافة لدمج الأداة.</p>
                       </div>
                    </div>
 
                    <div className="flex gap-5 bg-[#1e293b] p-6 rounded-3xl border border-[#D4AF37]/20 hover:border-[#D4AF37] transition-colors shadow-lg">
                       <div className="w-12 h-12 rounded-xl bg-[#D4AF37] flex items-center justify-center shrink-0 font-black text-[#010610] text-xl shadow-lg">3</div>
                       <div className="space-y-2">
-                        <h4 className="font-black text-[#FACC15] text-lg">الحقن التلقائي لبوابة ناجز</h4>
-                        <p className="text-sm text-white font-bold leading-relaxed">بمجرد تسجيل دخولك الاعتيادي بالبوابة الرسمية، تظهر الخيارات الذهبية للمنصة بأسفل الشاشة بسلاسة تامة.</p>
+                        <h4 className="font-black text-yellow-300 text-lg drop-shadow-[0_0_8px_rgba(253,224,71,0.6)]">الحقن التلقائي لبوابة ناجز</h4>
+                        <p className="text-sm text-white font-black leading-relaxed drop-shadow-md brightness-125">بمجرد تسجيل دخولك الاعتيادي بالبوابة الرسمية، تظهر الخيارات الذهبية للمنصة بأسفل الشاشة بسلاسة تامة.</p>
                       </div>
                    </div>
 
                    <div className="flex gap-5 bg-[#1e293b] p-6 rounded-3xl border border-[#D4AF37]/20 hover:border-[#D4AF37] transition-colors shadow-lg">
                       <div className="w-12 h-12 rounded-xl bg-[#D4AF37] flex items-center justify-center shrink-0 font-black text-[#010610] text-xl shadow-lg">4</div>
                       <div className="space-y-2">
-                        <h4 className="font-black text-[#FACC15] text-lg">برمجة الفرز وتفادي العشوائية</h4>
-                        <p className="text-sm text-white font-bold leading-relaxed">قوائم السحب المتعددة (Multi-select) تضمن للمحامي تعطيل وإبعاد أي تفاصيل أو سجلات وملفات لا يرغب بنقلها.</p>
+                        <h4 className="font-black text-yellow-300 text-lg drop-shadow-[0_0_8px_rgba(253,224,71,0.6)]">برمجة الفرز وتفادي العشوائية</h4>
+                        <p className="text-sm text-white font-black leading-relaxed drop-shadow-md brightness-125">قوائم السحب المتعددة (Multi-select) تضمن للمحامي تعطيل وإبعاد أي تفاصيل أو سجلات وملفات لا يرغب بنقلها.</p>
                       </div>
                    </div>
 
