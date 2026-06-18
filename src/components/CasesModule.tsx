@@ -2457,25 +2457,25 @@ export default React.memo(function CasesModule({
               )}
 
               <div className="card-professional border-2 bg-[#050e21] border-slate-800 p-8 space-y-8">
-                <h3 className="font-display font-black text-lg text-[#FFFFFF] border-b border-slate-800 pb-5 tracking-tight uppercase" style={{ textShadow: 'none' }}>أطراف النزاع والعملاء المعنيين</h3>
+                <h3 className="font-display font-black text-lg text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.8)] border-b border-slate-800 pb-5 tracking-tight uppercase" style={{ textShadow: 'none' }}>أطراف النزاع والعملاء المعنيين</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="p-8 bg-[#0c1a35] rounded-3xl border-2 border-slate-700 space-y-4">
-                    <div className="w-12 h-12 bg-primary/10 text-[#FACC15] rounded-2xl flex items-center justify-center">
+                    <div className="w-12 h-12 bg-primary/10 text-yellow-300 rounded-2xl flex items-center justify-center">
                       <Users className="w-6 h-6" />
                     </div>
                     <div>
-                      <span className="text-xs text-[#FACC15] font-black uppercase tracking-widest block mb-1" style={{ textShadow: 'none' }}>العميل المدعي (نظامي)</span>
-                      <p className="font-black text-base text-[#FFFFFF]" style={{ textShadow: 'none' }}>{selectedCase.clientName}</p>
+                      <span className="text-xs text-yellow-300 drop-shadow-[0_0_10px_rgba(253,224,71,0.8)] font-black uppercase tracking-widest block mb-1" style={{ textShadow: 'none' }}>العميل المدعي (نظامي)</span>
+                      <p className="font-black text-base text-white drop-shadow-md brightness-150" style={{ textShadow: 'none' }}>{selectedCase.clientName}</p>
                     </div>
                   </div>
 
                   <div className="p-8 bg-[#0c1a35] rounded-3xl border-2 border-slate-700 space-y-4">
-                    <div className="w-12 h-12 bg-rose-500/10 text-rose-400 rounded-2xl flex items-center justify-center">
+                    <div className="w-12 h-12 bg-rose-500/10 text-rose-300 rounded-2xl flex items-center justify-center">
                       <ShieldAlert className="w-6 h-6" />
                     </div>
                     <div>
-                      <span className="text-xs text-rose-400 font-black uppercase tracking-widest block mb-1" style={{ textShadow: 'none' }}>الخصم المدعى عليه</span>
-                      <p className="font-black text-base text-[#FFFFFF]" style={{ textShadow: 'none' }}>{selectedCase.opponentName}</p>
+                      <span className="text-xs text-rose-300 drop-shadow-md brightness-150 font-black uppercase tracking-widest block mb-1" style={{ textShadow: 'none' }}>الخصم المدعى عليه</span>
+                      <p className="font-black text-base text-white drop-shadow-md brightness-150" style={{ textShadow: 'none' }}>{selectedCase.opponentName}</p>
                     </div>
                   </div>
                 </div>
@@ -2489,12 +2489,12 @@ export default React.memo(function CasesModule({
         {/* DYNAMIC TRANSLATION & SUMMARIZER ENGINE CARD (GEMINI API) */}
         <div className="card-professional border-2 border-amber-500/20 bg-[#050e21] p-6 space-y-6 shadow-xl rounded-2xl text-right">
           <div className="flex items-center gap-3 border-b border-slate-800 pb-4">
-            <div className="p-2 bg-amber-500/10 text-[#FACC15] rounded-xl border border-amber-500/20 shrink-0">
-              <Sparkles className="w-5 h-5 text-[#FACC15]" />
+            <div className="p-2 bg-amber-500/10 text-yellow-300 rounded-xl border border-amber-500/20 shrink-0">
+              <Sparkles className="w-5 h-5 text-yellow-300" />
             </div>
             <div>
-              <h3 className="font-display font-black text-xs text-[#FACC15] uppercase tracking-wider" style={{ textShadow: 'none' }}>موجّز المستندات والجلسات المتقدم (Gemini RAG) 🧠</h3>
-              <p className="text-[10px] text-[#FFFFFF] font-black block mt-0.5" style={{ textShadow: 'none' }}>صياغة ملخصات ذكية بنقاط مركزة لمطابقة الدفوع </p>
+              <h3 className="font-display font-black text-xs text-yellow-300 drop-shadow-[0_0_10px_rgba(253,224,71,0.8)] uppercase tracking-wider" style={{ textShadow: 'none' }}>موجّز المستندات والجلسات المتقدم (Gemini RAG) 🧠</h3>
+              <p className="text-[10px] text-white drop-shadow-md brightness-150 font-black block mt-0.5" style={{ textShadow: 'none' }}>صياغة ملخصات ذكية بنقاط مركزة لمطابقة الدفوع </p>
             </div>
           </div>
 
@@ -2574,12 +2574,12 @@ export default React.memo(function CasesModule({
         <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 blur-3xl rounded-full pointer-events-none"></div>
 
         <div className="flex items-center gap-3 border-b border-slate-800 pb-4">
-          <div className="p-2 bg-primary/10 text-[#FACC15] rounded-xl border border-primary/20 shrink-0">
-            <Zap className="w-5 h-5 text-[#FACC15]" />
+          <div className="p-2 bg-primary/10 text-yellow-300 rounded-xl border border-primary/20 shrink-0">
+            <Zap className="w-5 h-5 text-yellow-300" />
           </div>
           <div>
-            <h3 className="font-display font-black text-xs text-[#FACC15] uppercase tracking-wider" style={{ textShadow: 'none' }}>بروتوكول الإشعارات التلقائية (نظام موكل)</h3>
-            <p className="text-xs text-[#FFFFFF] font-black" style={{ textShadow: 'none' }}>بث وتوجيه التنبيهات مع تغيرات ملف المرافعة الشرعية</p>
+            <h3 className="font-display font-black text-xs text-yellow-300 drop-shadow-[0_0_10px_rgba(253,224,71,0.8)] uppercase tracking-wider" style={{ textShadow: 'none' }}>بروتوكول الإشعارات التلقائية (نظام موكل)</h3>
+            <p className="text-xs text-white drop-shadow-md brightness-150 font-black" style={{ textShadow: 'none' }}>بث وتوجيه التنبيهات مع تغيرات ملف المرافعة الشرعية</p>
           </div>
         </div>
 
@@ -2723,15 +2723,15 @@ export default React.memo(function CasesModule({
                   <div className="p-2.5 bg-emerald-500/10 text-emerald-400 rounded-xl">
                     <Clock className="w-5 h-5" />
                   </div>
-                  <h3 className="font-display font-black text-sm text-[#FACC15] uppercase tracking-widest" style={{ textShadow: 'none' }}>توقيتات العدالة والآجال</h3>
+                  <h3 className="font-display font-black text-sm text-yellow-300 drop-shadow-[0_0_10px_rgba(253,224,71,0.8)] uppercase tracking-widest" style={{ textShadow: 'none' }}>توقيتات العدالة والآجال</h3>
                 </div>
                 
                 <div className="space-y-6">
                   <div className="flex justify-between items-end cursor-help">
-                    <span className="text-xs text-[#FFFFFF] font-black uppercase tracking-widest" style={{ textShadow: 'none' }}>الجلسة القادمة</span>
+                    <span className="text-xs text-white drop-shadow-md brightness-150 font-black uppercase tracking-widest" style={{ textShadow: 'none' }}>الجلسة القادمة</span>
                     <div className="flex flex-col items-end">
-                      <span className="font-black text-[#FFFFFF] text-base font-mono tracking-tighter" style={{ textShadow: 'none' }}>{selectedCase.nextSessionDate}</span>
-                      <span className="text-xs text-[#FACC15] font-black uppercase" style={{ textShadow: 'none' }}>{selectedCase.nextSessionTime}</span>
+                      <span className="font-black text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.8)] brightness-150 text-base font-mono tracking-tighter" style={{ textShadow: 'none' }}>{selectedCase.nextSessionDate}</span>
+                      <span className="text-xs text-yellow-300 drop-shadow-[0_0_10px_rgba(253,224,71,0.8)] font-black uppercase" style={{ textShadow: 'none' }}>{selectedCase.nextSessionTime}</span>
                     </div>
                   </div>
 
@@ -2827,16 +2827,16 @@ export default React.memo(function CasesModule({
                   </div>
 
                   <div className="flex justify-between items-center">
-                    <span className="text-xs text-[#FFFFFF] font-black uppercase tracking-widest" style={{ textShadow: 'none' }}>الخطوة الإجرائية</span>
-                    <span className="text-xs text-white font-black bg-indigo-500 px-4 py-1.5 rounded-full" style={{ textShadow: 'none' }}>إيداع اللائحة</span>
+                    <span className="text-xs text-white drop-shadow-md brightness-150 font-black uppercase tracking-widest" style={{ textShadow: 'none' }}>الخطوة الإجرائية</span>
+                    <span className="text-xs text-white drop-shadow-md brightness-150 font-black bg-indigo-500 px-4 py-1.5 rounded-full" style={{ textShadow: 'none' }}>إيداع اللائحة</span>
                   </div>
 
                   <div className="flex justify-between items-center">
-                    <span className="text-xs text-[#FFFFFF] font-black uppercase tracking-widest" style={{ textShadow: 'none' }}>معدل الإنجاز</span>
+                    <span className="text-xs text-white drop-shadow-md brightness-150 font-black uppercase tracking-widest" style={{ textShadow: 'none' }}>معدل الإنجاز</span>
                     <div className="flex items-center gap-3">
-                       <span className="text-xs text-emerald-400 font-black font-mono" style={{ textShadow: 'none' }}>68%</span>
+                       <span className="text-xs text-emerald-400 drop-shadow-md font-black font-mono" style={{ textShadow: 'none' }}>68%</span>
                        <div className="w-20 bg-[#0c1a35] h-1.5 rounded-full overflow-hidden border border-slate-800">
-                         <div className="bg-emerald-450 h-full w-[68%]"></div>
+                         <div className="bg-emerald-450 h-full w-[68%] shadow-[0_0_10px_rgba(52,211,153,0.8)]"></div>
                        </div>
                     </div>
                   </div>
