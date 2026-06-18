@@ -3,6 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+import './src/lib/polyfill.js';
 import 'dotenv/config';
 process.on('uncaughtException', (err) => console.error('!!! UNCAUGHT EXCEPTION !!!', err));
 process.on('unhandledRejection', (reason) => console.error('!!! UNHANDLED REJECTION !!!', reason));
@@ -323,6 +324,54 @@ app.get('/api/supabase/todos', async (req, res) => {
   const { data: todos, error } = await supabase.from('todos').select();
   if (error) return res.status(500).json({ error: error.message });
   res.json(todos);
+});
+
+// Endpoint for Najiz Extension Sync
+app.post('/api/najiz-sync', async (req, res) => {
+  try {
+    const { data, timestamp } = req.body;
+    if (!data) return res.status(400).json({ success: false, error: 'No data provided' });
+
+    const supabase = getSupabaseClient();
+    let insertedCounts = { cases: 0, hearings: 0, agencies: 0, executions: 0, judgments: 0 };
+    
+    // We insert data into Supabase. If client_id is required, we use a placeholder or let Supabase default it
+    if (data.cases && data.cases.length > 0) {
+      for (const c of data.cases) {
+        await supabase.from('cases').insert({ case_number: c.caseNumber, case_name: c.rawTitle, status: 'new' });
+        insertedCounts.cases++;
+      }
+    }
+    if (data.hearings && data.hearings.length > 0) {
+      for (const h of data.hearings) {
+        await supabase.from('hearings').insert({ date: h.rawDate, time: h.time, notes: h.rawTitle, status: 'upcoming' });
+        insertedCounts.hearings++;
+      }
+    }
+    if (data.agencies && data.agencies.length > 0) {
+      for (const a of data.agencies) {
+        await supabase.from('powers_of_attorney').insert({ poa_number: a.poa_number, type: a.rawTitle, status: 'سارية' });
+        insertedCounts.agencies++;
+      }
+    }
+    if (data.executions && data.executions.length > 0) {
+      for (const e of data.executions) {
+        await supabase.from('executions').insert({ execution_number: e.exec_number, details: e.rawTitle, status: 'قيد التنفيذ' });
+        insertedCounts.executions++;
+      }
+    }
+    if (data.judgments && data.judgments.length > 0) {
+      for (const j of data.judgments) {
+        await supabase.from('documents').insert({ file_name: `حكم رقم ${j.judgment_number}`, category: 'judgment', description: j.rawTitle });
+        insertedCounts.judgments++;
+      }
+    }
+
+    res.json({ success: true, insertedCounts });
+  } catch (err: any) {
+    console.error('Najiz Sync API Error:', err);
+    res.status(500).json({ success: false, error: err.message });
+  }
 });
 
 // Database direct connection test

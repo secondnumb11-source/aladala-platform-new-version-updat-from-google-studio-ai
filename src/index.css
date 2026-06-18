@@ -2186,3 +2186,463 @@ html:not(.dark) {
 .premium-sidebar-scrollbar::-webkit-scrollbar-thumb:hover {
   background: linear-gradient(180deg, #FDE047 #D4AF37 5#1e3a8a 100%);
 }
+
+/* =========================================================================
+   CASE DETAILS CONTRAST OVERRIDES (إصلاح تباين ألوان تفاصيل القضية)
+   ========================================================================= */
+
+/* Ensure the main case-details-view-container has proper light text on dark panels */
+.case-details-view-container,
+.case-details-view-container *,
+.case-details-view-container *:not(:hover) {
+  text-shadow: none !important;
+}
+
+/* =========================================================================
+   CASE DETAILS VIEW CONTRAST & LUXURY THEMING (ثيم فخم وعالي التباين لملف القضية)
+   ========================================================================= */
+
+/* Root overlay background (always dark backdrop) */
+.case-details-view-container {
+  background-color: rgba(0, 0, 0, 0.8) !important;
+}
+
+/* Ensure the main detail card maintains its deep dark navy luxury background */
+.card-details-panel {
+  background-color: #050e21 !important;
+  border: 2px solid #1e293b !important;
+}
+
+/* Base text color inside Case Details - Force bright white */
+.case-details-view-container h1,
+.case-details-view-container h2,
+.case-details-view-container h3,
+.case-details-view-container h4,
+.case-details-view-container h5,
+.case-details-view-container h6,
+.case-details-view-container p,
+.case-details-view-container label,
+.case-details-view-container li,
+.case-details-view-container td,
+.case-details-view-container th,
+.case-details-view-container strong,
+.case-details-view-container b,
+.case-details-view-container code,
+.card-details-panel h1,
+.card-details-panel h2,
+.card-details-panel h3,
+.card-details-panel h4,
+.card-details-panel h5,
+.card-details-panel h6,
+.card-details-panel p,
+.card-details-panel label,
+.card-details-panel li,
+.card-details-panel td,
+.card-details-panel th,
+.card-details-panel strong,
+.card-details-panel b,
+.card-details-panel code {
+  color: #ffffff !important;
+}
+
+/* Fallback for general nested divs/spans inside dark panels to prevent inheriting dark styles */
+.case-details-view-container div:not([class*="bg-"]):not([class*="border-"]),
+.case-details-view-container span:not([class*="bg-"]):not([class*="border-"]),
+.card-details-panel div:not([class*="bg-"]):not([class*="border-"]),
+.card-details-panel span:not([class*="bg-"]):not([class*="border-"]) {
+  color: #ffffff !important;
+}
+
+/* If elements have standard muted slate text classes, force them to be bright white for contrast */
+.case-details-view-container .text-slate-100,
+.case-details-view-container .text-slate-200,
+.case-details-view-container .text-slate-300,
+.case-details-view-container .text-slate-400,
+.case-details-view-container .text-slate-500,
+.case-details-view-container .text-gray-100,
+.case-details-view-container .text-gray-200,
+.case-details-view-container .text-gray-300,
+.case-details-view-container .text-gray-400,
+.case-details-view-container .text-gray-500,
+.card-details-panel .text-slate-100,
+.card-details-panel .text-slate-200,
+.card-details-panel .text-slate-300,
+.card-details-panel .text-slate-400,
+.card-details-panel .text-slate-500 {
+  color: #ffffff !important; /* Bright white instead of muted slate */
+}
+
+.case-details-view-container .text-slate-600,
+.case-details-view-container .text-slate-700,
+.case-details-view-container .text-slate-800,
+.case-details-view-container .text-slate-900,
+.case-details-view-container .text-slate-950,
+.case-details-view-container .text-gray-600,
+.case-details-view-container .text-gray-700,
+.case-details-view-container .text-gray-800,
+.case-details-view-container .text-gray-900,
+.card-details-panel .text-slate-600,
+.card-details-panel .text-slate-700,
+.card-details-panel .text-slate-800,
+.card-details-panel .text-slate-900 {
+  color: #ffffff !important; /* Bright white instead of dark slate */
+}
+
+/* Premium Gold Highlights */
+.case-details-view-container .text-primary,
+.case-details-view-container .text-accent,
+.case-details-view-container .text-amber-400,
+.case-details-view-container .text-amber-500,
+.case-details-view-container .text-yellow-400,
+.case-details-view-container .text-yellow-500,
+.case-details-view-container .text-\[\#FACC15\],
+.case-details-view-container .text-\[\#fbbf24\],
+.card-details-panel .text-primary,
+.card-details-panel .text-accent,
+.card-details-panel .text-amber-400,
+.card-details-panel .text-amber-500,
+.card-details-panel .text-yellow-400,
+.card-details-panel .text-yellow-500,
+.card-details-panel .text-\[\#FACC15\],
+.card-details-panel .text-\[\#fbbf24\] {
+  color: #ffd700 !important; /* Bright metallic gold */
+  font-weight: 800 !important;
+}
+
+/* Rich Emerald Success accents */
+.case-details-view-container .text-success,
+.case-details-view-container .text-emerald-400,
+.case-details-view-container .text-emerald-500,
+.card-details-panel .text-success,
+.card-details-panel .text-emerald-400,
+.card-details-panel .text-emerald-500 {
+  color: #34d399 !important;
+  font-weight: 800 !important;
+}
+
+/* Rich Red/Rose Warning accents */
+.case-details-view-container .text-error,
+.case-details-view-container .text-rose-450,
+.case-details-view-container .text-rose-500,
+.case-details-view-container .text-red-400,
+.case-details-view-container .text-red-500,
+.card-details-panel .text-error,
+.card-details-panel .text-rose-600,
+.card-details-panel .text-rose-500,
+.card-details-panel .text-red-400 {
+  color: #f87171 !important;
+  font-weight: 800 !important;
+}
+
+/* Inputs, Textareas and Selects inside Case Details */
+.case-details-view-container input,
+.case-details-view-container textarea,
+.case-details-view-container select,
+.card-details-panel input,
+.card-details-panel textarea,
+.card-details-panel select {
+  background-color: #0c1a35 !important;
+  color: #ffffff !important;
+  border: 1px solid #334155 !important;
+}
+
+.case-details-view-container input::placeholder,
+.case-details-view-container textarea::placeholder {
+  color: #64748b !important;
+}
+
+/* Action button with bg-primary */
+.case-details-view-container button.bg-primary,
+.case-details-view-container button[class*="bg-amber"],
+.card-details-panel button.bg-primary,
+.card-details-panel button[class*="bg-amber"] {
+  background-color: #b8860b !important; /* Rich gold background */
+  color: #ffffff !important;
+  border: 1px solid #ffd700 !important;
+  font-weight: 900 !important;
+}
+
+.case-details-view-container button.bg-primary svg,
+.case-details-view-container button[class*="bg-amber"] svg,
+.card-details-panel button.bg-primary svg,
+.card-details-panel button[class*="bg-amber"] svg {
+  color: #ffffff !important;
+}
+
+/* Share/WhatsApp Button */
+.case-details-view-container button[class*="bg-sky"],
+.card-details-panel button[class*="bg-sky"] {
+  background-color: #0c4a6e !important; /* Deep sky blue background */
+  color: #ffffff !important;
+  border: 1px solid #0284c7 !important;
+  font-weight: 900 !important;
+}
+
+.case-details-view-container button[class*="bg-sky"] svg,
+.card-details-panel button[class*="bg-sky"] svg {
+  color: #ffffff !important;
+}
+
+/* Modal Inner Card/Subtle boxes */
+.case-details-view-container .area-secondary,
+.case-details-view-container .area-subtle,
+.card-details-panel .area-secondary,
+.card-details-panel .area-subtle {
+  background-color: #0c1a35 !important;
+  border-color: #1e293b !important;
+}
+
+/* Borders and lines inside Details view */
+.case-details-view-container .border,
+.case-details-view-container .border-border,
+.card-details-panel .border,
+.card-details-panel .border-border {
+  border-color: #1e293b !important;
+}
+
+/* Active sub-tabs */
+.case-details-view-container .bg-accent {
+  background-color: #ffd700 !important; /* Bright gold for active tab */
+  color: #050e21 !important;
+  font-weight: 900 !important;
+}
+
+/* Timeline/Progress step numbers */
+.case-details-view-container .rounded-2xl span,
+.card-details-panel .rounded-2xl span {
+  color: #ffffff !important;
+}
+
+/* Force dark text on light backgrounds if they occur inside details view */
+/* We use [class*="text-"] to ensure higher specificity than the text-slate overrides above */
+.case-details-view-container [class*="bg-white"] *,
+.case-details-view-container [class*="bg-white"] [class*="text-"],
+.case-details-view-container [class*="bg-slate-50"] *,
+.case-details-view-container [class*="bg-slate-50"] [class*="text-"],
+.case-details-view-container [class*="bg-slate-100"] *,
+.case-details-view-container [class*="bg-slate-100"] [class*="text-"] {
+  color: #0f172a !important;
+  text-shadow: none !important;
+}
+
+/* =========================================================================
+   EXECUTIONS MODULE CONTRAST & LUXURY THEMING (ثيم فخم وعالي التباين لطلبات التنفيذ)
+   ========================================================================= */
+
+/* Table Header styling */
+.executions-table-container th {
+  color: #94a3b8 !important; /* Muted slate-blue */
+  font-weight: 800 !important;
+}
+
+html:not(.dark) .executions-table-container th {
+  color: #334155 !important; /* Darker slate for light mode */
+  font-weight: 900 !important;
+}
+
+/* --- LIGHT MODE ROW STYLING (الوضع المضيء) --- */
+html:not(.dark) .executions-table-row td {
+  background-color: #ffffff !important;
+  border-color: #e2e8f0 !important;
+}
+
+/* Execution Hash and Number */
+html:not(.dark) .executions-table-row .exec-hash {
+  color: #854d0e !important; /* Luxurious deep gold */
+  font-weight: 900 !important;
+  margin-left: 2px;
+}
+
+html:not(.dark) .executions-table-row .exec-number {
+  color: #0b1329 !important; /* Pristine deep navy */
+  font-weight: 900 !important;
+}
+
+/* Party names */
+html:not(.dark) .executions-table-row .requester-name {
+  color: #0b1329 !important; /* Rich deep navy */
+  font-weight: 800 !important;
+}
+
+html:not(.dark) .executions-table-row .opponent-name {
+  color: #475569 !important; /* Slate gray */
+  font-weight: 700 !important;
+}
+
+/* Financial values */
+html:not(.dark) .executions-table-row .amount-value {
+  color: #15803d !important; /* Premium rich green for currency values */
+  font-weight: 900 !important;
+}
+
+html:not(.dark) .executions-table-row .amount-currency {
+  color: #16a34a !important; /* Muted rich green */
+  font-weight: 800 !important;
+}
+
+/* Status Badges in Light Mode */
+html:not(.dark) .executions-table-row .status-badge.status-pending {
+  background-color: #fffbeb !important; /* Luxury warm light gold/amber */
+  color: #b45309 !important; /* Deep contrast amber */
+  border: 1px solid #f59e0b !important;
+  font-weight: 900 !important;
+}
+
+html:not(.dark) .executions-table-row .status-badge.status-completed {
+  background-color: #f0fdf4 !important; /* Soft light-emerald */
+  color: #15803d !important; /* Deep contrast green */
+  border: 1px solid #16a34a !important;
+  font-weight: 900 !important;
+}
+
+html:not(.dark) .executions-table-row .status-badge.status-other {
+  background-color: #f8fafc !important;
+  color: #475569 !important;
+  border: 1px solid #cbd5e1 !important;
+  font-weight: 900 !important;
+}
+
+/* Action Buttons in Light Mode */
+html:not(.dark) .executions-table-row .action-btn {
+  background-color: #fdfbf7 !important; /* Warm luxury cream background */
+  border: 1px solid #c5a880 !important; /* Champagne gold border */
+  color: #9a7d2c !important; /* Elegant dark gold */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+}
+
+html:not(.dark) .executions-table-row .action-btn svg {
+  color: #9a7d2c !important;
+}
+
+html:not(.dark) .executions-table-row .action-btn:hover {
+  background-color: #9a7d2c !important;
+  border-color: #9a7d2c !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 8px rgba(154, 125, 44, 0.2);
+}
+
+html:not(.dark) .executions-table-row .action-btn:hover svg {
+  color: #ffffff !important;
+}
+
+
+/* --- DARK MODE ROW STYLING (الوضع الداكن) --- */
+html.dark .executions-table-row td {
+  background-color: #0f172a !important; /* slate-900 */
+  border-color: #1e293b !important; /* slate-800 */
+}
+
+/* Execution Hash and Number */
+html.dark .executions-table-row .exec-hash {
+  color: #ffd700 !important; /* Shiny metallic gold */
+  font-weight: 900 !important;
+  margin-left: 2px;
+}
+
+html.dark .executions-table-row .exec-number {
+  color: #f8fafc !important; /* Crisp white */
+  font-weight: 900 !important;
+}
+
+/* Party names */
+html.dark .executions-table-row .requester-name {
+  color: #f8fafc !important;
+  font-weight: 800 !important;
+}
+
+html.dark .executions-table-row .opponent-name {
+  color: #cbd5e1 !important;
+  font-weight: 700 !important;
+}
+
+/* Financial values */
+html.dark .executions-table-row .amount-value {
+  color: #34d399 !important; /* Bright glowing emerald */
+  font-weight: 900 !important;
+}
+
+html.dark .executions-table-row .amount-currency {
+  color: #10b981 !important;
+  font-weight: 800 !important;
+}
+
+/* Status Badges in Dark Mode */
+html.dark .executions-table-row .status-badge.status-pending {
+  background-color: rgba(245, 158, 11, 0.12) !important;
+  color: #fbbf24 !important; /* Amber-400 */
+  border: 1px solid rgba(245, 158, 11, 0.35) !important;
+  font-weight: 900 !important;
+}
+
+html.dark .executions-table-row .status-badge.status-completed {
+  background-color: rgba(16, 185, 129, 0.12) !important;
+  color: #34d399 !important; /* Emerald-400 */
+  border: 1px solid rgba(16, 185, 129, 0.35) !important;
+  font-weight: 900 !important;
+}
+
+html.dark .executions-table-row .status-badge.status-other {
+  background-color: rgba(148, 163, 184, 0.1) !important;
+  color: #cbd5e1 !important;
+  border: 1px solid rgba(148, 163, 184, 0.25) !important;
+  font-weight: 900 !important;
+}
+
+/* Action Buttons in Dark Mode */
+html.dark .executions-table-row .action-btn {
+  background-color: #0f172a !important; /* Dark background */
+  border: 1px solid #4d442c !important; /* Luxurious dark gold border */
+  color: #ffd700 !important; /* Bright gold icon */
+}
+
+html.dark .executions-table-row .action-btn svg {
+  color: #ffd700 !important;
+}
+
+html.dark .executions-table-row .action-btn:hover {
+  background-color: #ffd700 !important;
+  border-color: #ffd700 !important;
+  color: #0f172a !important;
+  box-shadow: 0 4px 12px rgba(255, 215, 0, 0.25);
+}
+
+html.dark .executions-table-row .action-btn:hover svg {
+  color: #0f172a !important;
+}
+
+/* =========================================================================
+   CASES MODULE - LIGHT MODE CONTRAST FIXES
+   ========================================================================= */
+
+/* Fix any hardcoded white/yellow text inside cards in light mode */
+html:not(.dark) .card-professional [class*="text-[#FACC15]"],
+html:not(.dark) .card-professional [class*="text-amber-"],
+html:not(.dark) .card-professional [class*="text-[#FFFFFF]"],
+html:not(.dark) .card-professional [class*="text-white"],
+html:not(.dark) .card-professional [class*="text-primary"],
+html:not(.dark) .card-professional [class*="text-slate-100"] {
+  color: #0f172a !important; /* Dark slate */
+  text-shadow: none !important;
+}
+
+/* Ensure icons are also dark in light mode */
+html:not(.dark) .card-professional [class*="text-[#FACC15]"] svg,
+html:not(.dark) .card-professional [class*="text-amber-"] svg,
+html:not(.dark) .card-professional [class*="text-primary"] svg {
+  color: #0f172a !important;
+}
+
+/* Convert light gold backgrounds to light slate for better contrast */
+html:not(.dark) .card-professional [class*="bg-primary/10"],
+html:not(.dark) .card-professional [class*="bg-amber-"] {
+  background-color: #f1f5f9 !important; /* light slate */
+  border-color: #cbd5e1 !important;
+  color: #0f172a !important; /* dark slate text */
+}
+
+/* Ensure text inside these backgrounds is dark */
+html:not(.dark) .card-professional [class*="bg-primary/10"] *,
+html:not(.dark) .card-professional [class*="bg-amber-"] * {
+  color: #0f172a !important;
+  text-shadow: none !important;
+}

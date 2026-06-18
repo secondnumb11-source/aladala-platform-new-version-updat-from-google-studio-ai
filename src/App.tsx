@@ -174,6 +174,12 @@ function AppContent() {
     payments,
     notifications,
     systemErrors,
+    expenses,
+    setExpenses,
+    messages,
+    setMessages,
+    contracts,
+    setContracts,
     setHearings,
     setDocuments,
     setInvoices,
@@ -461,9 +467,6 @@ function AppContent() {
   const ALL_GRADIENT_THEMES = [...DARK_GRADIENT_THEMES, ...customThemes];
 
   // Core Data States Relocated to avoid TDZ errors in custom hooks
-  const [expenses, setExpenses] = useState<Expense[]>([]);
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [contracts, setContracts] = useState<any[]>([]);
   const [showArchivedNotice, setShowArchivedNotice] = useState(false);
   const [lastArchivedCount, setLastArchivedCount] = useState(0);
   const [lastArchivedIds, setLastArchivedIds] = useState<string[]>([]);
@@ -536,166 +539,15 @@ function AppContent() {
     return 'light';
   };
 
-  // PieSocket Connection with Exponential Backoff and Polling Fallback logic
-  const [pieSocketActive, setPieSocketActive] = useState<boolean>(false);
-  const [pieSocketConnected, setPieSocketConnected] = useState<'disconnected' | 'connecting' | 'connected' | 'error'>('disconnected');
-  const [pieSocketErrorCount, setPieSocketErrorCount] = useState<number>(0);
-  const [showDiagnosticModal, setShowDiagnosticModal] = useState<boolean>(false);
-  const [consoleErrors, setConsoleErrors] = useState<string[]>([]);
-
+  const [onlineStatus, setOnlineStatus] = useState<boolean>(navigator.onLine);
   useEffect(() => {
-    const originalError = console.error;
-    console.error = (...args) => {
-      setConsoleErrors(prev => [...prev.slice(-4), args.map(a => String(a)).join(' ')]);
-      originalError.apply(console, args);
-    };
-    return () => { console.error = originalError; };
-  }, []);
-
-  useEffect(() => {
-    let ws: WebSocket | null = null;
-    let reconnectTimeout: any = null;
-    let fallbackPollInterval: any = null;
-    let heartbeatInterval: any = null;
-    let attempts = 0;
-    let isComponentMounted = true;
-
-    const startFallbackPolling = () => {
-      console.log('[App PieSocket] Falling back to standard HTTP polling due to WebSocket restrictions.');
-      if (isComponentMounted) {
-        setPieSocketConnected('error');
-        setPieSocketActive(false);
-      }
-      
-      // Immediate initial fallback ping
-      window.dispatchEvent(new CustomEvent('najiz-connection-pulse', {
-        detail: { latency: 15, status: 'polling-immediate-fallback' }
-      }));
-      
-      fallbackPollInterval = setInterval(() => {
-        if (!isComponentMounted) return;
-        // Simulate a heartbeat sync via synthetic events
-        window.dispatchEvent(new CustomEvent('najiz-connection-pulse', {
-          detail: { latency: Math.floor(Math.random() * 50) + 100, status: 'polling' }
-        }));
-      }, 15000);
-    };
-
-    const cleanupWs = () => {
-      if (ws) {
-        try {
-          ws.onclose = null;
-          ws.onerror = null;
-          ws.onmessage = null;
-          ws.onopen = null;
-          if (ws.readyState === WebSocket.OPEN) {
-            ws.close();
-          }
-        } catch (e) {}
-        ws = null;
-      }
-      if (heartbeatInterval) clearInterval(heartbeatInterval);
-      if (reconnectTimeout) clearTimeout(reconnectTimeout);
-      if (fallbackPollInterval) clearInterval(fallbackPollInterval);
-    };
-
-    const connectPieSocket = () => {
-      if (!isComponentMounted) return;
-
-      if (ws) {
-        try {
-          ws.onclose = null;
-          ws.onerror = null;
-          ws.onmessage = null;
-          ws.onopen = null;
-          if (ws.readyState === WebSocket.OPEN) {
-            ws.close();
-          }
-        } catch (e) {}
-      }
-
-      setPieSocketConnected('connecting');
-      console.log(`[App PieSocket] Initializing connection... (Attempt ${attempts + 1})`);
-
-      let connectionTimeout: any = null;
-
-      try {
-        const pieSocketKey = (import.meta as any).env?.VITE_PIESOCKET_API_KEY;
-        const pieSocketCluster = (import.meta as any).env?.VITE_PIESOCKET_CLUSTER_ID || 'free.blr2';
-        ws = new WebSocket(`wss://${pieSocketCluster}.piesocket.com/v3/1?api_key=${pieSocketKey}&notify_self=1`);
-
-        connectionTimeout = setTimeout(() => {
-          if (isComponentMounted && ws?.readyState !== WebSocket.OPEN) {
-            console.log('[App PieSocket] WebSocket taking too long (>3s), starting initial fallback HTTPS polling.');
-            startFallbackPolling();
-          }
-        }, 3000);
-
-        ws.onopen = () => {
-          if (!isComponentMounted) return;
-          if (connectionTimeout) clearTimeout(connectionTimeout);
-          console.log('[App PieSocket] Connection established successfully.');
-          setPieSocketConnected('connected');
-          setPieSocketActive(true);
-          attempts = 0; 
-          setPieSocketErrorCount(0);
-          if (fallbackPollInterval) clearInterval(fallbackPollInterval);
-          
-          if (heartbeatInterval) clearInterval(heartbeatInterval);
-          heartbeatInterval = setInterval(() => {
-            if (ws?.readyState === WebSocket.OPEN) {
-              ws.send(JSON.stringify({ type: 'heartbeat', ping: Date.now() }));
-            }
-          }, 30000);
-        };
-
-        ws.onmessage = (event) => {
-          if (!isComponentMounted) return;
-          try {
-            const data = JSON.parse(event.data);
-            window.dispatchEvent(new CustomEvent('piesocket-message', { detail: data }));
-          } catch (err) {
-            window.dispatchEvent(new CustomEvent('piesocket-message', { detail: event.data }));
-          }
-        };
-
-        ws.onclose = (event) => {
-          if (!isComponentMounted) return;
-          console.warn(`[App PieSocket] Connection closed.`);
-          setPieSocketConnected('disconnected');
-          if (heartbeatInterval) clearInterval(heartbeatInterval);
-          
-          if (attempts < 4) {
-            const baseDelay = 1500;
-            const maxDelay = 20000;
-            const delay = Math.min(maxDelay, Math.pow(2, attempts) * baseDelay + Math.random() * 1000);
-            attempts += 1;
-            setPieSocketErrorCount(attempts);
-            console.log(`[App PieSocket] Reconnecting in ${Math.round(delay)}ms...`);
-            reconnectTimeout = setTimeout(connectPieSocket, delay);
-          } else {
-            console.warn('[App PieSocket] Maximum websocket limits reached.');
-            startFallbackPolling();
-          }
-        };
-
-        ws.onerror = (error) => {
-          console.warn('[App PieSocket] Socket connection error:', error);
-          if (attempts >= 2) {
-             startFallbackPolling();
-          }
-        };
-      } catch (err) {
-        console.warn('[App PieSocket] Failed: ', err);
-        startFallbackPolling();
-      }
-    };
-
-    connectPieSocket();
-
+    const handleOnline = () => setOnlineStatus(true);
+    const handleOffline = () => setOnlineStatus(false);
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
     return () => {
-      isComponentMounted = false;
-      cleanupWs();
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
     };
   }, []);
 
@@ -793,6 +645,7 @@ function AppContent() {
         const isColoredStatus = /text-(red|emerald|green|rose|amber|blue|indigo)-/i.test(classStr) || 
                                 /bg-(red|emerald|green|rose|amber|blue|indigo)-/i.test(classStr) || 
                                 htmlEl.getAttribute('data-contrast-ignore') === 'true' ||
+                                htmlEl.closest('[data-contrast-ignore="true"]') !== null ||
                                 htmlEl.classList.contains('case-status-badge') || 
                                 htmlEl.closest('.case-status-badge') !== null;
         if (isColoredStatus) return;
@@ -1268,7 +1121,8 @@ function AppContent() {
       'powersOfAttorney', 'powers_of_attorney', 'documents', 'attachments',
       'clientPortal', 'client_portal', 'employeePortal', 'employee_portal',
       'attendance', 'leaveRequests', 'leave_requests', 'invoices', 'payments', 'vouchers',
-      'notifications', 'auditTrails', 'audit_trails', 'systemErrors', 'system_errors'
+      'notifications', 'auditTrails', 'audit_trails', 'systemErrors', 'system_errors',
+      'executions', 'expenses', 'messages', 'contracts'
     ];
 
     if (managedTables.includes(type)) {
@@ -1301,6 +1155,10 @@ function AppContent() {
             case 'audit_trails': return (auditTrails || []).find(au => au.id === data.id);
             case 'systemErrors':
             case 'system_errors': return (systemErrors || []).find(s => s.id === data.id);
+            case 'executions': return (executions || []).find(ex => ex.id === data.id || ex.executionNumber === data.executionNumber);
+            case 'expenses': return (expenses || []).find(exp => exp.id === data.id);
+            case 'messages': return (messages || []).find(m => m.id === data.id);
+            case 'contracts': return (contracts || []).find(con => con.id === data.id);
             default: return null;
           }
         })();
@@ -1345,8 +1203,13 @@ function AppContent() {
           return res; 
         }
 
-        // Only sync if successful
-        syncWithBackend(type, data);
+        if (type === 'messages' && data && data.sender !== 'lawyer') {
+          triggerBrowserNotification('تعليق جديد من العميل 💬', {
+            body: `العميل: ${data.senderName || 'بوابة العملاء'}\nالمضمون: ${data.text}`,
+            tag: `msg-${data.id || Date.now()}`
+          });
+        }
+
         return res;
 
       } catch (err: any) {
@@ -1372,40 +1235,7 @@ function AppContent() {
       }
     }
 
-    // Send state change immediately to server
-    syncWithBackend(type, data);
-
-    // Instant local state transition fallback so user interaction is ultra-snappy
-    if (type === 'contracts') {
-      const exists = (contracts || []).some(c => c.id === data.id);
-      if (exists) {
-        setContracts(prev => prev.map(c => c.id === data.id ? { ...c, ...data } : c));
-      } else {
-        setContracts(prev => [data, ...prev]);
-      }
-    } else if (type === 'documents') {
-      setDocuments(prev => [data, ...prev]);
-    } else if (type === 'invoices') {
-      const exists = invoices.some(i => i.id === data.id);
-      if (exists) {
-        setInvoices(prev => prev.map(i => i.id === data.id ? { ...i, ...data } : i));
-      } else {
-        setInvoices(prev => [data, ...prev]);
-      }
-    } else if (type === 'messages') {
-      setMessages(prev => [...prev, data]);
-      // Trigger Web Browser Notification for client comments/messages
-      if (data && data.sender !== 'lawyer') {
-        triggerBrowserNotification('تعليق جديد من العميل 💬', {
-          body: `العميل: ${data.senderName || 'بوابة العملاء'}\nالمضمون: ${data.text}`,
-          tag: `msg-${data.id || Date.now()}`
-        });
-      }
-    } else if (type === 'stateOfPlatform') {
-      if (data.type === 'expenses') {
-        setExpenses(prev => [data.data, ...prev]);
-      }
-    } else if (type === 'logout') {
+    if (type === 'logout') {
       handleLogout();
     } else if (type === 'updateCurrentUser') {
       setCurrentUser(data);
@@ -1745,6 +1575,24 @@ function AppContent() {
         {currentTab !== 'landing' ? (
           <RouteGuard isAuthenticated={isAuthenticated} setCurrentTab={setCurrentTab}>
             <React.Suspense fallback={<SkeletonLoader />}>
+            {/* Global Najiz Sync Indicator */}
+            {['cases', 'calendar', 'tasks', 'agencies', 'documents', 'executions'].includes(currentTab) && currentUser?.role !== 'client' && (
+              <div className="bg-[#0b1329] border border-amber-500/30 p-4 rounded-2xl mb-6 flex justify-between items-center shadow-lg mx-6 mt-2" dir="rtl">
+                <div className="flex items-center gap-4">
+                  <div className="bg-amber-500/10 p-2.5 rounded-xl border border-amber-500/20">
+                    <RefreshCw className="w-6 h-6 text-amber-500" />
+                  </div>
+                  <div>
+                    <h3 className="text-white text-sm font-black tracking-tight">مزامنة بوابة ناجز</h3>
+                    <p className="text-slate-300 text-[11px] mt-1 font-bold">آخر تحديث: {localStorage.getItem('najizLastSync') ? new Date(parseInt(localStorage.getItem('najizLastSync') || '0')).toLocaleString('ar-SA') : 'لم تتم المزامنة بعد'}</p>
+                  </div>
+                </div>
+                <button onClick={() => setCurrentTab('najiz')} className="bg-[#D4AF37] hover:bg-amber-500 text-[#0b1329] font-black px-5 py-2.5 rounded-xl text-xs transition-all shadow-md hover:shadow-lg">
+                  استيراد أحدث البيانات
+                </button>
+              </div>
+            )}
+
             {currentTab === 'dashboard' && (
               <Dashboard 
                 cases={employeeFilteredCases}
@@ -2110,9 +1958,9 @@ function AppContent() {
             )}
 
             {supaDiagnosticAlert.details && (
-              <div className="bg-slate-900 border border-white/5 p-3 rounded-xl">
+              <div className="bg-slate-900 border border-white/5 p-3 rounded-xl text-right">
                 <span className="text-slate-400 text-[10px] block font-bold mb-1">تفاصيل تشخيصية تقنية (SQL / Auth):</span>
-                <pre className="text-[10px] font-mono text-slate-300 whitespace-pre-wrap break-all max-h-[120px] overflow-y-auto">
+                <pre className="text-[10px] font-mono text-slate-300 whitespace-pre-wrap break-all max-h-[120px] overflow-y-auto text-left" dir="ltr">
                   {supaDiagnosticAlert.details}
                 </pre>
               </div>
@@ -2153,113 +2001,6 @@ function AppContent() {
         </div>
       </div>
     )}
-
-    {showDiagnosticModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm" dir="rtl">
-          <div className="w-full max-w-lg bg-[#0c1427] border border-white/10 rounded-2xl p-6 shadow-2xl relative">
-            <button 
-              onClick={() => setShowDiagnosticModal(false)}
-              className="absolute top-4 left-4 text-slate-200 font-bold transition-colors"
-            >
-              <X className="w-5 h-5" />
-            </button>
-            
-            <div className="flex items-center gap-3 mb-5">
-              <Activity className="w-6 h-6 text-emerald-400 animate-pulse" />
-              <h3 className="text-lg font-black text-white">لوحة تشخيص الاتصال بالبث المباشر</h3>
-            </div>
-
-            <div className="space-y-4">
-              <div className="bg-slate-900/60 rounded-xl p-4 border border-white/5 space-y-3">
-                <div className="flex justify-between items-center text-sm border-b border-white/5 pb-2">
-                  <span className="text-slate-200 font-bold font-medium">نوع البروتوكول الحالي</span>
-                  <span className={`font-black uppercase tracking-wider ${pieSocketConnected === 'error' ? 'text-amber-400' : 'text-emerald-400'}`}>
-                    {pieSocketConnected === 'error' ? 'HTTPS Polling' : 'WebSockets (WS/WSS)'}
-                  </span>
-                </div>
-
-                <div className="flex justify-between items-center text-sm border-b border-white/5 pb-2">
-                  <span className="text-slate-200 font-bold font-medium">حالة ربط الاتصال</span>
-                  <span className={`px-2.5 py-1 rounded-md text-xs font-black ${
-                    pieSocketConnected === 'connected' ? 'bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-bold' :
-                    pieSocketConnected === 'connecting' ? 'bg-amber-500/10 border border-amber-500/30 text-amber-400 font-bold' :
-                    pieSocketConnected === 'error' ? 'bg-amber-500/10 border border-amber-500/30 text-amber-400 font-bold' :
-                    'bg-rose-500/10 border border-rose-500/30 text-rose-400 font-bold'
-                  }`}>
-                    {pieSocketConnected === 'connected' ? 'متصل بنجاح' :
-                     pieSocketConnected === 'connecting' ? 'جاري محاولة الاتصال...' :
-                     pieSocketConnected === 'error' ? 'وضع الاستطلاع النشط' : 'منفصل'}
-                  </span>
-                </div>
-
-                <div className="flex justify-between items-center text-sm border-b border-white/5 pb-2">
-                  <span className="text-slate-200 font-bold font-medium font-sans">محاولات الاتصال النشطة</span>
-                  <span className="text-white font-mono font-bold">{pieSocketErrorCount}</span>
-                </div>
-
-                <div className="flex justify-between items-center text-sm border-b border-white/5 pb-2">
-                  <span className="text-slate-200 font-bold font-medium">معدل الاستجابة (Latency)</span>
-                  <span className="text-amber-400 font-mono font-bold">{Math.floor(Math.random() * 60 + 40)}ms</span>
-                </div>
-
-                <div className="flex justify-between items-center text-sm">
-                  <span className="text-slate-200 font-bold font-medium">أخطاء الكونسول المسجلة</span>
-                  <span className="text-rose-400 font-mono font-bold">{consoleErrors.length}</span>
-                </div>
-              </div>
-
-              {consoleErrors.length > 0 && (
-                <div className="bg-rose-950/40 border border-rose-500/20 rounded-xl p-3 max-h-32 overflow-y-auto text-left text-[10px] font-mono text-rose-300">
-                  {consoleErrors.map((e, i) => <div key={i} className="mb-1 pb-1 border-b border-rose-500/10 last:border-0">{e}</div>)}
-                </div>
-              )}
-
-              {pieSocketConnected === 'error' ? (
-                <div className="bg-amber-500/15 border border-amber-500/30 rounded-xl p-4 flex gap-3 text-sm text-amber-300">
-                  <AlertTriangle className="w-5 h-5 flex-shrink-0 text-amber-400" />
-                  <div>
-                    <h4 className="font-extrabold mb-1">التحويل التلقائي لوضع الاستطلاع (Polling Mode)</h4>
-                    <p className="leading-relaxed text-xs opacity-90">
-                      تعذر تأسيس اتصال WebSocket مباشر (WSS) نظراً لقيود البيئة البرمجية أو سياسات الحماية بالخوادم البعيدة. 
-                      لقد قام النظام تلقائياً وبشكل آمن بالانتقال إلى وضع الاستطلاع الفعال لتحديث الجلسات دورياً ولا يوجد أي تأثير على جودة وأمان بياناتك وقضاياك.
-                    </p>
-                  </div>
-                </div>
-              ) : (
-                <div className="bg-[#10b981]/10 border border-[#10b981]/20 rounded-xl p-4 flex gap-3 text-sm text-emerald-300">
-                  <Wifi className="w-5 h-5 flex-shrink-0 text-emerald-400" />
-                  <div>
-                    <h4 className="font-extrabold mb-1">الاتصال المباشر فائق السرعة نشط</h4>
-                    <p className="leading-relaxed text-xs opacity-90">
-                      بروتوكول WebSocket مشفر بنجاح بترميز SSL 256-bit عبر PieSocket. كافة أحداث التعديل والاتصال تتم مزامنتها بشكل حي ومباشر دون الحاجة لتحديث الصفحة يدوياً.
-                    </p>
-                  </div>
-                </div>
-              )}
-              
-              <div className="flex gap-3 mt-4">
-                <button 
-                  onClick={() => {
-                    window.dispatchEvent(new CustomEvent('najiz-connection-pulse', {
-                      detail: { latency: Math.floor(Math.random() * 30) + 40, status: 'manual-test' }
-                    }));
-                    setShowDiagnosticModal(false);
-                  }}
-                  className="flex-1 bg-amber-500 text-slate-950 font-black py-2.5 rounded-xl text-center text-sm transition-all shadow-md active:scale-[0.98]"
-                >
-                  اختبار استجابة الشبكة الآن
-                </button>
-                <button 
-                  onClick={() => setShowDiagnosticModal(false)}
-                  className="px-5 bg-white/5 text-white font-bold py-2.5 rounded-xl text-sm transition-all"
-                >
-                  إغلاق
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Dynamic Custom Dark Gradients live-preview stylesheet */}
       <style id="live-preview-styles">

@@ -1,12 +1,19 @@
 {
   "manifest_version": 3,
-  "name": "Najiz Sync Auto",
-  "version": "1.0",
-  "description": "Auto sync data from najiz.sa into Adalah platform",
-  "permissions": ["activeTab", "scripting", "storage"],
+  "name": "منصة العدالة - مزامنة ناجز",
+  "version": "2.0",
+  "description": "مزامنة تلقائية لبيانات ناجز مع منصة العدالة الذكية",
+  "permissions": [
+    "activeTab",
+    "scripting",
+    "storage",
+    "tabs",
+    "notifications"
+  ],
   "host_permissions": [
     "*://*.najiz.sa/*",
-    "*://*.run.app/*",
+    "*://*.adalah.law/*",
+    "*://*.adalah.cloud/*",
     "http://localhost:*/*"
   ],
   "action": {
@@ -15,7 +22,11 @@
   "content_scripts": [
     {
       "matches": ["*://*.najiz.sa/*"],
-      "js": ["aiClassifier.js", "content.js"]
+      "js": ["content.js"],
+      "run_at": "document_idle"
     }
-  ]
+  ],
+  "background": {
+    "service_worker": "background.js"
+  }
 }

@@ -249,7 +249,12 @@ export default function CaseDetailsView({
   };
 
   return (
-    <div id="case-details-modal" className="fixed inset-0 bg-black backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto" dir="rtl">
+    <div 
+      id="case-details-modal" 
+      data-contrast-ignore="true"
+      className="fixed inset-0 bg-black backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto case-details-view-container" 
+      dir="rtl"
+    >
       <div className="area-secondary border-2 border-border rounded-2xl w-full max-w-5xl shadow-2xl overflow-hidden flex flex-col my-8 max-h-[90vh] animate-fade-in relative pr-6">
         
         {/* Animated Luxury Gradient Vertical Bar */}

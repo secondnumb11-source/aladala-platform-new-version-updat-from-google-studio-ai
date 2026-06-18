@@ -156,8 +156,8 @@ export default function ClientsModule({
     };
 
     const res = await onUpdateState('clients', newCl);
-    if (res && res.success === false && res.errorType === 'validation') {
-       alert(`فشل التحقق من صحة البيانات: ${res.message}`);
+    if (!res || res.success === false) {
+       alert(`فشل الحفظ: ${res?.message || 'الرجاء مراجعة البيانات والمحاولة مرة أخرى.'}`);
        return;
     }
 

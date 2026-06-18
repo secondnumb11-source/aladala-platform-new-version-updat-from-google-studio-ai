@@ -96,6 +96,16 @@ const DB_COLUMNS: Record<string, string[]> = {
     'id', 'message', 'stack', 'component',
     'user_id', 'severity', 'created_at'
   ],
+  expenses: [
+    'id', 'description', 'amount', 'category', 'date', 'case_number', 'created_at'
+  ],
+  messages: [
+    'id', 'sender', 'sender_name', 'text', 'timestamp', 'case_number', 'created_at'
+  ],
+  contracts: [
+    'id', 'client_name', 'client_id', 'title', 'content', 'status', 
+    'otp_code', 'otp_status', 'signed_at', 'signer_name', 'phone', 'created_at'
+  ],
 };
 
 /**
@@ -256,6 +266,9 @@ export function useSupabaseData() {
   const [payments, setPayments] = useState<any[]>([]);
   const [notifications, setNotifications] = useState<any[]>([]);
   const [systemErrors, setSystemErrors] = useState<any[]>([]);
+  const [expenses, setExpenses] = useState<Expense[]>([]);
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [contracts, setContracts] = useState<any[]>([]);
   
   const [loading, setLoading] = useState(true);
   const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -294,7 +307,10 @@ export function useSupabaseData() {
         leaveRequestsRes,
         paymentsRes,
         notificationsRes,
-        systemErrorsRes
+        systemErrorsRes,
+        expensesRes,
+        messagesRes,
+        contractsRes
       ] = await Promise.all([
         supabase.from('cases').select('*').order('created_at', { ascending: false }),
         supabase.from('clients').select('*').order('created_at', { ascending: false }),
@@ -314,6 +330,9 @@ export function useSupabaseData() {
         supabase.from('payments').select('*').order('payment_date', { ascending: false }).then(r => r, () => ({ data: [] } as any)),
         supabase.from('notifications').select('*').order('created_at', { ascending: false }).then(r => r, () => ({ data: [] } as any)),
         supabase.from('system_errors').select('*').order('created_at', { ascending: false }).limit(100).then(r => r, () => ({ data: [] } as any)),
+        supabase.from('expenses').select('*').order('date', { ascending: false }).then(r => r, () => ({ data: [] } as any)),
+        supabase.from('messages').select('*').order('timestamp', { ascending: true }).then(r => r, () => ({ data: [] } as any)),
+        supabase.from('contracts').select('*').order('created_at', { ascending: false }).then(r => r, () => ({ data: [] } as any)),
       ]);
 
       let mappedClients: Client[] = [];
@@ -341,6 +360,9 @@ export function useSupabaseData() {
       if (paymentsRes && 'data' in paymentsRes && paymentsRes.data) setPayments(toCamel(paymentsRes.data));
       if (notificationsRes && 'data' in notificationsRes && notificationsRes.data) setNotifications(toCamel(notificationsRes.data));
       if (systemErrorsRes && 'data' in systemErrorsRes && systemErrorsRes.data) setSystemErrors(toCamel(systemErrorsRes.data));
+      if (expensesRes && 'data' in expensesRes && expensesRes.data) setExpenses(toCamel(expensesRes.data) as Expense[]);
+      if (messagesRes && 'data' in messagesRes && messagesRes.data) setMessages(toCamel(messagesRes.data) as Message[]);
+      if (contractsRes && 'data' in contractsRes && contractsRes.data) setContracts(toCamel(contractsRes.data));
 
     } catch (error) {
       console.error('Error fetching Supabase data:', error);
@@ -370,7 +392,7 @@ export function useSupabaseData() {
       }
     };
 
-    const triggers = ['cases', 'clients', 'tasks', 'hearings', 'documents', 'powers_of_attorney', 'invoices', 'employees', 'attachments', 'client_portal', 'employee_portal', 'attendance', 'leave_requests', 'payments', 'notifications', 'audit_trails', 'system_errors'];
+    const triggers = ['cases', 'clients', 'tasks', 'hearings', 'documents', 'powers_of_attorney', 'invoices', 'employees', 'attachments', 'client_portal', 'employee_portal', 'attendance', 'leave_requests', 'payments', 'notifications', 'audit_trails', 'system_errors', 'executions', 'expenses', 'messages', 'contracts'];
     
     triggers.forEach(tbl => {
       singleChannel = singleChannel.on('postgres_changes', { event: '*', schema: 'public', table: tbl }, fetchData);
@@ -526,6 +548,9 @@ export function useSupabaseData() {
       'systemErrors': 'system_errors',
       'system_errors': 'system_errors',
       'executions': 'executions',
+      'expenses': 'expenses',
+      'messages': 'messages',
+      'contracts': 'contracts',
       'archive_items': 'archive_items',
     };
     return tableMap[table] || table;
@@ -542,6 +567,10 @@ export function useSupabaseData() {
       case 'powersOfAttorney': return setPowersOfAttorney;
       case 'invoices': return setInvoices;
       case 'employees': return setEmployees;
+      case 'executions': return setExecutions;
+      case 'expenses': return setExpenses;
+      case 'messages': return setMessages;
+      case 'contracts': return setContracts;
       case 'audit_trails':
       case 'auditTrails': return setAuditTrails;
       case 'attachments': return setAttachments;
@@ -836,6 +865,12 @@ export function useSupabaseData() {
     payments,
     notifications,
     systemErrors,
+    expenses,
+    setExpenses,
+    messages,
+    setMessages,
+    contracts,
+    setContracts,
     loading,
     createRecord,
     upsertRecord,

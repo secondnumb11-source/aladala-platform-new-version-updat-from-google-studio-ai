@@ -113,13 +113,20 @@ erDiagram
 | Name | Type | Description / Indexes |
 |-------------|---------|-----------------------|
 | `name` | String | اسم العميل/الشركة |
-| `national_id`| String | رقم الهوية / السجل التجاري (Indexed/Unique) |
+| `id_number` | String | رقم الهوية الوطنية / السجل التجاري (مطابق لـ national_id في الكود) |
 | `is_company`| Boolean | تحديد نوع العميل (فرد/شركة) |
 | `phone` | String | رقم الجوال (Indexed) |
 | `email` | String | البريد الإلكتروني |
 | `address` | Text | العنوان التفصيلي |
-| `source` | String | مصدر العميل (يدوي، بوابة، ناجز) |
-| `najiz_id` | String | معرّف العميل في ناجز للتأكد من عدم التكرار والدمج (Indexed) |
+| `status` | String | حالة الحساب (نشط، إلخ) |
+| `najiz_id` | String | معرّف العميل في ناجز لمنع التكرار (Indexed) |
+| `portal_token` | String | توكن تسجيل الدخول لبوابة العملاء |
+| `portal_link` | String | رابط البوابة الفرعية للعميل |
+| `portal_username` | String | اسم المستخدم لتسجيل دخول الموكل |
+| `portal_password` | String | كلمة مرور الموكل للبوابة |
+| `active_portal` | Boolean | حالة تفعيل البوابة |
+| `permitted_cases` | JSONB | القضايا المصرح للموكل برؤيتها |
+| `permitted_case_permissions` | JSONB | صلاحيات الموكل في البوابة |
 
 ### 2. القضايا (`cases`)
 | Name | Type | Description / Indexes |
@@ -127,199 +134,195 @@ erDiagram
 | `client_id` | UUID | (FK -> clients.id) (Indexed) |
 | `case_number` | String | رقم القضية الأساسي (Indexed) |
 | `najiz_case_number`| String | رقم القضية في ناجز (Unique/Indexed للدمج) |
-| `case_name` | String | عنوان القضية |
+| `title` | String | عنوان القضية (caseName في الكود) |
 | `category` | String | التصنيف (تجاري، عمالي، إلخ) |
 | `stage` | String | المرحلة (ترافع، استئناف، تنفيذ) |
 | `status` | String | الحالة الحالية |
+| `priority` | String | درجة الأهمية (high, normal, low) |
 | `court_name`| String | جهة التقاضي |
+| `opponent_name`| String | اسم الخصم |
+| `summary` | Text | خلاصة القضية |
+| `details` | Text | تفاصيل إضافية |
+| `attachments_count`| Integer | عدد المرفقات |
+| `last_session_at` | Timestampz | تاريخ آخر جلسة |
+| `next_session_at` | Timestampz | تاريخ الجلسة القادمة |
+| `lawyers` | JSONB | مصفوفة أسماء أو معرفات المحامين المسندة |
+| `metadata` | JSONB | حقول إضافية غير مهيكلة من ناجز |
+| `najiz_case_id` | String | معرف القضية الداخلي في ناجز |
+| `subject` | String | موضوع الدعوى |
+| `case_classification`| String | تصنيف الدعوى التفصيلي |
+| `case_status` | String | حالة الدعوى في ناجز |
+| `opponent_id` | String | رقم هوية الخصم |
+| `opponent_national_id`| String | الهوية الوطنية للخصم |
+| `circuit_number` | String | رقم الدائرة القضائية |
+| `power_of_attorney_number`| String | رقم الوكالة الشرعية للدعوى |
+| `next_session_time` | String | وقت الجلسة القادمة (أمثلة: 10:15 ص) |
 | `is_najiz_sync`| Boolean | هل هي مزامنة مع ناجز |
-| `last_sync_date`| Timestamptz | تاريخ آخر مزامنة تم دمجها |
-| `court_department`| String | الدائرة القضائية |
-| `opponents` | JSONB | قائمة الخصوم |
-| `is_manual` | Boolean | إذا تمت إضافتها يدوياً يتم التحديث لاحقاً من ناجز |
+| `is_confidential`| Boolean | هل القضية سرية |
+| `confidentiality` | String | تصنيف السرية |
+| `archived` | Boolean | هل تمت أرشفتها |
+| `last_activity_at` | Timestampz | تاريخ آخر نشاط |
+| `start_date` | Date | تاريخ بداية الترافع |
+| `judge_name` | String | اسم القاضي ناظر الدعوى |
+| `execution_number` | String | رقم طلب التنفيذ المرتبط |
+| `execution_amount` | Decimal | قيمة مبالغ التنفيذ |
+| `agreed_fees` | Decimal | الأتعاب المتفق عليها |
+| `collected_fees` | Decimal | الأتعاب المحصلة |
+| `expenses` | Decimal | المصاريف القضائية المدفوعة |
 
 ### 3. الجلسات (`hearings`)
 | Name | Type | Description / Indexes |
 |-------------|---------|-----------------------|
 | `case_id` | UUID | (FK -> cases.id) (Indexed) |
-| `hearing_date`| Date | تاريخ الجلسة (Indexed) |
-| `hearing_time`| Time | وقت الجلسة |
-| `court_name`| String | المحكمة / الدائرة المرتبطة |
-| `status` | String | حالة الجلسة (قادمة، منتهية، تأجيل) |
-| `hearing_link`| String | رابط الجلسة (عن بعد) |
-| `najiz_id` | String | معرّف الجلسة في ناجز (Unique/Indexed) |
+| `date` | Date | تاريخ الجلسة (Indexed) |
+| `time` | String | وقت الجلسة |
+| `location` | String | موقع الجلسة (عن بعد / اسم المحكمة) |
+| `hall` | String | قاعة الجلسة أو اسم الدائرة |
+| `judge` | String | اسم القاضي |
+| `status` | String | حالة الجلسة (upcoming, completed, canceled) |
+| `notes` | Text | مذكرات الجلسة |
 
 ### 4. الموظفين (`employees`)
 | Name | Type | Description / Indexes |
 |-------------|---------|-----------------------|
-| `user_id` | UUID | (FK -> users.id, Nullable) (Indexed) |
-| `name` | String | اسم الموظف |
-| `national_id`| String | الهوية (Unique) |
-| `role` | String | المسمى الوظيفي (محامي، مستشار، إداري) |
-| `phone` | String | الجوال |
+| `name` | String | اسم الموظف الكامل |
+| `role` | String | دور الموظف الافتراضي (admin, lawyer, employee) |
 | `email` | String | البريد الإلكتروني |
+| `phone` | String | رقم الجوال |
+| `status` | String | حالة الموظف (نشط، في إجازة، مستقيل) |
+| `salary` | Decimal | الراتب الصافي الحالي |
+| `department`| String | القسم |
+| `join_date` | Date | تاريخ الانضمام للمكتب |
+| `national_id`| String | رقم الهوية الوطنية أو الإقامة (Unique) |
+| `username` | String | اسم مستخدم فريد لتسجيل الدخول لبوابة الموظف |
+| `password` | String | كلمة المرور للدخول لبوابته |
+| `custom_login_token`| String | توكن الدخول التلقائي والمصادقة |
+| `portal_link` | String | الرابط المباشر لبوابة الموظف الفرعية |
+| `qualification` | String | المؤهل العلمي والدرجة الأكاديمية |
+| `birth_date` | Date | تاريخ الميلاد |
+| `manager` | String | المدير المباشر المسؤول |
+| `nationality`| String | جنسية الموظف |
+| `national_id_expiry`| Date | تاريخ انتهاء صلاحية الهوية/الإقامة |
+| `start_date` | Date | تاريخ مباشرة العمل الفعلي |
+| `end_date` | Date | تاريخ نهاية الخدمة إن وجد |
+| `branch` | String | فرع العمل والتبعية الجغرافية |
+| `allowances` | Decimal | إجمالي البدلات الشهرية (سكن، انتقال، أخرى) |
+| `deductions` | Decimal | إجمالي الخصومات والتأمينات الاجتماعية |
+| `base_salary`| Decimal | الراتب الأساسي قبل البدلات والخصم |
+| `job_title` | String | المسمى الوظيفي المهني التفصيلي |
+| `najiz_api_key`| String | مفتاح الربط والربط التلقائي بناجز الخاص بالموظف |
+| `assigned_cases` | JSONB | قائمة معرفات القضايا المسندة لمتابعته |
+| `assigned_clients` | JSONB | قائمة الموكلين التابعين له |
+| `permissions`| JSONB | الصلاحيات الإجرائية الممنوحة |
+| `feature_access`| JSONB | الميزات المصرح له باستخدامها |
+| `sidebar_config`| JSONB | الأقسام التي تظهر له في الشريط الجانبي |
+| `avatar_url` | String | رابط الصورة الشخصية |
+| `employee_code`| String | الكود الوظيفي التعريفي للمكتب |
 
 ### 5. المستخدمين (`users`)
-*(نعتمد على جدول Auth الخاص بـ Supabase عادة `auth.users`، ولكن يمكن إنشاء جدول مرتبط لإدارة الصلاحيات المخصصة).*
+*(مرتبط بنظام مصادقة Supabase Auth).*
 | Name | Type | Description / Indexes |
 |-------------|---------|-----------------------|
-| `auth_id` | UUID | مرتبط بـ Supabase Auth (Unique/Indexed) |
-| `role` | String | الدور (Admin, Lawyer, Client, Guest) |
-| `status` | String | نشط / موقوف |
+| `id` | UUID | مرتبط بـ `auth.users` |
+| `role` | String | دور المستخدم الفعلي (admin, user) |
 
 ### 6. المهام (`tasks`)
 | Name | Type | Description / Indexes |
 |-------------|---------|-----------------------|
 | `case_id` | UUID | (FK -> cases.id, Nullable) (Indexed) |
-| `assignee_id`| UUID | (FK -> employees.id) (Indexed) |
+| `employee_id`| UUID | (FK -> employees.id, Nullable) |
 | `title` | String | عنوان المهمة |
-| `description`| Text | التفاصيل |
-| `status` | String | (todo, in_progress, done) |
-| `due_date` | Date | تاريخ الاستحقاق (Indexed) |
+| `description`| Text | تفاصيل المنجز المطلوب |
+| `status` | String | (todo, in_progress, review, completed) |
+| `priority` | String | الأولوية (high, normal, low) |
+| `due_date` | Date | تاريخ تسليم الاستحقاق |
+| `assigned_to`| String | اسم الموظف المسندة إليه |
+| `case_number`| String | رقم القضية المرتبطة |
+| `timer_active`| Boolean | مؤشر تشغيل مؤقت العمل |
+| `timer_duration`| Integer | عدد الثواني المسجلة للمهمة |
+| `target_completion_time`| String | الوقت المستهدف للتسليم |
 
-### 7. الوكالات القضائية (`poas` - Powers of Attorney)
+### 7. الوكالات القضائية (`powers_of_attorney`)
 | Name | Type | Description / Indexes |
 |-------------|---------|-----------------------|
-| `client_id` | UUID | (FK -> clients.id) (Indexed) |
-| `poa_number`| String | رقم الوكالة (Unique/Indexed) |
+| `client_id` | UUID | (FK -> clients.id) |
+| `poa_number`| String | رقم الوكالة الشرعية الصادرة (Unique) |
 | `issue_date`| Date | تاريخ الإصدار |
-| `expiry_date`| Date | تاريخ الانتهاء (Indexed للتنبيهات) |
-| `status` | String | سارية / منتهية / مفسوخة |
-| `najiz_id` | String | المعرّف في ناجز |
+| `expiry_date`| Date | تاريخ الانتهاء الصلاحية |
+| `type` | String | نوع الوكالة (عامة، خاصة، مخصصة) |
+| `status` | String | حالة الوكالة (active, expired, revoked) |
+| `file_url` | String | رابط نسخة الوكالة السحابي |
 
 ### 8. المستندات (`documents`)
 | Name | Type | Description / Indexes |
 |-------------|---------|-----------------------|
-| `case_id` | UUID | (FK -> cases.id, Nullable) (Indexed) |
-| `client_id` | UUID | (FK -> clients.id, Nullable) |
-| `title` | String | اسم المستند |
-| `type` | String | نوع المستند (لائحة، حكم، عقد) |
-| `status` | String | حالة الاعتماد |
-
-### 9. المرفقات (`attachments`)
-| Name | Type | Description / Indexes |
-|-------------|---------|-----------------------|
-| `document_id`| UUID | (FK -> documents.id) (Indexed) |
-| `file_name` | String | اسم الملف |
-| `file_url` | String | رابط الملف في Supabase Storage |
-| `file_size` | Integer | حجم الملف |
-| `mime_type` | String | نوع الملف |
-
-### 10. الإشعارات (`notifications`)
-| Name | Type | Description / Indexes |
-|-------------|---------|-----------------------|
-| `user_id` | UUID | (FK -> users.id) (Indexed) |
-| `title` | String | عنوان التنبيه |
-| `message` | Text | محتوى التنبيه |
-| `type` | String | نوع الإشعار (سيستم، جلسة، مهمة) |
-| `is_read` | Boolean | مقروء أم لا |
-
-### 11. سجل العمليات (`audit_trails`)
-| Name | Type | Description / Indexes |
-|-------------|---------|-----------------------|
-| `user_id` | UUID | (FK -> users.id) (Indexed) |
-| `action` | String | نوع الإجراء (CREATE, UPDATE, DELETE) |
-| `table_name` | String | اسم الجدول المستهدف |
-| `record_id` | UUID | معرّف السجل المتأثر |
-| `old_data` | JSONB | البيانات قبل التعديل |
-| `new_data` | JSONB | البيانات بعد التعديل |
-| `ip_address` | String | عنوان الـ IP |
-
-### 12. بوابة العملاء (`client_portal`)
-| Name | Type | Description / Indexes |
-|-------------|---------|-----------------------|
-| `client_id` | UUID | (FK -> clients.id) (Unique/Indexed) |
-| `access_token`| String | رمز الدخول أو الصلاحية |
-| `last_login` | Timestamptz| تاريخ آخر دخول |
-| `preferences`| JSONB | إعدادات العميل في البوابة |
-
-### 13. بوابة الموظفين (`employee_portal`)
-| Name | Type | Description / Indexes |
-|-------------|---------|-----------------------|
-| `employee_id`| UUID | (FK -> employees.id) (Unique/Indexed) |
-| `dashboard_config`| JSONB | ترتيب واجهة המوظف |
-| `last_active`| Timestamptz| آخر ظهور |
-
-### 14. الفواتير (`invoices`)
-| Name | Type | Description / Indexes |
-|-------------|---------|-----------------------|
-| `client_id` | UUID | (FK -> clients.id) (Indexed) |
 | `case_id` | UUID | (FK -> cases.id, Nullable) |
-| `invoice_no` | String | رقم الفاتورة (Unique/Indexed) |
-| `subtotal` | Decimal | المبلغ الأصلي |
-| `vat_amount` | Decimal | قيمة الضريبة |
-| `total` | Decimal | الإجمالي الحقيقي |
-| `status` | String | (draft, sent, paid, overdue, cancelled) |
-| `due_date` | Date | تاريخ الاستحقاق |
+| `client_id` | UUID | (FK -> clients.id, Nullable) |
+| `name` | String | اسم المستند أو الوثيقة |
+| `category` | String | تصنيف المستند (لائحة جوابية، عقد، تقرير) |
+| `file_url` | String | رابط التخزين السحابي للملف |
+| `file_size` | String | حجم الملف التفصيلي |
+| `size` | Integer | حجم الملف بالبايت |
+| `storage_path`| String | المسار الداخلي بالـ storage bucket |
+| `uploaded_at`| Timestampz | تاريخ الرفع |
+| `tags` | JSONB | وسوم التصنيف والتصفية |
+| `content_text`| Text | المحتوى النصي المفهرس للبحث الذكي |
+| `ai_classification`| String | تصنيف الذكاء الاصطناعي للمستند |
 
-### 15. المدفوعات (`payments`)
+### 9. طلبات التنفيذ (`executions`)
 | Name | Type | Description / Indexes |
 |-------------|---------|-----------------------|
-| `invoice_id` | UUID | (FK -> invoices.id) (Indexed) |
-| `amount_paid`| Decimal | المبلغ المدفوع |
-| `payment_date`| Date | تاريخ الدفع |
-| `payment_method`| String| طريقة الدفع (حوالة، كاش، مدى) |
-| `reference_no`| String | رقم المرجع / الحوالة |
+| `execution_number`| String | رقم طلب التنفيذ الصادر (Unique) |
+| `case_number`| String | رقم القضية الأساسي المرتبط |
+| `requester_name`| String | اسم طالب التنفيذ (الموكل) |
+| `opponent_name`| String | اسم المنفذ ضده (الخصم) |
+| `status` | String | حالة الطلب (نشط، مكتمل، إلخ) |
+| `amount` | Decimal | مبالغ التنفيذ المطالب بها |
+| `court_name`| String | محكمة التنفيذ المختصة |
+| `issue_date`| Date | تاريخ تقديم الطلب |
+| `last_update`| Date | تاريخ آخر تحديث لحالة الطلب |
+| `details` | Text | تفاصيل القرارات الصادرة (أمثلة: قرار 34/46) |
 
-### 16. المواعيد (`appointments`)
+### 10. المصاريف القضائية (`expenses`)
 | Name | Type | Description / Indexes |
 |-------------|---------|-----------------------|
-| `client_id` | UUID | (FK -> clients.id) |
-| `employee_id`| UUID | (FK -> employees.id) (Indexed) |
-| `date_time` | Timestamptz| وقت الموعد (Indexed) |
-| `purpose` | String | الغرض من الاجتماع |
-| `status` | String | (scheduled, completed, cancelled) |
+| `description`| String | بيان وتفاصيل المصروف القضائي |
+| `amount` | Decimal | قيمة المصروف |
+| `category` | String | تصنيف المصروف (رسوم دعوى، خبرة، إعلانات) |
+| `date` | Date | تاريخ الدفع الصادر |
+| `case_number`| String | رقم القضية المرتبطة |
 
-### 17. الملاحظات (`notes`)
+### 11. المحادثات والرسائل (`messages`)
 | Name | Type | Description / Indexes |
 |-------------|---------|-----------------------|
-| `entity_type`| String | نوع الكيان (case, client, task) |
-| `entity_id` | UUID | معرّف الكيان |
-| `author_id` | UUID | (FK -> users.id) |
-| `content` | Text | محتوى الملاحظة |
-| `is_private` | Boolean | ظاهرة للجميع أم لكاتبها فقط |
+| `sender` | String | معرف أو كود المرسل (system, client, lawyer) |
+| `sender_name`| String | اسم مرسل الرسالة |
+| `text` | Text | محتوى نص الرسالة المتبادلة |
+| `timestamp` | Timestampz | وقت إرسال الرسالة بدقة |
+| `case_number`| String | رقم القضية المرتبطة بالمحادثة |
 
-### 18. أحداث القضية (`case_events`)
+### 12. عقود الترافع والاتفاقيات (`contracts`)
 | Name | Type | Description / Indexes |
 |-------------|---------|-----------------------|
-| `case_id` | UUID | (FK -> cases.id) (Indexed) |
-| `event_type` | String | نوع الحدث (تغيير حالة، حكم، إضافة خصم) |
-| `event_date` | Timestamptz| وقت الحدث |
-| `description`| Text | الوصف التفصيلي |
-| `najiz_ref` | String | مرجع الحدث إذا كان من ناجز |
+| `client_name`| String | اسم العميل/الطرف الثاني كلياً |
+| `client_id` | UUID | (FK -> clients.id, Nullable) |
+| `title` | String | عنوان العقد أو اتفاقية الأتعاب |
+| `content` | Text | البنود الكاملة والصيغة القانونية للعقد |
+| `status` | String | حالة العقد (draft, pending_signature, signed, active) |
+| `otp_code` | String | رمز التحقق الصادر للتوقيع الإلكتروني |
+| `otp_status` | String | حالة التحقق (verified, pending) |
+| `signed_at` | Timestampz | تاريخ التوقيع الفعلي للعميل |
+| `signer_name`| String | اسم موقع الاتفاقية الثنائي |
+| `phone` | String | رقم هاتف التحقق للتوقيع |
 
-### 19. سجلات مزامنة ناجز (`najiz_sync_logs`)
+### 13. سجل أخطاء النظام (`system_errors`)
 | Name | Type | Description / Indexes |
 |-------------|---------|-----------------------|
-| `sync_type` | String | (cases, hearings, poas) |
-| `status` | String | (success, failed, partial) |
-| `records_pulled`| Integer | عدد السجلات التي سُحبت |
-| `records_merged`| Integer | عدد السجلات المدمجة/المحدثة |
-| `error_details`| Text | تفاصيل الفشل إن وجدت |
-
-### 20. إعدادات مزامنة ناجز (`najiz_sync_settings`)
-| Name | Type | Description / Indexes |
-|-------------|---------|-----------------------|
-| `is_active` | Boolean | تشغيل/إيقاف المزامنة |
-| `sync_interval_hours`| Integer| التكرار كل كم ساعة |
-| `auth_token` | Text | توكن الربط المشفر |
-| `last_successful_sync`| Timestamptz| آخر مزامنة ناجحة |
-
-### 21. تاريخ تحديثات ناجز (`najiz_case_history`)
-*يستخدم للاحتفاظ بالبيانات القديمة وتتبع الداتا في حال تحديثها من ناجز (Versioning).*
-| Name | Type | Description / Indexes |
-|-------------|---------|-----------------------|
-| `case_id` | UUID | (FK -> cases.id) (Indexed) |
-| `snapshot_date`| Timestamptz| وقت أخذ النسخة |
-| `case_data` | JSONB | لقطة كاملة من بيانات ناجز للقضية |
-
-### 22. حالات المستخدم (`user_states`)
-| Name | Type | Description / Indexes |
-|-------------|---------|-----------------------|
-| `user_id` | UUID | (FK -> users.id) (Unique/Indexed) |
-| `is_online` | Boolean | حالة الاتصال (لـ Realtime Sync) |
-| `last_seen` | Timestamptz| وقت آخر ظهور |
-| `device_info`| JSONB | معلومات المتصفح والجهاز |
+| `message` | Text | رسالة الخطأ الملتقطة |
+| `stack` | Text | تفاصيل التعقب ومسار الأكواد/تعليمات SQL للإصلاح |
+| `component` | String | المكون البرمجي مسبب الخطأ (مثال: Supabase RLS Guard) |
+| `user_id` | UUID | (FK -> users.id, Nullable) |
+| `severity` | String | درجة خطورة العطل (error, warning, info) |
 
 ---
 ## قواعد وسياسات المزامنة مع "ناجز" وفق المتطلبات (Najiz Sync Rules)
