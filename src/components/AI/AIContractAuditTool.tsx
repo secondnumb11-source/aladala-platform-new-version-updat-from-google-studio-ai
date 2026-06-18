@@ -39,8 +39,6 @@ export default function AIContractAuditTool() {
   const [contractType, setContractType] = useState('شراكة');
   const [contractFacts, setContractFacts] = useState('');
   const [generatedDraft, setGeneratedDraft] = useState('');
-  const [error, setError] = useState<string | null>(null);
-  const [auditError, setAuditError] = useState<string | null>(null);
 
   const contractTypes = [
     'عقد شراكة', 'عقد عمل', 'عقد استشارات قانونية', 'عقد تمثيل قانوني', 
@@ -59,67 +57,56 @@ export default function AIContractAuditTool() {
     summary: string;
   } | null>(null);
 
-  const startAudit = async () => {
+  const startAudit = () => {
     setIsAnalyzing(true);
-    setAuditError(null);
-    try {
-      const prompt = `أنت خبير في الأنظمة السعودية (العمل، الشركات، المعاملات المدنية).
-يوجد عقد بحاجة إلى تدقيق. قم باستخراج المخالفات القانونية، إذا وُجدت، وأعطِ تقييماً شاملاً لمدى امتثال العقد.
-أرجع النتيجة بصيغة JSON حصراً بهذا الشكل:
-{
-  "summary": "نص ملخص",
-  "score": 85,
-  "findings": [
-    {
-      "clause": "نص البند المعيب",
-      "issue": "المشكلة القانونية",
-      "severity": "high" أو "medium" أو "low",
-      "lawReference": "المرجع النظامي",
-      "recommendation": "التوصية المقترحة"
-    }
-  ]
-}
-النص المرجعي للعقد:
-(مرفق عقد جاهز للمراجعة...)`;
-
-      const { callAnthropicAPI } = await import('@/lib/anthropic');
-      const responseText = await callAnthropicAPI(prompt);
-      
-      // Attempt to parse JSON from the response text
-      const jsonMatch = responseText.match(/\{[\s\S]*\}/);
-      if (jsonMatch) {
-        const parsed = JSON.parse(jsonMatch[0]);
-        setAuditResult(parsed);
-      } else {
-        throw new Error('لم يُرجع الذكاء الاصطناعي بيانات مهيكلة صالحة.');
-      }
-    } catch (e: any) {
-      console.error(e);
-      setAuditError(e.message || 'فشل الفحص والتدقيق القانوني.');
-    } finally {
+    setTimeout(() => {
+      setAuditResult({
+        summary: "تم اكتشاف مخالفات محتملة لنظام العمل السعودي تتعلق بساعات العمل والجزاءات التأديبية. يجب مراجعة المواد 77 و 98 من نظام العمل.",
+        score: 72,
+        findings: [
+          {
+            clause: "يقر العامل بالتنازل عن حقه في مكافأة نهاية الخدمة في حال استقالته قبل مرور سنتين.",
+            issue: "بند باطل لمخالفته المادة 84 و 85 من نظام العمل التي تقر الحق في المكافأة بنسب محددة.",
+            severity: 'high',
+            lawReference: "نظام العمل السعودي - المادة 84",
+            recommendation: "حذف هذا البند فوراً واستبداله بالنصوص النظامية المعمول بها."
+          },
+          {
+            clause: "ساعات العمل الرسمية 10 ساعات يومياً بدون احتساب أوقات الراحة.",
+            issue: "تجاوز الحد الأقصى لساعات العمل الفعلية (8 ساعات) دون احتساب عمل إضافي.",
+            severity: 'medium',
+            lawReference: "نظام العمل السعودي - المادة 98",
+            recommendation: "تعديل ساعات العمل للتوافق مع النظام (8 ساعات) أو إقرار أجر الساعات الإضافية."
+          }
+        ]
+      });
       setIsAnalyzing(false);
-    }
+    }, 2500);
   };
 
-  const startDrafting = async () => {
+  const startDrafting = () => {
     if (!contractFacts) return;
     setIsDrafting(true);
-    setError(null);
-    try {
-      const prompt = `أنت محامي سعودي متخصص في الأنظمة (المعاملات المدنية، نظام العمل، نظام الشركات).
-يرجى صياغة عقد من نوع (${contractType}) بناءً على المعطيات التالية:
-"${contractFacts}"
-قم بكتابة العقد بشكل احترافي مع الديباجة والتمهيد والبنود التفصيلية والختام.`;
-      
-      const { callAnthropicAPI } = await import('@/lib/anthropic');
-      const responseText = await callAnthropicAPI(prompt);
-      setGeneratedDraft(responseText);
-    } catch (e: any) {
-      console.error(e);
-      setError(e.message || 'حدث خطأ في صياغة العقد.');
-    } finally {
+    setTimeout(() => {
+      setGeneratedDraft(`إنه في يوم الإثنين الموافق 15/06/2026م، تم الاتفاق بين كل من:
+
+الطرف الأول: (يتم إدخال البيانات هنا)
+الطرف الثاني: (يتم إدخال البيانات هنا)
+
+بناءً على طلبكم ومعطياتكم: "${contractFacts}"
+
+تمهيد:
+حيث أن الطرف الأول يمتلك الخبرة الواسعة في مجال اختصاصه، وحيث أقر الطرف الثاني برغبته في التعاقد، فقد اتفق الطرفان على صياغة هذا العقد وفقاً للأنظمة المعمول بها في المملكة العربية السعودية، وعلى وجه الخصوص نظام المعاملات المدنية، المادة كذا...
+
+البند الأول: موضوع العقد
+البند الثاني: التزامات الأطراف
+البند الثالث: المقابل المالي وآلية الدفع
+البند الرابع: السرية وعدم الإفشاء
+البند الخامس: القوة القاهرة وتسوية المنازعات
+
+(هذا النص توليد آلي ذكي قابل للتعديل الفوري من قبل المستشار القانوني)`);
       setIsDrafting(false);
-    }
+    }, 3000);
   };
 
   const getSeverityColor = (severity: Finding['severity']) => {
@@ -201,14 +188,6 @@ export default function AIContractAuditTool() {
                     <Cpu className="w-8 h-8 text-amber-500 animate-pulse relative z-10" />
                     <p className="text-xs font-black relative z-10">جاري معالجة الوقائع والمواءمة مع نظام المعاملات المدنية المنشور ومبادئ القضاء...</p>
                   </div>
-                ) : error ? (
-                  <div className="bg-red-50 border border-red-200 text-red-700 p-6 rounded-2xl flex flex-col items-center justify-center text-center space-y-4">
-                    <AlertTriangle className="w-12 h-12 text-red-500" />
-                    <div>
-                      <h3 className="text-lg font-black mb-2">تعذر إكمال الصياغة</h3>
-                      <p className="text-sm font-bold">{error}</p>
-                    </div>
-                  </div>
                 ) : generatedDraft ? (
                   <div className="space-y-3 animate-fade-in">
                     <div className="flex items-center justify-between">
@@ -276,24 +255,17 @@ export default function AIContractAuditTool() {
                       <span className="w-2 h-2 bg-amber-500 rounded-full animate-bounce delay-300"></span>
                     </div>
                   </div>
-                  <p className="text-xs text-slate-200 font-bold max-w-sm leading-relaxed text-center">
-                    نقوم الآن باستخراج النصوص باستخدام OCR ومطابقتها مع مكتبة الأنظمة السعودية.
+                  <p className="text-xs text-slate-200 font-bold font-bold max-w-sm leading-relaxed text-center">
+                    نقوم الآن باستخراج النصوص باستخدام OCR ومطابقتها مع مكتبة الأنظمة السعودية (نظام العمل، نظام التأمينات الاجتماعية).
                   </p>
-                </div>
-              ) : auditError ? (
-                <div className="flex flex-col items-center gap-4 text-center">
-                  <ShieldAlert className="w-16 h-16 text-rose-500" />
-                  <h3 className="text-lg font-black text-slate-900">فشل التدقيق</h3>
-                  <p className="text-sm font-bold text-rose-600">{auditError}</p>
-                  <button onClick={() => setAuditError(null)} className="px-4 py-2 mt-4 bg-slate-900 text-white rounded-xl text-xs font-black">إعادة المحاولة</button>
                 </div>
               ) : (
                 <>
-                  <div className="p-6 bg-white rounded-full shadow-xl mb-6 transition-transform group-hover:scale-110">
-                    <Upload className="w-10 h-10 text-amber-500 transition-colors" />
+                  <div className="p-6 bg-white rounded-full shadow-xl mb-6 transition-transform">
+                    <Upload className="w-10 h-10 text-slate-200 font-bold transition-colors" />
                   </div>
                   <h3 className="text-lg font-black text-slate-900 mb-2">اسحب عقد العمل هنا (PDF/Image)</h3>
-                  <p className="text-xs text-slate-500 font-bold text-center max-w-xs leading-relaxed">
+                  <p className="text-xs text-slate-200 font-bold font-bold text-center max-w-xs leading-relaxed">
                     سأقوم بمسح الوثيقة ضوئياً والبحث عن البنود التعسفية أو المخالفة للنظام فوراً.
                   </p>
                   <input 

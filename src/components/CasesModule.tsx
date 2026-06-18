@@ -2202,7 +2202,7 @@ export default React.memo(function CasesModule({
 
           {/* Detail Layout */}
           {selectedCase ? (
-        <div className="space-y-10 case-details-view-container">
+        <div className="space-y-10">
           {/* Back button */}
           <button 
             onClick={() => {
@@ -2217,10 +2217,7 @@ export default React.memo(function CasesModule({
             <span>العودة لقائمة جميع الدعاوى والنزاعات الشرعية المقيدة</span>
           </button>
 
-          <div 
-            data-contrast-ignore="true"
-            className="card-details-panel border-2 border-slate-800 rounded-[2.5rem] p-12 shadow-[0_30px_60px_rgba(0,0,0,0.4)] bg-[#050e21] relative overflow-hidden"
-          >
+          <div className="card-professional border-2 border-slate-800 rounded-[2.5rem] p-12 shadow-[0_30px_60px_rgba(0,0,0,0.4)] bg-[#050e21] relative overflow-hidden">
             <div className="absolute top-0 right-0 w-96 h-96 bg-[#0c1a35] blur-[120px] pointer-events-none"></div>
             <div className="absolute bottom-0 left-0 w-64 h-64 bg-[#0c1a35] blur-[80px] pointer-events-none"></div>
             
@@ -2229,15 +2226,15 @@ export default React.memo(function CasesModule({
                 <div className="flex flex-wrap items-center gap-4">
                   <div className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-[0.2em] border shadow-lg ${
                     selectedCase.priority === 'high' 
-                    ? 'bg-rose-600 text-white border-rose-600' 
+                    ? 'bg-rose-500 text-rose-500 border-rose-500' 
                     : selectedCase.priority === 'medium' 
-                    ? 'bg-amber-500 text-slate-900 border-amber-500' 
-                    : 'bg-slate-800 text-slate-100 border-slate-700'
+                    ? 'bg-amber-500 text-amber-500 border-amber-500' 
+                    : 'bg-slate-100  text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]  border-slate-800'
                   }`}>
                     <ShieldAlert className="w-3.5 h-3.5" />
                     أولوية {selectedCase.priority === 'high' ? 'قصوى عاجلة' : selectedCase.priority === 'medium' ? 'متوسطة' : 'عادية'}
                   </div>
-                  <span className="text-sm text-slate-100 font-mono font-black border-r border-slate-400 pr-4">ملف نظام رقم: {selectedCase.caseNumber}</span>
+                  <span className="text-sm text-slate-950 font-mono font-black border-r border-slate-400 pr-4">ملف نظام رقم: {selectedCase.caseNumber}</span>
                   {selectedCase.isNajizSync && (
                     <span className="text-xs bg-emerald-600 text-emerald-800 border border-emerald-600 font-black px-4 py-1.5 rounded-full inline-flex items-center gap-2.5">
                       <span className="h-1.5 w-1.5 rounded-full bg-emerald-600 animate-pulse"></span>
@@ -2303,7 +2300,7 @@ export default React.memo(function CasesModule({
                     window.open(waUrl, '_blank');
                     alert('تم تجهيز وإرسال بيانات النفاذ للموكل عبر الواتساب بنجاح.');
                   }}
-                  className="bg-sky-950 text-white border border-sky-850 px-10 py-5 rounded-[1.5rem] text-xs font-black flex items-center justify-center gap-4 transition-all active:scale-95 shadow-xl hover:bg-sky-900"
+                  className="bg-sky-50 text-white border border-slate-700 px-10 py-5 rounded-[1.5rem] text-xs font-black flex items-center justify-center gap-4 transition-all active:scale-95 shadow-xl"
                 >
                   <Share2 className="w-6 h-6 text-primary" />
                   <span>إرسال بيانات بوابة العميل (WhatsApp)</span>
@@ -2338,7 +2335,7 @@ export default React.memo(function CasesModule({
                          {isPassed && <div className="absolute inset-0 rounded-2xl bg-[#050e21] animate-pulse"></div>}
                         <span className="relative z-10">{idx + 1}</span>
                       </div>
-                      <span className={`text-xs font-black uppercase tracking-widest text-center max-w-[100px] leading-relaxed transition-all ${isPassed ? 'text-amber-400' : 'text-slate-400'} `}>{st.label}</span>
+                      <span className={`text-xs font-black uppercase tracking-widest text-center max-w-[100px] leading-relaxed transition-all ${isPassed ? 'text-slate-950' : ' text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.8)] '} `}>{st.label}</span>
                     </div>
                   );
                 })}

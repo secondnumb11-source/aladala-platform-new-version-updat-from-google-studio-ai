@@ -11,6 +11,15 @@ import { handleRlsPolicyFriction } from '@/lib/debug-supabase';
 // مطابقة تماماً لـ supabase_schema_final.sql
 // ======================================================
 const DB_COLUMNS: Record<string, string[]> = {
+  expenses: [
+    'id', 'description', 'amount', 'category', 'date', 'case_number', 'created_at'
+  ],
+  messages: [
+    'id', 'sender', 'sender_name', 'text', 'timestamp', 'case_number', 'created_at'
+  ],
+  contracts: [
+    'id', 'client_name', 'client_id', 'title', 'content', 'status', 'otp_code', 'otp_status', 'signed_at', 'signer_name', 'phone', 'created_at'
+  ],
   clients: [
     'id', 'name', 'phone', 'email',
     'id_number', 'najiz_id', 'address',
@@ -95,16 +104,6 @@ const DB_COLUMNS: Record<string, string[]> = {
   system_errors: [
     'id', 'message', 'stack', 'component',
     'user_id', 'severity', 'created_at'
-  ],
-  expenses: [
-    'id', 'description', 'amount', 'category', 'date', 'case_number', 'created_at'
-  ],
-  messages: [
-    'id', 'sender', 'sender_name', 'text', 'timestamp', 'case_number', 'created_at'
-  ],
-  contracts: [
-    'id', 'client_name', 'client_id', 'title', 'content', 'status', 
-    'otp_code', 'otp_status', 'signed_at', 'signer_name', 'phone', 'created_at'
   ],
 };
 
@@ -266,8 +265,8 @@ export function useSupabaseData() {
   const [payments, setPayments] = useState<any[]>([]);
   const [notifications, setNotifications] = useState<any[]>([]);
   const [systemErrors, setSystemErrors] = useState<any[]>([]);
-  const [expenses, setExpenses] = useState<Expense[]>([]);
-  const [messages, setMessages] = useState<Message[]>([]);
+  const [expenses, setExpenses] = useState<any[]>([]);
+  const [messages, setMessages] = useState<any[]>([]);
   const [contracts, setContracts] = useState<any[]>([]);
   
   const [loading, setLoading] = useState(true);
@@ -320,6 +319,9 @@ export function useSupabaseData() {
         supabase.from('powers_of_attorney').select('*').order('issue_date', { ascending: false }),
         supabase.from('invoices').select('*').order('created_at', { ascending: false }),
         supabase.from('employees').select('*').order('created_at', { ascending: false }),
+        supabase.from('expenses').select('*').order('created_at', { ascending: false }),
+        supabase.from('messages').select('*').order('created_at', { ascending: false }),
+        supabase.from('contracts').select('*').order('created_at', { ascending: false }),
         supabase.from('executions').select('*').order('created_at', { ascending: false }).then(r => r, () => ({ data: [] } as any)),
         supabase.from('audit_trails').select('*').order('created_at', { ascending: false }).limit(10).then(r => r, () => ({ data: [] } as any)),
         supabase.from('attachments').select('*').order('file_name', { ascending: false }).then(r => r, () => ({ data: [] } as any)),
@@ -330,9 +332,6 @@ export function useSupabaseData() {
         supabase.from('payments').select('*').order('payment_date', { ascending: false }).then(r => r, () => ({ data: [] } as any)),
         supabase.from('notifications').select('*').order('created_at', { ascending: false }).then(r => r, () => ({ data: [] } as any)),
         supabase.from('system_errors').select('*').order('created_at', { ascending: false }).limit(100).then(r => r, () => ({ data: [] } as any)),
-        supabase.from('expenses').select('*').order('date', { ascending: false }).then(r => r, () => ({ data: [] } as any)),
-        supabase.from('messages').select('*').order('timestamp', { ascending: true }).then(r => r, () => ({ data: [] } as any)),
-        supabase.from('contracts').select('*').order('created_at', { ascending: false }).then(r => r, () => ({ data: [] } as any)),
       ]);
 
       let mappedClients: Client[] = [];
@@ -360,8 +359,8 @@ export function useSupabaseData() {
       if (paymentsRes && 'data' in paymentsRes && paymentsRes.data) setPayments(toCamel(paymentsRes.data));
       if (notificationsRes && 'data' in notificationsRes && notificationsRes.data) setNotifications(toCamel(notificationsRes.data));
       if (systemErrorsRes && 'data' in systemErrorsRes && systemErrorsRes.data) setSystemErrors(toCamel(systemErrorsRes.data));
-      if (expensesRes && 'data' in expensesRes && expensesRes.data) setExpenses(toCamel(expensesRes.data) as Expense[]);
-      if (messagesRes && 'data' in messagesRes && messagesRes.data) setMessages(toCamel(messagesRes.data) as Message[]);
+      if (expensesRes && 'data' in expensesRes && expensesRes.data) setExpenses(toCamel(expensesRes.data));
+      if (messagesRes && 'data' in messagesRes && messagesRes.data) setMessages(toCamel(messagesRes.data));
       if (contractsRes && 'data' in contractsRes && contractsRes.data) setContracts(toCamel(contractsRes.data));
 
     } catch (error) {
@@ -392,7 +391,7 @@ export function useSupabaseData() {
       }
     };
 
-    const triggers = ['cases', 'clients', 'tasks', 'hearings', 'documents', 'powers_of_attorney', 'invoices', 'employees', 'attachments', 'client_portal', 'employee_portal', 'attendance', 'leave_requests', 'payments', 'notifications', 'audit_trails', 'system_errors', 'executions', 'expenses', 'messages', 'contracts'];
+    const triggers = ['cases', 'clients', 'tasks', 'hearings', 'documents', 'powers_of_attorney', 'invoices', 'employees', 'attachments', 'client_portal', 'employee_portal', 'attendance', 'leave_requests', 'payments', 'notifications', 'audit_trails', 'system_errors', 'expenses', 'messages', 'contracts', 'executions'];
     
     triggers.forEach(tbl => {
       singleChannel = singleChannel.on('postgres_changes', { event: '*', schema: 'public', table: tbl }, fetchData);
@@ -548,9 +547,6 @@ export function useSupabaseData() {
       'systemErrors': 'system_errors',
       'system_errors': 'system_errors',
       'executions': 'executions',
-      'expenses': 'expenses',
-      'messages': 'messages',
-      'contracts': 'contracts',
       'archive_items': 'archive_items',
     };
     return tableMap[table] || table;
@@ -567,10 +563,6 @@ export function useSupabaseData() {
       case 'powersOfAttorney': return setPowersOfAttorney;
       case 'invoices': return setInvoices;
       case 'employees': return setEmployees;
-      case 'executions': return setExecutions;
-      case 'expenses': return setExpenses;
-      case 'messages': return setMessages;
-      case 'contracts': return setContracts;
       case 'audit_trails':
       case 'auditTrails': return setAuditTrails;
       case 'attachments': return setAttachments;
@@ -856,6 +848,9 @@ export function useSupabaseData() {
     invoices,
     employees,
     executions,
+    expenses,
+    messages,
+    contracts,
     auditTrails,
     attachments,
     clientPortal,
@@ -865,12 +860,6 @@ export function useSupabaseData() {
     payments,
     notifications,
     systemErrors,
-    expenses,
-    setExpenses,
-    messages,
-    setMessages,
-    contracts,
-    setContracts,
     loading,
     createRecord,
     upsertRecord,

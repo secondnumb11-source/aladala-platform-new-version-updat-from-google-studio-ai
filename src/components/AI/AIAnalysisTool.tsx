@@ -13,13 +13,10 @@ export default function AIAnalysisTool() {
   const [result, setResult] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  const [error, setError] = useState<string | null>(null);
-
   const handleAnalyze = async () => {
     if (!content.trim()) return;
     setIsLoading(true);
     setResult(null);
-    setError(null);
 
     try {
       const promptMap = {
@@ -48,12 +45,21 @@ export default function AIAnalysisTool() {
         4. المهل النظامية (مثل موعد الاستئناف).`
       };
 
-      const { callAnthropicAPI } = await import('@/lib/anthropic');
-      const responseText = await callAnthropicAPI(promptMap[analysisType]);
-      setResult(responseText);
-    } catch (e: any) {
+      const res = await fetch('/api/ai/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          messages: [{ role: 'user', content: promptMap[analysisType] }]
+        })
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        setResult(data.response);
+      }
+    } catch (e) {
       console.error(e);
-      setError(e.message || 'فشل التحليل الذكي.');
+      setResult('فشل التحليل الذكي.');
     } finally {
       setIsLoading(false);
     }
@@ -137,15 +143,7 @@ export default function AIAnalysisTool() {
             </div>
 
             <div className="flex-1 p-8 overflow-y-auto">
-              {error ? (
-                <div className="bg-red-50 border border-red-200 text-red-700 p-6 rounded-2xl flex flex-col items-center justify-center text-center space-y-4">
-                  <AlertCircle className="w-12 h-12 text-red-500" />
-                  <div>
-                    <h3 className="text-lg font-black mb-2">تعذر إكمال التحليل</h3>
-                    <p className="text-sm font-bold">{error}</p>
-                  </div>
-                </div>
-              ) : result ? (
+              {result ? (
                 <div className="space-y-6">
                   {/* We could parse the AI output here to show in a more structured way, but for now markdown-style text is fine */}
                   <div className="text-slate-800 text-sm font-bold leading-loose whitespace-pre-line text-justify font-sans bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">

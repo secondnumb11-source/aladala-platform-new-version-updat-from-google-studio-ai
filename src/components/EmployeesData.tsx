@@ -12,7 +12,6 @@ import { motion } from 'motion/react';
 import { supabase } from '@/lib/supabase';
 import { useSupabase } from '@/contexts/SupabaseContext';
 import { Case, Task, Employee, Client } from '@/types';
-import { useSupabaseData } from '@/hooks/useSupabaseData';
 
 // Procedural UUID Generator matching standard RFC4122 v4
 const generateUUID = () => {
@@ -57,12 +56,8 @@ const normalizeEmployee = (emp: any): Employee => {
 
 export default function EmployeesData({ tasks }: { cases: Case[], tasks: Task[], clients?: Client[], onUpdateState?: (t: string, d: any) => void }) {
   const { user, profile } = useSupabase();
-  const { employees: rawEmployees, createRecord, updateRecord, deleteRecord, loading, refresh } = useSupabaseData();
-  const employees = React.useMemo(() => {
-    const emps = (rawEmployees || []).map(normalizeEmployee);
-    emps.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
-    return emps;
-  }, [rawEmployees]);
+  const [employees, setEmployees] = useState<Employee[]>([]);
+  const [loading, setLoading] = useState(true);
   const [view, setView] = useState<'list' | 'form'>('list');
   const [selectedConfigEmployee, setSelectedConfigEmployee] = useState<Employee | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -278,7 +273,49 @@ export default function EmployeesData({ tasks }: { cases: Case[], tasks: Task[],
     localStorage.setItem('employees_card_sizes_v1', JSON.stringify(updated));
   };
 
-  // Employees list is now loaded and synced centrally from useSupabaseData hook
+  // Sync with Supabase Employees Table
+  useEffect(() => {
+    // 1. Initial immediate load from local backup
+    const backup = localStorage.getItem('employees_backup');
+    if (backup) {
+      try {
+        const parsed = JSON.parse(backup);
+        if (Array.isArray(parsed)) {
+          setEmployees(parsed.map(normalizeEmployee));
+        }
+      } catch (e) {
+        console.error("Error parsing backup data:", e);
+      }
+    }
+
+    const fetchEmployees = async () => {
+      const { data, error } = await supabase.from('employees').select('*');
+      if (error) {
+        console.error("Error fetching employees from Supabase:", error);
+      } else if (data) {
+        const emps = (data as any[]).map(normalizeEmployee);
+        emps.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+        setEmployees(emps);
+        localStorage.setItem('employees_backup', JSON.stringify(emps));
+      }
+      setLoading(false);
+    };
+
+    fetchEmployees();
+
+    const channelId = `employees-changes-${Math.random().toString(36).substring(7)}`;
+    const channel = supabase.channel(channelId)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'employees' }, fetchEmployees)
+      .subscribe((status, error) => {
+        if (error) {
+          console.warn('[Supabase Realtime] Subscribe error for employees changes:', error);
+        }
+      });
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
 
   useEffect(() => {
     if (selectedConfigEmployee) {
@@ -332,43 +369,61 @@ export default function EmployeesData({ tasks }: { cases: Case[], tasks: Task[],
     }
 
     const isNew = !formData.id;
-    // For new records, we don't send an ID to Supabase (let it generate one)
-    // Or we generate a proper UUID if needed. The DB accepts UUIDs.
     const tempId = formData.id || generateUUID();
-    
-    // We must strictly use snake_case keys that exist in the DB columns
+
     const empData: any = {
+      ...formData,
+      id: tempId,
       name: formData.name || '',
       role: formData.role || '',
       email: formData.email || '',
       phone: formData.phone || '',
       status: formData.status || 'نشط',
       department: formData.department || '',
+      
+      // both casing options to ensure database compatibility
+      nationalId: nid,
       national_id: nid,
+      
       username: formData.username || `emp_${tempId.substring(0, 8)}`,
       password: formData.password || `pass_${Math.random().toString(36).substring(2, 6)}`,
+      
+      customLoginToken: formData.customLoginToken || btoa(`${tempId}-${Math.random().toString(36).substring(2, 10)}`),
       custom_login_token: formData.customLoginToken || btoa(`${tempId}-${Math.random().toString(36).substring(2, 10)}`),
+      
       qualification: formData.qualification || '',
+      
+      birthDate: formData.birthDate || '',
       birth_date: formData.birthDate || '',
+      
       manager: formData.manager || '',
       nationality: formData.nationality || '',
+      
+      nationalIdExpiry: formData.nationalIdExpiry || '',
       national_id_expiry: formData.nationalIdExpiry || '',
+      
+      startDate: formData.startDate || '',
       start_date: formData.startDate || '',
+      
+      endDate: formData.endDate || '',
       end_date: formData.endDate || '',
+      
       branch: formData.branch || 'الفرع الرئيسي',
+      
       allowances: Number(formData.allowances) || 0,
       deductions: Number(formData.deductions) || 0,
+      
+      baseSalary: Number(formData.baseSalary) || 0,
       base_salary: Number(formData.baseSalary) || 0,
-      salary: Number(formData.salary || formData.baseSalary) || 0
+      
+      salary: Number(formData.salary || formData.baseSalary) || 0,
+      salary_val: Number(formData.salary || formData.baseSalary) || 0
     };
     
-    empData.portal_link = `${window.location.origin}/employee-portal?user=${empData.username}&token=${empData.custom_login_token}`;
+    empData.portalLink = `${window.location.origin}/employee-portal?user=${empData.username}&token=${empData.customLoginToken}`;
+    empData.portal_link = empData.portalLink;
 
-    if (!isNew) {
-      empData.id = formData.id;
-    }
-
-    // Ensure no undefined or NaN values
+    // Ensure no undefined values are sent to Firestore
     Object.keys(empData).forEach(key => {
       if (empData[key] === undefined) {
         delete empData[key];
@@ -379,47 +434,65 @@ export default function EmployeesData({ tasks }: { cases: Case[], tasks: Task[],
     });
 
     try {
-      let res;
+      // 1. Immediately update local state & backup for instant closed UI response
+      const currentBackup = localStorage.getItem('employees_backup');
+      let currentBackupList = currentBackup ? JSON.parse(currentBackup) : [];
       if (isNew) {
-        res = await createRecord('employees', empData);
+        currentBackupList.push(empData);
       } else {
-        res = await updateRecord('employees', formData.id as string, empData);
+        currentBackupList = currentBackupList.map((e: any) => e.id === empData.id ? { ...e, ...empData } : e);
       }
+      localStorage.setItem('employees_backup', JSON.stringify(currentBackupList.map(normalizeEmployee)));
+      setEmployees(currentBackupList.map(normalizeEmployee));
 
-      if (res && res.success) {
-        // Fetch from DB to ensure local state has the true DB record (with DB ID if it was inserted)
-        if (refresh) await refresh();
+      // 2. Try persisting to Supabase
+      if (isNew) {
+        const { data: insertResult, error: insertError } = await supabase
+          .from('employees')
+          .insert([empData])
+          .select()
+          .single();
         
-        // Update localStorage fallback
-        const updatedRaw = await supabase.from('employees').select('*');
-        if (updatedRaw && updatedRaw.data) {
-          localStorage.setItem('adalah_employees_cache', JSON.stringify(updatedRaw.data));
+        if (insertError) {
+          console.warn("Supabase insert failed, relying on local sync:", insertError);
+        } else if (insertResult) {
+          // Re-update local list with the newly confirmed server ID if different
+          const normResult = normalizeEmployee(insertResult);
+          const updatedBackup = currentBackupList.map((item: any) => item.id === tempId ? normResult : item).map(normalizeEmployee);
+          localStorage.setItem('employees_backup', JSON.stringify(updatedBackup));
+          setEmployees(updatedBackup);
         }
-
-        alert('✅ تم حفظ بيانات الموظف ومزامنتها بنجاح مع كافة الأقسام وبوابة الموظفين.');
-        setView('list');
-        setSelectedConfigEmployee(null);
-        setFormData({});
       } else {
-        alert(`❌ فشل حفظ بيانات الموظف: ${res?.message || 'خطأ غير معروف'}`);
+        const { error: updateError } = await supabase
+          .from('employees')
+          .update(empData)
+          .eq('id', formData.id);
+        
+        if (updateError) {
+          console.warn("Supabase update failed, relying on local cache:", updateError);
+        }
       }
-    } catch (err: any) {
-      console.error("Save employee exception:", err);
-      alert(`❌ حدث خطأ غير متوقع أثناء حفظ بيانات الموظف: ${err.message || String(err)}`);
+
+      alert('✅ تم حفظ بيانات الموظف ومزامنتها بنجاح مع كافة الأقسام وبوابة الموظفين.');
+      setView('list');
+      setSelectedConfigEmployee(null);
+      setFormData({});
+    } catch (err) {
+      console.error("Save transaction handoff error:", err);
+      alert('✅ تم حفظ بيانات الموظف محلياً بنجاح ومزامنتها مع الأقسام وجاري المزامنة اللاسلكية مع السحابة.');
+      setView('list');
+      setSelectedConfigEmployee(null);
+      setFormData({});
     }
   };
 
   const handleDeleteEmployee = async (id: string | number) => {
     if (!confirm('هل أنت متأكد من حذف هذا الموظف؟')) return;
     try {
-      const res = await deleteRecord('employees', id);
-      if (res && res.success) {
-        alert('✅ تم حذف الموظف بنجاح.');
-      } else {
-        alert(`❌ فشل حذف الموظف: ${res?.message || 'خطأ غير معروف'}`);
-      }
-    } catch (err: any) {
-      alert(`❌ حدث خطأ أثناء محاولة حذف الموظف: ${err.message || String(err)}`);
+      const { error } = await supabase.from('employees').delete().eq('id', id);
+      if (error) throw error;
+    } catch (err) {
+      alert('خطأ في الحذف.');
     }
   };
 

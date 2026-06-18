@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 
 export function useUserPreferences() {
@@ -23,18 +23,8 @@ export function useUserPreferences() {
 
   async function fetchPreferences() {
     try {
-      const local = localStorage.getItem('adalah_user_preferences');
-      if (local) {
-        try {
-          setPreferences(JSON.parse(local));
-        } catch (e) {}
-      }
-
       const { data, error } = await supabase.from('user_preferences').select('settings').single();
-      if (data && data.settings) {
-        setPreferences(data.settings);
-        localStorage.setItem('adalah_user_preferences', JSON.stringify(data.settings));
-      }
+      if (data) setPreferences(data.settings);
     } catch (e) {
       console.error('Error fetching preferences:', e);
     } finally {
@@ -42,26 +32,11 @@ export function useUserPreferences() {
     }
   }
 
-  const updatePreference = useCallback((key: string, value: any) => {
-    setPreferences((prevPrefs: any) => {
-      const newPrefs = { ...prevPrefs, [key]: value };
-      localStorage.setItem('adalah_user_preferences', JSON.stringify(newPrefs));
-      
-      // Fire-and-forget database upsert
-      (async () => {
-        try {
-          const { error } = await supabase.from('user_preferences').upsert({ settings: newPrefs });
-          if (error) {
-            console.error('Error updating preference in database:', error.message);
-          }
-        } catch (e) {
-          console.error('Error updating preference in database:', e);
-        }
-      })();
-        
-      return newPrefs;
-    });
-  }, []);
+  async function updatePreference(key: string, value: any) {
+    const newPrefs = { ...preferences, [key]: value };
+    setPreferences(newPrefs);
+    await supabase.from('user_preferences').upsert({ settings: newPrefs });
+  }
 
   return { preferences, updatePreference, loading };
 }

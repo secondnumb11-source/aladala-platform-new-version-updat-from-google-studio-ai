@@ -174,12 +174,6 @@ function AppContent() {
     payments,
     notifications,
     systemErrors,
-    expenses,
-    setExpenses,
-    messages,
-    setMessages,
-    contracts,
-    setContracts,
     setHearings,
     setDocuments,
     setInvoices,
@@ -324,9 +318,21 @@ function AppContent() {
     return () => window.removeEventListener('adalah-select-case', handleSelectCaseEvent);
   }, []);
 
-  // Connection Pulse State
-  const [connectionPulse, setConnectionPulse] = useState<{ latency: number, status: string } | null>(null);
+  // Connection status from navigator
+  const [isOnline, setIsOnline] = useState<boolean>(navigator.onLine);
 
+  useEffect(() => {
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
+
+  const [connectionPulse, setConnectionPulse] = useState<{ latency: number, status: string } | null>(null);
   useEffect(() => {
     const handlePulse = (e: any) => setConnectionPulse(e.detail);
     window.addEventListener('najiz-connection-pulse', handlePulse);
@@ -467,6 +473,9 @@ function AppContent() {
   const ALL_GRADIENT_THEMES = [...DARK_GRADIENT_THEMES, ...customThemes];
 
   // Core Data States Relocated to avoid TDZ errors in custom hooks
+  const [expenses, setExpenses] = useState<Expense[]>([]);
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [contracts, setContracts] = useState<any[]>([]);
   const [showArchivedNotice, setShowArchivedNotice] = useState(false);
   const [lastArchivedCount, setLastArchivedCount] = useState(0);
   const [lastArchivedIds, setLastArchivedIds] = useState<string[]>([]);
@@ -539,17 +548,7 @@ function AppContent() {
     return 'light';
   };
 
-  const [onlineStatus, setOnlineStatus] = useState<boolean>(navigator.onLine);
-  useEffect(() => {
-    const handleOnline = () => setOnlineStatus(true);
-    const handleOffline = () => setOnlineStatus(false);
-    window.addEventListener('online', handleOnline);
-    window.addEventListener('offline', handleOffline);
-    return () => {
-      window.removeEventListener('online', handleOnline);
-      window.removeEventListener('offline', handleOffline);
-    };
-  }, []);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   // Find active gradient setting
   const activeGradient = React.useMemo(() => {
@@ -645,7 +644,6 @@ function AppContent() {
         const isColoredStatus = /text-(red|emerald|green|rose|amber|blue|indigo)-/i.test(classStr) || 
                                 /bg-(red|emerald|green|rose|amber|blue|indigo)-/i.test(classStr) || 
                                 htmlEl.getAttribute('data-contrast-ignore') === 'true' ||
-                                htmlEl.closest('[data-contrast-ignore="true"]') !== null ||
                                 htmlEl.classList.contains('case-status-badge') || 
                                 htmlEl.closest('.case-status-badge') !== null;
         if (isColoredStatus) return;
@@ -991,56 +989,14 @@ function AppContent() {
     */
   }, []);
 
-  // Real-time backend state polling (2-way sync)
+  // Real-time backend state polling deprecated - relying on Supabase Realtime
   useEffect(() => {
-    let active = true;
-    const fetchState = async () => {
-      try {
-        const res = await fetch('/api/state');
-        if (res.ok) {
-          const data = await res.json();
-          if (active && data) {
-            // cases, clients, tasks, hearings, documents, invoices are handled by useSupabaseData
-            if (data.expenses) setExpenses(data.expenses);
-            if (data.messages) setMessages(data.messages);
-            if (data.contracts) setContracts(data.contracts);
-            if (data.hearingAlerts) {
-              setAlertMessages(data.hearingAlerts);
-            }
-          }
-        }
-      } catch (err) {
-        console.warn("Backend Sync API offline, using local memory state fallback:", err);
-      }
-    };
-
-    fetchState();
-    const interval = setInterval(fetchState, 3500); // Poll every 3.5 seconds
-    return () => {
-      active = false;
-      clearInterval(interval);
-    };
+    // No-op - relying on useSupabaseData hook
   }, []);
 
-  const syncWithBackend = (type: string, data: any) => {
-    return fetch('/api/state/update', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ type, data })
-    })
-    .then(async (res) => {
-      if (res.ok) {
-        const d = await res.json();
-        if (d.success && d.state) {
-          if (d.state.expenses) setExpenses(d.state.expenses);
-          if (d.state.messages) setMessages(d.state.messages);
-          if (d.state.contracts) setContracts(d.state.contracts);
-        }
-      }
-    })
-    .catch(err => {
-      console.warn("Update API offline - falling back to instant local React state:", err);
-    });
+  const syncWithBackend = async (type: string, data: any) => {
+    // Deprecated - use handleUpdateGlobalState which utilizes Supabase
+    return Promise.resolve();
   };
 
   // Listen for manual retries from the error toaster
@@ -1122,7 +1078,7 @@ function AppContent() {
       'clientPortal', 'client_portal', 'employeePortal', 'employee_portal',
       'attendance', 'leaveRequests', 'leave_requests', 'invoices', 'payments', 'vouchers',
       'notifications', 'auditTrails', 'audit_trails', 'systemErrors', 'system_errors',
-      'executions', 'expenses', 'messages', 'contracts'
+      'expenses', 'messages', 'contracts'
     ];
 
     if (managedTables.includes(type)) {
@@ -1155,10 +1111,9 @@ function AppContent() {
             case 'audit_trails': return (auditTrails || []).find(au => au.id === data.id);
             case 'systemErrors':
             case 'system_errors': return (systemErrors || []).find(s => s.id === data.id);
-            case 'executions': return (executions || []).find(ex => ex.id === data.id || ex.executionNumber === data.executionNumber);
-            case 'expenses': return (expenses || []).find(exp => exp.id === data.id);
+            case 'expenses': return (expenses || []).find(e => e.id === data.id);
             case 'messages': return (messages || []).find(m => m.id === data.id);
-            case 'contracts': return (contracts || []).find(con => con.id === data.id);
+            case 'contracts': return (contracts || []).find(c => c.id === data.id);
             default: return null;
           }
         })();
@@ -1203,13 +1158,8 @@ function AppContent() {
           return res; 
         }
 
-        if (type === 'messages' && data && data.sender !== 'lawyer') {
-          triggerBrowserNotification('تعليق جديد من العميل 💬', {
-            body: `العميل: ${data.senderName || 'بوابة العملاء'}\nالمضمون: ${data.text}`,
-            tag: `msg-${data.id || Date.now()}`
-          });
-        }
-
+        // Only sync if successful
+        syncWithBackend(type, data);
         return res;
 
       } catch (err: any) {
@@ -1235,7 +1185,40 @@ function AppContent() {
       }
     }
 
-    if (type === 'logout') {
+    // Send state change immediately to server
+    syncWithBackend(type, data);
+
+    // Instant local state transition fallback so user interaction is ultra-snappy
+    if (type === 'contracts') {
+      const exists = (contracts || []).some(c => c.id === data.id);
+      if (exists) {
+        setContracts(prev => prev.map(c => c.id === data.id ? { ...c, ...data } : c));
+      } else {
+        setContracts(prev => [data, ...prev]);
+      }
+    } else if (type === 'documents') {
+      setDocuments(prev => [data, ...prev]);
+    } else if (type === 'invoices') {
+      const exists = invoices.some(i => i.id === data.id);
+      if (exists) {
+        setInvoices(prev => prev.map(i => i.id === data.id ? { ...i, ...data } : i));
+      } else {
+        setInvoices(prev => [data, ...prev]);
+      }
+    } else if (type === 'messages') {
+      setMessages(prev => [...prev, data]);
+      // Trigger Web Browser Notification for client comments/messages
+      if (data && data.sender !== 'lawyer') {
+        triggerBrowserNotification('تعليق جديد من العميل 💬', {
+          body: `العميل: ${data.senderName || 'بوابة العملاء'}\nالمضمون: ${data.text}`,
+          tag: `msg-${data.id || Date.now()}`
+        });
+      }
+    } else if (type === 'stateOfPlatform') {
+      if (data.type === 'expenses') {
+        setExpenses(prev => [data.data, ...prev]);
+      }
+    } else if (type === 'logout') {
       handleLogout();
     } else if (type === 'updateCurrentUser') {
       setCurrentUser(data);
@@ -1575,24 +1558,6 @@ function AppContent() {
         {currentTab !== 'landing' ? (
           <RouteGuard isAuthenticated={isAuthenticated} setCurrentTab={setCurrentTab}>
             <React.Suspense fallback={<SkeletonLoader />}>
-            {/* Global Najiz Sync Indicator */}
-            {['cases', 'calendar', 'tasks', 'agencies', 'documents', 'executions'].includes(currentTab) && currentUser?.role !== 'client' && (
-              <div className="bg-[#0b1329] border border-amber-500/30 p-4 rounded-2xl mb-6 flex justify-between items-center shadow-lg mx-6 mt-2" dir="rtl">
-                <div className="flex items-center gap-4">
-                  <div className="bg-amber-500/10 p-2.5 rounded-xl border border-amber-500/20">
-                    <RefreshCw className="w-6 h-6 text-amber-500" />
-                  </div>
-                  <div>
-                    <h3 className="text-white text-sm font-black tracking-tight">مزامنة بوابة ناجز</h3>
-                    <p className="text-slate-300 text-[11px] mt-1 font-bold">آخر تحديث: {localStorage.getItem('najizLastSync') ? new Date(parseInt(localStorage.getItem('najizLastSync') || '0')).toLocaleString('ar-SA') : 'لم تتم المزامنة بعد'}</p>
-                  </div>
-                </div>
-                <button onClick={() => setCurrentTab('najiz')} className="bg-[#D4AF37] hover:bg-amber-500 text-[#0b1329] font-black px-5 py-2.5 rounded-xl text-xs transition-all shadow-md hover:shadow-lg">
-                  استيراد أحدث البيانات
-                </button>
-              </div>
-            )}
-
             {currentTab === 'dashboard' && (
               <Dashboard 
                 cases={employeeFilteredCases}
@@ -1639,7 +1604,6 @@ function AppContent() {
             clients={employeeFilteredClients}
             cases={employeeFilteredCases}
             onUpdateState={handleUpdateGlobalState}
-            onDeleteState={(type, id) => deleteRecord(type, id)}
           />
         )}
 
@@ -1770,7 +1734,6 @@ function AppContent() {
               tasks={tasks}
               invoices={invoices}
               onUpdateState={handleUpdateGlobalState}
-              onDeleteState={(type, id) => deleteRecord(type, id)}
             />
           </React.Suspense>
         )}
@@ -1827,13 +1790,6 @@ function AppContent() {
           <GCalSyncSettings />
         )}
 
-        {currentTab === 'wscat' && (
-          <WscatModule />
-        )}
-
-        {currentTab === 'websocket-echo' && (
-          <WebSocketEcho />
-        )}
 
         {currentTab === 'supabase' && (
           <div className="max-w-4xl mx-auto space-y-6">
@@ -1911,98 +1867,7 @@ function AppContent() {
         selectedRole={selectedRole} 
       />
 
-      {supaDiagnosticAlert && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm" dir="rtl">
-          <div className="w-full max-w-lg bg-[#0c1427] border-2 border-amber-500/30 rounded-2xl p-6 shadow-2xl relative text-right">
-            <button 
-              onClick={() => setSupaDiagnosticAlert(null)}
-              className="absolute top-4 left-4 text-slate-400 hover:text-white transition-colors"
-            >
-              <X className="w-5 h-5" />
-            </button>
-            
-            <div className="flex items-center gap-3 mb-5 text-amber-500">
-              <AlertTriangle className="w-6 h-6 animate-bounce" />
-              <h3 className="text-lg font-black font-sans text-amber-400">تنبيه المزامنة السحابية</h3>
-            </div>
 
-            <div className="space-y-4">
-              <div className="bg-red-500/10 border border-red-500/20 p-3 rounded-xl text-xs text-red-200">
-                <span className="font-bold">الحالة: {supaDiagnosticAlert.code}</span> - {supaDiagnosticAlert.message}
-              </div>
-
-              {supaDiagnosticAlert.code === '42501' || String(supaDiagnosticAlert.message).toLowerCase().includes('security policy') || String(supaDiagnosticAlert.message).toLowerCase().includes('row-level security') ? (
-                <div className="bg-emerald-950/20 border border-emerald-500/20 p-4 rounded-xl space-y-3">
-                  <p className="text-[11px] text-emerald-400 font-black flex items-center gap-1.5">
-                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                    نظام التنبيه الاستباقي للـ RLS:
-                  </p>
-                  <p className="text-[10px] text-slate-300">
-                    لقد وجدنا أن سياسة الوصول تحظر الحفظ في جدول <code className="bg-[#050b14] px-1.5 py-0.5 rounded text-amber-400 font-mono font-bold">public.{supaDiagnosticAlert.table || 'cases'}</code>. لتخطي هذا الحظر، يمكنك لصق الأمر التالي في الـ SQL Console:
-                  </p>
-                  <div className="bg-[#050b14] border border-slate-800 p-2.5 rounded text-[11px] font-mono text-white flex justify-between items-center text-left" dir="ltr">
-                    <span className="overflow-x-auto whitespace-nowrap block max-w-[280px]">{`ALTER TABLE public.${supaDiagnosticAlert.table || 'cases'} DISABLE ROW LEVEL SECURITY;`}</span>
-                    <button 
-                      onClick={() => {
-                        navigator.clipboard.writeText(`ALTER TABLE public.${supaDiagnosticAlert.table || 'cases'} DISABLE ROW LEVEL SECURITY;`);
-                        alert('📋 تم نسخ كود كسر حظر حماية الصفوف للجدول بنجاح! توجه لقسم DevOps ولصقه في الـ SQL Console لتنفيذه.');
-                      }}
-                      className="mr-2 py-1 px-2.5 bg-emerald-500 text-slate-950 text-[9px] font-black rounded hover:bg-emerald-400 transition-colors cursor-pointer"
-                    >
-                      نسخ 📋
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <div className="bg-amber-500/5 border border-amber-500/10 p-3 rounded-xl text-[10px] text-amber-400 font-bold leading-relaxed">
-                ℹ️ يمكن تلافي خطأ <strong>{supaDiagnosticAlert.code || 'RLS Violation'}</strong> بمراجعة سياسات Row-Level Security في لوحة إدارة الـ DevOps للتأكد من امتلاك المستخدم للصلاحية المناسبة للعملية.
-              </div>
-            )}
-
-            {supaDiagnosticAlert.details && (
-              <div className="bg-slate-900 border border-white/5 p-3 rounded-xl text-right">
-                <span className="text-slate-400 text-[10px] block font-bold mb-1">تفاصيل تشخيصية تقنية (SQL / Auth):</span>
-                <pre className="text-[10px] font-mono text-slate-300 whitespace-pre-wrap break-all max-h-[120px] overflow-y-auto text-left" dir="ltr">
-                  {supaDiagnosticAlert.details}
-                </pre>
-              </div>
-            )}
-          </div>
-
-          <div className="flex items-center gap-2 mt-6">
-            <button
-              onClick={() => {
-                setCurrentTab('database-devops');
-                setSupaDiagnosticAlert(null);
-              }}
-              className="flex-1 bg-amber-500 hover:bg-amber-600 text-slate-950 font-black text-xs py-2.5 px-4 rounded-xl transition-all shadow-lg shadow-amber-500/20 text-center cursor-pointer"
-            >
-              التوجه للـ DevOps لتشغيل كود الإصلاح
-            </button>
-            <button
-              onClick={() => {
-                setCurrentTab('settings');
-                setSupaDiagnosticAlert(null);
-                setTimeout(() => {
-                  const el = document.getElementById('database-issues-tab-btn');
-                  if (el) el.click();
-                }, 100);
-              }}
-              className="bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs py-2.5 px-4 rounded-xl transition-all cursor-pointer"
-              title="معاينة قاعة المشاكل والسجلات"
-            >
-              السجلات التفصيلية
-            </button>
-            <button
-              onClick={() => setSupaDiagnosticAlert(null)}
-              className="bg-slate-900 border border-slate-800 hover:bg-slate-850 text-slate-400 font-bold text-xs py-2.5 px-3 rounded-xl transition-all cursor-pointer"
-            >
-              إغلاق
-            </button>
-          </div>
-        </div>
-      </div>
-    )}
 
       {/* Dynamic Custom Dark Gradients live-preview stylesheet */}
       <style id="live-preview-styles">

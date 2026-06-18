@@ -2,129 +2,72 @@
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
-  <title>منصة العدالة - مزامنة ناجز</title>
+  <title>Najiz Sync</title>
   <style>
     body {
-      width: 320px;
-      margin: 0;
-      padding: 0;
+      width: 300px;
+      padding: 16px;
+      font-family: Arial, sans-serif;
       background-color: #0b1329;
       color: #FFFFFF;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      border: 1px solid #D4AF37;
-    }
-    .header {
-      background: #0f172a;
-      border-bottom: 2px solid #D4AF37;
-      padding: 15px;
-      text-align: center;
-    }
-    .header h2 {
       margin: 0;
-      font-size: 18px;
-      color: #D4AF37;
     }
-    .container {
-      padding: 15px;
+    h2 {
+      color: #FACC15;
+      font-size: 16px;
+      margin-top: 0;
+      border-bottom: 1px solid #D4AF37;
+      padding-bottom: 8px;
     }
-    .stats-card {
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid rgba(212, 175, 55, 0.3);
-      border-radius: 8px;
-      padding: 10px;
-      margin-bottom: 15px;
-    }
-    .stats-card h3 {
-      margin: 0 0 10px 0;
-      font-size: 14px;
-      color: #D4AF37;
-      text-align: center;
-    }
-    .stat-row {
-      display: flex;
-      justify-content: space-between;
-      margin-bottom: 5px;
-      font-size: 13px;
-    }
-    .stat-value {
-      font-weight: bold;
-      color: #D4AF37;
-    }
-    .settings-panel {
-      margin-bottom: 15px;
-    }
-    .settings-panel label {
-      display: block;
-      font-size: 12px;
-      margin-bottom: 5px;
-      color: #cbd5e1;
-    }
-    .settings-panel input {
-      width: 100%;
-      padding: 8px;
-      box-sizing: border-box;
-      background: #1e293b;
-      border: 1px solid #D4AF37;
-      border-radius: 4px;
-      color: #FFFFFF;
-      direction: ltr;
-    }
-    .btn-sync {
-      width: 100%;
-      padding: 12px;
-      background: #D4AF37;
+    .btn {
+      background-color: #D4AF37;
       color: #0b1329;
       border: none;
-      border-radius: 6px;
-      font-size: 16px;
+      padding: 10px;
+      width: 100%;
+      border-radius: 8px;
       font-weight: bold;
       cursor: pointer;
-      transition: opacity 0.2s;
-    }
-    .btn-sync:hover {
-      opacity: 0.9;
-    }
-    .btn-sync:disabled {
-      background: #64748b;
-      color: #cbd5e1;
-      cursor: not-allowed;
-    }
-    .status-msg {
       margin-top: 10px;
-      font-size: 12px;
-      text-align: center;
-      color: #10b981;
-      display: none;
     }
-    .error-msg {
-      color: #ef4444;
+    .btn:hover {
+      background-color: #FACC15;
+    }
+    .status {
+      margin-top: 12px;
+      font-size: 12px;
+      color: #FFFFFF;
+    }
+    label {
+      color: #FACC15;
+      font-size: 12px;
+      font-weight: bold;
+      display: block;
+      margin-top: 10px;
+    }
+    input {
+      width: 100%;
+      box-sizing: border-box;
+      background-color: #090f20;
+      border: 1px solid #D4AF37;
+      color: #FFFFFF;
+      padding: 8px;
+      border-radius: 6px;
+      margin-top: 4px;
     }
   </style>
 </head>
 <body>
-  <div class="header">
-    <h2>منصة العدالة - المزامنة</h2>
-  </div>
+  <h2>مزامنة بيانات ناجز</h2>
   
-  <div class="container">
-    <div class="settings-panel">
-      <label for="systemUrl">رابط النظام (System URL)</label>
-      <input type="text" id="systemUrl" placeholder="http://localhost:3000" />
-    </div>
-
-    <div class="stats-card">
-      <h3>البيانات المكتشفة في ناجز</h3>
-      <div class="stat-row"><span>القضايا:</span> <span class="stat-value" id="count-cases">0</span></div>
-      <div class="stat-row"><span>الجلسات:</span> <span class="stat-value" id="count-hearings">0</span></div>
-      <div class="stat-row"><span>الوكالات:</span> <span class="stat-value" id="count-agencies">0</span></div>
-      <div class="stat-row"><span>طلبات التنفيذ:</span> <span class="stat-value" id="count-executions">0</span></div>
-      <div class="stat-row"><span>الصكوك والأحكام:</span> <span class="stat-value" id="count-judgments">0</span></div>
-    </div>
-
-    <button id="btnSync" class="btn-sync">مزامنة الآن</button>
-    <div id="statusMsg" class="status-msg"></div>
-  </div>
-
+  <label>API URL</label>
+  <input type="text" id="apiUrl" placeholder="رابط الواجهة البرمجية">
+  
+  <label>API Key</label>
+  <input type="password" id="apiKey" placeholder="مفتاح الوصول">
+  
+  <button class="btn" id="syncBtn">مزامنة الآن</button>
+  <div class="status" id="statusMessage"></div>
   <script src="popup.js"></script>
 </body>
 </html>

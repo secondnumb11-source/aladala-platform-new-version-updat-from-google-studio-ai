@@ -1,146 +1,83 @@
-let extractedData = {
-  cases: [],
-  hearings: [],
-  agencies: [],
-  executions: [],
-  judgments: []
-};
-
-function notifyPopup() {
-  chrome.runtime.sendMessage({ action: 'statsUpdated' }).catch(() => {});
-}
-
-// Function to extract data based on specific patterns
-function scanNajizDOM() {
-  let newDataFound = false;
-  
-  // Cases Extraction
-  const caseRows = document.querySelectorAll('tr, .case-card, .row');
-  caseRows.forEach(row => {
-    const text = row.textContent || '';
-    if (text.includes('قضية') || text.includes('رقم القضية') || text.includes('حالة الدعوى')) {
-      const numberMatch = text.match(/\d{8,15}/);
-      if (numberMatch && !extractedData.cases.some(c => c.caseNumber === numberMatch[0])) {
-        extractedData.cases.push({
-          rawText: text,
-          caseNumber: numberMatch[0],
-          rawTitle: text.substring(0, 50).replace(/\s+/g, ' ').trim()
-        });
-        newDataFound = true;
-      }
-    }
-  });
-
-  // Hearings Extraction
-  const hearingRows = document.querySelectorAll('tr, .hearing-card, .session-card');
-  hearingRows.forEach(row => {
-    const text = row.textContent || '';
-    if (text.includes('جلسة') || text.includes('موعد') || text.includes('تداول')) {
-      const dateMatch = text.match(/\d{4}[\-\/]\d{2}[\-\/]\d{2}/) || text.match(/\d{2}[\-\/]\d{2}[\-\/]\d{4}/);
-      const timeMatch = text.match(/\d{1,2}:\d{2}/);
-      if (dateMatch && !extractedData.hearings.some(h => h.rawText === text)) {
-        extractedData.hearings.push({
-          rawText: text,
-          rawDate: dateMatch[0],
-          time: timeMatch ? timeMatch[0] : '09:00',
-          rawTitle: text.substring(0, 50).replace(/\s+/g, ' ').trim()
-        });
-        newDataFound = true;
-      }
-    }
-  });
-
-  // Agencies Extraction
-  const agencyRows = document.querySelectorAll('tr, .agency-card, .poa-card');
-  agencyRows.forEach(row => {
-    const text = row.textContent || '';
-    if (text.includes('وكالة') || text.includes('تفويض')) {
-      const numberMatch = text.match(/\d{8,15}/);
-      if (numberMatch && !extractedData.agencies.some(a => a.poa_number === numberMatch[0])) {
-        extractedData.agencies.push({
-          rawText: text,
-          poa_number: numberMatch[0],
-          rawTitle: text.substring(0, 50).replace(/\s+/g, ' ').trim()
-        });
-        newDataFound = true;
-      }
-    }
-  });
-
-  // Executions Extraction
-  const execRows = document.querySelectorAll('tr, .execution-card');
-  execRows.forEach(row => {
-    const text = row.textContent || '';
-    if (text.includes('تنفيذ') || text.includes('طلب تنفيذ')) {
-      const numberMatch = text.match(/\d{8,15}/);
-      if (numberMatch && !extractedData.executions.some(e => e.exec_number === numberMatch[0])) {
-        extractedData.executions.push({
-          rawText: text,
-          exec_number: numberMatch[0],
-          rawTitle: text.substring(0, 50).replace(/\s+/g, ' ').trim()
-        });
-        newDataFound = true;
-      }
-    }
-  });
-
-  // Judgments Extraction
-  const judgmentRows = document.querySelectorAll('tr, .judgment-card');
-  judgmentRows.forEach(row => {
-    const text = row.textContent || '';
-    if (text.includes('صك') || text.includes('حكم') || text.includes('قرار')) {
-      const numberMatch = text.match(/\d{8,15}/);
-      if (numberMatch && !extractedData.judgments.some(j => j.judgment_number === numberMatch[0])) {
-        extractedData.judgments.push({
-          rawText: text,
-          judgment_number: numberMatch[0],
-          rawTitle: text.substring(0, 50).replace(/\s+/g, ' ').trim()
-        });
-        newDataFound = true;
-      }
-    }
-  });
-
-  if (newDataFound) {
-    notifyPopup();
-  }
-}
-
-// Observe DOM mutations to catch AJAX-loaded data
-const observer = new MutationObserver((mutations) => {
-  let shouldScan = false;
-  for (let mutation of mutations) {
-    if (mutation.addedNodes.length > 0) {
-      shouldScan = true;
-      break;
-    }
-  }
-  if (shouldScan) {
-    scanNajizDOM();
-  }
-});
-
-observer.observe(document.body, { childList: true, subtree: true });
-
-// Initial scan
-setTimeout(scanNajizDOM, 1000);
-
-// Listen to requests from popup
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  if (request.action === 'getStats') {
-    sendResponse({
-      stats: {
-        cases: extractedData.cases.length,
-        hearings: extractedData.hearings.length,
-        agencies: extractedData.agencies.length,
-        executions: extractedData.executions.length,
-        judgments: extractedData.judgments.length
+  if (request.action === 'syncData') {
+    // 1. Scraping Najiz elements
+    const rawDataObjects = [];
+    
+    // Naively extract chunks of data from DOM that look like our targets
+    // Example CSS selectors for structural blocks (Najiz specific or generic placeholders)
+    const blocks = document.querySelectorAll('div, table, tr, li, .card, .row');
+    
+    blocks.forEach(block => {
+      // Basic text extraction
+      const text = block.textContent || '';
+      if (text.length > 20 && text.length < 500) {
+        // Look for numbers like case numbers, IDs
+        const numbers = text.match(/\d{8,14}/g) || [];
+        if (text.includes('قضية') || text.includes('جلسة') || text.includes('وكالة') || text.includes('تنفيذ')) {
+          rawDataObjects.push({
+            type: 'unknown',
+            payload: {
+              rawText: text,
+              number: numbers[0] || 'غير متوفر',
+              date: new Date().toISOString()
+            }
+          });
+        }
       }
     });
-  } else if (request.action === 'extractData') {
-    // Force a fresh scan before returning
-    scanNajizDOM();
-    sendResponse({ data: extractedData });
+
+    // We can also extract structured data from window variables if available
+    // e.g. window.__INITIAL_STATE__ etc.
+    
+    const scripts = document.querySelectorAll('script');
+    scripts.forEach(s => {
+      if (s.textContent?.includes('window.__INITIAL_STATE__')) {
+        try {
+          const match = s.textContent.match(/window\.__INITIAL_STATE__\s*=\s*(.*?);/);
+          if (match && match[1]) {
+             const json = JSON.parse(match[1]);
+             if (json.cases) rawDataObjects.push({ type: 'cases', payload: json.cases });
+             if (json.sessions) rawDataObjects.push({ type: 'sessions', payload: json.sessions });
+             if (json.agencies) rawDataObjects.push({ type: 'agencies', payload: json.agencies });
+             if (json.enforcements) rawDataObjects.push({ type: 'executions', payload: json.enforcements });
+          }
+        } catch(e) {}
+      }
+    });
+
+    // 2. Classify Data
+    const classified = typeof AIClassifier !== 'undefined' 
+       ? AIClassifier.classifyNajizData(rawDataObjects) 
+       : { 
+           cases: [], 
+           hearings: [], 
+           agencies: [], 
+           executions: [], 
+           case_requests: [],
+           minutes: [],
+           clients: [], 
+           documents: [] 
+         };
+
+    // 3. Post to SaaS Backend
+    fetch(request.apiUrl + '/api/sync-najiz', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + request.apiKey
+      },
+      body: JSON.stringify({
+        source_url: window.location.href,
+        data: classified
+      })
+    })
+    .then(r => r.json())
+    .then(data => {
+      sendResponse({ success: true, count: rawDataObjects.length, classified });
+    }).catch(err => {
+      sendResponse({ success: false, error: err.toString() });
+    });
+      
+    return true; // async response
   }
-  return true;
 });

@@ -110,64 +110,23 @@ WITH CHECK (true);
 GRANT ALL ON TABLE public.${table} TO anon, authenticated, service_role;
 `;
 
-  // Log to database system_errors table asynchronously
-  (async () => {
-    try {
-      const errorRecord = {
-        id: 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-          const r = Math.random() * 16 | 0;
-          const v = c === 'x' ? r : (r & 0x3 | 0x8);
-          return v.toString(16);
-        }),
-        message: `RLS policy friction detected on table "${table}": ${error.message || 'Row Level Security error'}`,
-        stack: `SQL instructions:\n\n${sqlCode}\n\nOriginal Error details: ${JSON.stringify(error)}`,
-        component: 'Supabase RLS Guard',
-        severity: 'error',
-        created_at: new Date().toISOString()
-      };
-      
-      await supabase.from('system_errors').insert([errorRecord]);
-      console.log('[RLS Policy Analyzer] Successfully logged RLS error to system_errors table.');
-    } catch (err) {
-      console.error('[RLS Policy Analyzer] Failed to log RLS error to database:', err);
+  // Dispatch a custom event to show a beautiful floating modal/toaster in the UI if possible
+  window.dispatchEvent(new CustomEvent('adalah_rls_friction_detected', {
+    detail: {
+      table,
+      error,
+      message: `لم تتمكن المنصة من حفظ البيانات في جدول "${table}" بسبب قيود سياسة RLS 42501. يرجى تنفيذ كود الإصلاح المجهز أدناه.`,
+      sqlCode,
+      consoleUrl: 'https://supabase.com/dashboard/project/_/sql',
+      source: 'Supabase RLS Guard'
     }
-  })();
+  }));
 
-  // Check if current user has admin permissions
-  let isAdminUser = false;
-  try {
-    const supabaseSessionStr = localStorage.getItem('sb-sydcelofkzvtsfatxnka-auth-token') || localStorage.getItem('supabase.auth.token');
-    if (supabaseSessionStr) {
-      const parsedSession = JSON.parse(supabaseSessionStr);
-      const userRole = parsedSession?.user?.role;
-      if (userRole === 'admin' || userRole === 'service_role') {
-        isAdminUser = true;
-      }
-    }
-    
-    const profileStr = localStorage.getItem('profile');
-    if (profileStr) {
-      const parsedProfile = JSON.parse(profileStr);
-      if (parsedProfile?.role === 'admin') {
-        isAdminUser = true;
-      }
-    }
-  } catch (e) {
-    console.error('[RLS Policy Analyzer] Error checking user role:', e);
-  }
-
-  // Dispatch event to display only to technical administrator
-  if (isAdminUser) {
-    window.dispatchEvent(new CustomEvent('adalah_rls_friction_detected', {
-      detail: {
-        table,
-        error,
-        message: `تنبيه للمدير التقني: لم تتمكن المنصة من حفظ البيانات في جدول "${table}" بسبب قيود سياسة RLS 42501. تم تسجيل الخطأ في قاعدة البيانات.`,
-        sqlCode,
-        consoleUrl: 'https://supabase.com/dashboard/project/_/sql',
-        source: 'Supabase RLS Guard'
-      }
-    }));
+  if (typeof window !== 'undefined') {
+    // Copy sqlCode to clipboard automatically
+    navigator.clipboard.writeText(sqlCode).catch(err => {
+      console.error('[RLS Policy Analyzer] Clipboard write failed:', err);
+    });
   }
 }
 

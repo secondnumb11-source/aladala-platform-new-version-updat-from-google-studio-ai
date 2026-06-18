@@ -23,55 +23,56 @@ export default function AISwotTool() {
   const [content, setContent] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [swotResult, setSwotResult] = useState<any>(null);
-  const [error, setError] = useState<string | null>(null);
 
   const handleSwotAnalysis = async () => {
     if (!content.trim()) return;
     setIsLoading(true);
     setSwotResult(null);
-    setError(null);
 
     try {
-      const prompt = `قم بإجراء تحليل SWOT (نقاط القوة، نقاط الضعف، الفرص، التهديدات) لهذه الصحيفة/اللائحة القانونية بناءً على الأنظمة القضائية السعودية المعاصرة (مثل نظام المعاملات المدنية، نظام الإثبات، نظام المرافعات الشرعية).
-      
-      كما يرجى اقتراح دفوع قانونية إضافية (Suggested Legal Defenses) مدعومة بالنصوص النظامية ذات الصلة لتقوية الموقف القضائي.
-      
-      ${content}
-      
-      المطلوب إرجاع النتيجة بتنسيق JSON يحتوي على:
-      {
-        "strengths": ["نقطة 1", ...],
-        "weaknesses": ["نقطة 1", ...],
-        "opportunities": ["نقطة 1", ...],
-        "threats": ["نقطة 1", ...],
-        "suggestedDefenses": ["دفع مع النص النظامي 1", ...],
-        "legalAdvice": "نصيحة قانونية ختامية شاملة"
-      }`;
+      const res = await fetch('/api/ai/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          messages: [{
+            role: 'user',
+            content: `قم بإجراء تحليل SWOT (نقاط القوة، نقاط الضعف، الفرص، التهديدات) لهذه الصحيفة/اللائحة القانونية بناءً على الأنظمة القضائية السعودية المعاصرة (مثل نظام المعاملات المدنية، نظام الإثبات، نظام المرافعات الشرعية).
+            
+            كما يرجى اقتراح دفوع قانونية إضافية (Suggested Legal Defenses) مدعومة بالنصوص النظامية ذات الصلة لتقوية الموقف القضائي.
+            
+            ${content}
+            
+            المطلوب إرجاع النتيجة بتنسيق JSON يحتوي على:
+            {
+              "strengths": ["نقطة 1", ...],
+              "weaknesses": ["نقطة 1", ...],
+              "opportunities": ["نقطة 1", ...],
+              "threats": ["نقطة 1", ...],
+              "suggestedDefenses": ["دفع مع النص النظامي 1", ...],
+              "legalAdvice": "نصيحة قانونية ختامية شاملة"
+            }`
+          }]
+        })
+      });
 
-      const { callAnthropicAPI } = await import('@/lib/anthropic');
-      const responseText = await callAnthropicAPI(prompt);
-      
-      try {
-        const jsonMatch = responseText.match(/\{[\s\S]*\}/);
-        if (jsonMatch) {
-          const parsed = JSON.parse(jsonMatch[0]);
+      const data = await res.json();
+      if (data.success) {
+        try {
+          const parsed = JSON.parse(data.response.replace(/```json|```/g, ''));
           setSwotResult(parsed);
-        } else {
-          throw new Error('لم يتم إرجاع JSON صالح');
+        } catch {
+          setSwotResult({
+            strengths: [data.response],
+            weaknesses: [],
+            opportunities: [],
+            threats: [],
+            suggestedDefenses: [],
+            legalAdvice: "لم يتمكن المحرك من تصنيف البيانات بدقة كـ JSON، يرجى مراجعة النص أعلاه."
+          });
         }
-      } catch {
-        setSwotResult({
-          strengths: [responseText],
-          weaknesses: [],
-          opportunities: [],
-          threats: [],
-          suggestedDefenses: [],
-          legalAdvice: "لم يتمكن المحرك من تصنيف البيانات بدقة كـ JSON، يرجى مراجعة النص أعلاه."
-        });
       }
-    } catch (e: any) {
+    } catch (e) {
       console.error(e);
-      setError(e.message || 'حدث خطأ أثناء معالجة التحليل.');
     } finally {
       setIsLoading(false);
     }
@@ -132,16 +133,10 @@ export default function AISwotTool() {
             </div>
 
             <div className="flex-1 p-8 overflow-y-auto">
-              {!swotResult && !isLoading && !error ? (
+              {!swotResult && !isLoading ? (
                 <div className="h-full flex flex-col items-center justify-center text-center opacity-30 py-20">
                   <Search className="w-16 h-16 text-white font-bold mb-4" />
                   <p className="text-sm font-bold">يرجى إدخال النص لبدء المعالجة العميقة...</p>
-                </div>
-              ) : error ? (
-                <div className="flex flex-col items-center justify-center h-full py-20 space-y-4">
-                  <AlertTriangle className="w-16 h-16 text-rose-500" />
-                  <h3 className="text-lg font-black text-slate-900">فشل التحليل</h3>
-                  <p className="text-sm font-bold text-rose-600">{error}</p>
                 </div>
               ) : swotResult ? (
                 <div className="space-y-8 animate-fade-in">

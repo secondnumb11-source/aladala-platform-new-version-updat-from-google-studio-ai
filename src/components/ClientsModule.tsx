@@ -35,8 +35,8 @@ import { generateUUID } from '@/lib/uuid';
 
 interface ClientsModuleProps {
   clients: Client[];
+  cases: Case[];
   onUpdateState: (type: string, data: any) => any;
-  onDeleteState?: (type: string, id: string) => any;
 }
 
 // Module-level in-memory cache for Google Access Token
@@ -45,8 +45,7 @@ let cachedGoogleAccessToken: string | null = null;
 export default function ClientsModule({
   clients,
   cases,
-  onUpdateState,
-  onDeleteState
+  onUpdateState
 }: ClientsModuleProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [isAdding, setIsAdding] = useState(false);
@@ -64,7 +63,6 @@ export default function ClientsModule({
   const [newEmail, setNewEmail] = useState('');
   const [newUsername, setNewUsername] = useState('');
   const [newPassword, setNewPassword] = useState('');
-  const [editingId, setEditingId] = useState<string | null>(null);
   
   // Message Template Schema
   interface MessageTemplate {
@@ -140,81 +138,38 @@ export default function ClientsModule({
     e.preventDefault();
     if (!newName || !newNationalId) return;
 
-    if (editingId) {
-      const existing = clients.find(c => c.id === editingId);
-      if (existing) {
-        const updatedCl = {
-          ...existing,
-          name: newName,
-          isCompany: newIsCompany,
-          nationalId: newNationalId,
-          phone: newPhone,
-          email: newEmail,
-          portalUsername: newUsername || existing.portalUsername,
-          portalPassword: newPassword || existing.portalPassword
-        };
-        const res = await onUpdateState('clients', updatedCl);
-        if (!res || res.success === false) {
-           alert(`فشل التحديث: ${res?.message || 'الرجاء مراجعة البيانات والمحاولة مرة أخرى.'}`);
-           return;
-        }
-        alert(`✅ تم تحديث بيانات الموكل ${updatedCl.name} بنجاح.`);
-      }
-    } else {
-      const token = generateUUID();
-      const genUser = generateUsername(newName, newNationalId);
-      const genPass = generatePassword();
+    const token = generateUUID();
+    const genUser = generateUsername(newName, newNationalId);
+    const genPass = generatePassword();
 
-      const newCl: Client = {
-        id: generateUUID(),
-        name: newName,
-        isCompany: newIsCompany,
-        nationalId: newNationalId,
-        phone: newPhone,
-        email: newEmail,
-        portalUsername: newUsername || genUser,
-        portalPassword: newPassword || genPass,
-        portalToken: token,
-        portalLink: `/portal?token=${token}`
-      };
+    const newCl: Client = {
+      id: generateUUID(),
+      name: newName,
+      isCompany: newIsCompany,
+      nationalId: newNationalId,
+      phone: newPhone,
+      email: newEmail,
+      portalUsername: newUsername || genUser,
+      portalPassword: newPassword || genPass,
+      portalToken: token,
+      portalLink: `/portal?token=${token}`
+    };
 
-      const res = await onUpdateState('clients', newCl);
-      if (!res || res.success === false) {
-         alert(`فشل الحفظ: ${res?.message || 'الرجاء مراجعة البيانات والمحاولة مرة أخرى.'}`);
-         return;
-      }
-      alert(`✅ تم إضافة الموكل ${newCl.name} بنجاح.`);
+    const res = await onUpdateState('clients', newCl);
+    if (res && res.success === false && res.errorType === 'validation') {
+       alert(`فشل التحقق من صحة البيانات: ${res.message}`);
+       return;
     }
 
     setIsAdding(false);
-    setEditingId(null);
     setNewName('');
     setNewNationalId('');
     setNewPhone('+9665');
     setNewEmail('');
     setNewUsername('');
     setNewPassword('');
-  };
-
-  const handleEditClient = (cl: Client) => {
-    setEditingId(cl.id);
-    setNewName(cl.name);
-    setNewIsCompany(cl.isCompany || false);
-    setNewNationalId(cl.nationalId);
-    setNewPhone(cl.phone);
-    setNewEmail(cl.email || "");
-    setNewUsername(cl.portalUsername || "");
-    setNewPassword(cl.portalPassword || "");
-    setIsAdding(true);
-  };
-
-  const handleDeleteClient = async (id: string) => {
-    if (window.confirm('هل أنت متأكد من حذف الموكل؟ سيؤدي ذلك لإنهاء ارتباطه بالقضايا الحالية.')) {
-      if (onDeleteState) {
-        await onDeleteState('clients', id);
-        alert('تم الحذف بنجاح.');
-      }
-    }
+    
+    alert(`✅ تم إضافة الموكل ${newCl.name} بنجاح.`);
   };
 
   const handleTriggerWhatsApp = () => {
@@ -400,25 +355,9 @@ export default function ClientsModule({
                   <div className="p-3 bg-slate-50 rounded-xl border border-slate-100 text-amber-400 font-black">
                     {cl.isCompany ? <Globe className="w-5 h-5" /> : <UserCheck className="w-5 h-5" />}
                   </div>
-                  <div className="flex gap-2">
-                    <button 
-                      onClick={() => handleEditClient(cl)}
-                      className="p-1.5 bg-blue-50 hover:bg-blue-100 text-blue-500 rounded-lg transition-colors border border-blue-200"
-                      title="تعديل بيانات الموكل"
-                    >
-                      <Edit2 className="w-4 h-4" />
-                    </button>
-                    <button 
-                      onClick={() => handleDeleteClient(cl.id)}
-                      className="p-1.5 bg-rose-50 hover:bg-rose-100 text-rose-500 rounded-lg transition-colors border border-rose-200"
-                      title="حذف الموكل"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                    <span className={`text-[10px] font-black px-2.5 py-1 rounded-full border ${cl.isCompany ? 'bg-amber-50 border-amber-200 text-amber-400 font-black' : 'bg-slate-50 border-slate-200 text-slate-200 font-bold'}`}>
-                      {cl.isCompany ? 'مؤسسة / كيان' : 'فرد موكل'}
-                    </span>
-                  </div>
+                  <span className={`text-[10px] font-black px-2.5 py-1 rounded-full border ${cl.isCompany ? 'bg-amber-50 border-amber-200 text-amber-400 font-black' : 'bg-slate-50 border-slate-200 text-slate-200 font-bold'}`}>
+                    {cl.isCompany ? 'مؤسسة / كيان' : 'فرد موكل'}
+                  </span>
                 </div>
 
                 <div className="space-y-1 mb-4">
@@ -624,21 +563,12 @@ export default function ClientsModule({
                   <UserCheck className="w-8 h-8" />
                 </div>
                 <div>
-                  <h2 className="text-2xl font-black tracking-tight">{editingId ? 'تعديل الموكل' : 'تسجيل موكل جديد'}</h2>
-                  <p className="text-xs font-bold opacity-80 uppercase tracking-widest mt-1">Client Identity Registration</p>
+                  <h2 className="text-2xl font-black tracking-tight">تسجيل موكل جديد</h2>
+                  <p className="text-xs font-bold opacity-80 uppercase tracking-widest mt-1">New Client Identity Registration</p>
                 </div>
               </div>
               <button 
-                onClick={() => {
-                  setIsAdding(false);
-                  setEditingId(null);
-                  setNewName('');
-                  setNewNationalId('');
-                  setNewPhone('+9665');
-                  setNewEmail('');
-                  setNewUsername('');
-                  setNewPassword('');
-                }} 
+                onClick={() => setIsAdding(false)} 
                 className="w-10 h-10 flex items-center justify-center bg-white/20 rounded-full hover:bg-white/30 transition-all font-black text-xl"
               >
                 ×
@@ -712,17 +642,8 @@ export default function ClientsModule({
                <div className="flex gap-4 pt-4">
                   <button 
                     type="button" 
-                    onClick={() => {
-                      setIsAdding(false);
-                      setEditingId(null);
-                      setNewName('');
-                      setNewNationalId('');
-                      setNewPhone('+9665');
-                      setNewEmail('');
-                      setNewUsername('');
-                      setNewPassword('');
-                    }}
-                    className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold font-black py-4 rounded-xl text-xs transition-all"
+                    onClick={() => setIsAdding(false)}
+                    className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-200 font-bold font-black py-4 rounded-xl text-xs transition-all"
                   >
                     إلغاء التراجع
                   </button>
@@ -730,7 +651,7 @@ export default function ClientsModule({
                     type="submit"
                     className="flex-[2] bg-amber-500 hover:bg-amber-400 text-slate-950 font-black py-4 rounded-xl text-xs shadow-lg shadow-amber-500/10 transition-all border-0 cursor-pointer"
                   >
-                    {editingId ? 'حفظ التعديلات' : 'حفظ وتسجيل الموكل بالنظام'}
+                    حفظ وتسجيل الموكل بالنظام
                   </button>
                </div>
             </form>

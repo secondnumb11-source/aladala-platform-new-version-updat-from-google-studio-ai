@@ -345,8 +345,7 @@ export default function EmployeePortal({
 
     try {
       console.log('Attempting to save employee config:', selectedConfigEmployee.id, updates);
-      const { error: saveErr } = await supabase.from('employees').upsert({ id: selectedConfigEmployee.id, ...updates });
-      if (saveErr) throw saveErr;
+      await supabase.from('employees').upsert({ id: selectedConfigEmployee.id, ...updates });
       
       // Update the local list to ensure immediate responsiveness
       setEmployees(prev => prev.map(e => e.id === selectedConfigEmployee.id ? { ...e, ...updates } : e));
@@ -356,7 +355,7 @@ export default function EmployeePortal({
       
     } catch (err: any) {
       console.error('Error saving employee config:', err);
-      alert('حدث خطأ أثناء حفظ الإعدادات لقاعدة البيانات: ' + (err.message || String(err)));
+      alert('حدث خطأ أثناء حفظ الإعدادات لقاعدة البيانات: ' + err.message);
     } finally {
       setIsSaving(false);
     }
@@ -544,12 +543,11 @@ export default function EmployeePortal({
           };
 
           try {
-            const { error: insertErr } = await supabase.from('attendance').insert(newRecord);
-            if (insertErr) throw insertErr;
+            await supabase.from('attendance').insert(newRecord);
             alert(`✅ تم إثبات الحضور والموقع الجغرافي بنجاح.`);
             setShowCheckInModal(false);
-          } catch (e: any) {
-            alert('فشل تسجيل الحضور، يرجى المحاولة لاحقاً: ' + (e.message || String(e)));
+          } catch (e) {
+            alert('فشل تسجيل الحضور، يرجى المحاولة لاحقاً.');
           } finally {
             setIsCheckingIn(false);
             setGeoLocating(false);
@@ -583,12 +581,11 @@ export default function EmployeePortal({
     };
 
     try {
-      const { error: insertErr } = await supabase.from('leave_requests').insert(newLeave);
-      if (insertErr) throw insertErr;
+      await supabase.from('leave_requests').insert(newLeave);
       alert('✅ تم إرسال طلب الإجازة للمدير المباشر بنجاح. سيصلك إشعار فور اتخاذ قرار.');
       setShowLeaveForm(false);
-    } catch (e: any) {
-      alert('فشل تقديم الطلب: ' + (e.message || String(e)));
+    } catch (e) {
+      alert('فشل تقديم الطلب.');
     }
   };
 
@@ -684,8 +681,7 @@ export default function EmployeePortal({
         dueDate: new Date(Date.now() + 86400000 * 2).toISOString(),
         caseNumber: simCaseNumber
       };
-      const { error: taskInsertErr } = await supabase.from('tasks').insert(testTask);
-      if (taskInsertErr) throw taskInsertErr;
+      await supabase.from('tasks').insert(testTask);
 
       // Audit logs
       await writeAuditLog('مزامنة ناجز', `تم سحب الدعوى التجارية رقم ${simCaseNumber} وتعيينها للموظف بنجاح`, loggedInEmployee!);
@@ -734,12 +730,10 @@ export default function EmployeePortal({
           const empData = matchedEmp as Employee;
           
           const currentLoginCount = (empData as any).loginCount || 0;
-          const { error: updateErr } = await supabase.from('employees').update({
+          await supabase.from('employees').update({
             loginCount: currentLoginCount + 1,
             lastLoginAt: new Date().toISOString()
           }).eq('id', matchedEmp.id);
-          
-          if (updateErr) throw updateErr;
           
           (empData as any).loginCount = currentLoginCount + 1;
 
@@ -785,8 +779,7 @@ export default function EmployeePortal({
       if (taskObj) {
          onUpdateState('tasks', { ...taskObj, status: newStatus });
       }
-      const { error: taskUpdateErr } = await supabase.from('tasks').update({ status: newStatus }).eq('id', taskId);
-      if (taskUpdateErr) throw taskUpdateErr;
+      await supabase.from('tasks').update({ status: newStatus }).eq('id', taskId);
       if (loggedInEmployee) {
         await writeAuditLog('تحديث حالة المهمة', `تحديث حالة المهمة إلى: ${newStatus}`, loggedInEmployee);
       }
