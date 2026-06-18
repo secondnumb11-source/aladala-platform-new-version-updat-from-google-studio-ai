@@ -33,7 +33,6 @@ interface DocumentRow {
   content_text: string | null;
   tags: string[] | null;
   storage_path: string | null;
-  storage_url?: string | null;
   created_at?: string;
 }
 
@@ -96,8 +95,6 @@ export default function ArchiveModule() {
 
   // Selected Document details modal
   const [selectedDocDetails, setSelectedDocDetails] = useState<DocumentRow | null>(null);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  const [previewType, setPreviewType] = useState<"pdf" | "image" | null>(null);
 
   // Notification states
   const [successMsg, setSuccessMsg] = useState("");
@@ -268,7 +265,6 @@ export default function ArchiveModule() {
         content_text: docContentText || `مستند مؤرشف سحابياً بشكل أمن. مسار التخزين: ${storagePath}`,
         tags: parsedTags,
         storage_path: storagePath,
-        storage_url: downloadUrl,
         uploaded_at: new Date().toISOString()
       };
 
@@ -294,7 +290,7 @@ export default function ArchiveModule() {
       fetchDocuments();
     } catch (err: any) {
       console.error("[ArchiveModule] File Upload Error:", err);
-      showNotification("error", "فشلت عملية أرشفة ورفع المستند: " + (err.message || String(err)));
+      showNotification("error", err.message || "فشلت عملية أرشفة ورفع الملف المرفق.");
     } finally {
       setIsUploading(false);
     }
@@ -358,7 +354,7 @@ export default function ArchiveModule() {
       fetchAttachments();
     } catch (err: any) {
       console.error("[ArchiveModule] Attachment upload Exception:", err);
-      showNotification("error", "تعذر إكمال ورفع المرفق المطلوب: " + (err.message || String(err)));
+      showNotification("error", err.message || "تعذر إكمال ورفع المرفق المطلوب.");
     } finally {
       setIsUploading(false);
     }
@@ -375,15 +371,7 @@ export default function ArchiveModule() {
         await supabase.storage.from("documents").remove([storagePath]);
       }
 
-      // 2. Delete attachments records associated with this document
-      const { error: attError } = await supabase
-        .from("attachments")
-        .delete()
-        .eq("document_id", id);
-        
-      if (attError) throw attError;
-
-      // 3. Delete DB record
+      // 2. Delete DB record
       const { error } = await supabase
         .from("documents")
         .delete()
@@ -391,42 +379,11 @@ export default function ArchiveModule() {
 
       if (error) throw error;
 
-      showNotification("success", `تم حذف مستند (${name}) ومرفقاته المرتبطة بنجاح وإلغاء أرشيفه بالكامل.`);
+      showNotification("success", `تم حذف مستند (${name}) وإلغاء أرشيفه بالكامل.`);
       fetchDocuments();
-      fetchAttachments();
     } catch (err: any) {
       console.error("[ArchiveModule] Delete document error:", err);
-      showNotification("error", "فشل حذف المستند: " + (err.message || String(err)));
-    }
-  };
-
-  // Preview Document Handler
-  const handlePreviewDocument = (storagePath: string | null) => {
-    if (!storagePath) {
-      showNotification("error", "عذراً، مسار الملف غير متوفر لمعاينته.");
-      return;
-    }
-    
-    try {
-      const publicUrl = supabase.storage.from("documents").getPublicUrl(storagePath).data.publicUrl;
-      if (!publicUrl) {
-         showNotification("error", "تعذر جلب الرابط المباشر للملف من الخادم السحابي.");
-         return;
-      }
-
-      const lowerPath = storagePath.toLowerCase();
-      if (lowerPath.endsWith(".pdf")) {
-        setPreviewUrl(publicUrl);
-        setPreviewType("pdf");
-      } else if (lowerPath.match(/\.(jpeg|jpg|gif|png|webp)$/i)) {
-        setPreviewUrl(publicUrl);
-        setPreviewType("image");
-      } else {
-        // Open directly in a new tab if it's not a pdf or image
-        window.open(publicUrl, "_blank");
-      }
-    } catch (e: any) {
-      showNotification("error", "حدث خطأ أثناء محاولة المعاينة: " + (e.message || String(e)));
+      showNotification("error", "فشل حذف المستند المرتبط لوجود مرفقات أو قواعد مقيدة.");
     }
   };
 
@@ -1003,45 +960,6 @@ export default function ArchiveModule() {
         </div>
       )}
 
-      {/* Preview Modal */}
-      {previewUrl && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-fadeIn">
-          <div className="bg-[#0b1e33] border border-[#c5a880]/30 rounded-2xl w-[90%] h-[90vh] flex flex-col shadow-2xl relative overflow-hidden">
-            <div className="flex justify-between items-center p-4 border-b border-[#c5a880]/15 bg-[#061224]">
-              <h3 className="text-white font-bold flex items-center gap-2">
-                <ExternalLink className="w-5 h-5 text-[#c5a880]" />
-                <span>معاينة المستند</span>
-              </h3>
-              <div className="flex items-center gap-2">
-                <a href={previewUrl} target="_blank" rel="noreferrer" className="text-[#c5a880] hover:text-white bg-[#c5a880]/10 px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1">
-                  <Download className="w-3.5 h-3.5" />
-                  <span>فتح في نافذة مستقلة</span>
-                </a>
-                <button
-                  onClick={() => {
-                    setPreviewUrl(null);
-                    setPreviewType(null);
-                  }}
-                  className="bg-rose-500/10 text-rose-400 hover:bg-rose-500/20 p-1.5 rounded-lg transition-all"
-                  title="إغلاق المعاينة"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-            </div>
-            <div className="flex-1 bg-slate-900 overflow-auto flex items-center justify-center p-2">
-              {previewType === "pdf" ? (
-                <iframe src={previewUrl} title="PDF Preview" className="w-full h-full rounded-lg border-none" />
-              ) : previewType === "image" ? (
-                <img src={previewUrl} alt="Document Preview" className="max-w-full max-h-full object-contain rounded-lg" />
-              ) : (
-                <div className="text-center text-slate-400">لا يمكن معاينة هذا النوع من الملفات داخل النظام.</div>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* Main Grid View */}
       {activeTab === "documents" ? (
         // ------------------ DOCUMENTS GENERAL ARCHIVE VIEW ------------------
@@ -1078,14 +996,6 @@ export default function ArchiveModule() {
                         </span>
                         
                         <div className="flex items-center gap-1">
-                          <button
-                            onClick={() => handlePreviewDocument(doc.storage_path)}
-                            className="p-1 px-2.5 bg-[#c5a880]/10 border border-[#c5a880]/20 rounded text-[10px] text-[#c5a880] hover:bg-[#c5a880]/20 flex items-center gap-1"
-                            title="معاينة الملف السحابي"
-                          >
-                            <ExternalLink className="w-3.5 h-3.5" />
-                            <span>معاينة</span>
-                          </button>
                           <button
                             onClick={() => setSelectedDocDetails(doc)}
                             className="p-1 px-2.5 bg-slate-950/60 rounded text-[10px] text-slate-300 hover:text-white flex items-center gap-1"

@@ -23,16 +23,16 @@ import {
 } from 'lucide-react';
 
 // Import new tool components
-const AIDraftingTool = React.lazy(() => import('./AI/AIDraftingTool'));
-const AIAnalysisTool = React.lazy(() => import('./AI/AIAnalysisTool'));
-const AILegalSearch = React.lazy(() => import('./AI/AILegalSearch'));
-const AIDeadlinesTool = React.lazy(() => import('./AI/AIDeadlinesTool'));
-const AiGatewayTool = React.lazy(() => import('./AiGatewayTool'));
-const AISwotTool = React.lazy(() => import('./AI/AISwotTool'));
-const AIContractAuditTool = React.lazy(() => import('./AI/AIContractAuditTool'));
-const AIFinanceTool = React.lazy(() => import('./AI/AIFinanceTool'));
-const AILegalRiskMatrix = React.lazy(() => import('./AI/AILegalRiskMatrix'));
-const AIZatcaTool = React.lazy(() => import('./AI/AIZatcaTool'));
+import AIDraftingTool from './AI/AIDraftingTool';
+import AIAnalysisTool from './AI/AIAnalysisTool';
+import AILegalSearch from './AI/AILegalSearch';
+import AIDeadlinesTool from './AI/AIDeadlinesTool';
+import AiGatewayTool from './AiGatewayTool';
+import AISwotTool from './AI/AISwotTool';
+import AIContractAuditTool from './AI/AIContractAuditTool';
+import AIFinanceTool from './AI/AIFinanceTool';
+import AILegalRiskMatrix from './AI/AILegalRiskMatrix';
+import AIZatcaTool from './AI/AIZatcaTool';
 
 interface AIModuleProps {
   onUpdateState: (type: string, data: any) => void;
@@ -250,18 +250,16 @@ export default function AIModule({ onUpdateState, cases = [], invoices = [], ini
           </div>
         )}
 
-        <React.Suspense fallback={<div className="h-96 flex flex-col items-center justify-center bg-slate-50 border border-slate-200 rounded-[2.5rem] animate-pulse gap-4 text-slate-500 font-bold"><div className="w-12 h-12 border-4 border-amber-500 border-t-transparent rounded-full animate-spin"></div>جاري تحميل أداة الذكاء الاصطناعي...</div>}>
-          {activeTab === 'drafting' && <AIDraftingTool cases={cases} />}
-          {activeTab === 'risk_matrix' && <AILegalRiskMatrix cases={cases} />}
-          {activeTab === 'swot' && <AISwotTool />}
-          {activeTab === 'analysis' && <AIAnalysisTool />}
-          {activeTab === 'search' && <AILegalSearch />}
-          {activeTab === 'deadlines' && <AIDeadlinesTool />}
-          {activeTab === 'finance' && <AIFinanceTool invoices={invoices} />}
-          {activeTab === 'zatca' && <AIZatcaTool invoices={invoices} />}
-          {activeTab === 'contract_audit' && <AIContractAuditTool />}
-          {activeTab === 'gateway' && <AiGatewayTool />}
-        </React.Suspense>
+        {activeTab === 'drafting' && <AIDraftingTool cases={cases} />}
+        {activeTab === 'risk_matrix' && <AILegalRiskMatrix cases={cases} />}
+        {activeTab === 'swot' && <AISwotTool />}
+        {activeTab === 'analysis' && <AIAnalysisTool />}
+        {activeTab === 'search' && <AILegalSearch />}
+        {activeTab === 'deadlines' && <AIDeadlinesTool />}
+        {activeTab === 'finance' && <AIFinanceTool invoices={invoices} />}
+        {activeTab === 'zatca' && <AIZatcaTool invoices={invoices} />}
+        {activeTab === 'contract_audit' && <AIContractAuditTool />}
+        {activeTab === 'gateway' && <AiGatewayTool />}
       </div>
     </div>
   );

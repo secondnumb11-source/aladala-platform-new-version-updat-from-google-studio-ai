@@ -4215,9 +4215,11 @@ async function initializeDatabaseTables() {
     await client.end();
   } catch (err: any) {
     if (err.code === 'ECONNREFUSED' || err.message?.includes('ECONNREFUSED')) {
-      console.warn('[Schema Auto-Init] PostgreSQL direct connection failed (IPv6 not supported or pooler required). Skipping native schema init, relying on Supabase REST.');
+      console.log('[Schema Auto-Init] PostgreSQL direct connection failed (IPv6 not supported or pooler required). Skipping native schema init, relying on Supabase REST.');
+    } else if (err.message && err.message.includes('password authentication failed')) {
+      console.log('[Schema Auto-Init] PostgreSQL authentication failed. Please check POSTGRES_URL credentials. Continuing with Supabase REST API instead.');
     } else {
-      console.error('[Schema Auto-Init ERROR] Failed schema check/creation:', err);
+      console.log('[Schema Auto-Init ERROR] Failed schema check/creation:', err.message || err);
     }
   }
 }
@@ -4229,7 +4231,7 @@ async function bootApp() {
   
   // Initialize Database schemas asynchronously on boot
   initializeDatabaseTables().catch(err => {
-    console.error('[bootApp] initializeDatabaseTables rejected:', err);
+    console.log('[bootApp] initializeDatabaseTables rejected:', err);
   });
   
   const isProduction = process.env.NODE_ENV === 'production' || 

@@ -45,7 +45,7 @@ const WscatModule = React.lazy(() => import('@/components/WscatModule'));
 const WebSocketEcho = React.lazy(() => import('@/components/WebSocketEcho'));
 
 import { SupabaseTodos } from '@/components/SupabaseTodos';
-const ElasticsearchModule = React.lazy(() => import('@/components/ElasticsearchModule'));
+import ElasticsearchModule from '@/components/ElasticsearchModule';
 import DbDevOpsModule from '@/components/DbDevOpsModule';
 import FailedPersistenceLogsDashboard from '@/components/FailedPersistenceLogsDashboard';
 import { useUserPreferences } from '@/hooks/useUserPreferences';
@@ -1805,9 +1805,7 @@ function AppContent() {
         )}
 
         {currentTab === 'elasticsearch' && (
-          <React.Suspense fallback={<SkeletonLoader />}>
-            <ElasticsearchModule />
-          </React.Suspense>
+          <ElasticsearchModule />
         )}
 
         {currentTab === 'database-devops' && (

@@ -392,8 +392,8 @@ export default function EmployeesData({ tasks }: { cases: Case[], tasks: Task[],
       custom_login_token: formData.customLoginToken || btoa(`${tempId}-${Math.random().toString(36).substring(2, 10)}`),
       
       qualification: formData.qualification || '',
+      
       birthDate: formData.birthDate || '',
-      job_title: formData.jobTitle || '',
       birth_date: formData.birthDate || '',
       
       manager: formData.manager || '',

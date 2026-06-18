@@ -3,7 +3,7 @@ import {
   Download, Zap, CheckCircle2, Copy, Bot, Rocket, 
   BookOpen, Key, Link2, Settings, ShieldCheck, 
   Database, Users, Calendar, FileText, ClipboardList, Briefcase, ExternalLink,
-  ChevronDown, X, Chrome, Info, HelpCircle, Sparkles
+  ChevronDown, X, Chrome, Info, HelpCircle
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import JSZip from 'jszip';
@@ -565,8 +565,7 @@ export default function NajizExtensionHub({ currentUser, onUpdateState }: NajizE
         description: "مزامنة ذكية وشاملة لكافة بيانات ناجز (قضايا، جلسات، وكالات، طلبات تنفيذ) بالـ AI.",
         permissions: ["activeTab", "scripting", "storage"],
         host_permissions: ["*://*.najiz.sa/*", "*://*.moj.gov.sa/*", "*://*/*"],
-        action: { default_popup: "popup.html", default_title: "منصة العدالة", default_icon: "icon.png" },
-        icons: { "16": "icon.png", "48": "icon.png", "128": "icon.png" },
+        action: { default_popup: "popup.html", default_title: "منصة العدالة" },
         content_scripts: [{
           matches: ["*://*.najiz.sa/*"],
           js: ["content.js"],
@@ -829,21 +828,7 @@ export default function NajizExtensionHub({ currentUser, onUpdateState }: NajizE
               };
               
               try {
-                // Post message locally for simulator/iframe detection
                 window.postMessage({ type: 'ADALAH_NAJIZ_SYNC', payload }, '*');
-                
-                // Actual API Call to sync data with backend
-                if (url && url.startsWith('http')) {
-                  fetch(url, {
-                    method: 'POST',
-                    headers: {
-                      'Content-Type': 'application/json',
-                      'Authorization': data.useApiKey ? 'Bearer ' + data.apiKey : ''
-                    },
-                    body: JSON.stringify(payload)
-                  }).catch(e => console.warn('Fetch sync error:', e));
-                }
-
                 await new Promise(r => setTimeout(r, 1800));
                 btn.style.background = '#10b981';
                 btn.style.color = '#ffffff';
@@ -971,9 +956,6 @@ export default function NajizExtensionHub({ currentUser, onUpdateState }: NajizE
       `;
 
       // Pack files inside zip output package pre-populated with current settings panel selections
-      const iconBase64 = "iVBORw0KGgoAAAANSUhEUgAAAIAAAACACAYAAADDPmHLAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAI0SURBVHhe7d0xTsMwFIZhW0QcgbFHYGZvxzHZE8yEihMDOwIjdgZiZGIGiAEyInaEQMRAIu0iTqL8b99Tvt/Y7s9VbB958y5tWpYl/8w701bF5P1TzPq2bQ+2L/Z220P2I685+mK/n/e2s260n91N2/d+6Xp+uJ2yH3nN24v9dM/A4Gf7k+31rIu3P3vH9s1+T59X2r87W1t2tS5k2Zc9W/c9mXQ//24Hj9zBvu3p5OvnYrtP3/Lz8u6o2S5/LtlO0r15y827n5/H3u79t5+f9w9T2S//zLuH7Qz9Sfe3k/7sB15s/+xnjL7l6wXQhwBAHwIAfQgA9CEA0IcAQB8CAH0IAPQhANCHAEDfIADt591Ltsf04L7s72/n+m3t4Xf7+1s++P7+2/z+9/4/b39/y/dfE4E/BAB9CAD0IQDQhwBAHwIAfQgA9CEA0IcAQB8CAH0IAPQhANCHAEDf4G/Ac9nO0rd8uXv20z0z9C1fL4A+BAD6EADoQwCgDwGAPgQA+hAA6EMAoA8BgD4EAPoQAOhDAKAPAYA+BAD6EADoQwCgDwGAPgQA+hAA6EMAoA8BgD4EAPoQAOhDAKAPAYA+BAD6EADoQwCgDwGAPgQA+hAA6EMAoA8BgD4EAPoQAOhDAKAPAYA+BAD6EADoQwCgDwGAPgQA+hAA6EMAoA8BgD4EAPoQAOhDAKAPAYA+BAD6EADoQwCgDwGAPgQA+hAA6EMAoA8BgD7f2A3kC2o4yL8AAAAASUVORK5CYII=";
-
-      zip.file("icon.png", iconBase64, { base64: true });
       zip.file("manifest.json", JSON.stringify(manifest, null, 2));
       zip.file("popup.html", popupHtmlText);
       zip.file("popup.js", popupJsText);
@@ -1017,12 +999,12 @@ export default function NajizExtensionHub({ currentUser, onUpdateState }: NajizE
             <div className="bg-[#0f172a] border border-[#D4AF37]/50 rounded-[2rem] p-6 lg:p-8 shadow-inner relative">
               <div className="absolute top-3 left-6">
                 <span className="inline-flex items-center gap-1.5 bg-[#D4AF37]/25 border border-[#D4AF37] text-yellow-300 text-[11px] px-3 py-1 rounded-full font-black animate-pulse shadow-md">
-                  <Sparkles className="w-3.5 h-3.5 text-[#FACC15]" />
+                  <SparklesIcon className="w-3.5 h-3.5 text-[#FACC15]" />
                   بروتوكول السحب الآمن
                 </span>
               </div>
               
-              <h3 className="text-xl font-black text-yellow-300 drop-shadow-[0_0_12px_rgba(253,224,71,0.8)] mb-5">خريطة خطوات التوجيه الذاتي (مرر لحقائق إضافية)</h3>
+              <h3 className="text-lg font-black text-[#FACC15] mb-5">خريطة خطوات التوجيه الذاتي (مرر لحقائق إضافية)</h3>
               
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 relative">
                 {/* Step 1 */}
@@ -1033,9 +1015,9 @@ export default function NajizExtensionHub({ currentUser, onUpdateState }: NajizE
                 >
                   <div className="flex items-center gap-3 mb-2">
                     <span className="w-8 h-8 rounded-full bg-[#FACC15] text-[#060b13] font-black text-sm flex items-center justify-center shadow-md">1</span>
-                    <h4 className="font-black text-yellow-300 text-sm tracking-wide drop-shadow-[0_0_8px_rgba(253,224,71,0.6)]">تسجيل دخول ناجز الكلاسيكي</h4>
+                    <h4 className="font-bold text-[#FACC15] text-sm tracking-wide">تسجيل دخول ناجز الكلاسيكي</h4>
                   </div>
-                  <p className="text-xs text-white font-black leading-relaxed mt-1 drop-shadow-md brightness-125">سجل بمصادقة نفاذ الوطني لدخول ناجز الاعتيادي بمستعرض الويب.</p>
+                  <p className="text-xs text-white font-black leading-relaxed mt-1">سجل بمصادقة نفاذ الوطني لدخول ناجز الاعتيادي بمستعرض الويب.</p>
 
                   <AnimatePresence>
                     {hoveredStep === 1 && (
@@ -1060,9 +1042,9 @@ export default function NajizExtensionHub({ currentUser, onUpdateState }: NajizE
                 >
                   <div className="flex items-center gap-3 mb-2">
                     <span className="w-8 h-8 rounded-full bg-[#FACC15] text-[#060b13] font-black text-sm flex items-center justify-center shadow-md">2</span>
-                    <h4 className="font-black text-yellow-300 text-sm tracking-wide drop-shadow-[0_0_8px_rgba(253,224,71,0.6)]">بروز زر "العدالة" بالأسفل</h4>
+                    <h4 className="font-bold text-[#FACC15] text-sm tracking-wide">بروز زر "العدالة" بالأسفل</h4>
                   </div>
-                  <p className="text-xs text-white font-black leading-relaxed mt-1 drop-shadow-md brightness-125">سيظهر الزر الذهبي بشكل أنيق في ركن بوابة ناجز الأيمن السفلي.</p>
+                  <p className="text-xs text-white font-black leading-relaxed mt-1">سيظهر الزر الذهبي بشكل أنيق في ركن بوابة ناجز الأيمن السفلي.</p>
 
                   <AnimatePresence>
                     {hoveredStep === 2 && (
@@ -1087,9 +1069,9 @@ export default function NajizExtensionHub({ currentUser, onUpdateState }: NajizE
                 >
                   <div className="flex items-center gap-3 mb-2">
                     <span className="w-8 h-8 rounded-full bg-[#FACC15] text-[#060b13] font-black text-sm flex items-center justify-center shadow-md">3</span>
-                    <h4 className="font-black text-yellow-300 text-sm tracking-wide drop-shadow-[0_0_8px_rgba(253,224,71,0.6)]">كبسة سحب واحدة بالـ AI</h4>
+                    <h4 className="font-bold text-[#FACC15] text-sm tracking-wide">كبسة سحب واحدة بالـ AI</h4>
                   </div>
-                  <p className="text-xs text-white font-black leading-relaxed mt-1 drop-shadow-md brightness-125">توليد المزامنة الفورية للمكاتب والعملاء المصنفين تلقائياً بالذكاء الاصطناعي.</p>
+                  <p className="text-xs text-white font-black leading-relaxed mt-1">توليد المزامنة الفورية للمكاتب والعملاء المصنفين تلقائياً بالذكاء الاصطناعي.</p>
 
                   <AnimatePresence>
                     {hoveredStep === 3 && (
@@ -1263,32 +1245,32 @@ export default function NajizExtensionHub({ currentUser, onUpdateState }: NajizE
                    <div className="flex gap-5 bg-[#1e293b] p-6 rounded-3xl border border-[#D4AF37]/20 hover:border-[#D4AF37] transition-colors shadow-lg">
                       <div className="w-12 h-12 rounded-xl bg-[#D4AF37] flex items-center justify-center shrink-0 font-black text-[#010610] text-xl shadow-lg">1</div>
                       <div className="space-y-2">
-                        <h4 className="font-black text-yellow-300 text-lg drop-shadow-[0_0_8px_rgba(253,224,71,0.6)]">تحميل الأداة وفك المجلد</h4>
-                        <p className="text-sm text-white font-black leading-relaxed drop-shadow-md brightness-125">قم بضغط زر التحميل بالأعلى لحفظ ملف <code className="bg-[#060b13]/60 px-2 py-0.5 rounded text-yellow-300 border border-[#D4AF37]/30 font-mono">ZIP</code> المستعد، ثم قم باستخراجه في مجلد فارغ بقرصك الصلب.</p>
+                        <h4 className="font-black text-[#FACC15] text-lg">تحميل الأداة وفك المجلد</h4>
+                        <p className="text-sm text-white font-bold leading-relaxed">قم بضغط زر التحميل بالأعلى لحفظ ملف <code className="bg-[#060b13]/60 px-2 py-0.5 rounded text-[#FACC15] border border-[#D4AF37]/30 font-mono">ZIP</code> المستعد، ثم قم باستخراجه في مجلد فارغ بقرصك الصلب.</p>
                       </div>
                    </div>
 
                    <div className="flex gap-5 bg-[#1e293b] p-6 rounded-3xl border border-[#D4AF37]/20 hover:border-[#D4AF37] transition-colors shadow-lg">
                       <div className="w-12 h-12 rounded-xl bg-[#D4AF37] flex items-center justify-center shrink-0 font-black text-[#010610] text-xl shadow-lg">2</div>
                       <div className="space-y-2">
-                        <h4 className="font-black text-yellow-300 text-lg drop-shadow-[0_0_8px_rgba(253,224,71,0.6)]">تحميل إضافات المطور (Chrome)</h4>
-                        <p className="text-sm text-white font-black leading-relaxed drop-shadow-md brightness-125">اذهب إلى <code className="bg-[#060b13]/60 px-2.5 py-0.5 rounded text-yellow-300 border border-[#D4AF37]/30 font-mono">chrome://extensions</code>، فّعل (وضع المطور) بأعلى الشاشة، ثم اختر مجلد الإضافة لدمج الأداة.</p>
+                        <h4 className="font-black text-[#FACC15] text-lg">تحميل إضافات المطور (Chrome)</h4>
+                        <p className="text-sm text-white font-bold leading-relaxed">اذهب إلى <code className="bg-[#060b13]/60 px-2.5 py-0.5 rounded text-[#FACC15] border border-[#D4AF37]/30 font-mono">chrome://extensions</code>، فّعل (وضع المطور) بأعلى الشاشة، ثم اختر مجلد الإضافة لدمج الأداة.</p>
                       </div>
                    </div>
 
                    <div className="flex gap-5 bg-[#1e293b] p-6 rounded-3xl border border-[#D4AF37]/20 hover:border-[#D4AF37] transition-colors shadow-lg">
                       <div className="w-12 h-12 rounded-xl bg-[#D4AF37] flex items-center justify-center shrink-0 font-black text-[#010610] text-xl shadow-lg">3</div>
                       <div className="space-y-2">
-                        <h4 className="font-black text-yellow-300 text-lg drop-shadow-[0_0_8px_rgba(253,224,71,0.6)]">الحقن التلقائي لبوابة ناجز</h4>
-                        <p className="text-sm text-white font-black leading-relaxed drop-shadow-md brightness-125">بمجرد تسجيل دخولك الاعتيادي بالبوابة الرسمية، تظهر الخيارات الذهبية للمنصة بأسفل الشاشة بسلاسة تامة.</p>
+                        <h4 className="font-black text-[#FACC15] text-lg">الحقن التلقائي لبوابة ناجز</h4>
+                        <p className="text-sm text-white font-bold leading-relaxed">بمجرد تسجيل دخولك الاعتيادي بالبوابة الرسمية، تظهر الخيارات الذهبية للمنصة بأسفل الشاشة بسلاسة تامة.</p>
                       </div>
                    </div>
 
                    <div className="flex gap-5 bg-[#1e293b] p-6 rounded-3xl border border-[#D4AF37]/20 hover:border-[#D4AF37] transition-colors shadow-lg">
                       <div className="w-12 h-12 rounded-xl bg-[#D4AF37] flex items-center justify-center shrink-0 font-black text-[#010610] text-xl shadow-lg">4</div>
                       <div className="space-y-2">
-                        <h4 className="font-black text-yellow-300 text-lg drop-shadow-[0_0_8px_rgba(253,224,71,0.6)]">برمجة الفرز وتفادي العشوائية</h4>
-                        <p className="text-sm text-white font-black leading-relaxed drop-shadow-md brightness-125">قوائم السحب المتعددة (Multi-select) تضمن للمحامي تعطيل وإبعاد أي تفاصيل أو سجلات وملفات لا يرغب بنقلها.</p>
+                        <h4 className="font-black text-[#FACC15] text-lg">برمجة الفرز وتفادي العشوائية</h4>
+                        <p className="text-sm text-white font-bold leading-relaxed">قوائم السحب المتعددة (Multi-select) تضمن للمحامي تعطيل وإبعاد أي تفاصيل أو سجلات وملفات لا يرغب بنقلها.</p>
                       </div>
                    </div>
 
