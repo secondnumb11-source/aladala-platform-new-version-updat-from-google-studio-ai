@@ -57,7 +57,7 @@ const normalizeEmployee = (emp: any): Employee => {
 
 export default function EmployeesData({ tasks }: { cases: Case[], tasks: Task[], clients?: Client[], onUpdateState?: (t: string, d: any) => void }) {
   const { user, profile } = useSupabase();
-  const { employees: rawEmployees, createRecord, updateRecord, deleteRecord, loading } = useSupabaseData();
+  const { employees: rawEmployees, createRecord, updateRecord, deleteRecord, loading, refresh } = useSupabaseData();
   const employees = React.useMemo(() => {
     const emps = (rawEmployees || []).map(normalizeEmployee);
     emps.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
@@ -332,44 +332,49 @@ export default function EmployeesData({ tasks }: { cases: Case[], tasks: Task[],
     }
 
     const isNew = !formData.id;
+    // For new records, we don't send an ID to Supabase (let it generate one)
+    // Or we generate a proper UUID if needed. The DB accepts UUIDs.
     const tempId = formData.id || generateUUID();
-
-    const empData: Partial<Employee> = {
-      id: tempId,
+    
+    // We must strictly use snake_case keys that exist in the DB columns
+    const empData: any = {
       name: formData.name || '',
       role: formData.role || '',
       email: formData.email || '',
       phone: formData.phone || '',
       status: formData.status || 'نشط',
       department: formData.department || '',
-      nationalId: nid,
+      national_id: nid,
       username: formData.username || `emp_${tempId.substring(0, 8)}`,
       password: formData.password || `pass_${Math.random().toString(36).substring(2, 6)}`,
-      customLoginToken: formData.customLoginToken || btoa(`${tempId}-${Math.random().toString(36).substring(2, 10)}`),
+      custom_login_token: formData.customLoginToken || btoa(`${tempId}-${Math.random().toString(36).substring(2, 10)}`),
       qualification: formData.qualification || '',
-      birthDate: formData.birthDate || '',
+      birth_date: formData.birthDate || '',
       manager: formData.manager || '',
       nationality: formData.nationality || '',
-      nationalIdExpiry: formData.nationalIdExpiry || '',
-      startDate: formData.startDate || '',
-      endDate: formData.endDate || '',
+      national_id_expiry: formData.nationalIdExpiry || '',
+      start_date: formData.startDate || '',
+      end_date: formData.endDate || '',
       branch: formData.branch || 'الفرع الرئيسي',
       allowances: Number(formData.allowances) || 0,
       deductions: Number(formData.deductions) || 0,
-      baseSalary: Number(formData.baseSalary) || 0,
+      base_salary: Number(formData.baseSalary) || 0,
       salary: Number(formData.salary || formData.baseSalary) || 0
     };
     
-    empData.portalLink = `${window.location.origin}/employee-portal?user=${empData.username}&token=${empData.customLoginToken}`;
+    empData.portal_link = `${window.location.origin}/employee-portal?user=${empData.username}&token=${empData.custom_login_token}`;
+
+    if (!isNew) {
+      empData.id = formData.id;
+    }
 
     // Ensure no undefined or NaN values
     Object.keys(empData).forEach(key => {
-      const k = key as keyof Employee;
-      if (empData[k] === undefined) {
-        delete empData[k];
+      if (empData[key] === undefined) {
+        delete empData[key];
       }
-      if (typeof empData[k] === 'number' && Number.isNaN(empData[k])) {
-         (empData as any)[k] = 0;
+      if (typeof empData[key] === 'number' && Number.isNaN(empData[key])) {
+         empData[key] = 0;
       }
     });
 
@@ -378,10 +383,19 @@ export default function EmployeesData({ tasks }: { cases: Case[], tasks: Task[],
       if (isNew) {
         res = await createRecord('employees', empData);
       } else {
-        res = await updateRecord('employees', tempId, empData);
+        res = await updateRecord('employees', formData.id as string, empData);
       }
 
       if (res && res.success) {
+        // Fetch from DB to ensure local state has the true DB record (with DB ID if it was inserted)
+        if (refresh) await refresh();
+        
+        // Update localStorage fallback
+        const updatedRaw = await supabase.from('employees').select('*');
+        if (updatedRaw && updatedRaw.data) {
+          localStorage.setItem('adalah_employees_cache', JSON.stringify(updatedRaw.data));
+        }
+
         alert('✅ تم حفظ بيانات الموظف ومزامنتها بنجاح مع كافة الأقسام وبوابة الموظفين.');
         setView('list');
         setSelectedConfigEmployee(null);
