@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { 
   Download, Zap, CheckCircle2, Copy, Bot, Rocket, 
   BookOpen, Key, Link2, Settings, ShieldCheck, 
   Database, Users, Calendar, FileText, ClipboardList, Briefcase, ExternalLink,
-  ChevronDown, X, Chrome, Info, HelpCircle
+  ChevronDown, X, Chrome, Info, HelpCircle, Sparkles
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import JSZip from 'jszip';
@@ -565,7 +565,8 @@ export default function NajizExtensionHub({ currentUser, onUpdateState }: NajizE
         description: "مزامنة ذكية وشاملة لكافة بيانات ناجز (قضايا، جلسات، وكالات، طلبات تنفيذ) بالـ AI.",
         permissions: ["activeTab", "scripting", "storage"],
         host_permissions: ["*://*.najiz.sa/*", "*://*.moj.gov.sa/*", "*://*/*"],
-        action: { default_popup: "popup.html", default_title: "منصة العدالة" },
+        action: { default_popup: "popup.html", default_title: "منصة العدالة", default_icon: "icon.png" },
+        icons: { "16": "icon.png", "48": "icon.png", "128": "icon.png" },
         content_scripts: [{
           matches: ["*://*.najiz.sa/*"],
           js: ["content.js"],
@@ -828,7 +829,21 @@ export default function NajizExtensionHub({ currentUser, onUpdateState }: NajizE
               };
               
               try {
+                // Post message locally for simulator/iframe detection
                 window.postMessage({ type: 'ADALAH_NAJIZ_SYNC', payload }, '*');
+                
+                // Actual API Call to sync data with backend
+                if (url && url.startsWith('http')) {
+                  fetch(url, {
+                    method: 'POST',
+                    headers: {
+                      'Content-Type': 'application/json',
+                      'Authorization': data.useApiKey ? 'Bearer ' + data.apiKey : ''
+                    },
+                    body: JSON.stringify(payload)
+                  }).catch(e => console.warn('Fetch sync error:', e));
+                }
+
                 await new Promise(r => setTimeout(r, 1800));
                 btn.style.background = '#10b981';
                 btn.style.color = '#ffffff';
@@ -956,6 +971,9 @@ export default function NajizExtensionHub({ currentUser, onUpdateState }: NajizE
       `;
 
       // Pack files inside zip output package pre-populated with current settings panel selections
+      const iconBase64 = "iVBORw0KGgoAAAANSUhEUgAAAIAAAACACAYAAADDPmHLAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAI0SURBVHhe7d0xTsMwFIZhW0QcgbFHYGZvxzHZE8yEihMDOwIjdgZiZGIGiAEyInaEQMRAIu0iTqL8b99Tvt/Y7s9VbB958y5tWpYl/8w701bF5P1TzPq2bQ+2L/Z220P2I685+mK/n/e2s260n91N2/d+6Xp+uJ2yH3nN24v9dM/A4Gf7k+31rIu3P3vH9s1+T59X2r87W1t2tS5k2Zc9W/c9mXQ//24Hj9zBvu3p5OvnYrtP3/Lz8u6o2S5/LtlO0r15y827n5/H3u79t5+f9w9T2S//zLuH7Qz9Sfe3k/7sB15s/+xnjL7l6wXQhwBAHwIAfQgA9CEA0IcAQB8CAH0IAPQhANCHAEDfIADt591Ltsf04L7s72/n+m3t4Xf7+1s++P7+2/z+9/4/b39/y/dfE4E/BAB9CAD0IQDQhwBAHwIAfQgA9CEA0IcAQB8CAH0IAPQhANCHAEDf4G/Ac9nO0rd8uXv20z0z9C1fL4A+BAD6EADoQwCgDwGAPgQA+hAA6EMAoA8BgD4EAPoQAOhDAKAPAYA+BAD6EADoQwCgDwGAPgQA+hAA6EMAoA8BgD4EAPoQAOhDAKAPAYA+BAD6EADoQwCgDwGAPgQA+hAA6EMAoA8BgD4EAPoQAOhDAKAPAYA+BAD6EADoQwCgDwGAPgQA+hAA6EMAoA8BgD4EAPoQAOhDAKAPAYA+BAD6EADoQwCgDwGAPgQA+hAA6EMAoA8BgD7f2A3kC2o4yL8AAAAASUVORK5CYII=";
+
+      zip.file("icon.png", iconBase64, { base64: true });
       zip.file("manifest.json", JSON.stringify(manifest, null, 2));
       zip.file("popup.html", popupHtmlText);
       zip.file("popup.js", popupJsText);
@@ -999,7 +1017,7 @@ export default function NajizExtensionHub({ currentUser, onUpdateState }: NajizE
             <div className="bg-[#0f172a] border border-[#D4AF37]/50 rounded-[2rem] p-6 lg:p-8 shadow-inner relative">
               <div className="absolute top-3 left-6">
                 <span className="inline-flex items-center gap-1.5 bg-[#D4AF37]/25 border border-[#D4AF37] text-yellow-300 text-[11px] px-3 py-1 rounded-full font-black animate-pulse shadow-md">
-                  <SparklesIcon className="w-3.5 h-3.5 text-[#FACC15]" />
+                  <Sparkles className="w-3.5 h-3.5 text-[#FACC15]" />
                   بروتوكول السحب الآمن
                 </span>
               </div>
