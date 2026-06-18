@@ -374,12 +374,24 @@ export default function Settings({
   const [lawLinkLaborLaw, setLawLinkLaborLaw] = useState(() => {
     return localStorage.getItem('law_link_labor_law') || '';
   });
+  const [lawLinkEvidenceLaw, setLawLinkEvidenceLaw] = useState(() => {
+    return localStorage.getItem('law_link_evidence_law') || '';
+  });
+  const [lawLinkEnforcementLaw, setLawLinkEnforcementLaw] = useState(() => {
+    return localStorage.getItem('law_link_enforcement_law') || '';
+  });
+  const [lawLinkBankruptcyLaw, setLawLinkBankruptcyLaw] = useState(() => {
+    return localStorage.getItem('law_link_bankruptcy_law') || '';
+  });
 
   const handleSaveLawLinks = (e: React.FormEvent) => {
     e.preventDefault();
     localStorage.setItem('law_link_civil_transactions', lawLinkCivilTransactions);
     localStorage.setItem('law_link_companies_new', lawLinkCompaniesNew);
     localStorage.setItem('law_link_labor_law', lawLinkLaborLaw);
+    localStorage.setItem('law_link_evidence_law', lawLinkEvidenceLaw);
+    localStorage.setItem('law_link_enforcement_law', lawLinkEnforcementLaw);
+    localStorage.setItem('law_link_bankruptcy_law', lawLinkBankruptcyLaw);
     window.dispatchEvent(new Event('adalah-law-links-updated'));
     alert('تم حفظ روابط كروت الأنظمة بنجاح ⚖️');
   };
@@ -1111,14 +1123,14 @@ export default function Settings({
           </div>
 
           {/* Digital Systems Library URL Config - Dedicated Card */}
-          <div className="bg-white border border-slate-800 rounded-2xl p-6 space-y-6 shadow-sm" id="legal-library-links-settings">
-            <div className="flex items-center gap-3 border-b border-slate-800 pb-4">
-              <div className="p-2.5 bg-amber-500/10 border border-amber-500/30 text-amber-500 rounded-xl">
-                <BookOpen className="w-5 h-5" />
+          <div className="bg-white border border-slate-200 rounded-3xl p-6 md:p-8 space-y-6 shadow-sm" id="legal-library-links-settings">
+            <div className="flex items-center gap-3 border-b border-slate-100 pb-5">
+              <div className="p-3 bg-emerald-50 border border-emerald-100 text-emerald-600 rounded-2xl shadow-sm">
+                <BookOpen className="w-6 h-6" />
               </div>
               <div>
-                <h2 className="text-sm font-bold text-slate-900">إعدادات روابط كروت الأنظمة (مكتبة الأنظمة والبحث الذكي)</h2>
-                <p className="text-[11px] text-slate-700 mt-0.5">تخصيص الروابط الخارجية التي يتم فتحها عند النقر على كروت الأنظمة واللوائح في المكتبة القانونية.</p>
+                <h2 className="text-lg font-black text-slate-950">إعدادات روابط الأنظمة القانونية</h2>
+                <p className="text-xs font-bold text-slate-700 mt-1">تخصيص الروابط الخارجية التي يتم فتحها عند النقر على كروت الأنظمة واللوائح في المكتبة القانونية.</p>
               </div>
             </div>
 
@@ -1162,9 +1174,48 @@ export default function Settings({
                 />
               </div>
 
-              <button type="submit" className="w-full py-3 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-black transition-all shadow-lg flex items-center justify-center gap-2">
-                <Save className="w-4 h-4" />
-                حفظ روابط كروت الأنظمة واللوائح
+              <div className="space-y-1.5">
+                <label className="text-xs font-black text-slate-900 flex items-center gap-1.5">
+                  📁 رابط كارت (نظام الإثبات القضائي):
+                </label>
+                <input 
+                  type="url" 
+                  value={lawLinkEvidenceLaw}
+                  onChange={e => setLawLinkEvidenceLaw(e.target.value)}
+                  className="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl text-xs font-bold focus:border-amber-500 outline-none font-sans"
+                  placeholder="https://example.com/evidence-law-link..."
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-black text-slate-900 flex items-center gap-1.5">
+                  📁 رابط كارت (نظام التنفيذ):
+                </label>
+                <input 
+                  type="url" 
+                  value={lawLinkEnforcementLaw}
+                  onChange={e => setLawLinkEnforcementLaw(e.target.value)}
+                  className="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl text-xs font-bold focus:border-amber-500 outline-none font-sans"
+                  placeholder="https://example.com/enforcement-law-link..."
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-black text-slate-900 flex items-center gap-1.5">
+                  📁 رابط كارت (نظام الإفلاس):
+                </label>
+                <input 
+                  type="url" 
+                  value={lawLinkBankruptcyLaw}
+                  onChange={e => setLawLinkBankruptcyLaw(e.target.value)}
+                  className="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl text-xs font-bold focus:border-amber-500 outline-none font-sans"
+                  placeholder="https://example.com/bankruptcy-law-link..."
+                />
+              </div>
+
+              <button type="submit" className="w-full py-4 bg-slate-950 hover:bg-slate-800 text-white rounded-2xl text-xs font-black transition-all shadow-xl flex items-center justify-center gap-2.5 active:scale-[0.98]">
+                <Save className="w-5 h-5 text-emerald-400" />
+                <span>حفظ المسارات والروابط المخصصة للأنظمة 🌿</span>
               </button>
             </form>
           </div>

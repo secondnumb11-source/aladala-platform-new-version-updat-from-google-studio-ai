@@ -145,6 +145,27 @@ function AppContent() {
   const { state, setStateData } = useAppState();
   const { user, profile, loading: authLoading, connectionStatus } = useSupabase();
 
+  const [najizConnectedState, setNajizConnectedState] = useState(() => localStorage.getItem('najiz_api_connected') === 'true');
+
+  useEffect(() => {
+    const connectedFromState = state?.najiz_api_connected === true || state?.preferences?.najiz_api_connected === 'true';
+    const connectedFromStorage = localStorage.getItem('najiz_api_connected') === 'true';
+    
+    if (connectedFromState !== najizConnectedState && state?.najiz_api_connected !== undefined) {
+      setNajizConnectedState(connectedFromState);
+    } else if (connectedFromStorage !== najizConnectedState) {
+      setNajizConnectedState(connectedFromStorage);
+    }
+  }, [state, najizConnectedState]);
+
+  useEffect(() => {
+    const handleStorage = () => {
+      setNajizConnectedState(localStorage.getItem('najiz_api_connected') === 'true');
+    };
+    window.addEventListener('storage', handleStorage);
+    return () => window.removeEventListener('storage', handleStorage);
+  }, []);
+
   // Try to clean up any corrupt auth session hashes or flags on app load
   useEffect(() => {
     cleanCorruptedAuth();
@@ -1344,7 +1365,7 @@ function AppContent() {
       })
     : hearings;
 
-  const isNajizConnected = state?.najiz_api_connected === true;
+  const isNajizConnected = najizConnectedState;
 
   return (
     <div className="flex flex-col h-screen max-h-screen overflow-hidden">

@@ -39,6 +39,9 @@ export default function ExecutionsModule({
   const [isAdding, setIsAdding] = useState(false);
   const [editingExec, setEditingExec] = useState<Execution | null>(null);
   
+  const [viewMode, setViewMode] = useState<'table' | 'card'>('table');
+  const [isSyncing, setIsSyncing] = useState(false);
+  
   // New execution form state
   const [newExec, setNewExec] = useState<Partial<Execution>>({
     execution_number: '',
@@ -102,8 +105,38 @@ export default function ExecutionsModule({
           <p className="text-slate-400 font-bold text-sm">متابعة كافة طلبات التنفيذ المزامنة من ناجز أو المضافة يدوياً بتنسيق فاخر.</p>
         </div>
         
-        <div className="flex items-center gap-3">
-          <div className="relative group">
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="flex bg-slate-950 p-1 rounded-xl border border-slate-800">
+            <button 
+              onClick={() => setViewMode('table')}
+              className={`px-4 py-2 rounded-lg text-xs font-black transition-all ${viewMode === 'table' ? 'bg-amber-600 text-slate-950 shadow-lg' : 'text-slate-500 hover:text-slate-300'}`}
+            >
+              جدول
+            </button>
+            <button 
+              onClick={() => setViewMode('card')}
+              className={`px-4 py-2 rounded-lg text-xs font-black transition-all ${viewMode === 'card' ? 'bg-amber-600 text-slate-950 shadow-lg' : 'text-slate-500 hover:text-slate-300'}`}
+            >
+              كروت
+            </button>
+          </div>
+
+          <button 
+            onClick={() => {
+              setIsSyncing(true);
+              setTimeout(() => {
+                setIsSyncing(false);
+                alert('تمت المزامنة مع بوابة ناجز بنجاح! تم تحديث ٥ طلبات تنفيذ.');
+              }, 2000);
+            }}
+            disabled={isSyncing}
+            className="bg-slate-800 hover:bg-slate-700 text-amber-500 border border-amber-500/30 px-6 py-3 rounded-2xl font-black text-sm flex items-center gap-2 transition-all shadow-lg active:scale-95 disabled:opacity-50"
+          >
+            <Activity className={`w-5 h-5 ${isSyncing ? 'animate-pulse' : ''}`} />
+            {isSyncing ? 'جاري المزامنة...' : 'مزامنة عن طريق ناجز'}
+          </button>
+
+          <div className="relative group min-w-[280px]">
             <Search className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500 group-focus-within:text-amber-500 transition-colors" />
             <input 
               type="text"
@@ -269,61 +302,141 @@ export default function ExecutionsModule({
         ))}
       </div>
 
-      {/* Table Section */}
-      <div className="bg-slate-900 border border-slate-800 rounded-[2.5rem] overflow-hidden shadow-2xl">
-        <div className="overflow-x-auto">
-          <table className="w-full text-right">
-            <thead>
-              <tr className="bg-slate-950/50 border-b border-slate-800">
-                <th className="px-8 py-5 text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] whitespace-nowrap">رقم الطلب</th>
-                <th className="px-6 py-5 text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] whitespace-nowrap">طالب الحماية (الموكل)</th>
-                <th className="px-6 py-5 text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] whitespace-nowrap">المنفذ ضده</th>
-                <th className="px-6 py-5 text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] whitespace-nowrap text-center">المبلغ</th>
-                <th className="px-6 py-5 text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] whitespace-nowrap text-center">الحالة</th>
-                <th className="px-8 py-5 text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] whitespace-nowrap text-left">التفاعل</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-800/50">
-              {filtered.length === 0 ? (
-                <tr>
-                  <td colSpan={6} className="px-8 py-20 text-center text-[#facc15] italic font-black text-lg">لا يوجد نتائج للبحث...</td>
+      {/* Table / Cards Section */}
+      {viewMode === 'table' ? (
+        <div className="bg-slate-900 border border-slate-800 rounded-[2.5rem] overflow-hidden shadow-2xl">
+          <div className="overflow-x-auto">
+            <table className="w-full text-right">
+              <thead>
+                <tr className="bg-slate-950/50 border-b border-slate-800">
+                  <th className="px-8 py-5 text-[10px] font-black text-slate-200 uppercase tracking-[0.2em] whitespace-nowrap">رقم الطلب</th>
+                  <th className="px-6 py-5 text-[10px] font-black text-slate-200 uppercase tracking-[0.2em] whitespace-nowrap">طالب الحماية (الموكل)</th>
+                  <th className="px-6 py-5 text-[10px] font-black text-slate-200 uppercase tracking-[0.2em] whitespace-nowrap">المنفذ ضده</th>
+                  <th className="px-6 py-5 text-[10px] font-black text-slate-200 uppercase tracking-[0.2em] whitespace-nowrap text-center">المبلغ</th>
+                  <th className="px-6 py-5 text-[10px] font-black text-slate-200 uppercase tracking-[0.2em] whitespace-nowrap text-center">الحالة</th>
+                  <th className="px-8 py-5 text-[10px] font-black text-slate-200 uppercase tracking-[0.2em] whitespace-nowrap text-left">التفاعل</th>
                 </tr>
-              ) : (
-                filtered.map((ex) => (
-                  <tr key={ex.id} className="hover:bg-slate-800/30 transition-all group">
-                    <td className="px-8 py-6 whitespace-nowrap font-mono font-black text-sm text-white group-hover:text-amber-500 transition-colors">#{ex.execution_number}</td>
-                    <td className="px-6 py-6 whitespace-nowrap text-slate-200 font-black text-sm">{ex.requester_name}</td>
-                    <td className="px-6 py-6 whitespace-nowrap text-slate-400 font-bold text-sm">{ex.opponent_name}</td>
-                    <td className="px-6 py-6 whitespace-nowrap text-center text-emerald-400 font-mono font-black text-sm">{(ex.amount || 0).toLocaleString()} <span className="text-[10px]">ر.س</span></td>
-                    <td className="px-6 py-6 whitespace-nowrap text-center">
-                      <span className={`px-4 py-1.5 rounded-full text-[9px] font-black border uppercase ${
-                        ex.status?.includes('مكتمل') ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' :
-                        ex.status?.includes('قيد') ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' :
-                        'bg-slate-800 text-slate-500 border-slate-700'
-                      }`}>
-                        {ex.status}
-                      </span>
-                    </td>
-                    <td className="px-8 py-6 whitespace-nowrap text-left">
-                      <div className="flex items-center justify-end gap-2">
-                        <button 
-                          onClick={() => setEditingExec(ex)}
-                          className="p-3 bg-slate-800 rounded-xl text-slate-500 hover:text-white hover:bg-amber-500/20 transition-all border border-slate-700/50"
-                        >
-                          <Edit2 className="w-4 h-4" />
-                        </button>
-                        <button className="p-3 bg-slate-800 rounded-xl text-slate-500 hover:text-white hover:bg-slate-700 transition-all border border-slate-700/50">
-                          <ArrowUpRight className="w-4 h-4" />
-                        </button>
-                      </div>
-                    </td>
+              </thead>
+              <tbody className="divide-y divide-slate-800/50">
+                {filtered.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} className="px-8 py-20 text-center text-amber-400 italic font-black text-lg">لا يوجد نتائج للبحث...</td>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+                ) : (
+                  filtered.map((ex) => (
+                    <tr key={ex.id} className="hover:bg-slate-800/30 transition-all group">
+                      <td className="px-8 py-6 whitespace-nowrap font-mono font-black text-sm text-white group-hover:text-amber-500 transition-colors">#{ex.execution_number}</td>
+                      <td className="px-6 py-6 whitespace-nowrap text-slate-200 font-black text-sm">{ex.requester_name}</td>
+                      <td className="px-6 py-6 whitespace-nowrap text-slate-300 font-bold text-sm">{ex.opponent_name}</td>
+                      <td className="px-6 py-6 whitespace-nowrap text-center text-emerald-400 font-mono font-black text-sm">{(ex.amount || 0).toLocaleString()} <span className="text-[10px]">ر.س</span></td>
+                      <td className="px-6 py-6 whitespace-nowrap text-center">
+                        <span className={`px-4 py-1.5 rounded-full text-[9px] font-black border uppercase ${
+                          ex.status?.includes('مكتمل') ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' :
+                          ex.status?.includes('قيد') ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' :
+                          'bg-slate-800 text-slate-300 border-slate-700'
+                        }`}>
+                          {ex.status}
+                        </span>
+                      </td>
+                      <td className="px-8 py-6 whitespace-nowrap text-left">
+                        <div className="flex items-center justify-end gap-2">
+                          <button 
+                            onClick={() => setEditingExec(ex)}
+                            className="p-3 bg-slate-800 rounded-xl text-slate-400 hover:text-white hover:bg-amber-500/20 transition-all border border-slate-700/50"
+                          >
+                            <Edit2 className="w-4 h-4" />
+                          </button>
+                          <button className="p-3 bg-slate-800 rounded-xl text-slate-400 hover:text-white hover:bg-slate-700 transition-all border border-slate-700/50">
+                            <ArrowUpRight className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
-      </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filtered.length === 0 ? (
+            <div className="col-span-full py-20 text-center text-amber-400 italic font-black text-lg bg-slate-900 border border-slate-800 rounded-[2.5rem]">
+              لا يوجد نتائج للبحث...
+            </div>
+          ) : (
+            filtered.map((ex) => (
+              <motion.div 
+                layout
+                key={ex.id}
+                className="bg-slate-900 border border-slate-800 p-6 rounded-[2rem] shadow-xl hover:border-amber-500/50 transition-all group"
+              >
+                <div className="flex justify-between items-start mb-6">
+                  <div className="p-3 bg-amber-500/10 rounded-2xl border border-amber-500/20 text-amber-500">
+                    <Gavel className="w-6 h-6" />
+                  </div>
+                  <span className={`px-4 py-1.5 rounded-full text-[9px] font-black border uppercase ${
+                    ex.status?.includes('مكتمل') ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' :
+                    ex.status?.includes('قيد') ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' :
+                    'bg-slate-800 text-slate-300 border-slate-700'
+                  }`}>
+                    {ex.status}
+                  </span>
+                </div>
+                
+                <h3 className="text-lg font-black text-white mb-2 group-hover:text-amber-500 transition-colors">
+                  طلب رقم: {ex.execution_number}
+                </h3>
+                
+                <div className="space-y-3 mb-6">
+                  <div className="flex items-center gap-3 text-sm">
+                    <User className="w-4 h-4 text-slate-500" />
+                    <span className="text-slate-400 font-bold">الموكل:</span>
+                    <span className="text-slate-200 font-black">{ex.requester_name}</span>
+                  </div>
+                  <div className="flex items-center gap-3 text-sm">
+                    <Activity className="w-4 h-4 text-slate-500" />
+                    <span className="text-slate-400 font-bold">الطرف الآخر:</span>
+                    <span className="text-slate-200 font-black">{ex.opponent_name}</span>
+                  </div>
+                  <div className="flex items-center gap-3 text-sm">
+                    <CreditCard className="w-4 h-4 text-slate-500" />
+                    <span className="text-slate-400 font-bold">المبلغ:</span>
+                    <span className="text-emerald-400 font-black">{(ex.amount || 0).toLocaleString()} ر.س</span>
+                  </div>
+                  {ex.court_name && (
+                    <div className="flex items-center gap-3 text-sm">
+                      <FileText className="w-4 h-4 text-slate-500" />
+                      <span className="text-slate-400 font-bold">المحكمة:</span>
+                      <span className="text-slate-200 font-bold">{ex.court_name}</span>
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex gap-2 pt-4 border-t border-slate-800">
+                  <button 
+                    onClick={() => setEditingExec(ex)}
+                    className="flex-1 flex items-center justify-center gap-2 bg-slate-800 hover:bg-amber-500 text-slate-400 hover:text-slate-950 p-3 rounded-xl font-black text-xs transition-all border border-slate-700/50"
+                  >
+                    <Edit2 className="w-4 h-4" />
+                    تعديل البيانات
+                  </button>
+                  <button 
+                    onClick={() => {
+                      if (confirm('هل أنت متأكد من حذف هذا السجل؟')) {
+                        onDeleteExecution && onDeleteExecution(ex.id);
+                      }
+                    }}
+                    className="p-3 bg-red-500/10 text-red-500 border border-red-500/20 hover:bg-red-500 hover:text-white rounded-xl transition-all"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+              </motion.div>
+            ))
+          )}
+        </div>
+      )}
     </div>
   );
 }

@@ -791,6 +791,22 @@ export default function AILegalSearch() {
                     onClick={() => {
                       setSelectedSystem(sys);
                       setObsAiResult(null);
+
+                      const linkMapping: Record<string, string> = {
+                        civil_transactions: localStorage.getItem('law_link_civil_transactions') || '',
+                        companies_law: localStorage.getItem('law_link_companies_new') || '',
+                        labor_law: localStorage.getItem('law_link_labor_law') || '',
+                        evidence_law: localStorage.getItem('law_link_evidence_law') || '',
+                        enforcement_law: localStorage.getItem('law_link_enforcement_law') || '',
+                        bankruptcy_law: localStorage.getItem('law_link_bankruptcy_law') || '',
+                      };
+                      const externalLink = linkMapping[sys.id];
+                      
+                      if (externalLink) {
+                        window.open(externalLink, '_blank', 'noopener,noreferrer');
+                      } else {
+                        alert('لم يتم العثور على رابط مخصص لهذا النظام. يرجى التوجه لصفحة الإعدادات وإضافته أولاً.');
+                      }
                     }}
                     className="cursor-pointer group flex flex-col relative text-right"
                   >

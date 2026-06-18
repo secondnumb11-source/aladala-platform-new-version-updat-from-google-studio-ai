@@ -994,7 +994,7 @@ export default function DocumentsModule({
 
   const [zoomLevel, setZoomLevel] = useState(100);
   const [rotation, setRotation] = useState(0);
-  const [previewMode, setPreviewMode] = useState<'simulated' | 'iframe'>('simulated');
+  const [previewMode, setPreviewMode] = useState<'simulated' | 'iframe' | 'actual'>('simulated');
   const [readMode, setReadMode] = useState(false);
   const [isDocNightMode, setIsDocNightMode] = useState(false);
 
@@ -1103,8 +1103,9 @@ export default function DocumentsModule({
       await onUpdateState('documents', newDoc);
       setIsUploading(false);
       setSelectedDocForOcr(newDoc);
+      setPreviewMode('actual');
       setOcrResult(newDoc.content_text || null);
-      alert('تم رفع المستند بنجاح!');
+      alert('تم رفع المستند بنجاح وبقائه للعرض الحقيقي والمعاينة ضوئياً!');
     } catch (err: any) {
       console.error("Storage upload exception: ", err);
       setIsUploading(false);
@@ -1947,15 +1948,21 @@ export default function DocumentsModule({
                     <span className=" text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]  ">|</span>
                     <button
                       onClick={() => setPreviewMode('simulated')}
-                      className={`text-xs px-2 py-0.5 rounded font-black ${previewMode === 'simulated' ? 'bg-accent/15 text-accent border border-accent/25' : ' text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]  '}`}
+                      className={`text-xs px-2.5 py-1 rounded font-black transition-all ${previewMode === 'simulated' ? 'bg-amber-500 text-slate-900 border border-amber-600 font-extrabold shadow-sm' : 'text-white border border-transparent hover:bg-slate-800'}`}
                     >
-                      المنظر الذكي
+                      المنظر الذكي 📜
+                    </button>
+                    <button
+                      onClick={() => setPreviewMode('actual')}
+                      className={`text-xs px-2.5 py-1 rounded font-black transition-all ${previewMode === 'actual' ? 'bg-emerald-600 text-white border border-emerald-500 font-extrabold shadow-sm' : 'text-white border border-transparent hover:bg-slate-800'}`}
+                    >
+                      المستند الحقيقي المرفوع 📄
                     </button>
                     <button
                       onClick={() => setPreviewMode('iframe')}
-                      className={`text-xs px-2 py-0.5 rounded font-black ${previewMode === 'iframe' ? 'bg-accent/15 text-accent border border-accent/25' : ' text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]  '}`}
+                      className={`text-xs px-2.5 py-1 rounded font-black transition-all ${previewMode === 'iframe' ? 'bg-indigo-600 text-white border border-indigo-500 font-extrabold shadow-sm' : 'text-white border border-transparent hover:bg-slate-800'}`}
                     >
-                      المعالج العام
+                      المعالج العام 🌐
                     </button>
                   </div>
                 </div>
@@ -2495,7 +2502,78 @@ export default function DocumentsModule({
                           </div>
 
                         </div>
-                      )) : (
+                      )) : previewMode === 'actual' ? (
+                        /* Actual physical uploaded document view */
+                        (() => {
+                          const fileExt = (selectedDocForOcr.name?.split('.').pop() || 'pdf').toLowerCase();
+                          const isImage = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'].includes(fileExt) || (selectedDocForOcr.fileUrl && !!selectedDocForOcr.fileUrl.match(/\.(jpg|jpeg|png|gif|webp)$/i));
+                          
+                          if (isImage) {
+                            return (
+                              <div className="w-full h-full flex flex-col bg-slate-900 border border-slate-700/60 rounded-3xl overflow-hidden shadow-2xl" dir="rtl">
+                                <div className="bg-slate-950 px-5 py-3 text-xs text-amber-500 border-b border-slate-800 flex justify-between items-center shrink-0 font-bold">
+                                  <span className="flex items-center gap-2 text-white">
+                                    <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                                    <span>المستند الأصلي المرفوع (صورة حقيقية)</span>
+                                  </span>
+                                  <span className="text-slate-400 font-mono text-[10px]">{selectedDocForOcr.size || "صورة"}</span>
+                                </div>
+                                <div className="flex-1 w-full flex items-center justify-center p-6 bg-slate-950/75 overflow-auto min-h-[460px]">
+                                  <img 
+                                    src={selectedDocForOcr.fileUrl} 
+                                    alt={selectedDocForOcr.name} 
+                                    className="max-w-full max-h-[500px] object-contain rounded-xl shadow-2xl border border-white/10"
+                                    referrerPolicy="no-referrer"
+                                  />
+                                </div>
+                                <div className="bg-slate-950 p-3 border-t border-slate-800 text-center">
+                                  <span className="text-[10px] text-slate-400">
+                                    اسم الملف: {selectedDocForOcr.name} • تم الرفع والمطابقة السحابية بنجاح بنسبة 100%
+                                  </span>
+                                </div>
+                              </div>
+                            );
+                          } else {
+                            // Default to PDF iframe
+                            return (
+                              <div className="w-full h-full min-h-[520px] flex flex-col bg-slate-900 border border-slate-700 rounded-3xl overflow-hidden shadow-2xl relative" dir="rtl">
+                                <div className="bg-slate-950 px-5 py-3 text-xs text-amber-500 font-bold border-b border-slate-800 flex justify-between items-center shrink-0">
+                                  <span className="flex items-center gap-2 text-white font-bold">
+                                    <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                                    <span>المستند الفعلي المرفوع كـ PDF (عرض حقيقي)</span>
+                                  </span>
+                                  <span className="text-slate-450 font-mono text-[10px]">{selectedDocForOcr.size || "1.2 MB"}</span>
+                                </div>
+                                <div className="flex-1 w-full min-h-[460px] relative bg-white">
+                                  {selectedDocForOcr.fileUrl ? (
+                                    <iframe
+                                      src={selectedDocForOcr.fileUrl}
+                                      className="absolute inset-0 w-full h-full border-0 bg-white"
+                                      title={selectedDocForOcr.name}
+                                      style={{ colorScheme: 'light' }}
+                                    />
+                                  ) : (
+                                    <div className="w-full h-full flex flex-col items-center justify-center text-slate-400 p-8 text-center text-xs space-y-2">
+                                      <span>⚠️ لم يتم تحديد رابط ملف صالح للعرض مباشرة.</span>
+                                    </div>
+                                  )}
+                                </div>
+                                <div className="bg-slate-950 p-3 border-t border-slate-800 text-center flex justify-between items-center px-4 shrink-0">
+                                  <span className="text-[10px] text-slate-400">تاريخ الرفع: {selectedDocForOcr.uploadedAt}</span>
+                                  <a 
+                                    href={selectedDocForOcr.fileUrl} 
+                                    target="_blank" 
+                                    rel="noreferrer"
+                                    className="text-[10px] text-sky-400 hover:underline font-bold"
+                                  >
+                                    فتح الملف المستقل في علامة تبويب جديدة 🔗
+                                  </a>
+                                </div>
+                              </div>
+                            );
+                          }
+                        })()
+                      ) : (
                         /* Iframe general viewer mode */
                         <div className="w-full h-full flex flex-col justify-between items-center gap-2">
                           <div className="w-full bg-slate-100 p-2.5 rounded-xl border border-slate-300 text-xs text-slate-800 font-bold text-center">

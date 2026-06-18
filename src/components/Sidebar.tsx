@@ -41,6 +41,7 @@ import {
   Compass,
   Key,
   Zap,
+  Link2,
   Database,
   ChevronDown,
   ChevronUp,
@@ -231,7 +232,7 @@ export default function Sidebar({
     { id: 'smart-services', name: 'خدمات المسانده والتحقق', icon: ShieldAlert },
     { id: 'court-map', name: 'دليل المحاكم', icon: Compass },
 
-    { id: 'najiz', name: 'الربط المباشر مع ناجز', icon: Zap },
+    { id: 'najiz', name: 'الربط مع ناجز', icon: Link2 },
     { id: 'audit-logs', name: 'سجل العمليات', icon: FileText },
     { id: 'settings', name: 'الاعدادات', icon: Settings },
 
@@ -488,7 +489,7 @@ export default function Sidebar({
                   // Inhibit administration and database operations logs
                   if (item.id === 'team' || item.id === 'audit-logs' || item.id === 'employees-data') return false;
                   if (item.id === 'employee-portal') return true;
-                  if (item.id === 'documentation' || item.id === 'settings') return true;
+                  if (item.id === 'documentation' || item.id === 'settings' || item.id === 'najiz') return true;
                   
                   return config.includes(item.id) || allowedByPerms.includes(item.id);
                 }
