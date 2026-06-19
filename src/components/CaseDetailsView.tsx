@@ -8,7 +8,8 @@ import {
   MapPin, Sparkles, FileDown, Printer, RefreshCw
 } from "lucide-react";
 import CourtMapAndServices from "./CourtMapAndServices";
-import AiDrafting from "./AiDrafting";
+import { lazy, Suspense } from "react";
+const AiDrafting = lazy(() => import('./AiDrafting'));
 import { getLeadLawyerName } from "./CasesModule";
 
 interface CaseDetailsViewProps {
@@ -1347,7 +1348,9 @@ export default function CaseDetailsView({
 
           {activeSubTab === "ai_drafting" && (
             <div id="panel-aidrafting" className="space-y-6">
-              <AiDrafting />
+              <Suspense fallback={<div className="h-64 flex items-center justify-center animate-pulse bg-slate-100 dark:bg-slate-800 rounded-3xl"><div className="w-8 h-8 rounded-full border-4 border-amber-500 border-t-transparent animate-spin"/></div>}>
+                <AiDrafting />
+              </Suspense>
             </div>
           )}
 

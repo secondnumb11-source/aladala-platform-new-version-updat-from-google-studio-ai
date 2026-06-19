@@ -31,7 +31,12 @@ import {
   Lock,
   Landmark,
   Camera,
-  Trash2
+  Trash2,
+  Edit2,
+  Edit3,
+  AlertCircle,
+  History as HistoryIcon,
+  Brain
 } from 'lucide-react';
 import { Document, Client, Case } from '@/types';
 import { supabase, uploadFileToStorage } from '@/lib/supabase';
@@ -1310,9 +1315,949 @@ export default function DocumentsModule({
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         
-        {/* Left Side: Folder, Drag & Drop, Documents Lists */}
+        {/* Right Side: Smart OCR Scanned text result / Quick Document Previewer (Moved to Left) */}
+        <div className={`${isFocusedRead ? 'lg:col-span-12' : 'lg:col-span-6'} space-y-6 transition-all duration-300 items-stretch flex flex-col order-2 lg:order-2`}>
+          <div className={`area-secondary border-2 border-slate-200 rounded-[2.5rem] p-8 space-y-6 ${isFocusedRead ? 'min-h-[850px] lg:h-[900px]' : 'min-h-[750px]'} flex flex-col justify-between shadow-2xl shadow-slate-200/50 transition-all duration-300 bg-white/60 backdrop-blur-md`}>
+            
+            {/* Tab selector menu */}
+            <div className="flex bg-slate-100/80 p-2 rounded-2xl border border-slate-200 gap-2 shrink-0">
+              <button
+                onClick={() => setRightPanelTab('preview')}
+                className={`flex-1 py-3 px-4 text-[12px] font-black rounded-xl transition-all cursor-pointer text-center flex items-center justify-center gap-2 ${
+                  rightPanelTab === 'preview'
+                    ? 'bg-blue-600 text-white shadow-lg shadow-blue-200'
+                    : 'text-slate-200 font-bold'
+                }`}
+              >
+                <span>🔍 المعاينة السريعة</span>
+              </button>
+              <button
+                onClick={() => setRightPanelTab('ocr')}
+                className={`flex-1 py-3 px-4 text-[12px] font-black rounded-xl transition-all cursor-pointer text-center flex items-center justify-center gap-2 ${
+                  rightPanelTab === 'ocr'
+                    ? 'bg-blue-600 text-white shadow-lg shadow-blue-200'
+                    : 'text-slate-200 font-bold'
+                }`}
+              >
+                <Cpu className="w-4 h-4" />
+                <span>تحليل OCR</span>
+              </button>
+              <button
+                onClick={() => setRightPanelTab('versions')}
+                className={`flex-1 py-3 px-4 text-[12px] font-black rounded-xl transition-all cursor-pointer text-center flex items-center justify-center gap-2 ${
+                  rightPanelTab === 'versions'
+                    ? 'bg-blue-600 text-white shadow-lg shadow-blue-200'
+                    : 'text-slate-200 font-bold'
+                }`}
+              >
+                <span>⏱️ سجل التعديلات</span>
+              </button>
+            </div>
+
+            {/* TAB CONTENT: VERSIONS AND CHANGE TRACKING */}
+            {rightPanelTab === 'versions' && (
+              <div className="flex-1 flex flex-col justify-between min-h-0 space-y-3">
+                <div className="space-y-1">
+                  <div className="flex items-center justify-between">
+                    <h3 className="font-black text-xs text-main ">سجل إصدارات المستند والتعديلات</h3>
+                    {selectedDocForOcr && (
+                      <span className="text-[11px] bg-amber-500 text-[#d97706] border border-amber-500 px-2 py-0.5 rounded-full font-mono font-bold">
+                        إصدار: {selectedDocForOcr.currentVersion || 1}
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-[10px]  text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]   font-bold leading-relaxed">
+                    تتبع التغييرات على مسودات العقود، وقم باستعادة الإصدارات السابقة بضغطة واحدة مع توثيق ملخص التعديلات.
+                  </p>
+                </div>
+
+                {selectedDocForOcr ? (
+                  <div className="flex-1 flex flex-col min-h-0 space-y-3">
+                    {/* Versions Archive List */}
+                    <div className="space-y-2 max-h-[175px] overflow-y-auto border-b border-border pb-3 shrink-0">
+                      <span className="text-[10px] text-primary font-black block">⌛ الأرشيف التاريخي لمسودة الملف:</span>
+                      
+                      <div className="space-y-2">
+                        {getDocumentVersions(selectedDocForOcr).map((v: any, index: number) => {
+                          const isActive = (selectedDocForOcr.currentVersion || 1) === v.version;
+                          return (
+                            <div 
+                              key={v.id || index}
+                              className={`p-2.5 rounded-2xl border text-right transition-all flex flex-col space-y-1 ${
+                                isActive 
+                                ? 'bg-amber-100/50 border-amber-500/30 ring-1 ring-amber-500/20' 
+                                : 'bg-slate-50/50 border-slate-200'
+                              }`}
+                            >
+                              <div className="flex items-center justify-between">
+                                <span className="text-xs font-black text-main flex items-center gap-1.5">
+                                  {isActive && <CheckCircle className="w-3 h-3 text-emerald-500" />}
+                                  الإصدار {v.version} ({v.label})
+                                </span>
+                                <span className="text-[10px] text-slate-200 font-bold">{v.timestamp}</span>
+                              </div>
+                              <p className="text-[10px] text-slate-700 leading-relaxed font-bold italic line-clamp-1">
+                                {v.summary || 'تم قيد الوثيقة وفهرستها في النظام الأساسي.'}
+                              </p>
+                              <div className="flex gap-2 mt-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                                {!isActive && (
+                                  <button className="text-[9px] bg-amber-500 text-white px-2 py-0.5 rounded-md font-black hover:bg-amber-600">استعادة ⟲</button>
+                                )}
+                                <button className="text-[9px] bg-slate-200 text-slate-700 px-2 py-0.5 rounded-md font-bold">معاينة</button>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* New Version Form */}
+                    <div className="space-y-2 shrink-0">
+                      <div className="flex items-center gap-2">
+                        <Edit3 className="w-4 h-4 text-primary" />
+                        <span className="text-[11px] font-black text-main">تسجيل تعديلات جديدة (الإصدار { (selectedDocForOcr.currentVersion || 1) + 1}):</span>
+                      </div>
+                      <textarea 
+                        placeholder="دون هنا ملاحظات التعديل أو ملخص التغييرات التي طرأت على المستند حالياً..."
+                        className="w-full h-16 bg-slate-100/80 border border-slate-200 rounded-xl p-3 text-[10px] font-bold text-slate-800 outline-none focus:border-amber-500 transition-colors placeholder:text-slate-200 font-bold"
+                      />
+                      <button className="w-full bg-slate-900 border border-slate-800 text-amber-100 font-black py-2.5 rounded-2xl text-[11px] hover:bg-slate-850 flex items-center justify-center gap-2 shadow-lg transition-transform active:scale-[0.98]">
+                        <RefreshCw className="w-3.5 h-3.5" />
+                        حفظ الإصدار الجديد وتحديث الفهرس
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center justify-center flex-1 space-y-3 opacity-40">
+                    <HistoryIcon className="w-16 h-16 text-slate-200" strokeWidth={1} />
+                    <p className="text-sm font-bold text-slate-200 font-bold">يرجى تحديد مستند لعرض تتبع الإصدارات</p>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* TAB CONTENT: ACCREDITED PREVIEWER */}
+            {rightPanelTab === 'preview' && (
+              <div className="flex-1 flex flex-col min-h-0 space-y-3">
+                
+                {/* Embedded Reader Toolbar with Zoom / Rotation / Toggle controls */}
+                <div className="flex items-center justify-between bg-slate-100  px-3 py-1.5 rounded-xl border border-border text-sm shrink-0 font-bold">
+                  {/* Tool actions */}
+                  <div className="flex items-center gap-2">
+                    <button 
+                      onClick={() => setZoomLevel(prev => Math.max(50, prev - 15))}
+                      className="text-slate-700 font-mono h-6 w-6 rounded flex items-center justify-center cursor-pointer transition-colors"
+                      title="تصغير"
+                    >
+                      -
+                    </button>
+                    <span className="text-xs text-main font-mono">{zoomLevel}%</span>
+                    <button 
+                      onClick={() => setZoomLevel(prev => Math.min(180, prev + 15))}
+                      className="text-slate-700 font-mono h-6 w-6 rounded flex items-center justify-center cursor-pointer transition-colors"
+                      title="تكبير"
+                    >
+                      +
+                    </button>
+                    <span className="text-slate-350 text-xs">|</span>
+                    <button 
+                      onClick={() => setRotation(prev => (prev + 90) % 360)}
+                      className="text-slate-700 text-xs px-1.5 py-0.5 rounded flex items-center gap-1 cursor-pointer transition-colors"
+                      title="تدوير الصفحة"
+                    >
+                      🔄 تدوير
+                    </button>
+                  </div>
+
+                  {/* Mode Selector */}
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <button
+                      onClick={() => {
+                        setIsFocusedRead(!isFocusedRead);
+                        if (!isFocusedRead) {
+                          setReadMode(true);
+                        }
+                      }}
+                      className={`text-xs px-2.5 py-1 rounded-lg font-black flex items-center gap-1.5 transition-all active:scale-95 duration-200 ${
+                        isFocusedRead 
+                          ? 'bg-amber-500 text-slate-950 shadow-md shadow-amber-500/20' 
+                          : 'bg-amber-500 text-amber-400 font-black'
+                      }`}
+                      title="القراءة المركزة: إخفاء القوائم وتوسيع مساحة عرض النص وتفعيل مبرز الألوان الذكي"
+                    >
+                      <span>{isFocusedRead ? '👁️ إلغاء القراءة المركزة' : '👁️ القراءة المركزة'}</span>
+                    </button>
+                    <span className="text-slate-350 ">|</span>
+                    <button
+                      onClick={() => {
+                        setIsReaderMode(!isReaderMode);
+                        if (!isReaderMode) {
+                          setReadMode(true);
+                        }
+                      }}
+                      className={`text-xs px-2.5 py-1 rounded-lg font-black flex items-center gap-1.5 transition-all active:scale-95 duration-200 ${
+                        isReaderMode 
+                          ? 'bg-emerald-600 text-white shadow-md shadow-emerald-500/20' 
+                          : 'bg-emerald-100 text-emerald-800'
+                      }`}
+                      title="وضع القراءة المبسطة للأبحاث القانونية: تباعد مريح وتعديل حجم الخطوط وحذف المشتتات"
+                    >
+                      <span>{isReaderMode ? '📖 وضع القارئ: نشط' : '📖 وضع القارئ'}</span>
+                    </button>
+                    <span className="text-slate-350 ">|</span>
+                      <button
+                        onClick={() => setReadMode(!readMode)}
+                        className={`text-xs px-2.5 py-1 rounded-lg font-black flex items-center gap-1.5 transition-all active:scale-95 duration-200 ${readMode ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20' : 'bg-blue-50 text-blue-800'}`}
+                        title="تكبير الخط وتظليل النصوص القانونية الهامة تلقائياً"
+                      >
+                        <span>📖 وضع القراءة</span>
+                      </button>
+                    <span className="text-slate-350">|</span>
+                    <button
+                      onClick={() => setIsDocNightMode(!isDocNightMode)}
+                      className={`text-xs px-2.5 py-1 rounded-lg font-black flex items-center gap-1.5 transition-all duration-200 active:scale-95 ${
+                        isDocNightMode 
+                          ? 'bg-slate-950 border border-yellow-500/50 text-yellow-300 shadow-lg' 
+                          : 'bg-amber-100 text-amber-900 border border-amber-300/30'
+                      }`}
+                      title="قفل القراءة الليلية لتقليل إجهاد الأعين عند رصد المستندات الطويلة"
+                    >
+                      <span>{isDocNightMode ? '💡 وضع النهار' : '🌙 قراءة ليلية'}</span>
+                    </button>
+                    <span className=" text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]  ">|</span>
+                    <button
+                      onClick={() => setPreviewMode('simulated')}
+                      className={`text-xs px-2.5 py-1 rounded font-black transition-all ${previewMode === 'simulated' ? 'bg-amber-500 text-slate-900 border border-amber-600 font-extrabold shadow-sm' : 'text-white border border-transparent hover:bg-slate-800'}`}
+                    >
+                      المنظر الذكي 📜
+                    </button>
+                    <button
+                      onClick={() => setPreviewMode('actual')}
+                      className={`text-xs px-2.5 py-1 rounded font-black transition-all ${previewMode === 'actual' ? 'bg-emerald-600 text-white border border-emerald-500 font-extrabold shadow-sm' : 'text-white border border-transparent hover:bg-slate-800'}`}
+                    >
+                      المستند الحقيقي المرفوع 📄
+                    </button>
+                    <button
+                      onClick={() => setPreviewMode('iframe')}
+                      className={`text-xs px-2.5 py-1 rounded font-black transition-all ${previewMode === 'iframe' ? 'bg-indigo-600 text-white border border-indigo-500 font-extrabold shadow-sm' : 'text-white border border-transparent hover:bg-slate-800'}`}
+                    >
+                      المعالج العام 🌐
+                    </button>
+                  </div>
+                </div>
+
+                {/* شريط أدوات مصغر لتصنيف المستند وترميزه اللوني بقوة */}
+                {isFocusedRead && selectedDocForOcr && (
+                  <div className="space-y-2 shrink-0 animate-fade-in">
+                    <div className="bg-slate-50 border border-border px-4 py-3 rounded-2xl flex flex-col md:flex-row items-center justify-between gap-4 text-right shadow-sm" dir="rtl">
+                      <div className="flex flex-wrap items-center gap-2.5">
+                        <span className="text-xs font-black text-slate-750 flex items-center gap-1">
+                          ✍️ خط القراءة:
+                        </span>
+                        <div className="flex gap-1.5">
+                          {[
+                            { id: 'sans', name: 'الأساسي' },
+                            { id: 'amiri', name: 'أميري (Amiri)' },
+                            { id: 'playfair', name: 'قانوني (Playfair)' }
+                          ].map((font) => (
+                            <button
+                              key={font.id}
+                              type="button"
+                              onClick={() => setReadingFont(font.id as any)}
+                              className={`text-xs px-3 py-1.5 rounded-xl font-bold transition-all active:scale-95 cursor-pointer border ${
+                                readingFont === font.id 
+                                  ? 'bg-amber-500 text-slate-950 border-amber-600 shadow-sm font-black' 
+                                  : 'bg-white border-slate-200 text-slate-200 font-bold'
+                              }`}
+                            >
+                              {font.name}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  <div className="bg-slate-50  border border-border px-4 py-3 rounded-2xl flex flex-col md:flex-row items-center justify-between gap-4 text-right shadow-sm" dir="rtl">
+                    {/* Classification section */}
+                    <div className="flex flex-wrap items-center gap-2.5">
+                      <span className="text-xs font-black text-slate-750  flex items-center gap-1">
+                        📁 تصنيف المستند الحالي:
+                      </span>
+                      <div className="flex gap-1.5">
+                        {['قانوني', 'مالي', 'إداري'].map((cat) => {
+                          const isSelected = selectedDocForOcr.category === cat;
+                          return (
+                            <button
+                              key={cat}
+                              type="button"
+                              onClick={() => {
+                                const updatedDoc = {
+                                  ...selectedDocForOcr,
+                                  category: cat
+                                };
+                                onUpdateState('documents', updatedDoc);
+                                setSelectedDocForOcr(updatedDoc);
+                              }}
+                              className={`text-xs px-3 py-1.5 rounded-xl font-bold transition-all active:scale-95 cursor-pointer border ${
+                                isSelected 
+                                  ? 'bg-accent/15 text-accent border-accent/45 shadow-sm font-black' 
+                                  : 'bg-gradient-to-br from-[#050e21] to-[#0c1a35]  border-border text-slate-750 '
+                              }`}
+                            >
+                              {cat === 'قانوني' ? '⚖️ قانوني' : cat === 'مالي' ? '💰 مالي' : '💼 إداري'}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* Color coding section */}
+                    <div className="flex flex-wrap items-center gap-3">
+                      <span className="text-xs font-black text-slate-750 ">
+                        🏷️ ترميز بصري ملون:
+                      </span>
+                      <div className="flex items-center gap-2 bg-gradient-to-br from-[#050e21] to-[#0c1a35]  px-2.5 py-1.5 rounded-xl border border-border">
+                        {[
+                          { code: 'red', name: 'أحمر', label: 'مراجعة', dot: 'bg-rose-500' },
+                          { code: 'green', name: 'أخضر', label: 'معتمد', dot: 'bg-emerald-500' },
+                          { code: 'blue', name: 'أزرق', label: 'عاجل', dot: 'bg-indigo-500' },
+                          { code: 'amber', name: 'أصفر', label: 'دراسة', dot: 'bg-amber-500' },
+                          { code: 'purple', name: 'أرجواني', label: 'سري', dot: 'bg-purple-500' },
+                        ].map(({ code, name, label, dot }) => {
+                          const isSelected = selectedDocForOcr.colorCode === code;
+                          return (
+                            <button
+                              key={code}
+                              type="button"
+                              onClick={() => {
+                                const updatedDoc = {
+                                  ...selectedDocForOcr,
+                                  colorCode: code
+                                };
+                                onUpdateState('documents', updatedDoc);
+                                setSelectedDocForOcr(updatedDoc);
+                              }}
+                              className={`w-5 h-5 rounded-full ${dot} border-2 active:scale-95 transition-all cursor-pointer flex items-center justify-center relative ${
+                                isSelected ? 'border-main  scale-110' : 'border-transparent'
+                              }`}
+                              title={`وضع ترميز ${name} (${label})`}
+                            >
+                              {isSelected && (
+                                <span className="absolute text-[10px] text-white font-extrabold">✓</span>
+                              )}
+                            </button>
+                          );
+                        })}
+                        
+                        {/* Clear tag button */}
+                        {selectedDocForOcr.colorCode && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const updatedDoc = {
+                                ...selectedDocForOcr,
+                                colorCode: undefined
+                              };
+                              onUpdateState('documents', updatedDoc);
+                              setSelectedDocForOcr(updatedDoc);
+                            }}
+                            className="text-[10px] text-rose-650  font-extrabold whitespace-nowrap px-1 border border-rose-500 rounded cursor-pointer mr-1"
+                          >
+                            مسح الترميز
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                  </div>
+                )}
+
+                {/* Interactive Dynamic Highlighting Controls Panel in Focused Mode */}
+                {isFocusedRead && (
+                  <div className="bg-amber-500/[0.04]  border border-amber-500 p-3.5 rounded-2xl space-y-3 shrink-0 animate-fade-in text-right" dir="rtl">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-amber-500 pb-2">
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm">🎨</span>
+                        <div>
+                          <h4 className="font-black text-xs  text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]   leading-none">لوحة مميز الألوان والتركيز القانوني</h4>
+                          <span className="text-[10px]  text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]   font-bold block mt-0.5">قم بتمييز البنود والالتزامات الهامة في العقد لتسريع تصفحها</span>
+                        </div>
+                      </div>
+                      
+                      {/* Font and Spacing Controls */}
+                      <div className="flex flex-wrap items-center gap-4 bg-[#0c1830]/50 p-2 rounded-xl border border-amber-500/20">
+                         <div className="flex items-center gap-2">
+                            <span className="text-[10px] font-black text-white">حجم الخط:</span>
+                            <div className="flex gap-1">
+                               <button onClick={() => setFontSize(prev => Math.max(12, prev - 2))} className="w-6 h-6 rounded bg-amber-500/20 border border-amber-500/40 text-white text-xs transition-all">-</button>
+                               <span className="text-[10px] font-mono text-white w-6 text-center">{fontSize}</span>
+                               <button onClick={() => setFontSize(prev => Math.min(24, prev + 2))} className="w-6 h-6 rounded bg-amber-500/20 border border-amber-500/40 text-white text-xs transition-all">+</button>
+                            </div>
+                         </div>
+                         <div className="flex items-center gap-2">
+                            <span className="text-[10px] font-black text-white">تباعد الأسطر:</span>
+                            <div className="flex gap-1">
+                               <button onClick={() => setLineSpacing(prev => Math.max(1, prev - 0.2))} className="w-6 h-6 rounded bg-amber-500/20 border border-amber-500/40 text-white text-xs transition-all">-</button>
+                               <span className="text-[10px] font-mono text-white w-8 text-center">{lineSpacing.toFixed(1)}</span>
+                               <button onClick={() => setLineSpacing(prev => Math.min(3, prev + 0.2))} className="w-6 h-6 rounded bg-amber-500/20 border border-amber-500/40 text-white text-xs transition-all">+</button>
+                            </div>
+                         </div>
+                      </div>
+
+                      {/* Active Color Highlight Selector */}
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] font-black  text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]  ">اللون النشط للتمييز:</span>
+                        <div className="flex gap-1.5">
+                          {(['amber', 'emerald', 'rose', 'sky'] as const).map((color) => {
+                            const bgStyle = {
+                              amber: 'bg-amber-400 border-amber-500',
+                              emerald: 'bg-emerald-400 border-emerald-500',
+                              rose: 'bg-rose-400 border-rose-500',
+                              sky: 'bg-sky-400 border-sky-500'
+                            }[color];
+                            const isSelected = activeHighlightColor === color;
+                            return (
+                              <button
+                                key={color}
+                                type="button"
+                                onClick={() => setActiveHighlightColor(color)}
+                                className={`w-5.5 h-5.5 rounded-full ${bgStyle} border-2 active:scale-95 transition-all cursor-pointer flex items-center justify-center`}
+                                title={`تجديد لون التمييز إلى ${color === 'amber' ? 'الأصفر' : color === 'emerald' ? 'الأخضر' : color === 'rose' ? 'الأحمر' : 'الأزرق'}`}
+                              >
+                                {isSelected && <span className="text-[11px]  text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]  font-extrabold">✓</span>}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Word input for adding custom keywords */}
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        value={highlightInput}
+                        onChange={(e) => setHighlightInput(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            if (highlightInput.trim()) {
+                              addHighlightKeyword(highlightInput, activeHighlightColor);
+                              setHighlightInput('');
+                            }
+                          }
+                        }}
+                        placeholder="أدخل كلمة أو جملة كاملة تريد تمييزها داخل المستند..."
+                        className="flex-1 bg-gradient-to-br from-[#050e21] to-[#0c1a35]  border border-border px-3.5 py-2 rounded-xl text-xs text-main  font-bold focus:outline-none focus:border-accent placeholder: text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.8)] "
+                      />
+                      <button
+                        onClick={() => {
+                          if (highlightInput.trim()) {
+                            addHighlightKeyword(highlightInput, activeHighlightColor);
+                            setHighlightInput('');
+                          }
+                        }}
+                        className="bg-[#ca8a04][#b45309] text-white font-black px-4 py-2 rounded-xl text-xs shadow-sm transition-all active:scale-[0.98] cursor-pointer shrink-0"
+                      >
+                        إضافة تمييز 🎨
+                      </button>
+                    </div>
+
+                    {/* Quick Preset Buttons for easy highlighting */}
+                    <div className="space-y-1.5 pt-0.5">
+                      <span className="text-[10px] text-primary font-black block">⌛ اختصارات وبنود شائعة للفحص السريع (انقر للتمييز):</span>
+                      <div className="flex flex-wrap gap-1.5">
+                        {[
+                          'الالتزامات', 'الشرط الجزائي', 'ضريبة القيمة المضافة', 'القوة القهرية', 
+                          'المسؤولية', 'التعويض عن الضرر', 'أطراف التعاقد', 'المحكمة المختصة', 'سجال'
+                        ].map((term) => {
+                          const isAlreadyHighlighted = !!highlightedKeywords[term];
+                          return (
+                            <button
+                              key={term}
+                              type="button"
+                              onClick={() => {
+                                if (isAlreadyHighlighted) {
+                                  removeHighlightKeyword(term);
+                                } else {
+                                  addHighlightKeyword(term, activeHighlightColor);
+                                }
+                              }}
+                              className={`text-[10px] px-2.5 py-1 rounded-lg font-bold border transition-all active:scale-95 cursor-pointer ${
+                                isAlreadyHighlighted
+                                  ? 'bg-amber-500 border-amber-500 text-amber-400 font-black '
+                                  : 'bg-gradient-to-br from-[#050e21] to-[#0c1a35]  border-border  text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.8)] '
+                              }`}
+                            >
+                              {term} {isAlreadyHighlighted ? '✓' : '+'}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* Custom highlights list */}
+                    {Object.keys(highlightedKeywords).length > 0 && (
+                      <div className="bg-gradient-to-br from-[#050e21] to-[#0c1a35]  p-2.5 rounded-xl border border-dashed border-border flex flex-wrap justify-between items-center gap-2">
+                        <div className="flex flex-wrap gap-1.5 min-w-0">
+                          {Object.entries(highlightedKeywords).map(([term, color]) => {
+                            const badgeColor = {
+                              amber: 'bg-amber-100 text-amber-900 border-amber-200  ',
+                              emerald: 'bg-emerald-100 text-emerald-900 border-emerald-200  ',
+                              rose: 'bg-rose-100 text-rose-900 border-rose-200  ',
+                              sky: 'bg-sky-100 text-sky-900 border-sky-200  '
+                            }[color as 'amber' | 'emerald' | 'rose' | 'sky'] || 'bg-amber-100 text-amber-900 border-amber-200';
+                            return (
+                              <span
+                                key={term}
+                                className={`text-[10px] font-black px-2 py-0.5 rounded-md border flex items-center gap-1 shrink-0 ${badgeColor}`}
+                              >
+                                <span>{term}</span>
+                                <button
+                                  type="button"
+                                  onClick={() => removeHighlightKeyword(term)}
+                                  className="text-[10px] cursor-pointer font-extrabold w-3 h-3 flex items-center justify-center rounded-full"
+                                >
+                                  ×
+                                </button>
+                              </span>
+                            );
+                          })}
+                        </div>
+                        <button
+                          type="button"
+                          onClick={clearAllHighlights}
+                          className="text-[10px] text-rose-600  font-extrabold whitespace-nowrap px-1.5 border border-rose-500 rounded"
+                        >
+                          مسحة كامل اللوحة 🗑️
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Main Viewport */}
+                <div className="flex-1 border border-border rounded-2xl bg-sky-50 p-4 overflow-auto min-h-0 flex items-start justify-center shadow-inner relative custom-scrollbar">
+                        
+                        {selectedDocForOcr ? (
+                          <div className="w-full h-full">
+                            {previewMode === 'simulated' ? (
+                              isReaderMode ? (
+                                /* Elegant, simplified Reader Mode Canvas designed specifically for Legal Research */
+                                <div 
+                                  className={`w-full h-full flex flex-col justify-between rounded-3xl border-2 transition-all duration-300 min-h-[480px] text-right font-sans relative overflow-hidden ${
+                                    readerTheme === 'sepia' 
+                                      ? 'bg-[#fbf7f0] text-[#3c2f2f] border-[#e6d8be] shadow-[0_15px_40px_rgba(44,31,23,0.08)]' 
+                                      : readerTheme === 'dark'
+                                        ? 'bg-[#0a0d14] text-[#cbd5e1] border-[#1e293b] shadow-[0_15px_40px_rgba(0,0,0,0.5)]'
+                                        : 'bg-white text-[#1e293b] border-[#e2e8f0] shadow-[0_15px_40px_rgba(148,163,184,0.08)]'
+                                  }`}
+                                >
+                                  {/* Inside customization bar */}
+                                  <div className={`px-4 py-3 border-b flex flex-wrap items-center justify-between gap-3 shrink-0 ${
+                                    readerTheme === 'sepia' ? 'border-[#e6d8be] bg-[#f5ebd6]/60' : readerTheme === 'dark' ? 'border-[#1e293b] bg-[#111622]/60' : 'border-[#e2e8f0] bg-slate-50/85'
+                                  }`}>
+                                    {/* Font & Spacing controls */}
+                                    <div className="flex items-center gap-4 flex-wrap">
+                                      <div className="flex items-center gap-1.5">
+                                        <span className="text-[11px] font-black opacity-80">حجم الخط:</span>
+                                        <div className="flex items-center gap-1">
+                                          <button 
+                                            type="button"
+                                            onClick={() => setFontSize(prev => Math.max(12, prev - 1))}
+                                            className={`w-7 h-7 rounded-lg text-xs font-bold flex items-center justify-center transition-colors border ${
+                                              readerTheme === 'sepia' ? 'bg-[#dfd3bc] border-[#d8c9a8]' : readerTheme === 'dark' ? 'bg-[#334155] border-[#314155]' : 'bg-slate-100 border-slate-200'
+                                            }`}
+                                          >
+                                            أ-
+                                          </button>
+                                          <span className="text-xs font-mono font-bold w-12 text-center">{fontSize}px</span>
+                                          <button 
+                                            type="button"
+                                            onClick={() => setFontSize(prev => Math.min(32, prev + 1))}
+                                            className={`w-7 h-7 rounded-lg text-xs font-bold flex items-center justify-center transition-colors border ${
+                                              readerTheme === 'sepia' ? 'bg-[#dfd3bc] border-[#d8c9a8]' : readerTheme === 'dark' ? 'bg-[#334155] border-[#314155]' : 'bg-slate-100 border-slate-200'
+                                            }`}
+                                          >
+                                            أ+
+                                          </button>
+                                        </div>
+                                      </div>
+
+                                      <div className="flex items-center gap-1.5">
+                                        <span className="text-[11px] font-black opacity-80">تباعد الأسطر:</span>
+                                        <div className="flex items-center gap-1">
+                                          <button 
+                                            type="button"
+                                            onClick={() => setLineSpacing(prev => Math.max(1.2, prev - 0.2))}
+                                            className={`w-7 h-7 rounded-lg text-xs font-bold flex items-center justify-center transition-colors border ${
+                                              readerTheme === 'sepia' ? 'bg-[#dfd3bc] border-[#d8c9a8]' : readerTheme === 'dark' ? 'bg-[#334155] border-[#314155]' : 'bg-slate-100 border-slate-200'
+                                            }`}
+                                          >
+                                            ↕-
+                                          </button>
+                                          <span className="text-xs font-mono font-bold w-10 text-center">{lineSpacing.toFixed(1)}</span>
+                                          <button 
+                                            type="button"
+                                            onClick={() => setLineSpacing(prev => Math.min(3.0, prev + 0.2))}
+                                            className={`w-7 h-7 rounded-lg text-xs font-bold flex items-center justify-center transition-colors border ${
+                                              readerTheme === 'sepia' ? 'bg-[#dfd3bc] border-[#d8c9a8]' : readerTheme === 'dark' ? 'bg-[#334155] border-[#314155]' : 'bg-slate-100 border-slate-200'
+                                            }`}
+                                          >
+                                            ↕+
+                                          </button>
+                                        </div>
+                                      </div>
+                                    </div>
+
+                                    {/* Reader Themes */}
+                                    <div className="flex items-center gap-2">
+                                      <span className="text-[11px] font-black opacity-85">المظهر:</span>
+                                      <div className="flex bg-slate-200/50 p-0.5 rounded-lg border border-border/80 gap-1">
+                                        {[
+                                          { id: 'sepia', label: '📜 دافئ', style: 'bg-[#fbf7f0] text-[#3c2f2f]' },
+                                          { id: 'light', label: '☀️ ناصع', style: 'bg-white text-slate-900' },
+                                          { id: 'dark', label: '🌙 ليلي', style: 'bg-slate-950 text-slate-100' },
+                                        ].map(theme => (
+                                          <button
+                                            key={theme.id}
+                                            type="button"
+                                            onClick={() => setReaderTheme(theme.id as any)}
+                                            className={`px-2 py-1 text-[10px] font-black rounded-md transition-all cursor-pointer ${
+                                              readerTheme === theme.id 
+                                                ? 'bg-emerald-600 text-white shadow-sm' 
+                                                : 'text-slate-650'
+                                            }`}
+                                          >
+                                            {theme.label}
+                                          </button>
+                                        ))}
+                                      </div>
+                                    </div>
+                                  </div>
+
+                                  {/* Elegant Content Body for long technical reading */}
+                                  <div className="flex-1 overflow-y-auto px-6 py-6 sm:px-10 sm:py-8 space-y-5 custom-scrollbar bg-transparent">
+                                    <div className="border-b pb-4 mb-4 select-text border-slate-300/30">
+                                      <div className="flex items-center gap-2 text-[10px] font-bold opacity-75 mb-1.5 bg-emerald-500/10 text-emerald-700 px-2.5 py-0.5 rounded-md inline-flex">
+                                        <span>{selectedDocForOcr.category}</span>
+                                        <span>•</span>
+                                        <span>تاريخ الرفع: {selectedDocForOcr.uploadedAt}</span>
+                                        <span>•</span>
+                                        <span>الحجم: {selectedDocForOcr.size}</span>
+                                      </div>
+                                      <h2 className={`font-black text-lg select-all leading-tight ${
+                                        readerTheme === 'sepia' ? 'text-[#1c1212]' : readerTheme === 'dark' ? 'text-white' : 'text-slate-950'
+                                      }`}>
+                                        {selectedDocForOcr.name}
+                                      </h2>
+                                      <div className="text-[10px] opacity-75 flex gap-2 items-center mt-2.5">
+                                        <span>⏱️ زمن القراءة المتوقع: {Math.max(1, Math.ceil((selectedDocForOcr.content_text || "").split(/\s+/).length / 150))} دقيقة</span>
+                                        <span>•</span>
+                                        <span>📝 عدد الكلمات: {(selectedDocForOcr.content_text || "").split(/\s+/).length} كلمة</span>
+                                      </div>
+                                    </div>
+
+                                    <div 
+                                      className="text-justify select-text select-all leading-relaxed break-words font-medium transition-all" 
+                                      style={{ 
+                                        fontSize: `${fontSize}px`, 
+                                        lineHeight: lineSpacing,
+                                        fontFamily: readingFont === 'amiri' ? '"Amiri", serif' : readingFont === 'playfair' ? '"Playfair Display", serif' : 'inherit'
+                                      }}
+                                    >
+                                      <p className="indent-8 font-bold text-base mb-4 opacity-90 border-r-2 border-emerald-500 pr-2">
+                                        أنه في هذا التاريخ المعتمد؛ تم أرشفة مستند القضية بالبوابة الموحدة، وتحليل النصوص ضوئياً للأبحاث القانونية.
+                                      </p>
+                                      
+                                      <div className="space-y-4">
+                                        {selectedDocForOcr.content_text ? (
+                                          <div className={`p-4 rounded-xl border border-dashed text-right font-medium leading-relaxed shadow-sm ${
+                                            readerTheme === 'sepia' ? 'bg-[#f4ebe1] border-[#dfd2be]' : readerTheme === 'dark' ? 'bg-[#0f141f] border-slate-800' : 'bg-slate-50 border-slate-200'
+                                          }`}>
+                                            {renderHighlightedText(selectedDocForOcr.content_text)}
+                                          </div>
+                                        ) : (
+                                          <p className="text-center italic text-xs py-12 opacity-80">
+                                            لم يتم تشغيل القارئ الضوئي بعد؛ انقر فوق زر قراءة OCR لاستخراج المحتويات الخطية ممتثلاً لمواثيق البحث القانوني.
+                                          </p>
+                                        )}
+                                      </div>
+                                    </div>
+                                  </div>
+
+                                  {/* Bottom bar of reader layout */}
+                                  <div className={`px-5 py-3 border-t text-xs shrink-0 flex items-center justify-between font-mono ${
+                                    readerTheme === 'sepia' ? 'border-[#e6d8be] bg-[#f5ebd6]/60 text-[#7c6a5e]' : readerTheme === 'dark' ? 'border-[#1e293b] bg-[#111622]/60 text-slate-100 font-bold' : 'border-[#e2e8f0] bg-slate-50/80 text-slate-700'
+                                  }`}>
+                                    <span className="font-sans font-black">بوابة العدالة الرقمية • الأبحاث القانونية المبسطة</span>
+                                    <button
+                                      type="button"
+                                      onClick={() => setIsReaderMode(false)}
+                                      className="px-3 py-1 font-bold rounded-lg bg-emerald-600 text-white font-sans transition-all flex items-center gap-1 active:scale-[0.98] cursor-pointer shadow-sm shadow-emerald-500/10"
+                                    >
+                                      <span> العودة للمنظهر الطبيعي</span>
+                                    </button>
+                                  </div>
+                                </div>
+                              ) : (
+                                /* Simulated accredited digital parchment of Ministry of Justice / Document */
+                                <div 
+                                style={{ 
+                                  transform: `rotate(${rotation}deg) scale(${zoomLevel / 100})`, 
+                                  transformOrigin: 'top center',
+                                  transition: 'transform 0.2s cubic-bezier(0.4, 0, 0.2, 1)'
+                                }}
+                                className={`border-[6px] border-double rounded-xl p-5 shadow-2xl mx-auto w-full ${isFocusedRead ? 'max-w-[850px]' : 'max-w-[95%]'} min-h-[480px] font-serif text-right select-none relative overflow-hidden transition-all duration-300 ${
+                                  isDocNightMode 
+                                    ? 'bg-slate-950 text-slate-100 border-yellow-500/50 shadow-yellow-500/5 shadow-2xl' 
+                                    : 'bg-amber-50 text-slate-900 border-primary/40'
+                                }`}
+                              >
+                                {/* Royal Saudi Legal Heading Watermark design background */}
+                                <div className="absolute inset-0 border border-amber-900 pointer-events-none m-1"></div>
+                                <div className="absolute inset-0 opacity-[0.03] select-none pointer-events-none flex items-center justify-center">
+                                  <span className="text-4xl font-serif text-amber-950 rotate-45 scale-150 font-black">وزارة العدل • مكتب المحاماة الاحترافي للمملكة</span>
+                                </div>
+      
+                                {/* Top Header details */}
+                                <div className="border-b border-amber-900 pb-3 mb-4 text-center space-y-1 relative z-10 shrink-0">
+                                  <span className="text-xs text-amber-850 font-black block tracking-widest text-primary">المملكة العربية السعودية</span>
+                                  <span className="text-xs text-[#2a3942] font-semibold block">مركز حوكمة الأوراق والتوثيق الرقمي الموثق لمشترك العدالة</span>
+                                  <h4 className="text-sm font-black text-amber-950 mt-1 pb-1 underline decoration-primary/20 underline-offset-4">
+                                    {renderHighlightedText(selectedDocForOcr.name)}
+                                  </h4>
+                                  
+                                  <div className="flex justify-between items-center text-xs text-[#2a3942] font-mono mt-2 px-1">
+                                    <span>التاريخ: {selectedDocForOcr.uploadedAt}</span>
+                                    <span className="text-success-bg text-emerald-800 font-bold">الحالة: مأمن ومشفر مستنديًا ✓</span>
+                                    <span>الحجم: {selectedDocForOcr.size}</span>
+                                  </div>
+                                </div>
+      
+                                {/* Body and Content text paragraph */}
+                                <div className={`leading-relaxed text-justify shrink-0 space-y-3 relative z-10 font-medium transition-all ${isFocusedRead ? 'h-[440px]' : 'h-[260px]'} overflow-y-auto pr-1 ${readMode ? 'text-base font-bold' : 'text-xs'} ${isDocNightMode ? 'text-white font-bold' : 'text-slate-800'}`} style={{ fontFamily: readingFont === 'amiri' ? '"Amiri", serif' : readingFont === 'playfair' ? '"Playfair Display", serif' : 'inherit' }}>
+                                  <p className={`indent-5 leading-loose font-bold border-r-2 border-primary/45 pr-2 ${isDocNightMode ? 'text-slate-100' : 'text-slate-900 font-bold'}`}>
+                                    أنه في هذا التاريخ وبناءً على البيانات المودعة في سجلاتنا العدلية وحاوية الأرشيف السحابي؛ تم تسجيل الوثيقة وصنف الملحق القانوني تحت مسمى <strong className={`${isDocNightMode ? 'text-slate-100' : 'text-slate-950 font-black'} text-xs`}>({renderHighlightedText(selectedDocForOcr.name)})</strong> التابع لتصنيف <span className={`${isDocNightMode ? 'bg-amber-900 text-white' : 'bg-amber-200/80 text-amber-950'} px-1.5 py-0.5 rounded font-black text-[10px]`}>{selectedDocForOcr.category}</span>.
+                                  </p>
+                                  
+                                  <div className={`p-3 border rounded-xl space-y-2 mt-2 ${isDocNightMode ? 'bg-[#050e21] border-yellow-500/30' : 'bg-amber-100/50 border-amber-900/40'}`}>
+                                    <span className={`text-primary font-black block ${readMode ? 'text-sm' : 'text-xs'}`}>🔎 المقتطف العدلي المستخرج للفحص السريع:</span>
+                                    <p className={`leading-relaxed font-bold italic ${readMode ? 'text-base line-clamp-none' : 'text-xs line-clamp-5'} ${isDocNightMode ? 'text-slate-100' : 'text-slate-800'}`}>
+                                      {selectedDocForOcr.content_text ? `"${renderHighlightedText(selectedDocForOcr.content_text)}"` : "لم يتم تشغيل القارئ الضوئي بعد؛ انقر فوق زر قراءة OCR لاستخراج المحتويات الخطية."}
+                                    </p>
+                                  </div>
+      
+                                  <p className={`text-xs mt-2 font-bold select-all leading-normal ${isDocNightMode ? 'text-white font-bold' : 'text-slate-700'}`}>
+                                    جميع الملاحق والسندات مدرجة ومحققة في شبكة خوادم سحابة العدالة، وممتثلة لتشفير AES-256 لضمان سرية المداولات بين العميل ومكتب المحاماة.
+                                  </p>
+                                </div>
+      
+                                {/* Official Stamp area */}
+                                <div className="mt-4 pt-3 border-t border-amber-900/30 flex justify-between items-center relative z-10 shrink-0">
+                                  <div className="space-y-1 text-[10px] text-amber-950 font-bold">
+                                    <span className="block italic opacity-75">المطابقة الرقمية نشطة بموجب:</span>
+                                    <span className="font-black text-amber-400">SA-GOV-CLOUD-TLS-1.3</span>
+                                  </div>
+                                  <div className="w-16 h-16 border-4 border-amber-900/40 rounded-full flex items-center justify-center rotate-12 opacity-80 scale-75 group/stamp">
+                                    <span className="text-[10px] font-black text-amber-900 text-center uppercase leading-tight group-hover:scale-110 transition-transform">ختم<br/>قانوني</span>
+                                  </div>
+                                </div>
+                              </div>
+                            )
+                            ) : previewMode === 'iframe' && (
+                              <div className="w-full h-full bg-slate-100 rounded-xl flex flex-col items-center justify-center space-y-4">
+                                <div className="w-24 h-24 bg-white rounded-full flex items-center justify-center border-4 border-indigo-500/20 text-indigo-600 shadow-xl">
+                                  <iframe src={selectedDocForOcr.fileUrl} className="w-full h-full rounded-full" title="File Preview" />
+                                </div>
+                                <div className="text-center">
+                                  <h4 className="text-slate-900 font-black">فتح عبر المعالج العام</h4>
+                                  <p className="text-slate-200 font-bold text-xs">جاري محاكاة عرض الملف عبر المتصفح الافتراضي</p>
+                                </div>
+                                <a 
+                                  href={selectedDocForOcr.fileUrl} 
+                                  target="_blank" 
+                                  rel="noreferrer"
+                                  className="px-6 py-2 bg-indigo-600 text-white rounded-xl text-sm font-black hover:bg-indigo-700 transition-all shadow-lg"
+                                >
+                                  فتح المستند في نافذة خارجية 🚀
+                                </a>
+                              </div>
+                            )}
+                            
+                            {previewMode === 'actual' && (
+                              <div className="w-full h-full flex flex-col items-center">
+                                {selectedDocForOcr.fileUrl ? (
+                                  selectedDocForOcr.fileUrl.match(/\.(pdf)$/i) ? (
+                                    <iframe
+                                      src={`${selectedDocForOcr.fileUrl}#toolbar=0`}
+                                      className="w-full h-full rounded-2xl border-4 border-white shadow-2xl bg-white"
+                                      title={selectedDocForOcr.name}
+                                      style={{ transform: `rotate(${rotation}deg)`, transformOrigin: 'center center' }}
+                                    />
+                                  ) : selectedDocForOcr.fileUrl.match(/\.(jpg|jpeg|png|gif|webp)$/i) ? (
+                                    <div className="relative w-full h-full flex items-center justify-center p-4">
+                                      <img
+                                        src={selectedDocForOcr.fileUrl}
+                                        alt={selectedDocForOcr.name}
+                                        className="max-w-full max-h-full object-contain rounded-xl shadow-2xl border-4 border-white transition-all duration-300"
+                                        style={{ transform: `rotate(${rotation}deg) scale(${zoomLevel / 100})`, filter: isDocNightMode ? 'invert(0.9) hue-rotate(180deg)' : 'none' }}
+                                      />
+                                    </div>
+                                  ) : (
+                                    <div className="flex flex-col items-center justify-center h-full w-full bg-white rounded-3xl border-2 border-dashed border-slate-200 p-12">
+                                      <FileText className="w-24 h-24 text-slate-200 mb-6" strokeWidth={1} />
+                                      <h3 className="text-xl font-bold text-slate-900 mb-2">لا يمكن عرض هذا الملف مباشرة</h3>
+                                      <p className="text-slate-200 font-bold mb-8 text-center max-w-md">نوع الملف المرفوع ({selectedDocForOcr.fileUrl.split('.').pop()?.toUpperCase()}) يتطلب تحميله أو فتحه في برنامج خارجي.</p>
+                                      <a href={selectedDocForOcr.fileUrl} target="_blank" rel="noopener noreferrer"
+                                        className="px-8 py-3 bg-blue-600 text-white rounded-2xl font-black shadow-xl shadow-blue-500/30 hover:bg-blue-700 transition-all flex items-center gap-2">
+                                        <ExternalLink className="w-4 h-4" />
+                                        فتح الملف في نافذة مستقلة
+                                      </a>
+                                    </div>
+                                  )
+                                ) : (
+                                  <div className="flex flex-col items-center justify-center h-full w-full text-slate-200 font-bold p-12 text-center">
+                                    <AlertCircle className="w-16 h-16 mb-4 opacity-20" />
+                                    <p>لم يتم العثور على رابط صالح لعرض الملف المادي.</p>
+                                  </div>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        ) : (
+                          <div className="flex flex-col items-center justify-center h-full text-center space-y-4 opacity-50">
+                            <div className="p-8 bg-white/50 rounded-full border border-slate-200 shadow-inner">
+                              <Search className="w-16 h-16 text-slate-200" strokeWidth={1} />
+                            </div>
+                            <div>
+                               <h3 className="text-lg font-black text-slate-900">منطقة العرض والمراجعة العدلية ⚖️</h3>
+                               <p className="text-sm font-bold text-slate-200 font-bold">يرجى تحديد مستند من القائمة الجانبية لبدء الفحص والتحليل.</p>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* OCR Highlights Mini Overlay (In OCR Tab) */}
+                        {selectedDocForOcr && (
+                           <motion.div 
+                             initial={{ opacity: 0, x: -20 }}
+                             animate={{ opacity: 1, x: 0 }}
+                             className="absolute bottom-6 left-6 p-4 bg-white/95 backdrop-blur-xl border border-blue-500 shadow-2xl rounded-2xl z-50 max-w-[220px] text-right"
+                             dir="rtl"
+                           >
+                              <div className="flex items-center gap-2 mb-2 text-blue-600">
+                                 <Brain className="w-4 h-4" />
+                                 <span className="text-[11px] font-black font-black uppercase">رؤية المحلل الذكي:</span>
+                              </div>
+                              <p className="text-[10px] text-slate-800 font-bold leading-relaxed mb-3">
+                                 تم رصد <span className="text-blue-600 font-black">7 كلمات مفتاحية</span> هامة تتعلق بالالتزامات والمهل النظامية.
+                              </p>
+                              <button className="w-full py-2 bg-blue-600 text-white rounded-lg text-[10px] font-black hover:bg-blue-700 transition-all">
+                                 تصدير ملخص التحليل
+                              </button>
+                           </motion.div>
+                        )}
+                </div>
+
+                {/* Reader actions buttons footer (When focused) */}
+                {isFocusedRead && (
+                  <div className="flex justify-center gap-4 shrink-0 animate-fade-in pt-2">
+                    <button className="flex items-center gap-2 px-6 py-3 bg-white border border-slate-200 rounded-2xl text-[11px] font-black text-slate-800 shadow-sm hover:bg-slate-50 transition-all active:scale-95">
+                      📥 تحميل المستند بصيغة PDF
+                    </button>
+                    <button className="flex items-center gap-2 px-6 py-3 bg-white border border-slate-200 rounded-2xl text-[11px] font-black text-slate-800 shadow-sm hover:bg-slate-50 transition-all active:scale-95">
+                      🖨️ طباعة فورية للمراجعة
+                    </button>
+                    <button onClick={() => setReadMode(false)} className="flex items-center gap-2 px-6 py-3 bg-slate-900 border border-slate-800 rounded-2xl text-[11px] font-black text-white shadow-xl hover:bg-slate-850 transition-all active:scale-95">
+                      ❌ إغلاق وضع التركيز
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* TAB CONTENT: TABULAR OCR RESULTS AND ANALYSIS */}
+            {rightPanelTab === 'ocr' && (
+              <div className="flex-1 flex flex-col min-h-0 space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="font-black text-xs text-main ">نتائج القراءة الضوئية للمستندات (OCR)</h3>
+                    <p className="text-[10px]  text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]   font-bold">استخراج النصوص القانونية وترجمتها إلى بيانات قابلة للمعالجة.</p>
+                  </div>
+                  {ocrResult && (
+                    <div className="flex items-center gap-2 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200">
+                      <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
+                      <span className="text-[10px] text-emerald-700 font-black">AI OCR Active</span>
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex-1 bg-slate-900 border border-slate-800 rounded-[2rem] p-6 overflow-auto custom-scrollbar shadow-inner relative group/ocr-box">
+                  {ocrResult ? (
+                    <div className="space-y-4 text-right">
+                       <div className="flex items-center justify-between mb-2">
+                          <button 
+                            className="text-[10px] bg-slate-800 border border-slate-700 text-white px-3 py-1 rounded-lg hover:bg-slate-700 transition-all flex items-center gap-1.5 font-bold"
+                            onClick={() => {
+                               navigator.clipboard.writeText(ocrResult);
+                               alert('تم نسخ النص المستخرج لـ الحافظة بنجاح!');
+                            }}
+                          >
+                             <span>📋</span>
+                             <span>نسخ النص كاملاً</span>
+                          </button>
+                          <div className="text-[10px] font-mono text-slate-100 font-bold opacity-60">
+                             دقة التحليل المتوقعة: 98.4%
+                          </div>
+                       </div>
+                       <div className="text-sm font-bold text-slate-100 leading-loose selection:bg-amber-500 selection:text-slate-950 whitespace-pre-wrap font-sans">
+                         {renderHighlightedText(ocrResult)}
+                       </div>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center justify-center h-full space-y-4 opacity-40">
+                      <div className="relative">
+                        <Cpu className="w-16 h-16 text-slate-700" strokeWidth={1} />
+                        <div className="absolute top-0 right-0 w-20 h-20 bg-blue-500/10 blur-xl rounded-full"></div>
+                      </div>
+                      <p className="text-sm font-bold text-slate-700 font-bold text-center max-w-xs">انقر على زر "تحليل OCR" في كارت المستند للبدء باستخراج النصوص باستخدام محرك AI Adalah.</p>
+                    </div>
+                  )}
+                </div>
+
+                {/* Analysis meta indicators */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 shrink-0">
+                  <div className="bg-slate-100/50 p-4 rounded-2xl border border-slate-200 space-y-1">
+                    <span className="text-[10px] font-black text-slate-755 uppercase tracking-wider block">التصنيف الإحصائي AI:</span>
+                    <div className="p-2 bg-white rounded-xl border border-slate-200 shadow-sm">
+                      <div className="flex justify-between items-center text-[11px] font-black text-main">
+                        <span>مستند عقد قانوني</span>
+                        <span className="text-blue-600 font-mono">92%</span>
+                      </div>
+                      <div className="w-full h-1.5 bg-slate-100 rounded-full mt-2 overflow-hidden">
+                        <div className="h-full bg-blue-500 rounded-full" style={{ width: '92%' }}></div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="bg-slate-100/50 p-4 rounded-2xl border border-slate-200 space-y-1">
+                    <span className="text-[10px] font-black text-slate-755 uppercase tracking-wider block">الامتثال والتحقق:</span>
+                    <div className="p-2 bg-white rounded-xl border border-slate-200 shadow-sm flex items-center gap-3">
+                      <div className="bg-emerald-50 text-emerald-600 p-2 rounded-lg">
+                        <CheckCircle className="w-4 h-4" />
+                      </div>
+                      <div className="text-[10px] font-black text-emerald-800 leading-tight">
+                        تم التحقق من الوثيقة ضد سجلات التزوير الرقمي (Zero Trust Policy Active).
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Left Side: Folder, Drag & Drop, Documents Lists (Moved to Right) */}
         {!isFocusedRead && (
-          <div className="lg:col-span-6 space-y-6">
+          <div className="lg:col-span-6 space-y-6 order-1 lg:order-1">
 
           {/* Responsive Drag & Drop panel */}
           <div 
@@ -1677,984 +2622,6 @@ export default function DocumentsModule({
           )}
         </div>
         )}
-
-        {/* Right Side: Smart OCR Scanned text result / Quick Document Previewer */}
-        <div className={`${isFocusedRead ? 'lg:col-span-12' : 'lg:col-span-6'} space-y-6 transition-all duration-300 items-stretch flex flex-col`}>
-          <div className={`area-secondary border-2 border-slate-200 rounded-[2.5rem] p-8 space-y-6 ${isFocusedRead ? 'min-h-[850px] lg:h-[900px]' : 'min-h-[750px]'} flex flex-col justify-between shadow-2xl shadow-slate-200/50 transition-all duration-300 bg-white/60 backdrop-blur-md`}>
-            
-            {/* Tab selector menu */}
-            <div className="flex bg-slate-100/80 p-2 rounded-2xl border border-slate-200 gap-2 shrink-0">
-              <button
-                onClick={() => setRightPanelTab('preview')}
-                className={`flex-1 py-3 px-4 text-[12px] font-black rounded-xl transition-all cursor-pointer text-center flex items-center justify-center gap-2 ${
-                  rightPanelTab === 'preview'
-                    ? 'bg-blue-600 text-white shadow-lg shadow-blue-200'
-                    : 'text-slate-200 font-bold'
-                }`}
-              >
-                <span>🔍 المعاينة السريعة</span>
-              </button>
-              <button
-                onClick={() => setRightPanelTab('ocr')}
-                className={`flex-1 py-3 px-4 text-[12px] font-black rounded-xl transition-all cursor-pointer text-center flex items-center justify-center gap-2 ${
-                  rightPanelTab === 'ocr'
-                    ? 'bg-blue-600 text-white shadow-lg shadow-blue-200'
-                    : 'text-slate-200 font-bold'
-                }`}
-              >
-                <Cpu className="w-4 h-4" />
-                <span>تحليل OCR</span>
-              </button>
-              <button
-                onClick={() => setRightPanelTab('versions')}
-                className={`flex-1 py-3 px-4 text-[12px] font-black rounded-xl transition-all cursor-pointer text-center flex items-center justify-center gap-2 ${
-                  rightPanelTab === 'versions'
-                    ? 'bg-blue-600 text-white shadow-lg shadow-blue-200'
-                    : 'text-slate-200 font-bold'
-                }`}
-              >
-                <span>⏱️ سجل التعديلات</span>
-              </button>
-            </div>
-
-            {/* TAB CONTENT: VERSIONS AND CHANGE TRACKING */}
-            {rightPanelTab === 'versions' && (
-              <div className="flex-1 flex flex-col justify-between min-h-0 space-y-3">
-                <div className="space-y-1">
-                  <div className="flex items-center justify-between">
-                    <h3 className="font-black text-xs text-main ">سجل إصدارات المستند والتعديلات</h3>
-                    {selectedDocForOcr && (
-                      <span className="text-[11px] bg-amber-500 text-[#d97706] border border-amber-500 px-2 py-0.5 rounded-full font-mono font-bold">
-                        إصدار: {selectedDocForOcr.currentVersion || 1}
-                      </span>
-                    )}
-                  </div>
-                  <p className="text-[10px]  text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]   font-bold leading-relaxed">
-                    تتبع التغييرات على مسودات العقود، وقم باستعادة الإصدارات السابقة بضغطة واحدة مع توثيق ملخص التعديلات.
-                  </p>
-                </div>
-
-                {selectedDocForOcr ? (
-                  <div className="flex-1 flex flex-col min-h-0 space-y-3">
-                    {/* Versions Archive List */}
-                    <div className="space-y-2 max-h-[175px] overflow-y-auto border-b border-border pb-3 shrink-0">
-                      <span className="text-[10px] text-primary font-black block">⌛ الأرشيف التاريخي لمسودة الملف:</span>
-                      
-                      <div className="space-y-2">
-                        {getDocumentVersions(selectedDocForOcr).map((v: any, index: number) => {
-                          const isActive = (selectedDocForOcr.currentVersion || 1) === v.version;
-                          return (
-                            <div 
-                              key={v.id || index}
-                              className={`p-2.5 rounded-2xl border text-right transition-all flex flex-col space-y-1 ${
-                                isActive 
-                                  ? 'bg-amber-500/[0.04]  border-amber-500 shadow-[0_4px_12px_rgba(245,158,11,0.03)]' 
-                                  : 'bg-gradient-to-br from-[#050e21] to-[#0c1a35]  border-border'
-                              }`}
-                            >
-                              <div className="flex justify-between items-center">
-                                <div className="flex items-center gap-1.5 flex-wrap">
-                                  <span className={`text-[11px] font-black px-1.5 py-0.3 rounded ${isActive ? 'bg-[#ca8a04] text-[#07132c] font-sans' : 'bg-slate-100 text-slate-200 font-bold font-sans'}`}>
-                                    إصدار {v.version} {isActive ? '(نشط حالياً)' : ''}
-                                  </span>
-                                  <span className="text-[11px] text-slate-700 font-mono font-bold">{v.uploadedAt}</span>
-                                </div>
-                                {!isActive && (
-                                  <button
-                                    onClick={() => handleRevertToVersion(v)}
-                                    className="text-[10px] font-black text-amber-400 font-black cursor-pointer bg-amber-500 px-2 py-0.5 rounded-md border border-amber-500 active:scale-95 transition-all"
-                                  >
-                                    استعادة ومزامنة ⏪
-                                  </button>
-                                )}
-                              </div>
-                              <p className="text-[11px] font-bold text-slate-800 leading-normal bg-slate-50 p-1.5 rounded-lg border border-border border-dashed">
-                                {v.changesSummary}
-                              </p>
-                              <span className="text-[11px] font-mono font-semibold text-slate-700">الحجم: {v.size} • بموجب فحص الأمان</span>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-
-                    {/* New version form inputs */}
-                    <div className="flex-1 flex flex-col min-h-0 space-y-2.5">
-                      <span className="text-[10px] text-primary font-black block shrink-0">🖋️ محرر مسودة القانونية وعقد التقاضي:</span>
-                      
-                      <textarea
-                        value={newVersionText}
-                        onChange={(e) => setNewVersionText(e.target.value)}
-                        placeholder="قم بكتابة التعديلات القانونية أو التعديل مباشرة على نص العقد/المستند المذكور هنا لحفظ مسودة محدثة..."
-                        className="flex-1 area-subtle p-3 text-xs leading-normal font-sans text-main  border border-border rounded-2xl focus:outline-none focus:border-accent resize-none min-h-[90px] overflow-y-auto"
-                      />
-
-                      <div className="space-y-2 shrink-0">
-                        <input
-                          type="text"
-                          value={changesSummary}
-                          onChange={(e) => setChangesSummary(e.target.value)}
-                          placeholder="ملاحظات التعديل (مثال: تحديث المادة 4 وإلغاء شرط الإخطار)..."
-                          className="w-full bg-white text-xs px-3 py-2 border border-border rounded-xl text-slate-900 focus:outline-none focus:border-accent placeholder:text-slate-200 font-bold font-bold shadow-sm"
-                        />
-                        <button
-                          onClick={handleSaveNewVersion}
-                          disabled={isSavingVersion}
-                          className="w-full bg-accent text-white font-black py-2.5 rounded-2xl text-xs flex items-center justify-center gap-1.5 transition-all shadow-sm cursor-pointer disabled:opacity-50"
-                        >
-                          <span>💾 تتبع وحفظ كإصدار جديد</span>
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="py-24 flex flex-col items-center justify-center text-center space-y-2 bg-slate-50  rounded-2xl border border-dashed border-border">
-                    <span className="text-2xl">⚡</span>
-                    <p className="text-xs font-bold text-slate-650 ">برجاء اختيار العقد أو المستند من القائمة الجانبية لعرض تاريخه وإصداراته.</p>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* TAB CONTENT: OCR ANALYSER */}
-            {rightPanelTab === 'ocr' && (
-              <div className="flex-1 flex flex-col justify-between min-h-0 space-y-4">
-                <div className="space-y-1">
-                  <h3 className="font-bold text-xs text-main ">قارئ النصوص ومكتشفات الـ OCR</h3>
-                  <p className="text-xs text-slate-200 font-bold">تصفح السطور والبيانات القضائية المستخرجة من المستند.</p>
-                </div>
-
-                <div className="flex-1 area-subtle p-4 rounded-xl border border-border text-xs leading-relaxed font-sans text-main overflow-y-auto whitespace-pre-line text-right shadow-inner min-h-0">
-                  {isOcrLoading ? (
-                    <div className="flex flex-col h-full justify-center items-center gap-3">
-                      <RefreshCw className="w-6 h-6 animate-spin text-accent" />
-                      <span className="text-slate-700 font-bold text-center">جاري استدعاء الذكاء الاصطناعي العدلي وقراءة النص...</span>
-                    </div>
-                  ) : ocrResult ? (
-                    <div 
-                      className="font-sans font-bold space-y-2"
-                      style={{ 
-                        fontSize: isFocusedRead ? `${fontSize}px` : 'inherit',
-                        lineHeight: isFocusedRead ? lineSpacing : 'inherit'
-                      }}
-                    >
-                      <p className="bg-emerald-500 text-white p-2 rounded-lg text-xs font-black inline-block">✅ تم استخراج النصوص ومطابقة الهويات</p>
-                      <div className="whitespace-pre-line">{renderHighlightedText(ocrResult)}</div>
-                    </div>
-                  ) : (
-                    <p className="text-slate-700 font-bold text-center py-24">انقر على زر "قراءة OCR" بجانب أي غلاف مستند لبدء معالجة واستخراج الأرقام القضائية.</p>
-                  )}
-                </div>
-
-                <div className="area-subtle p-3 border border-border rounded-xl space-y-1.5 shadow-sm shrink-0">
-                  <span className="text-xs text-main font-bold block underline decoration-accent/20 underline-offset-2">أبرز مستخرجات الفحص التلقائي بالـ OCR:</span>
-                  <ul className="text-xs text-slate-700 space-y-1 list-disc pr-3 leading-relaxed">
-                    <li>استخلاص أطراف النزاع وعقود التأسيس للشركات.</li>
-                    <li>الكشف عن المبالغ والبنود الخاضعة لضريبة القيمة المضافة.</li>
-                    <li>جدولة المواعيد المذكورة في خطابات المرافعة مباشرة.</li>
-                  </ul>
-                </div>
-              </div>
-            )}
-
-            {/* TAB CONTENT: ACCREDITED PREVIEWER */}
-            {rightPanelTab === 'preview' && (
-              <div className="flex-1 flex flex-col min-h-0 space-y-3">
-                
-                {/* Embedded Reader Toolbar with Zoom / Rotation / Toggle controls */}
-                <div className="flex items-center justify-between bg-slate-100  px-3 py-1.5 rounded-xl border border-border text-sm shrink-0 font-bold">
-                  {/* Tool actions */}
-                  <div className="flex items-center gap-2">
-                    <button 
-                      onClick={() => setZoomLevel(prev => Math.max(50, prev - 15))}
-                      className="text-slate-700 font-mono h-6 w-6 rounded flex items-center justify-center cursor-pointer transition-colors"
-                      title="تصغير"
-                    >
-                      -
-                    </button>
-                    <span className="text-xs text-main font-mono">{zoomLevel}%</span>
-                    <button 
-                      onClick={() => setZoomLevel(prev => Math.min(180, prev + 15))}
-                      className="text-slate-700 font-mono h-6 w-6 rounded flex items-center justify-center cursor-pointer transition-colors"
-                      title="تكبير"
-                    >
-                      +
-                    </button>
-                    <span className="text-slate-350 text-xs">|</span>
-                    <button 
-                      onClick={() => setRotation(prev => (prev + 90) % 360)}
-                      className="text-slate-700 text-xs px-1.5 py-0.5 rounded flex items-center gap-1 cursor-pointer transition-colors"
-                      title="تدوير الصفحة"
-                    >
-                      🔄 تدوير
-                    </button>
-                  </div>
-
-                  {/* Mode Selector */}
-                  <div className="flex items-center gap-1.5 flex-wrap">
-                    <button
-                      onClick={() => {
-                        setIsFocusedRead(!isFocusedRead);
-                        if (!isFocusedRead) {
-                          setReadMode(true);
-                        }
-                      }}
-                      className={`text-xs px-2.5 py-1 rounded-lg font-black flex items-center gap-1.5 transition-all active:scale-95 duration-200 ${
-                        isFocusedRead 
-                          ? 'bg-amber-500 text-slate-950 shadow-md shadow-amber-500/20' 
-                          : 'bg-amber-500 text-amber-400 font-black'
-                      }`}
-                      title="القراءة المركزة: إخفاء القوائم وتوسيع مساحة عرض النص وتفعيل مبرز الألوان الذكي"
-                    >
-                      <span>{isFocusedRead ? '👁️ إلغاء القراءة المركزة' : '👁️ القراءة المركزة'}</span>
-                    </button>
-                    <span className="text-slate-350 ">|</span>
-                    <button
-                      onClick={() => {
-                        setIsReaderMode(!isReaderMode);
-                        if (!isReaderMode) {
-                          setReadMode(true);
-                        }
-                      }}
-                      className={`text-xs px-2.5 py-1 rounded-lg font-black flex items-center gap-1.5 transition-all active:scale-95 duration-200 ${
-                        isReaderMode 
-                          ? 'bg-emerald-600 text-white shadow-md shadow-emerald-500/20' 
-                          : 'bg-emerald-100 text-emerald-800'
-                      }`}
-                      title="وضع القراءة المبسطة للأبحاث القانونية: تباعد مريح وتعديل حجم الخطوط وحذف المشتتات"
-                    >
-                      <span>{isReaderMode ? '📖 وضع القارئ: نشط' : '📖 وضع القارئ'}</span>
-                    </button>
-                    <span className="text-slate-350 ">|</span>
-                      <button
-                        onClick={() => setReadMode(!readMode)}
-                        className={`text-xs px-2.5 py-1 rounded-lg font-black flex items-center gap-1.5 transition-all active:scale-95 duration-200 ${readMode ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20' : 'bg-blue-50 text-blue-800'}`}
-                        title="تكبير الخط وتظليل النصوص القانونية الهامة تلقائياً"
-                      >
-                        <span>📖 وضع القراءة</span>
-                      </button>
-                    <span className="text-slate-350">|</span>
-                    <button
-                      onClick={() => setIsDocNightMode(!isDocNightMode)}
-                      className={`text-xs px-2.5 py-1 rounded-lg font-black flex items-center gap-1.5 transition-all duration-200 active:scale-95 ${
-                        isDocNightMode 
-                          ? 'bg-slate-950 border border-yellow-500/50 text-yellow-300 shadow-lg' 
-                          : 'bg-amber-100 text-amber-900 border border-amber-300/30'
-                      }`}
-                      title="قفل القراءة الليلية لتقليل إجهاد الأعين عند رصد المستندات الطويلة"
-                    >
-                      <span>{isDocNightMode ? '💡 وضع النهار' : '🌙 قراءة ليلية'}</span>
-                    </button>
-                    <span className=" text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]  ">|</span>
-                    <button
-                      onClick={() => setPreviewMode('simulated')}
-                      className={`text-xs px-2.5 py-1 rounded font-black transition-all ${previewMode === 'simulated' ? 'bg-amber-500 text-slate-900 border border-amber-600 font-extrabold shadow-sm' : 'text-white border border-transparent hover:bg-slate-800'}`}
-                    >
-                      المنظر الذكي 📜
-                    </button>
-                    <button
-                      onClick={() => setPreviewMode('actual')}
-                      className={`text-xs px-2.5 py-1 rounded font-black transition-all ${previewMode === 'actual' ? 'bg-emerald-600 text-white border border-emerald-500 font-extrabold shadow-sm' : 'text-white border border-transparent hover:bg-slate-800'}`}
-                    >
-                      المستند الحقيقي المرفوع 📄
-                    </button>
-                    <button
-                      onClick={() => setPreviewMode('iframe')}
-                      className={`text-xs px-2.5 py-1 rounded font-black transition-all ${previewMode === 'iframe' ? 'bg-indigo-600 text-white border border-indigo-500 font-extrabold shadow-sm' : 'text-white border border-transparent hover:bg-slate-800'}`}
-                    >
-                      المعالج العام 🌐
-                    </button>
-                  </div>
-                </div>
-
-                {/* شريط أدوات مصغر لتصنيف المستند وترميزه اللوني بقوة */}
-                {isFocusedRead && selectedDocForOcr && (
-                  <div className="space-y-2 shrink-0 animate-fade-in">
-                    <div className="bg-slate-50 border border-border px-4 py-3 rounded-2xl flex flex-col md:flex-row items-center justify-between gap-4 text-right shadow-sm" dir="rtl">
-                      <div className="flex flex-wrap items-center gap-2.5">
-                        <span className="text-xs font-black text-slate-750 flex items-center gap-1">
-                          ✍️ خط القراءة:
-                        </span>
-                        <div className="flex gap-1.5">
-                          {[
-                            { id: 'sans', name: 'الأساسي' },
-                            { id: 'amiri', name: 'أميري (Amiri)' },
-                            { id: 'playfair', name: 'قانوني (Playfair)' }
-                          ].map((font) => (
-                            <button
-                              key={font.id}
-                              type="button"
-                              onClick={() => setReadingFont(font.id as any)}
-                              className={`text-xs px-3 py-1.5 rounded-xl font-bold transition-all active:scale-95 cursor-pointer border ${
-                                readingFont === font.id 
-                                  ? 'bg-amber-500 text-slate-950 border-amber-600 shadow-sm font-black' 
-                                  : 'bg-white border-slate-200 text-slate-200 font-bold'
-                              }`}
-                            >
-                              {font.name}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                  <div className="bg-slate-50  border border-border px-4 py-3 rounded-2xl flex flex-col md:flex-row items-center justify-between gap-4 text-right shadow-sm" dir="rtl">
-                    {/* Classification section */}
-                    <div className="flex flex-wrap items-center gap-2.5">
-                      <span className="text-xs font-black text-slate-750  flex items-center gap-1">
-                        📁 تصنيف المستند الحالي:
-                      </span>
-                      <div className="flex gap-1.5">
-                        {['قانوني', 'مالي', 'إداري'].map((cat) => {
-                          const isSelected = selectedDocForOcr.category === cat;
-                          return (
-                            <button
-                              key={cat}
-                              type="button"
-                              onClick={() => {
-                                const updatedDoc = {
-                                  ...selectedDocForOcr,
-                                  category: cat
-                                };
-                                onUpdateState('documents', updatedDoc);
-                                setSelectedDocForOcr(updatedDoc);
-                              }}
-                              className={`text-xs px-3 py-1.5 rounded-xl font-bold transition-all active:scale-95 cursor-pointer border ${
-                                isSelected 
-                                  ? 'bg-accent/15 text-accent border-accent/45 shadow-sm font-black' 
-                                  : 'bg-gradient-to-br from-[#050e21] to-[#0c1a35]  border-border text-slate-750 '
-                              }`}
-                            >
-                              {cat === 'قانوني' ? '⚖️ قانوني' : cat === 'مالي' ? '💰 مالي' : '💼 إداري'}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
-
-                    {/* Color coding section */}
-                    <div className="flex flex-wrap items-center gap-3">
-                      <span className="text-xs font-black text-slate-750 ">
-                        🏷️ ترميز بصري ملون:
-                      </span>
-                      <div className="flex items-center gap-2 bg-gradient-to-br from-[#050e21] to-[#0c1a35]  px-2.5 py-1.5 rounded-xl border border-border">
-                        {[
-                          { code: 'red', name: 'أحمر', label: 'مراجعة', dot: 'bg-rose-500' },
-                          { code: 'green', name: 'أخضر', label: 'معتمد', dot: 'bg-emerald-500' },
-                          { code: 'blue', name: 'أزرق', label: 'عاجل', dot: 'bg-indigo-500' },
-                          { code: 'amber', name: 'أصفر', label: 'دراسة', dot: 'bg-amber-500' },
-                          { code: 'purple', name: 'أرجواني', label: 'سري', dot: 'bg-purple-500' },
-                        ].map(({ code, name, label, dot }) => {
-                          const isSelected = selectedDocForOcr.colorCode === code;
-                          return (
-                            <button
-                              key={code}
-                              type="button"
-                              onClick={() => {
-                                const updatedDoc = {
-                                  ...selectedDocForOcr,
-                                  colorCode: code
-                                };
-                                onUpdateState('documents', updatedDoc);
-                                setSelectedDocForOcr(updatedDoc);
-                              }}
-                              className={`w-5 h-5 rounded-full ${dot} border-2 active:scale-95 transition-all cursor-pointer flex items-center justify-center relative ${
-                                isSelected ? 'border-main  scale-110' : 'border-transparent'
-                              }`}
-                              title={`وضع ترميز ${name} (${label})`}
-                            >
-                              {isSelected && (
-                                <span className="absolute text-[10px] text-white font-extrabold">✓</span>
-                              )}
-                            </button>
-                          );
-                        })}
-                        
-                        {/* Clear tag button */}
-                        {selectedDocForOcr.colorCode && (
-                          <button
-                            type="button"
-                            onClick={() => {
-                              const updatedDoc = {
-                                ...selectedDocForOcr,
-                                colorCode: undefined
-                              };
-                              onUpdateState('documents', updatedDoc);
-                              setSelectedDocForOcr(updatedDoc);
-                            }}
-                            className="text-[10px] text-rose-650  font-extrabold whitespace-nowrap px-1 border border-rose-500 rounded cursor-pointer mr-1"
-                          >
-                            مسح الترميز
-                          </button>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                  </div>
-                )}
-
-                {/* Interactive Dynamic Highlighting Controls Panel in Focused Mode */}
-                {isFocusedRead && (
-                  <div className="bg-amber-500/[0.04]  border border-amber-500 p-3.5 rounded-2xl space-y-3 shrink-0 animate-fade-in text-right" dir="rtl">
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-amber-500 pb-2">
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm">🎨</span>
-                        <div>
-                          <h4 className="font-black text-xs  text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]   leading-none">لوحة مميز الألوان والتركيز القانوني</h4>
-                          <span className="text-[10px]  text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]   font-bold block mt-0.5">قم بتمييز البنود والالتزامات الهامة في العقد لتسريع تصفحها</span>
-                        </div>
-                      </div>
-                      
-                      {/* Font and Spacing Controls */}
-                      <div className="flex flex-wrap items-center gap-4 bg-[#0c1830]/50 p-2 rounded-xl border border-amber-500/20">
-                         <div className="flex items-center gap-2">
-                            <span className="text-[10px] font-black text-white">حجم الخط:</span>
-                            <div className="flex gap-1">
-                               <button onClick={() => setFontSize(prev => Math.max(12, prev - 2))} className="w-6 h-6 rounded bg-amber-500/20 border border-amber-500/40 text-white text-xs transition-all">-</button>
-                               <span className="text-[10px] font-mono text-white w-6 text-center">{fontSize}</span>
-                               <button onClick={() => setFontSize(prev => Math.min(24, prev + 2))} className="w-6 h-6 rounded bg-amber-500/20 border border-amber-500/40 text-white text-xs transition-all">+</button>
-                            </div>
-                         </div>
-                         <div className="flex items-center gap-2">
-                            <span className="text-[10px] font-black text-white">تباعد الأسطر:</span>
-                            <div className="flex gap-1">
-                               <button onClick={() => setLineSpacing(prev => Math.max(1, prev - 0.2))} className="w-6 h-6 rounded bg-amber-500/20 border border-amber-500/40 text-white text-xs transition-all">-</button>
-                               <span className="text-[10px] font-mono text-white w-8 text-center">{lineSpacing.toFixed(1)}</span>
-                               <button onClick={() => setLineSpacing(prev => Math.min(3, prev + 0.2))} className="w-6 h-6 rounded bg-amber-500/20 border border-amber-500/40 text-white text-xs transition-all">+</button>
-                            </div>
-                         </div>
-                      </div>
-
-                      {/* Active Color Highlight Selector */}
-                      <div className="flex items-center gap-2">
-                        <span className="text-[10px] font-black  text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]  ">اللون النشط للتمييز:</span>
-                        <div className="flex gap-1.5">
-                          {(['amber', 'emerald', 'rose', 'sky'] as const).map((color) => {
-                            const bgStyle = {
-                              amber: 'bg-amber-400 border-amber-500',
-                              emerald: 'bg-emerald-400 border-emerald-500',
-                              rose: 'bg-rose-400 border-rose-500',
-                              sky: 'bg-sky-400 border-sky-500'
-                            }[color];
-                            const isSelected = activeHighlightColor === color;
-                            return (
-                              <button
-                                key={color}
-                                type="button"
-                                onClick={() => setActiveHighlightColor(color)}
-                                className={`w-5.5 h-5.5 rounded-full ${bgStyle} border-2 active:scale-95 transition-all cursor-pointer flex items-center justify-center`}
-                                title={`تجديد لون التمييز إلى ${color === 'amber' ? 'الأصفر' : color === 'emerald' ? 'الأخضر' : color === 'rose' ? 'الأحمر' : 'الأزرق'}`}
-                              >
-                                {isSelected && <span className="text-[11px]  text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]  font-extrabold">✓</span>}
-                              </button>
-                            );
-                          })}
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Word input for adding custom keywords */}
-                    <div className="flex gap-2">
-                      <input
-                        type="text"
-                        value={highlightInput}
-                        onChange={(e) => setHighlightInput(e.target.value)}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter') {
-                            e.preventDefault();
-                            if (highlightInput.trim()) {
-                              addHighlightKeyword(highlightInput, activeHighlightColor);
-                              setHighlightInput('');
-                            }
-                          }
-                        }}
-                        placeholder="أدخل كلمة أو جملة كاملة تريد تمييزها داخل المستند..."
-                        className="flex-1 bg-gradient-to-br from-[#050e21] to-[#0c1a35]  border border-border px-3.5 py-2 rounded-xl text-xs text-main  font-bold focus:outline-none focus:border-accent placeholder: text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.8)] "
-                      />
-                      <button
-                        onClick={() => {
-                          if (highlightInput.trim()) {
-                            addHighlightKeyword(highlightInput, activeHighlightColor);
-                            setHighlightInput('');
-                          }
-                        }}
-                        className="bg-[#ca8a04][#b45309] text-white font-black px-4 py-2 rounded-xl text-xs shadow-sm transition-all active:scale-95 cursor-pointer shrink-0"
-                      >
-                        إضافة تمييز 🎨
-                      </button>
-                    </div>
-
-                    {/* Quick Preset Buttons for easy highlighting */}
-                    <div className="space-y-1.5 pt-0.5">
-                      <span className="text-[10px] text-primary font-black block">⌛ اختصارات وبنود شائعة للفحص السريع (انقر للتمييز):</span>
-                      <div className="flex flex-wrap gap-1.5">
-                        {[
-                          'الالتزامات', 'الشرط الجزائي', 'ضريبة القيمة المضافة', 'القوة القهرية', 
-                          'المسؤولية', 'التعويض عن الضرر', 'أطراف التعاقد', 'المحكمة المختصة', 'سجال'
-                        ].map((term) => {
-                          const isAlreadyHighlighted = !!highlightedKeywords[term];
-                          return (
-                            <button
-                              key={term}
-                              type="button"
-                              onClick={() => {
-                                if (isAlreadyHighlighted) {
-                                  removeHighlightKeyword(term);
-                                } else {
-                                  addHighlightKeyword(term, activeHighlightColor);
-                                }
-                              }}
-                              className={`text-[10px] px-2.5 py-1 rounded-lg font-bold border transition-all active:scale-95 cursor-pointer ${
-                                isAlreadyHighlighted
-                                  ? 'bg-amber-500 border-amber-500 text-amber-400 font-black '
-                                  : 'bg-gradient-to-br from-[#050e21] to-[#0c1a35]  border-border  text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.8)] '
-                              }`}
-                            >
-                              {term} {isAlreadyHighlighted ? '✓' : '+'}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
-
-                    {/* Custom highlights list */}
-                    {Object.keys(highlightedKeywords).length > 0 && (
-                      <div className="bg-gradient-to-br from-[#050e21] to-[#0c1a35]  p-2.5 rounded-xl border border-dashed border-border flex flex-wrap justify-between items-center gap-2">
-                        <div className="flex flex-wrap gap-1.5 min-w-0">
-                          {Object.entries(highlightedKeywords).map(([term, color]) => {
-                            const badgeColor = {
-                              amber: 'bg-amber-100 text-amber-900 border-amber-200  ',
-                              emerald: 'bg-emerald-100 text-emerald-900 border-emerald-200  ',
-                              rose: 'bg-rose-100 text-rose-900 border-rose-200  ',
-                              sky: 'bg-sky-100 text-sky-900 border-sky-200  '
-                            }[color as 'amber' | 'emerald' | 'rose' | 'sky'] || 'bg-amber-100 text-amber-900 border-amber-200';
-                            return (
-                              <span
-                                key={term}
-                                className={`text-[10px] font-black px-2 py-0.5 rounded-md border flex items-center gap-1 shrink-0 ${badgeColor}`}
-                              >
-                                <span>{term}</span>
-                                <button
-                                  type="button"
-                                  onClick={() => removeHighlightKeyword(term)}
-                                  className="text-[10px] cursor-pointer font-extrabold w-3 h-3 flex items-center justify-center rounded-full"
-                                >
-                                  ×
-                                </button>
-                              </span>
-                            );
-                          })}
-                        </div>
-                        <button
-                          type="button"
-                          onClick={clearAllHighlights}
-                          className="text-[10px] text-rose-600  font-extrabold whitespace-nowrap px-1.5 border border-rose-500 rounded"
-                        >
-                          مسحة كامل اللوحة 🗑️
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                {/* Main Viewport */}
-                <div className="flex-1 border border-border rounded-2xl bg-sky-50 p-4 overflow-auto min-h-0 flex items-start justify-center shadow-inner relative custom-scrollbar">
-                        
-                        {selectedDocForOcr ? (
-                          <div className="w-full h-full">
-                            {previewMode === 'simulated' ? (
-                              isReaderMode ? (
-                                /* Elegant, simplified Reader Mode Canvas designed specifically for Legal Research */
-                                <div 
-                                  className={`w-full h-full flex flex-col justify-between rounded-3xl border-2 transition-all duration-300 min-h-[480px] text-right font-sans relative overflow-hidden ${
-                                    readerTheme === 'sepia' 
-                                      ? 'bg-[#fbf7f0] text-[#3c2f2f] border-[#e6d8be] shadow-[0_15px_40px_rgba(44,31,23,0.08)]' 
-                                      : readerTheme === 'dark'
-                                        ? 'bg-[#0a0d14] text-[#cbd5e1] border-[#1e293b] shadow-[0_15px_40px_rgba(0,0,0,0.5)]'
-                                        : 'bg-white text-[#1e293b] border-[#e2e8f0] shadow-[0_15px_40px_rgba(148,163,184,0.08)]'
-                                  }`}
-                                >
-                                  {/* Inside customization bar */}
-                                  <div className={`px-4 py-3 border-b flex flex-wrap items-center justify-between gap-3 shrink-0 ${
-                                    readerTheme === 'sepia' ? 'border-[#e6d8be] bg-[#f5ebd6]/60' : readerTheme === 'dark' ? 'border-[#1e293b] bg-[#111622]/60' : 'border-[#e2e8f0] bg-slate-50/85'
-                                  }`}>
-                                    {/* Font & Spacing controls */}
-                                    <div className="flex items-center gap-4 flex-wrap">
-                                      <div className="flex items-center gap-1.5">
-                                        <span className="text-[11px] font-black opacity-80">حجم الخط:</span>
-                                        <div className="flex items-center gap-1">
-                                          <button 
-                                            type="button"
-                                            onClick={() => setFontSize(prev => Math.max(12, prev - 1))}
-                                            className={`w-7 h-7 rounded-lg text-xs font-bold flex items-center justify-center transition-colors border ${
-                                              readerTheme === 'sepia' ? 'bg-[#ebe0cb][#dfd3bc] border-[#d8c9a8]' : readerTheme === 'dark' ? 'bg-[#1e293b][#334155] border-[#314155]' : 'bg-slate-100 border-slate-200'
-                                            }`}
-                                          >
-                                            أ-
-                                          </button>
-                                          <span className="text-xs font-mono font-bold w-12 text-center">{fontSize}px</span>
-                                          <button 
-                                            type="button"
-                                            onClick={() => setFontSize(prev => Math.min(32, prev + 1))}
-                                            className={`w-7 h-7 rounded-lg text-xs font-bold flex items-center justify-center transition-colors border ${
-                                              readerTheme === 'sepia' ? 'bg-[#ebe0cb][#dfd3bc] border-[#d8c9a8]' : readerTheme === 'dark' ? 'bg-[#1e293b][#334155] border-[#314155]' : 'bg-slate-100 border-slate-200'
-                                            }`}
-                                          >
-                                            أ+
-                                          </button>
-                                        </div>
-                                      </div>
-
-                                      <div className="flex items-center gap-1.5">
-                                        <span className="text-[11px] font-black opacity-80">تباعد الأسطر:</span>
-                                        <div className="flex items-center gap-1">
-                                          <button 
-                                            type="button"
-                                            onClick={() => setLineSpacing(prev => Math.max(1.2, prev - 0.2))}
-                                            className={`w-7 h-7 rounded-lg text-xs font-bold flex items-center justify-center transition-colors border ${
-                                              readerTheme === 'sepia' ? 'bg-[#ebe0cb][#dfd3bc] border-[#d8c9a8]' : readerTheme === 'dark' ? 'bg-[#1e293b][#334155] border-[#314155]' : 'bg-slate-100 border-slate-200'
-                                            }`}
-                                          >
-                                            ↕-
-                                          </button>
-                                          <span className="text-xs font-mono font-bold w-10 text-center">{lineSpacing.toFixed(1)}</span>
-                                          <button 
-                                            type="button"
-                                            onClick={() => setLineSpacing(prev => Math.min(3.0, prev + 0.2))}
-                                            className={`w-7 h-7 rounded-lg text-xs font-bold flex items-center justify-center transition-colors border ${
-                                              readerTheme === 'sepia' ? 'bg-[#ebe0cb][#dfd3bc] border-[#d8c9a8]' : readerTheme === 'dark' ? 'bg-[#1e293b][#334155] border-[#314155]' : 'bg-slate-100 border-slate-200'
-                                            }`}
-                                          >
-                                            ↕+
-                                          </button>
-                                        </div>
-                                      </div>
-                                    </div>
-
-                                    {/* Reader Themes */}
-                                    <div className="flex items-center gap-2">
-                                      <span className="text-[11px] font-black opacity-85">المظهر:</span>
-                                      <div className="flex bg-slate-200/50 p-0.5 rounded-lg border border-border/80 gap-1">
-                                        {[
-                                          { id: 'sepia', label: '📜 دافئ', style: 'bg-[#fbf7f0] text-[#3c2f2f]' },
-                                          { id: 'light', label: '☀️ ناصع', style: 'bg-white text-slate-900' },
-                                          { id: 'dark', label: '🌙 ليلي', style: 'bg-slate-950 text-slate-100' },
-                                        ].map(theme => (
-                                          <button
-                                            key={theme.id}
-                                            type="button"
-                                            onClick={() => setReaderTheme(theme.id as any)}
-                                            className={`px-2 py-1 text-[10px] font-black rounded-md transition-all cursor-pointer ${
-                                              readerTheme === theme.id 
-                                                ? 'bg-emerald-600 text-white shadow-sm' 
-                                                : 'text-slate-650'
-                                            }`}
-                                          >
-                                            {theme.label}
-                                          </button>
-                                        ))}
-                                      </div>
-                                    </div>
-                                  </div>
-
-                                  {/* Elegant Content Body for long technical reading */}
-                                  <div className="flex-1 overflow-y-auto px-6 py-6 sm:px-10 sm:py-8 space-y-5 custom-scrollbar bg-transparent">
-                                    <div className="border-b pb-4 mb-4 select-text border-slate-300/30">
-                                      <div className="flex items-center gap-2 text-[10px] font-bold opacity-75 mb-1.5 bg-emerald-500/10 text-emerald-700 px-2.5 py-0.5 rounded-md inline-flex">
-                                        <span>{selectedDocForOcr.category}</span>
-                                        <span>•</span>
-                                        <span>تاريخ الرفع: {selectedDocForOcr.uploadedAt}</span>
-                                        <span>•</span>
-                                        <span>الحجم: {selectedDocForOcr.size}</span>
-                                      </div>
-                                      <h2 className={`font-black text-lg select-all leading-tight ${
-                                        readerTheme === 'sepia' ? 'text-[#1c1212]' : readerTheme === 'dark' ? 'text-white' : 'text-slate-950'
-                                      }`}>
-                                        {selectedDocForOcr.name}
-                                      </h2>
-                                      <div className="text-[10px] opacity-75 flex gap-2 items-center mt-2.5">
-                                        <span>⏱️ زمن القراءة المتوقع: {Math.max(1, Math.ceil((selectedDocForOcr.content_text || "").split(/\s+/).length / 150))} دقيقة</span>
-                                        <span>•</span>
-                                        <span>📝 عدد الكلمات: {(selectedDocForOcr.content_text || "").split(/\s+/).length} كلمة</span>
-                                      </div>
-                                    </div>
-
-                                    <div 
-                                      className="text-justify select-text select-all leading-relaxed break-words font-medium transition-all" 
-                                      style={{ 
-                                        fontSize: `${fontSize}px`, 
-                                        lineHeight: lineSpacing,
-                                        fontFamily: readingFont === 'amiri' ? '"Amiri", serif' : readingFont === 'playfair' ? '"Playfair Display", serif' : 'inherit'
-                                      }}
-                                    >
-                                      <p className="indent-8 font-bold text-base mb-4 opacity-90 border-r-2 border-emerald-500 pr-2">
-                                        أنه في هذا التاريخ المعتمد؛ تم أرشفة مستند القضية بالبوابة الموحدة، وتحليل النصوص ضوئياً للأبحاث القانونية.
-                                      </p>
-                                      
-                                      <div className="space-y-4">
-                                        {selectedDocForOcr.content_text ? (
-                                          <div className={`p-4 rounded-xl border border-dashed text-right font-medium leading-relaxed shadow-sm ${
-                                            readerTheme === 'sepia' ? 'bg-[#f4ebe1] border-[#dfd2be]' : readerTheme === 'dark' ? 'bg-[#0f141f] border-slate-800' : 'bg-slate-50 border-slate-200'
-                                          }`}>
-                                            {renderHighlightedText(selectedDocForOcr.content_text)}
-                                          </div>
-                                        ) : (
-                                          <p className="text-center italic text-xs py-12 opacity-80">
-                                            لم يتم تشغيل القارئ الضوئي بعد؛ انقر فوق زر قراءة OCR لاستخراج المحتويات الخطية ممتثلاً لمواثيق البحث القانوني.
-                                          </p>
-                                        )}
-                                      </div>
-                                    </div>
-                                  </div>
-
-                                  {/* Bottom bar of reader layout */}
-                                  <div className={`px-5 py-3 border-t text-xs shrink-0 flex items-center justify-between font-mono ${
-                                    readerTheme === 'sepia' ? 'border-[#e6d8be] bg-[#f5ebd6]/60 text-[#7c6a5e]' : readerTheme === 'dark' ? 'border-[#1e293b] bg-[#111622]/60 text-slate-100 font-bold' : 'border-[#e2e8f0] bg-slate-50/80 text-slate-700'
-                                  }`}>
-                                    <span className="font-sans font-black">بوابة العدالة الرقمية • الأبحاث القانونية المبسطة</span>
-                                    <button
-                                      type="button"
-                                      onClick={() => setIsReaderMode(false)}
-                                      className="px-3 py-1 font-bold rounded-lg bg-emerald-600 text-white font-sans transition-all flex items-center gap-1 active:scale-95 cursor-pointer shadow-sm shadow-emerald-500/10"
-                                    >
-                                      <span> العودة للمنظهر الطبيعي</span>
-                                    </button>
-                                  </div>
-                                </div>
-                              ) : (
-                                /* Simulated accredited digital parchment of Ministry of Justice / Document */
-                                <div 
-                                style={{ 
-                                  transform: `rotate(${rotation}deg) scale(${zoomLevel / 100})`, 
-                                  transformOrigin: 'top center',
-                                  transition: 'transform 0.2s cubic-bezier(0.4, 0, 0.2, 1)'
-                                }}
-                                className={`border-[6px] border-double rounded-xl p-5 shadow-2xl mx-auto w-full ${isFocusedRead ? 'max-w-[850px]' : 'max-w-[95%]'} min-h-[480px] font-serif text-right select-none relative overflow-hidden transition-all duration-300 ${
-                                  isDocNightMode 
-                                    ? 'bg-slate-950 text-slate-100 border-yellow-500/50 shadow-yellow-500/5 shadow-2xl' 
-                                    : 'bg-amber-50 text-slate-900 border-primary/40'
-                                }`}
-                              >
-                                {/* Royal Saudi Legal Heading Watermark design background */}
-                                <div className="absolute inset-0 border border-amber-900 pointer-events-none m-1"></div>
-                                <div className="absolute inset-0 opacity-[0.03] select-none pointer-events-none flex items-center justify-center">
-                                  <span className="text-4xl font-serif text-amber-950 rotate-45 scale-150 font-black">وزارة العدل • مكتب المحاماة الاحترافي للمملكة</span>
-                                </div>
-      
-                                {/* Top Header details */}
-                                <div className="border-b border-amber-900 pb-3 mb-4 text-center space-y-1 relative z-10 shrink-0">
-                                  <span className="text-xs text-amber-850 font-black block tracking-widest text-primary">المملكة العربية السعودية</span>
-                                  <span className="text-xs text-[#2a3942] font-semibold block">مركز حوكمة الأوراق والتوثيق الرقمي الموثق لمشترك العدالة</span>
-                                  <h4 className="text-sm font-black text-amber-950 mt-1 pb-1 underline decoration-primary/20 underline-offset-4">
-                                    {renderHighlightedText(selectedDocForOcr.name)}
-                                  </h4>
-                                  
-                                  <div className="flex justify-between items-center text-xs text-[#2a3942] font-mono mt-2 px-1">
-                                    <span>التاريخ: {selectedDocForOcr.uploadedAt}</span>
-                                    <span className="text-success-bg text-emerald-800 font-bold">الحالة: مأمن ومشفر مستنديًا ✓</span>
-                                    <span>الحجم: {selectedDocForOcr.size}</span>
-                                  </div>
-                                </div>
-      
-                                {/* Body and Content text paragraph */}
-                                <div className={`leading-relaxed text-justify shrink-0 space-y-3 relative z-10 font-medium transition-all ${isFocusedRead ? 'h-[440px]' : 'h-[260px]'} overflow-y-auto pr-1 ${readMode ? 'text-base font-bold' : 'text-xs'} ${isDocNightMode ? 'text-white font-bold' : 'text-slate-800'}`} style={{ fontFamily: readingFont === 'amiri' ? '"Amiri", serif' : readingFont === 'playfair' ? '"Playfair Display", serif' : 'inherit' }}>
-                                  <p className={`indent-5 leading-loose font-bold border-r-2 border-primary/45 pr-2 ${isDocNightMode ? 'text-slate-100' : 'text-slate-900 font-bold'}`}>
-                                    أنه في هذا التاريخ وبناءً على البيانات المودعة في سجلاتنا العدلية وحاوية الأرشيف السحابي؛ تم تسجيل الوثيقة وصنف الملحق القانوني تحت مسمى <strong className={`${isDocNightMode ? 'text-slate-100' : 'text-slate-950 font-black'} text-xs`}>({renderHighlightedText(selectedDocForOcr.name)})</strong> التابع لتصنيف <span className={`${isDocNightMode ? 'bg-amber-900 text-white' : 'bg-amber-200/80 text-amber-950'} px-1.5 py-0.5 rounded font-black text-[10px]`}>{selectedDocForOcr.category}</span>.
-                                  </p>
-                                  
-                                  <div className={`p-3 border rounded-xl space-y-2 mt-2 ${isDocNightMode ? 'bg-[#050e21] border-yellow-500/30' : 'bg-amber-100/50 border-amber-900/40'}`}>
-                                    <span className={`text-primary font-black block ${readMode ? 'text-sm' : 'text-xs'}`}>🔎 المقتطف العدلي المستخرج للفحص السريع:</span>
-                                    <p className={`leading-relaxed font-bold italic ${readMode ? 'text-base line-clamp-none' : 'text-xs line-clamp-5'} ${isDocNightMode ? 'text-slate-100' : 'text-slate-800'}`}>
-                                      {selectedDocForOcr.content_text ? `"${renderHighlightedText(selectedDocForOcr.content_text)}"` : "لم يتم تشغيل القارئ الضوئي بعد؛ انقر فوق زر قراءة OCR لاستخراج المحتويات الخطية."}
-                                    </p>
-                                  </div>
-      
-                                  <p className={`text-xs mt-2 font-bold select-all leading-normal ${isDocNightMode ? 'text-white font-bold' : 'text-slate-700'}`}>
-                                    جميع الملاحق والسندات مدرجة ومحققة في شبكة خوادم سحابة العدالة المحلية المطابقة لمعايير الأمن السيبراني بالمملكة العربية السعودية.
-                                  </p>
-                                </div>
-
-                          {/* Bottom Stamp and QA section */}
-                          <div className="border-t border-amber-900 pt-3 mt-4 flex items-center justify-between relative z-10 shrink-0">
-                            {/* QR Code and digital Verification seal */}
-                            <div className="flex items-center gap-1.5 bg-gradient-to-br from-[#050e21] to-[#0c1a35] p-1 rounded-lg border border-amber-900 shadow-sm">
-                              <svg className="w-8 h-8 opacity-80" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="6">
-                                <rect x="10" y="10" width="80" height="80" rx="4" />
-                                <rect x="25" y="25" width="20" height="20" fill="currentColor" />
-                                <rect x="55" y="25" width="20" height="20" fill="currentColor" />
-                                <rect x="25" y="55" width="20" height="20" fill="currentColor" />
-                                <path d="M55 55 h10 v10 h-10 z" fill="currentColor" />
-                                <path d="M65 65 h10 v10 h-10 z" fill="currentColor" />
-                              </svg>
-                              <div className="text-[6.5px] text-slate-650 leading-tight">
-                                <span className="font-extrabold  text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]   block">كود المصادقة</span>
-                                <span className="font-mono block mt-0.5">SHA-256 SECURED</span>
-                              </div>
-                            </div>
-
-                            {/* Digital Sign Seal stamp */}
-                            <div className="text-left select-none relative">
-                              <div className="absolute -top-3 -left-2 w-14 h-14 bg-red-600 border-2 border-dashed border-red-500 rounded-full flex items-center justify-center text-center rotate-12 pointer-events-none">
-                                <span className="text-[6.5px] text-red-600 font-serif font-black tracking-tighter uppercase">العدالة للمحاماة<br />معتمد مستندياً</span>
-                              </div>
-                              <span className="text-[7.5px] text-slate-550 block">مستشار الحفظ الفني:</span>
-                              <strong className="text-xs text-primary block font-serif underline decoration-amber-900/20 underline-offset-2">أحمد بن فهد البقمي</strong>
-                            </div>
-                          </div>
-
-                        </div>
-                      )) : previewMode === 'actual' ? (
-                        /* Actual physical uploaded document view */
-                        (() => {
-                          const fileExt = (selectedDocForOcr.name?.split('.').pop() || 'pdf').toLowerCase();
-                          const isImage = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'].includes(fileExt) || (selectedDocForOcr.fileUrl && !!selectedDocForOcr.fileUrl.match(/\.(jpg|jpeg|png|gif|webp)$/i));
-                          
-                          if (isImage) {
-                            return (
-                              <div className="w-full h-full flex flex-col bg-slate-900 border border-slate-700/60 rounded-3xl overflow-hidden shadow-2xl" dir="rtl">
-                                <div className="bg-slate-950 px-5 py-3 text-xs text-amber-500 border-b border-slate-800 flex justify-between items-center shrink-0 font-bold">
-                                  <span className="flex items-center gap-2 text-white">
-                                    <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                                    <span>المستند الأصلي المرفوع (صورة حقيقية)</span>
-                                  </span>
-                                  <span className="text-slate-400 font-mono text-[10px]">{selectedDocForOcr.size || "صورة"}</span>
-                                </div>
-                                <div className="flex-1 w-full flex items-center justify-center p-6 bg-slate-950/75 overflow-auto min-h-[460px]">
-                                  <img 
-                                    src={selectedDocForOcr.fileUrl} 
-                                    alt={selectedDocForOcr.name} 
-                                    className="max-w-full max-h-[500px] object-contain rounded-xl shadow-2xl border border-white/10"
-                                    referrerPolicy="no-referrer"
-                                  />
-                                </div>
-                                <div className="bg-slate-950 p-3 border-t border-slate-800 text-center">
-                                  <span className="text-[10px] text-slate-400">
-                                    اسم الملف: {selectedDocForOcr.name} • تم الرفع والمطابقة السحابية بنجاح بنسبة 100%
-                                  </span>
-                                </div>
-                              </div>
-                            );
-                          } else {
-                            // Default to PDF iframe
-                            return (
-                              <div className="w-full h-full min-h-[520px] flex flex-col bg-slate-900 border border-slate-700 rounded-3xl overflow-hidden shadow-2xl relative" dir="rtl">
-                                <div className="bg-slate-950 px-5 py-3 text-xs text-amber-500 font-bold border-b border-slate-800 flex justify-between items-center shrink-0">
-                                  <span className="flex items-center gap-2 text-white font-bold">
-                                    <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                                    <span>المستند الفعلي المرفوع كـ PDF (عرض حقيقي)</span>
-                                  </span>
-                                  <span className="text-slate-450 font-mono text-[10px]">{selectedDocForOcr.size || "1.2 MB"}</span>
-                                </div>
-                                <div className="flex-1 w-full min-h-[460px] relative bg-white">
-                                  {selectedDocForOcr.fileUrl ? (
-                                    <iframe
-                                      src={selectedDocForOcr.fileUrl}
-                                      className="absolute inset-0 w-full h-full border-0 bg-white"
-                                      title={selectedDocForOcr.name}
-                                      style={{ colorScheme: 'light' }}
-                                    />
-                                  ) : (
-                                    <div className="w-full h-full flex flex-col items-center justify-center text-slate-400 p-8 text-center text-xs space-y-2">
-                                      <span>⚠️ لم يتم تحديد رابط ملف صالح للعرض مباشرة.</span>
-                                    </div>
-                                  )}
-                                </div>
-                                <div className="bg-slate-950 p-3 border-t border-slate-800 text-center flex justify-between items-center px-4 shrink-0">
-                                  <span className="text-[10px] text-slate-400">تاريخ الرفع: {selectedDocForOcr.uploadedAt}</span>
-                                  <a 
-                                    href={selectedDocForOcr.fileUrl} 
-                                    target="_blank" 
-                                    rel="noreferrer"
-                                    className="text-[10px] text-sky-400 hover:underline font-bold"
-                                  >
-                                    فتح الملف المستقل في علامة تبويب جديدة 🔗
-                                  </a>
-                                </div>
-                              </div>
-                            );
-                          }
-                        })()
-                      ) : (
-                        /* Iframe general viewer mode */
-                        <div className="w-full h-full flex flex-col justify-between items-center gap-2">
-                          <div className="w-full bg-slate-100 p-2.5 rounded-xl border border-slate-300 text-xs text-slate-800 font-bold text-center">
-                            🔄 محاذاة العارض مع خوادم مستندات الـ PDF/DOCX (Iframe Sandbox Layer)
-                          </div>
-                          
-                          <div className="flex-1 w-full bg-white rounded-2xl border border-slate-300 overflow-hidden relative flex flex-col justify-center items-center p-6 text-center text-xs space-y-4 shadow-inner min-h-[360px]">
-                            <span className="text-3xl">🌐</span>
-                            <div className="space-y-1 h-3/4 flex flex-col justify-center">
-                              <p className="font-black text-slate-950">أمن الإطارات النشطة (Iframe Embed Safety Guard)</p>
-                              <p className="text-xs text-slate-800 font-bold leading-relaxed max-w-xs mx-auto mt-2">
-                                لتطبيق معايير NCA وسرية البيانات القضائية في المملكة؛ يُوصى ببدء المعاينة السريعة عبر المنظر الذكي، أو مراجعة الرابط السحابي التفاعلي الآمن للملف عبر خوادم مأمنة:
-                              </p>
-                              
-                              <input 
-                                type="text"
-                                readOnly
-                                value={`https://a-aladalah.gov.sa/archive/secretdocs/${selectedDocForOcr.id}.pdf`}
-                                className="w-full bg-slate-50 border border-slate-300 px-2 py-1.5 rounded-lg text-xs font-mono font-bold text-blue-700 text-center select-all focus:outline-none focus:border-blue-500 mt-4"
-                              />
-                            </div>
-                            
-                            <div className="flex gap-2 justify-center w-full">
-                              <button 
-                                onClick={() => alert(`محاكاة تحميل وحفظ الملف في خوادم ناجز السحابية: ${selectedDocForOcr.name}`)}
-                                className="bg-primary text-white font-extrabold text-xs px-3 py-1.5 rounded-lg cursor-pointer"
-                              >
-                                📥 تحميل المستند
-                              </button>
-                              <a 
-                                href={`https://docs.google.com/gview?url=https://al-adalah.com/mockdocs/${selectedDocForOcr.id}.docx&embedded=true`}
-                                target="_blank"
-                                rel="referrer"
-                                className="bg-sky-50 text-white font-bold font-extrabold text-xs px-3 py-1.5 rounded-lg cursor-pointer flex items-center gap-1"
-                              >
-                                🔗 فتح في علامة تبويب جديدة
-                              </a>
-                            </div>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  ) : (
-                    <div className="text-center py-24 text-slate-700 space-y-2">
-                      <span className="text-2xl block opacity-60">📂</span>
-                      <p className="text-xs font-black leading-relaxed">انقر فوق أي ملف بالاختيارات على اليسار لمكتبتك لعرض معالج المعاينة السريعة.</p>
-                    </div>
-                  )}
-
-                </div>
-
-                {/* Micro Actions */}
-                <div className="flex items-center justify-between text-xs text-slate-900 font-black shrink-0 bg-slate-100 p-2.5 rounded-xl border border-slate-300">
-                  <div className="flex items-center gap-1.5 font-black">
-                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-600 animate-pulse"></span>
-                    <span>معتمد بالترميز الاحترافي للمملكة</span>
-                  </div>
-                  <button 
-                    onClick={() => {
-                      alert(`🖨️ تم إعداد أمر طباعة الوثيقة وتجهيزها بالمقاس القانوني. جاري المصادقة مع طابعة المكتب المربحة...`);
-                    }}
-                    className="text-amber-800 font-extrabold cursor-pointer"
-                  >
-                    🖨️ طباعة سريعة
-                  </button>
-                </div>
-
-              </div>
-            )}
-
-            {/* Bottom Actions card info */}
-            <div className="area-subtle p-3 border border-border rounded-xl space-y-1 shadow-sm shrink-0">
-               <span className="text-xs text-primary font-black block">💡 نصيحة الخبراء للأرشفة السحابية:</span>
-               <p className="text-[8.5px]  text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]   leading-relaxed font-bold">
-                 يمكنك استخلاص بنود القضاء وتحقق الأصول وسداد أتعاب التقاضي مباشرة بربطها بالمستند المحقق في موكل المدموجة.
-               </p>
-            </div>
-
-          </div>
-        </div>
-
       </div>
 
       {/* Dynamic Contract Issuance Editor (OTP Protected) */}

@@ -36,7 +36,7 @@ export default function GlobalNotesWidget() {
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
       
-      if (data) setNotes(data);
+      if (data) setNotes(data as any as Note[]);
     };
 
     fetchNotes();

@@ -13,7 +13,7 @@ import MainLandingPage from '@/components/MainLandingPage';
 import NotificationsBell from '@/components/NotificationsBell';
 import GlobalNotesWidget from '@/components/GlobalNotesWidget';
 import DateConverterWidget from '@/components/DateConverterWidget';
-import AiDrafting from '@/components/AiDrafting';
+const AiDrafting = React.lazy(() => import('@/components/AiDrafting'));
 import ErrorBoundary from '@/components/ErrorBoundary';
 
 // Lazy load large modules using relative paths to avoid resolution issues in some environments
@@ -46,9 +46,9 @@ const WscatModule = React.lazy(() => import('@/components/WscatModule'));
 const WebSocketEcho = React.lazy(() => import('@/components/WebSocketEcho'));
 
 import { SupabaseTodos } from '@/components/SupabaseTodos';
-import ElasticsearchModule from '@/components/ElasticsearchModule';
-import DbDevOpsModule from '@/components/DbDevOpsModule';
-import FailedPersistenceLogsDashboard from '@/components/FailedPersistenceLogsDashboard';
+const ElasticsearchModule = React.lazy(() => import('@/components/ElasticsearchModule'));
+const DbDevOpsModule = React.lazy(() => import('@/components/DbDevOpsModule'));
+const FailedPersistenceLogsDashboard = React.lazy(() => import('@/components/FailedPersistenceLogsDashboard'));
 import { useUserPreferences } from '@/hooks/useUserPreferences';
 import { useAppState } from '@/hooks/useAppState';
 

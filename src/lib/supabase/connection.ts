@@ -4,7 +4,8 @@ import { supabase } from '@/lib/supabase';
 export function validateSupabaseConnection() {
   const rawUrl = import.meta.env.VITE_SUPABASE_URL || import.meta.env.NEXT_PUBLIC_SUPABASE_URL || 'https://sydcelofkzvtsfatxnka.supabase.co';
   const url = rawUrl ? (rawUrl.startsWith('http') ? rawUrl : `https://${rawUrl}`) : undefined;
-  const key = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || import.meta.env.VITE_SUPABASE_ANON_KEY || import.meta.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || 'sb_publishable_VW8gI2hAK_UzF8ApuoUUhA_KUmR1KYz';
+  const keyRaw = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || import.meta.env.VITE_SUPABASE_ANON_KEY || import.meta.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || '';
+  const key = keyRaw.startsWith('eyJ') ? keyRaw : 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN5ZGNlbG9ma3p2dHNmYXR4bmthIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEzNDE1ODUsImV4cCI6MjA5NjkxNzU4NX0._ZSotmVi0yTtTyzZNI9e4y9i8CcG4jLIz8HlKivxV_o';
 
   if (!url || !key) {
     console.error('[Supabase Diagnostics] ❌ Missing Environment Variables: VITE_SUPABASE_URL and/or VITE_SUPABASE_PUBLISHABLE_KEY are not defined.');
@@ -38,6 +39,9 @@ export function useSupabaseConnection() {
       return;
     }
 
+    let retryCount = 0;
+    const maxRetries = 3;
+
     // Attempt a basic health check ping
     const checkPing = async () => {
       try {
@@ -69,18 +73,32 @@ export function useSupabaseConnection() {
           if (authError.message.includes('JWT') || authError.message.toLowerCase().includes('clock')) {
             detailMsg += " (Please check your system time/clock)";
           }
-          setError('Auth Connection Error: ' + detailMsg);
+          throw new Error('Auth Connection Error: ' + detailMsg);
         } else {
           setIsValid(true);
         }
       } catch (err: any) {
         console.error('[Supabase Connection Ping] Exception:', err);
-        setIsValid(false);
-        setError('Network error or invalid Supabase credentials: ' + (err?.message || err));
+        throw err;
       }
     };
 
-    checkPing();
+    const connectWithRetry = async () => {
+      try {
+        await checkPing();
+      } catch (err: any) {
+        if (retryCount >= maxRetries) {
+          console.warn('[Supabase] Max retries reached. Please check your API key.');
+          setIsValid(false);
+          setError('Network error or invalid Supabase credentials: ' + (err?.message || err));
+          return;
+        }
+        retryCount++;
+        setTimeout(connectWithRetry, Math.pow(2, retryCount) * 1000);
+      }
+    };
+
+    connectWithRetry();
   }, []);
 
   return { isValid, error };

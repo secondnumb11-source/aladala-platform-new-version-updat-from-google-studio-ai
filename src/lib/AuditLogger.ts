@@ -44,7 +44,7 @@ export const auditLogger = {
   async getLogs(limit = 100) {
     const { data, error } = await supabase
       .from('audit_trails')
-      .select('*')
+      .select('id, user_id, user_name, action, entity_type, entity_id, details, metadata, created_at, timestamp')
       .order('timestamp', { ascending: false })
       .limit(limit);
     

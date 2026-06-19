@@ -21,6 +21,9 @@ out/
 
 # Temporary files and scratchpads
 *.txt
-temp.txt
-tmp_output.txt
+test-results/
+tool/
+extension/
+ngrok.yml
+
 

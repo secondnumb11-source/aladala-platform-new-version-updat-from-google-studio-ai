@@ -3,11 +3,12 @@ import {
   Gavel, Scale, FileText, Landmark, Calculator, Mail, 
   Handshake, ShieldAlert, CircleDot, ChevronLeft, HelpCircle, 
   Download, Send, Check, RefreshCw, ExternalLink, Search, Globe, ChevronRight,
-  Sun, Moon
+  Sun, Moon, Users, Briefcase
 } from "lucide-react";
 import { motion } from "motion/react";
 import CourtMapAndServices from "@/components/CourtMapAndServices";
 import { InteractiveCard } from "./InteractiveCard";
+import { supabase } from "@/lib/supabase";
 
 interface ServiceItem {
   id: string;
@@ -19,7 +20,7 @@ interface ServiceItem {
 
 interface SaudiServicesHubProps {
   theme?: "light" | "dark";
-  initialTab?: "portals" | "tools";
+  initialTab?: "internal" | "portals" | "watheeq" | "tools";
   isNested?: boolean;
   cases?: any[];
   language?: "ar" | "en";
@@ -43,10 +44,21 @@ export default function SaudiServicesHub({
   language = "ar"
 }: SaudiServicesHubProps) {
   const isNajizConnected = localStorage.getItem("najiz_api_connected") === "true";
-  const [activeTab, setActiveTab] = useState<"portals" | "tools">(initialTab || "portals");
+  const [activeTab, setActiveTab] = useState<"internal" | "portals" | "watheeq" | "tools">(initialTab || "portals");
   const [searchQuery, setSearchQuery] = useState("");
   const [activeService, setActiveService] = useState<string | null>(null);
   const [isDarkCards, setIsDarkCards] = useState<boolean>(false);
+  
+  // Internal search state
+  const [internalResults, setInternalResults] = useState<{cases: any[], clients: any[]}>({ cases: [], clients: [] });
+  const [isSearchingInternal, setIsSearchingInternal] = useState(false);
+  
+  // Watheeq state
+  const [watheeqDocNumber, setWatheeqDocNumber] = useState("");
+  
+  // Najiz / MOJ cases state
+  const [najizCaseNumber, setNajizCaseNumber] = useState("");
+  const [crNumber, setCrNumber] = useState("");
 
   // Inheritance calculator states
   const [estateAmount, setEstateAmount] = useState<number>(500000);
@@ -75,6 +87,51 @@ export default function SaudiServicesHub({
   // Execution query state
   const [executionNum, setExecutionNum] = useState("");
   const [executionResult, setExecutionResult] = useState<any>(null);
+
+  // External Links Handlers
+  const openWatheeqVerification = (docNumber: string) => {
+    if (!docNumber) return;
+    window.open(`https://watheeq.gov.sa/ar/inquiries/documentInquiry?documentNumber=${docNumber}`, '_blank');
+  };
+
+  const searchNajizCase = (caseNumber: string) => {
+    if (!caseNumber) return;
+    window.open(`https://www.moj.gov.sa/ar/eServices/Pages/CaseInquiry.aspx?caseNo=${caseNumber}`, '_blank');
+  };
+
+  const inquiryCaseStatus = (caseNumber: string) => {
+    window.open(`https://www.moj.gov.sa/ar/eServices/Pages/InquiryAboutCase.aspx`, '_blank');
+  };
+
+  const checkCommercialRegistry = async (crNum: string) => {
+    if (!crNum) return;
+    window.open(`https://mc.gov.sa/ar/eservices/Pages/serviceDetails.aspx?sID=107`, '_blank');
+  };
+
+  // Internal Database Search
+  const searchInternalDatabase = async (query: string) => {
+    if (!query || query.length < 2) {
+      setInternalResults({ cases: [], clients: [] });
+      return;
+    }
+    
+    setIsSearchingInternal(true);
+    try {
+      const [casesResult, clientsResult] = await Promise.all([
+        supabase.from('cases').select('id, title, case_number, status, court_name').or(`title.ilike.%${query}%,case_number.ilike.%${query}%`).limit(10),
+        supabase.from('clients').select('id, name, type, phone, email').ilike('name', `%${query}%`).limit(10)
+      ]);
+      
+      setInternalResults({
+        cases: casesResult.data || [],
+        clients: clientsResult.data || []
+      });
+    } catch (err) {
+      console.error('[Internal Search Error]', err);
+    } finally {
+      setIsSearchingInternal(false);
+    }
+  };
 
   const saudiPortals: PortalItem[] = [
     { 
@@ -307,33 +364,53 @@ export default function SaudiServicesHub({
 
       {/* Modern High-End Tab Navigation */}
       {!initialTab && (
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 pb-3">
-        <div className="flex p-1 bg-slate-100 rounded-2xl max-w-md w-full border border-slate-200">
+        <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4 border-b border-slate-200 pb-3">
+        <div className="flex p-1 bg-slate-100 rounded-2xl w-full xl:max-w-3xl border border-slate-200 overflow-x-auto hide-scrollbar">
           <button
-            onClick={() => setActiveTab("portals")}
-            className={`flex-1 py-3 text-center rounded-xl text-xs font-black transition-all cursor-pointer ${
-              activeTab === "portals"
+            onClick={() => setActiveTab("internal")}
+            className={`flex-1 min-w-[120px] whitespace-nowrap py-3 px-2 text-center rounded-xl text-xs font-black transition-all cursor-pointer ${
+              activeTab === "internal"
                 ? "bg-white text-slate-950 shadow-md transform scale-102"
-                : "text-slate-200 font-bold"
+                : "text-slate-500 font-bold hover:text-slate-700"
             }`}
           >
-            🏛️ قاعة البوابات والمنصات (11 منشأة)
+            🔍 بحث في المنصة
+          </button>
+          <button
+            onClick={() => setActiveTab("portals")}
+            className={`flex-1 min-w-[120px] whitespace-nowrap py-3 px-2 text-center rounded-xl text-xs font-black transition-all cursor-pointer ${
+              activeTab === "portals"
+                ? "bg-white text-slate-950 shadow-md transform scale-102"
+                : "text-slate-500 font-bold hover:text-slate-700"
+            }`}
+          >
+            🏛️ خدمات حكومية
+          </button>
+          <button
+            onClick={() => setActiveTab("watheeq")}
+            className={`flex-1 min-w-[120px] whitespace-nowrap py-3 px-2 text-center rounded-xl text-xs font-black transition-all cursor-pointer ${
+              activeTab === "watheeq"
+                ? "bg-white text-slate-950 shadow-md transform scale-102"
+                : "text-slate-500 font-bold hover:text-slate-700"
+            }`}
+          >
+            ✅ التحقق من المستندات
           </button>
           <button
             onClick={() => setActiveTab("tools")}
-            className={`flex-1 py-3 text-center rounded-xl text-xs font-black transition-all cursor-pointer ${
+            className={`flex-1 min-w-[140px] whitespace-nowrap py-3 px-2 text-center rounded-xl text-xs font-black transition-all cursor-pointer ${
               activeTab === "tools"
                 ? "bg-white text-slate-950 shadow-md transform scale-102"
-                : "text-slate-200 font-bold"
+                : "text-slate-500 font-bold hover:text-slate-700"
             }`}
           >
-            🛠️ خدمات المساندة والتحققات الذكية
+            🛠️ خدمات المساندة
           </button>
         </div>
 
         {activeTab === "portals" && (
-          <div className="relative max-w-xs w-full">
-            <Search className="w-4 h-4 text-slate-200 font-bold absolute right-3 top-1/2 -translate-y-1/2" />
+          <div className="relative max-w-xs w-full shrink-0">
+            <Search className="w-4 h-4 text-slate-400 font-bold absolute right-3 top-1/2 -translate-y-1/2" />
             <input
               type="text"
               placeholder="ابحث عن منصة حكومية..."
@@ -446,6 +523,173 @@ export default function SaudiServicesHub({
               <p className="text-slate-200 font-bold text-xs">يرجى التحقق من صياغة جملة البحث مسبقاً.</p>
             </div>
           )}
+        </div>
+      )}
+
+      {/* Internal Search */}
+      {activeTab === "internal" && (
+        <div className="space-y-6 animate-fade-in text-right" dir="rtl">
+          <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm space-y-4">
+            <div>
+              <h3 className="text-sm font-black text-slate-900 border-r-4 border-amber-500 pr-3">البحث الشامل والموحد في قواعد البيانات</h3>
+              <p className="text-xs text-slate-500 mt-2 font-medium">ابحث بالاسم، أو رقم الهوية، أو السجل التجاري، أو تصنيف القضية، وسيتم البحث في جداول العملاء والقضايا معاً.</p>
+            </div>
+            
+            <div className="flex gap-2 relative">
+              <input 
+                type="text" 
+                placeholder="أدخل مفتاح البحث هنا..." 
+                className="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 pr-4 text-xs font-bold text-slate-900 focus:outline-none focus:border-amber-500"
+                onKeyDown={(e) => {
+                   if(e.key === 'Enter') searchInternalDatabase(e.currentTarget.value);
+                }}
+                onChange={(e) => {
+                   if(e.target.value.length === 0) setInternalResults({cases: [], clients: []});
+                }}
+              />
+              <button 
+                className="bg-amber-600 hover:bg-amber-700 text-white rounded-xl px-6 font-black text-xs transition-colors shrink-0 flex items-center gap-2"
+                onClick={(e) => {
+                  const input = e.currentTarget.previousElementSibling as HTMLInputElement;
+                  searchInternalDatabase(input.value);
+                }}
+              >
+                <Search className="w-4 h-4"/>
+                بحث سريع
+              </button>
+            </div>
+            
+            {isSearchingInternal && (
+              <div className="py-8 flex justify-center text-amber-600">
+                <RefreshCw className="w-6 h-6 animate-spin" />
+              </div>
+            )}
+            
+            {!isSearchingInternal && (internalResults.cases.length > 0 || internalResults.clients.length > 0) && (
+               <div className="space-y-6 mt-6 border-t border-slate-100 pt-6">
+                 {internalResults.clients.length > 0 && (
+                   <div className="space-y-3">
+                     <h4 className="flex items-center gap-2 text-xs font-black text-slate-800"><Users className="w-4 h-4 text-indigo-500"/> العملاء والشركات المطابقة ({internalResults.clients.length})</h4>
+                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                       {internalResults.clients.map((c, i) => (
+                         <div key={i} className="p-3 border border-slate-200 rounded-xl bg-slate-50 hover:bg-white transition-colors">
+                           <p className="font-bold text-slate-900 text-xs mb-1">{c.name}</p>
+                           {c.identity_number && <span className="text-[10px] text-slate-500 block font-mono">الهوية/السجل: {c.identity_number}</span>}
+                         </div>
+                       ))}
+                     </div>
+                   </div>
+                 )}
+                 
+                 {internalResults.cases.length > 0 && (
+                   <div className="space-y-3">
+                     <h4 className="flex items-center gap-2 text-xs font-black text-slate-800"><Briefcase className="w-4 h-4 text-emerald-500"/> القضايا والملفات القانونية ({internalResults.cases.length})</h4>
+                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                       {internalResults.cases.map((c, i) => (
+                         <div key={i} className="p-3 border border-slate-200 rounded-xl bg-slate-50 hover:bg-white transition-colors">
+                           <p className="font-bold text-slate-900 text-xs mb-1 truncate">{c.title || c.case_number}</p>
+                           <div className="flex gap-2">
+                             <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-100 text-emerald-700">{c.status}</span>
+                             <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-slate-200 text-slate-700">{c.category}</span>
+                           </div>
+                         </div>
+                       ))}
+                     </div>
+                   </div>
+                 )}
+               </div>
+            )}
+            
+            {!isSearchingInternal && internalResults.cases.length === 0 && internalResults.clients.length === 0 && (
+              <div className="text-center py-8 opacity-50">
+                <Search className="w-8 h-8 mx-auto mb-2 text-slate-300" />
+                <p className="text-xs font-bold text-slate-500">لا توجد نتائج مطابقة، جرب كلمات مفتاحية أخرى</p>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Watheeq / External Search */}
+      {activeTab === "watheeq" && (
+        <div className="space-y-6 animate-fade-in text-right" dir="rtl">
+           {/* Watheeq Verification */}
+           <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm flex flex-col md:flex-row gap-6 items-start">
+             <div className="shrink-0 w-16 h-16 bg-blue-50 rounded-2xl flex items-center justify-center border border-blue-100">
+               <ShieldAlert className="w-8 h-8 text-blue-600" />
+             </div>
+             <div className="flex-1 space-y-3">
+               <h3 className="text-sm font-black text-slate-900">التحقق من الوثائق الرسمية (منصة وثيق)</h3>
+               <p className="text-xs text-slate-500 font-medium">الاستعلام المباشر عن صحة وسريان الوثائق والمستندات الحكومية عبر بوابة وثيق.</p>
+               <div className="flex gap-2 mt-4">
+                 <input 
+                   type="text" 
+                   value={watheeqDocNumber}
+                   onChange={e => setWatheeqDocNumber(e.target.value)}
+                   placeholder="أدخل رقم الوثيقة المرجعي (مثل: 4xxxxxxxxx)"
+                   className="flex-1 bg-slate-50 border border-slate-300 rounded-xl p-3 text-xs font-bold text-slate-900 focus:border-blue-500 focus:outline-none"
+                 />
+                 <button 
+                   onClick={() => openWatheeqVerification(watheeqDocNumber)}
+                   className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl px-5 font-black text-xs transition-colors shrink-0 flex items-center gap-2"
+                 >
+                   تحقق الآن <ExternalLink className="w-3 h-3" />
+                 </button>
+               </div>
+             </div>
+           </div>
+           
+           {/* MOJ Case Verification */}
+           <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm flex flex-col md:flex-row gap-6 items-start">
+             <div className="shrink-0 w-16 h-16 bg-emerald-50 rounded-2xl flex items-center justify-center border border-emerald-100">
+               <Gavel className="w-8 h-8 text-emerald-600" />
+             </div>
+             <div className="flex-1 space-y-3">
+               <h3 className="text-sm font-black text-slate-900">استعلام تفاصيل القضية (ناجز / وزارة العدل)</h3>
+               <p className="text-xs text-slate-500 font-medium">الاستعلام المباشر عن حالة ومواعيد جلسات القضايا المرفوعة بالرقم المرجعي.</p>
+               <div className="flex gap-2 mt-4">
+                 <input 
+                   type="text" 
+                   value={najizCaseNumber}
+                   onChange={e => setNajizCaseNumber(e.target.value)}
+                   placeholder="أدخل رقم القضية المرجعي"
+                   className="flex-1 bg-slate-50 border border-slate-300 rounded-xl p-3 text-xs font-bold text-slate-900 focus:border-emerald-500 focus:outline-none"
+                 />
+                 <button 
+                   onClick={() => searchNajizCase(najizCaseNumber)}
+                   className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl px-5 font-black text-xs transition-colors shrink-0 flex items-center gap-2"
+                 >
+                   استعلام القضية <ExternalLink className="w-3 h-3" />
+                 </button>
+               </div>
+             </div>
+           </div>
+
+           {/* MC CR Check */}
+           <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm flex flex-col md:flex-row gap-6 items-start">
+             <div className="shrink-0 w-16 h-16 bg-sky-50 rounded-2xl flex items-center justify-center border border-sky-100">
+               <Briefcase className="w-8 h-8 text-sky-600" />
+             </div>
+             <div className="flex-1 space-y-3">
+               <h3 className="text-sm font-black text-slate-900">الاستعلام عن بيانات السجل التجاري (وزارة التجارة)</h3>
+               <p className="text-xs text-slate-500 font-medium">مراجعة سريان وملكيات ومخالفات السجلات التجارية للشركاء والأطراف.</p>
+               <div className="flex gap-2 mt-4">
+                 <input 
+                   type="text" 
+                   value={crNumber}
+                   onChange={e => setCrNumber(e.target.value)}
+                   placeholder="أدخل رقم السجل التجاري"
+                   className="flex-1 bg-slate-50 border border-slate-300 rounded-xl p-3 text-xs font-bold text-slate-900 focus:border-sky-500 focus:outline-none"
+                 />
+                 <button 
+                   onClick={() => checkCommercialRegistry(crNumber)}
+                   className="bg-sky-600 hover:bg-sky-700 text-white rounded-xl px-5 font-black text-xs transition-colors shrink-0 flex items-center gap-2"
+                 >
+                   استعلام السجل <ExternalLink className="w-3 h-3" />
+                 </button>
+               </div>
+             </div>
+           </div>
         </div>
       )}
 

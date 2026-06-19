@@ -90,7 +90,7 @@ export default function UnifiedAuthLanding({ initialTab = "lawyer", language = "
 
     const performAutoLogin = async (session: any) => {
       try {
-        const { data: profile } = await supabase.from('profiles').select('*').eq('uid', session.user.id).single();
+        const { data: profile } = await supabase.from('profiles').select('id, uid, role, name, permittedModules, sidebarConfig, avatarUrl, created_at').eq('uid', session.user.id).single();
         if (profile) {
           onLoginSuccess({
             role: profile.role as any,
@@ -452,7 +452,7 @@ export default function UnifiedAuthLanding({ initialTab = "lawyer", language = "
       // Fetch persistent profile details from profiles table
       let userData: any = null;
       try {
-        const { data: profile } = await supabase.from('profiles').select('*').eq('uid', user.id).maybeSingle();
+        const { data: profile } = await supabase.from('profiles').select('id, uid, role, name, permittedModules, sidebarConfig, avatarUrl, created_at').eq('uid', user.id).maybeSingle();
         if (!profile) {
           userData = {
             uid: user.id,
@@ -531,7 +531,7 @@ export default function UnifiedAuthLanding({ initialTab = "lawyer", language = "
 
       let userData: any = null;
       try {
-        const { data: profile } = await supabase.from('profiles').select('*').eq('uid', user.id).maybeSingle();
+        const { data: profile } = await supabase.from('profiles').select('id, uid, role, name, permittedModules, sidebarConfig, avatarUrl, created_at').eq('uid', user.id).maybeSingle();
         if (!profile) {
           userData = {
             uid: user.id,
@@ -590,7 +590,7 @@ export default function UnifiedAuthLanding({ initialTab = "lawyer", language = "
     try {
       const { data: employeeRecords, error } = await supabase
         .from('employees')
-        .select('*')
+        .select('id, uid, role, name, permittedModules, sidebarConfig, avatarUrl, created_at')
         .eq('username', empUsername.trim());
       
       if (employeeRecords && employeeRecords.length > 0) {
@@ -655,7 +655,7 @@ export default function UnifiedAuthLanding({ initialTab = "lawyer", language = "
         // Fetch profile
         let profileData: any = null;
         try {
-          const { data: profile } = await supabase.from('profiles').select('*').eq('uid', user.id).maybeSingle();
+          const { data: profile } = await supabase.from('profiles').select('id, uid, role, name, permittedModules, sidebarConfig, avatarUrl, created_at').eq('uid', user.id).maybeSingle();
           profileData = profile;
         } catch (err) {
           console.error("Failed to fetch trial profile:", err);

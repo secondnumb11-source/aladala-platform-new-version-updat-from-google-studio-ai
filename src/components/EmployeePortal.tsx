@@ -247,7 +247,7 @@ export default function EmployeePortal({
     }
 
     const fetchEmployees = async () => {
-      const { data, error } = await supabase.from('employees').select('*');
+      const { data, error } = await supabase.from('employees').select('id, name, nationality, national_id, phone, job_title, manager, qualification, start_date, email, branch, notes, avatar_url, employee_code, role, department, salary, created_at');
       if (data) {
         const emps = (data as any[]).map(normalizeEmployee);
         emps.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
@@ -413,12 +413,11 @@ export default function EmployeePortal({
     // Attendance
     const fetchAttendance = async () => {
       const { data, error } = await supabase
-        .from('attendance')
-        .select('*')
+        .from('attendance').select('*')
         .eq('employeeId', loggedInEmployee.id)
         .order('date', { ascending: false });
       
-      if (data) setAttendance(data);
+      if (data) setAttendance(data as any as AttendanceRecord[]);
     };
 
     fetchAttendance();
@@ -439,12 +438,11 @@ export default function EmployeePortal({
     // Leave Requests
     const fetchLeave = async () => {
       const { data, error } = await supabase
-        .from('leave_requests')
-        .select('*')
+        .from('leave_requests').select('*')
         .eq('employeeId', loggedInEmployee.id)
         .order('requestedAt', { ascending: false });
       
-      if (data) setLeaveRequests(data);
+      if (data) setLeaveRequests(data as any as LeaveRequest[]);
     };
 
     fetchLeave();

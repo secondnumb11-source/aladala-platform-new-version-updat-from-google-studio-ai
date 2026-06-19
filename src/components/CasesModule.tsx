@@ -5,6 +5,7 @@
 
 import { List } from 'react-window';
 import React, { useState, useEffect } from 'react';
+import { supabase } from '@/lib/supabase';
 import { useAppState } from '@/hooks/useAppState';
 import { useUserPreferences } from '@/hooks/useUserPreferences';
 import { 
@@ -80,6 +81,9 @@ import { motion, AnimatePresence } from 'motion/react';
 import { InteractiveCard } from './InteractiveCard';
 import { Case, Client, Attachment } from '@/types';
 import { useAdaptiveContrast } from '../utils/themeUtils';
+import CasesList from './cases/CasesList';
+import CaseFilters from './cases/CaseFilters';
+import AddCaseModal from './cases/AddCaseModal';
 
 export const getCaseDocumentTags = (c: Case): string[] => {
   const tags: string[] = ['مفهرس_آلياً'];
@@ -1552,126 +1556,142 @@ export default React.memo(function CasesModule({
 
   const handleCreateCase = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newCaseNumber || !newCaseName || !newClientName || caseNumberError) return;
-
-    // Create a new client if does not exist to sync properly
-    let linkedClient = clients.find(cl => cl.name === newClientName);
-    if (!linkedClient) {
-      linkedClient = {
-        id: generateUUID(),
-        name: newClientName,
-        isCompany: newClientType === 'company',
-        nationalId: newClientType === 'company' ? newCompanyCR : (newPlaintiffNationalId || "100" + Math.floor(Math.random() * 10000000)),
-        phone: newPlaintiffPhone || "+9665" + Math.floor(Math.random() * 100000000),
-        email: "contact@domain.sa",
-        portalToken: generateUUID(),
-        portalLink: `/portal?token=${generateUUID()}`
-      };
-      await onUpdateState('clients', linkedClient);
-    } else {
-      // Update the client information
-      const updatedClient = { ...linkedClient };
-      
-      if (newClientType === 'company') {
-        updatedClient.isCompany = true;
-        if (newCompanyCR) updatedClient.nationalId = newCompanyCR;
-      } else {
-        updatedClient.isCompany = false;
-        if (newPlaintiffNationalId) updatedClient.nationalId = newPlaintiffNationalId;
-        if (newPlaintiffPhone) updatedClient.phone = newPlaintiffPhone;
-      }
-
-      await onUpdateState('clients', updatedClient);
-    }
-
-    const newCaseObj: Case = {
-      id: generateUUID(),
-      caseNumber: newCaseNumber,
-      caseName: newCaseName,
-      category: newCategory as any,
-      stage: newStage as any,
-      status: 'new',
-      clientName: newClientName,
-      clientId: linkedClient.id,
-      opponentName: newOpponent || 'طرف مجهول (خصم)',
-      opponentNationalId: newOpponentNationalId,
-      courtName: newCourt,
-      circuitNumber: newCircuitNumber,
-      powerOfAttorneyNumber: newPoANumber,
-      lastSessionDate: new Date().toISOString().split('T')[0],
-      nextSessionDate: newNextDate,
-      nextSessionTime: newNextTime,
-      summary: (newNajizNumber ? `[رقم الدعوى على ناجز: ${newNajizNumber}]\n` : '') + (newSummary || 'دعوى قضائية جديدة مضافة يدوياً عبر لوحة الإدارة.'),
-      details: newDetails || 'لا يوجد تفاصيل نظامية مدونة حالياً.',
-      isNajizSync: !!newNajizNumber,
-      priority: newPriority,
-      isConfidential: isConfidential,
-      createdAt: new Date().toISOString().split('T')[0],
-      attachments_count: hasContract ? 1 : 0
-    };
-
-    setServerValidationError(null);
-    const result = await onUpdateState('cases', newCaseObj);
-    if (!result || result.success === false) {
-      if (result && result.errorType === 'validation') {
-         setServerValidationError({ field: result.field, message: result.message });
-      }
-      alert('حدث خطأ في حفظ القضية: ' + (result?.message || 'خطأ غير معروف'));
+    if (!newCaseNumber || !newCaseName || !newClientName) {
+      setServerValidationError({ field: 'required', message: 'يرجى ملء جميع الحقول الإلزامية' });
       return;
     }
 
-    setIsCreateOpen(false);
-
-    // Explicit Credential Generation & Automated Notification
-    const clientForSms = linkedClient || clients.find(cl => cl.id === newCaseObj.clientId);
-    if (clientForSms) {
-      // Generate credentials if not existing
-      const generatedUsername = clientForSms.portalUsername || `asil-${(clientForSms.nationalId || "1234").slice(-4)}`;
-      const generatedPassword = clientForSms.portalPassword || `P@ss${Math.floor(1000 + Math.random() * 9000)}`;
-      
-      // Update client with credentials if needed
-      if (!clientForSms.portalUsername) {
-        onUpdateState('clients', {
-          ...clientForSms,
-          portalUsername: generatedUsername,
-          portalPassword: generatedPassword,
-          activePortal: true
-        });
+    try {
+      // التحقق من الاتصال أولاً (Ping database)
+      const { error: pingError } = await supabase.from('cases').select('id').limit(1);
+      if (pingError) {
+        alert('تعذر الاتصال بقاعدة البيانات الخاصة بك. يرجى التحقق من المفاتيح: ' + pingError.message);
+        return;
       }
 
-      const accessTemplate = "سعادة العميل الأستاذ / {clientName} المحترم،\n\nتم ربط دعواكم الجديدة رقم {caseNumber} بنظام موكل بنجاح.\n\nبيانات دخول بوابتكم التفاعلية (عميل وموكل):\nاسم المستخدم: {username}\nكلمة المرور: {password}\n\nرابط الدخول الموحد:\n{portalLink}\n\nموكل للعملاء والعملاء والمحاميين والمستشاريين القانونيين ⚖️.";
-      
-      const logMsg = accessTemplate
-        .replace(/{clientName}/g, clientForSms.name)
-        .replace(/{caseNumber}/g, newCaseNumber)
-        .replace(/{username}/g, generatedUsername)
-        .replace(/{password}/g, generatedPassword)
-        .replace(/{portalLink}/g, `${window.location.origin}/portal/login`);
-      
-      // Trigger Twilio Notification (Simulated through state update and alert)
-      setIsSendingWhatsApp(true);
-      setTimeout(() => {
-        setWhatsAppLogs(prev => [{
+      // Create a new client if does not exist to sync properly
+      let linkedClient = clients.find(cl => cl.name === newClientName);
+      if (!linkedClient) {
+        linkedClient = {
           id: generateUUID(),
-          caseNumber: newCaseNumber,
-          status: 'success',
-          type: 'ربط دعوى وإنشاء بيانات نفاذ',
-          phone: clientForSms.phone,
-          message: logMsg,
-          timestamp: new Date().toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' }) + ' ' + new Date().toLocaleDateString('ar-SA')
-        }, ...prev]);
-        setIsSendingWhatsApp(false);
-        alert(`✅ تم ربط الدعوى وتوليد بيانات النفاذ للموكل: \nاسم المستخدم: ${generatedUsername}\nكلمة المرور: ${generatedPassword}\n\nتم إرسال إشعار آلي عبر Twilio/WhatsApp للرقم: ${clientForSms.phone}`);
-      }, 800);
-    }
+          name: newClientName,
+          isCompany: newClientType === 'company',
+          nationalId: newClientType === 'company' ? newCompanyCR : (newPlaintiffNationalId || "100" + Math.floor(Math.random() * 10000000)),
+          phone: newPlaintiffPhone || "+9665" + Math.floor(Math.random() * 100000000),
+          email: "contact@domain.sa",
+          portalToken: generateUUID(),
+          portalLink: `/portal?token=${generateUUID()}`
+        };
+        await onUpdateState('clients', linkedClient);
+      } else {
+        // Update the client information
+        const updatedClient = { ...linkedClient };
+        
+        if (newClientType === 'company') {
+          updatedClient.isCompany = true;
+          if (newCompanyCR) updatedClient.nationalId = newCompanyCR;
+        } else {
+          updatedClient.isCompany = false;
+          if (newPlaintiffNationalId) updatedClient.nationalId = newPlaintiffNationalId;
+          if (newPlaintiffPhone) updatedClient.phone = newPlaintiffPhone;
+        }
 
-    // Clear form inputs
-    setNewCaseNumber('');
-    setNewCaseName('');
-    setNewOpponent('');
-    setNewDetails('');
-    setStateData('case_form_draft', null);
-    onSelectCase(newCaseObj);
+        await onUpdateState('clients', updatedClient);
+      }
+
+      const newCaseObj: Case = {
+        id: generateUUID(),
+        caseNumber: newCaseNumber,
+        caseName: newCaseName,
+        category: newCategory as any,
+        stage: newStage as any,
+        status: 'new',
+        clientName: newClientName,
+        clientId: linkedClient.id,
+        opponentName: newOpponent || 'طرف مجهول (خصم)',
+        opponentNationalId: newOpponentNationalId,
+        courtName: newCourt,
+        circuitNumber: newCircuitNumber,
+        powerOfAttorneyNumber: newPoANumber,
+        lastSessionDate: new Date().toISOString().split('T')[0],
+        nextSessionDate: newNextDate,
+        nextSessionTime: newNextTime,
+        summary: (newNajizNumber ? `[رقم الدعوى على ناجز: ${newNajizNumber}]\n` : '') + (newSummary || 'دعوى قضائية جديدة مضافة يدوياً عبر لوحة الإدارة.'),
+        details: newDetails || 'لا يوجد تفاصيل نظامية مدونة حالياً.',
+        isNajizSync: !!newNajizNumber,
+        priority: newPriority,
+        isConfidential: isConfidential,
+        createdAt: new Date().toISOString().split('T')[0],
+        attachments_count: hasContract ? 1 : 0
+      };
+
+      setServerValidationError(null);
+      const result = await onUpdateState('cases', newCaseObj);
+      if (!result || result.success === false) {
+        if (result && result.errorType === 'validation') {
+           setServerValidationError({ field: result.field, message: result.message });
+        }
+        alert('حدث خطأ في حفظ القضية: ' + (result?.message || 'خطأ غير معروف'));
+        return;
+      }
+
+      setIsCreateOpen(false);
+
+      // Explicit Credential Generation & Automated Notification
+      const clientForSms = linkedClient || clients.find(cl => cl.id === newCaseObj.clientId);
+      if (clientForSms) {
+        // Generate credentials if not existing
+        const generatedUsername = clientForSms.portalUsername || `asil-${(clientForSms.nationalId || "1234").slice(-4)}`;
+        const generatedPassword = clientForSms.portalPassword || `P@ss${Math.floor(1000 + Math.random() * 9000)}`;
+        
+        // Update client with credentials if needed
+        if (!clientForSms.portalUsername) {
+          onUpdateState('clients', {
+            ...clientForSms,
+            portalUsername: generatedUsername,
+            portalPassword: generatedPassword,
+            activePortal: true
+          });
+        }
+
+        const accessTemplate = "سعادة العميل الأستاذ / {clientName} المحترم،\n\nتم ربط دعواكم الجديدة رقم {caseNumber} بنظام موكل بنجاح.\n\nبيانات دخول بوابتكم التفاعلية (عميل وموكل):\nاسم المستخدم: {username}\nكلمة المرور: {password}\n\nرابط الدخول الموحد:\n{portalLink}\n\nموكل للعملاء والعملاء والمحاميين والمستشاريين القانونيين ⚖️.";
+        
+        const logMsg = accessTemplate
+          .replace(/{clientName}/g, clientForSms.name)
+          .replace(/{caseNumber}/g, newCaseNumber)
+          .replace(/{username}/g, generatedUsername)
+          .replace(/{password}/g, generatedPassword)
+          .replace(/{portalLink}/g, `${window.location.origin}/portal/login`);
+        
+        // Trigger Twilio Notification (Simulated through state update and alert)
+        setIsSendingWhatsApp(true);
+        setTimeout(() => {
+          setWhatsAppLogs(prev => [{
+            id: generateUUID(),
+            caseNumber: newCaseNumber,
+            status: 'success',
+            type: 'ربط دعوى وإنشاء بيانات نفاذ',
+            phone: clientForSms.phone,
+            message: logMsg,
+            timestamp: new Date().toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' }) + ' ' + new Date().toLocaleDateString('ar-SA')
+          }, ...prev]);
+          setIsSendingWhatsApp(false);
+          alert(`✅ تم ربط الدعوى وتوليد بيانات النفاذ للموكل: \nاسم المستخدم: ${generatedUsername}\nكلمة المرور: ${generatedPassword}\n\nتم إرسال إشعار آلي عبر Twilio/WhatsApp للرقم: ${clientForSms.phone}`);
+        }, 800);
+      }
+
+      // Clear form inputs
+      setNewCaseNumber('');
+      setNewCaseName('');
+      setNewOpponent('');
+      setNewDetails('');
+      setStateData('case_form_draft', null);
+      onSelectCase(newCaseObj);
+
+    } catch (err: any) {
+      console.error('[Add Case Exception]', err);
+      alert('حدث خطأ غير متوقع: ' + err.message);
+    }
   };
 
   const handleTriggerAiAnalysis = async (c: Case) => {
@@ -2931,587 +2951,31 @@ export default React.memo(function CasesModule({
                   
                 {!isFocusMode && filterBarMarkup}
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
-                  <motion.div 
-                    initial={{ opacity: 0, y: 20 }} 
-                    animate={{ opacity: 1, y: 0 }} 
-                    transition={{ delay: 0.1 }} 
-                    className="border-2 p-10 bg-gradient-to-br from-[#0b1329] to-[#050e21] border-[#d4af37] shadow-2xl relative overflow-hidden rounded-[2rem] group"
-                    style={{ background: 'linear-gradient(135deg, #0b1329 0%, #050e21 100%)', borderColor: '#d4af37', borderWidth: '2px' }}
-                  >
-                     <div className="absolute top-0 right-0 w-32 h-32 bg-[#d4af37]/10 blur-3xl rounded-full transition-all"></div>
-                     <div className="relative z-10 flex flex-col gap-8">
-                       <div className="flex items-center justify-between">
-                          <div className="w-16 h-16 rounded-[1.5rem] flex items-center justify-center border shadow-inner transition-transform duration-500" style={{ backgroundColor: 'rgba(212, 175, 55, 0.15)', borderColor: '#d4af37' }}>
-                            <Clock className="w-8 h-8 text-[#facc15]" />
-                          </div>
-                          <div className="text-right">
-                             <h4 className="text-sm font-black mb-2 px-2 border-r-4 border-[#d4af37]" style={{ color: '#ffd700', textShadow: '0 0 10px rgba(212, 175, 55, 0.4)' }}>قضايا نشطة</h4>
-                             <span className="text-4xl font-display font-black tracking-tighter tabular-nums" style={{ color: '#ffffff', textShadow: '0 2px 10px rgba(255, 255, 255, 0.3)' }}>{cases.filter(c => c.status === 'active' || c.status === 'new').length}</span>
-                          </div>
-                       </div>
-                       <div className="w-full bg-[#030712] h-3 rounded-full overflow-hidden border border-amber-500/30 shadow-inner">
-                         <motion.div initial={{ width: 0 }} animate={{ width: '70%' }} transition={{ duration: 1.5, ease: "easeOut", delay: 0.5 }} className="bg-gradient-to-r from-[#ffd700] via-[#facc15] to-[#b8860b] h-full shadow-[0_0_15px_rgba(250,204,21,0.5)]" />
-                       </div>
-                       <div className="flex items-center justify-between">
-                          <div className="text-xs font-black flex items-center gap-2" style={{ color: '#facc15' }}>
-                             <div className="w-1.5 h-1.5 bg-[#facc15] rounded-full animate-ping"></div>
-                             System Response: Strategic
-                          </div>
-                          <span className="text-xs font-mono font-black animate-pulse" style={{ color: '#ffffff', textShadow: '0 0 8px rgba(255, 255, 255, 0.8)' }}>70.2%</span>
-                       </div>
-                     </div>
-                  </motion.div>
-
-                  <motion.div 
-                    initial={{ opacity: 0, y: 20 }} 
-                    animate={{ opacity: 1, y: 0 }} 
-                    transition={{ delay: 0.2 }} 
-                    className="border-2 p-10 bg-white shadow-2xl relative overflow-hidden rounded-[2rem] cursor-default group"
-                    style={{ backgroundColor: '#ffffff', borderColor: '#d4af37', borderWidth: '2px' }}
-                  >
-                     <div className="absolute -bottom-8 -left-8 w-32 h-32 bg-emerald-500/5 blur-3xl rounded-full"></div>
-                     <div className="relative flex flex-col gap-8">
-                       <div className="flex items-center justify-between">
-                          <div className="w-16 h-16 rounded-[1.5rem] flex items-center justify-center border shadow-inner transition-transform duration-500" style={{ backgroundColor: 'rgba(16, 185, 129, 0.08)', borderColor: 'rgba(16, 185, 129, 0.3)' }}>
-                            <Check className="w-8 h-8 text-emerald-600" />
-                          </div>
-                          <div className="text-right">
-                             <h4 className="text-sm font-black mb-2 px-2 border-r-4 border-emerald-500" style={{ color: '#0f172a' }}>منتهية نهائياً</h4>
-                             <span className="text-4xl font-display font-black tracking-tighter tabular-nums" style={{ color: '#0f172a' }}>{cases.filter(c => c.status === 'closed').length}</span>
-                          </div>
-                       </div>
-                       <div className="w-full bg-slate-100 h-3 rounded-full overflow-hidden shadow-inner border border-slate-200">
-                         <motion.div initial={{ width: 0 }} animate={{ width: '45%' }} transition={{ duration: 1.5, ease: "easeOut", delay: 0.6 }} className="bg-gradient-to-r from-emerald-400 to-emerald-600 h-full shadow-[0_0_15px_rgba(16,185,129,0.3)]" />
-                       </div>
-                       <div className="flex items-center justify-between">
-                          <p className="text-xs font-black flex items-center gap-2" style={{ color: '#059669' }}>Legal Outcome: Positive</p>
-                          <span className="text-xs font-mono font-black bg-emerald-50 text-emerald-700 px-3 py-1 rounded-lg border border-emerald-200">45.8%</span>
-                       </div>
-                     </div>
-                  </motion.div>
-
-             <motion.div 
-               initial={{ opacity: 0, y: 20 }} 
-               animate={{ opacity: 1, y: 0 }} 
-               transition={{ delay: 0.3 }} 
-               className="border-2 p-10 bg-white shadow-2xl relative overflow-hidden rounded-[2rem] cursor-default group"
-               style={{ backgroundColor: '#ffffff', borderColor: '#d4af37', borderWidth: '2px' }}
-             >
-                <div className="absolute -top-12 -right-12 w-48 h-48 bg-amber-500/5 blur-3xl rounded-full"></div>
-                <div className="relative flex flex-col gap-8">
-                  <div className="flex items-center justify-between">
-                     <div className="w-16 h-16 rounded-[1.5rem] flex items-center justify-center border shadow-inner transition-transform" style={{ backgroundColor: 'rgba(217, 119, 6, 0.08)', borderColor: 'rgba(217, 119, 6, 0.3)' }}>
-                       <div className="flex items-center justify-center font-black text-amber-600 font-bold text-lg leading-none" style={{ color: '#d97706' }}>ر.س</div>
-                     </div>
-                     <div className="text-right">
-                        <h4 className="text-xs font-black mb-2 px-2 border-r-4 border-amber-600" style={{ color: '#0f172a' }}>حصيلة التنفيذ</h4>
-                        <span className="text-3xl font-display font-black tracking-tighter tabular-nums" style={{ color: '#0f172a' }}>485,000 <span className="text-xs uppercase opacity-60">ريال سعودي</span></span>
-                     </div>
-                  </div>
-                  <div className="w-full bg-slate-100 h-3 rounded-full overflow-hidden shadow-inner border border-slate-200">
-                    <motion.div initial={{ width: 0 }} animate={{ width: '85%' }} transition={{ duration: 1.5, ease: "easeOut", delay: 0.7 }} className="bg-gradient-to-r from-amber-500 to-amber-600 h-full shadow-[0_0_15px_rgba(217,119,6,0.3)]" />
-                  </div>
-                  <div className="flex items-center justify-between">
-                     <p className="text-xs font-black flex items-center gap-2" style={{ color: '#b45309' }}>Recovery: Phase 5 Optimized</p>
-                     <span className="text-xs font-mono font-black bg-amber-50 text-amber-700 px-3 py-1 rounded-lg border border-amber-200">85.0%</span>
-                  </div>
-                </div>
-             </motion.div>
-          </div>
-
-          <div className="flex flex-col lg:flex-row items-center justify-between gap-6 bg-slate-50 p-8 rounded-[2.5rem] border border-slate-200 shadow-2xl mb-10 relative z-20">
-            <div className="flex flex-wrap items-center gap-6">
-              <div className="flex flex-col space-y-3">
-                <label className="text-[10px] font-black text-slate-900 uppercase tracking-[0.3em] mr-1">Litigation Stage</label>
-                <select 
-                  value={stageFilter}
-                  onChange={(e) => setStageFilter(e.target.value)}
-                  className="bg-white border-2 border-slate-200 text-slate-900 px-6 py-4 rounded-2xl text-[11px] font-black focus:border-amber-500 outline-none transition-all cursor-pointer min-w-[180px] appearance-none shadow-sm hover:border-slate-300"
-                >
-                  <option value="all">كافة المراحل</option>
-                  <option value="primary">الدرجة الاولى</option>
-                  <option value="appeal">الاستئناف</option>
-                  <option value="supreme">المحكمة العليا</option>
-                  <option value="execution">التنفيذ</option>
-                </select>
+                <CasesList
+                  filteredCases={filteredCases}
+                  viewMode={viewMode}
+                  isHighContrast={isHighContrast}
+                  onSelectCase={onSelectCase}
+                  isSyncing={isSyncing}
+                  onNajizSync={handleNajizSync}
+                  setActivityLogCaseId={setActivityLogCaseId}
+                  isCaseOverdue={isCaseOverdue}
+                  getInteractiveCaseStyles={getInteractiveCaseStyles}
+                  getStatusKineticStyles={getStatusKineticStyles}
+                  getCaseDocumentTags={getCaseDocumentTags}
+                  gridDensity={gridDensity}
+                  visibleCount={visibleCount}
+                  onArchiveToggle={(c) => {
+                    if (c.archived) {
+                      onUpdateState('cases', { ...c, archived: false });
+                    } else {
+                      onUpdateState('cases', { ...c, archived: true });
+                    }
+                  }}
+                  selectedRole={selectedRole}
+                />
               </div>
-
-              <div className="flex flex-col space-y-3 font-sans">
-                <label className="text-[10px] font-black text-slate-900 uppercase tracking-[0.3em] mr-1">Court Venue</label>
-                <select 
-                  value={courtFilter}
-                  onChange={(e) => setCourtFilter(e.target.value)}
-                  className="bg-white border-2 border-slate-200 text-slate-900 px-6 py-4 rounded-2xl text-[11px] font-black focus:border-amber-500 outline-none transition-all cursor-pointer min-w-[180px] appearance-none shadow-sm hover:border-slate-300"
-                >
-                  <option value="all">كافة المحاكم</option>
-                  <option value="التجارية">المحكمة التجارية</option>
-                  <option value="العمالية">المحكمة العمالية</option>
-                  <option value="الجزائية">المحكمة الجزائية</option>
-                  <option value="الأحوال الشخصية">محكمة الأحوال الشخصية</option>
-                  <option value="العامة">المحكمة العامة</option>
-                  <option value="التنفيذ">محكمة التنفيذ</option>
-                  <option value="ديوان المظالم">ديوان المظالم</option>
-                </select>
-              </div>
-
-              <div className="flex flex-col space-y-3 font-sans">
-                <label className="text-[10px] font-black text-slate-900 uppercase tracking-[0.3em] mr-1">Document Tag (AI)</label>
-                <select 
-                  value={selectedDocTag}
-                  onChange={(e) => setSelectedDocTag(e.target.value)}
-                  className="bg-white border-2 border-slate-200 text-slate-900 px-6 py-4 rounded-2xl text-[11px] font-black focus:border-amber-500 outline-none transition-all cursor-pointer min-w-[200px] appearance-none shadow-sm hover:border-slate-300"
-                >
-                  <option value="all">كافة التصنيفات الآلية</option>
-                  <option value="مفهرس_آلياً">مفهرس آلياً</option>
-                  <option value="عقد_عمل">عقد عمل</option>
-                  <option value="عقد_تأسيس">عقد تأسيس</option>
-                  <option value="عقد_مدني">عقد مدني</option>
-                  <option value="مذكرة_دعوى">مذكرة دعوى</option>
-                  <option value="لائحة_اعتراضية">لائحة اعتراضية</option>
-                  <option value="سند_تنفيذي">سند تنفيذي</option>
-                  <option value="قرار_حكم">قرار حكم</option>
-                  <option value="وكالة_شرعية">وكالة شرعية</option>
-                  <option value="تقرير_خبير">تقرير خبير</option>
-                </select>
-              </div>
-
-              <div className="flex flex-col space-y-3 font-sans">
-                <label className="text-[10px] font-black text-slate-900 uppercase tracking-[0.3em] mr-1">حالة القضية (Status)</label>
-                <select 
-                  value={statusFilter}
-                  onChange={(e) => setStatusFilter(e.target.value)}
-                  className="bg-white border-2 border-slate-200 text-slate-900 px-6 py-4 rounded-2xl text-[11px] font-black focus:border-amber-500 outline-none transition-all cursor-pointer min-w-[160px] appearance-none shadow-sm hover:border-slate-300"
-                >
-                  <option value="all">كافة الحالات</option>
-                  <option value="active">نشطة جارية</option>
-                  <option value="closed">مغلقة مؤرشفة</option>
-                  <option value="under_review">قيد النظر والمراجعة</option>
-                </select>
-              </div>
-
-              <div className="flex flex-col space-y-3 font-sans">
-                <label className="text-[10px] font-black text-slate-900 uppercase tracking-[0.3em] mr-1">المسؤول القانوني (Counsel)</label>
-                <select 
-                  value={lawyerFilter}
-                  onChange={(e) => setLawyerFilter(e.target.value)}
-                  className="bg-white border-2 border-slate-200 text-slate-900 px-6 py-4 rounded-2xl text-[11px] font-black focus:border-amber-500 outline-none transition-all cursor-pointer min-w-[200px] appearance-none shadow-sm hover:border-slate-300"
-                >
-                  <option value="all">كافة المستشارين</option>
-                  <option value="baqami">المحامي أحمد البقمي</option>
-                  <option value="qahtani">د. عادل القحطاني</option>
-                  <option value="ghamdi">أ. خالد الغامدي</option>
-                </select>
-              </div>
-
-            </div>
-          </div>
-
-          {/* Filtering Tags for classifications */}
-          <div className="flex flex-wrap items-center gap-3 mb-6 w-full text-right animate-in fade-in slide-in-from-top-4 duration-500" dir="rtl">
-            <span className="text-[11px] font-black text-slate-700 ml-2">تصفية القضايا حسب النوع:</span>
-            {[
-              { key: 'civil', label: 'شرعية' },
-              { key: 'commercial', label: 'تجارية' },
-              { key: 'labor', label: 'عمالية' },
-              { key: 'personal_status', label: 'أحوال شخصية' }
-            ].map((item) => {
-              const isActive = categoryFilter.includes(item.key);
-              return (
-                <button
-                  type="button"
-                  key={item.key}
-                  onClick={() => setCategoryFilter(prev => prev.includes(item.key) ? prev.filter(k => k !== item.key) : [...prev, item.key])}
-                  className={`px-5 py-2.5 rounded-full text-xs font-black transition-all cursor-pointer shadow-sm border ${
-                    isActive 
-                      ? 'bg-amber-500 border-amber-500 text-slate-900 shadow-amber-500/20' 
-                      : 'bg-[#050e21] border-slate-700 text-white font-bold hover:border-slate-500'
-                  }`}
-                >
-                  {item.label}
-                </button>
-              );
-            })}
-          </div>
-
-          <div className="flex flex-col md:flex-row items-center justify-between gap-6 mb-8 bg-[#050e21] p-6 rounded-[2rem] border border-slate-800/85">
-            <div className="text-right">
-              <h3 className="text-xs font-black text-white font-black font-bold uppercase tracking-widest mb-1">نتائج الفرز والبحث</h3>
-              <p className="text-xs text-slate-700">تم العثور على {filteredCases.length} قضية نشطة ومؤرشفة.</p>
-            </div>
-            
-            <div className="flex items-center gap-3">
-              <button 
-                type="button"
-                onClick={() => window.print()}
-                className="p-6 bg-[#b8860b] text-white border border-transparent rounded-2xl transition-all shadow-sm cursor-pointer active:scale-95 group relative flex items-center justify-center gap-1.5"
-                title="طباعة سجل القضايا"
-              >
-                <span>🖨️</span>
-                <span className="text-xs font-black font-sans">طباعة التقرير</span>
-              </button>
-
-              <button 
-                onClick={handleExportCSV}
-                className="p-6 bg-[#050e21] border border-slate-800 rounded-2xl text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.8)] transition-all shadow-sm cursor-pointer[#0c1a35] active:scale-95 group relative"
-                title="تصدير CSV"
-              >
-                <Download className="w-7 h-7 transition-transform" />
-                <span className="absolute -top-2 -right-2 bg-primary text-white text-xs font-black px-1.5 py-0.5 rounded-md shadow-lg">CSV</span>
-              </button>
-
-              <button 
-                type="button"
-                onClick={() => setIsLegalReviewMode(!isLegalReviewMode)}
-                className={`p-6 border rounded-2xl transition-all shadow-sm cursor-pointer active:scale-95 group relative flex items-center justify-center gap-2 font-sans ${
-                  isLegalReviewMode 
-                    ? 'bg-amber-500 text-slate-950 border-amber-400 font-extrabold shadow-lg shadow-amber-500/20' 
-                    : 'bg-[#050e21] border-slate-800 text-white[#fbbf24]'
-                }`}
-                title="نمط المراجعة القانونية لتقليل إجهاد العين"
-              >
-                <span className="text-sm">👁️⚙️</span>
-                <span className="text-xs font-black">
-                  {isLegalReviewMode ? 'تعطيل نمط المراجعة' : 'تفعيل نمط المراجعة'}
-                </span>
-              </button>
-            </div>
-          </div>
-
-          {filteredCases.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-24 bg-[#050e21] border-2 border-dashed border-slate-800 rounded-[2.5rem] space-y-4">
-              <span className="text-5xl opacity-40">📂</span>
-              <p className="text-white font-black font-bold font-black text-xs uppercase tracking-widest">لا توجد ملفات قضايا تتطابق مع المرشحات الحالية</p>
-            </div>
-          ) : viewMode === 'table' ? (
-            <div className={`overflow-hidden shadow-2xl transition-all duration-300 border rounded-[2.5rem] w-full ${
-              isHighContrast 
-                ? 'bg-white border-slate-900 border-2 shadow-slate-200' 
-                : 'bg-[#050e21] border-slate-700/50 shadow-black/80'
-            }`}>
-              <div className={`flex items-center text-right border-b ${isHighContrast ? 'bg-slate-200 border-slate-900' : 'bg-slate-900/80 border-slate-800'}`} dir="rtl">
-                <div className={`flex-[1] px-4 py-4 text-[11px] font-black uppercase tracking-[0.2em] ${isHighContrast ? 'text-slate-900' : 'text-white font-bold'} drop-shadow-sm`}>رقم الدعوى</div>
-                <div className={`flex-[2] px-4 py-4 text-[11px] font-black uppercase tracking-[0.2em] ${isHighContrast ? 'text-slate-900' : 'text-white font-bold'} drop-shadow-sm`}>اسم الدعوى</div>
-                <div className={`flex-[1.5] px-4 py-4 text-[11px] font-black uppercase tracking-[0.2em] ${isHighContrast ? 'text-slate-900' : 'text-white font-bold'} drop-shadow-sm`}>العميل</div>
-                <div className={`flex-[1] px-4 py-4 text-[11px] font-black uppercase tracking-[0.2em] ${isHighContrast ? 'text-slate-900' : 'text-white font-bold'} drop-shadow-sm`}>التصنيف</div>
-                <div className={`flex-[1] px-4 py-4 text-[11px] font-black uppercase tracking-[0.2em] ${isHighContrast ? 'text-slate-900' : 'text-white font-bold'} drop-shadow-sm`}>الحالة</div>
-                <div className={`flex-[1] px-4 py-4 text-[11px] font-black uppercase tracking-[0.2em] ${isHighContrast ? 'text-slate-900' : 'text-white font-bold'} drop-shadow-sm`}>تحليل AI</div>
-                <div className={`flex-[1] px-4 py-4 text-[11px] font-black uppercase tracking-[0.2em] ${isHighContrast ? 'text-slate-900' : 'text-white font-bold'} drop-shadow-sm`}>الجلسة القادمة</div>
-                <div className="flex-[0.5] px-4 py-4"></div>
-              </div>
-              <List
-                style={{ height: 600, width: "100%", direction: "rtl" }}
-                rowCount={filteredCases.length}
-                rowHeight={100}
-                rowProps={{}}
-                className={`divide-y-4 ${isHighContrast ? 'divide-slate-200' : 'divide-slate-900'}`}
-                rowComponent={({ index, style }) => {
-                  const c = filteredCases[index];
-                  const { arabicStatusName, statusColorClass, arabicCategoryName, CategoryIcon } = getInteractiveCaseStyles(c.category, c.status);
-                  const cTags = getCaseDocumentTags(c);
-                  return (
-                    <div 
-                      key={c.id} 
-                      style={style}
-                      className={`flex items-center text-right transition-all group cursor-pointer ${
-                        isHighContrast 
-                          ? (index % 2 === 0 ? 'bg-slate-50 hover:bg-slate-100' : 'bg-white hover:bg-slate-100') 
-                          : (index % 2 === 0 ? 'bg-[#0a182f]/40 hover:bg-amber-500/10' : 'bg-transparent hover:bg-amber-500/10')
-                      } ${c.archived ? 'opacity-50 grayscale-[0.5]' : ''}`} 
-                      onClick={() => onSelectCase(c)}
-                      dir="rtl"
-                    >
-                      <div className={`flex-[1] px-4 py-3 text-xs font-mono font-black tracking-tight ${isHighContrast ? 'text-amber-800' : 'text-amber-400'} transition-colors`}>#{c.caseNumber}</div>
-                      <div className={`flex-[2] px-4 py-3 text-xs font-black tracking-tight transition-colors ${isHighContrast ? 'text-slate-950 font-black' : 'text-white'}`}>
-                        <div className="flex items-center gap-2">
-                          <span className="truncate">{c.caseName}</span>
-                          {isCaseOverdue(c) && (
-                            <span className="shrink-0 w-2 h-2 rounded-full bg-rose-500 animate-pulse relative group" title="تجاوزت المهلة النظامية">
-                              <span className="absolute -top-8 right-0 bg-rose-900 text-white text-[10px] px-2 py-1 rounded opacity-0 transition-opacity whitespace-nowrap z-[60]">تجاوزت المهلة النظامية</span>
-                            </span>
-                          )}
-                        </div>
-                        <CaseClassificationTags category={c.category} status={c.status} isHighContrast={isHighContrast} />
-                      </div>
-                      <div className={`flex-[1.5] px-4 py-3 text-[11px] font-black tracking-tight truncate ${isHighContrast ? 'text-slate-800' : 'text-indigo-300'} transition-colors`}>{c.clientName}</div>
-                      <div className="flex-[1] px-4 py-3">
-                        <span className={`text-[11px] font-black px-2.5 py-1.5 rounded-xl border-2 transition-all inline-flex items-center gap-1 shrink-0 ${
-                          isHighContrast 
-                            ? 'bg-slate-100 border-slate-900 text-slate-950 shadow-sm' 
-                            : 'bg-slate-900 border-slate-700 text-white font-bold'
-                        }`}>
-                          <CategoryIcon className="w-3 h-3" />
-                          <span className="truncate">{arabicCategoryName}</span>
-                        </span>
-                      </div>
-                      <div className="flex-[1] px-4 py-3">
-                        <span className={`text-[11px] font-black px-2 py-1.5 rounded-xl border-2 transition-all shrink-0 ${
-                          isHighContrast 
-                            ? 'bg-slate-950 text-white border-slate-950 shadow-md' 
-                            : `${statusColorClass.replace('bg-opacity-10', 'bg-opacity-30')} text-white border-white/10`
-                        }`}>
-                          <span className="truncate block">{arabicStatusName}</span>
-                        </span>
-                      </div>
-                      <div className="flex-[1] px-4 py-3">
-                        <div className="flex flex-wrap gap-1 max-w-full overflow-hidden">
-                          {cTags.slice(0, 2).map((tag, tIdx) => (
-                            <span key={tIdx} className={`text-[10px] truncate font-black px-1.5 py-0.5 border-2 rounded-md transition-all ${
-                              isHighContrast 
-                                ? 'bg-slate-200 border-slate-900 text-slate-950' 
-                                : 'bg-amber-500/10 border-amber-500/30 text-amber-300'
-                            }`}>
-                              {tag}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                      <div className={`flex-[1] px-4 py-3 text-[10px] font-black font-mono tracking-widest truncate ${isHighContrast ? 'text-emerald-900' : 'text-emerald-400'} transition-colors`}>{c.nextSessionDate || '---'}</div>
-                      <div className="flex-[0.5] px-4 py-3 text-right">
-                        <ChevronLeft className={`w-4 h-4 transition-all rotate-180 inline-block drop-shadow-sm ${isHighContrast ? 'text-white font-black font-bold' : 'text-slate-700'}`} />
-                      </div>
-                    </div>
-                  );
-                }}
-              />
-            </div>
-          ) : (
-            <div className={`grid grid-cols-1 ${gridDensity === 'relaxed' ? 'md:grid-cols-2 lg:grid-cols-3 gap-10' : 'md:grid-cols-3 lg:grid-cols-4 gap-6'}`}>
-              {filteredCases.slice(0, visibleCount).map((c, idx) => {
-                const { 
-                  arabicCategoryName, 
-                  arabicStatusName, 
-                  statusColorClass, 
-                  IconComponent, 
-                  categoryBadgeColor,
-                  hoverBorderAccent,
-                  gradientBg,
-                  sidebarColor,
-                  CategoryIcon
-                } = getInteractiveCaseStyles(c.category, c.status);
-
-                return (
-                  <div
-                    key={idx}
-                    onClick={() => onSelectCase(c)}
-                    className={`card-professional-case relative cursor-default rounded-[2rem] border-2 p-[3px] overflow-hidden ${
-                      isHighContrast 
-                        ? 'border-slate-900 bg-white shadow-xl' 
-                        : 'border-[#fbbf24]/55 bg-[#050e21] shadow-[0_4px_20px_rgba(0,0,0,0.8)]'
-                    }`}
-                  >
-                    {/* Main Content Area - Dynamic theme support */}
-                    <div className={`relative z-10 w-full h-full p-6 md:p-8 rounded-[calc(2rem-3px)] flex flex-col justify-between shadow-inner ${
-                      isHighContrast ? 'bg-slate-50' : 'theme-card-bg'
-                    }`}>
-                      
-                      <div className="relative z-10 space-y-6">
-                        <div className="flex items-center justify-between">
-                          <div className="flex flex-wrap items-center gap-4">
-                            <button
-                              type="button"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setActivityLogCaseId(c.id);
-                              }}
-                              className={`p-2.5 border rounded-xl transition-all cursor-pointer shrink-0 z-30 ${
-                                isHighContrast 
-                                  ? 'bg-slate-200 border-slate-400 text-slate-800' 
-                                  : 'bg-amber-500/10 border-amber-500/30 text-[#fbbf24]'
-                              }`}
-                              title="سجل النشاط والتعديلات"
-                            >
-                              <Clock className="w-4 h-4 case-icon-svg" />
-                            </button>
-
-                            <div className={`case-icon-element rounded-xl border shadow-inner flex items-center justify-center shrink-0 ${
-                                 isHighContrast 
-                                   ? 'bg-slate-900 border-slate-950 text-white' 
-                                   : 'bg-[#B8860B]/25 border-amber-500/30 text-[#fbbf24]'
-                                 }`}
-                                 style={{ width: `${38}px`, height: `${38}px` }}>
-                              <IconComponent className={`case-icon-svg ${isHighContrast ? 'text-white' : 'text-amber-300'}`} style={{ width: `${18}px`, height: `${18}px` }} />
-                            </div>
-                            <div className="flex flex-col text-right font-sans">
-                              <span className={`case-header-title text-[11px] uppercase tracking-[0.1em] mt-0.5 font-extrabold ${isHighContrast ? 'text-slate-900' : 'text-[#ffff00] drop-shadow-[0_0_8px_rgba(255,255,255,0.95)]'}`}>نظام التقاضي الذكي</span>
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-2">
-                             <button
-                               type="button"
-                               onClick={(e) => {
-                                 e.stopPropagation();
-                                 handleNajizSync(c);
-                               }}
-                               disabled={isSyncing === c.id}
-                               className={`p-2.5 rounded-xl border transition-all cursor-pointer z-35 flex items-center gap-2 ${
-                                 isSyncing === c.id 
-                                   ? 'bg-indigo-500/20 border-indigo-400 text-indigo-400 animate-pulse'
-                                   : isHighContrast 
-                                      ? 'bg-white border-slate-900 text-slate-900'
-                                      : 'bg-slate-900 border-slate-700 text-amber-400'
-                               }`}
-                               title="مزامنة بيانات ناجز"
-                             >
-                               <Bot className={`w-4 h-4 ${isSyncing === c.id ? 'animate-spin' : ''}`} />
-                               <span className="text-[10px] font-black">{isSyncing === c.id ? 'جاري السحب...' : 'مزامنة ناجز'}</span>
-                             </button>
-                             {c.isNajizSync ? (
-                               <span className={`text-[11px] font-black px-2 py-1 rounded-lg border-2 flex items-center gap-1 transition-colors font-sans shadow-md ${
-                                   isHighContrast ? 'bg-[#adff2f] text-black border-black/10' : 'bg-[#adff2f] text-black border-[#adff2f]/50 drop-shadow-[0_0_8px_rgba(173,255,47,0.4)]'
-                                 }`}>
-                                  <Bot className="w-3.5 h-3.5 text-black" />
-                                  <span className="text-black">من ناجز</span>
-                               </span>
-                             ) : (
-                               <span className={`text-[11px] font-black px-2 py-1 rounded-lg border-2 flex items-center gap-1 transition-colors font-sans shadow-md ${
-                                   isHighContrast ? 'bg-orange-100 text-orange-900 border-orange-200' : 'bg-[#ffb067] text-[#4a2600] border-[#ffb067]/50 drop-shadow-[0_0_8px_rgba(255,176,103,0.3)]'
-                                 }`}>
-                                  <Edit2 className="w-3.5 h-3.5" />
-                                  <span>يدويا</span>
-                               </span>
-                             )}
-                             {(() => {
-                               const styles = getStatusKineticStyles(c.status);
-                               return (
-                                 <span className={`status-badge-kinetic ${styles.glow} text-[11px] font-extrabold px-3 py-1.5 rounded-lg border flex items-center gap-2 transition-colors font-sans shadow-sm ${
-                                   isHighContrast ? 'bg-slate-950 text-white border-slate-950' : 'text-white'
-                                 }`} data-contrast-ignore="true">
-                                    <span className="w-2.5 h-2.5 rounded-full bg-white opacity-80"></span>
-                                    <span className="drop-shadow-sm font-black text-white">{arabicStatusName}</span>
-                                 </span>
-                               );
-                             })()}
-                          </div>
-                        </div>
-
-                        <h3 className={`case-name-text font-display font-black text-2xl leading-tight text-right drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)] flex items-start justify-between gap-4 ${
-                          isHighContrast ? 'text-slate-900' : 'text-white'
-                        }`}>
-                          <span>{c.caseName}</span>
-                          <CaseClassificationTags category={c.category} status={c.status} isHighContrast={isHighContrast} />
-                          {isCaseOverdue(c) && (
-                            <span className="bg-rose-600/20 border border-rose-500/50 text-rose-400 text-[10px] px-3 py-1.5 rounded-xl flex items-center gap-2 animate-bounce-subtle shrink-0">
-                               <AlertCircle className="w-3 h-3" />
-                               <span>متأخرة نظامياً</span>
-                            </span>
-                          )}
-                        </h3>
-
-                        {(c.status === 'judgment_issued' || c.status === 'primary_judgment') && c.judgment_date && (
-                          <div className={`mt-4 p-3.5 border rounded-2xl flex items-center justify-between animate-pulse ${
-                            isHighContrast ? 'bg-rose-50 border-rose-900' : 'bg-rose-500/10 border-rose-500/30'
-                          }`}>
-                            <div className="flex items-center gap-2">
-                              <BellRing className={`w-4 h-4 ${isHighContrast ? 'text-rose-900' : 'text-rose-500'}`} />
-                              <span className={`text-[10px] font-black uppercase tracking-widest ${isHighContrast ? 'text-rose-950' : 'text-rose-500'}`}>مهلة الاستئناف</span>
-                            </div>
-                            <div className="flex items-center gap-1.5 font-mono">
-                              <span className={`text-sm font-black ${isHighContrast ? 'text-slate-950' : 'text-white'}`}>{calculateDaysLeft(c.judgment_date)}</span>
-                              <span className={`text-[10px] font-bold ${isHighContrast ? 'text-slate-700' : 'text-white font-black font-bold'}`}>أيـام متبقية</span>
-                            </div>
-                            <div className="flex gap-1.5">
-                              <button
-                                type="button"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleStatusTransition(c, 'closed');
-                                }}
-                                className="px-3 py-1.5 rounded-lg text-[10px] font-black border border-[#ffff00] text-[#ffff00] bg-transparent transition-colors cursor-pointer z-35 shadow-sm"
-                              >
-                                أرشفة
-                              </button>
-                              <button
-                                type="button"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  alert(`تم تعيين تنبيه لهذه القضية (${c.caseNumber}). لتذكير المهام والجلسات قبل 24 ساعة عبر الإشعارات.`);
-                                }}
-                                className="px-3 py-1.5 rounded-lg bg-indigo-500/10 text-indigo-400 border border-indigo-500/30 transition-colors cursor-pointer z-[35] shadow-sm flex items-center gap-1"
-                                title="تفعيل التنبيه المسبق (24 ساعة)"
-                              >
-                                🔔
-                                <span className="text-[10px] font-black">تذكير 24س</span>
-                              </button>
-                              <button
-                                type="button"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setReportModalCase(c);
-                                }}
-                                className="px-3 py-1.5 rounded-lg bg-emerald-500/10 text-emerald-500 border border-emerald-500/30 transition-colors cursor-pointer z-[35] shadow-sm flex items-center gap-1"
-                                title="توليد تقرير سريع"
-                              >
-                                <Printer className="w-3 h-3" />
-                                <span className="text-[10px] font-black">تقرير سريع</span>
-                              </button>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-
-                      <div className="mt-8 flex flex-col gap-4 border-t border-white/10 pt-6 relative z-10">
-                        <div className="flex items-center justify-between w-full">
-                          <span className="text-[#ffff00] font-extrabold text-[11px] uppercase tracking-[0.1em] font-sans flex items-center gap-1.5">
-                            <CategoryIcon className="w-4 h-4 text-amber-300" />
-                            {arabicCategoryName}
-                          </span>
-                          
-                          <div className="flex flex-wrap items-center gap-2">
-                            <button
-                              type="button"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                toggleSummary(c.id);
-                              }}
-                              className="text-[10.5px] font-black px-3 py-1.5 rounded-lg border border-[#cfa036] bg-[#cfa036] text-[#012a5e] transition-all cursor-pointer z-35 font-sans shadow-lg shadow-amber-500/10"
-                            >
-                              {summaryVisibleIds.includes(c.id) ? 'إخفاء ملخص القضية ▲' : 'ملخص عن القضية 🔍 ▼'}
-                            </button>
-
-                            <div className="flex items-center gap-2 text-[11px] font-black text-white">
-                              <span className="underline decoration-slate-600 underline-offset-4 text-shadow-sm text-white">المحكمة</span>
-                              <span className="court-name-text text-amber-300 bg-white/10 p-1 px-3 rounded-lg border border-white/10 transition-all shadow-sm font-black text-[10px]">{c.courtName || 'المحكمة'}</span>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-
-          <div ref={loadMoreRef} className="h-6 w-full mt-4 bg-transparent" />
-
-          {isVirtualLoading && (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 mt-6 animate-pulse">
-              {[1, 2, 3].map((sIdx) => (
-                <div key={sIdx} className="bg-[#020D1F]/90 border border-slate-800/80 p-10 flex flex-col justify-between rounded-3xl min-h-[350px] space-y-6">
-                  <div className="flex items-center gap-4">
-                    <div className="w-14 h-14 bg-slate-800 rounded-xl" />
-                    <div className="space-y-2 flex-1">
-                      <div className="h-3 bg-slate-800 rounded w-1/4" />
-                      <div className="h-2 bg-slate-800 rounded w-1/3" />
-                    </div>
-                  </div>
-                  <div className="h-5 bg-slate-800 rounded w-2/3" />
-                  <div className="space-y-2">
-                    <div className="h-2 bg-slate-800 rounded" />
-                    <div className="h-2 bg-slate-800 rounded w-5/6" />
-                  </div>
-                  <div className="flex justify-between items-center mt-4">
-                    <div className="w-16 h-4 bg-slate-800 rounded animate-pulse" />
-                    <div className="w-24 h-8 bg-slate-800 rounded-xl animate-pulse" />
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-
-        </div>
-      )}
+            )}
 
       {isCreateOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#050e21]/80 backdrop-blur-md p-6 animate-in fade-in duration-500">

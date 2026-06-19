@@ -419,6 +419,10 @@ export interface PowerOfAttorney {
   clauses?: string[];
   parties?: { name: string; role: string; identity?: string }[];
   isNajizSync?: boolean;
+  subject?: string;
+  principalName?: string;
+  agentName?: string;
+  najizSyncDate?: string;
 }
 
 export interface TimelineEvent {

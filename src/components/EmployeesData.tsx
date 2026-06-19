@@ -289,7 +289,7 @@ export default function EmployeesData({ tasks }: { cases: Case[], tasks: Task[],
     }
 
     const fetchEmployees = async () => {
-      const { data, error } = await supabase.from('employees').select('*');
+      const { data, error } = await supabase.from('employees').select('id, name, nationality, national_id, phone, job_title, manager, qualification, start_date, email, branch, notes, avatar_url, employee_code, role, department, salary, created_at');
       if (error) {
         console.error("Error fetching employees from Supabase:", error);
       } else if (data) {
@@ -434,52 +434,71 @@ export default function EmployeesData({ tasks }: { cases: Case[], tasks: Task[],
     });
 
     try {
-      // 1. Immediately update local state & backup for instant closed UI response
-      const currentBackup = localStorage.getItem('employees_backup');
-      let currentBackupList = currentBackup ? JSON.parse(currentBackup) : [];
-      if (isNew) {
-        currentBackupList.push(empData);
-      } else {
-        currentBackupList = currentBackupList.map((e: any) => e.id === empData.id ? { ...e, ...empData } : e);
-      }
-      localStorage.setItem('employees_backup', JSON.stringify(currentBackupList.map(normalizeEmployee)));
-      setEmployees(currentBackupList.map(normalizeEmployee));
+      const dbPayload = {
+        id: empData.id,
+        name: empData.name,
+        role: empData.role || empData.jobTitle,
+        email: empData.email,
+        phone: empData.phone,
+        status: empData.status || 'نشط',
+        salary: empData.salary,
+        department: empData.department,
+        join_date: empData.startDate,
+        national_id: empData.nationalId,
+        username: empData.username,
+        password: empData.password,
+        job_title: empData.jobTitle,
+        branch: empData.branch,
+        notes: empData.notes,
+        permissions: empData.permissions ? JSON.stringify(empData.permissions) : null,
+        updated_at: new Date().toISOString(),
+        custom_login_token: empData.customLoginToken,
+        portal_link: empData.portalLink
+      };
 
-      // 2. Try persisting to Supabase
-      if (isNew) {
-        const { data: insertResult, error: insertError } = await supabase
-          .from('employees')
-          .insert([empData])
-          .select()
-          .single();
-        
-        if (insertError) {
-          console.warn("Supabase insert failed, relying on local sync:", insertError);
-        } else if (insertResult) {
-          // Re-update local list with the newly confirmed server ID if different
-          const normResult = normalizeEmployee(insertResult);
-          const updatedBackup = currentBackupList.map((item: any) => item.id === tempId ? normResult : item).map(normalizeEmployee);
-          localStorage.setItem('employees_backup', JSON.stringify(updatedBackup));
-          setEmployees(updatedBackup);
-        }
-      } else {
-        const { error: updateError } = await supabase
-          .from('employees')
-          .update(empData)
-          .eq('id', formData.id);
-        
-        if (updateError) {
-          console.warn("Supabase update failed, relying on local cache:", updateError);
-        }
+      const { data, error } = await supabase
+        .from('employees')
+        .upsert(dbPayload, { onConflict: 'id' })
+        .select()
+        .single();
+      
+      if (error) {
+        throw error;
       }
+      
+      // Update local state and cache
+      setEmployees(prev => {
+        const exists = prev.find(e => e.id === empData.id);
+        const updated = exists 
+          ? prev.map(e => e.id === empData.id ? normalizeEmployee(data) : e)
+          : [...prev, normalizeEmployee(data)];
+        localStorage.setItem('employees_backup', JSON.stringify(updated));
+        return updated;
+      });
 
       alert('✅ تم حفظ بيانات الموظف ومزامنتها بنجاح مع كافة الأقسام وبوابة الموظفين.');
       setView('list');
       setSelectedConfigEmployee(null);
       setFormData({});
-    } catch (err) {
-      console.error("Save transaction handoff error:", err);
-      alert('✅ تم حفظ بيانات الموظف محلياً بنجاح ومزامنتها مع الأقسام وجاري المزامنة اللاسلكية مع السحابة.');
+    } catch (err: any) {
+      console.error('[Save Employee Error]', err);
+      
+      // Offline fallback queue
+      const failedQueue = JSON.parse(localStorage.getItem('failed_employee_saves') || '[]');
+      failedQueue.push({ employeeData: empData, timestamp: new Date().toISOString() });
+      localStorage.setItem('failed_employee_saves', JSON.stringify(failedQueue));
+
+      // Local State Update
+      setEmployees(prev => {
+        const exists = prev.find(e => e.id === empData.id);
+        const updated = exists 
+          ? prev.map(e => e.id === empData.id ? normalizeEmployee(empData) : e)
+          : [...prev, normalizeEmployee(empData)];
+        localStorage.setItem('employees_backup', JSON.stringify(updated));
+        return updated;
+      });
+      
+      alert('⚠️ تعذر الاتصال بالخادم، تم الحفظ محلياً. ستتم المزامنة لاحقاً عند توفر الاتصال.');
       setView('list');
       setSelectedConfigEmployee(null);
       setFormData({});
@@ -487,12 +506,19 @@ export default function EmployeesData({ tasks }: { cases: Case[], tasks: Task[],
   };
 
   const handleDeleteEmployee = async (id: string | number) => {
-    if (!confirm('هل أنت متأكد من حذف هذا الموظف؟')) return;
+    if (!confirm('هل أنت متأكد من تعطيل/أرشفة هذا الموظف؟')) return;
     try {
-      const { error } = await supabase.from('employees').delete().eq('id', id);
+      const { error } = await supabase.from('employees').update({ status: 'inactive', updated_at: new Date().toISOString() }).eq('id', id);
       if (error) throw error;
+      
+      setEmployees(prev => {
+        const updated = prev.map(e => String(e.id) === String(id) ? { ...e, status: 'inactive' } : e);
+        localStorage.setItem('employees_backup', JSON.stringify(updated));
+        return updated;
+      });
+      alert('تم تعطيل حساب الموظف بنجاح.');
     } catch (err) {
-      alert('خطأ في الحذف.');
+      alert('خطأ في العملية.');
     }
   };
 
@@ -1049,6 +1075,32 @@ export default function EmployeesData({ tasks }: { cases: Case[], tasks: Task[],
                        className="px-6 py-3 bg-[#0f172a] text-white rounded-xl font-black text-xs hover:bg-slate-800 transition-all shadow-md"
                      >
                        تحرير بيانات الموظف
+                     </button>
+                     <button 
+                       onClick={async () => {
+                         const username = `emp-${emp.nationalId?.slice(-4) || Math.floor(1000+Math.random()*9000)}`;
+                         const password = `Work@${Math.floor(1000+Math.random()*9000)}`;
+                         
+                         const { error } = await supabase
+                           .from('employees')
+                           .update({ username, password, updated_at: new Date().toISOString() })
+                           .eq('id', emp.id);
+                         
+                         if (!error) {
+                           alert(`تم تحديث بيانات دخول الموظف بنجاح:\n\nاسم المستخدم: ${username}\nكلمة المرور: ${password}`);
+                           
+                           setEmployees(prev => {
+                             const updated = prev.map(e => String(e.id) === String(emp.id) ? { ...e, username, password } : e);
+                             localStorage.setItem('employees_backup', JSON.stringify(updated));
+                             return updated;
+                           });
+                         } else {
+                           alert('حدث خطأ أثناء توليد بيانات الدخول.');
+                         }
+                       }}
+                       className="px-4 py-3 bg-white text-slate-700 border border-slate-200 rounded-xl font-black text-xs hover:bg-slate-50 transition-all shadow-sm"
+                     >
+                       توليد بيانات الدخول
                      </button>
                      <button 
                        onClick={() => handleDeleteEmployee(emp.id)}

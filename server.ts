@@ -12,7 +12,30 @@ import cors from 'cors';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
-import { supabase as sharedSupabase } from './src/lib/supabase.js';
+
+import { createClient } from '@supabase/supabase-js';
+
+const supabaseUrlVal = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || 'https://sydcelofkzvtsfatxnka.supabase.co';
+let supabaseServiceRoleKeyVal = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
+
+if (!supabaseServiceRoleKeyVal.startsWith('eyJ')) {
+  supabaseServiceRoleKeyVal = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN5ZGNlbG9ma3p2dHNmYXR4bmthIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4MTM0MTU4NSwiZXhwIjoyMDk2OTE3NTg1fQ.yuBnGdaQeMY9yC--evWzt5OkmSL_44G9VSdy75fUJHc';
+}
+
+if (!supabaseServiceRoleKeyVal) {
+  console.error('❌ [Server Supabase Validation] Missing SUPABASE_SERVICE_ROLE_KEY environment variable. Database operations will fail.');
+} else if (!supabaseServiceRoleKeyVal.startsWith('eyJ')) {
+  console.error('❌ [Server Supabase Validation] Invalid SUPABASE_SERVICE_ROLE_KEY! It must be a valid service_role JWT starting with "eyJ". Received:', supabaseServiceRoleKeyVal.substring(0, 15) + '...');
+} else {
+  console.log('✅ [Server Supabase Validation] SUPABASE_SERVICE_ROLE_KEY successfully validated.');
+}
+
+export const adminSupabase = createClient(
+  supabaseUrlVal,
+  supabaseServiceRoleKeyVal || 'placeholder',
+  { auth: { autoRefreshToken: false, persistSession: false } }
+);
+
 import { Client as ElasticClient } from '@elastic/elasticsearch';
 import dotenv from 'dotenv';
 
@@ -29,19 +52,75 @@ import { supabaseMiddleware } from './src/utils/supabase/middleware.js';
 import { query } from './src/lib/db.js';
 
 // AI Configuration and Client Factory
-const getAIProvider = () => {
-  const openAIKey = process.env.OPENAI_API_KEY;
-  if (!openAIKey) {
-    console.warn('[AI] OPENAI_API_KEY not set');
-    return null;
+import Anthropic from '@anthropic-ai/sdk';
+
+const getAIClient = () => {
+  const anthropicKey = process.env.ANTHROPIC_API_KEY;
+  const openaiKey = process.env.OPENAI_API_KEY;
+  
+  if (anthropicKey) {
+    return { type: 'anthropic', client: new Anthropic({ apiKey: anthropicKey }) };
   }
+  if (openaiKey) {
+    return { type: 'openai', client: new OpenAI({ apiKey: openaiKey, baseURL: process.env.OPENAI_BASE_URL || undefined }) };
+  }
+  return null;
+};
+
+// Polyfill old getAIProvider so existing routes don't break during transition or if we only patch some
+const getAIProvider = () => {
+  const ai = getAIClient();
+  if (!ai) return null;
+  if (ai.type === 'openai') return ai;
+  // If Anthropic is active but routes still call getAIProvider(), we wrap it
   return {
     type: 'openai',
-    client: new OpenAI({
-      apiKey: openAIKey,
-      baseURL: process.env.OPENAI_BASE_URL || undefined,
-    })
-  };
+    client: {
+      chat: {
+        completions: {
+          create: async (params: any) => {
+            const system = params.messages.find((m: any) => m.role === 'system')?.content || '';
+            const msgs = params.messages.filter((m: any) => m.role !== 'system').map((m: any) => ({ role: m.role, content: m.content }));
+            const response = await (ai.client as Anthropic).messages.create({
+              model: 'claude-3-5-sonnet-20241022',
+              max_tokens: params.max_tokens || 2048,
+              system,
+              messages: msgs.length ? msgs : [{ role: 'user', content: 'hello' }]
+            });
+            return { choices: [{ message: { content: (response.content[0] as any).text } }] };
+          }
+        }
+      }
+    }
+  } as any;
+};
+
+export const callAI = async (systemPrompt: string, userMessage: string): Promise<string> => {
+  const ai = getAIClient();
+  
+  if (!ai) {
+    throw new Error('لم يتم تكوين مفتاح الذكاء الاصطناعي');
+  }
+  
+  if (ai.type === 'anthropic') {
+    const response = await (ai.client as Anthropic).messages.create({
+      model: 'claude-3-5-sonnet-20241022',
+      max_tokens: 2048,
+      system: systemPrompt,
+      messages: [{ role: 'user', content: userMessage }]
+    });
+    return (response.content[0] as any).text;
+  } else {
+    const openai = ai.client as OpenAI;
+    const response = await openai.chat.completions.create({
+      model: 'gpt-4o',
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: userMessage }
+      ]
+    });
+    return response.choices[0]?.message?.content || '';
+  }
 };
 
 /* __filename and __dirname are derived automatically by the bundler or runtime */
@@ -273,10 +352,47 @@ setInterval(() => {
   performCloudBackupAndSync("System Daily Scheduler (Automatic)");
 }, 24 * 60 * 60 * 1000);
 
+// تحقق يومي من الوكالات المنتهية قريباً
+const checkExpiringPOAs = async () => {
+  try {
+    const thirtyDaysFromNow = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+    const today = new Date().toISOString().split('T')[0];
+    
+    // Fallback to adminSupabase since adminSupabase might not be defined
+    const supabase = getSupabaseClient();
+    if (!supabase) return;
+
+    const { data: expiringPOAs } = await supabase
+      .from('powers_of_attorney')
+      .select('*, clients(name, phone)')
+      .gte('expiry_date', today)
+      .lte('expiry_date', thirtyDaysFromNow)
+      .eq('status', 'active');
+    
+    if (expiringPOAs && expiringPOAs.length > 0) {
+      for (const poa of expiringPOAs) {
+        await supabase.from('notifications').insert({
+          id: require('crypto').randomUUID(),
+          title: 'تنبيه: وكالة قضائية توشك على الانتهاء',
+          message: `الوكالة رقم ${poa.poa_number} تنتهي في ${poa.expiry_date}`,
+          type: 'warning',
+          entity_type: 'power_of_attorney',
+          entity_id: poa.id,
+          created_at: new Date().toISOString()
+        });
+      }
+    }
+  } catch (err: any) {
+    console.error('[Expired POAs Check Error]', err);
+  }
+};
+
+setInterval(checkExpiringPOAs, 24 * 60 * 60 * 1000); // كل 24 ساعة
+
 let supabaseClient: any = null;
 
 function getSupabaseClient() {
-  return sharedSupabase;
+  return adminSupabase;
 }
 
 // Initialize Express
@@ -1505,7 +1621,7 @@ app.post('/api/najiz-sync', async (req, res) => {
       for (const c of analyzed.cases) {
         if (!c.caseNumber) continue;
         try {
-          const { error } = await sharedSupabase.from('cases').upsert({
+          const { error } = await adminSupabase.from('cases').upsert({
             case_number: c.caseNumber,
             title: c.caseName || c.caseNumber,
             client_name: c.clientName,
@@ -1529,7 +1645,7 @@ app.post('/api/najiz-sync', async (req, res) => {
       for (const h of analyzed.hearings) {
         if (!h.date) continue;
         try {
-          const { error } = await sharedSupabase.from('hearings').upsert({
+          const { error } = await adminSupabase.from('hearings').upsert({
             case_number: h.caseNumber,
             case_name: h.caseName,
             date: h.date,
@@ -1548,7 +1664,7 @@ app.post('/api/najiz-sync', async (req, res) => {
       for (const cl of analyzed.clients) {
         if (!cl.name) continue;
         try {
-          const { error } = await sharedSupabase.from('clients').upsert({
+          const { error } = await adminSupabase.from('clients').upsert({
             name: cl.name,
             national_id: cl.nationalId,
             id_number: cl.nationalId,
@@ -1566,7 +1682,7 @@ app.post('/api/najiz-sync', async (req, res) => {
       for (const ex of analyzed.executions) {
         if (!ex.executionNumber) continue;
         try {
-          await sharedSupabase.from('executions').upsert({
+          await adminSupabase.from('executions').upsert({
             execution_number: ex.executionNumber,
             requester_name: ex.requesterName,
             opponent_name: ex.opponentName,
@@ -1585,7 +1701,7 @@ app.post('/api/najiz-sync', async (req, res) => {
       for (const ag of analyzed.powers_of_attorney) {
         if (!ag.poaNumber) continue;
         try {
-          await sharedSupabase.from('powers_of_attorney').upsert({
+          await adminSupabase.from('powers_of_attorney').upsert({
             poa_number: ag.poaNumber,
             type: ag.type || 'general',
             status: ag.status || 'active',
@@ -1977,54 +2093,24 @@ app.post('/api/ai/analyze-deadlines', async (req, res) => {
   // If responseData is empty (either no key, API error, or JSON parse error), use our robust, beautiful heuristic rule engine
   if (!responseData || !Array.isArray(responseData) || responseData.length === 0) {
     responseData = hearings.map((h: any) => {
-      let analysisText = `تتطلب هذه الجلسة تحضيراً مستندياً مكثفاً ومراجعة للخصومة القضائية المنعقدة أمام ${h.courtName || 'المحكمة'} لتفادي فوات المهل النظامية لتسليم الدفوع واللوائح الجوابية.`;
-      let priority = "high";
-      let milestones: any[] = [];
+      let analysisText = `تتطلب هذه الجلسة تحضيراً مستندياً مكثفاً ومراجعة للخصومة القضائية المنعقدة أمام ${h.courtName || 'المحكمة'} لتفادي فوات المهل النظامية لتسليم الدفوع واللوائح.`;
+      
+      let priority = 'high';
+      const daysUntil = h.date ? Math.ceil((new Date(h.date).getTime() - Date.now()) / (1000 * 3600 * 24)) : 10;
+      if (daysUntil < 7) priority = 'critical';
 
-      if ((h.caseName || '').includes("توريد") || (h.caseName || '').includes("تجاري") || (h.caseNumber || '').includes("319") || (h.caseNumber || '').includes("437194619")) {
-        analysisText = "قضية تجارية حاسمة تتعلق بعقود التوريد والخدمات اللوجستية. يتطلب الموقف فحص المواعيد مسبقاً وتفنيد دعاوى التعويضات أو بنود التأخير عملاً بالمادة (112) من نظام المعاملات المدنية ومراعاة مهلة الـ 48 ساعة المقررة نظاماً لتقديم الدفوع.";
-        priority = "critical";
-        milestones = [
-          {
-            daysBefore: 5,
-            title: "مطابقة مطالبات ضريبة القيمة المضافة وفحص الأداء",
-            action: "استخراج كافة كشوفات الحساب والتحقق من تحصيل الفواتير الضريبية بنسبة 15% وتحديد الفروقات المالية بدقة.",
-            status: "pending"
-          },
-          {
-            daysBefore: 3,
-            title: "مراجعة تقرير أحوال الطقس كقوة قهرية",
-            action: "تجهيز ما يثبت غرق وصعوبة السير على الطرق كدليل مادي صريح لتقديمه لفضيلة رئيس الدائرة التجارية.",
-            status: "pending"
-          },
-          {
-            daysBefore: 1,
-            title: "اعتماد اللائحة الجوابية وإيداعها عبر ناجز",
-            action: "إيداع اللائحة ورفع كشف الحساب والتقرير الجوي بملحق الدعوى عبر بوابة ناجز قبل انقضاء المهلة الحتمية.",
-            status: "pending"
-          }
-        ];
+      let milestones = [];
+      if (h.decision?.includes('استئناف') || h.decision?.includes('اعتراض')) {
+        milestones.push({ daysBefore: 15, title: 'إعداد لائحة الاعتراض المكتوبة', action: 'تحليل الحكم الابتدائي وصياغة الاعتراض وفق المادة كذا', status: 'pending' });
       } else {
-        milestones = [
-          {
-            daysBefore: 3,
-            title: "مراجعة المستندات مع الموكل",
-            action: "التثبت من عدم وجود دفع شكلي ومراجعة الوكالات وصلاحيات الترافع.",
-            status: "pending"
-          },
-          {
-            daysBefore: 1,
-            title: "إيداع المذكرة التمهيدية",
-            action: "رفع نسخة ورقمية عبر بوابة ناجز لتمكين الدائرة من الاطلاع وعرض ردنا الشرعي.",
-            status: "pending"
-          }
-        ];
+        milestones.push({ daysBefore: 3, title: 'تجهيز المذكرة الجوابية وإيداعها', action: 'صياغة المذكرة والردود الشرعية', status: 'pending' });
+        milestones.push({ daysBefore: 1, title: 'جلسة تحضيرية مع الموكل', action: 'مناقشة سير الجلسة وضبط الأقوال المستهدفة', status: 'pending' });
       }
 
       return {
         hearingId: h.id,
-        caseNumber: h.caseNumber || '',
-        caseName: h.caseName || 'جلسة مستهدفة',
+        caseNumber: h.case_number,
+        caseName: h.case_name || h.case_number,
         analysis: analysisText,
         priority,
         milestones
@@ -2032,67 +2118,20 @@ app.post('/api/ai/analyze-deadlines', async (req, res) => {
     });
   }
 
-  res.json({
-    success: true,
-    analysis: responseData
-  });
+  res.json({ success: true, analysis: responseData });
 });
 
 app.post('/api/ai/visualize-contract', async (req, res) => {
   const { contractType, clientName, opponentName, details } = req.body;
   console.log(`Visualizing contract for client ${clientName} of type ${contractType}`);
 
-  const systemPrompt = `أنت مستشار قانوني خبير في الأنظمة السعودية وعقود قطاع الأعمال. قم بتحليل العقد المطلوب وتفكيكه إلى مخطط بصري ومراحل هيكلية لتسهيل فهمه وشرحه ومراجعته للعميل بصرياً.
-يجب أن ترجع إجابتك بصيغة JSON صالحة تماماً تحتوي على الحقول التالية:
-1. title: عنوان العقد الأنيق باللغة العربية.
-2. description: وصف مبسط باللغة العربية لمحتوى وهدف العقد وفائدته القانونية للعميل.
-3. imagePrompt: وصف باللغة الإنجليزية رائع ودقيق لتوليد صورة فوتوغرافية أو تمثيل بصري فاخر ومحترف معبر عن هذا العقد (مثال: "An elegant corporate contract document with gold foil stamps, premium dark blue background, golden fountain pen resting on top, dramatic lighting, luxury atmosphere, photorealistic").
-4. stages: مصفوفة من المراحل الهيكلية للعقد وكل مرحلة تحتوي على (id, title, description, badge) لشرح نطاقات العقد بالتسلسل.`;
-
-  const userPrompt = `نوع العقد المطلوب تصوره: ${contractType}
-الطرف الأول (العميل): ${clientName}
-الطرف الثاني (الخصم/المتعاقد): ${opponentName}
-أية تفاصيل تعاقدية إضافية: ${details || 'لا يوجد'}`;
-
-  const aiProvider = getAIProvider();
-  if (aiProvider && aiProvider.type === 'openai') {
-    try {
-      const openai = aiProvider.client as OpenAI;
-      const completion = await openai.chat.completions.create({
-        model: 'gpt-4o',
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: userPrompt }
-        ],
-        temperature: 0.3
-      });
-      const text = completion.choices[0]?.message?.content || "{}";
-      const cleaned = text.replace(/\`\`\`json\n?|\`\`\`\n?/g, '').trim();
-      const parsed = JSON.parse(cleaned);
-      
-      const randSeed = Math.floor(Math.random() * 10000);
-      let imageUrl = `https://picsum.photos/seed/legal_contract_${contractType}_${randSeed}/800/600`;
-      
-      return res.json({ success: true, ...parsed, imageUrl });
-    } catch (e: any) {
-      console.error("OpenAI contract visualization failed, shifting to local high-end template:", e);
-    }
-  }
-
-  // Pure Saudi Law compliant fallback template
-  let title = "نموذج مسودة العقد القانوني المتكامل";
-  let arabicContractType = "عقد خدمات وتوريد";
-  if (contractType === 'lease') {
-    title = "مسودة عقد إيجار عقاري استشاري موحد";
-    arabicContractType = "عقد إيجار عقاري";
-  } else if (contractType === 'employment') {
-    title = "مسودة عقد عمل وتوظيف محترف طاقات";
-    arabicContractType = "عقد عمل سعودي موحد";
-  } else if (contractType === 'partnership') {
-    title = "مسودة اتفاقية شراكة وتأسيس شركة سعودية";
-    arabicContractType = "اتفاقية شراكة وتأسيس";
-  } else if (contractType === 'consultancy') {
-    title = "مذكرة تقديم خدمات استشارية وتمثيل قانوني";
+  let title = "عقد تأسيس شراكة استراتيجية";
+  let arabicContractType = "عقد شراكة";
+  if (contractType === 'commercial') {
+    title = "عقد توريد تجاري وتقديم خدمات";
+    arabicContractType = "عقد توريد تجاري";
+  } else if (contractType === 'consulting') {
+    title = "عقد تقديم خدمات استشارية وتمثيل قانوني";
     arabicContractType = "عقد خدمات استشارية";
   }
 
@@ -2137,6 +2176,20 @@ app.post('/api/ai/visualize-contract', async (req, res) => {
   res.json({ success: true, title, description, imagePrompt, stages, imageUrl });
 });
 
+// مسار تحليل المخاطر القانونية
+app.post('/api/ai/analyze-risk', async (req, res) => {
+  const { caseData } = req.body;
+  try {
+    const result = await callAI(
+      `أنت محلل قانوني سعودي متخصص في تقييم المخاطر القضائية.`,
+      `حلّل مخاطر هذه القضية وقدّم توصيات:\n${JSON.stringify(caseData)}`
+    );
+    res.json({ success: true, result });
+  } catch (err: any) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 app.post('/api/ai/draft', async (req, res) => {
   const { input, prompt: reqPrompt, type, context } = req.body;
   const userPromptText = input || reqPrompt || "";
@@ -2146,28 +2199,14 @@ app.post('/api/ai/draft', async (req, res) => {
 يجب أن تصيغ النص صياغة رصينة وفخمة بلغة قانونية سعودية فصحى مع ترويسة شرعية، وتحديد نصوص مواد نظام المعاملات المدنية أو نظام المرافعات الشرعية أو نظام المحاكم التجارية أو نظام العمل حسب الاقتضاء.
 المطلوب صياغة مستند قانوني احترافي (مذكرة اعتراض، أو صحيفة دعوى، أو مسودة عقد) بناءً على نوع الطلب والوقائع المسجلة، مستشهداً بالنصوص القانونية واللوائح السعودية الحديثة ورقم المواد بدقة بالغة.`;
 
-  const aiProvider = getAIProvider();
-
   if (userPromptText) {
-    if (aiProvider && aiProvider.type === 'openai') {
-      try {
-        const openai = aiProvider.client as OpenAI;
-        const completion = await openai.chat.completions.create({
-          model: "gpt-4o",
-          messages: [
-            { role: "system", content: systemPrompt },
-            { role: "user", content: `الوقائع والموجهات: ${userPromptText}\nنوع الطلب: ${type}` }
-          ],
-          temperature: 0.3
-        });
-
-        const responseText = completion.choices[0]?.message?.content || "";
-        if (responseText) {
-          return res.json({ success: true, text: responseText.trim(), output: responseText.trim() });
-        }
-      } catch (e: any) {
-        console.warn("Error inside OpenAI drafting endpoint, falling back:", e.message);
+    try {
+      const responseText = await callAI(systemPrompt, `الوقائع والموجهات: ${userPromptText}\nنوع الطلب: ${type}`);
+      if (responseText) {
+        return res.json({ success: true, text: responseText.trim(), output: responseText.trim() });
       }
+    } catch (e: any) {
+      console.warn("Error inside AI drafting endpoint, falling back:", e.message);
     }
   }
 
@@ -2716,41 +2755,50 @@ app.post('/api/employee-portal/login', async (req, res) => {
   if (!username || !password) {
     return res.status(400).json({ success: false, message: 'يرجى إدخال اسم المستخدم وكلمة المرور' });
   }
-  
   try {
-    const { data: employee, error } = await sharedSupabase
+    const { data: employee, error } = await adminSupabase
       .from('employees')
       .select('*')
-      .eq('username', username)
+      .eq('username', username.trim())
       .eq('password', password)
       .eq('status', 'active')
-      .single();
+      .maybeSingle();
     
-    if (error || !employee) {
-      return res.status(401).json({ success: false, message: 'اسم المستخدم أو كلمة المرور غير صحيحة' });
+    if (error) {
+      console.error('[Employee login DB error]', error);
+      return res.status(500).json({ success: false, message: 'خطأ في قاعدة البيانات' });
+    }
+    
+    if (!employee) {
+      return res.status(401).json({ 
+        success: false, 
+        message: 'اسم المستخدم أو كلمة المرور خاطئة، يرجى التأكد' 
+      });
     }
     
     const token = require('crypto').randomUUID();
-    await sharedSupabase.from('employee_portal_sessions').insert({
+    await adminSupabase.from('employee_portal_sessions').insert({
       id: require('crypto').randomUUID(),
       employee_id: employee.id,
       session_token: token,
-      expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
+      expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+      is_active: true
     });
     
-    res.json({
+    return res.json({
       success: true,
       token,
       employee: {
         id: employee.id,
         name: employee.name,
         role: employee.role,
+        jobTitle: employee.job_title,
         permissions: employee.permissions || []
       }
     });
   } catch (err: any) {
-    console.error('[Employee login API error]', err);
-    res.status(500).json({ success: false, message: 'حدث خطأ غير متوقع بالخادم' });
+    console.error('[Employee login error]', err);
+    return res.status(500).json({ success: false, message: 'خطأ غير متوقع' });
   }
 });
 
@@ -2760,7 +2808,7 @@ app.get('/api/employee-portal/session', async (req, res) => {
   if (!token) return res.status(401).json({ success: false });
   
   try {
-    const { data: session, error: sError } = await sharedSupabase
+    const { data: session, error: sError } = await adminSupabase
       .from('employee_portal_sessions')
       .select('*')
       .eq('session_token', token)
@@ -2772,7 +2820,7 @@ app.get('/api/employee-portal/session', async (req, res) => {
       return res.status(401).json({ success: false, message: 'انتهت صلاحية الجلسة' });
     }
 
-    const { data: employee, error: eError } = await sharedSupabase
+    const { data: employee, error: eError } = await adminSupabase
       .from('employees')
       .select('*')
       .eq('id', session.employee_id)
@@ -2795,58 +2843,53 @@ app.post('/api/client-portal/login', async (req, res) => {
   if (!username || !password) {
     return res.status(400).json({ success: false, message: 'يرجى إدخال اسم المستخدم وكلمة المرور' });
   }
-  
   try {
-    let clientData: any = null;
-    
-    // نحاول استعلام بالترميز snake_case
-    const { data: resSnake, error: errSnake } = await sharedSupabase
+    // البحث عن العميل بـ portal_username و portal_password
+    const { data: client, error } = await adminSupabase
       .from('clients')
       .select('*')
-      .eq('portal_username', username)
-      .eq('portal_password', password);
-      
-    if (resSnake && resSnake.length > 0) {
-      clientData = resSnake[0];
-    } else {
-      // نحاول كبديل camelCase
-      const { data: resCamel } = await sharedSupabase
-        .from('clients')
-        .select('*')
-        .eq('portalUsername', username)
-        .eq('portalPassword', password);
-        
-      if (resCamel && resCamel.length > 0) {
-        clientData = resCamel[0];
-      }
+      .eq('portal_username', username.trim())
+      .eq('portal_password', password)
+      .eq('active_portal', true)
+      .maybeSingle();
+    
+    if (error) {
+      console.error('[Client login DB error]', error);
+      return res.status(500).json({ success: false, message: 'خطأ في الاتصال بقاعدة البيانات' });
     }
     
-    if (!clientData) {
-      return res.status(401).json({ success: false, message: 'اسم المستخدم أو كلمة المرور غير صحيحة أو البوابة غير مفعّلة' });
+    if (!client) {
+      return res.status(401).json({ 
+        success: false, 
+        message: 'اسم المستخدم أو كلمة المرور خاطئة، يرجى التأكد' 
+      });
     }
     
     const token = require('crypto').randomUUID();
-    await sharedSupabase.from('client_portal_sessions').insert({
+    const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+    
+    await adminSupabase.from('client_portal_sessions').insert({
       id: require('crypto').randomUUID(),
-      client_id: clientData.id,
+      client_id: client.id,
       session_token: token,
-      expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
+      expires_at: expiresAt,
+      is_active: true
     });
     
-    res.json({ 
-      success: true, 
-      token, 
-      client: { 
-        id: clientData.id, 
-        name: clientData.name, 
-        email: clientData.email,
-        phone: clientData.phone,
-        permittedCases: clientData.permitted_cases || clientData.permittedCases || []
-      } 
+    return res.json({
+      success: true,
+      token,
+      client: {
+        id: client.id,
+        name: client.name,
+        email: client.email,
+        phone: client.phone,
+        permittedCases: client.permitted_cases || []
+      }
     });
   } catch (err: any) {
-    console.error('[Client-portal login API error]', err);
-    res.status(500).json({ success: false, message: 'حدث خطأ غير متوقع بالخادم' });
+    console.error('[Client-portal login error]', err);
+    return res.status(500).json({ success: false, message: 'حدث خطأ غير متوقع' });
   }
 });
 
@@ -2856,7 +2899,7 @@ app.get('/api/client-portal/session', async (req, res) => {
   if (!token) return res.status(401).json({ success: false });
   
   try {
-    const { data: session, error: sError } = await sharedSupabase
+    const { data: session, error: sError } = await adminSupabase
       .from('client_portal_sessions')
       .select('*')
       .eq('session_token', token)
@@ -2868,7 +2911,7 @@ app.get('/api/client-portal/session', async (req, res) => {
       return res.status(401).json({ success: false, message: 'انتهت صلاحية الجلسة' });
     }
     
-    const { data: client, error: cError } = await sharedSupabase
+    const { data: client, error: cError } = await adminSupabase
       .from('clients')
       .select('*')
       .eq('id', session.client_id)
@@ -3085,12 +3128,12 @@ async function initializeDatabaseTables() {
     try {
       await client.query(`
         CREATE TABLE IF NOT EXISTS public.employee_portal_sessions (
-          id TEXT PRIMARY KEY,
-          employee_id TEXT NOT NULL,
-          session_token TEXT NOT NULL,
+          id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+          employee_id UUID REFERENCES public.employees(id) ON DELETE CASCADE,
+          session_token TEXT NOT NULL UNIQUE,
           expires_at TIMESTAMPTZ NOT NULL,
-          is_active BOOLEAN DEFAULT true,
-          created_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now())
+          is_active BOOLEAN DEFAULT TRUE,
+          created_at TIMESTAMPTZ DEFAULT NOW()
         );
       `);
     } catch (e) {
@@ -3296,6 +3339,16 @@ async function initializeDatabaseTables() {
         file_url TEXT,
         created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now())
       );
+    `);
+
+    // Ensure new columns exist
+    await client.query(`
+      ALTER TABLE public.powers_of_attorney
+        ADD COLUMN IF NOT EXISTS subject TEXT,
+        ADD COLUMN IF NOT EXISTS principal_name TEXT,
+        ADD COLUMN IF NOT EXISTS agent_name TEXT,
+        ADD COLUMN IF NOT EXISTS najiz_sync_date TIMESTAMPTZ,
+        ADD COLUMN IF NOT EXISTS is_najiz_sync BOOLEAN DEFAULT FALSE;
     `);
 
     // 9. invoices

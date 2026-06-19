@@ -85,7 +85,8 @@ import SystemErrorRecovery from './SystemErrorRecovery';
 import InteractionGuideComponent from './InteractionGuideComponent';
 import DashboardCardSkeleton from './DashboardCardSkeleton';
 import TimelineView from './TimelineView';
-import TimelineD3 from './TimelineD3';
+import { Suspense } from 'react';
+const TimelineD3 = React.lazy(() => import('./TimelineD3'));
 import LegalRiskMatrix from './legal/LegalRiskMatrix';
 import MiniChart from './charts/MiniChart';
 import { RadialBarChart, RadialBar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, PieChart, Pie, Cell, Tooltip as RechartsTooltip, ResponsiveContainer, Legend, BarChart, Bar, XAxis, YAxis, CartesianGrid, AreaChart, Area, LineChart, Line } from 'recharts';
@@ -397,8 +398,8 @@ const Dashboard = function Dashboard({
     const fetchDashboardData = async () => {
       try {
         const [empRes, poaRes] = await Promise.all([
-          supabase.from('employees').select('*'),
-          supabase.from('powers_of_attorney').select('*')
+          supabase.from('employees').select('id, name, employee_code'),
+          supabase.from('powers_of_attorney').select('id, raw_poa_number, status, agent_name, issue_date, expiry_date')
         ]);
         
         if (empRes.data) {
@@ -1270,7 +1271,9 @@ const Dashboard = function Dashboard({
           animate={{ opacity: 1, y: 0 }}
           className="w-full relative z-10"
         >
-          <TimelineD3 hearings={hearings} tasks={tasks} />
+          <Suspense fallback={<div className="h-64 flex items-center justify-center animate-pulse bg-slate-100 dark:bg-slate-800 rounded-3xl"><div className="w-8 h-8 rounded-full border-4 border-amber-500 border-t-transparent animate-spin"/></div>}>
+            <TimelineD3 hearings={hearings} tasks={tasks} />
+          </Suspense>
         </motion.div>
       )}
 
@@ -2365,7 +2368,9 @@ const Dashboard = function Dashboard({
                         <GripVertical className="w-8 h-8 text-amber-500 animate-pulse" />
                       </div>
                     )}
-                    <TimelineD3 hearings={hearings} tasks={tasks} />
+                    <Suspense fallback={<div className="h-64 flex items-center justify-center animate-pulse bg-slate-100 dark:bg-slate-800 rounded-3xl"><div className="w-8 h-8 rounded-full border-4 border-amber-500 border-t-transparent animate-spin"/></div>}>
+                      <TimelineD3 hearings={hearings} tasks={tasks} />
+                    </Suspense>
                   </div>
                 </EnhancedSortableWidgetWrapper>
               );

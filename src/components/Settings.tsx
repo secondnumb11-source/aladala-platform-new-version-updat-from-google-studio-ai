@@ -1889,6 +1889,91 @@ export default function Settings({
             <div className="text-[10px] font-bold text-slate-200 font-bold mt-2 text-left w-full relative z-10">* مدير المكتب له كافة الصلاحيات افتراضياً ولا تقيد بهذه التبويبات.</div>
           </div>
 
+          {/* Custom Law Links Section */}
+          <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm space-y-6">
+            <div className="flex items-center gap-3 border-b border-slate-100 pb-4">
+              <div className="p-2.5 bg-indigo-50 text-indigo-700 border border-indigo-200 rounded-xl">
+                <BookOpen className="w-5 h-5 text-indigo-600" />
+              </div>
+              <div>
+                <h2 className="text-base font-black text-slate-950">إعدادات روابط الأنظمة القانونية (Library Custom Links)</h2>
+                <p className="text-xs text-slate-700 mt-1 font-bold">قم بتخصيص الروابط الخارجية التي يتم فتحها عند الضغط على كروت الأنظمة في (مكتبة الأنظمة والبحث الذكي).</p>
+              </div>
+            </div>
+
+            <form onSubmit={handleSaveLawLinks} className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              <div className="space-y-2 text-right" dir="rtl">
+                <label className="text-[11px] font-black text-slate-800 uppercase tracking-wider block">رابط مخصص لكارت (نظام المعاملات المدنية):</label>
+                <input
+                  type="url"
+                  placeholder="https://laws.boe.gov.sa/..."
+                  value={lawLinkCivilTransactions}
+                  onChange={(e) => setLawLinkCivilTransactions(e.target.value)}
+                  className="w-full bg-slate-50 border border-slate-200 p-3.5 rounded-xl text-slate-950 font-bold text-xs outline-none focus:border-indigo-600 shadow-inner"
+                />
+              </div>
+              <div className="space-y-2 text-right" dir="rtl">
+                <label className="text-[11px] font-black text-slate-800 uppercase tracking-wider block">رابط مخصص لكارت (نظام الشركات الجديد):</label>
+                <input
+                  type="url"
+                  placeholder="https://..."
+                  value={lawLinkCompaniesNew}
+                  onChange={(e) => setLawLinkCompaniesNew(e.target.value)}
+                  className="w-full bg-slate-50 border border-slate-200 p-3.5 rounded-xl text-slate-950 font-bold text-xs outline-none focus:border-indigo-600 shadow-inner"
+                />
+              </div>
+              <div className="space-y-2 text-right" dir="rtl">
+                <label className="text-[11px] font-black text-slate-800 uppercase tracking-wider block">رابط مخصص لكارت (نظام العمل السعودي):</label>
+                <input
+                  type="url"
+                  placeholder="https://..."
+                  value={lawLinkLaborLaw}
+                  onChange={(e) => setLawLinkLaborLaw(e.target.value)}
+                  className="w-full bg-slate-50 border border-slate-200 p-3.5 rounded-xl text-slate-950 font-bold text-xs outline-none focus:border-indigo-600 shadow-inner"
+                />
+              </div>
+              <div className="space-y-2 text-right" dir="rtl">
+                <label className="text-[11px] font-black text-slate-800 uppercase tracking-wider block">رابط مخصص لكارت (نظام الإثبات القضائي):</label>
+                <input
+                  type="url"
+                  placeholder="https://..."
+                  value={lawLinkEvidenceLaw}
+                  onChange={(e) => setLawLinkEvidenceLaw(e.target.value)}
+                  className="w-full bg-slate-50 border border-slate-200 p-3.5 rounded-xl text-slate-950 font-bold text-xs outline-none focus:border-indigo-600 shadow-inner"
+                />
+              </div>
+              <div className="space-y-2 text-right" dir="rtl">
+                <label className="text-[11px] font-black text-slate-800 uppercase tracking-wider block">رابط مخصص لكارت (نظام التنفيذ):</label>
+                <input
+                  type="url"
+                  placeholder="https://..."
+                  value={lawLinkEnforcementLaw}
+                  onChange={(e) => setLawLinkEnforcementLaw(e.target.value)}
+                  className="w-full bg-slate-50 border border-slate-200 p-3.5 rounded-xl text-slate-950 font-bold text-xs outline-none focus:border-indigo-600 shadow-inner"
+                />
+              </div>
+              <div className="space-y-2 text-right" dir="rtl">
+                <label className="text-[11px] font-black text-slate-800 uppercase tracking-wider block">رابط مخصص لكارت (نظام الإفلاس):</label>
+                <input
+                  type="url"
+                  placeholder="https://..."
+                  value={lawLinkBankruptcyLaw}
+                  onChange={(e) => setLawLinkBankruptcyLaw(e.target.value)}
+                  className="w-full bg-slate-50 border border-slate-200 p-3.5 rounded-xl text-slate-950 font-bold text-xs outline-none focus:border-indigo-600 shadow-inner"
+                />
+              </div>
+              <div className="col-span-full pt-2">
+                <button
+                  type="submit"
+                  className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-black py-4 rounded-2xl text-sm shadow-xl shadow-indigo-100 transition-all flex items-center justify-center gap-3 active:scale-95"
+                >
+                  <Save className="w-5 h-5" />
+                  <span>حفظ روابط الأنظمة القانونية المخصصة ⚖️</span>
+                </button>
+              </div>
+            </form>
+          </div>
+
           {/* Form 1: Office Profile Details */}
           <div className="bg-white border border-slate-800 rounded-2xl p-6 space-y-4 shadow-sm">
             <div className="flex items-center gap-2 border-b border-slate-800 pb-3">

@@ -697,7 +697,38 @@ export default function ClientsModule({
                        </div>
                     </div>
 
-                    <div className="flex gap-3">
+                    <div className="flex flex-col gap-3">
+                       <button 
+                         onClick={async () => {
+                           const username = `client-${c.nationalId?.slice(-4) || Math.floor(1000+Math.random()*9000)}`;
+                           const password = `Pass@${Math.floor(1000+Math.random()*9000)}`;
+                           
+                           // حفظ في قاعدة البيانات مباشرة
+                           const { error } = await supabase
+                             .from('clients')
+                             .update({
+                               portal_username: username,
+                               portal_password: password,
+                               active_portal: true
+                             })
+                             .eq('id', c.id);
+                           
+                           if (error) {
+                             alert('فشل في حفظ بيانات الدخول: ' + error.message);
+                             return;
+                           }
+                           
+                           // تحديث State
+                           onUpdateState('clients', { ...c, portalUsername: username, portalPassword: password, activePortal: true });
+                           
+                           alert(`تم توليد بيانات الدخول:\nاسم المستخدم: ${username}\nكلمة المرور: ${password}`);
+                         }}
+                         className="flex-1 bg-slate-800 text-white font-black py-3.5 rounded-xl text-[11px] flex items-center justify-center gap-2 transition-all shadow-md active:scale-95"
+                       >
+                         <ShieldCheck className="w-4 h-4" />
+                         توليد وتفعيل بيانات الدخول
+                       </button>
+
                        <button 
                         onClick={() => {
                           const msg = `أهلاً بك سعادة العميل / ${c.name}\nلقد تم تفعيل حسابكم لمتابعة ملفاتكم وقضاياكم عبر بوابة العدالة.\n\nاسم المستخدم: ${c.portalUsername || c.nationalId}\nكلمة المرور: ${c.portalPassword || 'Adalah@123'}\n\nرابط البوابة: ${window.location.origin}/portal/login`;

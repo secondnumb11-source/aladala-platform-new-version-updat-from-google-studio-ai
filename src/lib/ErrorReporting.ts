@@ -67,7 +67,7 @@ export const ErrorReporting = {
     if (!supabase) return [];
     const { data, error } = await supabase
       .from('system_errors')
-      .select('*')
+      .select('id, error_code, component, details, created_at, timestamp')
       .order('timestamp', { ascending: false })
       .limit(20);
     if (error) {

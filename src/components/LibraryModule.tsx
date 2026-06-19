@@ -15,13 +15,7 @@ const SAUDI_LAWS = [
     desc: 'المرجع الأساسي للحقوق والالتزامات المدنية في المملكة العربية السعودية.',
     category: 'قانون مدني',
     lastUpdated: '1445-01-01',
-    content: `
-# نظام المعاملات المدنية
-
-## الباب الأول: الأهلية والالتزامات
-يعد هذا النظام نقلة نوعية في البيئة التشريعية والقضائية في المملكة...
-...
-    `
+    content: ''
   },
   {
     id: 'companies-new',
@@ -29,7 +23,7 @@ const SAUDI_LAWS = [
     desc: 'ينظم أنواع الشركات وتأسيسها وحوكمتها وتصفيتها.',
     category: 'قانون تجاري',
     lastUpdated: '1444-06-01',
-    content: 'تفاصيل نظام الشركات الجديد وقواعد الحوكمة...'
+    content: ''
   },
   {
     id: 'labor-law',
@@ -37,7 +31,31 @@ const SAUDI_LAWS = [
     desc: 'ينظم العلاقة التعاقدية بين صاحب العمل والعامل.',
     category: 'قانون العمل',
     lastUpdated: '1444-12-01',
-    content: 'قواعد الفصل، التعويض، ساعات العمل، ومكافأة نهاية الخدمة...'
+    content: ''
+  },
+  {
+    id: 'evidence-law',
+    title: 'نظام الإثبات القضائي',
+    desc: 'القواعد المنظمة لإثبات الحقوق في المواد المدنية والتجارية.',
+    category: 'قانون إجرائي',
+    lastUpdated: '1443-05-01',
+    content: ''
+  },
+  {
+    id: 'enforcement-law',
+    title: 'نظام التنفيذ',
+    desc: 'ينظم إجراءات تنفيذ الأحكام والسندات التنفيذية.',
+    category: 'قانون إجرائي',
+    lastUpdated: '1444-07-01',
+    content: ''
+  },
+  {
+    id: 'bankruptcy-law',
+    title: 'نظام الإفلاس',
+    desc: 'يهدف إلى تمكين المدين المفلس من إعادة تنظيم أوضاعه المالية.',
+    category: 'قانون تجاري',
+    lastUpdated: '1445-02-01',
+    content: ''
   }
 ];
 
@@ -68,14 +86,22 @@ export default function LibraryModule() {
   const [searchTerm, setSearchTerm] = useState('');
 
   const getLawUrl = (lawId: string): string => {
-    if (lawId === 'civil-transactions') {
-      return localStorage.getItem('law_link_civil_transactions') || 'https://laws.boe.gov.sa/SaudiLaws/Laws/LawDetails/6968fd0a-115f-4bf2-abb9-b01600c01fa1';
-    } else if (lawId === 'companies-new') {
-      return localStorage.getItem('law_link_companies_new') || 'https://laws.boe.gov.sa/SaudiLaws/Laws/LawDetails/2585f9ea-b97c-40ad-9b8d-ae7b00bef027';
-    } else if (lawId === 'labor-law') {
-      return localStorage.getItem('law_link_labor_law') || 'https://laws.boe.gov.sa/SaudiLaws/Laws/LawDetails/f7648348-18e4-4d10-8277-ae7b00bef20b';
+    switch (lawId) {
+      case 'civil-transactions':
+        return localStorage.getItem('law_link_civil_transactions') || 'https://laws.boe.gov.sa/SaudiLaws/Laws/LawDetails/6968fd0a-115f-4bf2-abb9-b01600c01fa1';
+      case 'companies-new':
+        return localStorage.getItem('law_link_companies_new') || 'https://laws.boe.gov.sa/SaudiLaws/Laws/LawDetails/2585f9ea-b97c-40ad-9b8d-ae7b00bef027';
+      case 'labor-law':
+        return localStorage.getItem('law_link_labor_law') || 'https://laws.boe.gov.sa/SaudiLaws/Laws/LawDetails/f7648348-18e4-4d10-8277-ae7b00bef20b';
+      case 'evidence-law':
+        return localStorage.getItem('law_link_evidence_law') || 'https://laws.boe.gov.sa/SaudiLaws/Laws/LawDetails/623d3a08-8e81-4b13-b5f7-ae3400877044';
+      case 'enforcement-law':
+        return localStorage.getItem('law_link_enforcement_law') || 'https://laws.boe.gov.sa/SaudiLaws/Laws/LawDetails/7180fd12-c247-495c-9c7a-ae7b00bef264';
+      case 'bankruptcy-law':
+        return localStorage.getItem('law_link_bankruptcy_law') || 'https://laws.boe.gov.sa/SaudiLaws/Laws/LawDetails/33580cae-c496-419b-ab05-ae7b00bef18d';
+      default:
+        return 'https://laws.boe.gov.sa';
     }
-    return 'https://laws.boe.gov.sa';
   };
 
   const handleLawClick = (law: typeof SAUDI_LAWS[0]) => {

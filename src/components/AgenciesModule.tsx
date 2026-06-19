@@ -25,7 +25,10 @@ export default function AgenciesModule({ clients, onUpdateState }: AgenciesModul
 
   // Form states
   const [poaNumber, setPoaNumber] = useState('');
+  const [clientId, setClientId] = useState('');
   const [clientName, setClientName] = useState('');
+  const [principalName, setPrincipalName] = useState('');
+  const [agentName, setAgentName] = useState('');
   const [lawyerName, setLawyerName] = useState('');
   const [issueDate, setIssueDate] = useState('');
   const [expiryDate, setExpiryDate] = useState('');
@@ -88,7 +91,7 @@ export default function AgenciesModule({ clients, onUpdateState }: AgenciesModul
 
   const handleAddAgency = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!poaNumber || !clientName || !expiryDate || !issueDate) {
+    if (!poaNumber || (!clientId && !clientName) || !expiryDate || !issueDate || !principalName || !agentName) {
       showToast('يرجى ملء كافة الحقول الأساسية', 'error');
       return;
     }
@@ -107,28 +110,38 @@ export default function AgenciesModule({ clients, onUpdateState }: AgenciesModul
           };
         }).filter(p => p.name)
       : [
-          { name: clientName, role: 'موكل (Client)', identity: '' },
-          { name: lawyerName || 'محامو المكتب', role: 'وكيل (Agent)', identity: '' }
+          { name: principalName, role: 'موكل (Principal)', identity: '' },
+          { name: agentName, role: 'وكيل (Agent)', identity: '' }
         ];
+
+    let finalClientName = clientName;
+    if (clientId && clients) {
+        const c = clients.find(cl => String(cl.id) === String(clientId));
+        if (c) finalClientName = c.name;
+    }
 
     const newPoa = {
       poaNumber,
-      clientName,
-      lawyerName: lawyerName || 'المكتب الرئيسي - كادر العدالة',
+      clientId,
+      clientName: finalClientName,
+      lawyerName: agentName, // Or can keep separate, but agent is often the lawyer/office
       issueDate,
       expiryDate,
       status: getRemainingDays(expiryDate) <= 0 ? 'منتهية' : status,
       scope: scope || clausesArray[0] || '',
       clauses: clausesArray,
       parties: partiesArray,
-      isNajizSync: false
+      isNajizSync: false,
+      subject: scope || clausesArray[0] || '',
+      principalName,
+      agentName
     };
 
     try {
       await supabase.from('powers_of_attorney').insert([toSnake(newPoa)]);
       showToast('تم حفظ وإصدار كارت الوكالة بنجاح', 'success');
       setShowAddModal(false);
-      setPoaNumber(''); setClientName(''); setLawyerName(''); setIssueDate(''); setExpiryDate(''); setScope(''); setClausesText(''); setPartiesText('');
+      setPoaNumber(''); setClientId(''); setClientName(''); setPrincipalName(''); setAgentName(''); setLawyerName(''); setIssueDate(''); setExpiryDate(''); setScope(''); setClausesText(''); setPartiesText('');
     } catch (err: any) {
       showToast('فشل التخزين: ' + err.message, 'error');
     }
@@ -183,6 +196,19 @@ export default function AgenciesModule({ clients, onUpdateState }: AgenciesModul
       setIsSyncing(false);
       showToast(addedCount > 0 ? `مزامنة ناجحة: جلب ${addedCount} وكالات من ناجز` : 'سجلات الوكالات في منصة ناجز محدثة', 'success');
     }, 1800);
+  };
+
+  const getExpiryStatus = (expiryDate: string) => {
+    if (!expiryDate) return null;
+    const today = new Date();
+    const expiry = new Date(expiryDate);
+    const daysLeft = Math.ceil((expiry.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+    
+    if (daysLeft < 0) return { label: 'منتهية الصلاحية', color: 'red', urgent: true };
+    if (daysLeft <= 7) return { label: `تنتهي خلال ${daysLeft} أيام!`, color: 'red', urgent: true };
+    if (daysLeft <= 30) return { label: `تنتهي خلال ${daysLeft} يوماً`, color: 'orange', urgent: false };
+    if (daysLeft <= 60) return { label: `تنتهي خلال ${daysLeft} يوماً`, color: 'yellow', urgent: false };
+    return { label: `متبقي ${daysLeft} يوم`, color: 'green', urgent: false };
   };
 
   const getUrgencyBadge = (days: number) => {
@@ -342,6 +368,19 @@ export default function AgenciesModule({ clients, onUpdateState }: AgenciesModul
                   <p className="text-xs text-slate-700 font-medium line-clamp-2 bg-slate-50 p-2.5 rounded-lg border border-slate-100/50">
                     {poa.scope || 'لم يتم تخصيص نطاق. الوكالة عامة.'}
                   </p>
+                  {(() => {
+                    const status = getExpiryStatus(poa.expiryDate || (poa as any).expiry_date);
+                    if (!status) return null;
+                    return (
+                      <div className={`mt-2 px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1
+                        ${status.color === 'red' ? 'bg-red-500/20 text-red-400 border border-red-500/40' :
+                          status.color === 'orange' ? 'bg-orange-500/20 text-orange-400 border border-orange-500/40' :
+                          status.color === 'yellow' ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/40' :
+                          'bg-green-500/20 text-green-400 border border-green-500/40'}`}>
+                        {status.urgent ? '⚠️' : '📅'} {status.label}
+                      </div>
+                    );
+                  })()}
                 </div>
 
                 <div className="pt-4 border-t border-slate-100 flex items-center justify-between mt-4">
@@ -509,18 +548,39 @@ export default function AgenciesModule({ clients, onUpdateState }: AgenciesModul
                       className="w-full px-4 py-3 bg-white border border-slate-300 rounded-xl text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-900 shadow-sm" />
                   </div>
                   <div className="space-y-1.5">
-                    <label className="text-xs text-slate-700 font-bold block">اسم الموكل (العميل) *</label>
-                    <input type="text" required placeholder="شركة الأمل أو السيد حمد" value={clientName} onChange={(e) => setClientName(e.target.value)}
+                    <label className="text-xs text-slate-700 font-bold block">اسم العميل المرتبط (مسجل بالنظام)</label>
+                    <select value={clientId} onChange={(e) => setClientId(e.target.value)}
+                      className="w-full px-4 py-3 bg-white border border-slate-300 rounded-xl text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-900 shadow-sm">
+                      <option value="">-- ربط بعميل خارجي غير مسجل --</option>
+                      {clients.map(c => (
+                        <option key={c.id} value={String(c.id)}>{c.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                {!clientId && (
+                  <div className="space-y-1.5">
+                    <label className="text-xs text-slate-700 font-bold block">اسم العميل الخارجي *</label>
+                    <input type="text" placeholder="الشركة أو الشخص" value={clientName} onChange={(e) => setClientName(e.target.value)}
+                      className="w-full px-4 py-3 bg-white border border-slate-300 rounded-xl text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-900 shadow-sm" />
+                  </div>
+                )}
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                  <div className="space-y-1.5">
+                    <label className="text-xs text-slate-700 font-bold block">الموكِّل (Principal) *</label>
+                    <input type="text" required placeholder="أطراف الوكالة الموكل" value={principalName} onChange={(e) => setPrincipalName(e.target.value)}
+                      className="w-full px-4 py-3 bg-white border border-slate-300 rounded-xl text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-900 shadow-sm" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-xs text-slate-700 font-bold block">الموكَّل له (Agent) *</label>
+                    <input type="text" required placeholder="المحامي الوكيل" value={agentName} onChange={(e) => setAgentName(e.target.value)}
                       className="w-full px-4 py-3 bg-white border border-slate-300 rounded-xl text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-900 shadow-sm" />
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                  <div className="space-y-1.5">
-                    <label className="text-xs text-slate-700 font-bold block">اسم المحامي الوكيل</label>
-                    <input type="text" placeholder="فريق المحامين" value={lawyerName} onChange={(e) => setLawyerName(e.target.value)}
-                      className="w-full px-4 py-3 bg-white border border-slate-300 rounded-xl text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-900 shadow-sm" />
-                  </div>
                   <div className="space-y-1.5">
                     <label className="text-xs text-slate-700 font-bold block">حالة الوكالة</label>
                     <select value={status} onChange={(e) => setStatus(e.target.value)}

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   BarChart, 
   Bar, 
@@ -39,21 +39,95 @@ import {
   Sparkles
 } from 'lucide-react';
 import { Case } from '@/types';
+import { supabase } from '@/lib/supabase';
 
 interface LawyerPerformanceProps {
   cases: Case[];
 }
 
-export default function LawyerPerformance({ cases }: LawyerPerformanceProps) {
+export default function LawyerPerformance({ cases: propCases }: LawyerPerformanceProps) {
   const [themeTick, setThemeTick] = useState(Date.now());
+  const [kpiData, setKpiData] = useState<any>(null);
+  const [selectedEmployee, setSelectedEmployee] = useState<string>('all');
 
-  React.useEffect(() => {
+  useEffect(() => {
     const handleThemeEvent = () => setThemeTick(Date.now());
     window.addEventListener('adalah-advanced-config-updated', handleThemeEvent);
     return () => window.removeEventListener('adalah-advanced-config-updated', handleThemeEvent);
   }, []);
 
-  const [selectedLawyerId, setSelectedLawyerId] = useState<string>("all");
+  const loadKPIData = async () => {
+    try {
+      // جلب كل البيانات المطلوبة
+      const [casesRes, tasksRes, employeesRes, invoicesRes, poaRes, consultationsRes] = await Promise.all([
+        supabase.from('cases').select('id, status, category, created_at, updated_at', { count: 'exact' }),
+        supabase.from('tasks').select('id, status, employee_id, due_date, created_at, updated_at', { count: 'exact' }),
+        supabase.from('employees').select('id, name, role, status').eq('status', 'active'),
+        supabase.from('invoices').select('id, status, amount, created_at', { count: 'exact' }),
+        supabase.from('powers_of_attorney').select('id, status, expiry_date', { count: 'exact' }),
+        supabase.from('cases').select('id, status').eq('category', 'consultation')
+      ]);
+      
+      const cases = casesRes.data || [];
+      const tasks = tasksRes.data || [];
+      const employees = employeesRes.data || [];
+      const invoices = invoicesRes.data || [];
+      const poas = poaRes.data || [];
+      
+      // حساب المؤشرات
+      const today = new Date();
+      const thirtyDaysFromNow = new Date(today.getTime() + 30 * 24 * 60 * 60 * 1000);
+      
+      const kpi = {
+        totalCases: cases.length,
+        activeCases: cases.filter(c => c.status === 'active' || c.status === 'new').length,
+        completedCases: cases.filter(c => c.status === 'closed' || c.status === 'won').length,
+        pendingCases: cases.filter(c => c.status === 'pending').length,
+        commercialCases: cases.filter(c => c.category === 'commercial').length,
+        laborCases: cases.filter(c => c.category === 'labor').length,
+        personalCases: cases.filter(c => c.category === 'personal').length,
+        executionCases: cases.filter(c => c.category === 'execution').length,
+        administrativeCases: cases.filter(c => c.category === 'administrative').length,
+        completedTasks: tasks.filter(t => t.status === 'done').length,
+        pendingTasks: tasks.filter(t => t.status !== 'done').length,
+        activeEmployees: employees.length,
+        paidInvoices: invoices.filter(i => i.status === 'paid').length,
+        pendingInvoices: invoices.filter(i => i.status === 'pending' || i.status === 'unpaid').length,
+        totalPOAs: poas.length,
+        expiringPOAs: poas.filter(p => {
+          if (!p.expiry_date) return false;
+          const expiry = new Date(p.expiry_date);
+          return expiry >= today && expiry <= thirtyDaysFromNow;
+        }).length,
+        
+        // أداء كل موظف
+        employeePerformance: employees.map(emp => {
+          const empTasks = tasks.filter(t => t.employee_id === emp.id);
+          const empCases = cases.filter(c => (c as any).lead_lawyer_id === emp.id);
+          const completedEmpTasks = empTasks.filter(t => t.status === 'done').length;
+          const totalEmpTasks = empTasks.length;
+          
+          return {
+            id: emp.id,
+            name: emp.name,
+            role: emp.role,
+            completedTasks: completedEmpTasks,
+            totalTasks: totalEmpTasks,
+            completionRate: totalEmpTasks > 0 ? Math.round((completedEmpTasks / totalEmpTasks) * 100) : 0,
+            casesHandled: empCases.length,
+            closedCases: empCases.filter(c => c.status === 'closed').length,
+          };
+        })
+      };
+      
+      setKpiData(kpi);
+    } catch (err) {
+      console.error('[KPI Load Error]', err);
+    }
+  };
+
+  useEffect(() => { loadKPIData(); }, []);
+
   const [targetCaseCategory, setTargetCaseCategory] = useState<string>("commercial");
   const [predictionResult, setPredictionResult] = useState<{ probability: number; reason: string } | null>(null);
   const [isPredicting, setIsPredicting] = useState(false);
@@ -118,81 +192,25 @@ export default function LawyerPerformance({ cases }: LawyerPerformanceProps) {
     document.body.classList.remove('print-performance-report');
   };
 
-  // Simulated Lawyers in the Saudi Law firm
-  const lawyersData = [
-    {
-      id: "lawyer-1",
-      name: "المحامي أحمد البقمي (عضو أول)",
-      completedCases: 14,
-      completedTasks: 45,
-      wonCases: 12,
-      lostCases: 2,
-      avgResolutionDays: 112,
-      rating: 4.9,
-      billableHours: 210,
-      activeCases: 6,
-      avatar: "👨‍⚖️"
-    },
-    {
-      id: "lawyer-2",
-      name: "الباحث القانوني سليمان الجاسر",
-      completedCases: 19,
-      completedTasks: 62,
-      wonCases: 15,
-      lostCases: 4,
-      avgResolutionDays: 68,
-      rating: 4.7,
-      billableHours: 195,
-      activeCases: 4,
-      avatar: "🎓"
-    },
-    {
-      id: "lawyer-3",
-      name: "المحامية أفنان العتيبي (دائرة الأحوال)",
-      completedCases: 11,
-      completedTasks: 38,
-      wonCases: 10,
-      lostCases: 1,
-      avgResolutionDays: 94,
-      rating: 4.8,
-      billableHours: 160,
-      activeCases: 5,
-      avatar: "👩‍⚖️"
-    },
-    {
-      id: "lawyer-4",
-      name: "الأستاذ بندر الدوسري (القضايا العمالية)",
-      completedCases: 15,
-      completedTasks: 51,
-      wonCases: 11,
-      lostCases: 4,
-      avgResolutionDays: 85,
-      rating: 4.6,
-      billableHours: 180,
-      activeCases: 7,
-      avatar: "💼"
-    }
-  ];
-
   // Colors mapping for charts to guarantee elite branding: Dark Blue, Gold, White
   const COLORS = ['#d4af37', '#aa8c2c', '#3b82f6', '#10b981'];
 
   // Total Metrics
-  const totalCompleted = lawyersData.reduce((acc, curr) => acc + curr.completedCases, 0);
-  const totalWon = lawyersData.reduce((acc, curr) => acc + curr.wonCases, 0);
-  const totalCompletedTasks = lawyersData.reduce((acc, curr) => acc + curr.completedTasks, 0);
-  const successRate = ((totalWon / totalCompleted) * 100).toFixed(1);
-  const avgRating = (lawyersData.reduce((acc, curr) => acc + curr.rating, 0) / lawyersData.length).toFixed(1);
-  const totalBillable = lawyersData.reduce((acc, curr) => acc + curr.billableHours, 0);
-  const totalActive = lawyersData.reduce((acc, curr) => acc + curr.activeCases, 0);
+  const totalCompleted = kpiData?.completedCases || 0;
+  const totalCompletedTasks = kpiData?.completedTasks || 0;
+  const successRate = 68.5; // Placeholder for now, could be calculated in the future
+  const avgRating = 4.8;
+  const totalBillable = 0; // Not tracked in DB yet
+  const totalActive = kpiData?.activeCases || 0;
 
   // Case category breakdown metrics mapping for pie chart
   const categoriesMap = [
-    { name: 'تجاري (Commercial)', value: cases.filter(c => c.category === 'commercial').length || 8 },
-    { name: 'عمالي (Labor)', value: cases.filter(c => c.category === 'labor').length || 5 },
-    { name: 'تنفيذ وعقود (Execution)', value: cases.filter(c => c.category === 'execution').length || 6 },
-    { name: 'إداري (Grievance)', value: cases.filter(c => c.category === 'administrative').length || 4 },
-  ];
+    { name: 'تجاري (Commercial)', value: kpiData?.commercialCases || 0 },
+    { name: 'عمالي (Labor)', value: kpiData?.laborCases || 0 },
+    { name: 'تنفيذ وعقود (Execution)', value: kpiData?.executionCases || 0 },
+    { name: 'إداري (Grievance)', value: kpiData?.administrativeCases || 0 },
+    { name: 'أحوال شخصية (Personal)', value: kpiData?.personalCases || 0 }
+  ].filter(c => c.value > 0);
 
   // 6 Months Performance Trend Data (Enhanced with speed metrics)
   const trendData = [
@@ -235,13 +253,13 @@ export default function LawyerPerformance({ cases }: LawyerPerformanceProps) {
             <div className="flex flex-col bg-white border border-slate-200 p-3 rounded-2xl shadow-sm min-w-[240px]">
               <span className="text-[10px] text-slate-200 font-bold block mb-1 font-black uppercase">عرض تقرير:</span>
               <select
-                value={selectedLawyerId}
-                onChange={(e) => setSelectedLawyerId(e.target.value)}
+                value={selectedEmployee}
+                onChange={(e) => setSelectedEmployee(e.target.value)}
                 className="bg-transparent text-slate-900 font-black text-xs focus:outline-none cursor-pointer appearance-none"
               >
                 <option value="all">كافة الكوادر والمستشارين (الفريق)</option>
-                {lawyersData.map(l => (
-                  <option key={l.id} value={l.id}>{l.name}</option>
+                {kpiData?.employeePerformance?.map((emp: any) => (
+                  <option key={emp.id} value={emp.id}>{emp.name}</option>
                 ))}
               </select>
             </div>
@@ -540,7 +558,7 @@ export default function LawyerPerformance({ cases }: LawyerPerformanceProps) {
             <div style={{ width: '100%', height: '100%', minWidth: 0 }}>
               <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0} key={themeTick}>
                 <BarChart
-                  data={lawyersData}
+                  data={kpiData?.employeePerformance || []}
                   margin={{ top: 10, right: 10, left: -20, bottom: 5 }}
                 >
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
@@ -564,9 +582,9 @@ export default function LawyerPerformance({ cases }: LawyerPerformanceProps) {
                     labelStyle={{ color: '#0f172a', fontWeight: 'bold' }} 
                   />
                   <Legend iconType="circle" wrapperStyle={{ fontSize: 10, paddingTop: 20 }} />
-                  <Bar name="ساعات مفوترة" dataKey="billableHours" fill="#fbbf24" radius={[4, 4, 0, 0]} barSize={25} />
-                  <Bar name="مهام محققة" dataKey="completedTasks" fill="#10b981" radius={[4, 4, 0, 0]} barSize={25} />
-                  <Bar name="قضايا منجزة" dataKey="completedCases" fill="#3b82f6" radius={[4, 4, 0, 0]} barSize={25} />
+                  <Bar name="إجمالي المهام" dataKey="totalTasks" fill="#fbbf24" radius={[4, 4, 0, 0]} barSize={25} />
+                  <Bar name="مهام منجزة" dataKey="completedTasks" fill="#10b981" radius={[4, 4, 0, 0]} barSize={25} />
+                  <Bar name="قضايا قيد النظر" dataKey="casesHandled" fill="#3b82f6" radius={[4, 4, 0, 0]} barSize={25} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -772,49 +790,35 @@ export default function LawyerPerformance({ cases }: LawyerPerformanceProps) {
         <h3 className="text-sm font-black text-slate-900 border-b border-slate-200 pb-3 mb-4">قائمة المستشارين القانونيين النشطين بالمكتب</h3>
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {lawyersData.filter(l => selectedLawyerId === "all" || l.id === selectedLawyerId).map((l) => (
-            <div key={l.id} className="bg-white border border-slate-200 p-4 rounded-xl space-y-4 shadow-sm">
+          {(kpiData?.employeePerformance || []).filter((l: any) => selectedEmployee === "all" || l.id === selectedEmployee).map((l: any) => (
+            <div key={l.id} className="bg-white border border-slate-200 p-4 rounded-xl space-y-4 shadow-sm relative">
               <div className="flex items-center gap-3">
-                <span className="text-2xl filter drop-shadow">{l.avatar}</span>
+                <span className="text-2xl filter drop-shadow">👨‍⚖️</span>
                 <div className="text-right">
                   <h4 className="text-xs font-black text-slate-900">{l.name}</h4>
-                  <span className="text-xs text-slate-700 block font-sans">مرخص من قِبل وزارة العدل</span>
+                  <span className="text-xs text-slate-500 block font-sans">{l.role === 'admin' ? 'مدير نظام' : l.role === 'lawyer' ? 'محام' : 'موظف'}</span>
                 </div>
               </div>
 
               <div className="text-sm text-slate-700 space-y-1 font-sans border-t border-slate-100 pt-2">
                 <div className="flex justify-between">
-                  <span>ساعات الاستثمار المعتمدة:</span>
-                  <strong className="text-slate-900">{l.billableHours} ساعة</strong>
+                  <span>المهام المنجزة / الكلي:</span>
+                  <strong className="text-slate-900">{l.completedTasks} / {l.totalTasks}</strong>
                 </div>
                 <div className="flex justify-between">
-                  <span>قضايا قيد النظر الفعال:</span>
-                  <strong className="text-slate-900">{l.activeCases} قضايا</strong>
-                </div>
-                <div className="flex justify-between">
-                  <span>إجمالي القضايا المنتهية:</span>
-                  <strong className="text-emerald-700">{l.completedCases} قضايا محسومة</strong>
+                  <span>نسبة الإنجاز:</span>
+                  <strong className="text-emerald-700">{l.completionRate}%</strong>
                 </div>
                 <div className="flex justify-between mt-1 pt-1 border-t border-slate-100">
-                  <span className="text-slate-800">نسبة النجاح (حكم لصالح العميل):</span>
-                  <strong className="text-emerald-700">{((l.wonCases / l.completedCases) * 100).toFixed(0)}% ({l.wonCases} كسب)</strong>
+                  <span className="text-slate-800">قضايا يترافع بها:</span>
+                  <strong className="text-slate-900">{l.casesHandled} قضايا</strong>
                 </div>
                 <div className="flex justify-between">
-                  <span>حالات الإغلاق الأخرى:</span>
-                  <strong className="text-slate-900">{l.lostCases} خسارة/تسوية</strong>
-                </div>
-                <div className="flex justify-between mt-1">
-                  <span>متوسط سرعة الحل:</span>
-                  <strong className="text-slate-900">{l.avgResolutionDays} يوم</strong>
+                  <span>القضايا المحسومة:</span>
+                  <strong className="text-emerald-700">{l.closedCases} قضايا</strong>
                 </div>
               </div>
 
-              <div className="flex gap-0.5 justify-end text-slate-800 border-t border-slate-100 pt-2">
-                {Array.from({ length: 5 }, (_, idx) => (
-                  <Star key={idx} className={`w-3 h-3 ${idx < Math.floor(l.rating) ? 'fill-yellow-500 text-yellow-400 font-black' : 'text-white font-bold'}`} />
-                ))}
-                <span className="text-xs text-slate-800 font-extrabold mr-1.5 leading-none">{l.rating}</span>
-              </div>
             </div>
           ))}
         </div>

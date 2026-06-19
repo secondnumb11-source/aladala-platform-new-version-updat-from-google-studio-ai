@@ -91,7 +91,7 @@ export default function ExecutionsModule({
   };
 
   return (
-    <div className="space-y-8 animate-fade-in pb-10" dir="rtl">
+    <div id="executions-module-container" className="space-y-8 animate-fade-in pb-10" dir="rtl">
       {/* Header Section */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 bg-slate-900 border border-slate-800 p-8 rounded-[2rem] shadow-xl relative overflow-hidden backdrop-blur-xl">
         <div className="absolute top-0 right-0 w-64 h-64 bg-amber-500/5 blur-3xl -z-10"></div>
@@ -307,16 +307,14 @@ export default function ExecutionsModule({
         <div className="bg-slate-900 border border-slate-800 rounded-[2.5rem] overflow-hidden shadow-2xl">
           <div className="overflow-x-auto">
             <table className="w-full text-right">
-              <thead>
-                <tr className="bg-slate-950/50 border-b border-slate-800">
-                  <th className="px-8 py-5 text-[10px] font-black text-slate-200 uppercase tracking-[0.2em] whitespace-nowrap">رقم الطلب</th>
-                  <th className="px-6 py-5 text-[10px] font-black text-slate-200 uppercase tracking-[0.2em] whitespace-nowrap">طالب الحماية (الموكل)</th>
-                  <th className="px-6 py-5 text-[10px] font-black text-slate-200 uppercase tracking-[0.2em] whitespace-nowrap">المنفذ ضده</th>
-                  <th className="px-6 py-5 text-[10px] font-black text-slate-200 uppercase tracking-[0.2em] whitespace-nowrap text-center">المبلغ</th>
-                  <th className="px-6 py-5 text-[10px] font-black text-slate-200 uppercase tracking-[0.2em] whitespace-nowrap text-center">الحالة</th>
-                  <th className="px-8 py-5 text-[10px] font-black text-slate-200 uppercase tracking-[0.2em] whitespace-nowrap text-left">التفاعل</th>
+                <tr className="bg-slate-950/80 border-b border-slate-800">
+                  <th className="px-8 py-5 text-[11px] font-black text-slate-100 uppercase tracking-[0.2em] whitespace-nowrap">رقم الطلب</th>
+                  <th className="px-6 py-5 text-[11px] font-black text-slate-100 uppercase tracking-[0.2em] whitespace-nowrap">طالب الحماية (الموكل)</th>
+                  <th className="px-6 py-5 text-[11px] font-black text-slate-100 uppercase tracking-[0.2em] whitespace-nowrap">المنفذ ضده</th>
+                  <th className="px-6 py-5 text-[11px] font-black text-slate-100 uppercase tracking-[0.2em] whitespace-nowrap text-center">المبلغ</th>
+                  <th className="px-6 py-5 text-[11px] font-black text-slate-100 uppercase tracking-[0.2em] whitespace-nowrap text-center">الحالة</th>
+                  <th className="px-8 py-5 text-[11px] font-black text-slate-100 uppercase tracking-[0.2em] whitespace-nowrap text-left">التفاعل</th>
                 </tr>
-              </thead>
               <tbody className="divide-y divide-slate-800/50">
                 {filtered.length === 0 ? (
                   <tr>
@@ -388,27 +386,35 @@ export default function ExecutionsModule({
                   طلب رقم: {ex.execution_number}
                 </h3>
                 
-                <div className="space-y-3 mb-6">
-                  <div className="flex items-center gap-3 text-sm">
-                    <User className="w-4 h-4 text-slate-500" />
-                    <span className="text-slate-400 font-bold">الموكل:</span>
-                    <span className="text-slate-200 font-black">{ex.requester_name}</span>
+                <div className="space-y-4 mb-6">
+                  <div className="flex items-center justify-between text-sm group/item">
+                    <div className="flex items-center gap-3">
+                      <User className="w-4 h-4 text-amber-500/60" />
+                      <span className="text-slate-400 font-bold">الموكل:</span>
+                    </div>
+                    <span className="text-slate-100 font-black">{ex.requester_name}</span>
                   </div>
-                  <div className="flex items-center gap-3 text-sm">
-                    <Activity className="w-4 h-4 text-slate-500" />
-                    <span className="text-slate-400 font-bold">الطرف الآخر:</span>
-                    <span className="text-slate-200 font-black">{ex.opponent_name}</span>
+                  <div className="flex items-center justify-between text-sm group/item">
+                    <div className="flex items-center gap-3">
+                      <Activity className="w-4 h-4 text-amber-500/60" />
+                      <span className="text-slate-400 font-bold">الطرف الآخر:</span>
+                    </div>
+                    <span className="text-slate-100 font-black">{ex.opponent_name}</span>
                   </div>
-                  <div className="flex items-center gap-3 text-sm">
-                    <CreditCard className="w-4 h-4 text-slate-500" />
-                    <span className="text-slate-400 font-bold">المبلغ:</span>
-                    <span className="text-emerald-400 font-black">{(ex.amount || 0).toLocaleString()} ر.س</span>
+                  <div className="flex items-center justify-between text-sm group/item">
+                    <div className="flex items-center gap-3">
+                      <CreditCard className="w-4 h-4 text-amber-500/60" />
+                      <span className="text-slate-400 font-bold">المبلغ:</span>
+                    </div>
+                    <span className="text-emerald-400 font-black text-base">{(ex.amount || 0).toLocaleString()} <span className="text-[10px]">ر.س</span></span>
                   </div>
                   {ex.court_name && (
-                    <div className="flex items-center gap-3 text-sm">
-                      <FileText className="w-4 h-4 text-slate-500" />
-                      <span className="text-slate-400 font-bold">المحكمة:</span>
-                      <span className="text-slate-200 font-bold">{ex.court_name}</span>
+                    <div className="flex items-center justify-between text-sm group/item">
+                      <div className="flex items-center gap-3">
+                        <FileText className="w-4 h-4 text-amber-500/60" />
+                        <span className="text-slate-400 font-bold">المحكمة:</span>
+                      </div>
+                      <span className="text-slate-100 font-bold">{ex.court_name}</span>
                     </div>
                   )}
                 </div>

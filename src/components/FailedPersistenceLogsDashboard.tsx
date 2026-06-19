@@ -49,18 +49,18 @@ export default function FailedPersistenceLogsDashboard({ onUpdateState }: Failed
       }
 
       // Filter and map to FailedLogEntry format
-      const filtered = (data || []).filter(item => 
-        item.event_data && 
-        (item.event_data.type === 'cases' || item.event_data.type === 'clients' || item.event_data.table === 'cases' || item.event_data.table === 'clients')
+      const filtered = ((data as any[]) || []).filter(item => 
+        item.details && 
+        (item.details.type === 'cases' || item.details.type === 'clients' || item.details.table === 'cases' || item.details.table === 'clients')
       ).map(item => {
-        const type = item.event_data.type || item.event_data.table || 'unknown';
+        const type = item.details.type || item.details.table || 'unknown';
         return {
           id: item.id, // Include id
           timestamp: item.created_at || new Date().toISOString(),
           type,
-          action: item.event_data.action || 'INSERT',
-          data: item.event_data.data || {},
-          error: item.event_data.error || 'N/A'
+          action: item.details.action || 'INSERT',
+          data: item.details.data || {},
+          error: item.details.error || 'N/A'
         };
       });
       setLogs(filtered);

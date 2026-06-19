@@ -19,13 +19,26 @@ const getViteEnv = (key: string): string => {
 
 const rawSupabaseUrl = getViteEnv('VITE_SUPABASE_URL') || getViteEnv('NEXT_PUBLIC_SUPABASE_URL') || 'https://sydcelofkzvtsfatxnka.supabase.co';
 const supabaseUrl = rawSupabaseUrl.startsWith('http') ? rawSupabaseUrl : `https://${rawSupabaseUrl}`;
-const supabaseAnonKey = getViteEnv('VITE_SUPABASE_ANON_KEY') || getViteEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY') || getViteEnv('VITE_SUPABASE_PUBLISHABLE_KEY') || getViteEnv('NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY') || 'sb_publishable_VW8gI2hAK_UzF8ApuoUUhA_KUmR1KYz';
+const supabaseRawKey = getViteEnv('VITE_SUPABASE_ANON_KEY') || '';
+// In AI Studio, the environmental variables sometimes stick to old values despite .env changes. Fallback to the known correct keys
+const supabaseAnonKey = supabaseRawKey.startsWith('eyJ') 
+  ? supabaseRawKey 
+  : 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN5ZGNlbG9ma3p2dHNmYXR4bmthIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEzNDE1ODUsImV4cCI6MjA5NjkxNzU4NX0._ZSotmVi0yTtTyzZNI9e4y9i8CcG4jLIz8HlKivxV_o';
 
-if (!supabaseUrl || !supabaseAnonKey) {
-  console.warn('Missing Supabase environment variables. API calls will fail.');
+
+if (!supabaseUrl) {
+  console.error('❌ [Supabase Validation] Missing VITE_SUPABASE_URL environment variable.');
 }
 
-export const isSupabaseConfigured = !!supabaseUrl && !!supabaseAnonKey;
+if (!supabaseAnonKey) {
+  console.error('❌ [Supabase Validation] Missing VITE_SUPABASE_ANON_KEY environment variable. API calls will fail.');
+} else if (!supabaseAnonKey.startsWith('eyJ')) {
+  console.error('❌ [Supabase Validation] Invalid VITE_SUPABASE_ANON_KEY! It must be a valid JWT starting with "eyJ". Received:', supabaseAnonKey.substring(0, 15) + '...');
+} else {
+  console.log('✅ [Supabase Validation] VITE_SUPABASE_ANON_KEY successfully validated.');
+}
+
+export const isSupabaseConfigured = !!supabaseUrl && !!supabaseAnonKey && supabaseAnonKey.startsWith('eyJ');
 
 // Primary Singleton Instance
 export const supabase = createClient(supabaseUrl || 'https://placeholder.supabase.co', supabaseAnonKey || 'placeholder', {

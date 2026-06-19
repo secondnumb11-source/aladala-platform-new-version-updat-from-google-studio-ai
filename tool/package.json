@@ -1,8 +1,0 @@
-{
-  "name": "ts-modifier",
-  "version": "1.0.0",
-  "type": "commonjs",
-  "dependencies": {
-    "ts-morph": "^20.0.0"
-  }
-}
