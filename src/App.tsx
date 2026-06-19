@@ -248,6 +248,62 @@ function AppContent() {
     return () => clearInterval(cleanupInterval);
   }, []);
 
+  // Automated 24-hour court session email reminder integration via SMTP/Nodemailer
+  useEffect(() => {
+    if (!cases || cases.length === 0 || !clients) return;
+
+    const sentRemindersKey = 'sent_session_reminders_keys';
+    let sentKeys: string[] = [];
+    try {
+      sentKeys = JSON.parse(localStorage.getItem(sentRemindersKey) || '[]');
+    } catch (e) {
+      sentKeys = [];
+    }
+
+    const today = new Date();
+    const tomorrow = new Date(today);
+    tomorrow.setDate(today.getDate() + 1);
+    const tomorrowStr = tomorrow.toISOString().split('T')[0];
+
+    const upcomingTomorrowCases = cases.filter(c => {
+      if (!c.nextSessionDate) return false;
+      const isTomorrow = c.nextSessionDate === tomorrowStr;
+      const isNotAlreadySent = !sentKeys.includes(`${c.id}_tomorrow`);
+      return isTomorrow && isNotAlreadySent;
+    });
+
+    if (upcomingTomorrowCases.length > 0) {
+      console.log(`[Scheduled Reminders] Found ${upcomingTomorrowCases.length} sessions tomorrow`);
+      upcomingTomorrowCases.forEach(async (c) => {
+        const clientObj = clients.find(cl => cl.id === c.clientId || cl.name === c.clientName);
+        const email = clientObj?.email || `${clientObj?.portalUsername || 'client'}@adalahlaw.sa`;
+
+        try {
+          const response = await fetch('/api/notifications/send-session-reminders', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              clientName: clientObj?.name || c.clientName,
+              clientEmail: email,
+              caseName: c.caseName,
+              caseNumber: c.caseNumber,
+              nextSessionDate: c.nextSessionDate,
+              nextSessionTime: c.nextSessionTime || '09:00 AM'
+            })
+          });
+          const result = await response.json();
+          if (result.success) {
+            console.log(`[Scheduled Reminders] Successfully delivered reminder for case ${c.caseNumber} to ${email}`);
+            sentKeys.push(`${c.id}_tomorrow`);
+            localStorage.setItem(sentRemindersKey, JSON.stringify(sentKeys));
+          }
+        } catch (error) {
+          console.error(`[Scheduled Reminders Error] Failed to send to ${email}:`, error);
+        }
+      });
+    }
+  }, [cases, clients]);
+
   const [showLandingPage, setShowLandingPage] = useState(true);
   const [authMode, setAuthMode] = useState<"lawyer" | "trial">("lawyer");
   const [isAuthenticated, setIsAuthenticated] = useState(false);

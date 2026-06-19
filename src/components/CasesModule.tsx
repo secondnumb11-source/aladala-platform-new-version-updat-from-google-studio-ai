@@ -84,6 +84,7 @@ import { useAdaptiveContrast } from '../utils/themeUtils';
 import CasesList from './cases/CasesList';
 import CaseFilters from './cases/CaseFilters';
 import AddCaseModal from './cases/AddCaseModal';
+import { jsPDF } from 'jspdf';
 
 export const getCaseDocumentTags = (c: Case): string[] => {
   const tags: string[] = ['مفهرس_آلياً'];
@@ -1227,6 +1228,91 @@ export default React.memo(function CasesModule({
     }, 2000);
   };
 
+  const handleExportToPdf = (c: Case) => {
+    if (!c) return;
+    try {
+      const doc = new jsPDF({
+        orientation: 'p',
+        unit: 'mm',
+        format: 'a4'
+      });
+
+      // Drawing elegant gold / navy border & branding
+      doc.setDrawColor(184, 134, 11); // Gold tint
+      doc.setLineWidth(1);
+      doc.rect(5, 5, 200, 287); // Page Frame
+
+      doc.setFillColor(15, 23, 42); // Navy Slate 900
+      doc.rect(5, 5, 200, 30, 'F');
+
+      // Title & Subtitle
+      doc.setTextColor(255, 255, 255);
+      doc.setFontSize(22);
+      doc.text("AL-ADALAH LAW FIRM", 105, 17, { align: 'center' });
+      doc.setFontSize(10);
+      doc.text("CASE SUMMARY FILE  |  OFFICIAL JUSTICE HQ INTEGRATION", 105, 26, { align: 'center' });
+
+      // Body Metadata Details
+      doc.setTextColor(15, 23, 42);
+      doc.setFontSize(13);
+      doc.text(`CASE NUMBER REFERENCE: [ ${c.caseNumber || 'N/A'} ]`, 15, 48);
+      
+      doc.setDrawColor(226, 232, 240); // slate-200 line
+      doc.setLineWidth(0.5);
+      doc.line(15, 53, 195, 53);
+
+      doc.setFontSize(10.5);
+      doc.setTextColor(51, 65, 85); // Slate 600
+
+      doc.text(`File Registry ID: ${c.id || 'N/A'}`, 15, 62);
+      doc.text(`System Category / Branch: ${c.category || 'N/A'}`, 15, 70);
+      doc.text(`Active Court Status Code: ${c.status || 'N/A'}`, 15, 78);
+      doc.text(`Lead Registered Client: ${c.clientName || 'N/A'}`, 15, 86);
+      doc.text(`Designated Opponent party: ${c.opponentName || 'N/A'}`, 15, 94);
+      doc.text(`Subject Jurisdiction Court: ${c.courtName || 'N/A'}`, 15, 102);
+      doc.text(`Next Recorded Session Date: ${c.nextSessionDate || 'N/A'} (${c.nextSessionTime || 'N/A'})`, 15, 110);
+      doc.text(`Assigned Lead Attorney: ${c.lead_lawyer_id || 'AL-ADALAH SENIOR COUNSEL'}`, 15, 118);
+
+      doc.line(15, 125, 195, 125);
+
+      // Plain English / Transliterated text fallback mapping to ensure zero rendering issues with standard PDF layout:
+      doc.setFontSize(12.5);
+      doc.setTextColor(15, 23, 42);
+      doc.text("CASE DETAILS & DIRECTORY CONTEXTS:", 15, 134);
+      doc.rect(15, 139, 180, 52);
+      doc.setFontSize(9);
+      doc.setTextColor(71, 85, 105);
+
+      const detailsCleanText = c.details || "No secondary notes provided yet on this directory record file.";
+      const splitDetails = doc.splitTextToSize(detailsCleanText, 170);
+      doc.text(splitDetails, 18, 145);
+
+      // AI Summary Section
+      doc.setFontSize(12.5);
+      doc.setTextColor(15, 23, 42);
+      doc.text("INTELLIGENT AI SYSTEM SUMMARY MEMO:", 15, 203);
+      doc.rect(15, 208, 180, 52);
+      doc.setFontSize(9);
+      doc.setTextColor(71, 85, 105);
+
+      const summaryCleanText = c.summary || "No active smart analysis summarized yet on this case directory file. Run 'AI Legal Assistant' to populate summary.";
+      const splitSummary = doc.splitTextToSize(summaryCleanText, 170);
+      doc.text(splitSummary, 18, 214);
+
+      // Footer brand marks
+      doc.setDrawColor(226, 232, 240);
+      doc.line(15, 268, 195, 268);
+      doc.setFontSize(8.5);
+      doc.setTextColor(148, 163, 184); // Slate 400
+      doc.text("Official Case Document Generated Automatically through Al-Adalah Justice Suite Cloud.", 105, 276, { align: 'center' });
+      doc.text(`Secure Local Print Timestamp: ${new Date().toLocaleString('en-US')}`, 105, 281, { align: 'center' });
+
+      doc.save(`AlAdalah_Summary_CaseRef_${c.caseNumber || c.id}.pdf`);
+    } catch (e: any) {
+      alert("حدث خطأ أثناء صياغة ملف PDF: " + e.message);
+    }
+  };
+
   const countByCategory = (cat: string) => {
     const safeCases = cases || [];
     if (cat === 'archived') {
@@ -1910,27 +1996,28 @@ export default React.memo(function CasesModule({
 
   // Reset pagination on filter change
   React.useEffect(() => {
-    setVisibleCount(6);
+    setVisibleCount(12);
   }, [categoryFilter, stageFilter, courtFilter, searchTerm, selectedDocTag, statusFilter, lawyerFilter]);
 
   // Load more sentinel trigger observer
   React.useEffect(() => {
     if (!loadMoreRef.current) return;
+    const element = loadMoreRef.current;
     const observer = new IntersectionObserver(
       (entries) => {
         if (entries[0].isIntersecting && !isVirtualLoading && visibleCount < filteredCases.length) {
           setIsVirtualLoading(true);
           setTimeout(() => {
-            setVisibleCount(prev => prev + 6);
+            setVisibleCount(prev => prev + 12);
             setIsVirtualLoading(false);
           }, 600);
         }
       },
       { threshold: 0.1 }
     );
-    observer.observe(loadMoreRef.current);
+    observer.observe(element);
     return () => observer.disconnect();
-  }, [loadMoreRef.current, isVirtualLoading, visibleCount, filteredCases.length]);
+  }, [isVirtualLoading, visibleCount, filteredCases.length]);
 
   const handleQuickCopySummary = () => {
     const summary = `📊 ملخص الدعاوى القضائية الحالي:
@@ -2242,34 +2329,38 @@ export default React.memo(function CasesModule({
             <span>العودة لقائمة جميع الدعاوى والنزاعات الشرعية المقيدة</span>
           </button>
 
-          <div className="card-professional border-2 border-slate-800 rounded-[2.5rem] p-12 shadow-[0_30px_60px_rgba(0,0,0,0.4)] bg-[#050e21] relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-96 h-96 bg-[#0c1a35] blur-[120px] pointer-events-none"></div>
-            <div className="absolute bottom-0 left-0 w-64 h-64 bg-[#0c1a35] blur-[80px] pointer-events-none"></div>
+          <div className={`card-professional border-2 ${isHighContrast ? 'border-slate-300 bg-white shadow-xl' : 'border-slate-800 bg-[#050e21] shadow-[0_30px_60px_rgba(0,0,0,0.4)]'} rounded-[2.5rem] p-12 relative overflow-hidden`}>
+            {!isHighContrast && (
+              <>
+                <div className="absolute top-0 right-0 w-96 h-96 bg-[#0c1a35] blur-[120px] pointer-events-none"></div>
+                <div className="absolute bottom-0 left-0 w-64 h-64 bg-[#0c1a35] blur-[80px] pointer-events-none"></div>
+              </>
+            )}
             
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-10 relative z-10">
               <div className="space-y-6">
                 <div className="flex flex-wrap items-center gap-4">
                   <div className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-[0.2em] border shadow-lg ${
                     selectedCase.priority === 'high' 
-                    ? 'bg-rose-500 text-rose-500 border-rose-500' 
+                    ? 'bg-rose-500 text-white border-rose-500' 
                     : selectedCase.priority === 'medium' 
-                    ? 'bg-amber-500 text-amber-500 border-amber-500' 
-                    : 'bg-slate-100  text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]  border-slate-800'
+                    ? 'bg-amber-500 text-white border-amber-500' 
+                    : (isHighContrast ? 'bg-slate-200 text-slate-800 border-slate-300' : 'bg-slate-800 text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.8)] border-slate-700')
                   }`}>
                     <ShieldAlert className="w-3.5 h-3.5" />
                     أولوية {selectedCase.priority === 'high' ? 'قصوى عاجلة' : selectedCase.priority === 'medium' ? 'متوسطة' : 'عادية'}
                   </div>
-                  <span className="text-sm text-slate-950 font-mono font-black border-r border-slate-400 pr-4">ملف نظام رقم: {selectedCase.caseNumber}</span>
+                  <span className={`text-sm ${isHighContrast ? 'text-slate-800 border-slate-300' : 'text-slate-300 border-slate-600'} font-mono font-black border-r pr-4`}>ملف نظام رقم: {selectedCase.caseNumber}</span>
                   {selectedCase.isNajizSync && (
-                    <span className="text-xs bg-emerald-600 text-emerald-800 border border-emerald-600 font-black px-4 py-1.5 rounded-full inline-flex items-center gap-2.5">
-                      <span className="h-1.5 w-1.5 rounded-full bg-emerald-600 animate-pulse"></span>
+                    <span className="text-xs bg-emerald-600/20 text-emerald-600 border border-emerald-600/50 font-black px-4 py-1.5 rounded-full inline-flex items-center gap-2.5">
+                      <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
                       مزامنة ناجز النشطة
                     </span>
                   )}
                 </div>
 
                 <div className="flex flex-wrap items-center gap-4">
-                  <h1 className="text-4xl md:text-5xl font-display font-black text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.8)] tracking-tighter leading-tight drop-shadow-md">
+                  <h1 className={`text-4xl md:text-5xl font-display font-black tracking-tighter leading-tight drop-shadow-sm ${isHighContrast ? 'text-slate-900 drop-shadow-none' : 'text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]'}`}>
                     {selectedCase.caseName}
                   </h1>
                   <button
@@ -2278,18 +2369,18 @@ export default React.memo(function CasesModule({
                       e.stopPropagation();
                       setActivityLogCaseId(selectedCase.id);
                     }}
-                    className="p-3 bg-amber-500/10 border border-amber-500/30 rounded-2xl text-[#fbbf24] transition-all cursor-pointer shrink-0 mt-2"
+                    className={`p-3 rounded-2xl transition-all cursor-pointer shrink-0 mt-2 ${isHighContrast ? 'bg-slate-200 border-slate-300 text-slate-700 hover:bg-slate-300' : 'bg-amber-500/10 border border-amber-500/30 text-[#fbbf24]'}`}
                     title="سجل النشاط والتعديلات"
                   >
                     <Clock className="w-6 h-6" />
                   </button>
                 </div>
-                <div className="flex flex-wrap items-center gap-6 mt-2">
-                   <div className="flex items-center gap-3  text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]  font-bold text-sm bg-[#0c1a35] px-4 py-2 rounded-xl border border-slate-800">
+                <div className="flex flex-wrap items-center gap-4 mt-2">
+                   <div className={`flex items-center gap-3 font-bold text-sm px-4 py-2 rounded-xl border ${isHighContrast ? 'bg-slate-100 text-slate-800 border-slate-300' : 'bg-[#0c1a35] text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.8)] border-slate-800'}`}>
                     <MapPin className="w-4 h-4 text-primary" />
                     <span>المحكمة المختصة: {selectedCase.courtName}</span>
                   </div>
-                  <div className="flex items-center gap-3  text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]  font-bold text-sm bg-[#0c1a35] px-4 py-2 rounded-xl border border-slate-800">
+                  <div className={`flex items-center gap-3 font-bold text-sm px-4 py-2 rounded-xl border ${isHighContrast ? 'bg-slate-100 text-slate-800 border-slate-300' : 'bg-[#0c1a35] text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.8)] border-slate-800'}`}>
                     <Eye className="w-4 h-4 text-primary" />
                     <span>آخر تحديث: {selectedCase.lastSessionDate}</span>
                   </div>
@@ -2301,7 +2392,7 @@ export default React.memo(function CasesModule({
                   onClick={() => handleTriggerAiAnalysis(selectedCase)}
                   className="bg-primary text-white font-black px-10 py-5 rounded-[1.5rem] text-xs flex items-center justify-center gap-4 transition-all shadow-[0_20px_40px_rgba(184,134,11,0.3)] active:scale-95 group border border-primary-light/30"
                 >
-                  <Cpu className="w-6 h-6 transition-transform" />
+                  <Cpu className="w-6 h-6 transition-transform group-hover:scale-110" />
                   <span>تحليل قانوني معمق (موكل AI) 💎</span>
                 </button>
 
@@ -2323,20 +2414,27 @@ export default React.memo(function CasesModule({
                     const waUrl = `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
                     
                     window.open(waUrl, '_blank');
-                    alert('تم تجهيز وإرسال بيانات النفاذ للموكل عبر الواتساب بنجاح.');
                   }}
-                  className="bg-sky-50 text-white border border-slate-700 px-10 py-5 rounded-[1.5rem] text-xs font-black flex items-center justify-center gap-4 transition-all active:scale-95 shadow-xl"
+                  className={`border px-10 py-5 rounded-[1.5rem] text-xs font-black flex items-center justify-center gap-4 transition-all active:scale-95 shadow-xl ${isHighContrast ? 'bg-slate-100 border-slate-300 text-slate-800 hover:bg-slate-200' : 'bg-sky-50 text-slate-900 border-slate-700'}`}
                 >
                   <Share2 className="w-6 h-6 text-primary" />
-                  <span>إرسال بيانات بوابة العميل (WhatsApp)</span>
+                  <span>إرسال تعميد العميل (WhatsApp)</span>
+                </button>
+
+                <button 
+                  onClick={() => handleExportToPdf(selectedCase)}
+                  className={`border px-10 py-5 rounded-[1.5rem] text-xs font-black flex items-center justify-center gap-4 transition-all active:scale-95 shadow-xl ${isHighContrast ? 'bg-amber-100 hover:bg-amber-200 border-amber-300 text-amber-950' : 'bg-amber-500/10 hover:bg-amber-500/20 text-[#fbbf24] border-amber-500/30'}`}
+                >
+                  <Printer className="w-6 h-6 text-amber-500 animate-pulse" />
+                  <span>تصدير ملخص القضية وملحقها (PDF) 📄</span>
                 </button>
               </div>
             </div>
             
             {/* Progress Bar of litigation stage */}
-            <div className="relative mt-16 bg-[#0c1a35] p-12 rounded-[2.5rem] border border-slate-800 shadow-inner overflow-hidden">
+            <div className={`relative mt-16 p-10 rounded-[2.5rem] border shadow-inner overflow-hidden ${isHighContrast ? 'bg-slate-100 border-slate-300' : 'bg-[#0a152e] border-slate-800'}`}>
               <div className="absolute inset-0 flex items-center pointer-events-none" aria-hidden="true">
-                <div className="w-[85%] mx-auto border-t border-slate-800"></div>
+                <div className={`w-[85%] mx-auto border-t ${isHighContrast ? 'border-slate-300' : 'border-slate-800'}`}></div>
               </div>
               <div className="relative flex justify-between px-6 gap-2 overflow-x-auto min-w-max">
                 {[
@@ -2355,12 +2453,12 @@ export default React.memo(function CasesModule({
                       <div className={`h-14 w-14 rounded-2xl flex items-center justify-center text-sm font-black transition-all duration-700 shadow-2xl relative ${
                         isPassed 
                         ? 'bg-primary text-white shadow-primary/40 scale-110' 
-                        : 'bg-[#050e21]  text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]  border border-slate-400'
+                        : (isHighContrast ? 'bg-white text-slate-400 border border-slate-300' : 'bg-[#050e21] text-slate-400 border border-slate-700')
                       } `}>
-                         {isPassed && <div className="absolute inset-0 rounded-2xl bg-[#050e21] animate-pulse"></div>}
+                         {isPassed && <div className={`absolute inset-0 rounded-2xl animate-ping opacity-20 ${isHighContrast ? 'bg-primary' : 'bg-[#050e21]'}`}></div>}
                         <span className="relative z-10">{idx + 1}</span>
                       </div>
-                      <span className={`text-xs font-black uppercase tracking-widest text-center max-w-[100px] leading-relaxed transition-all ${isPassed ? 'text-slate-950' : ' text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.8)] '} `}>{st.label}</span>
+                      <span className={`text-[11px] font-black uppercase tracking-widest text-center max-w-[100px] leading-relaxed transition-all ${isPassed ? (isHighContrast ? 'text-primary' : 'text-primary drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]') : (isHighContrast ? 'text-slate-500' : 'text-slate-500')}`}>{st.label}</span>
                     </div>
                   );
                 })}
@@ -2374,106 +2472,106 @@ export default React.memo(function CasesModule({
             <div className="lg:col-span-8 space-y-8">
               
               {/* Electronic Archiving Section (Professional & Elegant) */}
-              <div className="card-professional bg-[#050e21] border-2 border-slate-705 rounded-[2.5rem] p-8 space-y-6 shadow-2xl relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 blur-[100px] pointer-events-none"></div>
-                <div className="flex items-center justify-between border-b border-slate-800 pb-5">
-                  <div className="flex items-center gap-4">
-                    <div className="p-3 bg-primary/10 text-[#FACC15] rounded-2xl border border-primary/20">
+              <div className={`card-professional border-2 rounded-[2.5rem] p-10 space-y-8 relative overflow-hidden transition-all duration-300 ${isHighContrast ? 'bg-white border-slate-300 shadow-[0_10px_40px_rgba(0,0,0,0.1)]' : 'bg-[#050e21] border-slate-700 shadow-[0_20px_60px_rgba(0,0,0,0.5)]'}`}>
+                {!isHighContrast && <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 blur-[100px] pointer-events-none"></div>}
+                <div className={`flex items-center justify-between border-b pb-6 ${isHighContrast ? 'border-slate-300' : 'border-slate-800'}`}>
+                  <div className="flex items-center gap-5">
+                    <div className={`p-4 rounded-2xl border ${isHighContrast ? 'bg-slate-100 border-slate-300 text-slate-800' : 'bg-primary/10 border-primary/20 text-[#FACC15]'}`}>
                       <Archive className="w-6 h-6" />
                     </div>
                     <div>
-                      <h3 className="font-display font-black text-xl text-[#FACC15] tracking-tight uppercase" style={{ textShadow: 'none' }}>الأرشفة الإلكترونية المنظمة</h3>
-                      <p className="text-xs text-[#FFFFFF] font-black uppercase tracking-widest mt-1" style={{ textShadow: 'none' }}>Structured Electronic Legal Archive</p>
+                      <h3 className={`font-display font-black text-2xl tracking-tight uppercase ${isHighContrast ? 'text-slate-900' : 'text-[#FACC15]'}`}>الأرشفة الإلكترونية المنظمة</h3>
+                      <p className={`text-sm font-black uppercase tracking-widest mt-1.5 ${isHighContrast ? 'text-slate-500' : 'text-slate-400'}`}>Structured Electronic Legal Archive</p>
                     </div>
                   </div>
-                  <button className="bg-primary/10 text-[#FACC15] px-4 py-2 rounded-xl text-[10px] font-black border border-primary/20">
+                  <button className={`px-5 py-2.5 rounded-xl text-xs font-black border transition-colors shadow-sm ${isHighContrast ? 'bg-slate-900 text-white border-slate-800 hover:bg-slate-800' : 'bg-primary/10 text-[#FACC15] border-primary/20 hover:bg-primary/20'}`}>
                     + إيداع مستند جديد
                   </button>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                   {[
-                    { id: 'pleadings', label: 'اللوائح الجوابية والاعتبارية', icon: FileText, count: 3, color: 'text-amber-400' },
-                    { id: 'documents', label: 'المستندات الثبوتية والأسانيد', icon: Paperclip, count: 8, color: 'text-blue-400' },
-                    { id: 'judgments', label: 'الأحكام والصكوك القضائية', icon: Gavel, count: 1, color: 'text-emerald-400' },
-                    { id: 'execution', label: 'قرارات التنفيذ (مادة ٣٤/٤٦)', icon: Zap, count: 2, color: 'text-orange-400' },
+                    { id: 'pleadings', label: 'اللوائح الجوابية والاعتبارية', icon: FileText, count: 3, color: isHighContrast ? 'text-amber-600' : 'text-amber-400' },
+                    { id: 'documents', label: 'المستندات الثبوتية والمرافعات', icon: Paperclip, count: 8, color: isHighContrast ? 'text-blue-600' : 'text-blue-400' },
+                    { id: 'judgments', label: 'الأحكام والصكوك القضائية', icon: Gavel, count: 1, color: isHighContrast ? 'text-emerald-600' : 'text-emerald-400' },
+                    { id: 'execution', label: 'قرارات التنفيذ (مادة ٣٤/٤٦)', icon: Zap, count: 2, color: isHighContrast ? 'text-orange-600' : 'text-orange-400' },
                   ].map((cat) => (
-                    <div key={cat.id} className="p-5 bg-[#0c1a35] border-2 border-slate-700 rounded-2xl shadow-sm">
-                      <div className="flex items-center justify-between mb-3">
-                        <div className={`p-2 rounded-lg bg-slate-900 border border-slate-800 ${cat.color}`}>
+                    <div key={cat.id} className={`p-6 border-2 rounded-2xl shadow-sm transition-transform hover:-translate-y-1 ${isHighContrast ? 'bg-slate-50 border-slate-200 hover:border-slate-400' : 'bg-[#0c1a35] border-slate-700 hover:border-slate-500'}`}>
+                      <div className="flex items-center justify-between mb-4">
+                        <div className={`p-2.5 rounded-xl border ${isHighContrast ? 'bg-white border-slate-200' : 'bg-slate-900 border-slate-800'} ${cat.color}`}>
                           <cat.icon className="w-5 h-5" />
                         </div>
-                        <span className="text-[11px] font-black text-[#FACC15] uppercase" style={{ textShadow: 'none' }}>{cat.count} ملفات</span>
+                        <span className={`text-[12px] font-black uppercase px-2.5 py-1 rounded-md ${isHighContrast ? 'bg-slate-200 text-slate-800' : 'bg-slate-800 text-[#FACC15]'}`}>{cat.count} ملفات</span>
                       </div>
-                      <h4 className="text-sm font-black text-[#FFFFFF]" style={{ textShadow: 'none' }}>{cat.label}</h4>
-                      <div className="mt-4 flex items-center justify-between text-[10px] font-black text-[#FFFFFF]/80 border-t border-slate-800 pt-3">
-                        <span style={{ textShadow: 'none' }}>آخر تحديث: قبل يومين</span>
+                      <h4 className={`text-sm font-black mb-4 ${isHighContrast ? 'text-slate-900' : 'text-white'}`}>{cat.label}</h4>
+                      <div className={`flex items-center justify-between text-[11px] font-bold pt-3 border-t ${isHighContrast ? 'text-slate-500 border-slate-200' : 'text-slate-400 border-slate-800'}`}>
+                        <span>آخر تحديث: قبل يومين</span>
                       </div>
                     </div>
                   ))}
                 </div>
               </div>
-              <div className="card-professional border-2 bg-[#050e21] border-slate-800 p-8 space-y-6 shadow-md">
-                <div className="flex items-center gap-4 border-b border-slate-800 pb-6">
-                  <div className="p-3.5 bg-primary/10 text-[#FACC15] rounded-2xl border border-primary/20">
+              <div className={`card-professional border-2 rounded-[2.5rem] p-10 space-y-8 shadow-md ${isHighContrast ? 'bg-white border-slate-300' : 'bg-[#050e21] border-slate-800'}`}>
+                <div className={`flex items-center gap-5 border-b pb-6 ${isHighContrast ? 'border-slate-300' : 'border-slate-800'}`}>
+                  <div className={`p-4 rounded-2xl border ${isHighContrast ? 'bg-slate-100 border-slate-300 text-slate-800' : 'bg-primary/10 border-primary/20 text-[#FACC15]'}`}>
                     <FileText className="w-6 h-6" />
                   </div>
                   <div>
-                    <h3 className="font-display font-black text-xl text-[#FACC15] tracking-tight uppercase" style={{ textShadow: 'none' }}>مذكرات الدعوى والصكوك الثبوتية</h3>
-                    <p className="text-xs text-[#FFFFFF] font-black uppercase tracking-widest mt-1" style={{ textShadow: 'none' }}>Foundational Legal Memoranda & Deeds</p>
+                    <h3 className={`font-display font-black text-2xl tracking-tight uppercase ${isHighContrast ? 'text-slate-900' : 'text-[#FACC15]'}`}>مذكرات الدعوى والصكوك الثبوتية</h3>
+                    <p className={`text-sm font-black uppercase tracking-widest mt-1.5 ${isHighContrast ? 'text-slate-500' : 'text-slate-400'}`}>Foundational Legal Memoranda & Deeds</p>
                   </div>
                 </div>
                 
-                <div className="bg-[#0c1a35] p-8 rounded-[2rem] border-2 border-slate-700">
-                  <p className="text-sm md:text-base text-[#FFFFFF] leading-loose font-black text-justify" style={{ textShadow: 'none' }}>
+                <div className={`p-8 rounded-[2rem] border-2 shadow-inner ${isHighContrast ? 'bg-slate-50 border-slate-200 text-slate-800' : 'bg-[#0c1a35] border-slate-700 text-white'}`}>
+                  <p className="text-sm md:text-base leading-relaxed font-bold text-justify">
                     {selectedCase.details}
                   </p>
                 </div>
 
-                <div className="bg-primary/5 p-6 rounded-2xl border-2 border-slate-700 flex flex-col md:flex-row gap-6">
-                  <div className="flex flex-col gap-1 min-w-[140px]">
-                    <span className="text-xs text-[#FACC15] font-black uppercase tracking-[0.2em] mb-1" style={{ textShadow: 'none' }}>ملخص النزاع السريع:</span>
-                    <div className="w-10 h-1 bg-amber-500 rounded-full"></div>
+                <div className={`p-8 rounded-2xl border-2 flex flex-col md:flex-row gap-8 ${isHighContrast ? 'bg-amber-50 border-amber-200 text-slate-800' : 'bg-primary/5 border-slate-700 text-white'}`}>
+                  <div className="flex flex-col gap-2 min-w-[150px]">
+                    <span className={`text-xs font-black uppercase tracking-[0.2em] mb-1 ${isHighContrast ? 'text-amber-700' : 'text-[#FACC15]'}`}>ملخص النزاع السريع:</span>
+                    <div className="w-12 h-1.5 bg-amber-500 rounded-full"></div>
                   </div>
-                  <p className="text-xs text-[#FFFFFF] font-black leading-relaxed" style={{ textShadow: 'none' }}>{selectedCase.summary}</p>
+                  <p className="text-sm font-bold leading-relaxed">{selectedCase.summary}</p>
                 </div>
               </div>
 
               {/* AI Assistant Output Box */}
               {(isAiLoading || aiAnalysis) && (
-                <div className="card-professional border-2 bg-[#0c1a35] border-primary/40 shadow-xl relative overflow-hidden">
-                  <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 blur-3xl rounded-full"></div>
+                <div className={`card-professional border-2 rounded-[2.5rem] p-10 space-y-8 shadow-xl relative overflow-hidden ${isHighContrast ? 'bg-white border-slate-300' : 'bg-[#0c1a35] border-primary/40'}`}>
+                  {!isHighContrast && <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 blur-3xl rounded-full"></div>}
                   
-                  <div className="flex items-center justify-between border-b border-primary/10 pb-6 relative z-10">
-                    <div className="flex items-center gap-4">
-                      <div className="p-3.5 bg-primary/10 text-primary rounded-2xl border border-primary/20">
+                  <div className={`flex items-center justify-between border-b pb-6 relative z-10 ${isHighContrast ? 'border-slate-300' : 'border-primary/10'}`}>
+                    <div className="flex items-center gap-5">
+                      <div className={`p-4 rounded-2xl border ${isHighContrast ? 'bg-slate-100 border-slate-300 text-slate-800' : 'bg-primary/10 border-primary/20 text-primary'}`}>
                         <Cpu className="w-6 h-6" />
                       </div>
                       <div>
-                        <h4 className="font-display font-black text-[#FACC15] text-lg tracking-tight" style={{ textShadow: 'none' }}>الدراسة اللغوية والتقنية (موكل AI)</h4>
-                        <p className="text-xs text-[#FFFFFF] font-black uppercase tracking-widest mt-1" style={{ textShadow: 'none' }}>Deep Inference Sovereign Model</p>
+                        <h4 className={`font-display font-black text-2xl tracking-tight ${isHighContrast ? 'text-slate-900' : 'text-[#FACC15]'}`}>الدراسة اللغوية والتقنية (موكل AI)</h4>
+                        <p className={`text-sm font-black uppercase tracking-widest mt-1.5 ${isHighContrast ? 'text-slate-500' : 'text-slate-400'}`}>Deep Inference Sovereign Model</p>
                       </div>
                     </div>
-                    <span className="text-xs bg-primary text-white px-3 py-1.5 rounded-lg font-black uppercase tracking-widest shadow-lg">V5.0 LEGAL CORE</span>
+                    <span className="text-xs bg-primary text-white px-4 py-2 rounded-xl font-black uppercase tracking-widest shadow-lg">V5.0 LEGAL CORE</span>
                   </div>
 
                   {isAiLoading ? (
                     <div className="py-12 flex flex-col items-center justify-center gap-6 relative z-10">
                       <div className="relative">
-                        <div className="w-16 h-16 rounded-full border-t-2 border-r-2 border-primary animate-spin"></div>
+                        <div className={`w-16 h-16 rounded-full border-t-2 border-r-2 animate-spin ${isHighContrast ? 'border-slate-800' : 'border-primary'}`}></div>
                         <div className="absolute inset-0 flex items-center justify-center">
-                          <Cpu className="w-6 h-6 text-primary" />
+                          <Cpu className={`w-6 h-6 ${isHighContrast ? 'text-slate-800' : 'text-primary'}`} />
                         </div>
                       </div>
-                      <p className="text-xs text-[#FFFFFF] font-black tracking-widest" style={{ textShadow: 'none' }}>جاري استنباط الأسانيد وفحص اللوائح التنفيذية...</p>
+                      <p className={`text-sm font-black tracking-widest ${isHighContrast ? 'text-slate-700' : 'text-white'}`}>جاري استنباط الأسانيد وفحص اللوائح التنفيذية...</p>
                     </div>
                   ) : (
-                    <div className="bg-[#050e21] p-8 rounded-3xl border-2 border-slate-700 text-sm text-[#FFFFFF] space-y-6 leading-loose font-black text-justify relative z-10">
+                    <div className={`p-8 rounded-[2rem] border-2 text-base space-y-6 leading-loose font-black text-justify relative z-10 ${isHighContrast ? 'bg-slate-50 border-slate-300 text-slate-800' : 'bg-[#050e21] border-slate-700 text-white'}`}>
                       <div className="flex items-center gap-3 mb-2">
-                        <div className="w-2 h-2 bg-[#FACC15] rounded-full"></div>
-                        <span className="text-xs text-[#FACC15] uppercase font-black tracking-widest" style={{ textShadow: 'none' }}>توجيه فني مخصص للمرافع الشرعي</span>
+                        <div className={`w-2 h-2 rounded-full ${isHighContrast ? 'bg-primary' : 'bg-[#FACC15]'}`}></div>
+                        <span className={`text-xs uppercase font-black tracking-widest ${isHighContrast ? 'text-slate-600' : 'text-[#FACC15]'}`}>توجيه فني مخصص للمرافع الشرعي</span>
                       </div>
-                      <div className="text-[#FFFFFF] font-black" style={{ textShadow: 'none' }}>
+                      <div>
                         {aiAnalysis}
                       </div>
                     </div>
@@ -2481,26 +2579,26 @@ export default React.memo(function CasesModule({
                 </div>
               )}
 
-              <div className="card-professional border-2 bg-[#050e21] border-slate-800 p-8 space-y-8">
-                <h3 className="font-display font-black text-lg text-[#FFFFFF] border-b border-slate-800 pb-5 tracking-tight uppercase" style={{ textShadow: 'none' }}>أطراف النزاع والعملاء المعنيين</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="p-8 bg-[#0c1a35] rounded-3xl border-2 border-slate-700 space-y-4">
-                    <div className="w-12 h-12 bg-primary/10 text-[#FACC15] rounded-2xl flex items-center justify-center">
-                      <Users className="w-6 h-6" />
+              <div className={`card-professional border-2 rounded-[2.5rem] p-10 space-y-8 shadow-md ${isHighContrast ? 'bg-white border-slate-300' : 'bg-[#050e21] border-slate-800'}`}>
+                <h3 className={`font-display font-black text-2xl border-b pb-6 tracking-tight uppercase ${isHighContrast ? 'text-slate-900 border-slate-300' : 'text-white border-slate-800'}`}>أطراف النزاع والعملاء المعنيين</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  <div className={`p-8 rounded-[2rem] border-2 space-y-5 ${isHighContrast ? 'bg-slate-50 border-slate-200' : 'bg-[#0c1a35] border-slate-700'}`}>
+                    <div className={`w-14 h-14 rounded-2xl flex items-center justify-center ${isHighContrast ? 'bg-slate-200 text-slate-800' : 'bg-primary/10 text-[#FACC15]'}`}>
+                      <Users className="w-7 h-7" />
                     </div>
                     <div>
-                      <span className="text-xs text-[#FACC15] font-black uppercase tracking-widest block mb-1" style={{ textShadow: 'none' }}>العميل المدعي (نظامي)</span>
-                      <p className="font-black text-base text-[#FFFFFF]" style={{ textShadow: 'none' }}>{selectedCase.clientName}</p>
+                      <span className={`text-xs font-black uppercase tracking-widest block mb-1.5 ${isHighContrast ? 'text-slate-600' : 'text-[#FACC15]'}`}>العميل المدعي (نظامي)</span>
+                      <p className={`font-black text-xl ${isHighContrast ? 'text-slate-900' : 'text-white'}`}>{selectedCase.clientName}</p>
                     </div>
                   </div>
 
-                  <div className="p-8 bg-[#0c1a35] rounded-3xl border-2 border-slate-700 space-y-4">
-                    <div className="w-12 h-12 bg-rose-500/10 text-rose-400 rounded-2xl flex items-center justify-center">
-                      <ShieldAlert className="w-6 h-6" />
+                  <div className={`p-8 rounded-[2rem] border-2 space-y-5 ${isHighContrast ? 'bg-rose-50 border-rose-200' : 'bg-[#0c1a35] border-slate-700'}`}>
+                    <div className={`w-14 h-14 rounded-2xl flex items-center justify-center ${isHighContrast ? 'bg-rose-200 text-rose-800' : 'bg-rose-500/10 text-rose-400'}`}>
+                      <ShieldAlert className="w-7 h-7" />
                     </div>
                     <div>
-                      <span className="text-xs text-rose-400 font-black uppercase tracking-widest block mb-1" style={{ textShadow: 'none' }}>الخصم المدعى عليه</span>
-                      <p className="font-black text-base text-[#FFFFFF]" style={{ textShadow: 'none' }}>{selectedCase.opponentName}</p>
+                      <span className={`text-xs font-black uppercase tracking-widest block mb-1.5 ${isHighContrast ? 'text-rose-700' : 'text-rose-400'}`}>الخصم المدعى عليه</span>
+                      <p className={`font-black text-xl ${isHighContrast ? 'text-rose-950' : 'text-white'}`}>{selectedCase.opponentName}</p>
                     </div>
                   </div>
                 </div>
@@ -2975,6 +3073,9 @@ export default React.memo(function CasesModule({
                     }
                   }}
                   selectedRole={selectedRole}
+                  onUpdateCaseStatus={(c, newStatus) => {
+                    onUpdateState('cases', { ...c, status: newStatus });
+                  }}
                 />
               </div>
             )}

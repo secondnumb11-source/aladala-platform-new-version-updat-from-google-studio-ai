@@ -619,13 +619,14 @@ export default function ArchiveModule() {
             </div>
 
             <div className="space-y-1.5">
-              <label className="block text-slate-300 font-medium">الربط بقضية معينة (اختياري):</label>
+              <label className="block text-slate-300 font-medium">الربط بقضية معينة (مطلوب):</label>
               <select
+                required
                 value={docCaseId}
                 onChange={(e) => setDocCaseId(e.target.value)}
                 className="w-full bg-[#11243f] border border-[#c5a880]/20 rounded-lg p-2.5 text-slate-100 cursor-pointer"
               >
-                <option value="">غير مرتبط بقضية</option>
+                <option value="" disabled>اختر القضية المرتبطة بالمستند</option>
                 {cases.map((c) => (
                   <option key={c.id} value={c.id}>
                     {c.case_number} - {c.case_name}
@@ -779,13 +780,14 @@ export default function ArchiveModule() {
             </div>
 
             <div className="space-y-1.5">
-              <label className="block text-slate-300 font-medium">الربط بقضية معينة (اختياري):</label>
+              <label className="block text-slate-300 font-medium">الربط بقضية معينة (مطلوب):</label>
               <select
+                required
                 value={attCaseId}
                 onChange={(e) => setAttCaseId(e.target.value)}
                 className="w-full bg-[#11243f] border border-amber-400/20 rounded-lg p-2.5 text-slate-100 cursor-pointer"
               >
-                <option value="">تحديد قضية معينة</option>
+                <option value="" disabled>تحديد قضية معينة</option>
                 {cases.map((c) => (
                   <option key={c.id} value={c.id}>
                     {c.case_number} - {c.case_name}
@@ -883,8 +885,22 @@ export default function ArchiveModule() {
             </div>
 
             <div className="space-y-1">
-              <span className="text-slate-300 font-bold">معاينة المستند المرفق:</span>
-              <div className="bg-[#11243f] border border-slate-800 rounded-lg p-2 h-72 md:h-96 w-full flex items-center justify-center relative overflow-hidden">
+              <div className="flex items-center justify-between">
+                <span className="text-slate-300 font-bold">معاينة المستند المرفق:</span>
+                {selectedDocDetails.storage_path && (
+                  <button
+                    onClick={() => {
+                      const url = supabase.storage.from("documents").getPublicUrl(selectedDocDetails.storage_path!).data.publicUrl;
+                      window.open(url, "_blank");
+                    }}
+                    className="flex items-center gap-1.5 px-3 py-1 bg-[#11243f] text-[#c5a880] border border-[#c5a880]/30 rounded-lg hover:bg-[#11243f]/80 transition-colors text-[10px] font-bold cursor-pointer"
+                  >
+                    <ExternalLink className="w-3.5 h-3.5" />
+                    <span>عرض بكامل الشاشة</span>
+                  </button>
+                )}
+              </div>
+              <div className="bg-[#11243f] border border-slate-800 rounded-lg p-2 h-72 md:h-96 w-full flex items-center justify-center relative overflow-hidden group">
                 {selectedDocDetails.storage_path ? (
                   <iframe 
                     src={supabase.storage.from("documents").getPublicUrl(selectedDocDetails.storage_path).data.publicUrl} 

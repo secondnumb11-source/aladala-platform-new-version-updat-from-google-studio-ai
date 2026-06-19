@@ -5,6 +5,7 @@
 
 import React from 'react';
 import { List } from 'react-window';
+const VirtualList = List as any;
 import { ChevronLeft } from 'lucide-react';
 import { Case } from '@/types';
 import CaseCard from './CaseCard';
@@ -26,6 +27,7 @@ interface CasesListProps {
   visibleCount: number;
   onArchiveToggle?: (c: Case) => void;
   selectedRole?: string;
+  onUpdateCaseStatus?: (c: Case, newStatus: string) => void;
 }
 
 export default function CasesList({
@@ -43,7 +45,8 @@ export default function CasesList({
   gridDensity = 'relaxed',
   visibleCount,
   onArchiveToggle,
-  selectedRole
+  selectedRole,
+  onUpdateCaseStatus
 }: CasesListProps) {
   if (filteredCases.length === 0) {
     return (
@@ -72,13 +75,15 @@ export default function CasesList({
           <div className="flex-[1] px-4 py-4 text-[11px] font-black uppercase tracking-[0.2em]">الجلسة القادمة</div>
           <div className="flex-[0.5] px-4 py-4"></div>
         </div>
-        <List
-          style={{ height: 600, width: "100%", direction: "rtl" }}
-          rowCount={filteredCases.length}
-          rowHeight={100}
+        <VirtualList
+          style={{ direction: "rtl" }}
+          height={600}
+          width="100%"
           className={`divide-y-4 ${isHighContrast ? 'divide-slate-200' : 'divide-slate-900'}`}
-          rowProps={{}}
-          rowComponent={({ index, style }) => {
+          itemCount={filteredCases.length}
+          itemSize={100}
+        >
+          {({ index, style }: any) => {
             const c = filteredCases[index];
             if (!c) return null;
             const { arabicStatusName, CategoryIcon } = getInteractiveCaseStyles(c.category, c.status);
@@ -113,8 +118,25 @@ export default function CasesList({
                     <CategoryIcon className="w-3 h-3" />
                   </span>
                 </div>
-                <div className="flex-[1] px-4">
-                  <span className="text-[11px] font-extrabold">{arabicStatusName}</span>
+                <div className="flex-[1] px-4" onClick={(e) => e.stopPropagation()}>
+                  <select
+                    value={c.status || 'under_study'}
+                    onChange={(e) => onUpdateCaseStatus && onUpdateCaseStatus(c, e.target.value)}
+                    className={`text-[11px] font-black bg-transparent focus:outline-none border rounded-lg p-1.5 cursor-pointer ${
+                      isHighContrast ? 'text-slate-950 border-slate-900 bg-white font-black' : 'text-amber-400 border-slate-700/50 bg-[#050e21] font-bold'
+                    }`}
+                  >
+                    <option value="under_study" className="bg-slate-950 text-white">قيد الدراسة 🖋️</option>
+                    <option value="under_review" className="bg-slate-950 text-white">قيد النظر ⚖️</option>
+                    <option value="struck_off" className="bg-slate-950 text-white">شطبت 🗑️</option>
+                    <option value="appeal" className="bg-slate-950 text-white">استئناف ⤴️</option>
+                    <option value="execution" className="bg-slate-950 text-white">تنفيذ ⚡</option>
+                    <option value="primary_judgment" className="bg-slate-950 text-white">حكم ابتدائي 📜</option>
+                    <option value="final_judgment" className="bg-slate-950 text-white">حكم قطعي ✅</option>
+                    <option value="postponed" className="bg-slate-950 text-white">مؤجلة ⏳</option>
+                    <option value="closed" className="bg-slate-950 text-white">ملف مقفل منتهي 🔒</option>
+                    <option value="active" className="bg-slate-950 text-white">نشطة جارية ⚖️</option>
+                  </select>
                 </div>
                 <div className={`flex-[1] px-4 text-[10px] font-black font-mono tracking-widest truncate ${isHighContrast ? 'text-emerald-900' : 'text-emerald-400'}`}>{c.nextSessionDate || '---'}</div>
                 <div className="flex-[0.5] px-4 text-right">
@@ -123,7 +145,7 @@ export default function CasesList({
               </div>
             );
           }}
-        />
+        </VirtualList>
       </div>
     );
   }
@@ -146,6 +168,7 @@ export default function CasesList({
           getCaseDocumentTags={getCaseDocumentTags}
           onArchiveToggle={onArchiveToggle}
           selectedRole={selectedRole}
+          onUpdateCaseStatus={onUpdateCaseStatus}
         />
       ))}
     </div>

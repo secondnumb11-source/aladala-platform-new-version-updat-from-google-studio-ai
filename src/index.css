@@ -2186,3 +2186,23 @@ html:not(.dark) {
 .premium-sidebar-scrollbar::-webkit-scrollbar-thumb:hover {
   background: linear-gradient(180deg, #FDE047 #D4AF37 5#1e3a8a 100%);
 }
+
+/* High Contrast Override for hardcoded #FFFFFF texts and #0c1a35 backgrounds in internal cards */
+body.high-contrast-mode [style*="textShadow: 'none'"],
+body.high-contrast-mode [style*="textShadow: none"] {
+    color: var(--text-main) !important;
+}
+
+body.high-contrast-mode .bg-\[\#0c1a35\],
+body.high-contrast-mode .bg-\[\#050e21\] {
+    background-color: var(--bg-card) !important;
+    border-color: var(--border) !important;
+}
+
+body.high-contrast-mode .text-\[\#FFFFFF\] {
+    color: var(--text-main) !important;
+}
+
+body.high-contrast-mode .text-\[\#FACC15\] {
+    color: var(--primary) !important;
+}

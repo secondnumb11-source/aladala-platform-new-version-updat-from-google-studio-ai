@@ -38,11 +38,11 @@ interface AIModuleProps {
   onUpdateState: (type: string, data: any) => void;
   cases?: any[];
   invoices?: any[];
-  initialTab?: 'advisor' | 'drafting' | 'analysis' | 'swot' | 'search' | 'deadlines' | 'gateway' | 'finance' | 'contract_audit' | 'risk_matrix' | 'zatca';
+  initialTab?: 'advisor' | 'drafting' | 'analysis' | 'swot' | 'search' | 'deadlines' | 'gateway' | 'finance' | 'contract_audit' | 'risk_matrix' | 'zatca' | 'classification';
 }
 
 export default function AIModule({ onUpdateState, cases = [], invoices = [], initialTab = 'advisor' }: AIModuleProps) {
-  const [activeTab, setActiveTab] = useState<'advisor' | 'drafting' | 'analysis' | 'swot' | 'search' | 'deadlines' | 'gateway' | 'finance' | 'contract_audit' | 'risk_matrix' | 'zatca'>(initialTab);
+  const [activeTab, setActiveTab] = useState<'advisor' | 'drafting' | 'analysis' | 'swot' | 'search' | 'deadlines' | 'gateway' | 'finance' | 'contract_audit' | 'risk_matrix' | 'zatca' | 'classification'>(initialTab);
 
   React.useEffect(() => {
     setActiveTab(initialTab);
@@ -57,6 +57,37 @@ export default function AIModule({ onUpdateState, cases = [], invoices = [], ini
       time: new Date().toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' })
     }
   ]);
+
+  const [classificationInput, setClassificationInput] = useState('');
+  const [isClassifying, setIsClassifying] = useState(false);
+  const [classificationResult, setClassificationResult] = useState<any | null>(null);
+  const [classificationError, setClassificationError] = useState('');
+
+  const handleClassifySubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!classificationInput.trim()) return;
+    setIsClassifying(true);
+    setClassificationError('');
+    setClassificationResult(null);
+
+    try {
+      const res = await fetch('/api/ai/classify-case', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ description: classificationInput })
+      });
+      const data = await res.json();
+      if (data.success && data.classification) {
+        setClassificationResult(data.classification);
+      } else {
+        setClassificationError(data.error || 'عذراً، فشل تصنيف القضية.');
+      }
+    } catch (err: any) {
+      setClassificationError('حدث خطأ غير متوقع أثناء الاتصال بالخادم الذكي.');
+    } finally {
+      setIsClassifying(false);
+    }
+  };
 
   const handleAdvisorChatSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -135,7 +166,8 @@ export default function AIModule({ onUpdateState, cases = [], invoices = [], ini
             { id: 'deadlines', name: 'المهل وتنبيهات', icon: <CalendarRange className="w-3.5 h-3.5" /> },
             { id: 'finance', name: 'المالية AI', icon: <DollarSign className="w-3.5 h-3.5" /> },
             { id: 'zatca', name: 'الفواتير المعتمدة ZATCA', icon: <CheckCircle2 className="w-3.5 h-3.5" /> },
-            { id: 'gateway', name: 'البوابة', icon: <Zap className="w-3.5 h-3.5" /> }
+            { id: 'gateway', name: 'البوابة', icon: <Zap className="w-3.5 h-3.5" /> },
+            { id: 'classification', name: 'تصنيف القضايا تلقائياً', icon: <Bot className="w-3.5 h-3.5" /> }
           ].map(tab => (
             <button
               key={tab.id}
@@ -266,6 +298,98 @@ export default function AIModule({ onUpdateState, cases = [], invoices = [], ini
         {activeTab === 'zatca' && <AIZatcaTool invoices={invoices} />}
         {activeTab === 'contract_audit' && <AIContractAuditTool />}
         {activeTab === 'gateway' && <AiGatewayTool />}
+
+        {activeTab === 'classification' && (
+          <div className="bg-white border border-slate-200 rounded-[2.5rem] shadow-2xl p-8 max-w-4xl mx-auto space-y-6 animate-fade-in">
+            <div className="flex items-center gap-4 border-b border-slate-100 pb-4">
+              <div className="p-3 bg-amber-500/10 text-amber-500 rounded-2xl">
+                <Bot className="w-6 h-6" />
+              </div>
+              <div>
+                <h3 className="text-lg font-black text-slate-900">المصنف القضائي الذكي للقضايا السعودية</h3>
+                <p className="text-slate-500 font-bold text-xs mt-1">تحديد نوع القضية، المحكمة المختصة، والأنظمة المطبقة باستخدام Google Gemini API</p>
+              </div>
+            </div>
+
+            <form onSubmit={handleClassifySubmit} className="space-y-4">
+              <div>
+                <label className="block text-xs font-black text-slate-700 mb-2">وقائع القضية أو نص وصف الدعوى:</label>
+                <textarea
+                  value={classificationInput}
+                  onChange={(e) => setClassificationInput(e.target.value)}
+                  rows={6}
+                  placeholder="اكتب هنا وقائع وملخص القضية بالتفصيل لتمكين المساعد من تحليلها وتصنيفها بدقة..."
+                  className="w-full bg-slate-50 border-2 border-slate-200 rounded-2xl p-4 text-xs font-semibold text-[#0a0a0a] focus:outline-none focus:border-slate-900 transition-all font-sans leading-relaxed"
+                />
+              </div>
+
+              <div className="flex justify-end">
+                <button
+                  type="submit"
+                  disabled={isClassifying || !classificationInput.trim()}
+                  className="bg-slate-900 hover:bg-slate-800 text-white px-6 py-3 rounded-2xl text-xs font-black transition-all flex items-center gap-2 shadow-lg disabled:opacity-40"
+                >
+                  {isClassifying ? (
+                    <>
+                      <div className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                      جاري فحص وتصنيف الدعوى...
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="w-4 h-4 text-amber-500" />
+                      فحص وتصنيف القضية فورياً
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
+
+            {classificationError && (
+              <div className="p-4 bg-rose-50 border border-rose-200 text-rose-700 rounded-2xl text-xs font-bold">
+                ⚠️ {classificationError}
+              </div>
+            )}
+
+            {classificationResult && (
+              <div className="mt-8 border-t border-slate-100 pt-6 space-y-6">
+                <h4 className="text-sm font-black text-slate-900">نتائج تصنيف القضية بواسطة الذكاء الاصطناعي:</h4>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                    <span className="block text-[10px] text-slate-400 font-bold mb-1">نوع القضية المقترح:</span>
+                    <span className="text-xs font-black text-slate-900 flex items-center gap-1.5 uppercase">
+                      <span className="w-2 h-2 rounded-full bg-amber-500"></span>
+                      {classificationResult.categoryAr}
+                    </span>
+                  </div>
+
+                  <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                    <span className="block text-[10px] text-slate-400 font-bold mb-1">مستوى الموثوقية / الدقة:</span>
+                    <span className="text-xs font-black text-amber-500">{classificationResult.confidence}</span>
+                  </div>
+
+                  <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                    <span className="block text-[10px] text-slate-400 font-bold mb-1">المحكمة المختصة ولائياً:</span>
+                    <span className="text-xs font-black text-slate-900">{classificationResult.proposedCourt}</span>
+                  </div>
+                </div>
+
+                <div className="p-5 bg-amber-500/5 rounded-3xl border border-amber-500/10 space-y-2">
+                  <h5 className="text-xs font-black text-slate-950 flex items-center gap-2">
+                    <Scale className="w-4 h-4 text-amber-500" />
+                    النظام الحاكم والمسند القانوني:
+                  </h5>
+                  <p className="text-xs font-bold text-slate-800 leading-relaxed">{classificationResult.applicableLaw}</p>
+                </div>
+
+                <div className="p-5 bg-slate-50 rounded-3xl border border-slate-100 space-y-2">
+                  <h5 className="text-xs font-black text-slate-950 font-black">التبرير والتحليل القانوني السعودي:</h5>
+                  <p className="text-xs font-semibold text-slate-700 leading-relaxed font-sans text-justify bg-white/80 p-4 rounded-xl border border-slate-100 whitespace-pre-line">{classificationResult.reasonAr}</p>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
