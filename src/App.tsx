@@ -13,7 +13,6 @@ import MainLandingPage from '@/components/MainLandingPage';
 import NotificationsBell from '@/components/NotificationsBell';
 import GlobalNotesWidget from '@/components/GlobalNotesWidget';
 import DateConverterWidget from '@/components/DateConverterWidget';
-const AiDrafting = React.lazy(() => import('@/components/AiDrafting'));
 import ErrorBoundary from '@/components/ErrorBoundary';
 
 // Lazy load large modules using relative paths to avoid resolution issues in some environments
@@ -33,7 +32,6 @@ const GCalSyncSettings = React.lazy(() => import('@/components/GCalSyncSettings'
 const WhatsappTemplates = React.lazy(() => import('@/components/WhatsappTemplates'));
 const LawyerPerformance = React.lazy(() => import('@/components/LawyerPerformance'));
 const TeamMembers = React.lazy(() => import('@/components/TeamMembers'));
-const MockNajizSimulator = React.lazy(() => import('@/components/MockNajizSimulator'));
 const UnifiedAuthLanding = React.lazy(() => import('@/components/UnifiedAuthLanding'));
 const PlatformDocumentation = React.lazy(() => import('@/components/PlatformDocumentation'));
 const JudicialObservatory = React.lazy(() => import('@/components/JudicialObservatory'));

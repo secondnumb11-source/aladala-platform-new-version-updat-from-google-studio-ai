@@ -1,29 +1,19 @@
 node_modules/
-coverage/
-.DS_Store
+dist/
+.env
+.env.local
 *.log
-.env*
-!.env.example
+.DS_Store
+dist-ssr/
+*.local
+build/
+.cache/
 
 # Firebase & Secrets
 serviceAccountKey.json
 serviceAccountKey*.json
 *.json.bk
 
-# Build and IDE outputs
-dist/
-build/
-out/
-.next/
-.cache/
+# IDE outputs
 .vscode/
 .idea/
-
-# Temporary files and scratchpads
-*.txt
-test-results/
-tool/
-extension/
-ngrok.yml
-
-

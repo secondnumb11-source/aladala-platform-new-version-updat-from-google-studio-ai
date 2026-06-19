@@ -9,7 +9,7 @@ import {
 } from "lucide-react";
 import CourtMapAndServices from "./CourtMapAndServices";
 import { lazy, Suspense } from "react";
-const AiDrafting = lazy(() => import('./AiDrafting'));
+const AiDrafting = lazy(() => import('./AI/AIDraftingTool'));
 import { getLeadLawyerName } from "./CasesModule";
 
 interface CaseDetailsViewProps {
