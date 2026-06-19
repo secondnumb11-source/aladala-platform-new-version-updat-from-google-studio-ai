@@ -88,17 +88,17 @@ export default function LibraryModule() {
   const getLawUrl = (lawId: string): string => {
     switch (lawId) {
       case 'civil-transactions':
-        return localStorage.getItem('law_link_civil_transactions') || 'https://laws.boe.gov.sa/SaudiLaws/Laws/LawDetails/6968fd0a-115f-4bf2-abb9-b01600c01fa1';
+        return localStorage.getItem('law_link_civil_transactions') || 'https://laws.boe.gov.sa/BoeLaws/Laws/LawDetails/655fdb42-8c96-422b-b8c4-b04f0095c94c/1';
       case 'companies-new':
-        return localStorage.getItem('law_link_companies_new') || 'https://laws.boe.gov.sa/SaudiLaws/Laws/LawDetails/2585f9ea-b97c-40ad-9b8d-ae7b00bef027';
+        return localStorage.getItem('law_link_companies_new') || 'https://laws.boe.gov.sa/BoeLaws/Laws/LawDetails/a8376aea-1bc3-49d4-9027-aed900b555af/1';
       case 'labor-law':
-        return localStorage.getItem('law_link_labor_law') || 'https://laws.boe.gov.sa/SaudiLaws/Laws/LawDetails/f7648348-18e4-4d10-8277-ae7b00bef20b';
+        return localStorage.getItem('law_link_labor_law') || 'https://laws.boe.gov.sa/boelaws/laws/lawdetails/08381293-6388-48e2-8ad2-a9a700f2aa94/1';
       case 'evidence-law':
-        return localStorage.getItem('law_link_evidence_law') || 'https://laws.boe.gov.sa/SaudiLaws/Laws/LawDetails/623d3a08-8e81-4b13-b5f7-ae3400877044';
+        return localStorage.getItem('law_link_evidence_law') || 'https://laws.boe.gov.sa/BoeLaws/Laws/LawDetails/2716057c-c097-4bad-8e1e-ae1400c678d5/1';
       case 'enforcement-law':
-        return localStorage.getItem('law_link_enforcement_law') || 'https://laws.boe.gov.sa/SaudiLaws/Laws/LawDetails/7180fd12-c247-495c-9c7a-ae7b00bef264';
+        return localStorage.getItem('law_link_enforcement_law') || 'https://laws.boe.gov.sa/BoeLaws/Laws/LawDetails/c81ba2f1-1bf1-443b-9b1c-a9a700f27110/1';
       case 'bankruptcy-law':
-        return localStorage.getItem('law_link_bankruptcy_law') || 'https://laws.boe.gov.sa/SaudiLaws/Laws/LawDetails/33580cae-c496-419b-ab05-ae7b00bef18d';
+        return localStorage.getItem('law_link_bankruptcy_law') || 'https://laws.boe.gov.sa/BoeLaws/Laws/LawDetails/68204119-84f1-4789-8fad-a9ec014c3788/1';
       default:
         return 'https://laws.boe.gov.sa';
     }

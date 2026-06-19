@@ -789,7 +789,7 @@ export default function DocumentsModule({
   );
 
   // OCR Simulator
-  const [selectedDocForOcr, setSelectedDocForOcr] = useState<Document | null>(documents[0]);
+  const [selectedDocForOcr, setSelectedDocForOcr] = useState<Document | null>(null);
   const selectedDocument = selectedDocForOcr;
 
   const handleDeleteDocument = async (docId: string, storagePath?: string) => {
@@ -2590,36 +2590,6 @@ export default function DocumentsModule({
               );
             })}
           </div>
-
-          {selectedDocument && (
-            <div className="bg-slate-900 border border-slate-700 rounded-3xl p-6 mt-6 space-y-4 shadow-xl text-right">
-              <h3 className="text-white font-bold mb-3">عرض المستند</h3>
-              {selectedDocument.fileUrl ? (
-                selectedDocument.fileUrl.match(/\.(pdf)$/i) ? (
-                  <iframe
-                    src={selectedDocument.fileUrl}
-                    className="w-full h-96 rounded-lg border border-slate-600"
-                    title={selectedDocument.name}
-                  />
-                ) : selectedDocument.fileUrl.match(/\.(jpg|jpeg|png|gif|webp)$/i) ? (
-                  <img
-                    src={selectedDocument.fileUrl}
-                    alt={selectedDocument.name}
-                    className="w-full max-h-96 object-contain rounded-lg mx-auto"
-                  />
-                ) : (
-                  <div className="flex flex-col items-center justify-center h-48 bg-slate-800 rounded-lg">
-                    <FileText className="w-12 h-12 text-amber-400 mb-2" />
-                    <p className="text-slate-300 text-sm">لا يمكن عرض هذا النوع من الملفات مباشرة</p>
-                    <a href={selectedDocument.fileUrl} target="_blank" rel="noopener noreferrer"
-                      className="mt-2 text-amber-400 underline text-sm">فتح الملف</a>
-                  </div>
-                )
-              ) : (
-                <p className="text-slate-400 text-sm">لا يوجد ملف مرتبط بهذا المستند</p>
-              )}
-            </div>
-          )}
         </div>
         )}
       </div>

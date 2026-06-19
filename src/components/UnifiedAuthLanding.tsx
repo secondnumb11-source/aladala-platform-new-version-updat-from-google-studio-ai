@@ -4,7 +4,7 @@ import { Shield, User, Lock, Mail, Smartphone, Building, Key, CheckCircle2, Arro
 import { supabase, isSupabaseConfigured } from "@/lib/supabase";
 import { auditLogger, AuditAction } from "@/lib/AuditLogger";
 import { logAuthError, logDiagnosticData } from "@/lib/debug-auth";
-import { cleanCorruptedAuth, logOAuthEvent } from "@/lib/auth-utils";
+import { cleanCorruptedAuth, logOAuthEvent, verifyClientCredentials, verifyEmployeeCredentials } from "@/lib/auth-utils";
 
 interface UnifiedAuthProps {
   initialTab?: "lawyer" | "trial";
@@ -517,59 +517,32 @@ export default function UnifiedAuthLanding({ initialTab = "lawyer", language = "
       return;
     }
 
+    if (loading) return; // Prevent duplicate clicks
+
     setLoading(true);
 
-    try {
-      const loginEmail = clientNationalId.includes('@') ? clientNationalId : `${clientNationalId}@client.aladalah-law.sa`;
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email: loginEmail,
-        password: clientPassword
-      });
+    const result = await verifyClientCredentials(clientNationalId, clientPassword);
 
-      if (error) throw error;
-      const user = data.user!;
-
-      let userData: any = null;
-      try {
-        const { data: profile } = await supabase.from('profiles').select('id, uid, role, name, permittedModules, sidebarConfig, avatarUrl, created_at').eq('uid', user.id).maybeSingle();
-        if (!profile) {
-          userData = {
-            uid: user.id,
-            name: "عميل النظام",
-            role: "client",
-            email: loginEmail
-          };
-          try {
-            await supabase.from('profiles').insert([{
-              uid: user.id,
-              name: userData.name,
-              role: userData.role,
-              email: userData.email
-            }]);
-          } catch (pe) {
-            console.warn("Client profile insertion bypassed", pe);
-          }
-        } else {
-          userData = profile;
-        }
-      } catch (err) {
-        console.warn("Profiles fetch error:", err);
-      }
-
+    if (result.success && result.data) {
+      const matchedRecord = result.data;
       setSuccessMsg("تم توثيق الدخول بنجاح. جاري تحويلك لبوابة العملاء التفاعلية...");
       
+      sessionStorage.setItem('client_portal_token', 'bypass-token-' + matchedRecord.id);
+      sessionStorage.setItem('active-logged-in-client', JSON.stringify({
+        id: matchedRecord.id,
+        name: matchedRecord.name
+      }));
+
       setTimeout(() => {
         onLoginSuccess({
           role: "client",
-          id: user.id,
-          name: userData?.name || "عميل النظام"
+          id: matchedRecord.id,
+          name: matchedRecord.name || "عميل النظام"
         });
         setLoading(false);
       }, 1000);
-      
-    } catch (sbErr: any) {
-      console.log("Supabase Client Login error:", sbErr.message);
-      setErrorMessage("بيانات الدخول غير صحيحة. يرجى التأكد من اسم المستخدم وكلمة المرور.");
+    } else {
+      setErrorMessage(result.error || "حدث خطأ غير معروف.");
       setLoading(false);
     }
   };
@@ -585,46 +558,34 @@ export default function UnifiedAuthLanding({ initialTab = "lawyer", language = "
       return;
     }
 
+    if (loading) return; // Prevent duplicate clicks
+
     setLoading(true);
 
-    try {
-      const { data: employeeRecords, error } = await supabase
-        .from('employees')
-        .select('id, uid, role, name, permittedModules, sidebarConfig, avatarUrl, created_at')
-        .eq('username', empUsername.trim());
+    const result = await verifyEmployeeCredentials(empUsername, empPassword);
+
+    if (result.success && result.data) {
+      const empData = result.data;
+      setSuccessMsg(`تم التحقق بنجاح لملف الموظف...`);
       
-      if (employeeRecords && employeeRecords.length > 0) {
-        const matchedRecord = employeeRecords.find((emp: any) => emp.password === empPassword);
-        if (matchedRecord) {
-          const empData: any = matchedRecord;
-          
-          setSuccessMsg(`تم التحقق بنجاح لملف الموظف...`);
-          
-          localStorage.setItem('adalah-employee-auth-bypass', 'true');
-          sessionStorage.setItem('active-logged-in-employee-v2', JSON.stringify(empData));
-          
-          setTimeout(() => {
-            onLoginSuccess({
-              role: "employee",
-              id: empData.id || "employee",
-              name: empData.name || "تعريف موظف",
-              employeeCode: empData.employeeCode || "EMP-11",
-              jobTitle: empData.jobTitle || "موظف مكاتب",
-              assignedCases: empData.assignedCases || [],
-              assignedClients: empData.assignedClients || [],
-              permittedModules: empData.sidebarConfig || ['dashboard', 'cases', 'tasks', 'ai', 'documents']
-            });
-            setLoading(false);
-          }, 1000);
-          return;
-        }
-      }
+      localStorage.setItem('adalah-employee-auth-bypass', 'true');
+      sessionStorage.setItem('active-logged-in-employee-v2', JSON.stringify(empData));
       
-      setErrorMessage("بيانات الدخول غير صحيحة. يرجى التأكد من اسم المستخدم وكلمة المرور.");
-      setLoading(false);
-    } catch (err: any) {
-      console.log("Employee Login error:", err);
-      setErrorMessage("حدث خطأ أثناء محاولة الدخول. يرجى المحاولة لاحقاً.");
+      setTimeout(() => {
+        onLoginSuccess({
+          role: "employee",
+          id: empData.id || "employee",
+          name: empData.name || "تعريف موظف",
+          employeeCode: empData.employeeCode || "EMP-11",
+          jobTitle: empData.jobTitle || "موظف مكاتب",
+          assignedCases: empData.assignedCases || [],
+          assignedClients: empData.assignedClients || [],
+          permittedModules: empData.sidebarConfig || ['dashboard', 'cases', 'tasks', 'ai', 'documents']
+        });
+        setLoading(false);
+      }, 1000);
+    } else {
+      setErrorMessage(result.error || "حدث خطأ غير معروف.");
       setLoading(false);
     }
   };
@@ -1076,10 +1037,19 @@ export default function UnifiedAuthLanding({ initialTab = "lawyer", language = "
                   type="submit"
                   id="client-login-button-submit"
                   disabled={loading}
-                  className="w-full bg-gradient-to-r from-[#D4AF37] to-[#B8860B] hover:from-[#FFD700] hover:to-[#D4AF37] text-slate-950 font-black tracking-tight text-sm font-black tracking-tight py-4 rounded-xl shadow-md shadow-amber-900/10 transition-all active:scale-95 transition-transform duration-300 flex items-center justify-center gap-2 cursor-pointer mt-6"
+                  className="w-full bg-gradient-to-r from-[#D4AF37] to-[#B8860B] hover:from-[#FFD700] hover:to-[#D4AF37] text-slate-950 font-black tracking-tight text-sm font-black tracking-tight py-4 rounded-xl shadow-md shadow-amber-900/10 transition-all active:scale-95 transition-transform duration-300 flex items-center justify-center gap-2 cursor-pointer mt-6 disabled:opacity-70 disabled:cursor-not-allowed"
                 >
-                  <LogIn className="w-4.5 h-4.5" />
-                  <span>دخول آمن للمحفظة (العدالة)</span>
+                  {loading ? (
+                    <>
+                      <RefreshCw className="w-4.5 h-4.5 animate-spin" />
+                      <span>جاري التحقق...</span>
+                    </>
+                  ) : (
+                    <>
+                      <LogIn className="w-4.5 h-4.5" />
+                      <span>دخول آمن للمحفظة (العدالة)</span>
+                    </>
+                  )}
                 </button>
               </motion.form>
             )}
@@ -1128,10 +1098,19 @@ export default function UnifiedAuthLanding({ initialTab = "lawyer", language = "
                   type="submit"
                   id="employee-login-button-submit"
                   disabled={loading}
-                  className="w-full bg-[#FAFAFA] hover:bg-[#D4AF37]/10 border border-[#D4AF37]/50 text-[#B8860B] text-sm font-black tracking-tight py-4 rounded-xl transition-all active:scale-95 transition-transform duration-300 flex items-center justify-center gap-2 cursor-pointer mt-6 shadow-lg"
+                  className="w-full bg-[#FAFAFA] hover:bg-[#D4AF37]/10 border border-[#D4AF37]/50 text-[#B8860B] text-sm font-black tracking-tight py-4 rounded-xl transition-all active:scale-95 transition-transform duration-300 flex items-center justify-center gap-2 cursor-pointer mt-6 shadow-lg disabled:opacity-70 disabled:cursor-not-allowed"
                 >
-                  <LogIn className="w-4.5 h-4.5 text-[#B8860B]" />
-                  <span className="text-slate-950 font-black tracking-tight">دخول آمن للموظف والمستشارين</span>
+                  {loading ? (
+                    <>
+                      <RefreshCw className="w-4.5 h-4.5 text-[#B8860B] animate-spin" />
+                      <span className="text-slate-950 font-black tracking-tight">جاري التحقق من الهوية...</span>
+                    </>
+                  ) : (
+                    <>
+                      <LogIn className="w-4.5 h-4.5 text-[#B8860B]" />
+                      <span className="text-slate-950 font-black tracking-tight">دخول آمن للموظف والمستشارين</span>
+                    </>
+                  )}
                 </button>
               </motion.form>
             )}

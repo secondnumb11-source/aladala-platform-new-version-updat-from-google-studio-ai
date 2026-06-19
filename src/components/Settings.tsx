@@ -351,6 +351,34 @@ export default function Settings({
   const [isCalSyncing, setIsCalSyncing] = useState(false);
   const [calLogs, setCalLogs] = useState<string[]>([]);
 
+  // Law Links management from Supabase
+  const [lawLinks, setLawLinks] = useState<LawLink[]>([]);
+  const [isSavingLaws, setIsSavingLaws] = useState(false);
+
+  const fetchLawLinks = async () => {
+    const { data, error } = await supabase.from('law_links').select('*').order('created_at', { ascending: true });
+    if (!error && data) {
+      setLawLinks(toCamel(data) as LawLink[]);
+    }
+  };
+
+  const handleUpdateLawLink = async (law: LawLink) => {
+    setIsSavingLaws(true);
+    try {
+      if (law.id) {
+        await supabase.from('law_links').update(toSnake(law)).eq('id', law.id);
+      } else {
+        await supabase.from('law_links').insert(toSnake(law));
+      }
+      alert('تم تحديث رابط النظام بنجاح ⚖️');
+      fetchLawLinks();
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsSavingLaws(false);
+    }
+  };
+
   const [whatsappTemplate, setWhatsappTemplate] = useState(() => {
     return localStorage.getItem('adalah-whatsapp-template') || "عزيزي العميل، نود تذكيركم بموعد جلستكم القضائية غداً الموافق {DATE} في تمام الساعة {TIME}. يُرجى التأكد من جاهزيتكم لحضور الجلسة المرئية. مع تحيات مكتب المحاماة.";
   });
@@ -366,22 +394,22 @@ export default function Settings({
 
   // Systems Library custom card links states and save handler
   const [lawLinkCivilTransactions, setLawLinkCivilTransactions] = useState(() => {
-    return localStorage.getItem('law_link_civil_transactions') || '';
+    return localStorage.getItem('law_link_civil_transactions') || 'https://laws.boe.gov.sa/BoeLaws/Laws/LawDetails/655fdb42-8c96-422b-b8c4-b04f0095c94c/1';
   });
   const [lawLinkCompaniesNew, setLawLinkCompaniesNew] = useState(() => {
-    return localStorage.getItem('law_link_companies_new') || '';
+    return localStorage.getItem('law_link_companies_new') || 'https://laws.boe.gov.sa/BoeLaws/Laws/LawDetails/a8376aea-1bc3-49d4-9027-aed900b555af/1';
   });
   const [lawLinkLaborLaw, setLawLinkLaborLaw] = useState(() => {
-    return localStorage.getItem('law_link_labor_law') || '';
+    return localStorage.getItem('law_link_labor_law') || 'https://laws.boe.gov.sa/boelaws/laws/lawdetails/08381293-6388-48e2-8ad2-a9a700f2aa94/1';
   });
   const [lawLinkEvidenceLaw, setLawLinkEvidenceLaw] = useState(() => {
-    return localStorage.getItem('law_link_evidence_law') || '';
+    return localStorage.getItem('law_link_evidence_law') || 'https://laws.boe.gov.sa/BoeLaws/Laws/LawDetails/2716057c-c097-4bad-8e1e-ae1400c678d5/1';
   });
   const [lawLinkEnforcementLaw, setLawLinkEnforcementLaw] = useState(() => {
-    return localStorage.getItem('law_link_enforcement_law') || '';
+    return localStorage.getItem('law_link_enforcement_law') || 'https://laws.boe.gov.sa/BoeLaws/Laws/LawDetails/c81ba2f1-1bf1-443b-9b1c-a9a700f27110/1';
   });
   const [lawLinkBankruptcyLaw, setLawLinkBankruptcyLaw] = useState(() => {
-    return localStorage.getItem('law_link_bankruptcy_law') || '';
+    return localStorage.getItem('law_link_bankruptcy_law') || 'https://laws.boe.gov.sa/BoeLaws/Laws/LawDetails/68204119-84f1-4789-8fad-a9ec014c3788/1';
   });
 
   const handleSaveLawLinks = (e: React.FormEvent) => {
@@ -558,6 +586,7 @@ export default function Settings({
 
   useEffect(() => {
     fetchConfig();
+    fetchLawLinks();
     
     // Load SMTP details from dynamic local state of browser
     const localHost = localStorage.getItem('SMTP_HOST');
@@ -1218,6 +1247,50 @@ export default function Settings({
                 <span>حفظ المسارات والروابط المخصصة للأنظمة 🌿</span>
               </button>
             </form>
+          </div>
+
+          {/* Law Links Management (Supabase) */}
+          <div className="bg-white border border-slate-800 rounded-3xl p-6 shadow-sm space-y-6">
+            <div className="flex items-center gap-3 border-b border-slate-800 pb-4">
+              <div className="p-2.5 bg-blue-50 text-blue-900 border border-blue-200 rounded-xl">
+                <FileSpreadsheet className="w-5 h-5" />
+              </div>
+              <div>
+                <h2 className="text-base font-black text-slate-900">إدارة روابط الأنظمة واللوائح (Cloud)</h2>
+                <p className="text-xs text-slate-700 mt-1">تخصيص الروابط السريعة التي تظهر في قسم الوكالات للوصول لآخر تحديثات الأنظمة السعودية.</p>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              {lawLinks.map((law, idx) => (
+                <div key={law.id || idx} className="grid grid-cols-1 md:grid-cols-2 gap-4 border-b border-slate-100 pb-4">
+                  <div className="space-y-1.5 text-right">
+                    <label className="text-[10px] text-slate-500 font-black">{law.name}</label>
+                    <input 
+                      type="text" 
+                      value={law.url} 
+                      onChange={(e) => {
+                        const newList = [...lawLinks];
+                        newList[idx].url = e.target.value;
+                        setLawLinks(newList);
+                      }}
+                      className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-black text-slate-900 focus:outline-none focus:border-blue-500"
+                      placeholder="رابط النظام (URL)"
+                    />
+                  </div>
+                  <div className="flex items-end justify-end">
+                    <button 
+                      type="button"
+                      onClick={() => handleUpdateLawLink(law)}
+                      disabled={isSavingLaws}
+                      className="px-4 py-2.5 bg-blue-950 text-white rounded-xl text-[10px] font-black hover:bg-blue-900 transition-all disabled:opacity-50"
+                    >
+                      {isSavingLaws ? <RefreshCw className="w-4 h-4 animate-spin" /> : 'تحديث الرابط في السحابة'}
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
           
           {/* Custom Theme Color & Gradient Config for Dark Cards & Backgrounds with Live Preview */}

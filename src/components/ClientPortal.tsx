@@ -18,10 +18,12 @@ import {
   Clock, 
   Activity,
   Edit2,
-  ShieldAlert
+  ShieldAlert,
+  Loader2
 } from 'lucide-react';
 import { Case, Client, Invoice, Message, Hearing, Contract, Document } from '@/types';
 import { generateUUID } from '@/lib/uuid';
+import { verifyClientCredentials } from "@/lib/auth-utils";
 
 interface ClientPortalProps {
   clients: Client[];
@@ -59,8 +61,38 @@ export default function ClientPortal({
 
   // Restore or check Client Portal session
   React.useEffect(() => {
+    // If the main auth landed us here, skip dual login
+    if (currentUser?.role === 'client' && currentUser.id) {
+        setIsLoggedIn(true);
+        const matchingClient = clients.find(c => String(c.id) === String(currentUser.id));
+        if (matchingClient) {
+            setPortalClient(matchingClient);
+        } else {
+            // fallback if not mapped yet
+             setPortalClient({
+                 id: currentUser.id,
+                 name: currentUser.name,
+                 phone: '',
+                 email: '',
+                 type: 'individual',
+             } as any);
+        }
+        return;
+    }
+
     const token = sessionStorage.getItem('client_portal_token');
     if (token) {
+      // If we are passing a bypass token from global auth
+      if (token.startsWith('bypass-token-')) {
+          const clientId = token.replace('bypass-token-', '');
+          const found = clients.find(c => String(c.id) === clientId);
+          if (found) {
+             setPortalClient(found);
+             setIsLoggedIn(true);
+          }
+          return;
+      }
+
       setIsLoggingIn(true);
       fetch('/api/client-portal/session', {
         headers: { 'Authorization': `Bearer ${token}` }
@@ -89,35 +121,29 @@ export default function ClientPortal({
       setLoginUsername(userParam);
       setLoginPassword(passParam);
     }
-  }, [clients]);
+  }, [clients, currentUser]);
 
   // Handle Client Login Submission to API
   const handleClientLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isLoggingIn) return;
     setIsLoggingIn(true);
     setLoginError('');
     
     try {
-      const response = await fetch('/api/client-portal/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          username: loginUsername.trim(),
-          password: loginPassword,
-        }),
-      });
+      const result = await verifyClientCredentials(loginUsername, loginPassword);
       
-      const data = await response.json();
-      if (!response.ok || !data.success) {
-        setLoginError(data.message || 'بيانات الدخول غير صحيحة أو البوابة غير مفعّلة');
+      if (!result.success || !result.data) {
+        setLoginError(result.error || 'بيانات الدخول غير صحيحة أو البوابة غير مفعّلة');
+        setIsLoggingIn(false);
         return;
       }
       
-      sessionStorage.setItem('client_portal_token', data.token);
+      sessionStorage.setItem('client_portal_token', 'bypass-token-' + result.data.id);
       
       // Look up full client details from app state
-      const matchingClient = clients.find(cl => cl.id === data.client.id);
-      setPortalClient(matchingClient || data.client);
+      const matchingClient = clients.find(cl => cl.id === result.data.id);
+      setPortalClient(matchingClient || result.data);
       setIsLoggedIn(true);
     } catch (err: any) {
       console.error('[Client login exception]', err);
@@ -490,7 +516,10 @@ export default function ClientPortal({
               className="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black rounded-xl p-3 text-sm shadow-md cursor-pointer transition-all disabled:opacity-50 flex items-center justify-center gap-2 font-display uppercase"
             >
               {isLoggingIn ? (
-                <>فحص الجلسة والاعتمادات...</>
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  فحص الجلسة والاعتمادات...
+                </>
               ) : (
                 <>تسجيل دخول آمن للبوابة 🔐</>
               )}

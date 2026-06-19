@@ -440,6 +440,14 @@ export interface Note {
   createdAt: string;
 }
 
+export interface LawLink {
+  id: string;
+  name: string;
+  url: string;
+  category?: string;
+  createdAt?: string;
+}
+
 export interface FinancialRecord {
   id: string;
   date: string;

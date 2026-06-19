@@ -793,12 +793,12 @@ export default function AILegalSearch() {
                       setObsAiResult(null);
 
                       const linkMapping: Record<string, string> = {
-                        civil_transactions: localStorage.getItem('law_link_civil_transactions') || '',
-                        companies_law: localStorage.getItem('law_link_companies_new') || '',
-                        labor_law: localStorage.getItem('law_link_labor_law') || '',
-                        evidence_law: localStorage.getItem('law_link_evidence_law') || '',
-                        enforcement_law: localStorage.getItem('law_link_enforcement_law') || '',
-                        bankruptcy_law: localStorage.getItem('law_link_bankruptcy_law') || '',
+                        civil_transactions: localStorage.getItem('law_link_civil_transactions') || 'https://laws.boe.gov.sa/BoeLaws/Laws/LawDetails/655fdb42-8c96-422b-b8c4-b04f0095c94c/1',
+                        companies_law: localStorage.getItem('law_link_companies_new') || 'https://laws.boe.gov.sa/BoeLaws/Laws/LawDetails/a8376aea-1bc3-49d4-9027-aed900b555af/1',
+                        labor_law: localStorage.getItem('law_link_labor_law') || 'https://laws.boe.gov.sa/boelaws/laws/lawdetails/08381293-6388-48e2-8ad2-a9a700f2aa94/1',
+                        evidence_law: localStorage.getItem('law_link_evidence_law') || 'https://laws.boe.gov.sa/BoeLaws/Laws/LawDetails/2716057c-c097-4bad-8e1e-ae1400c678d5/1',
+                        enforcement_law: localStorage.getItem('law_link_enforcement_law') || 'https://laws.boe.gov.sa/BoeLaws/Laws/LawDetails/c81ba2f1-1bf1-443b-9b1c-a9a700f27110/1',
+                        bankruptcy_law: localStorage.getItem('law_link_bankruptcy_law') || 'https://laws.boe.gov.sa/BoeLaws/Laws/LawDetails/68204119-84f1-4789-8fad-a9ec014c3788/1',
                       };
                       const externalLink = linkMapping[sys.id];
                       

@@ -87,11 +87,17 @@ export default function AIModule({ onUpdateState, cases = [], invoices = [], ini
           text: data.response,
           time: new Date().toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' })
         }]);
+      } else {
+        setChatHistory(prev => [...prev, {
+          sender: 'bot',
+          text: data.error || "عذراً زميلي، تعطل الاتصال بالخادم.",
+          time: "الآن"
+        }]);
       }
-    } catch {
+    } catch (e: any) {
       setChatHistory(prev => [...prev, {
         sender: 'bot',
-        text: "عذراً زميلي، تعطل الاتصال بالخادم، جاري الارتداد للتلخيص المحلي المعرب.",
+        text: typeof e?.message === 'string' ? e.message : "عذراً زميلي، تعطل الاتصال بالخادم، جاري الارتداد للتلخيص المحلي المعرب.",
         time: "الآن"
       }]);
     } finally {

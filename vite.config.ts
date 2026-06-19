@@ -52,12 +52,7 @@ export default defineConfig(() => {
       host: '0.0.0.0',
       port: 3000,
       strictPort: true,
-      hmr: process.env.DISABLE_HMR === 'true' ? false : {
-        // Auto-detect protocol and host in the browser
-        clientPort: process.env.HMR_PORT ? parseInt(process.env.HMR_PORT) : 443,
-        path: '/@vite/hmr',
-        overlay: false,
-      },
+      hmr: false,
       cors: true,
     },
     test: {

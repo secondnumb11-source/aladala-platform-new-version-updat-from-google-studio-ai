@@ -46,6 +46,7 @@ import nodemailer from 'nodemailer';
 import twilio from 'twilio';
 import OpenAI from 'openai';
 import JSZip from 'jszip';
+import { GoogleGenAI } from '@google/genai';
 
 // Supabase integration (Next-style helpers adapted for Express)
 import { supabaseMiddleware } from './src/utils/supabase/middleware.js';
@@ -55,9 +56,21 @@ import { query } from './src/lib/db.js';
 import Anthropic from '@anthropic-ai/sdk';
 
 const getAIClient = () => {
+  const geminiKey = process.env.GEMINI_API_KEY;
   const anthropicKey = process.env.ANTHROPIC_API_KEY;
   const openaiKey = process.env.OPENAI_API_KEY;
   
+  if (geminiKey) {
+    return { 
+      type: 'gemini', 
+      client: new GoogleGenAI({ 
+        apiKey: geminiKey,
+        httpOptions: {
+          headers: { 'User-Agent': 'aistudio-build' }
+        }
+      }) 
+    };
+  }
   if (anthropicKey) {
     return { type: 'anthropic', client: new Anthropic({ apiKey: anthropicKey }) };
   }
@@ -72,7 +85,7 @@ const getAIProvider = () => {
   const ai = getAIClient();
   if (!ai) return null;
   if (ai.type === 'openai') return ai;
-  // If Anthropic is active but routes still call getAIProvider(), we wrap it
+  // If Anthropic or Gemini is active but routes still call getAIProvider(), we wrap it
   return {
     type: 'openai',
     client: {
@@ -81,6 +94,22 @@ const getAIProvider = () => {
           create: async (params: any) => {
             const system = params.messages.find((m: any) => m.role === 'system')?.content || '';
             const msgs = params.messages.filter((m: any) => m.role !== 'system').map((m: any) => ({ role: m.role, content: m.content }));
+            
+            if (ai.type === 'gemini') {
+                const gemini = ai.client as GoogleGenAI;
+                const formattedMsgs = msgs.map((m: any) => `${m.role === 'user' ? 'User' : 'Model'}: ${m.content}`).join('\n\n');
+                const prompt = `${system ? `System: ${system}\n\n` : ''}${formattedMsgs}`;
+                try {
+                  const response = await gemini.models.generateContent({
+                      model: 'gemini-2.5-flash',
+                      contents: prompt,
+                  });
+                  return { choices: [{ message: { content: response.text } }] };
+                } catch (err: any) {
+                  throw new Error(`Gemini API Error: ${err.message}`);
+                }
+            }
+
             const response = await (ai.client as Anthropic).messages.create({
               model: 'claude-3-5-sonnet-20241022',
               max_tokens: params.max_tokens || 2048,
@@ -89,6 +118,25 @@ const getAIProvider = () => {
             });
             return { choices: [{ message: { content: (response.content[0] as any).text } }] };
           }
+        }
+      },
+      embeddings: {
+        create: async (params: any) => {
+           if (ai.type === 'gemini') {
+              const gemini = ai.client as GoogleGenAI;
+              try {
+                const response = await gemini.models.embedContent({
+                  model: 'text-embedding-004',
+                  contents: params.input,
+                });
+                return { data: [{ embedding: response.embeddings?.[0]?.values || [] }] };
+              } catch (err: any) {
+                // If it fails, return dummy embedding (or throw)
+                throw new Error(`Gemini Embed API Error: ${err.message}`);
+              }
+           }
+           // Fallback dummy for anthropic
+           return { data: [{ embedding: new Array(1536).fill(0.01) }] };
         }
       }
     }
@@ -102,7 +150,15 @@ export const callAI = async (systemPrompt: string, userMessage: string): Promise
     throw new Error('لم يتم تكوين مفتاح الذكاء الاصطناعي');
   }
   
-  if (ai.type === 'anthropic') {
+  if (ai.type === 'gemini') {
+    const gemini = ai.client as GoogleGenAI;
+    const prompt = `System: ${systemPrompt}\n\nUser: ${userMessage}`;
+    const response = await gemini.models.generateContent({
+      model: 'gemini-2.5-flash',
+      contents: prompt,
+    });
+    return response.text || '';
+  } else if (ai.type === 'anthropic') {
     const response = await (ai.client as Anthropic).messages.create({
       model: 'claude-3-5-sonnet-20241022',
       max_tokens: 2048,
@@ -2084,41 +2140,17 @@ app.post('/api/ai/analyze-deadlines', async (req, res) => {
       if (responseText) {
         const cleaned = responseText.replace(/\`\`\`json\n?|\`\`\`\n?/g, '').trim();
         responseData = JSON.parse(cleaned);
+        return res.json({ success: true, analysis: responseData });
+      } else {
+        return res.json({ success: false, error: "فشل استخراج البيانات." });
       }
     } catch (e: any) {
-      console.warn("Error calling OpenAI API for deadline analysis, falling back to sovereign rule engine:", e.message);
+      console.warn("Error calling OpenAI API for deadline analysis:", e.message);
+      return res.json({ success: false, error: "فشل الاتصال بالذكاء الاصطناعي." });
     }
   }
 
-  // If responseData is empty (either no key, API error, or JSON parse error), use our robust, beautiful heuristic rule engine
-  if (!responseData || !Array.isArray(responseData) || responseData.length === 0) {
-    responseData = hearings.map((h: any) => {
-      let analysisText = `تتطلب هذه الجلسة تحضيراً مستندياً مكثفاً ومراجعة للخصومة القضائية المنعقدة أمام ${h.courtName || 'المحكمة'} لتفادي فوات المهل النظامية لتسليم الدفوع واللوائح.`;
-      
-      let priority = 'high';
-      const daysUntil = h.date ? Math.ceil((new Date(h.date).getTime() - Date.now()) / (1000 * 3600 * 24)) : 10;
-      if (daysUntil < 7) priority = 'critical';
-
-      let milestones = [];
-      if (h.decision?.includes('استئناف') || h.decision?.includes('اعتراض')) {
-        milestones.push({ daysBefore: 15, title: 'إعداد لائحة الاعتراض المكتوبة', action: 'تحليل الحكم الابتدائي وصياغة الاعتراض وفق المادة كذا', status: 'pending' });
-      } else {
-        milestones.push({ daysBefore: 3, title: 'تجهيز المذكرة الجوابية وإيداعها', action: 'صياغة المذكرة والردود الشرعية', status: 'pending' });
-        milestones.push({ daysBefore: 1, title: 'جلسة تحضيرية مع الموكل', action: 'مناقشة سير الجلسة وضبط الأقوال المستهدفة', status: 'pending' });
-      }
-
-      return {
-        hearingId: h.id,
-        caseNumber: h.case_number,
-        caseName: h.case_name || h.case_number,
-        analysis: analysisText,
-        priority,
-        milestones
-      };
-    });
-  }
-
-  res.json({ success: true, analysis: responseData });
+  return res.json({ success: false, error: "لم يتم تكوين مزود الذكاء الاصطناعي." });
 });
 
 app.post('/api/ai/visualize-contract', async (req, res) => {
@@ -2204,145 +2236,70 @@ app.post('/api/ai/draft', async (req, res) => {
       const responseText = await callAI(systemPrompt, `الوقائع والموجهات: ${userPromptText}\nنوع الطلب: ${type}`);
       if (responseText) {
         return res.json({ success: true, text: responseText.trim(), output: responseText.trim() });
+      } else {
+        return res.json({ success: false, error: "فشل استخراج البيانات من الصياغة." });
       }
     } catch (e: any) {
-      console.warn("Error inside AI drafting endpoint, falling back:", e.message);
+      console.warn("Error inside AI drafting endpoint:", e.message);
+      return res.json({ success: false, error: "فشل الاتصال بالذكاء الاصطناعي." });
     }
   }
 
-  let resultText = "";
-  
+  return res.json({ success: false, error: "يجب تقديم سياق أو وقائع للصياغة." });
+});
+
+app.get('/api/ai/test-mock', async (req, res) => {
   try {
-    if (type === 'brief') {
-      resultText = `بسم الله الرحمن الرحيم
-
-الموضوع: مذكرة جوابية ودفوع قانونية رداً على لائحة الخصم
-لدى: المحكمة التجارية بمدينة الرياض (الدائرة الثالثة)
-في القضية المقيدة برقم: 437194619
-بين المدعية: شركة نادك للتنمية الزراعية
-بين المدعى عليه: مؤسسة النقل السريع للتجارة
-
-فضيلة رئيس وأعضاء الدائرة الموقرين،،
-السلام عليكم ورحمة الله وبركاته،،
-
-أما بعد: نتقدم لعدالة محكمتكم الموقرة بهذه المذكرة الجوابية حيال ادعاءات الخصم، ونوجز دفوعنا في النقاط الشرعية والنظامية التالية:
-
-أولاً: الدفع بانتفاء القوة القهرية وتأخر التسليم المنسوب لموكلنا:
-إن التأخير الحاصل في تسليم الشحنة لم يأتِ متعمداً ولا ناتجاً عن إهمال، وإنما جاء نتيجة حظر السير المؤقت الصادر من الجهات المختصة بالطرق البرية الجنوبية بسبب السيول، مما يبطل تفعيل الشرط الجزائي عملاً بالمادة (112) من نظام المعاملات المدنية السعودي التي تنص على سقوط التعويض في حال تبين وجود السبب الأجنبي الخارج عن الإرادة.
-
-ثانياً: عدم صحة حساب حجم الأضرار التقديري:
-لم تقدم الجهة المدعية أي بينة محاسبية حقيقية تثبت وقوع ضرر مباشر عليها يبرر المطالبة بمبلغ 50,000 ريال كتعويض جزائي، وحيث أن القاعدة الفقهية تنص على أن 'الضرر لا يزال، ولا يزال بضرر أكبر'، ولم تتم المعاينة الثلاثية المعتادة.
-
-الطلبـــــــــات:
-بناءً على ما تقدم من وجوه شرعية وقانونية، نلتمس من فضيلتكم:
-1. رد دعوى المدعي بالكامل وإسقاط المطالبة بالتعويض الجزائي.
-2. تحميل المدعي كافة مصاريف التقاضي وأتعاب المحاماة الفعلية.
-
-والله الموفق والمستعان،،
-مقدمه/ وكيل المدعى عليه - مكتب العدالة للمحاماة والاستشارات`;
-    } else if (type === 'contract') {
-      resultText = `بسم الله الرحمن الرحيم
-
-عقد توريد تجاري لتقديم خدمات استشارية ومشتريات
-إنه في يوم الأحد بتاريخ 2026/05/31م بمدينة الرياض، تم الاتفاق والتعاقد بين كل من:
-
-الطرف الأول: شركة نادك للتنمية الزراعية (شركة مساهمة سعودية سجله تجاري 1010065271) ويمثلها في هذا العقد المدير العام.
-الطرف الثاني: مكتب العدالة للخدمات القانونية والمحاماة (سجل مهني رقم 44/291) ويمثله المحامي أحمد البقمي.
-
-تمهيد:
-حيث أن الطرف الأول يرغب بتمثيل قانوني شامل وصياغة وتدقيق العقود واللوائح وعقود التوزيع وتصفية المعاملات، وحيث أن الطرف الثاني لديه الخبرة المهنية والترخيص النظامي... فقد اتفقا على ما يلي:
-
-البند الأول (التمهيد):
-يعتبر التمهيد السابق جزءاً لا يتجزأ من هذا العقد ويقرأ ويرجى العمل بموجبه.
-
-البند الثاني (محل العقد والالتزامات):
-يتعهد الطرف الثاني بتقديم كافة الخدمات الاستشارية القضائية، وصياغة ما لا يقل عن 10 عقود شهرية، والتمثيل الشرعي أمام المحاكم العامة والعمالية والتجارية بالمملكة بكفاءة تامة وأمانة مهنية ممتدة.
-
-البند الثالث (المقابل المادي والضريبة):
-يلتزم الطرف الأول بدفع مبلغ وقدره 100,000 ريال سعودي (فقط مائة ألف ريال سعودي لا غير) تسدد على دفعات ربع سنوية متساوية. ويضاف إليها نسبة 15% ضريبة القيمة المضافة لجمهورية المملكة العربية السعودية.
-
-البند الرابع (الأنظمة المطبقة وفض النزاعات):
-يخضع هذا العقد وتفسيره للأنظمة السارية في المملكة العربية السعودية، وفي حال نشوء أي نزاع لا سمح الله يسوى ودياً، فإن تعذر ذلك، ينعقد الاختصاص الحصري للمحكمة التجارية بمدينة الرياض.
-
-توقيع الطرف الأول: _________________            توقيع الطرف الثاني: _________________`;
-    } else if (type === 'summary') {
-      resultText = `تقرير تلخيص القضية بالذكاء الاصطناعي (AI Summary)
-رقم القضية: ${context?.caseNumber || "437194619"}
-الخصوم: ${context?.clientName || "شركة نادك"} ضد ${context?.opponentName || "الملتقى للنقل"}
-
-النقاط الرئيسية والأسانيد المكتشفة:
-1. نوع النزاع: تجاري/عقود خدمات لوجستية.
-2. موضوع المطالبة: متبقي مالي بقيمة 450 ألف ريال من عقد توريد، مع مطالبة الخصم المقابلة بـ 50 ألف غرامة تأخير.
-3. الموقف النظامي لمكتبنا: موقف قوي استناداً للمادة (112) من نظام المعاملات المدنية لوجود قوة قهرية معلنة من الأرصاد المدنية والبلدية.
-4. التوصية القانونية العاجلة:
-   - ايداع نسخة ورقية من النشرة الجوية الرسمية عن أحوال الطقس في يوم التأخير كدليل مادي.
-   - إعداد اللائحة الجوابية قبل موعد الجلسة بـ 48 ساعة على الأقل.
-   - تفعيل إشعار العميل عبر بوابة العملاء بنظام الرسائل المدعوم.`;
-    } else {
-      resultText = `مسودة صياغة قانونية مخصصة بناءً على مدخلاتكم:
-
-تحية طيبة وبعد،،
-بناءً على طلبكم لتحليل ومراجع المعاملات المتعلقة بالمطالبات القانونية، نوضح لفضيلتكم أنه بتتبع النصوص القانونية في المملكة العربية السعودية، لابد أن تشتمل اللائحة على:
-1. الأسماء الكاملة للمدعين والمدعى عليهم وأرقام الهويات الوطنية والسجلات التجارية الخاصة بهم.
-2. أصل الحق المطالب به وبينات ايداع المبالغ أو توقيع شهادة الاستلام.
-3. مراجع الأحكام القضائية الصادرة من محاكم الاستئناف في وقائع مماثلة لتأييد الدفع.
-
-يرجى مراجعة المسودة وتعديلها أو تصديرها مباشرة لملف قضيتكم.`;
-    }
-    
-    await new Promise(resolve => setTimeout(resolve, 600));
-    
-  } catch (error) {
-    console.warn("OpenAI API call issue, utilizing smart fallback template.");
-    resultText = "نظراً لتحديث المفاتيح السحابية، تم صياغة هذه المسودة الذكية المحايدة طبقاً للأنظمة واللوائح السعودية المعتمدة رسمياً بوزارة العدل.";
+     const provider = getAIProvider();
+     if (!provider) return res.json({ error: "no provider" });
+     const openai = provider.client as OpenAI;
+     const completion = await openai.chat.completions.create({
+          model: "gpt-4o",
+          messages: [{ role: "system", content: "Test" }, { role: "user", content: "Hello" }],
+          temperature: 0.3
+     });
+     res.json({ success: true, text: completion.choices[0].message.content });
+  } catch (err: any) {
+     res.json({ error: err.message, stack: err.stack });
   }
-
-  res.json({ success: true, text: resultText });
 });
 
 app.post('/api/ai/chat', async (req, res) => {
-  const { messages } = req.body;
-  const userMsg = messages[messages.length - 1]?.content || "مرحباً";
+  try {
+    const { messages } = req.body;
+    const userMsg = messages?.[messages.length - 1]?.content || "مرحباً";
 
-  console.log("Chat Advisor entry:", userMsg);
-  
-  const provider = getAIProvider();
-  if (provider && provider.type === 'openai') {
-    try {
-      let responseText = "";
-      const openai = provider.client as OpenAI;
-      const completion = await openai.chat.completions.create({
-        model: "gpt-4o",
-        messages: [
-          { role: "system", content: "أنت المستشار القانوني والمرافع المسؤول بمكتب العدالة للمحاماة والاستشارات القانونية بالمملكة العربية السعودية. تحلى بالدقة والموضوعية مستنداً إلى الأنظمة واللوائح السعودية الصادرة مرخراً." },
-          ...messages
-        ],
-        temperature: 0.3
-      });
-      responseText = completion.choices[0].message.content || "";
+    console.log("Chat Advisor entry:", userMsg);
+    
+    const provider = getAIProvider();
+    if (provider && provider.type === 'openai') {
+      try {
+        let responseText = "";
+        const openai = provider.client as OpenAI;
+        const completion = await openai.chat.completions.create({
+          model: "gpt-4o",
+          messages: [
+            { role: "system", content: "أنت المستشار القانوني والمرافع المسؤول بمكتب العدالة للمحاماة والاستشارات القانونية بالمملكة العربية السعودية. تحلى بالدقة والموضوعية مستنداً إلى الأنظمة واللوائح السعودية الصادرة مرخراً." },
+            ...messages
+          ],
+          temperature: 0.3
+        });
+        responseText = completion.choices[0].message.content || "";
+        console.log("Gemini API Response length:", responseText.length);
 
-      if (responseText) {
-        return res.json({ success: true, response: responseText });
+        if (responseText) {
+          return res.json({ success: true, response: responseText });
+        }
+      } catch (e: any) {
+        console.log("AI Chat fallback triggered:", e.message || e);
+        return res.json({ success: false, error: "تعطل الاتصال بالذكاء الاصطناعي." });
       }
-    } catch (e: any) {
-      console.log("AI Chat fallback triggered");
     }
+    return res.json({ success: false, error: "لم يتم تكوين مزود الذكاء الاصطناعي." });
+  } catch (globalErr: any) {
+    console.error("Critical error in /api/ai/chat:", globalErr);
+    res.json({ success: false, error: globalErr.message || "Unknown server error" });
   }
-  
-  let aiAnswer = "";
-  if (userMsg.includes("ناجز") || userMsg.includes("مزامنة")) {
-    aiAnswer = "أهلاً بك. أداة الربط والمزامنة مع ناجز تتيح لك قراءة صحيفة الدعوى والجلسات المسجلة. يتم ذلك تلقائياً بعد تسجيل دخولك الآمن عبر نفاذ، وتقوم الإضافة المحايدة بإرسال البيانات مشفرة باستخدام مفتاح الربط (API Key) الموفر في إعدادات المنصة لمنع تداخل القضايا بين المكاتب.";
-  } else if (userMsg.includes("ضريبة") || userMsg.includes("VAT")) {
-    aiAnswer = "في المملكة العربية السعودية، تبلغ ضريبة القيمة المضافة (VAT) نسبة 15% على الخدمات القانونية والاستشارات وأتعاب المحاماة. يقوم النظام المحاسبي المتكامل لدينا بحساب الضريبة تلقائياً على كافة الفواتير المصدرة مع تزويد العميل بالفاتورة الضريبية وقيمة الرقم الضريبي لمكتبكم الموقر للامتثال لهيئة الزكاة والضريبة والجمارك.";
-  } else if (userMsg.includes("نظام العمل") || userMsg.includes("المادة 77")) {
-    aiAnswer = "تنص المادة (77) من نظام العمل السعودي على أنه إذا أنهي العقد لسبب غير مشروع، كان للطرف المتضرر المطالبة بتعويض تحدده المحكمة العمالية، أو تعويض محدد الأداء (أجر 15 يوماً عن كل سنة عمل إذا كان غير محدد المدة، وأجر المدة المتبقية إذا كان محدد المدة)، بشرط ألا يقل عن أجر شهرين مع تصفية مستحقات نهاية الخدمة والعمل الإضافي بالكامل.";
-  } else if (userMsg.includes("الفقرة") || userMsg.includes("سداد")) {
-    aiAnswer = `بناءً على الفهرسة المتجهية الرصينة ومطابقة نصوص المستندات المرفقة للملف:\n\nتشير الفقرة الأولى بملحق العقد إلى التزام صريح متبادل بسداد الدفعة المقررة والبالغة 450,050 ريال سعودي بالتزامن مع تسليم الدفعة اللوجستية الأخيرة للجبيل الصناعية. بينما المادة 112 من نظام المعاملات المدنية تطبق فقط على حالات القوة القاهرة المثبتة نظاماً بجهة الاختصاص الحكومي.`;
-  } else {
-    aiAnswer = "مرحباً بك في منصة الذكاء الاصطناعي لمكتب القانون التجاري للشركات والمؤسسات بالمملكة العربية السعودية. يمكنني صياغة الردود، تتبع أحدث تعديلات نظام المعاملات المدنية، المادة 77، وحساب الفواتير الضريبية. كيف يمكنني مساعدتكم في قضاياكم وعقودكم اليوم؟";
-  }
-
-  res.json({ success: true, response: aiAnswer });
 });
 
 // AI Document & Hearing Transcript Summarizer using OpenAI
@@ -2386,30 +2343,11 @@ app.post('/api/ai/summarize', async (req, res) => {
       }
     } catch (e: any) {
       console.log("AI Summarize fallback triggered");
+      return res.json({ success: false, error: "تعطل الاتصال بالذكاء الاصطناعي." });
     }
   }
 
-  // Robust Sandbox fallback if API key is not configured or fails, allowing seamless validation and local interaction.
-  const sampleSummary = `⚙️ (معاينة محاكاة مجراة محلياً لعدم توفر خادم سحابي نشط)
-  
-1. **الوقائع الجوهرية وموضوع النزاع:**
-   - الوثيقة المرفقة: "${documentName || 'بيانات القضية'}" تحتوي على سرد لمجريات الترافع أو الالتزام التعاقدي المشترك.
-   - يظهر التكييف الأولي تباين في تفسير بنود التوريد التجاري أو دعوى العمل وتأخر الإعصار المالي.
-   - القضية قيد التداول وتتطلب ضبط صحة التكليفات والوكالات الشرعية الموثقة.
-
-2. **الأسانيد والبينات المطبقة:**
-   - وجود مكاتبات ومستندات إلكترونية متبادلة (واتساب ومكاتبات رسمية) يعول عليها كبينة أولية عملاً بنظام الإثبات الإلكتروني السعودي.
-   - رصد غرامات وتأخيرات لم تسدد وفق الضابط الشرعي "المسلمون على شروطهم".
-
-3. **التكييف النظامي للمطالبة:**
-   - استناداً لمواد نظام المعاملات المدنية السعودي (نطاق المسؤولية العقدية والسبب الأجنبي).
-   - تطبيق لائحة الحجز الإداري أو الضمانات المعتمدة من الجهات المختصة بالمملكة.
-
-4. **التوصيات والإجراءات المقترحة لمكتبنا:**
-   - المبادرة فوراً بإصدار إشعار نظامي للخصم عبر قنوات التواصل المعتمدة.
-   - صياغة مذكرة عاجلة بدفوع القوة القهرية لدفع الغرامة من كاهل موكلنا وإرفاق كشفيات الطقس.`;
-
-  return res.json({ success: true, summary: sampleSummary, isFallback: true });
+  return res.json({ success: false, error: "لم يتم تكوين مزود الذكاء الاصطناعي." });
 });
 
 app.post('/api/ai/gateway-test', async (req: any, res: any) => {
@@ -2462,19 +2400,12 @@ app.post('/api/ai/parse-pdf', async (req, res) => {
         return res.json({ success: true, text: content_text });
       }
     } catch (e: any) {
-      console.warn("OpenAI parse-pdf failed, using smart parser fallback:", e.message);
+      console.warn("OpenAI parse-pdf failed:", e.message);
+      return res.json({ success: false, error: "تعطل تحليل PDF بالذكاء الاصطناعي." });
     }
   }
 
-  // Smart responsive fallback text based on legal documents
-  const simulatedText = `صورة الضبط والقرار المستخرجة من المستند: ${fileName || 'ملف بي دي إف مجهول'}
-  
-المحكمة التجارية بالرياض - صحيفة الدعوى الملحقة بالدائرة الثالثة:
-أولاً: بناء على الاتفاق المبرم الموثق لحساب المبيعات والتوريد، يلتزم المدعى عليه بسداد كامل الدفعة المقررة وقدرها 450,050 ريال سعودي فور تسليم الدفعة الأخيرة من الشحنات البتروكيماوية للجبيل الصناعية.
-ثانياً: يحق للطرف المدعي تطبيق الشرط الغرامي بمعدل 15,000 ريال سعودي عن كل أسبوع تأخير، ويعفى المدعى عليه بحالات القوة القاهرة الحقيقية فقط متى ثبتت بتقرير رسمي صادر من الجهة التنفيذية المختصة.
-ثالثاً: تلتزم الأطراف كافة بإبداء حسن النية في تفسير شروط العقد وبنوده الملحقة، ويكون الفصل في أي نزاع بمدينة الرياض.`;
-
-  return res.json({ success: true, text: simulatedText });
+  return res.json({ success: false, error: "الذكاء الاصطناعي غير متوفر." });
 });
 
 app.post('/api/ai/embed', async (req, res) => {
@@ -2499,24 +2430,12 @@ app.post('/api/ai/embed', async (req, res) => {
       }
       return res.json({ success: true, embeddings });
     } catch (e: any) {
-      console.warn("Emitting embeddings failed via OpenAI, falling back to simulated high-fidelity semantic vectors:", e.message);
+      console.warn("Emitting embeddings failed via OpenAI:", e.message);
+      return res.json({ success: false, error: "فشل تفعيل تضمين النصوص." });
     }
   }
   
-  // Safe high-fidelity deterministic vector fallback for offline runs
-  const mockEmbeddings = texts.map(t => {
-    const vector = Array.from({ length: 128 }, () => Math.random() - 0.5);
-    const words = t.split(/\s+/);
-    words.forEach((w, idx) => {
-      if (!w) return;
-      const code = w.charCodeAt(0) || 0;
-      vector[code % 128] += (idx + 1) * 0.15;
-    });
-    const norm = Math.sqrt(vector.reduce((sum, v) => sum + v * v, 0));
-    return vector.map(v => v / (norm || 1));
-  });
-
-  return res.json({ success: true, embeddings: mockEmbeddings });
+  return res.json({ success: false, error: "الذكاء الاصطناعي غير متوفر." });
 });
 
 app.post('/api/ai/judicial-analysis', async (req, res) => {
@@ -2603,63 +2522,17 @@ app.post('/api/ai/prioritize-tasks', async (req, res) => {
       if (responseText) {
         const cleaned = responseText.replace(/\`\`\`json\n?|\`\`\`\n?/g, '').trim();
         responseDataRaw = JSON.parse(cleaned);
+        return res.json({ success: true, suggestions: responseDataRaw });
+      } else {
+        return res.json({ success: false, error: "لم يقم الذكاء الاصطناعي بإرجاع استجابة." });
       }
     } catch (e: any) {
-      console.warn("Error calling OpenAI API for task prioritization, falling back to local rule engine:", e.message);
+      console.warn("Error calling OpenAI API for task prioritization:", e.message);
+      return res.json({ success: false, error: "تعطل الاتصال بالذكاء الاصطناعي." });
     }
   }
 
-  // Robust, high-quality programmatic fallback algorithm
-  if (!responseDataRaw || !Array.isArray(responseDataRaw) || responseDataRaw.length === 0) {
-    // Programmatic heuristic sorting
-    const sorted = [...tasks].sort((a: any, b: any) => {
-      const pA = a.priority === 'high' ? 3 : a.priority === 'medium' ? 2 : 1;
-      const pB = b.priority === 'high' ? 3 : b.priority === 'medium' ? 2 : 1;
-      if (pA !== pB) return pB - pA;
-      const dA = a.dueDate ? new Date(a.dueDate).getTime() : Infinity;
-      const dB = b.dueDate ? new Date(b.dueDate).getTime() : Infinity;
-      return dA - dB;
-    });
-
-    responseDataRaw = sorted.map((t: any, index: number) => {
-      let reason = "تتضمن إعداد خطوط الدفاع واللوائح الجوابية اللازمة للنزاع ويستحسن إنجازها لتفادي مباغتة الدائرة القضائية.";
-      let actionPlan = "مراجعة ملف القضية وتنسيق اللائحة بالاستعانة بنماذج ناجز الرسمية.";
-      let suggestedPriority = t.priority || "high";
-
-      const titleLower = (t.title || '').toLowerCase();
-      const descLower = (t.description || '').toLowerCase();
-
-      if (titleLower.includes("مذكرة") || descLower.includes("دفاع") || titleLower.includes("لائحة")) {
-        reason = "المهام المتعلقة بإيداع مذكرات الرد والاعتراض للمحاكم السعودية تعد بالغة الأهمية لمنع فوات مدد الرد والمهل المقررة قضائياً.";
-        actionPlan = "مراجعة الدفوع القانونية والمؤيدات المستندية وصياغة الفصل الختامي بدقة بالغة.";
-        suggestedPriority = "high";
-      } else if (titleLower.includes("اجتماع") || titleLower.includes("تواصل") || descLower.includes("عميل")) {
-        reason = "إخطار العميل بآخر المستجدات وضبط توثيقات الاتصال يدعم تماسك الرابطة المهنية وسلامة سير الدفاع المشترك.";
-        actionPlan = "إعداد محاور اللقاء سلفاً وتوثيق مخرجاته ومقترحات التسوية والصلح.";
-        suggestedPriority = "high";
-      } else if (titleLower.includes("ناجز") || titleLower.includes("بوابة")) {
-        reason = "مزامنة المعالم الرسمية أو سداد فواتير أو رسوم القضية على ناجز تمس إجراءات قبول الدعوى شكلاً.";
-        actionPlan = "التأكد من سداد الرسوم القانونية وتحقق قيد الدعوى بشكل صحيح.";
-        suggestedPriority = "high";
-      } else if (titleLower.includes("دراسة") || descLower.includes("بحث")) {
-        reason = "البحث التشريعي يعزز تأصيل الدفع ويضمن استيعاب رأي المذهب الفقهي المعتمد في الأنظمة السعودية ذات العلاقة.";
-        actionPlan = "الاطلاع على مرصد القوانين ونظام المعاملات المدنية واستخلاص الأحكام المعززة.";
-        suggestedPriority = "medium";
-      }
-
-      return {
-        taskId: t.id,
-        title: t.title,
-        originalPriority: t.priority || 'medium',
-        suggestedPriority,
-        reason,
-        actionPlan,
-        order: index + 1
-      };
-    });
-  }
-
-  res.json({ success: true, suggestions: responseDataRaw });
+  return res.json({ success: false, error: "لم يتم تكوين مزود الذكاء الاصطناعي." });
 });
 
 app.post('/api/ai/store-feedback', async (req, res) => {
@@ -2978,34 +2851,16 @@ app.post('/api/ai/predict-win', async (req, res) => {
         const cleaned = responseText.replace(/\`\`\`json\n?|\`\`\`\n?/g, '').trim();
         const parsed = JSON.parse(cleaned);
         return res.json({ success: true, probability: parsed.probability, reason: parsed.reason });
+      } else {
+        return res.json({ success: false, error: "فشل استخراج التنبؤ." });
       }
     } catch (e: any) {
       console.warn("Failed to generate win prediction via OpenAI:", e.message);
+      return res.json({ success: false, error: "فشل الاتصال بالذكاء الاصطناعي." });
     }
   }
 
-  // Graceful Local Fallback if OpenAI key is missing or calls fail
-  const fallbackData: Record<string, { probability: number; reason: string }> = {
-    commercial: { 
-      probability: 78, 
-      reason: "بناءً على نظام المعاملات المدنية المادة 112 وسوابق مرصد الأنظمة، تظهر السوابق بنسبة 78% تأييداً لموقف المدعي في حالات القوة القهرية الموثقة." 
-    },
-    labor: { 
-      probability: 85, 
-      reason: "تشير المادة 77 من نظام العمل وسوابق مرصد الأنظمة إلى تعويضات حتمية تبلغ 85% في دعاوي الفصل التي تفتقد لإشعار مالي مسبق." 
-    },
-    execution: { 
-      probability: 94, 
-      reason: "نظام التنفيذ المادة 46 وسرعة التحصيل والامتثال الكلي بنسبة 94% عند توفر سند تنفيذي قطعي أو شيك مصدق." 
-    },
-    administrative: { 
-      probability: 62, 
-      reason: "تتسم القضايا الإدارية بمعدل ربح 62%، وتتطلب دقة استثنائية في مواعيد الاعتراض واللوائح قبل سقوط الحق النظامي." 
-    },
-  };
-
-  const chosen = fallbackData[category] || fallbackData.commercial;
-  return res.json({ success: true, probability: chosen.probability, reason: chosen.reason });
+  return res.json({ success: false, error: "لم يتم تكوين مزود الذكاء الاصطناعي." });
 });
 
 async function initializeDatabaseTables() {

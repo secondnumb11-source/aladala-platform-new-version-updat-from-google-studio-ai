@@ -114,10 +114,12 @@ export default function AIDraftingTool({ onDraftGenerated, cases = [] }: AIDraft
       if (data.success) {
         setOutput(data.response);
         onDraftGenerated?.(data.response);
+      } else {
+        setOutput(data.error || 'حدث خطأ أثناء الصياغة. يرجى المحاولة لاحقاً.');
       }
-    } catch (e) {
+    } catch (e: any) {
       console.error(e);
-      setOutput('حدث خطأ أثناء الصياغة. يرجى المحاولة لاحقاً.');
+      setOutput(e.message || 'حدث خطأ أثناء الصياغة. يرجى المحاولة لاحقاً.');
     } finally {
       setIsLoading(false);
     }
