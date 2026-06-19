@@ -1342,26 +1342,29 @@ function AppContent() {
   }
 
   // Enforce secure data partitioning for Employees
+  const safeCases = cases || [];
   const employeeFilteredCases = currentUser?.role === 'employee' 
-    ? cases.filter(c => {
+    ? safeCases.filter(c => {
         const assigned = currentUser.assignedCases || [];
         return assigned.includes(c.caseNumber) || assigned.includes(c.id) || assigned.includes(c.caseName);
       })
-    : cases;
+    : safeCases;
 
+  const safeClients = clients || [];
   const employeeFilteredClients = currentUser?.role === 'employee'
-    ? clients.filter(cl => {
+    ? safeClients.filter(cl => {
         const assigned = currentUser.assignedClients || [];
         return assigned.includes(cl.id) || assigned.includes(cl.name);
       })
-    : clients;
+    : safeClients;
 
+  const safeHearings = hearings || [];
   const employeeFilteredHearings = currentUser?.role === 'employee'
-    ? hearings.filter(h => {
+    ? safeHearings.filter(h => {
         const assigned = currentUser.assignedCases || [];
         return assigned.includes(h.caseNumber) || assigned.includes(h.caseName);
       })
-    : hearings;
+    : safeHearings;
 
   const isNajizConnected = najizConnectedState;
 

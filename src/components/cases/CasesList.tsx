@@ -80,11 +80,10 @@ export default function CasesList({
           rowProps={{}}
           rowComponent={({ index, style }) => {
             const c = filteredCases[index];
+            if (!c) return null;
             const { arabicStatusName, CategoryIcon } = getInteractiveCaseStyles(c.category, c.status);
-            const cTags = getCaseDocumentTags(c);
             return (
               <div 
-                key={c.id} 
                 style={style}
                 className={`flex items-center text-right transition-all group cursor-pointer ${
                   isHighContrast 
@@ -94,8 +93,8 @@ export default function CasesList({
                 onClick={() => onSelectCase(c)}
                 dir="rtl"
               >
-                <div className={`flex-[1] px-4 py-3 text-xs font-mono font-black tracking-tight ${isHighContrast ? 'text-amber-800' : 'text-amber-400'} transition-colors`}>#{c.caseNumber}</div>
-                <div className="flex-[2] px-4 py-3 text-xs font-black tracking-tight truncate">
+                <div className={`flex-[1] px-4 text-xs font-mono font-black tracking-tight ${isHighContrast ? 'text-amber-800' : 'text-amber-400'} transition-colors`}>#{c.caseNumber}</div>
+                <div className="flex-[2] px-4 text-xs font-black tracking-tight truncate">
                   <div className="flex items-center gap-2">
                     <span className="truncate">{c.caseName}</span>
                     {isCaseOverdue(c) && (
@@ -104,8 +103,8 @@ export default function CasesList({
                   </div>
                   <CaseClassificationTags category={c.category} status={c.status} isHighContrast={isHighContrast} />
                 </div>
-                <div className={`flex-[1.5] px-4 py-3 text-[11px] font-black tracking-tight truncate ${isHighContrast ? 'text-slate-800' : 'text-indigo-300'}`}>{c.clientName}</div>
-                <div className="flex-[1] px-4 py-3">
+                <div className={`flex-[1.5] px-4 text-[11px] font-black tracking-tight truncate ${isHighContrast ? 'text-slate-800' : 'text-indigo-300'}`}>{c.clientName}</div>
+                <div className="flex-[1] px-4">
                   <span className={`text-[11px] font-black px-2.5 py-1.5 rounded-xl border-2 inline-flex items-center gap-1 ${
                     isHighContrast 
                       ? 'bg-slate-100 border-slate-900 text-slate-950' 
@@ -114,11 +113,11 @@ export default function CasesList({
                     <CategoryIcon className="w-3 h-3" />
                   </span>
                 </div>
-                <div className="flex-[1] px-4 py-3">
+                <div className="flex-[1] px-4">
                   <span className="text-[11px] font-extrabold">{arabicStatusName}</span>
                 </div>
-                <div className={`flex-[1] px-4 py-3 text-[10px] font-black font-mono tracking-widest truncate ${isHighContrast ? 'text-emerald-900' : 'text-emerald-400'}`}>{c.nextSessionDate || '---'}</div>
-                <div className="flex-[0.5] px-4 py-3 text-right">
+                <div className={`flex-[1] px-4 text-[10px] font-black font-mono tracking-widest truncate ${isHighContrast ? 'text-emerald-900' : 'text-emerald-400'}`}>{c.nextSessionDate || '---'}</div>
+                <div className="flex-[0.5] px-4 text-right">
                   <ChevronLeft className="w-4 h-4 transition-all rotate-180 inline-block drop-shadow-sm text-slate-700" />
                 </div>
               </div>

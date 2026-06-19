@@ -211,7 +211,7 @@ export const getLeadLawyerName = (c: Case): string => {
     if (c.lead_lawyer_id.includes('الغامدي') || c.lead_lawyer_id === 'ghamdi') return 'أ. خالد الغامدي';
     return c.lead_lawyer_id;
   }
-  const hash = c.id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+  const hash = (c.id || '').split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
   const lawyers = ['المحامي أحمد البقمي', 'د. عادل القحطاني', 'أ. خالد الغامدي'];
   return lawyers[hash % lawyers.length];
 };
@@ -959,7 +959,7 @@ export default React.memo(function CasesModule({
 
   const allDocuments = React.useMemo(() => {
     const docs: any[] = [];
-    cases.forEach(c => {
+    (cases || []).forEach(c => {
       if (c.attachments) {
         c.attachments.forEach((a: Attachment) => {
           docs.push({
@@ -1228,10 +1228,11 @@ export default React.memo(function CasesModule({
   };
 
   const countByCategory = (cat: string) => {
+    const safeCases = cases || [];
     if (cat === 'archived') {
-      return cases.filter(c => c.archived === true || c.status === 'closed').length;
+      return safeCases.filter(c => c.archived === true || c.status === 'closed').length;
     }
-    return cases.filter(c => c.category === cat && !c.archived).length;
+    return safeCases.filter(c => c.category === cat && !c.archived).length;
   };
 
   const calculateDaysLeft = (judgmentDate: string) => {
@@ -1827,7 +1828,7 @@ export default React.memo(function CasesModule({
   };
 
   // Filters
-  const filteredCases = cases.filter(c => {
+  const filteredCases = (cases || []).filter(c => {
     const caseNameSafe = c.caseName || '';
     const caseNumberSafe = c.caseNumber || '';
     const clientNameSafe = c.clientName || '';
@@ -1943,7 +1944,7 @@ export default React.memo(function CasesModule({
 
   const handleExportCSV = () => {
     const headers = ['رقم الدعوى', 'اسم الدعوى', 'العميل', 'الحالة', 'نوع الدعوى', 'المرحلة المقيدة', 'تاريخ الجلسة القادمة'].join(',');
-    const rows = cases.map(c => {
+    const rows = (cases || []).map(c => {
       const stageMap: any = { litigation: 'المرافعة والتقاضي', appeals: 'الاستئناف والتمييز', execution: 'محكمة التنفيذ' };
       const stageName = stageMap[c.stage] || c.stage;
       return [c.caseNumber, c.caseName, c.clientName, c.status, c.category, stageName, c.nextSessionDate || 'لا يوجد'].join(',');
@@ -2012,7 +2013,7 @@ export default React.memo(function CasesModule({
               </div>
               <div className="bg-slate-900 border border-slate-800 px-5 py-3 rounded-2xl flex items-center gap-3">
                 <span className="text-[10px] text-slate-700 font-black uppercase tracking-widest">إجمالي القضايا:</span>
-                <span className="text-lg font-mono text-amber-500 font-black leading-none">{cases.length}</span>
+                <span className="text-lg font-mono text-amber-500 font-black leading-none">{(cases || []).length}</span>
               </div>
               <button 
                 onClick={() => setIsGraphsOpen(!isGraphsOpen)}
@@ -2027,7 +2028,8 @@ export default React.memo(function CasesModule({
             {categories.map((cat) => {
               const Icon = cat.icon;
               const isActive = cat.id === 'all' ? categoryFilter.length === 0 : categoryFilter.includes(cat.id);
-              const count = cat.id === 'all' ? cases.filter(c => !c.archived).length : countByCategory(cat.id);
+              const safeCases = cases || [];
+              const count = cat.id === 'all' ? safeCases.filter(c => !c.archived).length : countByCategory(cat.id);
               
               return (
                 <button
@@ -2176,7 +2178,7 @@ export default React.memo(function CasesModule({
                     exit={{ height: 0, opacity: 0 }}
                     className="overflow-hidden mb-10"
                   >
-                    <SummaryCharts cases={cases} preferences={preferences} updatePreference={updatePreference} themeTick={themeTick} />
+                    <SummaryCharts cases={cases || []} preferences={preferences} updatePreference={updatePreference} themeTick={themeTick} />
                   </motion.div>
                 )}
               </AnimatePresence>
@@ -3307,7 +3309,7 @@ export default React.memo(function CasesModule({
       {/* Activity Log / Timeline Sidebar Drawer */}
       <AnimatePresence>
         {activityLogCaseId && (() => {
-          const activeC = filteredCases.find(item => item.id === activityLogCaseId) || cases.find(item => item.id === activityLogCaseId);
+          const activeC = filteredCases.find(item => item.id === activityLogCaseId) || (cases || []).find(item => item.id === activityLogCaseId);
           if (!activeC) return null;
           const timelineData = getCaseActivityTimeline(activeC);
           return (

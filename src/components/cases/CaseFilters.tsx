@@ -125,7 +125,7 @@ export default function CaseFilters({
           </div>
           <div className="bg-slate-900 border border-slate-800 px-5 py-3 rounded-2xl flex items-center gap-3">
             <span className="text-[10px] text-slate-700 font-black uppercase tracking-widest">إجمالي القضايا:</span>
-            <span className="text-lg font-mono text-amber-500 font-black leading-none">{cases.length}</span>
+            <span className="text-lg font-mono text-amber-500 font-black leading-none">{(cases || []).length}</span>
           </div>
           <button 
             type="button"
@@ -148,7 +148,8 @@ export default function CaseFilters({
         {categories.map((cat) => {
           const Icon = cat.icon;
           const isActive = cat.id === 'all' ? categoryFilter.length === 0 : categoryFilter.includes(cat.id);
-          const count = cat.id === 'all' ? cases.filter(c => !c.archived).length : countByCategory(cat.id);
+          const safeCases = cases || [];
+          const count = cat.id === 'all' ? safeCases.filter(c => !c.archived).length : countByCategory(cat.id);
           
           return (
             <button

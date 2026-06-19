@@ -130,7 +130,7 @@ export default function ClientsModule({
   }, [selectedTemplateForEdit, templates]);
 
   const formatTemplate = (templateContent: string, client: Client) => {
-    const clientCases = cases.filter(c => c.clientId === client.id);
+    const clientCases = (cases || []).filter(c => c.clientId === client.id);
     const relatedCase = clientCases[0];
     const portalUrl = `${window.location.origin}${client.portalLink}`;
 
@@ -371,7 +371,10 @@ export default function ClientsModule({
         {/* Clients List */}
         <div className="xl:col-span-8 space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {filteredClients.map(cl => (
+            {filteredClients.map(cl => {
+              const clientCases = (cases || []).filter(c => c.clientId === cl.id);
+              
+              return (
               <div 
                 key={cl.id}
                 className="bg-white border border-slate-200 p-6 rounded-2xl shadow-sm hover:shadow-md transition-all group relative overflow-hidden"
@@ -404,7 +407,25 @@ export default function ClientsModule({
                   </div>
                 </div>
 
-                <div className="flex flex-wrap items-center gap-2 pt-3 border-t border-slate-100">
+                {/* Display Related Cases */}
+                {clientCases.length > 0 && (
+                  <div className="mt-4 pt-4 border-t border-slate-100">
+                    <p className="text-[10px] font-black uppercase text-slate-500 mb-2">القضايا المرتبطة:</p>
+                    <div className="space-y-2">
+                      {clientCases.map(c => (
+                        <div key={c.id} className="bg-slate-50 p-2.5 rounded-lg border border-slate-200 text-[10px] flex flex-col gap-1">
+                          <div className="flex items-center justify-between font-bold">
+                            <span className="text-[#0B2545]">{c.caseNumber}</span>
+                            <span className="text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded shadow-sm">{c.status}</span>
+                          </div>
+                          <span className="text-slate-600 truncate">{c.caseName}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                <div className="flex flex-wrap items-center gap-2 pt-4 border-t border-slate-100 mt-4">
                   <button 
                     onClick={() => {
                       setSelectedClientForWa(cl);
@@ -446,7 +467,8 @@ export default function ClientsModule({
                   </button>
                 </div>
               </div>
-            ))}
+              );
+            })}
           </div>
         </div>
 

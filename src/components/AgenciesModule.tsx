@@ -7,7 +7,7 @@ import {
 import CountdownTimer from './CountdownTimer';
 import { motion, AnimatePresence } from 'motion/react';
 import { supabase } from '@/lib/supabase';
-import { PowerOfAttorney, Client, LawLink } from '@/types';
+import { PowerOfAttorney, Client } from '@/types';
 import { toCamel, toSnake } from '@/utils/schemaMapping';
 
 interface AgenciesModuleProps {
@@ -24,9 +24,9 @@ export default function AgenciesModule({ clients, onUpdateState }: AgenciesModul
   const [selectedAgency, setSelectedAgency] = useState<PowerOfAttorney | null>(null);
   const [editingAgency, setEditingAgency] = useState<PowerOfAttorney | null>(null);
   const [activePreviewDocId, setActivePreviewDocId] = useState<string | null>(null);
+  const [docContents, setDocContents] = useState<Record<string, string>>({});
   const [deletingId, setDeletingId] = useState<string | null>(null);
-  const [lawLinks, setLawLinks] = useState<LawLink[]>([]);
-  const [isLoadingLaws, setIsLoadingLaws] = useState(false);
+
 
   // Form states (used for both Add and Edit modals)
   const [poaNumber, setPoaNumber] = useState('');
@@ -51,48 +51,25 @@ export default function AgenciesModule({ clients, onUpdateState }: AgenciesModul
     }
   };
 
-  const fetchLawLinks = async () => {
-    setIsLoadingLaws(true);
-    try {
-      const { data, error } = await supabase.from('law_links').select('*').order('created_at', { ascending: true });
-      if (error) throw error;
-      if (data && data.length > 0) {
-        setLawLinks(toCamel(data) as LawLink[]);
-      } else {
-        // Seed some defaults if empty
-        const defaults: Partial<LawLink>[] = [
-          { name: 'نظام المعاملات المدنية', url: 'https://laws.boe.gov.sa/BoeLaws/Laws/LawDetails/655fdb42-8c96-422b-b8c4-b04f0095c94c/1', category: 'قانون مدني' },
-          { name: 'نظام الإثبات', url: 'https://laws.boe.gov.sa/BoeLaws/Laws/LawDetails/2716057c-c097-4bad-8e1e-ae1400c678d5/1', category: 'إثبات' },
-          { name: 'نظام العمل', url: 'https://laws.boe.gov.sa/boelaws/laws/lawdetails/08381293-6388-48e2-8ad2-a9a700f2aa94/1', category: 'قانون عمل' },
-          { name: 'نظام الشركات', url: 'https://laws.boe.gov.sa/BoeLaws/Laws/LawDetails/a8376aea-1bc3-49d4-9027-aed900b555af/1', category: 'شركات' },
-          { name: 'نظام التنفيذ', url: 'https://laws.boe.gov.sa/BoeLaws/Laws/LawDetails/c81ba2f1-1bf1-443b-9b1c-a9a700f27110/1', category: 'تنفيذ' },
-          { name: 'نظام الإفلاس', url: 'https://laws.boe.gov.sa/BoeLaws/Laws/LawDetails/68204119-84f1-4789-8fad-a9ec014c3788/1', category: 'إفلاس' }
-        ];
-        setLawLinks(defaults as LawLink[]);
-        // Optionally save to DB if we have access
-        for (const item of defaults) {
-          await supabase.from('law_links').insert(toSnake(item)).select();
-        }
-      }
-    } catch (err) {
-      console.warn('Law links table might not exist in Supabase yet. Using local fallback.', err);
-      // Fallback for UI even if table is not created yet
-      setLawLinks([
-        { id: '1', name: 'نظام المعاملات المدنية', url: 'https://laws.boe.gov.sa/BoeLaws/Laws/LawDetails/655fdb42-8c96-422b-b8c4-b04f0095c94c/1' },
-        { id: '2', name: 'نظام الإثبات', url: 'https://laws.boe.gov.sa/BoeLaws/Laws/LawDetails/2716057c-c097-4bad-8e1e-ae1400c678d5/1' },
-        { id: '3', name: 'نظام العمل', url: 'https://laws.boe.gov.sa/boelaws/laws/lawdetails/08381293-6388-48e2-8ad2-a9a700f2aa94/1' },
-        { id: '4', name: 'نظام الشركات', url: 'https://laws.boe.gov.sa/BoeLaws/Laws/LawDetails/a8376aea-1bc3-49d4-9027-aed900b555af/1' },
-        { id: '5', name: 'نظام التنفيذ', url: 'https://laws.boe.gov.sa/BoeLaws/Laws/LawDetails/c81ba2f1-1bf1-443b-9b1c-a9a700f27110/1' },
-        { id: '6', name: 'نظام الإفلاس', url: 'https://laws.boe.gov.sa/BoeLaws/Laws/LawDetails/68204119-84f1-4789-8fad-a9ec014c3788/1' }
-      ]);
-    } finally {
-      setIsLoadingLaws(false);
+
+
+  const handlePreviewDoc = (docId: string, poa: PowerOfAttorney) => {
+    if (activePreviewDocId === docId) {
+      setActivePreviewDocId(null);
+      return;
+    }
+    setActivePreviewDocId(docId);
+    if (!docContents[docId]) {
+      let content = '';
+      if (docId === 'doc1') content = `وزارة العدل بالمملكة العربية السعودية\nكتابة العدل الافتراضية\n\nصك وكالة رقم: ${poa.poaNumber}\nتاريخ الصدور: ${poa.issueDate}\nالموكل الرئيسي: ${poa.clientName}\nالوكيل المرخص له: ${poa.lawyerName}\nنطاق الاختصاص القانوني: ${poa.scope || 'المرافعة والمدافعة وتقديم الأوراق وتنزيل الصكوك بالتوريد'}\nالحالة الرسمية: سارية معتمدة بالأرشفة.\n\nتشهد كتابة العدل بصحة تسجيل وتفويض المحامي بالتمثيل والصلح والامتثال لمستحقات الموكل.`;
+      if (docId === 'doc2') content = `وزارة التجارة بجمهورية المملكة\nملخص قرارات مجلس الإدارة لشركاء ${poa.clientName}\n\nيشهد السجل التجاري رقم 1010065271 بموافقة الهيئة التنفيذية بتوكيل وتسمية المحامي ${poa.lawyerName} ليتولى إتمام المطالبات المالية والاعتراض والصلح والاتصال مع المنصات الرسمية ناجز ونفاذ.`;
+      if (docId === 'doc3') content = `مكتب العدالة للمحاماة والاستشارات القانونية\nترخيص رقم 44/291\n\nبناء على رغبة العميل الموقر ${poa.clientName}، يُعمد المحامي ${poa.lawyerName} لمباشرة استلام الشحنات البتروكيماوية للجبيل الصناعية وتتبع المطالبة رقم 437194619 رداً على لجان المنازعات بالرياض.`;
+      setDocContents(prev => ({ ...prev, [docId]: content }));
     }
   };
 
   useEffect(() => {
     fetchAgencies();
-    fetchLawLinks();
     const chId = `poa-changes-${Math.random().toString(36).substring(7)}`;
     const sub = supabase.channel(chId)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'powers_of_attorney' }, () => {
@@ -545,20 +522,17 @@ export default function AgenciesModule({ clients, onUpdateState }: AgenciesModul
                   {
                     id: 'doc1',
                     name: `صك_الوكالة_الرقمية_${selectedAgency.poaNumber}.pdf`,
-                    size: '224 KB',
-                    content: `وزارة العدل بالمملكة العربية السعودية\nكتابة العدل الافتراضية\n\nصك وكالة رقم: ${selectedAgency.poaNumber}\nتاريخ الصدور: ${selectedAgency.issueDate}\nالموكل الرئيسي: ${selectedAgency.clientName}\nالوكيل المرخص له: ${selectedAgency.lawyerName}\nنطاق الاختصاص القانوني: ${selectedAgency.scope || 'المرافعة والمدافعة وتقديم الأوراق وتنزيل الصكوك بالتوريد'}\nالحالة الرسمية: سارية معتمدة بالأرشفة.\n\nتشهد كتابة العدل بصحة تسجيل وتفويض المحامي بالتمثيل والصلح والامتثال لمستحقات الموكل.`
+                    size: '224 KB'
                   },
                   {
                     id: 'doc2',
                     name: `قرارات_مجلس_الإدارة_المفوضة.pdf`,
-                    size: '480 KB',
-                    content: `وزارة التجارة بجمهورية المملكة\nملخص قرارات مجلس الإدارة لشركاء ${selectedAgency.clientName}\n\nيشهد السجل التجاري رقم 1010065271 بموافقة الهيئة التنفيذية بتوكيل وتسمية المحامي ${selectedAgency.lawyerName} ليتولى إتمام المطالبات المالية والاعتراض والصلح والاتصال مع المنصات الرسمية ناجز ونفاذ.`
+                    size: '480 KB'
                   },
                   {
                     id: 'doc3',
                     name: `قرار_تمكين_الممثل_رقم_4429.pdf`,
-                    size: '112 KB',
-                    content: `مكتب العدالة للمحاماة والاستشارات القانونية\nترخيص رقم 44/291\n\nبناء على رغبة العميل الموقر ${selectedAgency.clientName}، يُعمد المحامي ${selectedAgency.lawyerName} لمباشرة استلام الشحنات البتروكيماوية للجبيل الصناعية وتتبع المطالبة رقم 437194619 رداً على لجان المنازعات بالرياض.`
+                    size: '112 KB'
                   }
                 ].map((doc) => {
                   const isOpened = activePreviewDocId === doc.id;
@@ -573,7 +547,7 @@ export default function AgenciesModule({ clients, onUpdateState }: AgenciesModul
                           </div>
                         </div>
                         <button
-                          onClick={() => setActivePreviewDocId(isOpened ? null : doc.id)}
+                          onClick={() => handlePreviewDoc(doc.id, selectedAgency)}
                           className={`px-2.5 py-1 rounded text-[10px] font-[800] transition-all ${
                             isOpened 
                               ? 'bg-indigo-600 text-white shadow-sm' 
@@ -585,7 +559,7 @@ export default function AgenciesModule({ clients, onUpdateState }: AgenciesModul
                       </div>
 
                       {/* Preview logic: strictly only display content inside after pressing preview button */}
-                      {isOpened && (
+                      {isOpened && docContents[doc.id] && (
                         <motion.div 
                           initial={{ opacity: 0, height: 0 }} 
                           animate={{ opacity: 1, height: 'auto' }} 
@@ -593,7 +567,7 @@ export default function AgenciesModule({ clients, onUpdateState }: AgenciesModul
                           className="pt-2 border-t border-slate-200/60 mt-1"
                         >
                           <div className="bg-slate-900 text-emerald-400 font-mono text-[10px] p-2.5 rounded-lg overflow-x-auto whitespace-pre-wrap max-h-[140px] leading-relaxed border border-slate-800 shadow-inner">
-                            {doc.content}
+                            {docContents[doc.id]}
                           </div>
                         </motion.div>
                       )}
@@ -736,41 +710,7 @@ export default function AgenciesModule({ clients, onUpdateState }: AgenciesModul
         </div>
       </div>
 
-      {/* LAW LINKS PANEL (كروت الأنظمة القضائية) */}
-      <div className="w-full bg-white border border-slate-200 rounded-[2rem] p-8 shadow-sm space-y-6">
-        <div className="flex items-center justify-between border-b border-slate-100 pb-4">
-          <div className="flex items-center gap-3">
-            <div className="p-3 bg-blue-50 rounded-2xl">
-              <FileSpreadsheet className="w-6 h-6 text-blue-600" />
-            </div>
-            <div>
-              <h3 className="text-lg font-[800] text-[#0B2545]">الأنظمة واللوائح القضائية</h3>
-              <p className="text-xs text-blue-500 font-[800]">روابط سريعة لأحدث أنظمة المملكة العربية السعودية</p>
-            </div>
-          </div>
-          {isLoadingLaws && <RefreshCw className="w-5 h-5 text-blue-400 animate-spin" />}
-        </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {lawLinks.map((law, idx) => (
-            <a 
-              key={law.id || idx}
-              href={law.url} 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="group p-5 border border-slate-100 rounded-2xl bg-slate-50/50 hover:bg-white hover:border-blue-200 hover:shadow-md transition-all flex items-center justify-between"
-            >
-              <div className="space-y-1">
-                <h4 className="text-sm font-[800] text-[#0B2545] group-hover:text-blue-700 transition-colors uppercase">{law.name}</h4>
-                <div className="flex items-center gap-2">
-                  <span className="text-[10px] font-[800] text-blue-400 bg-blue-50 px-2 py-0.5 rounded-full border border-blue-100">بوابة هيئة الخبراء</span>
-                </div>
-              </div>
-              <ChevronRight className="w-4 h-4 text-slate-300 group-hover:text-blue-500 group-hover:translate-x-[-4px] transition-all" />
-            </a>
-          ))}
-        </div>
-      </div>
 
       {/* Delete Confirmation Modal */}
       <AnimatePresence>

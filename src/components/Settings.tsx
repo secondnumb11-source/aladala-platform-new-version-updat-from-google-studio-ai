@@ -4,6 +4,9 @@
  */
 
 import React, { useState, useEffect } from 'react';
+import { LawLink } from '@/types';
+import { supabase } from '@/lib/supabase';
+import { toCamel, toSnake } from '@/utils/schemaMapping';
 import { 
   Settings as SettingsIcon, 
   Mail, 
@@ -32,7 +35,8 @@ import {
   ArrowUp,
   ArrowDown,
   Trash2,
-  BookOpen
+  BookOpen,
+  FileSpreadsheet
 } from 'lucide-react';
 import { useSupabase } from '@/contexts/SupabaseContext';
 

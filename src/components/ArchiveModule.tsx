@@ -883,9 +883,27 @@ export default function ArchiveModule() {
             </div>
 
             <div className="space-y-1">
-              <span className="text-slate-300 font-bold">محتوى الفهرسة والنص المستخرج (OCR) :</span>
-              <div className="bg-[#11243f] border border-slate-800 rounded-lg p-3 max-h-48 overflow-y-auto font-mono text-slate-300 whitespace-pre-wrap leading-relaxed">
-                {selectedDocDetails.content_text || "لا تتوفر تفاصيل نص لهذا المستند بعد."}
+              <span className="text-slate-300 font-bold">معاينة المستند المرفق:</span>
+              <div className="bg-[#11243f] border border-slate-800 rounded-lg p-2 h-72 md:h-96 w-full flex items-center justify-center relative overflow-hidden">
+                {selectedDocDetails.storage_path ? (
+                  <iframe 
+                    src={supabase.storage.from("documents").getPublicUrl(selectedDocDetails.storage_path).data.publicUrl} 
+                    className="w-full h-full rounded"
+                    title={selectedDocDetails.name}
+                  />
+                ) : (
+                  <div className="text-slate-500 font-bold flex flex-col items-center">
+                    <FileText className="w-10 h-10 mb-2 opacity-50" />
+                    <span>هذا المستند لا يحتوي على ملف مرفق للمعاينة</span>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="space-y-1">
+              <span className="text-slate-300 font-bold text-[10px]">محتوى الفهرسة المدخل يدويًا:</span>
+              <div className="bg-[#11243f] border border-slate-800/50 rounded-lg p-2 max-h-24 overflow-y-auto font-mono text-slate-400 text-[10px] whitespace-pre-wrap leading-relaxed">
+                {selectedDocDetails.content_text || "لا توجد فهرسة نصية لهذا المستند."}
               </div>
             </div>
 

@@ -722,8 +722,8 @@ const Dashboard = function Dashboard({
                 <ResponsiveContainer width="100%" height="100%" key={themeTick}>
                   <BarChart data={typeDistributionData} margin={{ top: 10, right: 10, left: -25, bottom: 0 }} barSize={10}>
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={isHighContrast ? '#64748b' : '#e2e8f0'} />
-                    <XAxis dataKey="name" tick={{ fontSize: 8, fill: isHighContrast ? '#f8fafc' : '#64748b', fontWeight: '900' }} axisLine={false} tickLine={false} />
-                    <YAxis tick={{ fontSize: 8, fill: isHighContrast ? '#f8fafc' : '#64748b' }} axisLine={false} tickLine={false} />
+                    <XAxis dataKey="name" style={{ fontSize: '8px', fill: isHighContrast ? '#f8fafc' : '#64748b', fontWeight: '900' }} axisLine={false} tickLine={false} />
+                    <YAxis style={{ fontSize: '8px', fill: isHighContrast ? '#f8fafc' : '#64748b' }} axisLine={false} tickLine={false} />
                     <RechartsTooltip cursor={{ fill: isHighContrast ? '#334155' : '#f1f5f9' }} contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 5px 15px rgba(0,0,0,0.1)', textAlign: 'right', backgroundColor: isHighContrast ? '#0f172a' : '#fff', color: isHighContrast ? '#fff' : '#000', fontSize: '9px' }} formatter={(val: number) => val.toLocaleString() + ' ر.س'} />
                     <Bar dataKey="revenue" name="متوسط الدخل المتوقع" fill={isHighContrast ? '#fbbf24' : '#0B2545'} radius={[3, 3, 0, 0]} />
                   </BarChart>
@@ -748,8 +748,8 @@ const Dashboard = function Dashboard({
                       </linearGradient>
                     </defs>
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={isHighContrast ? '#64748b' : '#e2e8f0'} />
-                    <XAxis dataKey="month" tick={{ fontSize: 8, fill: isHighContrast ? '#f8fafc' : '#64748b', fontWeight: '900' }} axisLine={false} tickLine={false} />
-                    <YAxis tick={{ fontSize: 8, fill: isHighContrast ? '#f8fafc' : '#64748b' }} axisLine={false} tickLine={false} />
+                    <XAxis dataKey="month" style={{ fontSize: '8px', fill: isHighContrast ? '#f8fafc' : '#64748b', fontWeight: '900' }} axisLine={false} tickLine={false} />
+                    <YAxis style={{ fontSize: '8px', fill: isHighContrast ? '#f8fafc' : '#64748b' }} axisLine={false} tickLine={false} />
                     <RechartsTooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 5px 15px rgba(0,0,0,0.1)', textAlign: 'right', backgroundColor: isHighContrast ? '#0f172a' : '#fff', color: isHighContrast ? '#fff' : '#000', fontSize: '9px' }} formatter={(val: number) => val.toLocaleString() + ' ر.س'} />
                     <Area type="monotone" dataKey="actual" name="المحصل" stroke={isHighContrast ? '#fbbf24' : '#8A6201'} fillOpacity={1} fill="url(#colorActual)" strokeWidth={2} />
                   </AreaChart>
@@ -1668,7 +1668,7 @@ const Dashboard = function Dashboard({
                                    <stop offset="95%" stopColor="#D4AF37" stopOpacity={0}/>
                                  </linearGradient>
                                </defs>
-                               <XAxis dataKey="day" tickLine={false} axisLine={false} tick={{ fill: '#94a3b8', fontSize: 8 }} />
+                               <XAxis dataKey="day" tickLine={false} axisLine={false} style={{ fill: '#94a3b8', fontSize: '8px' }} />
                                <YAxis hide={true} domain={[0, 100]} />
                                <RechartsTooltip 
                                  contentStyle={{ backgroundColor: '#0f172a', borderColor: '#334155', borderRadius: '8px', padding: '6px' }}
@@ -2252,7 +2252,7 @@ const Dashboard = function Dashboard({
                           <ResponsiveContainer width="100%" height="100%">
                             <RadarChart cx="50%" cy="50%" outerRadius="80%" data={radarData}>
                               <PolarGrid stroke="#e2e8f0" />
-                              <PolarAngleAxis dataKey="subject" tick={{ fill: '#64748b', fontSize: 10, fontWeight: 'bold' }} />
+                              <PolarAngleAxis dataKey="subject" style={{ fill: '#64748b', fontSize: '10px', fontWeight: 'bold' }} />
                               <PolarRadiusAxis angle={30} domain={[0, 100]} tick={false} axisLine={false} />
                               <Radar name="الأداء" dataKey="A" stroke="#8b5cf6" fill="#8b5cf6" fillOpacity={0.4} />
                             </RadarChart>
@@ -2335,8 +2335,8 @@ const Dashboard = function Dashboard({
                           <ResponsiveContainer width="100%" height="100%" key={themeTick}>
                             <BarChart data={efficiencyData} margin={{ top: 10, right: 10, left: -25, bottom: 0 }}>
                               <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={isHighContrast ? '#334155' : '#f1f5f9'} />
-                              <XAxis dataKey="phase" axisLine={false} tickLine={false} tick={{ fontSize: 9, fontWeight: 900, fill: isHighContrast ? '#f8fafc' : '#1e293b' }} />
-                              <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 8, fill: isHighContrast ? '#cbd5e1' : '#64748b' }} />
+                              <XAxis dataKey="phase" axisLine={false} tickLine={false} style={{ fontSize: '9px', fontWeight: 900, fill: isHighContrast ? '#f8fafc' : '#1e293b' }} />
+                              <YAxis axisLine={false} tickLine={false} style={{ fontSize: '8px', fill: isHighContrast ? '#cbd5e1' : '#64748b' }} />
                               <RechartsTooltip cursor={{ fill: isHighContrast ? '#1e293b' : '#f8fafc' }} contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 5px 15px rgba(0,0,0,0.05)', textAlign: 'right', backgroundColor: isHighContrast ? '#0f172a' : '#fff', color: isHighContrast ? '#fff' : '#000', fontSize: '9px' }} />
                               <Bar name="الأيام المخطط" dataKey="planned" fill={isHighContrast ? '#fbbf24' : '#10b981'} radius={[5, 5, 0, 0]} barSize={24} />
                               <Bar name="الأيام المستغرقة" dataKey="actual" fill={isHighContrast ? '#f8fafc' : '#ef4444'} radius={[5, 5, 0, 0]} barSize={24} />

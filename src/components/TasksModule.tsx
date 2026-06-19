@@ -957,6 +957,44 @@ export default function TasksModule({
       {/* Smart Notifications and Expiration Watcher Center removed to Dashboard as requested */}
 
 
+
+      {/* Task Summary Cards Panel (Top) */}
+      <div className="mb-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4" dir="rtl">
+        {[
+          { title: 'المهام العاجلة والمتأخرة', status: 'urgent', color: 'bg-rose-50 border-rose-200 text-rose-900', icon: AlertCircle, filteredTasks: tasks.filter(t => t.priority === 'high' && t.status !== 'done') },
+          { title: 'المهام المؤجلة / المعلقة', status: 'todo', color: 'bg-slate-50 border-slate-200 text-slate-800', icon: Clock, filteredTasks: tasks.filter(t => t.status === 'todo') },
+          { title: 'قيد العمل والدراسة', status: 'in_progress', color: 'bg-blue-50 border-blue-200 text-blue-900', icon: Layout, filteredTasks: tasks.filter(t => t.status === 'in_progress' || t.status === 'review') },
+          { title: 'المهام المنتهية / المغلقة', status: 'done', color: 'bg-emerald-50 border-emerald-200 text-emerald-900', icon: CheckCircle2, filteredTasks: tasks.filter(t => t.status === 'done') }
+        ].map(cat => (
+          <div key={cat.status} className={`border rounded-2xl p-4 shadow-sm flex flex-col max-h-80 ${cat.color}`}>
+            <div className="flex items-center gap-2 mb-3 border-b border-black/5 pb-2">
+              <cat.icon className="w-5 h-5 opacity-80" />
+              <h3 className="font-black text-sm">{cat.title}</h3>
+              <span className="mr-auto font-mono text-xs font-bold bg-white/50 px-2 py-0.5 rounded-full">{cat.filteredTasks.length}</span>
+            </div>
+            
+            <div className="flex-1 overflow-y-auto space-y-2 pr-1 custom-scrollbar">
+              {cat.filteredTasks.length === 0 ? (
+                <p className="text-xs text-center opacity-60 font-bold py-4">لا توجد مهام في هذا التصنيف</p>
+              ) : (
+                cat.filteredTasks.map(t => (
+                  <div key={t.id} className="bg-white/60 p-2.5 rounded-xl border border-black/5 flex flex-col gap-1.5 hover:bg-white transition-colors text-right">
+                    <p className="text-[11px] font-black leading-snug line-clamp-2" title={t.title}>{t.title}</p>
+                    <div className="flex items-center justify-between text-[9px] font-bold opacity-80">
+                      <span className="flex items-center gap-1">
+                        <User className="w-3 h-3" />
+                        {t.assignedTo}
+                      </span>
+                      {t.status !== 'done' && <TaskCountdown dueDate={t.dueDate} status={t.status} />}
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+
       {/* كارت توزيع المهام اليومي والعبء الوظيفي (Daily Task Distribution) */}
       <div className="bg-slate-900 border border-slate-800 rounded-[2.5rem] p-8 shadow-2xl space-y-6 relative overflow-hidden text-right" dir="rtl">
         <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-amber-500 via-primary to-emerald-500"></div>
@@ -1374,42 +1412,6 @@ export default function TasksModule({
         </div>
       </DndContext>
 
-      {/* Task Summary Cards Panel (Bottom) */}
-      <div className="mt-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {[
-          { title: 'المهام العاجلة والمتأخرة', status: 'urgent', color: 'bg-rose-50 border-rose-200 text-rose-900', icon: AlertCircle, filteredTasks: tasks.filter(t => t.priority === 'high' && t.status !== 'done') },
-          { title: 'المهام المؤجلة / المعلقة', status: 'todo', color: 'bg-slate-50 border-slate-200 text-slate-800', icon: Clock, filteredTasks: tasks.filter(t => t.status === 'todo') },
-          { title: 'قيد العمل والدراسة', status: 'in_progress', color: 'bg-blue-50 border-blue-200 text-blue-900', icon: Layout, filteredTasks: tasks.filter(t => t.status === 'in_progress' || t.status === 'review') },
-          { title: 'المهام المنتهية / المغلقة', status: 'done', color: 'bg-emerald-50 border-emerald-200 text-emerald-900', icon: CheckCircle2, filteredTasks: tasks.filter(t => t.status === 'done') }
-        ].map(cat => (
-          <div key={cat.status} className={`border rounded-2xl p-4 shadow-sm flex flex-col max-h-80 ${cat.color}`}>
-            <div className="flex items-center gap-2 mb-3 border-b border-black/5 pb-2">
-              <cat.icon className="w-5 h-5 opacity-80" />
-              <h3 className="font-black text-sm">{cat.title}</h3>
-              <span className="mr-auto font-mono text-xs font-bold bg-white/50 px-2 py-0.5 rounded-full">{cat.filteredTasks.length}</span>
-            </div>
-            
-            <div className="flex-1 overflow-y-auto space-y-2 pr-1 custom-scrollbar">
-              {cat.filteredTasks.length === 0 ? (
-                <p className="text-xs text-center opacity-60 font-bold py-4">لا توجد مهام في هذا التصنيف</p>
-              ) : (
-                cat.filteredTasks.map(t => (
-                  <div key={t.id} className="bg-white/60 p-2.5 rounded-xl border border-black/5 flex flex-col gap-1.5 hover:bg-white transition-colors text-right">
-                    <p className="text-[11px] font-black leading-snug line-clamp-2" title={t.title}>{t.title}</p>
-                    <div className="flex items-center justify-between text-[9px] font-bold opacity-80">
-                      <span className="flex items-center gap-1">
-                        <User className="w-3 h-3" />
-                        {t.assignedTo}
-                      </span>
-                      {t.status !== 'done' && <TaskCountdown dueDate={t.dueDate} status={t.status} />}
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
-        ))}
-      </div>
 
       {/* Task Creation Modal Popup */}
       {isAdding && (

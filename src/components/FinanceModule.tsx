@@ -855,10 +855,10 @@ export default function FinanceModule({
               <span className="text-[10px] font-black bg-yellow-400 text-slate-950 px-2 py-0.5 rounded-full border border-yellow-500/20 uppercase tracking-widest leading-none shadow-lg">إصدار فاتورة أتعاب</span>
             </div>
             <div>
-              <h3 className="text-sm font-black text-yellow-400 transition-colors leading-snug mb-1">
+              <h3 className="text-xl font-black text-yellow-400 transition-colors leading-snug mb-2">
                 توليد فاتورة أتعاب ضريبية
               </h3>
-              <p className="text-[11px] font-bold text-white font-bold leading-normal">
+              <p className="text-sm font-bold text-white leading-normal">
                 إصدار وتحرير عقود الفواتير الضريبية المبسطة والشاملة.
               </p>
             </div>
@@ -881,10 +881,10 @@ export default function FinanceModule({
               <span className="text-[10px] font-black bg-yellow-400 text-slate-950 px-2 py-0.5 rounded-full border border-yellow-500/20 uppercase tracking-widest leading-none shadow-lg">ربط بوابات دفع</span>
             </div>
             <div>
-              <h3 className="text-sm font-black text-yellow-400 transition-colors leading-snug mb-1">
+              <h3 className="text-xl font-black text-yellow-400 transition-colors leading-snug mb-2">
                 بوابات الدفع الإلكتروني
               </h3>
-              <p className="text-[11px] font-bold text-white font-bold leading-normal">
+              <p className="text-sm font-bold text-white leading-normal">
                 مزامنة بوابات STC Pay و مدي و Apple Pay والروابط الآلية.
               </p>
             </div>
@@ -907,10 +907,10 @@ export default function FinanceModule({
               <span className="text-[10px] font-black bg-yellow-400 text-slate-950 px-2 py-0.5 rounded-full border border-yellow-500/20 uppercase tracking-widest leading-none shadow-lg">إصدار سند قبض</span>
             </div>
             <div>
-              <h3 className="text-sm font-black text-yellow-400 transition-colors leading-snug mb-1">
+              <h3 className="text-xl font-black text-yellow-400 transition-colors leading-snug mb-2">
                 إصدار سند قبض رسمي
               </h3>
-              <p className="text-[11px] font-bold text-white font-bold leading-normal">
+              <p className="text-sm font-bold text-white leading-normal">
                 رصد المقبوضات وتوليد سند قبض فوري مع رمز QR المشفر.
               </p>
             </div>
@@ -933,10 +933,10 @@ export default function FinanceModule({
               <span className="text-[10px] font-black bg-yellow-400 text-slate-950 px-2 py-0.5 rounded-full border border-yellow-500/20 uppercase tracking-widest leading-none shadow-lg">إصدار سند صرف</span>
             </div>
             <div>
-              <h3 className="text-sm font-black text-yellow-400 transition-colors leading-snug mb-1">
+              <h3 className="text-xl font-black text-yellow-400 transition-colors leading-snug mb-2">
                 إصدار سند صرف معتمد
               </h3>
-              <p className="text-[11px] font-bold text-white font-bold leading-normal">
+              <p className="text-sm font-bold text-white leading-normal">
                 إثبات المصروفات التشغيلية والرسوم القضائية.
               </p>
             </div>
@@ -1280,8 +1280,8 @@ export default function FinanceModule({
                     </linearGradient>
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                  <XAxis dataKey="name" tick={{ fontSize: 9, fontWeight: 'bold', fill: '#64748b' }} stroke="#e2e8f0" />
-                  <YAxis tick={{ fontSize: 8, fontWeight: 'bold', fill: '#64748b' }} stroke="#e2e8f0" />
+                  <XAxis dataKey="name" stroke="#e2e8f0" style={{ fontSize: '9px', fontWeight: 'bold', fill: '#64748b' }} />
+                  <YAxis stroke="#e2e8f0" style={{ fontSize: '8px', fontWeight: 'bold', fill: '#64748b' }} />
                   <RechartsTooltip 
                     formatter={(value: any) => [`${Number(value).toLocaleString()} ر.س`, '']}
                     contentStyle={{ backgroundColor: '#ffffff', borderRadius: '12px', border: '1px solid #e2e8f0', color: '#0f172a', fontWeight: 'bold' }}
@@ -2870,57 +2870,57 @@ export default function FinanceModule({
 
       {/* Electronic Payment Gateways Simulator Modal */}
       {isGatewaysOpen && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4 animate-in fade-in duration-300">
-          <div className="bg-white border border-slate-200 w-full max-w-2xl rounded-[2.5rem] overflow-hidden shadow-2xl animate-in zoom-in-95 duration-300 font-sans text-right" dir="rtl">
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-950/80 backdrop-blur-md p-4 animate-in fade-in duration-300">
+          <div className="bg-[#0B1221] border border-[#d4af37]/30 w-full max-w-2xl rounded-[2rem] overflow-hidden shadow-[0_0_60px_rgba(212,175,55,0.15)] animate-in zoom-in-95 duration-300 font-sans text-right" dir="rtl">
             
             {/* Modal Header */}
-            <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+            <div className="p-6 border-b border-[#d4af37]/20 flex items-center justify-between bg-gradient-to-l from-[#d4af37]/10 to-transparent">
               <div>
-                <h2 className="font-display font-black text-lg text-slate-900 flex items-center gap-2">
-                  <CreditCard className="w-5 h-5 text-amber-550" />
+                <h2 className="font-display font-black text-xl text-[#d4af37] flex items-center gap-3 shadow-sm">
+                  <CreditCard className="w-6 h-6 text-[#d4af37]" />
                   <span>بوابات الدفع الإلكتروني والتحصيل الآلي المباشر</span>
                 </h2>
-                <p className="text-xs text-slate-700 font-bold mt-0.5">مزامنة قنوات الدفع (مدى، ومحافظ STC Pay و Apple Pay) ومطابقة الحسابات البنكية</p>
+                <p className="text-sm text-slate-300 font-bold mt-1">مزامنة قنوات الدفع (مدى، ومحافظ STC Pay و Apple Pay) ومطابقة الحسابات البنكية</p>
               </div>
               <button 
                 onClick={() => setIsGatewaysOpen(false)}
-                className="bg-slate-200/60 text-slate-800 px-4 py-2 rounded-xl text-xs font-black transition-all cursor-pointer"
+                className="bg-slate-800/80 hover:bg-slate-700 text-slate-200 px-5 py-2.5 rounded-xl text-sm font-black transition-all cursor-pointer border border-slate-700"
               >
                 إغلاق
               </button>
             </div>
 
-            <div className="p-8 space-y-6">
+            <div className="p-8 space-y-8">
               {/* Saudi Payment Channels Showcase */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                 {[
-                  { name: 'شبكة مدى الوطنية', status: 'نشط آلياً', color: 'border-emerald-250 bg-emerald-50/20 text-emerald-800 font-black' },
-                  { name: 'Apple Pay', status: 'نشط آلياً', color: 'border-dark bg-slate-50 text-slate-900 font-black' },
-                  { name: 'STC Pay', status: 'مصدقة ومتصلة', color: 'border-purple-200 bg-purple-50/25 text-purple-700 font-black' },
-                  { name: 'سداد والبطاقات', status: 'متوفر', color: 'border-sky-200 bg-sky-50/25 text-sky-700 font-black' }
+                  { name: 'شبكة مدى الوطنية', status: 'نشط آلياً', color: 'border-emerald-500/40 bg-emerald-500/10 text-emerald-400' },
+                  { name: 'Apple Pay', status: 'نشط آلياً', color: 'border-slate-500/40 bg-slate-500/10 text-slate-300' },
+                  { name: 'STC Pay', status: 'مصدقة ومتصلة', color: 'border-purple-500/40 bg-purple-500/10 text-purple-400' },
+                  { name: 'سداد والبطاقات', status: 'متوفر', color: 'border-sky-500/40 bg-sky-500/10 text-sky-400' }
                 ].map((gate, i) => (
-                  <div key={i} className={`p-4 rounded-2xl border text-center font-bold text-xs ${gate.color}`}>
-                    <p className="font-black mb-1">{gate.name}</p>
-                    <span className="text-[11px] bg-white border px-2 py-0.5 rounded-full inline-block mt-1">✓ {gate.status}</span>
+                  <div key={i} className={`p-4 rounded-2xl border text-center font-bold text-sm ${gate.color} transition-all hover:scale-105 backdrop-blur-sm`}>
+                    <p className="font-black mb-2 text-white">{gate.name}</p>
+                    <span className="text-[11px] bg-black/40 border border-current px-3 py-1 rounded-full inline-block mt-1 font-bold">✓ {gate.status}</span>
                   </div>
                 ))}
               </div>
 
               {/* Stats Bar */}
-              <div className="p-5 bg-amber-500/5 border border-amber-500/10 rounded-2xl flex justify-between items-center text-xs font-bold text-slate-900">
-                <div className="space-y-1">
-                  <p className="text-slate-700 text-[11px]">مجموع المدفوعات المسحوبة هذا الشهر عبر الروابط الرقمية</p>
-                  <strong className="text-slate-900 font-black text-sm">38,400 ر.س</strong>
+              <div className="p-6 bg-gradient-to-r from-[#d4af37]/5 to-[#d4af37]/20 border border-[#d4af37]/30 rounded-2xl flex justify-between items-center font-bold text-slate-900 shadow-inner">
+                <div className="space-y-2 text-right">
+                  <p className="text-slate-300 text-sm font-bold">مجموع المدفوعات المسحوبة هذا الشهر عبر الروابط الرقمية</p>
+                  <strong className="text-white font-black text-2xl tracking-wide font-mono block">38,400 <span className="text-[#d4af37] text-lg font-sans">ر.س</span></strong>
                 </div>
-                <div className="text-left">
-                  <span className="text-[10px] bg-amber-500/10 border border-amber-500/30 text-amber-400 font-bold font-black px-2 py-1 rounded-full font-black">الربط آلي بالكامل ⚡</span>
+                <div className="text-left mt-2 lg:mt-0">
+                  <span className="text-xs bg-[#d4af37] text-[#0B1221] px-4 py-2 rounded-full font-black shadow-[0_0_15px_rgba(212,175,55,0.4)]">الربط آلي بالكامل ⚡</span>
                 </div>
               </div>
 
               {/* Action Buttons */}
-              <div className="space-y-3.5">
-                <h4 className="text-xs font-black text-slate-900">أدوات الربط وتوليد الروابط السريعة:</h4>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-4 pt-2">
+                <h4 className="text-sm font-black text-[#d4af37]">أدوات الربط وتوليد الروابط السريعة:</h4>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                   <button 
                     onClick={() => {
                       const client = prompt("أدخل اسم العميل لتوليد رابط الدفع السداد:");
@@ -2929,16 +2929,16 @@ export default function FinanceModule({
                         alert(`✅ تم توليد رابط سداد العميل بقيمة ${amount} ر.س ومشاركته الفورية للعميل (${client}).\nرابط السداد المحمي: \nhttps://pay.moj.gov.sa/invoice-link/r-${Date.now().toString().substring(7)}`);
                       }
                     }}
-                    className="p-3.5 rounded-2xl border border-dashed border-amber-600 font-black text-xs text-amber-400 font-black bg-amber-50/40 leading-relaxed text-center shadow-sm cursor-pointer"
+                    className="p-4 rounded-xl border-2 border-dashed border-[#d4af37]/60 font-black text-sm text-[#d4af37] bg-[#d4af37]/5 hover:bg-[#d4af37]/10 transition-all text-center cursor-pointer flex items-center justify-center gap-2 group"
                   >
-                    🚀 توليد رابط دفع فوري سريع لعميل
+                    <span className="group-hover:scale-125 transition-transform">🚀</span> توليد رابط دفع فوري سريع لعميل
                   </button>
 
                   <button 
                     onClick={() => {
                       alert("تم رصد مطابقة الدفعات البنكية للحسابات واستقطاب الفواتير مع ZATCA بنجاح تام.");
                     }}
-                    className="p-3.5 rounded-2xl border border-dashed border-blue-200 font-black text-xs text-blue-950 bg-blue-50 hover:bg-blue-100 transition-all cursor-pointer shadow-sm text-center"
+                    className="p-4 rounded-xl border border-blue-500/30 font-black text-sm text-blue-400 bg-blue-500/10 hover:bg-blue-500/20 transition-all cursor-pointer text-center shadow-inner flex items-center justify-center gap-2"
                   >
                     🔄 مطابقة الدفعات مع فواتير زاتكا
                   </button>

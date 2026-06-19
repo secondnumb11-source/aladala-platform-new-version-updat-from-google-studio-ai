@@ -458,8 +458,8 @@ export default function NajizSyncBackendService() {
                       <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0} key={themeTick}>
                         <BarChart data={monitoringData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                           <CartesianGrid strokeDasharray="3 3" stroke="#334155" vertical={false} />
-                          <XAxis dataKey="time" stroke="#94a3b8" tick={{ fontSize: 10 }} />
-                          <YAxis stroke="#94a3b8" tick={{ fontSize: 10 }} />
+                          <XAxis dataKey="time" stroke="#94a3b8" style={{ fontSize: '10px' }} />
+                          <YAxis stroke="#94a3b8" style={{ fontSize: '10px' }} />
                           <RechartsTooltip 
                             contentStyle={{ backgroundColor: '#020617', borderColor: '#334155', borderRadius: '12px' }}
                             itemStyle={{ fontSize: '12px', fontWeight: 'bold' }}
