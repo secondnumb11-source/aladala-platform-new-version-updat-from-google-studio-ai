@@ -22,17 +22,17 @@ import {
   CheckCircle2
 } from 'lucide-react';
 
-// Import new tool components
-import AIDraftingTool from './AI/AIDraftingTool';
-import AIAnalysisTool from './AI/AIAnalysisTool';
-import AILegalSearch from './AI/AILegalSearch';
-import AIDeadlinesTool from './AI/AIDeadlinesTool';
-import AiGatewayTool from './AiGatewayTool';
-import AISwotTool from './AI/AISwotTool';
-import AIContractAuditTool from './AI/AIContractAuditTool';
-import AIFinanceTool from './AI/AIFinanceTool';
-import AILegalRiskMatrix from './AI/AILegalRiskMatrix';
-import AIZatcaTool from './AI/AIZatcaTool';
+// Lazy load tool components for better performance
+const AIDraftingTool = React.lazy(() => import('./AI/AIDraftingTool'));
+const AIAnalysisTool = React.lazy(() => import('./AI/AIAnalysisTool'));
+const AILegalSearch = React.lazy(() => import('./AI/AILegalSearch'));
+const AIDeadlinesTool = React.lazy(() => import('./AI/AIDeadlinesTool'));
+const AiGatewayTool = React.lazy(() => import('./AiGatewayTool'));
+const AISwotTool = React.lazy(() => import('./AI/AISwotTool'));
+const AIContractAuditTool = React.lazy(() => import('./AI/AIContractAuditTool'));
+const AIFinanceTool = React.lazy(() => import('./AI/AIFinanceTool'));
+const AILegalRiskMatrix = React.lazy(() => import('./AI/AILegalRiskMatrix'));
+const AIZatcaTool = React.lazy(() => import('./AI/AIZatcaTool'));
 
 interface AIModuleProps {
   onUpdateState: (type: string, data: any) => void;
@@ -187,10 +187,16 @@ export default function AIModule({ onUpdateState, cases = [], invoices = [], ini
 
       {/* Main Content Area */}
       <div className="min-h-[700px]">
-        {activeTab === 'advisor' && (
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-            {/* Chat Room */}
-            <div className="lg:col-span-8 bg-white border border-slate-200 rounded-[2.5rem] shadow-2xl flex flex-col h-[700px] overflow-hidden">
+        <React.Suspense fallback={
+          <div className="flex flex-col items-center justify-center p-20 bg-slate-50/50 rounded-[3rem] border-2 border-dashed border-slate-200">
+             <div className="w-12 h-12 border-4 border-slate-900/10 border-t-slate-900 rounded-full animate-spin mb-4"></div>
+             <p className="text-slate-500 font-black text-sm">جاري تهيئة منظومة الذكاء الاصطناعي...</p>
+          </div>
+        }>
+          {activeTab === 'advisor' && (
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+              {/* Chat Room */}
+              <div className="lg:col-span-8 bg-white border border-slate-200 rounded-[2.5rem] shadow-2xl flex flex-col h-[700px] overflow-hidden">
               <div className="p-6 bg-slate-50 border-b border-slate-200 flex justify-between items-center">
                 <div className="flex items-center gap-3">
                   <div className="w-3 h-3 bg-emerald-500 rounded-full animate-pulse"></div>
@@ -390,6 +396,7 @@ export default function AIModule({ onUpdateState, cases = [], invoices = [], ini
             )}
           </div>
         )}
+        </React.Suspense>
       </div>
     </div>
   );

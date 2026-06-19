@@ -5,7 +5,10 @@ import { defineConfig } from 'vite';
 
 export default defineConfig(() => {
   return {
-    plugins: [react(), tailwindcss()],
+    plugins: [
+      react(), 
+      tailwindcss(),
+    ],
     resolve: {
       alias: {
         '@': path.resolve(process.cwd(), './src'),
@@ -27,20 +30,14 @@ export default defineConfig(() => {
       emptyOutDir: true,
       chunkSizeWarningLimit: 1000,
       sourcemap: false, 
-      minify: 'terser',
-      terserOptions: {
-        compress: {
-          drop_console: true,
-          drop_debugger: true,
-        },
-      },
+      minify: 'esbuild',
       assetsInlineLimit: 4096,
       rollupOptions: {
         external: ['ws'],
         output: {
           manualChunks: {
             'react-vendor': ['react', 'react-dom'],
-            'framer-motion': ['framer-motion'],
+            'motion-vendor': ['motion'],
             'charts-vendor': ['recharts', 'd3'],
             'supabase': ['@supabase/supabase-js']
           }

@@ -34,6 +34,8 @@ export interface Execution {
   details?: string;
   created_at?: string;
   updated_at?: string;
+  is_najiz_sync?: boolean;
+  last_sync_at?: string;
 }
 
 export interface Case {
@@ -64,6 +66,8 @@ export interface Case {
   summary: string;
   details: string;
   isNajizSync: boolean;
+  is_najiz_sync?: boolean;
+  last_sync_at?: string;
   priority: 'low' | 'medium' | 'high';
   isConfidential?: boolean;
   confidentiality?: 'standard' | 'confidential' | 'highly_confidential';
@@ -135,6 +139,8 @@ export interface Hearing {
   hearingStatus?: string;
   hallNumber?: string;
   decision?: string;
+  is_najiz_sync?: boolean;
+  last_sync_at?: string;
 }
 
 export interface Task {
@@ -423,6 +429,8 @@ export interface PowerOfAttorney {
   principalName?: string;
   agentName?: string;
   najizSyncDate?: string;
+  is_najiz_sync?: boolean;
+  last_sync_at?: string;
 }
 
 export interface TimelineEvent {

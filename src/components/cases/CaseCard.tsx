@@ -275,8 +275,14 @@ export default function CaseCard({
               </div>
             </div>
 
-            {/* Displaying Current Case Status (WCAG AAA AAA standard colors) */}
+            {/* Displaying Current Case Status and Najiz Sync Badge */}
             <div className="flex flex-col items-end gap-1.5 z-10">
+              {c.is_najiz_sync && (
+                <div className="flex items-center gap-1.5 bg-[#D4AF37]/20 border border-[#D4AF37]/40 px-2.5 py-1 rounded-lg animate-pulse-slow">
+                   <Clock className="w-3 h-3 text-[#FACC15]" />
+                   <span className="text-[9px] font-black text-[#FACC15]">مزامنة ناجز: {c.last_sync_at ? new Date(c.last_sync_at).toLocaleDateString('ar-SA') : 'تاريخ غير معروف'}</span>
+                </div>
+              )}
               <span className={`text-[11px] font-black px-3 py-1.5 rounded-xl border flex items-center gap-1.5 transition-colors shadow-sm ${
                 isHighContrast 
                   ? 'bg-slate-950 text-white border-slate-900' 

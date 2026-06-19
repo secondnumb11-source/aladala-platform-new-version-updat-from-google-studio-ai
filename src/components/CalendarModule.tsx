@@ -557,8 +557,14 @@ export default function CalendarModule({ cases, hearings, tasks, invoices = [], 
                   <div key={hearing.id} className="bg-[#4c0519] border-2 border-[#b91c1c] p-4 rounded-xl flex flex-col gap-3 shadow-lg">
                     <div className="flex justify-between items-start">
                       <div className="space-y-2 text-right">
-                        <div className="flex items-center gap-2">
+                        <div className="flex flex-wrap items-center gap-2">
                           <span className="text-[10px] bg-[#991B1B] text-white px-2 py-0.5 rounded font-black border border-red-500/30" style={{ textShadow: 'none' }}>جلسة قضائية</span>
+                          {hearing.is_najiz_sync && (
+                            <span className="text-[9px] bg-[#D4AF37] text-slate-950 px-2 py-0.5 rounded font-black flex items-center gap-1">
+                               <Clock className="w-2.5 h-2.5" />
+                               مستورد من ناجز ({hearing.last_sync_at ? new Date(hearing.last_sync_at).toLocaleDateString('ar-SA') : 'تاريخ غير معروف'})
+                            </span>
+                          )}
                           <h4 className="text-xs font-black" style={{ color: '#FFFFFF', textShadow: 'none' }}>{hearing.caseName}</h4>
                         </div>
                         <div className="text-sm font-black space-y-1">

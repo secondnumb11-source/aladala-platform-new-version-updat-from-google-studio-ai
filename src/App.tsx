@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState, useEffect, useLayoutEffect } from 'react';
+import React, { useState, useEffect, useLayoutEffect, Suspense, useRef } from 'react';
 import { Search, AlertCircle, X, Wifi, Activity, AlertTriangle, Server, LogOut, RefreshCw } from 'lucide-react';
 import Sidebar from '@/components/Sidebar';
 import CommandPalette from '@/components/CommandPalette';
@@ -14,8 +14,32 @@ import NotificationsBell from '@/components/NotificationsBell';
 import GlobalNotesWidget from '@/components/GlobalNotesWidget';
 import DateConverterWidget from '@/components/DateConverterWidget';
 import ErrorBoundary from '@/components/ErrorBoundary';
+import { ErrorToaster } from '@/components/ErrorToaster';
+import { ErrorReporting } from '@/lib/ErrorReporting';
+import { generateUUID } from '@/lib/uuid';
+import { cleanCorruptedAuth } from '@/lib/auth-utils';
+import { SupabaseTodos } from '@/components/SupabaseTodos';
+import { useUserPreferences } from '@/hooks/useUserPreferences';
+import { useAppState } from '@/hooks/useAppState';
+import { SkeletonLoader } from '@/components/SkeletonLoader';
+import { SupabaseProvider, useSupabase } from '@/contexts/SupabaseContext';
+import { useSupabaseData } from '@/hooks/useSupabaseData';
+import { supabase } from '@/lib/supabase';
+import { auditLogger, AuditAction } from '@/lib/AuditLogger';
+import { useSupabaseConnection } from '@/lib/supabase/connection';
+import '@/lib/supabase/init';
+import { 
+  Case, 
+  Client, 
+  Invoice, 
+  Task, 
+  Hearing, 
+  Document as LegalDoc, 
+  Message,
+  Expense
+} from '@/types';
 
-// Lazy load large modules using relative paths to avoid resolution issues in some environments
+// Lazy load large modules
 const CasesModule = React.lazy(() => import('@/components/CasesModule'));
 const ClientsModule = React.lazy(() => import('@/components/ClientsModule'));
 const AgenciesModule = React.lazy(() => import('@/components/AgenciesModule'));
@@ -42,42 +66,34 @@ const ExecutionsModule = React.lazy(() => import('@/components/ExecutionsModule'
 const FeedbackModal = React.lazy(() => import('@/components/FeedbackModal'));
 const WscatModule = React.lazy(() => import('@/components/WscatModule'));
 const WebSocketEcho = React.lazy(() => import('@/components/WebSocketEcho'));
-
-import { SupabaseTodos } from '@/components/SupabaseTodos';
 const ElasticsearchModule = React.lazy(() => import('@/components/ElasticsearchModule'));
 const DbDevOpsModule = React.lazy(() => import('@/components/DbDevOpsModule'));
 const FailedPersistenceLogsDashboard = React.lazy(() => import('@/components/FailedPersistenceLogsDashboard'));
-import { useUserPreferences } from '@/hooks/useUserPreferences';
-import { useAppState } from '@/hooks/useAppState';
-
 const CalendarModule = React.lazy(() => import('@/components/CalendarModule'));
 const SaudiServicesHub = React.lazy(() => import('@/components/SaudiServicesHub'));
 const CourtMapAndServices = React.lazy(() => import('@/components/CourtMapAndServices'));
-
 const GlobalCustomizationEngine = React.lazy(() => import('@/components/GlobalCustomizationEngine'));
-import { runSupabaseDiagnostics } from '@/lib/debug-supabase';
-import { SkeletonLoader } from '@/components/SkeletonLoader';
 
-runSupabaseDiagnostics().catch(err => console.error('[Supabase Top-Level Diagnostics] Failed:', err));
-import '@/lib/supabase/init';
+/**
+ * Development Performance Monitor for Lazy Loaded Modules
+ */
+const PerformanceSuspense: React.FC<{ children: React.ReactNode; moduleName: string }> = ({ children, moduleName }) => {
+  const startTime = useRef(Date.now());
+  
+  useEffect(() => {
+    const loadTime = (Date.now() - startTime.current) / 1000;
+    
+    // @ts-ignore
+    if (import.meta.env.DEV) {
+      console.log(`[PerfMonitor] Module "${moduleName}" loaded in ${loadTime.toFixed(2)}s`);
+      if (loadTime > 2) {
+        console.warn(`[PerfMonitor] ⚠️ SLOW MODULE ALERT: "${moduleName}" took ${loadTime.toFixed(2)}s to load.`);
+      }
+    }
+  }, [moduleName]);
 
-import { 
-  Case, 
-  Client, 
-  Invoice, 
-  Task, 
-  Hearing, 
-  Document as LegalDoc, 
-  Message,
-  Expense
-} from '@/types';
-
-import { SupabaseProvider, useSupabase } from '@/contexts/SupabaseContext';
-import { useSupabaseData } from '@/hooks/useSupabaseData';
-import { supabase } from '@/lib/supabase';
-import { auditLogger, AuditAction } from '@/lib/AuditLogger';
-
-import { useSupabaseConnection } from '@/lib/supabase/connection';
+  return <Suspense fallback={<SkeletonLoader />}>{children}</Suspense>;
+};
 
 export default function App() {
   const { isValid, error } = useSupabaseConnection();
@@ -127,18 +143,14 @@ function RouteGuard({ children, isAuthenticated, setCurrentTab }: { children: Re
   }, [isAuthenticated, setCurrentTab]);
 
   return isVerified ? (
-    <React.Suspense fallback={<SkeletonLoader />}>
+    <PerformanceSuspense moduleName="RouteGuard">
       {children}
-    </React.Suspense>
+    </PerformanceSuspense>
   ) : null;
 }
 
-import { ErrorToaster } from '@/components/ErrorToaster';
-import { ErrorReporting } from '@/lib/ErrorReporting';
-import { generateUUID } from '@/lib/uuid';
-import { cleanCorruptedAuth } from '@/lib/auth-utils';
-
 function AppContent() {
+  // ...
   const { preferences, updatePreference } = useUserPreferences();
   const { state, setStateData } = useAppState();
   const { user, profile, loading: authLoading, connectionStatus } = useSupabase();
@@ -208,45 +220,12 @@ function AppContent() {
     }
   }, [user]);
   
-  // Implementation of periodic localStorage cache cleanup and state conflict resolution
   useEffect(() => {
-    const PLATFORM_VERSION = '2.1.0'; // Current system version
-    const lastVersion = state?.platform_version;
-    
-    if (lastVersion !== PLATFORM_VERSION) {
-      console.log(`[Justice Platform] Version mismatch (Old: ${lastVersion}, New: ${PLATFORM_VERSION}). Purging stale state cache...`);
-      
-      // Keys to preserve
-      const themes = preferences.customThemes; // Assuming these were migrated!
-      const roles = preferences.customRoles;
-      
-      // Clean conflicts
-      // ... (rest of the logic, updated to use Supabase)
-      
-      // Restoration (if needed) or simple reset
+    const PLATFORM_VERSION = '2.1.0';
+    if (state?.platform_version !== PLATFORM_VERSION) {
       setStateData('platform_version', PLATFORM_VERSION);
-      
-      console.log('[Justice Platform] Cache cleanup complete. Environment stabilized.');
     }
-
-    // --- HOURLY CACHE CLEANUP CRON-LIKE JOB ---
-    const cleanupStaleCache = () => {
-      console.log('[Justice Platform] Running scheduled hourly cache optimization...');
-      const keys = Object.keys(localStorage);
-      const now = Date.now();
-      
-      keys.forEach(key => {
-        // Purge session artifacts and temp caches if they exist
-        if (key.includes('-temp-') || key.includes('session-')) {
-          localStorage.removeItem(key);
-        }
-      });
-      console.log('[Justice Platform] Stale session artifacts purged.');
-    };
-
-    const cleanupInterval = setInterval(cleanupStaleCache, 3600000); // 1 Hour
-    return () => clearInterval(cleanupInterval);
-  }, []);
+  }, [state?.platform_version]);
 
   // Automated 24-hour court session email reminder integration via SMTP/Nodemailer
   useEffect(() => {
@@ -1301,13 +1280,15 @@ function AppContent() {
     }
   };
 
-  // Auto-Archive logic: cases marked as 'Closed' to 'archived' after 30 days of inactivity
+  // Auto-Archive logic: cases marked as 'Closed' to 'archived' after configurable days of inactivity
   useEffect(() => {
     if (cases.length === 0) return;
 
     const now = new Date();
-    const thirtyDaysAgo = new Date();
-    thirtyDaysAgo.setDate(now.getDate() - 30);
+    const storedDays = localStorage.getItem('adalah-archive-inactivity-days');
+    const daysConfig = storedDays ? parseInt(storedDays, 10) : 30;
+    const limitDate = new Date();
+    limitDate.setDate(now.getDate() - daysConfig);
 
     const casesToArchive = cases.filter(c => {
       // Only archive closed cases that aren't already archived
@@ -1318,12 +1299,12 @@ function AppContent() {
       if (!activityDateStr) return false;
 
       const activityDate = new Date(activityDateStr);
-      // If the activity was more than 30 days ago, it qualifies for auto-archiving
-      return activityDate < thirtyDaysAgo;
+      // If the activity was more than the configured days ago, it qualifies for auto-archiving
+      return activityDate < limitDate;
     });
 
     if (casesToArchive.length > 0) {
-      console.log(`[Auto-Archive] archiving ${casesToArchive.length} inactive closed cases`);
+      console.log(`[Auto-Archive] archiving ${casesToArchive.length} inactive closed cases based on ${daysConfig} days setting`);
       const ids = casesToArchive.map(c => c.id);
       setLastArchivedIds(ids);
       setLastArchivedCount(casesToArchive.length);
@@ -1334,7 +1315,7 @@ function AppContent() {
         handleUpdateGlobalState('cases', { ...c, archived: true });
       });
     }
-  }, [cases.length]); // Check when cases list size changes (or on initial load)
+  }, [cases.length, localStorage.getItem('adalah-archive-inactivity-days')]); // Check on state changes or settings updates
 
   const handleRestoreArchived = () => {
     lastArchivedIds.forEach(id => {
@@ -1636,7 +1617,7 @@ function AppContent() {
         {/* Module Router Multiplexer */}
         {currentTab !== 'landing' ? (
           <RouteGuard isAuthenticated={isAuthenticated} setCurrentTab={setCurrentTab}>
-            <React.Suspense fallback={<SkeletonLoader />}>
+            <PerformanceSuspense moduleName={currentTab}>
             {currentTab === 'dashboard' && (
               <Dashboard 
                 cases={employeeFilteredCases}
@@ -1866,6 +1847,8 @@ function AppContent() {
             onHighContrastModeChange={handleHighContrastModeChange}
             isDarkMode={isDarkMode}
             onDarkModeChange={handleDarkModeChange}
+            cases={cases}
+            onUpdateState={handleUpdateGlobalState}
           />
         )}
 
@@ -1936,7 +1919,7 @@ function AppContent() {
           </React.Suspense>
         )}
 
-            </React.Suspense>
+            </PerformanceSuspense>
           </RouteGuard>
         ) : (
           currentTab === 'landing' && <MainLandingPage onSignInSelect={() => setCurrentTab('dashboard')} onTrialSelect={() => setCurrentTab('dashboard')} />

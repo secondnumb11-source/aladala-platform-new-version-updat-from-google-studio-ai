@@ -323,7 +323,16 @@ export default function ExecutionsModule({
                 ) : (
                   filtered.map((ex) => (
                     <tr key={ex.id} className="hover:bg-slate-800/30 transition-all group">
-                      <td className="px-8 py-6 whitespace-nowrap font-mono font-black text-sm text-white group-hover:text-amber-500 transition-colors">#{ex.execution_number}</td>
+                      <td className="px-8 py-6 whitespace-nowrap font-mono font-black text-sm text-white group-hover:text-amber-500 transition-colors">
+                        <div className="flex flex-col gap-1">
+                          <span>#{ex.execution_number}</span>
+                          {ex.is_najiz_sync && (
+                            <span className="text-[8px] bg-amber-500/10 text-amber-500 border border-amber-500/20 px-1 py-0.5 rounded flex items-center gap-1 w-fit">
+                              <Activity className="w-2.5 h-2.5" /> مستورد
+                            </span>
+                          )}
+                        </div>
+                      </td>
                       <td className="px-6 py-6 whitespace-nowrap text-slate-200 font-black text-sm">{ex.requester_name}</td>
                       <td className="px-6 py-6 whitespace-nowrap text-slate-300 font-bold text-sm">{ex.opponent_name}</td>
                       <td className="px-6 py-6 whitespace-nowrap text-center text-emerald-400 font-mono font-black text-sm">{(ex.amount || 0).toLocaleString()} <span className="text-[10px]">ر.س</span></td>
@@ -382,9 +391,16 @@ export default function ExecutionsModule({
                   </span>
                 </div>
                 
-                <h3 className="text-lg font-black text-white mb-2 group-hover:text-amber-500 transition-colors">
+                <h3 className="text-lg font-black text-white mb-1 group-hover:text-amber-500 transition-colors">
                   طلب رقم: {ex.execution_number}
                 </h3>
+                {ex.is_najiz_sync && (
+                  <div className="flex items-center gap-1.5 mb-2">
+                    <span className="text-[9px] bg-amber-500/10 text-amber-500 border border-amber-500/20 px-2 py-0.5 rounded font-black flex items-center gap-1">
+                      <Activity className="w-3 h-3" /> مستورد من ناجز ({ex.last_sync_at ? new Date(ex.last_sync_at).toLocaleDateString('ar-SA') : 'تاريخ غير معروف'})
+                    </span>
+                  </div>
+                )}
                 
                 <div className="space-y-4 mb-6">
                   <div className="flex items-center justify-between text-sm group/item">

@@ -343,6 +343,30 @@ const Dashboard = function Dashboard({
     }
   }, [currentUser]);
 
+  // Sync drag-and-drop customized widget hierarchy from database
+  useEffect(() => {
+    const loadLayoutFromSupabase = async () => {
+      const uid = currentUser?.id;
+      if (!uid) return;
+      try {
+        const { data, error } = await supabase
+          .from('user_preferences')
+          .select('widgets')
+          .eq('user_id', uid)
+          .eq('key', 'dashboardLayout')
+          .maybeSingle();
+
+        if (data?.widgets && Array.isArray(data.widgets)) {
+          setWidgets(data.widgets);
+          localStorage.setItem(`dashboard_widgets_config_${selectedRole}_v4`, JSON.stringify(data.widgets));
+        }
+      } catch (err) {
+        console.warn("Failed to load layout from Supabase", err);
+      }
+    };
+    loadLayoutFromSupabase();
+  }, [currentUser, selectedRole]);
+
   const handleSaveUserName = async (val: string) => {
     setUserName(val);
     localStorage.setItem('adalah-dashboard-username', val);

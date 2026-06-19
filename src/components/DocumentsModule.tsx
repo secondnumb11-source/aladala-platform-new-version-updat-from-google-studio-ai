@@ -874,9 +874,56 @@ export default function DocumentsModule({
   };
 
   // Quick Document Preview States
-  const [rightPanelTab, setRightPanelTab] = useState<'ocr' | 'preview' | 'versions'>('preview');
+  const [rightPanelTab, setRightPanelTab] = useState<'ocr' | 'preview' | 'versions' | 'memo'>('preview');
+
+  // Smart Legal Memo Draft Creator States (Gemini-Powered)
+  const [memoSelectedCaseId, setMemoSelectedCaseId] = useState('');
+  const [memoType, setMemoType] = useState('defense');
+  const [memoFacts, setMemoFacts] = useState('');
+  const [memoDemands, setMemoDemands] = useState('');
+  const [memoCourtName, setMemoCourtName] = useState('');
+  const [isDraftingMemo, setIsDraftingMemo] = useState(false);
+  const [draftedMemoResult, setDraftedMemoResult] = useState('');
+  const [memoDraftError, setMemoDraftError] = useState<string | null>(null);
 
   const [draggedDocId, setDraggedDocId] = useState<string | null>(null);
+
+  const handleGenerateLegalMemo = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsDraftingMemo(true);
+    setMemoDraftError(null);
+    setDraftedMemoResult('');
+
+    try {
+      const response = await fetch('/api/documents/draft-memo', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          caseId: memoSelectedCaseId,
+          memoType,
+          facts: memoFacts,
+          additionalDemands: memoDemands,
+          courtName: memoCourtName
+        })
+      });
+
+      const result = await response.json();
+      if (!response.ok) {
+        throw new Error(result.error || 'فشلت عملية إنشاء المسودة الذكية للمذكرة القانونية من السيرفر.');
+      }
+
+      if (result.success && result.draftText) {
+        setDraftedMemoResult(result.draftText);
+      } else {
+        throw new Error('لم يتم استرجاع نص المسودة من خادم الذكاء الاصطناعي.');
+      }
+    } catch (err: any) {
+      console.error('[Draft Legal Memo Error]', err);
+      setMemoDraftError(err.message || 'خطأ غير متوقع أثناء صياغة المذكرة القانونية.');
+    } finally {
+      setIsDraftingMemo(false);
+    }
+  };
 
   const handleDocDragStart = (e: React.DragEvent, docId: string) => {
     setDraggedDocId(docId);
@@ -1319,38 +1366,49 @@ export default function DocumentsModule({
         <div className={`${isFocusedRead ? 'lg:col-span-12' : 'lg:col-span-6'} space-y-6 transition-all duration-300 items-stretch flex flex-col order-2 lg:order-2`}>
           <div className={`area-secondary border-2 border-slate-200 rounded-[2.5rem] p-8 space-y-6 ${isFocusedRead ? 'min-h-[850px] lg:h-[900px]' : 'min-h-[750px]'} flex flex-col justify-between shadow-2xl shadow-slate-200/50 transition-all duration-300 bg-white/60 backdrop-blur-md`}>
             
-            {/* Tab selector menu */}
-            <div className="flex bg-slate-100/80 p-2 rounded-2xl border border-slate-200 gap-2 shrink-0">
+             {/* Tab selector menu */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 bg-slate-100/80 p-2 rounded-2xl border border-slate-200 gap-1.5 shrink-0" dir="rtl">
               <button
                 onClick={() => setRightPanelTab('preview')}
-                className={`flex-1 py-3 px-4 text-[12px] font-black rounded-xl transition-all cursor-pointer text-center flex items-center justify-center gap-2 ${
+                className={`py-2 px-2 text-[10px] sm:text-[11px] font-black rounded-xl transition-all cursor-pointer text-center flex items-center justify-center gap-1 ${
                   rightPanelTab === 'preview'
-                    ? 'bg-blue-600 text-white shadow-lg shadow-blue-200'
-                    : 'text-slate-200 font-bold'
+                    ? 'bg-blue-600 text-white shadow-md shadow-blue-200'
+                    : 'text-slate-700 bg-white/40 hover:bg-white/60 border border-slate-200 font-bold'
                 }`}
               >
                 <span>🔍 المعاينة السريعة</span>
               </button>
               <button
                 onClick={() => setRightPanelTab('ocr')}
-                className={`flex-1 py-3 px-4 text-[12px] font-black rounded-xl transition-all cursor-pointer text-center flex items-center justify-center gap-2 ${
+                className={`py-2 px-2 text-[10px] sm:text-[11px] font-black rounded-xl transition-all cursor-pointer text-center flex items-center justify-center gap-1 ${
                   rightPanelTab === 'ocr'
-                    ? 'bg-blue-600 text-white shadow-lg shadow-blue-200'
-                    : 'text-slate-200 font-bold'
+                    ? 'bg-blue-600 text-white shadow-md shadow-blue-200'
+                    : 'text-slate-705 bg-white/40 hover:bg-white/60 border border-slate-200 font-bold'
                 }`}
               >
-                <Cpu className="w-4 h-4" />
+                <Cpu className="w-3.5 h-3.5" />
                 <span>تحليل OCR</span>
               </button>
               <button
                 onClick={() => setRightPanelTab('versions')}
-                className={`flex-1 py-3 px-4 text-[12px] font-black rounded-xl transition-all cursor-pointer text-center flex items-center justify-center gap-2 ${
+                className={`py-2 px-2 text-[10px] sm:text-[11px] font-black rounded-xl transition-all cursor-pointer text-center flex items-center justify-center gap-1 ${
                   rightPanelTab === 'versions'
-                    ? 'bg-blue-600 text-white shadow-lg shadow-blue-200'
-                    : 'text-slate-200 font-bold'
+                    ? 'bg-blue-600 text-white shadow-md shadow-blue-200'
+                    : 'text-slate-705 bg-white/40 hover:bg-white/60 border border-slate-200 font-bold'
                 }`}
               >
                 <span>⏱️ سجل التعديلات</span>
+              </button>
+              <button
+                onClick={() => setRightPanelTab('memo')}
+                className={`py-2 px-2 text-[10px] sm:text-[11px] font-black rounded-xl transition-all cursor-pointer text-center flex items-center justify-center gap-1 ${
+                  rightPanelTab === 'memo'
+                    ? 'bg-amber-600 text-white shadow-md shadow-amber-200'
+                    : 'text-amber-800 bg-amber-50 hover:bg-amber-100 border border-amber-200 font-black'
+                }`}
+              >
+                <Sparkles className="w-3.5 h-3.5 text-amber-500 animate-pulse" />
+                <span>منشئ المذكرات 🤖</span>
               </button>
             </div>
 
@@ -2250,6 +2308,174 @@ export default function DocumentsModule({
                     </div>
                   </div>
                 </div>
+              </div>
+            )}
+
+            {/* TAB CONTENT: SMART LEGAL MEMO CREATOR (GEMINI-POWERED) */}
+            {rightPanelTab === 'memo' && (
+              <div className="flex-1 flex flex-col min-h-0 space-y-4 text-right" dir="rtl">
+                <div className="flex items-center justify-between border-b border-amber-500/20 pb-2">
+                  <div>
+                    <h3 className="font-black text-xs text-amber-700 flex items-center gap-1.5 justify-end">
+                      <Sparkles className="w-4 h-4 text-amber-400 animate-pulse" />
+                      منشئ مذكرات الدفاع والمذكرات القانونية الذكي (Gemini Legal Drafter)
+                    </h3>
+                    <p className="text-[10px] text-slate-500 font-bold leading-normal">
+                      صياغة لوائح ومذكرات قانونية أولية متوافقة مع الأنظمة السعودية والمصطلحات القضائية في دقائق.
+                    </p>
+                  </div>
+                </div>
+
+                {!draftedMemoResult ? (
+                  <form onSubmit={handleGenerateLegalMemo} className="flex-1 overflow-y-auto max-h-[500px] space-y-3.5 pr-1 text-right">
+                    <div className="space-y-1">
+                      <label className="text-[11px] text-slate-800 font-black block text-right">ربط المذكرة بقضية نشطة:</label>
+                      <select
+                        value={memoSelectedCaseId}
+                        onChange={(e) => {
+                          const cid = e.target.value;
+                          setMemoSelectedCaseId(cid);
+                          const matchedCase = cases.find(c => c.id === cid);
+                          if (matchedCase) {
+                            setMemoCourtName(matchedCase.courtName || 'المحكمة العامة بالرياض');
+                            setMemoFacts(`أقام المدعي الدعوى يطالب فيها بمبالغ مالية... والوقائع مبنية على أن موكلنا...`);
+                            setMemoDemands(`1. رد الدعوى لعدم التأسيس الشرعي.\n2. تحميل المدعي الأتعاب والمصاريف.`);
+                          }
+                        }}
+                        className="w-full bg-slate-50 border border-slate-300 p-2 rounded-lg text-[11px] font-bold text-slate-800 focus:border-amber-500 outline-none"
+                      >
+                        <option value="">-- اختر من قائمة قضايا المكتب النشطة --</option>
+                        {cases.map(c => (
+                          <option key={c.id} value={c.id}>
+                            {c.caseName} | {c.caseNumber}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="space-y-1 text-right">
+                        <label className="text-[11px] text-slate-800 font-black block">نوع المذكرة القانونية:</label>
+                        <select
+                          value={memoType}
+                          onChange={(e) => setMemoType(e.target.value)}
+                          className="w-full bg-slate-50 border border-slate-300 p-2 rounded-lg text-[11px] font-bold text-slate-800 focus:border-amber-500 outline-none"
+                        >
+                          <option value="defense">مذكرة دفاع جوابية أولية</option>
+                          <option value="response">مذكرة تعقيب وجواب للدعوى</option>
+                          <option value="appeal">لائحة اعتراضية للرأي الاستئنافي</option>
+                          <option value="initiation">صحيفة دعوى افتتاحية رسمية</option>
+                        </select>
+                      </div>
+
+                      <div className="space-y-1 text-right">
+                        <label className="text-[11px] text-slate-800 font-black block">اسم المحكمة أو الدائرة:</label>
+                        <input
+                          type="text"
+                          value={memoCourtName}
+                          onChange={(e) => setMemoCourtName(e.target.value)}
+                          placeholder="مثال: المحكمة التجارية الأولى بالدمام"
+                          className="w-full bg-slate-50 border border-slate-300 p-2 rounded-lg text-[11px] font-bold text-slate-800 focus:border-amber-500 outline-none"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-1 text-right">
+                      <label className="text-[11px] text-slate-800 font-black block">الخلفية الواقعية وسرد الأحداث (الأهم):</label>
+                      <textarea
+                        value={memoFacts}
+                        onChange={(e) => setMemoFacts(e.target.value)}
+                        rows={4}
+                        placeholder="اكتب هنا وقائع الدعوى باختصار، مثل تفاصيل الاتفاق أو طبيعة الخلاف المالي أو القضائي الحاصل..."
+                        className="w-full bg-slate-50 border border-slate-300 p-2.5 rounded-lg text-[11px] font-bold leading-relaxed focus:border-amber-500 outline-none text-right"
+                      />
+                    </div>
+
+                    <div className="space-y-1 text-right">
+                      <label className="text-[11px] text-slate-800 font-black block">الطلبات والدفوع المقترحة لموكلنا:</label>
+                      <textarea
+                        value={memoDemands}
+                        onChange={(e) => setMemoDemands(e.target.value)}
+                        rows={3}
+                        placeholder="مثل: عدم الاختصاص، سقوط المطالبة بالتقادم، رد المدعي وتكبيده المصاريف القضائية..."
+                        className="w-full bg-slate-50 border border-slate-300 p-2.5 rounded-lg text-[11px] font-bold leading-relaxed focus:border-amber-500 outline-none text-right"
+                      />
+                    </div>
+
+                    {memoDraftError && (
+                      <div className="p-3 bg-rose-50 border border-rose-200 text-rose-700 text-xs font-bold rounded-xl text-right">
+                        ⚠️ فشل الإنشاء: {memoDraftError}
+                      </div>
+                    )}
+
+                    <button
+                      type="submit"
+                      disabled={isDraftingMemo}
+                      className="w-full bg-amber-600 hover:bg-amber-700 disabled:opacity-50 text-white font-black text-xs py-3 rounded-xl transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer"
+                    >
+                      {isDraftingMemo ? (
+                        <>
+                          <RefreshCw className="w-4 h-4 animate-spin" />
+                          <span>جاري تفعيل خادم Gemini ذكاء اصطناعي وصياغة المذكرة...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Sparkles className="w-4 h-4 text-yellow-300 animate-pulse" />
+                          <span>صياغة مسودة المذكرة بالذكاء الاصطناعي (Gemini Engine) ✨</span>
+                        </>
+                      )}
+                    </button>
+                  </form>
+                ) : (
+                  <div className="flex-1 flex flex-col justify-between min-h-0 space-y-3">
+                    <div className="flex items-center justify-between bg-amber-50 p-3 rounded-2xl border border-amber-200">
+                      <span className="text-xs font-black text-amber-950">✅ تم صياغة مسودة مذكرتك بنجاح وبسرية تامة!</span>
+                      <button
+                        type="button"
+                        onClick={() => setDraftedMemoResult('')}
+                        className="text-xs font-bold text-[#d97706] hover:underline cursor-pointer"
+                      >
+                        إعادة الصياغة والتعديل ♻️
+                      </button>
+                    </div>
+
+                    <div className="flex-1 bg-slate-900 border border-slate-800 rounded-2xl p-5 overflow-auto custom-scrollbar shadow-inner text-right">
+                      <pre className="text-xs text-amber-100 font-mono font-medium whitespace-pre-wrap leading-loose">
+                        {draftedMemoResult}
+                      </pre>
+                    </div>
+
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          navigator.clipboard.writeText(draftedMemoResult);
+                          alert('تم نسخ المذكرة القانونية للحافظة بنجاح! 📋');
+                        }}
+                        className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs py-2.5 rounded-xl transition-all shadow-md flex items-center justify-center gap-1.5 cursor-pointer"
+                      >
+                        📋 نسخ المذكرة للحافظة
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const blob = new Blob([draftedMemoResult], { type: 'text/plain;charset=utf-8' });
+                          const url = URL.createObjectURL(blob);
+                          const link = document.createElement('a');
+                          link.href = url;
+                          link.download = `مسودة_مذكرة_${memoType}_${new Date().toISOString().split('T')[0]}.txt`;
+                          document.body.appendChild(link);
+                          link.click();
+                          document.body.removeChild(link);
+                          URL.revokeObjectURL(url);
+                        }}
+                        className="flex-1 bg-slate-800 hover:bg-slate-950 text-white font-bold text-xs py-2.5 rounded-xl transition-all shadow-md flex items-center justify-center gap-1.5 cursor-pointer"
+                      >
+                        💾 تنزيل كملف نصي
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </div>

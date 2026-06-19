@@ -636,9 +636,10 @@ export default function AgenciesModule({ clients, onUpdateState }: AgenciesModul
                                 رقم: {poa.poaNumber}
                               </span>
                             </div>
-                           {poa.isNajizSync && (
-                             <span className="block w-fit bg-blue-50 text-[#0B2545] text-[10px] font-[800] border border-blue-100 px-1.5 py-0.5 rounded flex items-center gap-1 shadow-sm">
-                               <CheckCircle2 className="w-3 h-3 text-indigo-500" /> مزامنة ناجز
+                           {poa.is_najiz_sync && (
+                             <span className="block w-fit bg-[#D4AF37]/10 text-slate-900 text-[9px] font-[800] border border-[#D4AF37]/30 px-1.5 py-0.5 rounded flex items-center gap-1 shadow-sm">
+                               <Clock className="w-2.5 h-2.5 text-amber-600" /> 
+                               مستورد من ناجز ({poa.last_sync_at ? new Date(poa.last_sync_at).toLocaleDateString('ar-SA') : 'تاريخ غير معروف'})
                              </span>
                            )}
                         </div>

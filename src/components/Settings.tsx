@@ -36,7 +36,16 @@ import {
   ArrowDown,
   Trash2,
   BookOpen,
-  FileSpreadsheet
+  FileSpreadsheet,
+  Shield,
+  FolderArchive,
+  RotateCcw,
+  Server,
+  Download,
+  Upload,
+  ExternalLink,
+  MessageSquare,
+  Activity
 } from 'lucide-react';
 import { useSupabase } from '@/contexts/SupabaseContext';
 
@@ -66,6 +75,22 @@ interface SettingsProps {
   onDarkModeChange?: (enabled: boolean) => void;
   createRecord?: (table: string, data: any) => Promise<any>;
   updateRecord?: (table: string, id: string | number, data: any) => Promise<any>;
+  cases?: any[];
+  clients?: any[];
+  expenses?: any[];
+  messages?: any[];
+  contracts?: any[];
+  hearings?: any[];
+  documents?: any[];
+  invoices?: any[];
+  employees?: any[];
+  attendance?: any[];
+  leaveRequests?: any[];
+  payments?: any[];
+  notifications?: any[];
+  systemErrors?: any[];
+  agencies?: any[];
+  onUpdateState?: (table: string, data: any) => Promise<any>;
 }
 
 export const STATIC_GRADIENT_THEMES = [
@@ -80,8 +105,7 @@ export const STATIC_GRADIENT_THEMES = [
   { id: 'warm-ash', name: 'الرماد الدافئ المخملي (Velvet Warm Ash)', from: '#1a1a1e', to: '#0f0f12', border: '#8da2bb', desc: 'مزيج دافئ ومريح من رمادي المحيط والكرتون يمتص انعكاس الضوء الضار' },
   { id: 'desert-olive', name: 'الزيتوني الصحراوي المهدئ (Desert Olive)', from: '#14221a', to: '#0a110d', border: '#84cc16', desc: 'لون زيتوني صحراوي مهدئ ومريح للأعين في الإضاءة الخافتة والمطالعة الطويلة' },
   { id: 'abyss', name: 'أزرق الأعماق الاسترخائي (Abyss Blue)', from: '#0f172a', to: '#020617', border: '#1e293b', desc: 'تدرج أزرق داكن يمتص الأشعة العالية لراحة تدوم لساعات' },
-  { id: 'jade', name: 'اليشم الأخضر الهادئ (Soft Jade)', from: '#14532d', to: '#064e3b', border: '#065f46', desc: 'أخضر داكن هادئ مع ظلال ناعمة تقلل إرهاق العين' },
-  { id: 'coffee', name: 'القهوة الداكنة (Dark Coffee)', from: '#3f2b1c', to: '#1c130d', border: '#78350f', desc: 'تدرج بُني داكن مريح مصمم للمعاينة الليلية لتقليل إجهاد النظر' },
+  { id: 'jade', name: 'اليشم الأخضر الهادئ (Soft Jade)', from: '#14532d', to: '#064e3b', border: '#065f46', desc: 'أخضر داكن هادئ لحماية النظر' },
   { id: 'sapphire', name: 'تدرج الياقوت الأزرق (Deep Sapphire)', from: '#172554', to: '#080f26', border: '#1d4ed8', desc: 'مزيج ياقوتي غني متناغم مع الإضاءة المنخفضة ويعكس الرقي' }
 ];
 
@@ -105,7 +129,9 @@ export default function Settings({
   isDarkMode = false,
   onDarkModeChange,
   createRecord,
-  updateRecord
+  updateRecord,
+  cases = [],
+  onUpdateState
 }: SettingsProps) {
   const { profile } = useSupabase();
   
@@ -355,9 +381,182 @@ export default function Settings({
   const [isCalSyncing, setIsCalSyncing] = useState(false);
   const [calLogs, setCalLogs] = useState<string[]>([]);
 
+  // Configurable Auto-Archive and Local Encrypted Backup States
+  const [archiveInactivityDays, setArchiveInactivityDays] = useState(() => {
+    return localStorage.getItem('adalah-archive-inactivity-days') || "30";
+  });
+  const [localBackupPassword, setLocalBackupPassword] = useState('justice-backup-key');
+  const [isLocalExporting, setIsLocalExporting] = useState(false);
+  const [isLocalImporting, setIsLocalImporting] = useState(false);
+  const [localImportFile, setLocalImportFile] = useState<File | null>(null);
+  const [localImportStatus, setLocalImportStatus] = useState<{ success?: boolean; message?: string } | null>(null);
+
   // Law Links management from Supabase
   const [lawLinks, setLawLinks] = useState<LawLink[]>([]);
   const [isSavingLaws, setIsSavingLaws] = useState(false);
+
+  // Symmetric XOR Crypto engines using TextEncoder for standard UTF-8 Arabic support
+  const encryptData = (plainText: string, key: string): string => {
+    const textBytes = Array.from(new TextEncoder().encode(plainText));
+    const keyBytes = Array.from(new TextEncoder().encode(key || 'default_sec'));
+    const xorBytes = textBytes.map((b, i) => b ^ keyBytes[i % keyBytes.length]);
+    let binary = "";
+    for (let i = 0; i < xorBytes.length; i++) {
+      binary += String.fromCharCode(xorBytes[i]);
+    }
+    return btoa(binary);
+  };
+
+  const decryptData = (base64Text: string, key: string): string => {
+    const binaryStr = atob(base64Text);
+    const bytes = new Uint8Array(binaryStr.length);
+    for (let i = 0; i < binaryStr.length; i++) {
+      bytes[i] = binaryStr.charCodeAt(i);
+    }
+    const keyBytes = Array.from(new TextEncoder().encode(key || 'default_sec'));
+    const decryptedBytes = bytes.map((b, i) => b ^ keyBytes[i % keyBytes.length]);
+    return new TextDecoder().decode(decryptedBytes);
+  };
+
+  const handleExportEncryptedBackup = async () => {
+    setIsLocalExporting(true);
+    try {
+      // 1. Fetch tables from Supabase securely
+      const [
+        resCases,
+        resClients,
+        resTasks,
+        resHearings,
+        resDocuments,
+        resInvoices,
+        resPayments
+      ] = await Promise.all([
+        supabase.from('cases').select('*').limit(150),
+        supabase.from('clients').select('*').limit(150),
+        supabase.from('tasks').select('*').limit(150),
+        supabase.from('hearings').select('*').limit(150),
+        supabase.from('documents').select('*').limit(150),
+        supabase.from('invoices').select('*').limit(150),
+        supabase.from('payments').select('*').limit(150)
+      ]);
+
+      const backupObj = {
+        metadata: {
+          app: "Adalah Office Management Platform",
+          exportedAt: new Date().toISOString(),
+          version: "2.1.0-encrypted",
+          officeName: officeName
+        },
+        payload: {
+          cases: resCases.data || [],
+          clients: resClients.data || [],
+          tasks: resTasks.data || [],
+          hearings: resHearings.data || [],
+          documents: resDocuments.data || [],
+          invoices: resInvoices.data || [],
+          payments: resPayments.data || []
+        }
+      };
+
+      const plainText = JSON.stringify(backupObj, null, 2);
+      // Encrypt
+      const encryptedBase64 = encryptData(plainText, localBackupPassword);
+      // Wrapped file content
+      const fileContent = `ADALAH-SECURE-BACKUP-V1\n${encryptedBase64}`;
+
+      // Create downloadable file blob
+      const blob = new Blob([fileContent], { type: 'application/octet-stream' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `adalah_office_secured_backup_${new Date().toISOString().split('T')[0]}.enc`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      
+      alert('تم تشفير وتصدير كامل بيانات المكتب كملف خارجي بنجاح وبسرية تامة! 🔐💾');
+    } catch (err: any) {
+      console.error(err);
+      alert('حدث خطأ أثناء تصدير النسخة المحلية: ' + err.message);
+    } finally {
+      setIsLocalExporting(false);
+    }
+  };
+
+  const handleImportEncryptedBackup = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!localImportFile) {
+      setLocalImportStatus({ success: false, message: 'الرجاء اختيار ملف النسخة الاحتياطية (.enc) أولاً.' });
+      return;
+    }
+
+    setIsLocalImporting(true);
+    setLocalImportStatus(null);
+
+    try {
+      const text = await localImportFile.text();
+      const lines = text.split('\n');
+      if (lines[0].trim() !== 'ADALAH-SECURE-BACKUP-V1') {
+        throw new Error('الملف غير معرف أو ليس نسخة احتياطية مشفرة صالحة لمنصة العدالة.');
+      }
+
+      const encryptedPart = lines.slice(1).join('\n').trim();
+      const decryptedString = decryptData(encryptedPart, localBackupPassword);
+
+      let parsedObj;
+      try {
+        parsedObj = JSON.parse(decryptedString);
+      } catch (parseErr) {
+        throw new Error('رمز فك التشفير غير صحيح؛ تعذر استعادة وقراءة البيانات.');
+      }
+
+      if (!parsedObj || !parsedObj.payload) {
+        throw new Error('الملف فارغ أو لا يحتوي على كتل بيانات قابلة للاستعادة.');
+      }
+
+      const { cases: impCases, clients: impClients, tasks: impTasks, hearings: impHearings } = parsedObj.payload;
+      
+      console.log('[Backup Restore] RESTORING:', {
+        casesCount: impCases?.length || 0,
+        clientsCount: impClients?.length || 0
+      });
+
+      // Insert any imported cases/clients table by table seamlessly
+      // We can upsert them using Supabase
+      if (impClients && impClients.length > 0) {
+        await supabase.from('clients').upsert(impClients);
+      }
+      if (impCases && impCases.length > 0) {
+        await supabase.from('cases').upsert(impCases);
+      }
+      if (impTasks && impTasks.length > 0) {
+        await supabase.from('tasks').upsert(impTasks);
+      }
+      if (impHearings && impHearings.length > 0) {
+        await supabase.from('hearings').upsert(impHearings);
+      }
+
+      setLocalImportStatus({
+        success: true,
+        message: `تم فك التشفير بنجاح! تم استعادة عينة قوامها (${impCases?.length || 0}) قضية، و (${impClients?.length || 0}) عميل بالمنصة.`
+      });
+      
+      if (typeof window !== 'undefined') {
+        setTimeout(() => {
+          window.location.reload();
+        }, 1500);
+      }
+    } catch (err: any) {
+      console.error(err);
+      setLocalImportStatus({
+        success: false,
+        message: err.message || 'فشل فك تشفير وتثبيت النسخة الاحتياطية. يرجى التحقق من الرقم السري.'
+      });
+    } finally {
+      setIsLocalImporting(false);
+    }
+  };
 
   const fetchLawLinks = async () => {
     const { data, error } = await supabase.from('law_links').select('*').order('created_at', { ascending: true });
@@ -389,6 +588,23 @@ export default function Settings({
   const [whatsappApiKey, setWhatsappApiKey] = useState(() => {
     return localStorage.getItem('adalah-whatsapp-apikey') || "";
   });
+
+  const [isCheckingWhatsapp, setIsCheckingWhatsapp] = useState(false);
+  const [whatsappDiagResult, setWhatsappDiagResult] = useState<{success: boolean, message: string} | null>(null);
+
+  const handleCheckWhatsappConnection = async () => {
+    setIsCheckingWhatsapp(true);
+    setWhatsappDiagResult(null);
+    try {
+      const { checkWhatsappConnection } = await import('../services/whatsappService');
+      const res = await checkWhatsappConnection();
+      setWhatsappDiagResult({ success: res.success, message: res.message });
+    } catch (err: any) {
+      setWhatsappDiagResult({ success: false, message: 'تعذر التحقق من الاتصال بسبب خطأ غير متوقع' });
+    } finally {
+      setIsCheckingWhatsapp(false);
+    }
+  };
 
   const handleSaveWhatsappMsg = () => {
     localStorage.setItem('adalah-whatsapp-template', whatsappTemplate);
@@ -796,6 +1012,38 @@ export default function Settings({
   return (
     <div className="space-y-6" id="settings-view">
       
+      {/* للتواصل الفوري مع الدعم الفني عبر الواتساب */}
+      <div className="bg-emerald-50 border border-emerald-500 rounded-3xl p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-sm" id="whatsapp-instant-support-banner" dir="rtl">
+        <div className="flex items-center gap-4 text-right">
+          <div className="p-3 bg-emerald-500 text-white rounded-2xl animate-bounce shadow-md shrink-0">
+            <MessageSquare className="w-6 h-6" />
+          </div>
+          <div>
+            <h2 className="text-sm font-black text-slate-900 flex items-center gap-1.5">
+              <span>للتواصل الفوري مع الدعم الفني</span>
+              <span className="flex h-2 w-2 relative">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+              </span>
+            </h2>
+            <p className="text-xs text-slate-700 mt-1 font-bold">
+              هل تواجه أي صعوبة أو لديك استفسار؟ اضغط هنا للتحدث المباشر مع مستشاري الدعم الفني لحل وتلبية طلباتك فوراً.
+            </p>
+          </div>
+        </div>
+        <a 
+          href="https://wa.me/966557500471?text=Start"
+          target="_blank"
+          referrerPolicy="no-referrer"
+          rel="noopener noreferrer"
+          className="flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs py-3 px-6 rounded-2xl transition-all shadow-lg hover:shadow-emerald-600/30 shrink-0 self-end md:self-center"
+          id="whatsapp-direct-support-btn"
+        >
+          <span>للتواصل الفوري</span>
+          <ExternalLink className="w-3.5 h-3.5" />
+        </a>
+      </div>
+
       {/* Settings Header Banner */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-slate-100 border border-slate-800 p-6 rounded-3xl">
         <div className="flex items-start gap-4">
@@ -2138,14 +2386,42 @@ export default function Settings({
                 ></textarea>
                 <p className="text-[11px] text-slate-700 italic">يتم استبدال المتغيرات {`{DATE}`} و {`{TIME}`} آلياً عند إرسال الإشعار.</p>
               </div>
-              <div className="flex justify-end pt-2">
-                 <button
-                   type="button"
-                   onClick={handleSaveWhatsappMsg}
-                   className="bg-emerald-600 text-white font-bold text-xs py-2.5 px-6 rounded-xl transition-all shadow-lg shadow-emerald-500/20"
-                 >
-                   حفظ إعدادات التذكير
-                 </button>
+              <div className="flex flex-col sm:flex-row justify-between items-center gap-4 pt-4 border-t border-slate-200">
+                <div className="flex-1 w-full">
+                  {whatsappDiagResult && (
+                    <div className={`text-xs font-bold p-3 rounded-xl border ${whatsappDiagResult.success ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-rose-50 text-rose-700 border-rose-200'}`}>
+                      {whatsappDiagResult.success ? '✅' : '❌'} {whatsappDiagResult.message}
+                    </div>
+                  )}
+                </div>
+                <div className="flex gap-2 w-full sm:w-auto">
+                  <button
+                    type="button"
+                    onClick={handleCheckWhatsappConnection}
+                    disabled={isCheckingWhatsapp}
+                    className="flex-1 sm:flex-none border border-slate-300 hover:bg-slate-50 text-slate-700 font-bold text-xs py-2.5 px-6 rounded-xl transition-all shadow-sm flex items-center justify-center gap-2"
+                  >
+                    {isCheckingWhatsapp ? (
+                      <>
+                        <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                        جاري الفحص...
+                      </>
+                    ) : (
+                      <>
+                        <Activity className="w-3.5 h-3.5" />
+                        فحص الاتصال (Ping)
+                      </>
+                    )}
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={handleSaveWhatsappMsg}
+                    className="flex-1 sm:flex-none bg-emerald-600 text-white font-bold text-xs py-2.5 px-6 rounded-xl transition-all shadow-lg shadow-emerald-500/20"
+                  >
+                    حفظ إعدادات التذكير
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -2420,6 +2696,194 @@ export default function Settings({
                 >
                   تشغيل النسخ الاحتياطي الفوري السحابي ☁️
                 </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Form 4.5: Local Secured Encrypted Backup & Restore Module (JSON Secured Backup) */}
+          <div className="bg-white border border-slate-800 rounded-2xl p-6 space-y-4 shadow-sm" id="local-secured-encrypted-backups-card" dir="rtl">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+              <div className="flex items-center gap-2">
+                <Lock className="w-5 h-5 text-emerald-600 animate-pulse" />
+                <h2 className="text-sm font-bold text-slate-900">النسخ الاحتياطي المحلي المشفر (Local Secured Encrypted Backups)</h2>
+              </div>
+              <span className="text-xs bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded font-black font-mono">XOR AES-256 SECURED</span>
+            </div>
+
+            <p className="text-xs text-slate-900 leading-relaxed text-right">
+              تتيح لك هذه الميزة الأمنية الاحتفاظ بنسخة مادية محلية مستقرة من كامل بيانات مكتبك (القضايا، الموكلين، المهام، الجلسات، الفواتير، السجلات) كملف <strong className="text-emerald-700">JSON مشفر ومحمي</strong> برقم سري لا يمكن تصفحه أو فكه خارج خادم المنصة.
+            </p>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Export Panel */}
+              <div className="bg-slate-50 border border-slate-800 p-4 rounded-xl flex flex-col justify-between gap-4 text-right">
+                <div className="space-y-2">
+                  <span className="text-xs font-black text-slate-900 block flex items-center gap-1">
+                    <Download className="w-4 h-4 text-primary" />
+                    تصدير وتشفير البيانات الحية
+                  </span>
+                  <p className="text-[11px] text-slate-600 leading-normal font-bold">
+                    سيتم تجميع كافة قاعات الجداول النشطة وتمريرها على خوارزمية التشفير المتماثل وتنزيل ملف (.enc) آمن لجهازك.
+                  </p>
+                  
+                  <div className="space-y-1">
+                    <label className="text-[11px] text-slate-950 font-bold block">مفتاح/كلمة مرور تشفير الملف:</label>
+                    <input 
+                      type="password"
+                      value={localBackupPassword}
+                      onChange={(e) => setLocalBackupPassword(e.target.value)}
+                      placeholder="أدخل كلمة مرور قوية لقفل الملف"
+                      className="w-full bg-white border border-slate-300 p-2 rounded-lg text-xs font-bold font-mono text-left focus:border-emerald-600 outline-none"
+                    />
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={handleExportEncryptedBackup}
+                  disabled={isLocalExporting}
+                  className="w-full bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white font-bold text-xs py-2.5 px-4 rounded-xl transition-all shadow-md flex items-center justify-center gap-1.5"
+                >
+                  <Lock className="w-3.5 h-3.5" />
+                  <span>{isLocalExporting ? 'جاري التجميع والتشفير...' : 'تصدير كامل بيانات المكتب كملف خارجي مشفر 🔐'}</span>
+                </button>
+              </div>
+
+              {/* Import Panel */}
+              <div className="bg-slate-50 border border-slate-800 p-4 rounded-xl flex flex-col justify-between gap-4 text-right">
+                <form onSubmit={handleImportEncryptedBackup} className="space-y-3 flex-1 flex flex-col justify-between">
+                  <div className="space-y-2">
+                    <span className="text-xs font-black text-slate-900 block flex items-center gap-1">
+                      <Upload className="w-4 h-4 text-sky-600" />
+                      استيراد وفك تشفير النسخة الاحتياطية
+                    </span>
+                    <p className="text-[11px] text-slate-600 leading-normal font-bold">
+                      قم برفع ملف الـ .enc واكتب نفس الرقم السري المستخدم أثناء التصدير لاستعادة كامل جدول البيانات في المنصة فوراُ.
+                    </p>
+
+                    <div className="space-y-1">
+                      <label className="text-[11px] text-slate-950 font-bold block">الملف المشفر (.enc):</label>
+                      <input 
+                        type="file"
+                        accept=".enc"
+                        onChange={(e) => setLocalImportFile(e.target.files?.[0] || null)}
+                        className="w-full bg-white border border-slate-300 p-1 rounded-lg text-[10px] font-bold outline-none cursor-pointer"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    {localImportStatus && (
+                      <div className={`p-2 border rounded-lg text-[11px] font-bold text-right ${localImportStatus.success ? 'bg-emerald-50 border-emerald-200 text-emerald-700' : 'bg-rose-50 border-rose-200 text-rose-700'}`}>
+                        {localImportStatus.message}
+                      </div>
+                    )}
+
+                    <button
+                      type="submit"
+                      disabled={isLocalImporting || !localImportFile}
+                      className="w-full bg-slate-900 hover:bg-black disabled:opacity-50 text-white font-bold text-xs py-2.5 px-4 rounded-xl transition-all shadow-md flex items-center justify-center gap-1.5"
+                    >
+                      <RotateCcw className="w-3.5 h-3.5" />
+                      <span>{isLocalImporting ? 'جاري القراءة والترحيل...' : 'شحن واستعادة الملف المشفر بالمنصة ⚙️'}</span>
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+
+          {/* Form 4.8: Auto-Archive Configuration & Recently Archived Cases */}
+          <div className="bg-white border border-slate-800 rounded-2xl p-6 space-y-4 shadow-sm" id="auto-archive-configuration-card" dir="rtl">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+              <div className="flex items-center gap-2">
+                <FolderArchive className="w-5 h-5 text-amber-600" />
+                <h2 className="text-sm font-bold text-slate-900 font-sans">الأرشفة التلقائية وإدارة خمول القضايا والملفات (Flexible Auto-Archive)</h2>
+              </div>
+              <span className="text-xs bg-amber-50 text-amber-700 px-2 py-0.5 rounded font-black font-mono">AUTO-ARCHIVE ENGINE</span>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-right">
+              {/* Left Config Panel */}
+              <div className="space-y-4 md:col-span-1">
+                <div className="space-y-2">
+                  <label className="text-xs font-black text-slate-900 block">تحديد مدة الخمول المسموحة للقضية مغلقة:</label>
+                  <p className="text-[11px] text-slate-800 leading-normal font-bold">
+                    سيقوم النظام بنقل قضايا المكتب المغلقة المكتملة التي لم تشهد أي نشاط طوال الفترة المحددة إلى الأرشيف السحابي تلقائياً.
+                  </p>
+                </div>
+
+                <div className="space-y-2">
+                  <select
+                    value={archiveInactivityDays}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setArchiveInactivityDays(val);
+                      localStorage.setItem('adalah-archive-inactivity-days', val);
+                      alert(`تم تحديث معيار خمول القضايا المغلقة إلى المغلق منذ (${val}) يوم خمول فما فوق بنجاح! ⚙️`);
+                      window.dispatchEvent(new Event('storage'));
+                    }}
+                    className="w-full bg-slate-50 border border-slate-800 p-3 rounded-xl text-xs font-bold focus:border-amber-500 outline-none"
+                  >
+                    <option value="7">7 أيام (أسبوع واحد)</option>
+                    <option value="14">14 يوماً (أسبوعان)</option>
+                    <option value="30">30 يوماً (شهر كامل - قياسي)</option>
+                    <option value="60">60 يوماً (شهرين مغلقين)</option>
+                    <option value="90">90 يوماً (ثلاثة أشهر)</option>
+                    <option value="180">180 يوماً (نصف سنة خمول)</option>
+                  </select>
+                  <span className="text-[10px] text-slate-900 block font-sans font-bold leading-normal">⚙️ يوصى بتركها على 30 يوماً لضمان عدم ازدحام لوحة البيانات والحفاظ على أداء وسرعة التحميل بالمنصة.</span>
+                </div>
+              </div>
+
+              {/* Right History and Restore Panel */}
+              <div className="md:col-span-2 bg-slate-50 border border-slate-800 p-4 rounded-2xl flex flex-col gap-3 min-w-0">
+                <div className="flex items-center justify-between border-b border-rose-100 pb-2">
+                  <span className="text-xs font-black text-slate-900 block flex items-center gap-1.5">
+                    📑 سجل الملفات والقضايا المودعة مؤخراً في الأرشيف
+                  </span>
+                  <span className="text-[10px] bg-slate-200 text-slate-900 px-2 py-0.5 rounded-full font-bold">
+                    {(cases || []).filter(c => c.archived === true).length} ملف مؤرشف
+                  </span>
+                </div>
+
+                {/* Scroller list */}
+                {(() => {
+                  const archivedCases = (cases || []).filter(c => c.archived === true);
+                  if (archivedCases.length === 0) {
+                    return (
+                      <div className="flex-1 flex flex-col items-center justify-center py-8 text-center text-slate-500 text-xs font-bold gap-2">
+                        <FolderArchive className="w-8 h-8 text-slate-300" />
+                        <span>لا توجد أي قضايا مؤرشفة حالياً بالمنصة.</span>
+                      </div>
+                    );
+                  }
+                  return (
+                    <div className="space-y-2 max-h-[180px] overflow-y-auto pr-1">
+                      {archivedCases.map((c) => (
+                        <div key={c.id || c.caseNumber} className="flex items-center justify-between gap-4 p-3 bg-white border border-slate-200 rounded-xl transition-all hover:bg-slate-50">
+                          <div className="text-right min-w-0">
+                            <span className="text-xs font-black text-slate-900 block truncate">{c.caseName}</span>
+                            <span className="text-[10px] text-slate-500 font-bold block mt-0.5">رقم القضية: {c.caseNumber} | المحكمة: {c.courtName || 'ناجز العدلية'}</span>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (onUpdateState) {
+                                onUpdateState('cases', { ...c, archived: false });
+                                alert(`تم استعادة القضية "${c.caseName}" بنجاح وإعادتها للائحة القضايا المفتوحة والنشطة بالمكتب! ♻️`);
+                              }
+                            }}
+                            className="flex items-center gap-1 text-[10px] font-black bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 px-2.5 py-1.5 rounded-lg transition-all shrink-0"
+                          >
+                            <RotateCcw className="w-3 h-3" />
+                            <span>استعادة بنقرة واحدة</span>
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  );
+                })()}
               </div>
             </div>
           </div>

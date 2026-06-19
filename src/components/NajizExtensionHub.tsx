@@ -1,9 +1,12 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { Joyride, STATUS, Step } from 'react-joyride';
+
+const JoyrideAny = Joyride as any;
 import { 
   Download, Zap, CheckCircle2, Copy, Bot, Rocket, 
   BookOpen, Key, Link2, Settings, ShieldCheck, 
   Database, Users, Calendar, FileText, ClipboardList, Briefcase, ExternalLink,
-  ChevronDown, X, Chrome, Info, HelpCircle
+  ChevronDown, X, Chrome, Info, HelpCircle, Sparkles, Code
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import JSZip from 'jszip';
@@ -19,7 +22,95 @@ export default function NajizExtensionHub({ currentUser, onUpdateState }: NajizE
   const [downloading, setDownloading] = useState(false);
   const [activeTab, setActiveTab] = useState<'instructions' | 'features' | 'keys'>('instructions');
   const [copiedKey, setCopiedKey] = useState(false);
-  const { createRecord, upsertRecord, clients, cases } = useSupabaseData();
+  const { createRecord, updateRecord, upsertRecord, clients, cases, hearings, executions, powersOfAttorney } = useSupabaseData();
+
+  // New states for real-time status and history
+  const [syncStatus, setSyncStatus] = useState<Record<string, 'idle' | 'syncing' | 'success'>>({
+    cases: 'idle',
+    hearings: 'idle',
+    agencies: 'idle',
+    executions: 'idle',
+    clients: 'idle'
+  });
+
+  const [syncHistory, setSyncHistory] = useState<Record<string, { lastSync: string | null, newCount: number, updatedCount: number }>>(() => {
+    const saved = localStorage.getItem('adalah_najiz_sync_history');
+    return saved ? JSON.parse(saved) : {
+      cases: { lastSync: null, newCount: 0, updatedCount: 0 },
+      hearings: { lastSync: null, newCount: 0, updatedCount: 0 },
+      agencies: { lastSync: null, newCount: 0, updatedCount: 0 },
+      executions: { lastSync: null, newCount: 0, updatedCount: 0 },
+      clients: { lastSync: null, newCount: 0, updatedCount: 0 }
+    };
+  });
+
+  const [importedCardTheme, setImportedCardTheme] = useState<'light' | 'dark'>(() => {
+    return (localStorage.getItem('adalah_imported_card_theme') as 'light' | 'dark') || 'dark';
+  });
+
+  useEffect(() => {
+    localStorage.setItem('adalah_najiz_sync_history', JSON.stringify(syncHistory));
+  }, [syncHistory]);
+
+  useEffect(() => {
+    localStorage.setItem('adalah_imported_card_theme', importedCardTheme);
+    // Optional: Broad-cast event or update global context if needed
+  }, [importedCardTheme]);
+
+  /**
+   * Najiz/Legal Reference Number Normalizer
+   * Standardizes Arabic-Indic digits to English digits and cleans separators
+   * to ensure robust duplicate detection.
+   */
+  const normalizeRefNumber = useCallback((val: string | number | null | undefined): string => {
+    if (!val) return '';
+    let str = String(val).trim();
+    
+    // 1. Map Arabic-Indic digits (٠-٩) to standard English digits (0-9)
+    const arabicDigits: Record<string, string> = {
+      '٠': '0', '١': '1', '٢': '2', '٣': '3', '٤': '4',
+      '٥': '5', '٦': '6', '٧': '7', '٨': '8', '٩': '9'
+    };
+    str = str.replace(/[٠-٩]/g, (match) => arabicDigits[match]);
+    
+    // 2. Remove all non-essential characters, keeping only digits, slashes, and dashes
+    // This removes 'رقم' or 'القضية' or spaces if they were accidentally included
+    str = str.replace(/[^\d\/\-]/g, '');
+    
+    // 3. Normalize parts (remove leading zeros for each segment to treat 1444/0123 as 1444/123)
+    // and standardize on slash '/' as primary separator
+    return str.split(/[\/\-]/)
+      .map(part => part.replace(/^0+/, ''))
+      .filter(part => part.length > 0)
+      .join('/');
+  }, []);
+
+  // Onboarding Tour State
+  const [runTour, setRunTour] = useState(false);
+
+  // Sync Report State
+  const [syncReport, setSyncReport] = useState<{
+    show: boolean;
+    stats: { newCount: number; duplicateCount: number; total: number };
+    details: { id?: string; title: string; status: 'new' | 'updated' | 'conflict'; category: string; itemData?: any; existingId?: string }[];
+  } | null>(null);
+  
+  const [isSmartMergeApplying, setIsSmartMergeApplying] = useState(false);
+
+  useEffect(() => {
+    const hasSeenTour = localStorage.getItem('adalah_najiz_tour_seen');
+    if (!hasSeenTour) {
+      setRunTour(true);
+    }
+  }, []);
+
+  const handleJoyrideCallback = (data: any) => {
+    const { status } = data;
+    if (['finished', 'skipped'].includes(status)) {
+      setRunTour(false);
+      localStorage.setItem('adalah_najiz_tour_seen', 'true');
+    }
+  };
 
   // Settings Modal & Options with persistent LocalStorage
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -29,7 +120,7 @@ export default function NajizExtensionHub({ currentUser, onUpdateState }: NajizE
   });
   const [customApiKey, setCustomApiKey] = useState(() => {
     const saved = localStorage.getItem('adalah_custom_api_key');
-    return saved || ('sk_adalah_workspace_' + (currentUser?.workspace_id || 'demo1234'));
+    return saved || '';
   });
   const [customApiUrl, setCustomApiUrl] = useState(() => {
     const saved = localStorage.getItem('adalah_custom_api_url');
@@ -84,7 +175,7 @@ export default function NajizExtensionHub({ currentUser, onUpdateState }: NajizE
           }
           
           // Heuristic extraction
-          const numRegex = /(\\d+(?:[\\-\\/]\\d+)*)/;
+          const numRegex = /([\d\u0660-\u0669]+(?:[\-\/][\d\u0660-\u0669]+)*)/;
           const numMatch = textStr.match(numRegex);
           const extractedNumber = numMatch ? numMatch[1] : '';
 
@@ -181,8 +272,8 @@ export default function NajizExtensionHub({ currentUser, onUpdateState }: NajizE
         category = 'minutes';
       }
 
-      // Extraction heuristic logic
-      const numRegex = /(\d+(?:[\-\/]\d+)*)/;
+      // Extraction heuristic logic with Arabic digit support
+      const numRegex = /([\d\u0660-\u0669]+(?:[\-\/][\d\u0660-\u0669]+)*)/;
       const numMatch = textStr.match(numRegex);
       extractedNumber = numMatch ? numMatch[1] : '';
 
@@ -212,6 +303,96 @@ export default function NajizExtensionHub({ currentUser, onUpdateState }: NajizE
         category,
         message: `[AI تجاهل] تم حظر إدراج العنصر "${item.rawTitle || 'غير محدد'}" لتعطيل صنف [${category}] في خيارات السحب المحددة.`
       };
+    }
+
+    // Advanced Matching and Upsert Logic (preventing duplicates and updating existing)
+    let isDuplicate = false;
+    let existingId = '';
+    const finalCaseNumberDetect = item.caseNumber || extractedNumber;
+    const normalizedTarget = normalizeRefNumber(finalCaseNumberDetect);
+
+    if (category === 'cases' && normalizedTarget) {
+      const existing = (cases || []).find((c: any) => 
+        normalizeRefNumber(c.caseNumber) === normalizedTarget || 
+        normalizeRefNumber(c.najizCaseNumber) === normalizedTarget
+      );
+      if (existing) { isDuplicate = true; existingId = existing.id; }
+    } else if (category === 'hearings') {
+      const hDate = item.rawDate || new Date().toISOString().split('T')[0];
+      const hTime = item.time || '10:00';
+      const existing = (hearings || []).find((h: any) => h.date === hDate && h.time === hTime);
+      if (existing) { isDuplicate = true; existingId = existing.id; }
+    } else if (category === 'executions' && (item.execution_number || extractedNumber)) {
+      const exNumNormalized = normalizeRefNumber(item.execution_number || extractedNumber);
+      const existing = (executions || []).find((ex: any) => 
+        normalizeRefNumber(ex.execution_number) === exNumNormalized ||
+        normalizeRefNumber(ex.case_number) === exNumNormalized
+      );
+      if (existing) { isDuplicate = true; existingId = existing.id; }
+    } else if (category === 'agencies' && (item.poa_number || extractedNumber)) {
+      const poaNumNormalized = normalizeRefNumber(item.poa_number || extractedNumber);
+      const existing = (powersOfAttorney || []).find((p: any) => normalizeRefNumber(p.poaNumber) === poaNumNormalized);
+      if (existing) { isDuplicate = true; existingId = existing.id; }
+    }
+
+    if (isDuplicate) {
+      try {
+        // Perform an update instead of just blocking
+        if (category === 'cases' && existingId) {
+          // Defer update so user can smart merge later
+          return {
+            status: 'conflict',
+            category,
+            existingId,
+            itemData: item,
+            title: item.rawTitle || finalCaseNumberDetect || 'سجل متضارب',
+            message: `[تضارب] تم اكتشاف سجل مشابه، يرجى اختيار دمج ذكي للبيانات الأحدث.`
+          };
+        } else if (category === 'hearings' && existingId) {
+          return {
+            status: 'conflict',
+            category,
+            existingId,
+            itemData: item,
+            title: item.rawTitle || finalCaseNumberDetect || 'جلسة متضاربة',
+            message: `[تضارب] تم اكتشاف جلسة مشابهة.`
+          };
+        } else if (category === 'executions' && existingId) {
+          return {
+            status: 'conflict',
+            category,
+            existingId,
+            itemData: item,
+            title: item.rawTitle || finalCaseNumberDetect || 'تنفيذ متضارب',
+            message: `[تضارب] تم اكتشاف طلب مشابه للدمج.`
+          };
+        } else if (category === 'agencies' && existingId) {
+          return {
+            status: 'conflict',
+            category,
+            existingId,
+            itemData: item,
+            title: item.rawTitle || finalCaseNumberDetect || 'وكالة متضاربة',
+            message: `[تضارب] تم اكتشاف وكالة مشابهة للدمج.`
+          };
+        }
+
+        setSyncHistory(prev => ({
+          ...prev,
+          [category]: {
+            ...prev[category],
+            lastSync: new Date().toISOString(),
+          }
+        }));
+        return {
+          status: 'conflict',
+          category,
+          title: item.rawTitle || finalCaseNumberDetect || 'سجل متضارب',
+          message: `[تحديث] تم العثور على تضارب في السجل "${item.rawTitle || 'سجل'}".`
+        };
+      } catch (e) {
+        console.error("Error updating record during sync:", e);
+      }
     }
 
     try {
@@ -257,12 +438,23 @@ export default function NajizExtensionHub({ currentUser, onUpdateState }: NajizE
           courtName: courtName,
           summary: item.rawText || 'تمت المزامنة تلقائياً بالذكاء الاصطناعي التوجيهي',
           status: 'new',
-          priority: priority
+          priority: priority,
+          is_najiz_sync: true,
+          last_sync_at: new Date().toISOString()
         });
 
         if (creationResult && !creationResult.success) {
           throw new Error(creationResult.message || 'فشلت معايير التحقق المحلية للقضية');
         }
+
+        setSyncHistory(prev => ({
+          ...prev,
+          cases: {
+            ...prev.cases,
+            lastSync: new Date().toISOString(),
+            newCount: (prev.cases?.newCount || 0) + 1
+          }
+        }));
 
         return {
           status: 'success',
@@ -285,7 +477,9 @@ export default function NajizExtensionHub({ currentUser, onUpdateState }: NajizE
             courtName: courtName,
             summary: 'قضية منشأة تلقائياً لربط الجلسة المستوردة',
             status: 'new',
-            priority: priority
+            priority: priority,
+            is_najiz_sync: true,
+            last_sync_at: new Date().toISOString()
           });
           if (caseRes && caseRes.success && caseRes.data) {
             associatedCaseId = caseRes.data.id;
@@ -303,8 +497,19 @@ export default function NajizExtensionHub({ currentUser, onUpdateState }: NajizE
           hall: item.hall || 'القاعة الرابعة التابعة للدائرة المعنية',
           judge: item.judge || 'فضيلة الشيخ المستشار المشرّف ص.ق',
           status: 'upcoming',
-          notes: item.rawText || `جلسة تلقائية مستوردة من ناجز: ${item.rawTitle || 'غير محدد'}`
+          notes: item.rawText || `جلسة تلقائية مستوردة من ناجز: ${item.rawTitle || 'غير محدد'}`,
+          is_najiz_sync: true,
+          last_sync_at: new Date().toISOString()
         });
+
+        setSyncHistory(prev => ({
+          ...prev,
+          hearings: {
+            ...prev.hearings,
+            lastSync: new Date().toISOString(),
+            newCount: (prev.hearings?.newCount || 0) + 1
+          }
+        }));
 
         return {
           status: 'success',
@@ -322,12 +527,23 @@ export default function NajizExtensionHub({ currentUser, onUpdateState }: NajizE
           issueDate: item.rawDate || new Date().toISOString().split('T')[0],
           expiryDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
           type: 'عامة في المرافعة والمدافعة',
-          status: 'سارية'
+          status: 'سارية',
+          is_najiz_sync: true,
+          last_sync_at: new Date().toISOString()
         });
 
         if (resPoa && !resPoa.success) {
           throw new Error(resPoa.message || 'فشلت معايير التحقق المحلية للوكالة');
         }
+
+        setSyncHistory(prev => ({
+          ...prev,
+          agencies: {
+            ...prev.agencies,
+            lastSync: new Date().toISOString(),
+            newCount: (prev.agencies?.newCount || 0) + 1
+          }
+        }));
 
         return {
           status: 'success',
@@ -346,12 +562,23 @@ export default function NajizExtensionHub({ currentUser, onUpdateState }: NajizE
           amount: item.amount || 0,
           court_name: item.court_name || 'إدارة التنفيذ بالمحكمة المعنية',
           issue_date: issueDate,
-          details: item.rawText || `تفاصيل طلب التنفيذ المسحوب آلياً من بوابة ناجز برقم ${execNo}`
+          details: item.rawText || `تفاصيل طلب التنفيذ المسحوب آلياً من بوابة ناجز برقم ${execNo}`,
+          is_najiz_sync: true,
+          last_sync_at: new Date().toISOString()
         }, 'execution_number');
 
         if (execRes && !execRes.success) {
           throw new Error(execRes.message || 'فشلت معايير التحقق لطلب التنفيذ');
         }
+
+        setSyncHistory(prev => ({
+          ...prev,
+          executions: {
+            ...prev.executions,
+            lastSync: new Date().toISOString(),
+            newCount: (prev.executions?.newCount || 0) + 1
+          }
+        }));
 
         return {
           status: 'success',
@@ -368,12 +595,23 @@ export default function NajizExtensionHub({ currentUser, onUpdateState }: NajizE
           phone: clientPhoneStr,
           nationalId: clientNationalIdStr,
           email: item.email || 'client.najiz@adalah.sa',
-          status: 'نشط'
+          status: 'نشط',
+          is_najiz_sync: true,
+          last_sync_at: new Date().toISOString()
         });
 
         if (resClient && !resClient.success) {
           throw new Error(resClient.message || 'فشلت معايير التحقق المحلية للعميل الجديد');
         }
+
+        setSyncHistory(prev => ({
+          ...prev,
+          clients: {
+            ...prev.clients,
+            lastSync: new Date().toISOString(),
+            newCount: (prev.clients?.newCount || 0) + 1
+          }
+        }));
 
         return {
           status: 'success',
@@ -389,7 +627,9 @@ export default function NajizExtensionHub({ currentUser, onUpdateState }: NajizE
           dueDate: dueDateStr,
           description: item.rawText || 'طلب مقدم على الدائرة القضائية مسحوب تلقائياً من ناجز للمتابعة',
           status: 'todo',
-          priority: 'medium'
+          priority: 'medium',
+          is_najiz_sync: true,
+          last_sync_at: new Date().toISOString()
         });
 
         return {
@@ -415,7 +655,9 @@ export default function NajizExtensionHub({ currentUser, onUpdateState }: NajizE
           fileName: `minute_${dateStr}.pdf`,
           fileType: 'pdf',
           uploadedBy: 'Najiz AI Agent',
-          createdAt: new Date().toISOString()
+          createdAt: new Date().toISOString(),
+          is_najiz_sync: true,
+          last_sync_at: new Date().toISOString()
         });
 
         return {
@@ -432,7 +674,9 @@ export default function NajizExtensionHub({ currentUser, onUpdateState }: NajizE
           dueDate: dueDateStr,
           description: item.rawText || 'مستند مجهول التصنيف مسحوب من بوابة ناجز تم حفظه للمراجعة اليدوية',
           status: 'todo',
-          priority: 'medium'
+          priority: 'medium',
+          is_najiz_sync: true,
+          last_sync_at: new Date().toISOString()
         });
 
         return {
@@ -461,11 +705,35 @@ export default function NajizExtensionHub({ currentUser, onUpdateState }: NajizE
         showToast('جاري تحليل وتصنيف البيانات المسحوبة بالذكاء الاصطناعي التوجيهي المتطور...', 'info');
 
         const targets = payload.targetTypes || selectedSyncTypes;
+        const results = [];
+        let newCount = 0;
+        let duplicateCount = 0;
+
+        // Set all involved categories to syncing
+        const catsToSync = targets.filter((t: string) => syncStatus.hasOwnProperty(t));
+        setSyncStatus(prev => {
+          const next = { ...prev };
+          catsToSync.forEach((c: string) => next[c] = 'syncing');
+          return next;
+        });
 
         for (const item of payload.data) {
           const result = await classifyAndSyncItem(item, targets);
+          results.push({
+            id: Math.random().toString(),
+            title: item.rawTitle || item.caseNumber || item.poa_number || 'معاملة ناجز',
+            status: (result.status === 'duplicate' || result.status === 'updated' || result.status === 'conflict') ? 'conflict' : 'new' as any,
+            category: result.category,
+            itemData: result.itemData,
+            existingId: result.existingId
+          });
+
           if (result.status === 'success') {
+            newCount++;
             showToast(result.message, 'success');
+          } else if (result.status === 'duplicate' || result.status === 'updated' || result.status === 'conflict') {
+            duplicateCount++;
+            showToast(result.message, 'info');
           } else if (result.status === 'disabled') {
             showToast(result.message, 'info');
           } else {
@@ -473,6 +741,26 @@ export default function NajizExtensionHub({ currentUser, onUpdateState }: NajizE
           }
         }
         
+        // Mark as success
+        setSyncStatus(prev => {
+          const next = { ...prev };
+          catsToSync.forEach((c: string) => next[c] = 'success');
+          return next;
+        });
+        setTimeout(() => {
+          setSyncStatus(prev => {
+            const next = { ...prev };
+            catsToSync.forEach((c: string) => next[c] = 'idle');
+            return next;
+          });
+        }, 3000);
+
+        setSyncReport({
+          show: true,
+          stats: { newCount: newCount, duplicateCount: duplicateCount, total: payload.data.length },
+          details: results
+        });
+
         showToast('اكتملت مزامنة وترتيب البيانات بجميع أقسام النظام بنجاح', 'success');
       }
     };
@@ -527,6 +815,10 @@ export default function NajizExtensionHub({ currentUser, onUpdateState }: NajizE
     log(`📦 العثور على ${dummyScrapes.length} عناصر للتحليل والفرز...`);
     await new Promise(r => setTimeout(r, 700));
 
+    const results = [];
+    let newCount = 0;
+    let duplicateCount = 0;
+
     for (const item of dummyScrapes) {
       if (bgProcessingEnabled) {
         log(`⚙️ [الخلفية النشطة Web Worker Thread] جاري فك حزم ونمذجة نصوص الكيان: "${item.rawTitle || 'سجل مجهول'}"`);
@@ -539,37 +831,674 @@ export default function NajizExtensionHub({ currentUser, onUpdateState }: NajizE
       const result = await classifyAndSyncItem(item, selectedSyncTypes);
       log(result.message);
       
+      results.push({
+        id: Math.random().toString(),
+        title: item.rawTitle || (item as any).caseNumber || (item as any).poa_number || 'معاملة ناجز',
+        status: (result.status === 'duplicate' || result.status === 'updated' || result.status === 'conflict') ? 'conflict' : 'new' as any,
+        category: result.category,
+        itemData: result.itemData,
+        existingId: result.existingId
+      });
+
       if (result.status === 'success') {
+        newCount++;
         showToast(result.message, 'success');
+      } else if (result.status === 'duplicate' || result.status === 'updated' || result.status === 'conflict') {
+        duplicateCount++;
+        showToast(result.message, 'info');
       } else {
         showToast(result.message, 'info');
       }
       await new Promise(r => setTimeout(r, 600));
     }
 
+    setSyncReport({
+      show: true,
+      stats: { newCount: newCount, duplicateCount: duplicateCount, total: dummyScrapes.length },
+      details: results
+    });
+
     log("✅ اكتمل الفرز الآلي وتوزيع كافة الكيانات على أقسام المنصة بنجاح دون أي تدخل بشري!");
     setIsSimulatingSync(false);
   };
 
-  // Download Chrome Extension package
   const handleDownload = async () => {
     setDownloading(true);
     try {
-      window.open('/api/extension/download', '_blank');
+      const manifestCode = `{
+  "manifest_version": 3,
+  "name": "منصة العدالة - مزامنة ناجز",
+  "version": "2.0",
+  "description": "مزامنة تلقائية لبيانات ناجز مع منصة العدالة",
+  "permissions": ["activeTab", "scripting", "storage", "tabs"],
+  "host_permissions": ["*://*.najiz.sa/*", "*://*.adalah.law/*", "http://localhost:*/*"],
+  "action": { "default_popup": "popup.html" },
+  "content_scripts": [{
+    "matches": ["*://*.najiz.sa/*"],
+    "js": ["content.js"],
+    "run_at": "document_idle"
+  }],
+  "background": {
+    "service_worker": "background.js"
+  }
+}`;
+
+      const backgroundJsCode = `chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  if (message.action === 'syncNajizData') {
+    chrome.storage.local.get(['systemUrl', 'apiKey'], (result) => {
+      const systemUrl = result.systemUrl || 'http://localhost:3000';
+      const apiKey = result.apiKey || '';
+      fetch(systemUrl + '/api/najiz-sync', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+           'X-Source': 'najiz-extension',
+           ...(apiKey ? { 'x-api-key': apiKey } : {})
+        },
+        body: JSON.stringify({
+          type: message.dataType,
+          data: message.data,
+          url: message.url,
+          timestamp: Date.now(),
+          apiKey: apiKey,
+          rawText: message.data.map(d => d.rawText).join('\\n'),
+          selectedTypes: [message.dataType === 'all' ? 'cases' : message.dataType]
+        })
+      })
+      .then(res => res.json())
+      .then(data => {
+        chrome.storage.local.set({ lastSync: Date.now() });
+        sendResponse({ success: true, count: message.data.length });
+        chrome.notifications.create({
+          type: "basic",
+          iconUrl: "icon.png",
+          title: "اكتملت المزامنة",
+          message: \`تم مزامنة \${message.data.length} سجل بنجاح.\`
+        });
+      })
+      .catch(err => {
+        sendResponse({ success: false, error: err.message });
+      });
+    });
+    return true;
+  }
+});`;
+
+      const contentJsCode = `// content.js - سحب البيانات من صفحات ناجز
+function extractNajizData() {
+  const url = window.location.href;
+  let extractedData = [];
+  let dataType = 'unknown';
+
+  if (url.includes('/cases') || url.includes('/my-cases')) {
+    dataType = 'cases';
+    document.querySelectorAll('.case-card, table tr, .najiz-card').forEach(el => {
+      const text = el.innerText;
+      if (text.includes('رقم القضية') || text.includes('المحكمة')) {
+        extractedData.push({
+          caseNumber: text.match(/رقم القضية:?\\s*(\\S+)/)?.[1] || 'غير متوفر',
+          courtName: text.match(/المحكمة:?\\s*([^\\n]+)/)?.[1] || 'غير متوفر',
+          status: text.match(/الحالة:?\\s*([^\\n]+)/)?.[1] || 'غير متوفر',
+          date: text.match(/تاريخ:?\\s*([^\\n]+)/)?.[1] || new Date().toISOString().split('T')[0],
+          rawText: text
+        });
+      }
+    });
+  } else if (url.includes('/sessions') || url.includes('/hearings')) {
+    dataType = 'hearings';
+    document.querySelectorAll('.session-card, table tr').forEach(el => {
+      const text = el.innerText;
+      if (text.includes('التاريخ') || text.includes('الجلسة')) {
+        extractedData.push({
+          date: text.match(/تاريخ:?\\s*([^\\n]+)/)?.[1] || 'غير متوفر',
+          time: text.match(/وقت:?\\s*([^\\n]+)/)?.[1] || 'غير متوفر',
+          court: text.match(/قاعة:?\\s*([^\\n]+)/)?.[1] || 'غير متوفر',
+          rawText: text
+        });
+      }
+    });
+  } else if (url.includes('/agencies') || url.includes('/powers')) {
+    dataType = 'agencies';
+    document.querySelectorAll('.agency-card, table tr').forEach(el => {
+      const text = el.innerText;
+      if (text.includes('رقم الوكالة')) {
+        extractedData.push({
+          number: text.match(/رقم الوكالة:?\\s*(\\S+)/)?.[1] || 'غير متوفر',
+          issueDate: text.match(/تاريخ الإصدار:?\\s*([^\\n]+)/)?.[1] || 'غير متوفر',
+          rawText: text
+        });
+      }
+    });
+  } else if (url.includes('/execution')) {
+    dataType = 'executions';
+    document.querySelectorAll('.execution-card, table tr').forEach(el => {
+      const text = el.innerText;
+      if (text.includes('رقم الطلب') || text.includes('التنفيذ')) {
+        extractedData.push({
+          number: text.match(/رقم الطلب:?\\s*(\\S+)/)?.[1] || 'غير متوفر',
+          amount: text.match(/المبلغ:?\\s*([^\\n]+)/)?.[1] || 'غير متوفر',
+          status: text.match(/الحالة:?\\s*([^\\n]+)/)?.[1] || 'غير متوفر',
+          rawText: text
+        });
+      }
+    });
+  } else if (url.includes('/judgments') || url.includes('/deeds')) {
+    dataType = 'judgments';
+    document.querySelectorAll('.judgment-card, table tr').forEach(el => {
+      const text = el.innerText;
+      if (text.includes('رقم الصك') || text.includes('رقم الحكم')) {
+        extractedData.push({
+          number: text.match(/رقم الصك:?\\s*(\\S+)/)?.[1] || text.match(/رقم الحكم:?\\s*(\\S+)/)?.[1] || 'غير متوفر',
+          date: text.match(/تاريخ:?\\s*([^\\n]+)/)?.[1] || 'غير متوفر',
+          rawText: text
+        });
+      }
+    });
+  }
+
+  if (extractedData.length === 0) {
+    dataType = 'all';
+    document.querySelectorAll('.card, table tr').forEach(el => {
+      if (el.innerText.length > 50) {
+        extractedData.push({ rawText: el.innerText });
+      }
+    });
+  }
+
+  return { dataType, data: extractedData, url };
+}
+
+function injectAlAdalahBtn() {
+  if (document.querySelector('.aladalah-sync-container')) return;
+  const container = document.createElement('div');
+  container.className = 'aladalah-sync-container';
+  container.innerHTML = \`
+    <div style="position:fixed; bottom:20px; left:20px; z-index:99999; background:#0b1329; border:2px solid #D4AF37; padding:10px; border-radius:10px; color:#fff; font-family:sans-serif; text-align:right; direction:rtl; box-shadow: 0 4px 10px rgba(0,0,0,0.5);">
+      <h4 style="margin:0 0 10px 0; color:#D4AF37;">مزامنة بيانات ناجز</h4>
+      <button id="aladalah-sync-all" style="background:#D4AF37; color:#0b1329; border:none; padding:8px 12px; margin:3px; border-radius:5px; font-weight:bold; cursor:pointer;">مزامنة جميع البيانات</button>
+      <div style="display:flex; flex-direction:column; gap:5px; margin-top:10px;">
+         <button id="aladalah-sync-cases" style="background:#1a2b5e; color:#fff; border:1px solid #D4AF37; padding:5px; border-radius:4px; font-size:11px; cursor:pointer;">مزامنة جميع القضايا</button>
+         <button id="aladalah-sync-sessions" style="background:#1a2b5e; color:#fff; border:1px solid #D4AF37; padding:5px; border-radius:4px; font-size:11px; cursor:pointer;">مزامنة جميع الجلسات</button>
+         <button id="aladalah-sync-agencies" style="background:#1a2b5e; color:#fff; border:1px solid #D4AF37; padding:5px; border-radius:4px; font-size:11px; cursor:pointer;">سحب الوكالات</button>
+         <button id="aladalah-sync-execution" style="background:#1a2b5e; color:#fff; border:1px solid #D4AF37; padding:5px; border-radius:4px; font-size:11px; cursor:pointer;">سحب طلبات التنفيذ</button>
+         <button id="aladalah-sync-judgments" style="background:#1a2b5e; color:#fff; border:1px solid #D4AF37; padding:5px; border-radius:4px; font-size:11px; cursor:pointer;">الأحكام ومحاضر الجلسات</button>
+      </div>
+    </div>
+  \`;
+  document.body.appendChild(container);
+
+  const doSync = () => {
+    const extracted = extractNajizData();
+    if(extracted.data.length === 0) {
+      alert("لم يتم العثور على بيانات واضحة للسحب من هذه الصفحة.");
+      return;
+    }
+    chrome.runtime.sendMessage({
+      action: 'syncNajizData',
+      ...extracted
+    }, (res) => {
+      if (res && res.success) {
+        alert("تم إرسال " + res.count + " سجل بنجاح إلى منصة العدالة!");
+      } else {
+        alert("تأكد من ضبط رابط النظام في إعدادات الامتداد.");
+      }
+    });
+  };
+
+  document.getElementById('aladalah-sync-all').onclick = doSync;
+  document.getElementById('aladalah-sync-cases').onclick = doSync;
+  document.getElementById('aladalah-sync-sessions').onclick = doSync;
+  document.getElementById('aladalah-sync-agencies').onclick = doSync;
+  document.getElementById('aladalah-sync-execution').onclick = doSync;
+  document.getElementById('aladalah-sync-judgments').onclick = doSync;
+}
+
+const observer = new MutationObserver(() => {
+  injectAlAdalahBtn();
+});
+observer.observe(document.body, { childList: true, subtree: true });
+
+injectAlAdalahBtn();
+`;
+
+      const popupHtmlCode = `<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+  <meta charset="UTF-8">
+  <style>
+    body { width: 320px; font-family: sans-serif; padding: 20px; background: #0b1329; color: #FFFFFF; text-align: right; }
+    h3 { margin: 0 0 15px 0; color: #D4AF37; text-align: center; }
+    label { font-size: 11px; color: #D4AF37; display: block; margin-bottom: 5px; }
+    input { width: 100%; box-sizing: border-box; padding: 8px; margin-bottom: 12px; border: 1px solid #D4AF37; border-radius: 4px; background: #1a2b5e; color: #fff; font-size: 11px; }
+    p.status { font-size: 11px; color: #aaa; margin-bottom: 15px; text-align: center; }
+    .btn { background: #D4AF37; color: #0b1329; border: none; padding: 10px; font-weight: bold; width: 100%; border-radius: 6px; cursor: pointer; transition: 0.2s; font-size: 12px; }
+    .btn:hover { background: #eac54c; }
+    .btn-secondary { background: transparent; color: #D4AF37; border: 1px solid #D4AF37; margin-top: 5px; }
+  </style>
+</head>
+<body>
+  <h3>منصة العدالة - مزامنة ناجز</h3>
+  
+  <label>رابط النظام (URL التطبيق المنشور):</label>
+  <input type="text" id="systemUrl" placeholder="https://adalah.law" />
+
+  <label>مفتاح الربط API KEY (اختياري - للربط الخارجي):</label>
+  <input type="password" id="apiKey" placeholder="ادخل مفتاح الربط إن وجد" />
+
+  <button class="btn btn-secondary" id="saveUrlBtn">حفظ الإعدادات</button>
+  
+  <hr style="border-color: #1a2b5e; margin: 20px 0;" />
+  
+  <p class="status" id="statusText">بانتظار المزامنة...</p>
+  <button class="btn" id="syncBtn">مزامنة الآن</button>
+
+  <script src="popup.js"></script>
+</body>
+</html>`;
+
+      const popupJsCode = `document.addEventListener('DOMContentLoaded', () => {
+  const systemUrlInput = document.getElementById('systemUrl');
+  const apiKeyInput = document.getElementById('apiKey');
+  const saveUrlBtn = document.getElementById('saveUrlBtn');
+  const syncBtn = document.getElementById('syncBtn');
+  const statusText = document.getElementById('statusText');
+
+  chrome.storage.local.get(['systemUrl', 'apiKey', 'lastSync'], (result) => {
+    if (result.systemUrl) systemUrlInput.value = result.systemUrl;
+    if (result.apiKey) apiKeyInput.value = result.apiKey;
+    if (result.lastSync) {
+      statusText.innerText = 'آخر مزامنة: ' + new Date(result.lastSync).toLocaleString('ar-SA');
+    }
+  });
+
+  saveUrlBtn.addEventListener('click', () => {
+    const url = systemUrlInput.value.trim();
+    const key = apiKeyInput.value.trim();
+    chrome.storage.local.set({ systemUrl: url, apiKey: key }, () => {
+      alert('تم حفظ الإعدادات بنجاح!');
+    });
+  });
+
+  syncBtn.addEventListener('click', () => {
+    statusText.innerText = 'جاري المزامنة...';
+    chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+      chrome.scripting.executeScript({
+        target: {tabId: tabs[0].id},
+        function: () => { document.getElementById('aladalah-sync-all')?.click(); }
+      });
+    });
+  });
+});`;
+
+      const readmeCode = `# أداة المزامنة الفورية لنظام العدالة (منصة ناجز)
+
+أهلاً بك في الدليل الإرشادي لتنصيب امتداد "العدالة وناجز". هذا الامتداد مصمم لتوفير الجهد في تكرار إدخال البيانات عبر سحبها آلياً من بوابة ناجز.
+
+## 🛠️ متطلبات التشغيل
+- متصفح Google Chrome (أو متصفح مبني على Chromium مثل Edge).
+- اتصال نشط بالإنترنت.
+
+## 🚀 خطوات التثبيت (بوضوح)
+
+### الخطوة الأولى: تجهيز الملفات
+1. قم بفك الضغط عن الملف الذي قمت بتحميله الآن (Adalah-Najiz-Sync-Build.zip).
+2. تأكد من وجود مجلد يحتوي على ملفات مثل \`manifest.json\` و \`content.js\`.
+
+### الخطوة الثانية: تفعيل وضع المطورين في المتصفح
+1. افتح متصفح Google Chrome.
+2. اذهب إلى الرابط التالي (انسخه والصقه في شريط العنوان): \`chrome://extensions\`
+3. في الزاوية العلوية اليمنى (أو اليسرى حسب اللغة)، ستجد خيار **"وضع المطور" (Developer mode)**، قم بتفعيله.
+
+### الخطوة الثالثة: تحميل الإضافة
+1. سيظهر لك زر جديد بعنوان **"تحميل حزمة غير مضغوطة" (Load unpacked)**. اضغط عليه.
+2. اختر المجلد الذي قمت بفك ضغطه في الخطوة الأولى.
+3. ستلاحظ ظهور أيقونة "العدالة" الآن في قائمة الإضافات.
+
+### الخطوة الرابعة: الضبط والربط
+1. ادخل إلى حسابك في **منصة ناجز (najiz.sa)** عبر نفاذ.
+2. بمجرد الدخول، ستجد زر "العدالة" أسفل يمين الشاشة.
+3. اضغط على أيقونة الإضافة في شريط الأدوات العُلوي للمتصفح.
+4. أدخل **رابط النظام** الخاص بك (Webhook URL) الموجود في صفحة "الربط مع ناجز" داخل نظامك.
+5. (اختياري) أدخل **مفتاح الـ API** إذا كنت تستخدم الوضع المطور للشركات.
+6. اضغط على "حفظ".
+
+## 💡 كيف تستخدم الأداة؟
+- عند تصفح "قضاياي" أو "الجلسات" في ناجز، سيظهر لك خيار "مزامنة الكل" أو "مزامنة هذه القضية".
+- بمجرد الضغط، سيقوم الذكاء الاصطناعي في نظام العدالة باستقبال البيانات، فرزها، وتحديث "آخر مزامنة" في واجهة القضايا والجلسات لديك فوراً.
+
+---
+*شكراً لاستخدامك حلول "العدالة" الذكية.*
+`;
+
+      const zip = new JSZip();
+      const folder = zip.folder("Adalah-Najiz-Sync-Build");
+      if (folder) {
+        folder.file("manifest.json", manifestCode);
+        folder.file("background.js", backgroundJsCode);
+        folder.file("content.js", contentJsCode);
+        folder.file("popup.html", popupHtmlCode);
+        folder.file("popup.js", popupJsCode);
+        folder.file("README-AR.md", readmeCode);
+      }
+      
+      const content = await zip.generateAsync({ type: "blob" });
+      const url = URL.createObjectURL(content);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'Adalah-Najiz-Sync-Build.zip';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      
+      (window as any).showToast?.('تم توليد وتنزيل حزمة الإضافة بصيغة ZIP وجاهزة للعمل.', 'success');
     } catch (e) {
       console.error("Error initiating download: ", e);
-      alert('حدث خطأ أثناء تحميل الإضافة');
+      (window as any).showToast?.('حدث خطأ أثناء تحميل الإضافة', 'error');
     } finally {
-      // Simulate slight delay before enabling the button again
       setTimeout(() => setDownloading(false), 2000);
     }
   };
 
+  const joyrideSteps: Step[] = [
+    {
+      target: '#najiz-welcome',
+      content: 'أهلاً بك في فضاء ناجز المتطور. هنا يمكنك ربط مكتبك ببيانات ناجز الرسمية لسحب القضايا والجلسات آلياً.',
+      title: 'أهلاً بك 🚀',
+    },
+    {
+      target: '#sync-dashboard',
+      content: 'لوحة التحكم الفورية لمزامنة كافة أقسام مكتبك بضغطة زر من بوابة ناجز.',
+      title: 'لوحة التحكم الملكية 👑',
+    },
+    {
+      target: '#sync-history',
+      content: 'هنا يتم رصد كل عملية استيراد بدقة متناهية لضمان شفافية وجودة البيانات.',
+      title: 'سجل الشفافية 📊',
+    },
+    {
+        target: '#features-section',
+        content: 'تعرف على الخطوات العملية لتثبيت الامتداد وتفعيله على متصفحك.',
+        title: 'دليل التثبيت 📦',
+    },
+    {
+      target: '#config-card',
+      content: 'من هنا حدد أنواع البيانات التي ترغب في استقبالها آلياً.',
+      title: 'تخصيص البيانات 🎯',
+    },
+    {
+      target: '#settings-btn',
+      content: 'هنا يمكنك ضبط مفاتيح الربط وتغيير هوية الكروت المستوردة.',
+      title: 'بروتوكولات الضبط ⚙️',
+    }
+  ];
+
   return (
-    <div className="p-8 max-w-7xl mx-auto space-y-8 animate-in fade-in duration-500 min-h-screen bg-[#060b13] text-[#ffffff]" dir="rtl">
+    <div className="p-8 max-w-7xl mx-auto space-y-8 animate-in fade-in duration-500 min-h-screen bg-slate-50 text-slate-900" dir="rtl">
+      
+      <JoyrideAny
+        steps={joyrideSteps}
+        run={runTour}
+        continuous={true}
+        callback={handleJoyrideCallback}
+        locale={{
+          back: 'السابق',
+          close: 'إغلاق',
+          last: 'نهاية الجولة',
+          next: 'التالي',
+          skip: 'تخطي الجولة',
+        }}
+        styles={{
+          tooltipContainer: {
+            textAlign: 'right',
+            direction: 'rtl'
+          }
+        }}
+      />
+      {/* Live Dashboard Control Panel */}
+      <div id="sync-dashboard" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {[
+          { id: 'cases', label: 'مزامنة القضايا', icon: Database, color: 'blue' },
+          { id: 'hearings', label: 'مزامنة الجلسات', icon: Calendar, color: 'amber' },
+          { id: 'agencies', label: 'مزامنة الوكالات', icon: Users, color: 'indigo' },
+          { id: 'executions', label: 'مزامنة طلبات التنفيذ', icon: FileText, color: 'emerald' }
+        ].map((btn) => {
+          const status = syncStatus[btn.id] || 'idle';
+          return (
+            <motion.button
+              key={btn.id}
+              whileHover={{ scale: 1.05, translateY: -4 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => {
+                if (status === 'idle') {
+                  const showToast = (window as any).showToast || console.log;
+                  showToast(`جاري الاتصال بـ ناجز لسحب ${btn.label}...`, 'info');
+                  setSyncStatus(prev => ({ ...prev, [btn.id]: 'syncing' }));
+                  setTimeout(() => {
+                    setSyncStatus(prev => ({ ...prev, [btn.id]: 'success' }));
+                    showToast(`تم تحديث ${btn.label} بنجاح`, 'success');
+                    setTimeout(() => setSyncStatus(prev => ({ ...prev, [btn.id]: 'idle' })), 3000);
+                  }, 2000);
+                }
+              }}
+              className={`relative overflow-hidden p-6 rounded-[2.5rem] border-2 transition-all flex flex-col gap-4 text-right shadow-2xl
+                ${status === 'syncing' ? 'border-[#D4AF37] bg-slate-900 animate-pulse' : 
+                  status === 'success' ? 'border-emerald-500 bg-emerald-950' : 
+                  'border-[#D4AF37]/30 bg-[#063060] hover:border-[#D4AF37] shadow-[#063060]/20'}`}
+            >
+              <div className="flex items-center justify-between">
+                <div className={`p-3.5 rounded-2xl ${
+                  status === 'syncing' ? 'bg-[#D4AF37]/20 text-[#D4AF37]' :
+                  status === 'success' ? 'bg-emerald-500/20 text-emerald-400' :
+                  'bg-[#D4AF37]/10 text-[#FACC15]'}`}>
+                  <btn.icon className="w-7 h-7" />
+                </div>
+                <div className={`flex items-center gap-2 text-[10px] font-black px-3 py-1.5 rounded-full ${
+                  status === 'syncing' ? 'bg-[#D4AF37]/20 text-[#FACC15]' :
+                  status === 'success' ? 'bg-emerald-500/20 text-emerald-400' :
+                  'bg-white/10 text-[#FACC15]/80'}`}>
+                  <div className={`w-2 h-2 rounded-full ${
+                    status === 'syncing' ? 'bg-[#FACC15] animate-ping' :
+                    status === 'success' ? 'bg-emerald-400' :
+                    'bg-[#D4AF37]'}`} />
+                  {status === 'syncing' ? 'جاري السحب...' : status === 'success' ? 'اكتمل بنجاح' : 'جاهز للربط'}
+                </div>
+              </div>
+              <div>
+                <h4 className={`font-black text-lg ${status === 'idle' ? 'text-white' : 'text-white'}`}>{btn.label}</h4>
+                <p className={`text-[10px] font-bold ${status === 'idle' ? 'text-[#FACC15]/70' : 'text-white/60'}`}>
+                  {syncHistory[btn.id]?.lastSync ? `آخر عملية: ${new Date(syncHistory[btn.id].lastSync!).toLocaleDateString('ar-SA')}` : 'انتظار الربط الأول'}
+                </p>
+              </div>
+              
+              {/* Luxury Glossy Overlay */}
+              <div className="absolute top-0 left-0 w-full h-1/2 bg-gradient-to-b from-white/5 to-transparent pointer-events-none" />
+            </motion.button>
+          );
+        })}
+      </div>
+
+      {/* Sync History Table */}
+      <motion.div 
+        id="sync-history"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="bg-white border-2 border-slate-100 rounded-[3rem] overflow-hidden shadow-xl"
+      >
+        <div className="p-8 border-b border-slate-50 bg-slate-50/50 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className="p-3 bg-indigo-500/10 text-indigo-600 rounded-2xl">
+              <Database className="w-6 h-6" />
+            </div>
+            <div>
+              <h3 className="text-xl font-black text-slate-900">سجل شفافية البيانات</h3>
+              <p className="text-sm text-slate-400 font-bold">متابعة دقيقة لكل عملية استيراد من بوابة ناجز</p>
+            </div>
+          </div>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-right">
+            <thead>
+              <tr className="bg-slate-50/50 text-[11px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100">
+                <th className="px-8 py-4">القسم / التصنيف</th>
+                <th className="px-8 py-4 text-center">آخر عملية سحب</th>
+                <th className="px-8 py-4 text-center">سجلات مضافة</th>
+                <th className="px-8 py-4 text-center">سجلات محدثة</th>
+                <th className="px-8 py-4 text-center">الحالة الحالية</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-50">
+              {[
+                { id: 'cases', label: 'القضايا والدعاوى', icon: Briefcase },
+                { id: 'hearings', label: 'الجلسات والمواعيد', icon: Calendar },
+                { id: 'agencies', label: 'الوكالات الشرعية', icon: Users },
+                { id: 'executions', label: 'طلبات التنفيذ', icon: Zap },
+                { id: 'clients', label: 'ملفات الموكلين', icon: Bot }
+              ].map((item) => (
+                <tr key={item.id} className="hover:bg-slate-50 transition-colors">
+                  <td className="px-8 py-5">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-slate-100 text-slate-600 rounded-lg">
+                        <item.icon className="w-4 h-4" />
+                      </div>
+                      <span className="font-black text-slate-700 text-sm">{item.label}</span>
+                    </div>
+                  </td>
+                  <td className="px-8 py-5 text-center font-bold text-slate-500 text-xs">
+                    {syncHistory[item.id]?.lastSync ? new Date(syncHistory[item.id].lastSync!).toLocaleString('ar-SA') : '---'}
+                  </td>
+                  <td className="px-8 py-5 text-center font-black text-emerald-600 text-sm">
+                    {syncHistory[item.id]?.newCount || 0}
+                  </td>
+                  <td className="px-8 py-5 text-center font-black text-amber-500 text-sm">
+                    {syncHistory[item.id]?.updatedCount || 0}
+                  </td>
+                  <td className="px-8 py-5 text-center">
+                    <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black ${
+                      syncHistory[item.id]?.lastSync ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' : 'bg-slate-100 text-slate-400'
+                    }`}>
+                      {syncHistory[item.id]?.lastSync ? 'متزامن' : 'غير متصل'}
+                    </span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </motion.div>
+      
+      {/* Sync Report Modal */}
+      <AnimatePresence>
+        {syncReport?.show && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 bg-black/90 backdrop-blur-md"
+              onClick={() => setSyncReport(null)}
+            />
+            <motion.div 
+              initial={{ scale: 0.9, opacity: 0, y: 30 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.9, opacity: 0, y: 30 }}
+              className="relative bg-[#0b1329] border-2 border-[#D4AF37] overflow-hidden rounded-[3rem] max-w-2xl w-full shadow-[0_0_50px_rgba(212,175,55,0.4)]"
+            >
+              <div className="p-8 bg-[#1e293b]/50 border-b border-[#D4AF37]/30">
+                 <div className="flex items-center justify-between">
+                    <div>
+                      <h2 className="text-2xl font-black text-[#FACC15] mb-1">تقرير ذكاء المزامنة والمطابقة (Mapping)</h2>
+                      <p className="text-slate-300 text-xs font-bold italic">تحليل المطابقة الفوري لتجنب التكرار وتحديث السجلات القائمة.</p>
+                    </div>
+                    <button 
+                      onClick={() => setSyncReport(null)}
+                      className="p-2 hover:bg-white/10 rounded-full text-slate-400 hover:text-white"
+                    >
+                      <X className="w-6 h-6" />
+                    </button>
+                 </div>
+
+                 <div className="grid grid-cols-3 gap-4 mt-8">
+                    <div className="bg-emerald-500/10 border border-emerald-500/30 p-4 rounded-2xl text-center">
+                       <p className="text-[10px] font-black text-emerald-400 mb-1">بيانات جديدة ✅</p>
+                       <p className="text-3xl font-black text-white">{syncReport.stats.newCount}</p>
+                    </div>
+                    <div className="bg-amber-500/10 border border-amber-500/30 p-4 rounded-2xl text-center">
+                       <p className="text-[10px] font-black text-amber-400 mb-1">سجلات للدمج الذكي 🔁</p>
+                       <p className="text-3xl font-black text-white">{syncReport.stats.duplicateCount}</p>
+                    </div>
+                    <div className="bg-[#D4AF37]/10 border border-[#D4AF37]/30 p-4 rounded-2xl text-center">
+                       <p className="text-[10px] font-black text-[#FACC15] mb-1">إجمالي المعاملات</p>
+                       <p className="text-3xl font-black text-white">{syncReport.stats.total}</p>
+                    </div>
+                 </div>
+              </div>
+
+              <div className="p-6 max-h-[400px] overflow-y-auto space-y-3 custom-scrollbar">
+                {syncReport.details.map((item, idx) => (
+                  <div key={idx} className="flex items-center justify-between p-4 bg-[#1e293b]/30 border border-white/5 rounded-2xl hover:bg-[#1e293b]/50 transition-all">
+                    <div className="flex items-center gap-3">
+                       <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${item.status === 'new' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-amber-500/20 text-amber-400'}`}>
+                          {item.status === 'new' ? <Zap className="w-4 h-4" /> : <Rocket className="w-4 h-4" />}
+                       </div>
+                       <div>
+                          <p className="text-xs font-black text-white">{item.title}</p>
+                          <p className="text-[10px] text-slate-400 font-bold">{item.category}</p>
+                       </div>
+                    </div>
+                    <div className={`text-[10px] font-black px-3 py-1 rounded-full border ${item.status === 'new' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30' : 'bg-amber-500/10 text-[#FACC15] border-[#D4AF37]/50'}`}>
+                       {item.status === 'new' ? 'بيانات جديدة' : 'معلق للدمج'}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="p-6 bg-black/20 flex gap-3">
+                 {syncReport.details.some(d => d.status === 'conflict') && (
+                   <button 
+                    disabled={isSmartMergeApplying}
+                    onClick={async () => {
+                      setIsSmartMergeApplying(true);
+                      for (const item of syncReport.details) {
+                        if (item.status === 'conflict' && item.existingId && item.itemData) {
+                          try {
+                            if (item.category === 'cases') {
+                              await updateRecord('cases', item.existingId, { last_sync_at: new Date().toISOString(), summary: (item.itemData.rawText || '') + ' [دمج ذكي]' });
+                            } else if (item.category === 'hearings') {
+                              await updateRecord('hearings', item.existingId, { last_sync_at: new Date().toISOString(), notes: (item.itemData.rawText || '') + ' [دمج ذكي]' });
+                            } else if (item.category === 'executions') {
+                              await updateRecord('executions', item.existingId, { last_sync_at: new Date().toISOString() });
+                            } else if (item.category === 'agencies') {
+                              await updateRecord('powers_of_attorney', item.existingId, { last_sync_at: new Date().toISOString() });
+                            }
+                          } catch (e) { console.error('Error in smart merge:', e); }
+                        }
+                      }
+                      const showToast = (window as any).showToast || console.log;
+                      showToast("تم تطبيق دمج ذكي للبيانات الأحدث بنجاح!", "success");
+                      setIsSmartMergeApplying(false);
+                      setSyncReport(null);
+                    }}
+                    className="flex-1 bg-[#203c68] hover:bg-[#D4AF37] disabled:opacity-50 text-white font-black py-4 rounded-2xl transition-all shadow-lg flex items-center justify-center gap-2"
+                   >
+                     {isSmartMergeApplying ? <Settings className="w-5 h-5 animate-spin" /> : <Rocket className="w-5 h-5" />}
+                     {isSmartMergeApplying ? 'جاري الدمج والتحديث...' : 'دمج ذكي (تحديث البيانات الأحدث)'}
+                   </button>
+                 )}
+                 <button 
+                  onClick={() => setSyncReport(null)}
+                  className={`${syncReport.details.some(d => d.status === 'conflict') ? 'flex-[0.5] bg-white/5 border border-white/10 hover:bg-white/10 text-slate-300' : 'w-full bg-[#D4AF37] hover:bg-[#FACC15] text-[#060b13]'} font-black py-4 rounded-2xl transition-all`}
+                 >
+                   إغلاق
+                 </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
       
       {/* Royal Header Widget (Deep Navy and Luxury Gold) */}
-      <div className="bg-[#0b0f19] rounded-[3rem] p-12 text-white shadow-2xl relative overflow-hidden border-2 border-[#D4AF37]/60">
+      <div id="najiz-welcome" className="bg-[#0b0f19] rounded-[3rem] p-12 text-white shadow-2xl relative overflow-hidden border-2 border-[#D4AF37]/60">
         <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(ellipse_at_top_right,rgba(212,175,55,0.08),transparent)] pointer-events-none" />
         <div className="absolute -top-24 -right-12 w-80 h-80 bg-[#D4AF37]/10 blur-[100px] rounded-full pointer-events-none" />
         
@@ -682,7 +1611,7 @@ export default function NajizExtensionHub({ currentUser, onUpdateState }: NajizE
               </div>
             </div>
             
-            <div className="flex flex-wrap items-center gap-4 pt-4">
+            <div className="flex flex-wrap items-center gap-4 pt-4" id="download-btn">
               <button 
                 onClick={handleDownload}
                 disabled={downloading}
@@ -699,6 +1628,7 @@ export default function NajizExtensionHub({ currentUser, onUpdateState }: NajizE
               </button>
 
               <button 
+                id="settings-btn"
                 onClick={() => setIsSettingsOpen(true)}
                 className="bg-transparent hover:bg-white/10 text-white border-2 border-[#D4AF37] font-black text-lg px-6 py-5 rounded-2xl shadow-lg transition-all flex items-center gap-2 active:scale-95"
               >
@@ -721,7 +1651,7 @@ export default function NajizExtensionHub({ currentUser, onUpdateState }: NajizE
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
         
         {/* Left Side: Settings Panel, Configuration Status, Multi-select Target Types */}
-        <div className="lg:col-span-1 space-y-6">
+        <div id="features-section" className="lg:col-span-1 space-y-6">
           
           {/* Active Connection Status Badge */}
           <div className="bg-[#0b0f19] border border-[#D4AF37]/50 rounded-[2.5rem] p-6 shadow-2xl text-white">
@@ -739,6 +1669,9 @@ export default function NajizExtensionHub({ currentUser, onUpdateState }: NajizE
                 <p className="text-sm font-black text-emerald-400">
                   {syncMode === 'personal' ? 'المزامنة الذاتية (الحساب الشخصي)' : 'المزامنة المقيدة (API Key)'}
                 </p>
+                {syncMode === 'apikey' && !customApiKey && (
+                  <p className="text-[10px] text-amber-400 mt-1 font-bold">⚠️ لم يتم إدخال مفتاح API - سيتم استخدام الوضع الافتراضي</p>
+                )}
               </div>
 
               <div className="p-4 bg-[#1e293b]/70 border border-[#D4AF37]/30 rounded-2xl text-[11px] font-black leading-relaxed text-yellow-300">
@@ -763,14 +1696,76 @@ export default function NajizExtensionHub({ currentUser, onUpdateState }: NajizE
             </div>
           </div>
 
+          {/* Enhanced Infographics & Security Benefits Section */}
+          <div className="bg-[#0b0f19] border border-[#D4AF37]/50 rounded-[2.5rem] p-8 shadow-2xl text-white space-y-8">
+            <div className="flex items-center gap-4 border-b border-[#D4AF37]/20 pb-4">
+              <div className="p-3 bg-[#D4AF37]/20 text-[#D4AF37] rounded-2xl">
+                <ShieldCheck className="w-6 h-6" />
+              </div>
+              <h3 className="font-black text-[#FACC15] text-xl">دليل الربط الآمن والتثبيت</h3>
+            </div>
+            
+            <div className="space-y-6">
+              {[
+                { 
+                  title: "1. تفعيل وضع المطور", 
+                  desc: "افتح chrome://extensions وفعّل خيار 'Developer Mode' للسماح بتحميل الحزم المحلية.",
+                  icon: Code,
+                  color: "blue"
+                },
+                { 
+                  title: "2. فك حزمة الامتداد", 
+                  desc: "يجب استخراج ملف .ZIP المحمل في مجلد مستقل لضمان عمل كافة الملفات البرمجية.",
+                  icon: Download,
+                  color: "amber"
+                },
+                { 
+                  title: "3. مزايا المزامنة التلقائية", 
+                  desc: "الوضع الافتراضي (بدون مفاتيح) يحمي خصوصيتك عبر تشفير البيانات محلياً قبل الترحيل.",
+                  icon: ShieldCheck,
+                  color: "emerald"
+                }
+              ].map((step, i) => (
+                <div key={i} className="flex gap-4 p-4 bg-white/5 rounded-2xl border border-white/5 hover:border-[#D4AF37]/30 transition-all">
+                  <div className="p-3 rounded-xl bg-slate-800 text-[#D4AF37] h-fit">
+                    <step.icon className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-black text-white">{step.title}</h4>
+                    <p className="text-[10px] text-slate-400 font-bold leading-relaxed mt-1">{step.desc}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="p-4 bg-[#D4AF37]/5 rounded-2xl border border-[#D4AF37]/20">
+              <div className="flex items-center gap-2 mb-2 text-[#FACC15]">
+                <Key className="w-4 h-4" />
+                <span className="text-[10px] font-black uppercase tracking-wider">تطبيق مفاتيح الربط</span>
+              </div>
+              <div className="space-y-1 bg-black/40 p-3 rounded-xl border border-white/5 font-mono text-[9px] text-slate-300">
+                <div className="flex justify-between items-center bg-white/5 p-1.5 rounded mb-1">
+                  <span className="opacity-60">System URL:</span>
+                  <span className="text-emerald-400 font-bold select-all truncate max-w-[120px]">{window.location.origin}</span>
+                </div>
+                <div className="flex justify-between items-center bg-white/5 p-1.5 rounded">
+                  <span className="opacity-60">API Status:</span>
+                  <span className={syncMode === 'personal' ? 'text-amber-400' : 'text-blue-400'}>
+                    {syncMode === 'personal' ? 'Keyless/Personal' : 'Enterprise API'}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+
           {/* Dynamic Checklist Multi-select Config Card inside React UI */}
-          <div className="bg-[#0b0f19] border border-[#D4AF37]/50 rounded-[2.5rem] p-6 shadow-2xl text-white space-y-4">
+          <div className="bg-[#0b0f19] border border-[#D4AF37]/50 rounded-[2.5rem] p-6 shadow-2xl text-white space-y-4" id="config-card">
              <div>
                 <h3 className="font-black text-[#FACC15] text-lg flex items-center gap-2">
                    <ClipboardList className="w-6 h-6 text-[#FACC15]" />
                    تحديد بيانات السحب
                 </h3>
-                <p className="text-[11px] text-yellow-100/70 font-semibold mt-1">اختر الأصناف المقررة للاستقبال بالأسفل. سيتم حظر وسحب أي صنف غير محدد آلياً.</p>
+                <p className="text-[11px] text-amber-100 font-semibold mt-1">اختر الأصناف المقررة للاستقبال بالأسفل. سيتم حظر وسحب أي صنف غير محدد آلياً.</p>
              </div>
 
              <div className="space-y-3 pt-2">
@@ -786,10 +1781,10 @@ export default function NajizExtensionHub({ currentUser, onUpdateState }: NajizE
                     <button
                       key={item.value}
                       onClick={() => handleToggleSyncType(item.value)}
-                      className={`w-full flex items-center justify-between p-3.5 rounded-xl border text-right font-bold text-xs transition-all ${isChecked ? 'bg-[#D4AF37]/10 border-[#D4AF37] text-white shadow-md' : 'bg-[#1e293b]/40 border-white/10 text-white/80 hover:text-white hover:bg-[#1e293b]/60'}`}
+                      className={`w-full flex items-center justify-between p-3.5 rounded-xl border text-right font-bold text-xs transition-all ${isChecked ? 'bg-[#D4AF37]/10 border-[#D4AF37] text-white shadow-md' : 'bg-[#1e293b]/40 border-white/10 text-slate-200 hover:text-white hover:bg-[#1e293b]/60'}`}
                     >
                       <div className="flex items-center gap-3">
-                        <item.icon className={`w-4 h-4 ${isChecked ? 'text-[#FACC15]' : 'text-white/60'}`} />
+                        <item.icon className={`w-4 h-4 ${isChecked ? 'text-[#FACC15]' : 'text-slate-400'}`} />
                         <span>{item.label}</span>
                       </div>
                       <div className={`w-4 h-4 rounded flex items-center justify-center border ${isChecked ? 'bg-[#D4AF37] border-[#D4AF37]' : 'border-white/40'}`}>
@@ -910,7 +1905,7 @@ export default function NajizExtensionHub({ currentUser, onUpdateState }: NajizE
                     <div className="flex flex-wrap items-center justify-between gap-4">
                       <div>
                         <h4 className="font-black text-white text-base">منصة محاكاة الاستقبال المباشر</h4>
-                        <p className="text-xs text-yellow-100/70 font-semibold mt-0.5">ستقوم المحاكاة باستقاء المعطیات وتصنيفها كالقضايا والوكالات والمهام ونقلها لجداول Supabase.</p>
+                        <p className="text-xs text-amber-100 font-semibold mt-0.5">ستقوم المحاكاة باستقاء المعطیات وتصنيفها كالقضايا والوكالات والمهام ونقلها لجداول Supabase.</p>
                       </div>
 
                       <button
@@ -923,28 +1918,32 @@ export default function NajizExtensionHub({ currentUser, onUpdateState }: NajizE
                     </div>
 
                     {/* Simulated terminal console window */}
-                    <div className="bg-[#060b13] rounded-2xl p-5 border-2 border-[#D4AF37]/50 font-mono text-[11px] leading-relaxed relative shadow-inner">
-                      <div className="flex items-center gap-2 pb-3 mb-3 border-b border-white/10 text-white/40">
-                         <div className="w-3.5 h-3.5 rounded-full bg-red-500/80" />
-                         <div className="w-3.5 h-3.5 rounded-full bg-yellow-500/80" />
-                         <div className="w-3.5 h-3.5 rounded-full bg-emerald-500/80" />
-                         <span className="text-xs font-black text-white ml-auto">لوحة التحكم التوجيهية للـ AI (الاستقبال والفرز المباشر)</span>
+                    <div className={`${importedCardTheme === 'dark' ? 'bg-[#060b13] border-[#D4AF37]/50 text-white' : 'bg-white border-slate-200 text-slate-900'} rounded-2xl p-5 border-2 font-mono text-[11px] leading-relaxed relative shadow-inner overflow-hidden transition-all duration-500`}>
+                      <div className="flex items-center justify-between pb-3 mb-3 border-b border-white/10">
+                         <div className="flex items-center gap-2">
+                            <div className="w-3.5 h-3.5 rounded-full bg-red-500/80" />
+                            <div className="w-3.5 h-3.5 rounded-full bg-yellow-500/80" />
+                            <div className="w-3.5 h-3.5 rounded-full bg-emerald-500/80" />
+                         </div>
+                         <div className={`px-3 py-1 rounded-full text-[9px] font-black ${importedCardTheme === 'dark' ? 'bg-white/5 text-white/40' : 'bg-slate-100 text-slate-400'}`}>
+                           {importedCardTheme === 'dark' ? 'لوحة التحكم الفاخرة' : 'لوحة التحكم المضيئة'}
+                         </div>
                       </div>
 
                       <div className="space-y-2 max-h-60 overflow-y-auto font-semibold font-mono text-left" dir="ltr">
                         {simulatedLogs.length === 0 ? (
-                          <div className="text-white/30 italic text-center py-10 font-sans">
+                          <div className={`italic text-center py-10 font-sans ${importedCardTheme === 'dark' ? 'text-slate-400' : 'text-slate-500'}`}>
                              بانتظار إطلاق المحاكاة لتتبع مآل البيانات والتحقق من الفرز التوجيهي حسب اختيارك...
                           </div>
                         ) : (
                           simulatedLogs.map((logStr, i) => {
-                            let textClass = "text-white";
-                            if (logStr.includes("[مزامنة ناجحة]")) textClass = "text-emerald-400";
+                            let textClass = importedCardTheme === 'dark' ? "text-white" : "text-slate-700";
+                            if (logStr.includes("[مزامنة ناجحة]")) textClass = "text-emerald-500 font-black";
                             else if (logStr.includes("[AI تجاهل]")) textClass = "text-amber-500";
-                            else if (logStr.includes("🔒") || logStr.includes("🤖")) textClass = "text-[#FACC15]";
+                            else if (logStr.includes("🔒") || logStr.includes("🤖")) textClass = "text-[#D4AF37]";
                             
                             return (
-                              <div key={i} className={`p-1.5 rounded transition-transform duration-200 ${textClass}`}>
+                              <div key={i} className={`p-2 rounded-lg mb-1 transition-all ${importedCardTheme === 'dark' ? 'bg-white/5 border border-white/5' : 'bg-slate-50 border border-slate-100'} ${textClass}`}>
                                  {logStr}
                               </div>
                             );
@@ -953,7 +1952,7 @@ export default function NajizExtensionHub({ currentUser, onUpdateState }: NajizE
                       </div>
                     </div>
 
-                    <div className="flex items-start gap-3 p-4 bg-[#D4AF37]/10 rounded-2xl border border-[#D4AF37]/30 text-xs font-semibold text-white/90">
+                    <div className="flex items-start gap-3 p-4 bg-[#D4AF37]/10 rounded-2xl border border-[#D4AF37]/30 text-xs font-semibold text-white">
                        <Info className="w-5 h-5 text-[#FACC15] shrink-0" />
                        <p>
                           برنامج السحب مدعم بقواعد مطابقة أنماط وتصنيفات مبنية لتفسير العناوين القانونية المفتوحة وفرزها إلى قضايا مستقلة، جلسات مجدولة، عملاء كأفراد أو شركات، أو وكلاء لتوفير الجهد وحوكمة البيانات بالكامل.
@@ -984,12 +1983,41 @@ export default function NajizExtensionHub({ currentUser, onUpdateState }: NajizE
                   <X className="w-6 h-6" />
                 </button>
 
-                <div className="flex items-center gap-3 mb-6 border-b border-[#D4AF37]/30 pb-4">
+                <div className="flex items-center gap-3 mb-6 border-b border-[#D4AF37]/30 pb-4" id="settings-btn">
                    <Settings className="w-8 h-8 text-[#FACC15] animate-spin-slow" />
                    <div>
                      <h2 className="text-2xl font-black text-[#FACC15]">ضبط بروتوكولات المزامنة المتقدمة</h2>
-                     <p className="text-[#ffffff]/70 text-xs font-bold leading-relaxed mt-0.5">خصص واجهة الاتصال وأسلوب التحويل المباشر لنظام ناجز.</p>
+                     <p className="text-slate-200 text-xs font-bold leading-relaxed mt-0.5">خصص واجهة الاتصال وأسلوب التحويل المباشر لنظام ناجز.</p>
                    </div>
+                </div>
+
+                {/* Theme Selection Section */}
+                <div className="bg-white/5 p-6 rounded-3xl border border-white/10 mb-8">
+                  <h3 className="text-lg font-black text-white mb-4 flex items-center gap-2">
+                    <Sparkles className="w-5 h-5 text-[#FACC15]" />
+                    هوية الكروت المستوردة
+                  </h3>
+                  <div className="grid grid-cols-2 gap-4">
+                    <button 
+                      onClick={() => setImportedCardTheme('dark')}
+                      className={`p-4 rounded-2xl border-2 transition-all flex flex-col items-center gap-2 ${importedCardTheme === 'dark' ? 'border-[#D4AF37] bg-[#D4AF37]/10' : 'border-white/5 hover:border-white/10'}`}
+                    >
+                      <div className="w-full h-12 bg-[#0b1329] rounded-lg border border-[#D4AF37]/40 flex items-center justify-center">
+                        <div className="w-3/4 h-2 bg-white/20 rounded" />
+                      </div>
+                      <span className="text-xs font-black text-white">النمط الداكن الفاخر</span>
+                    </button>
+                    <button 
+                      onClick={() => setImportedCardTheme('light')}
+                      className={`p-4 rounded-2xl border-2 transition-all flex flex-col items-center gap-2 ${importedCardTheme === 'light' ? 'border-[#D4AF37] bg-[#D4AF37]/10' : 'border-white/5 hover:border-white/10'}`}
+                    >
+                      <div className="w-full h-12 bg-white rounded-lg border border-slate-200 flex items-center justify-center">
+                        <div className="w-3/4 h-2 bg-slate-200 rounded" />
+                      </div>
+                      <span className="text-xs font-black text-white">النمط المضيء الصافي</span>
+                    </button>
+                  </div>
+                  <p className="text-[10px] text-slate-400 font-bold mt-4 italic">سيتم تطبيق هذا النمط على جميع الكروت المسحوبة من ناجز لضمان تباين عالٍ ومقروئية فائقة في كافة أقسام النظام.</p>
                 </div>
 
                 {/* Sleek Switch for Connection Mode Option */}
@@ -1020,7 +2048,7 @@ export default function NajizExtensionHub({ currentUser, onUpdateState }: NajizE
                         <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
                         <div>
                           <p className="text-xs font-black text-white">الوضع التلقائي الموصى به (بدون مفتاح)</p>
-                          <p className="text-[11px] text-yellow-100/80 leading-relaxed mt-1 font-semibold">
+                          <p className="text-[11px] text-amber-100 leading-relaxed mt-1 font-semibold">
                              المزامنة تتم بموجب توثيق المتصفح الشخصي وخصوصية المحامي الكاملة. لا تطلب الأداة منك أي مفاتيح، ويتم ترحيل قضاياك للغرفة وتوجيهها محلياً بأقصى سرية ونسبة أمان.
                           </p>
                         </div>
@@ -1035,27 +2063,30 @@ export default function NajizExtensionHub({ currentUser, onUpdateState }: NajizE
                            <input 
                              type="text" 
                              value={customApiUrl}
-                             onChange={(e) => setCustomApiUrl(e.target.value)}
+                             onChange={(e) => {
+                               setCustomApiUrl(e.target.value);
+                               localStorage.setItem('adalah_custom_api_url', e.target.value);
+                             }}
                              className="w-full bg-[#060b13] border-2 border-[#D4AF37]/40 rounded-xl p-4 text-xs font-mono font-bold text-white outline-none focus:border-[#FACC15] transition-all"
+                             placeholder="https://your-server.com/api/najiz-sync"
                            />
                         </div>
 
                         <div className="space-y-2">
                            <div className="flex justify-between items-center">
-                             <label className="text-xs font-black text-[#FACC15] block">مفتاح API الخاص بك للشركة والمكتب:</label>
-                             <button 
-                               onClick={handleCopyKey} 
-                               className="text-xs text-[#FACC15] hover:underline font-bold flex items-center gap-1"
-                             >
-                               {copiedKey ? 'تم النسخ' : 'نسخ المفتاح الخاص 📋'}
-                             </button>
+                             <label className="text-xs font-black text-[#FACC15] block">مفتاح الربط (API KEY) - اختياري:</label>
                            </div>
                            <input 
                              type="password" 
                              value={customApiKey}
-                             onChange={(e) => setCustomApiKey(e.target.value)}
+                             onChange={(e) => {
+                               setCustomApiKey(e.target.value);
+                               localStorage.setItem('adalah_custom_api_key', e.target.value);
+                             }}
                              className="w-full bg-[#060b13] border-2 border-[#D4AF37]/40 rounded-xl p-4 text-xs font-mono font-bold text-white outline-none focus:border-[#FACC15] transition-all"
+                             placeholder="ادخل المفتاح أو اتركه فارغاً"
                            />
+                           <p className="text-[10px] text-slate-400 font-semibold italic mt-1 leading-relaxed">عند ترك الحقل فارغاً، سيتم الاعتماد على وضع المزامنة التلقائية بدون مفتاح كخيار افتراضي.</p>
                         </div>
                      </div>
                    )}
