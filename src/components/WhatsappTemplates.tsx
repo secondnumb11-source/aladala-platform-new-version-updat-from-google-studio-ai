@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   MessageSquare, Send, CheckCircle, Sparkles, 
   Clock, ChevronDown, History, FileText, CalendarDays,
@@ -6,6 +6,9 @@ import {
   Plus, ArrowRightLeft, Star, Volume2, Bookmark, CheckCircle2, RefreshCw
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+import { supabase } from '@/lib/supabase';
+import { Client, Case } from '@/types';
+import { toCamel } from '@/utils/schemaMapping';
 
 interface WhatsappTemplate {
   id: string;
@@ -164,18 +167,28 @@ export default function WhatsappTemplates() {
   // Toast / Status state
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
-  const clients = [
-    'شركة نادك للتنمية الزراعية', 
-    'إسماعيل بن فيصل الحربي', 
-    'عاصم بن طلال العقاد',
-    'مجموعة التميمي القابضة والاستثمارات',
-    'عبدالرحمن بن حمود الشبيلي'
-  ];
-  const cases = [
-    '437194619 - نزاع تجاري دولي بمحكمة الاستئناف', 
-    '419284711 - استخلاص مبالغ عقارية بمحكمة شمال الرياض',
-    '451829014 - منازعة تنفيذ شيك بدون رصيد بالمحكمة العامة'
-  ];
+  const [dbClients, setDbClients] = useState<Client[]>([]);
+  const [dbCases, setDbCases] = useState<Case[]>([]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [clientsRes, casesRes] = await Promise.all([
+          supabase.from('clients').select('*'),
+          supabase.from('cases').select('*')
+        ]);
+        
+        if (clientsRes.data) setDbClients(toCamel(clientsRes.data) as Client[]);
+        if (casesRes.data) setDbCases(toCamel(casesRes.data) as Case[]);
+      } catch (err) {
+        console.error('Error fetching data for whatsapp templates:', err);
+      }
+    };
+    fetchData();
+  }, []);
+
+  const clients = dbClients.map(c => c.name);
+  const cases = dbCases.map(c => `${c.caseNumber} - ${c.caseName}`);
 
   const triggerToast = (msg: string) => {
     setToastMessage(msg);
@@ -251,6 +264,9 @@ export default function WhatsappTemplates() {
       return;
     }
 
+    const clientObj = dbClients.find(c => c.name === selectedClient);
+    const phoneNum = clientObj?.phone || '';
+
     const now = new Date();
     const formattedDate = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')} ${String(now.getHours() % 12 || 12).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')} ${now.getHours() >= 12 ? 'م' : 'ص'}`;
 
@@ -272,6 +288,16 @@ export default function WhatsappTemplates() {
       setScheduleDate('');
       setScheduleTime('');
     } else {
+      // Direct send -> open WhatsApp Link
+      if (phoneNum) {
+        // Remove styling characters from phone like +, space, -, etc to strictly digits
+        const cleanPhone = phoneNum.replace(/\D/g, '');
+        window.open(`https://wa.me/${cleanPhone}?text=${encodeURIComponent(editorText)}`, '_blank');
+      } else {
+        alert('هذا العميل ليس لديه رقم هاتف مسجل بالنظام لإرسال الواتساب.');
+        return;
+      }
+
       // Add to history / outbox
       const newHistory = {
         id: Date.now(),
@@ -459,7 +485,7 @@ export default function WhatsappTemplates() {
                         className="w-full bg-white border border-slate-200 hover:border-emerald-500 rounded-xl py-3 px-4 text-slate-900 font-extrabold appearance-none outline-none focus:bg-white focus:ring-1 focus:ring-emerald-500 transition-all text-sm shadow-sm"
                       >
                         <option value="">-- اضغط لتحديد العميل --</option>
-                        {clients.map(c => <option key={c} value={c}>{c}</option>)}
+                        {dbClients.map(c => <option key={c.id} value={c.name}>{c.name} {c.phone ? `- ${c.phone}` : ''}</option>)}
                       </select>
                       <ChevronDown className="absolute left-4 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-slate-600 pointer-events-none" />
                     </div>

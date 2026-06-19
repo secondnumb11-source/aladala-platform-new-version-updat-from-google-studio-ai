@@ -33,6 +33,8 @@ interface TerminalLine {
   isPrefixCmd?: boolean;
 }
 
+import { StableWebSocket } from '@/lib/websocket-handler';
+
 export default function WscatModule() {
   // Tabs and PieSocket SDK options
   const [activeTab, setActiveTab] = useState<'wscat' | 'piesocket_sdk' | 'echo_test'>('wscat');
@@ -48,7 +50,7 @@ export default function WscatModule() {
 
   // Connection states
   const [url, setUrl] = useState('wss://echo.websocket.org');
-  const [socket, setSocket] = useState<WebSocket | null>(null);
+  const [socket, setSocket] = useState<StableWebSocket | null>(null);
   const [connectionStatus, setConnectionStatus] = useState<'disconnected' | 'connecting' | 'connected' | 'error'>('disconnected');
   const [protocol, setProtocol] = useState('');
   const [customHeaders, setCustomHeaders] = useState('');
@@ -108,12 +110,8 @@ export default function WscatModule() {
         clearTimeout(reconnectTimeoutRef.current);
       }
       if (socket) {
-        socket.onopen = null;
-        socket.onmessage = null;
-        socket.onerror = null;
-        socket.onclose = null;
         try {
-          if (socket.readyState === WebSocket.OPEN) {
+          if (socket.getReadyState() === WebSocket.OPEN) {
             socket.close();
           }
         } catch (e) {}
@@ -285,105 +283,66 @@ export default function WscatModule() {
   };
 
   // Setup actual WebSocket connection
-  const initiateConnection = (targetUrl: string, isReconnect = false) => {
+  const initiateConnection = (targetUrl: string) => {
     if (socket) {
-      socket.onopen = null;
-      socket.onmessage = null;
-      socket.onerror = null;
-      socket.onclose = null;
-      try {
-        if (socket.readyState === WebSocket.OPEN) {
-          socket.close();
-        }
-      } catch (e) {}
-    }
-
-    if (reconnectTimeoutRef.current) {
-      clearTimeout(reconnectTimeoutRef.current);
-      reconnectTimeoutRef.current = null;
-    }
-
-    if (!isReconnect) {
-      isManualDisconnectRef.current = false;
-      reconnectAttemptsRef.current = 0;
+      socket.close();
+      setSocket(null);
     }
 
     setConnectionStatus('connecting');
     setUrl(targetUrl);
 
     try {
-      const ws = new WebSocket(targetUrl);
-      setSocket(ws);
-
       const startTime = Date.now();
+      
+      const ws = new StableWebSocket(targetUrl, {
+        timeout: 10000,
+        maxRetries: 7,
+        onOpen: (event: any) => {
+          setConnectionStatus('connected');
+          // @ts-ignore
+          setProtocol(event?.target?.protocol || 'Default (No specific protocol)');
+          setLatency(Date.now() - startTime);
 
-      ws.onopen = (event) => {
-        setConnectionStatus('connected');
-        setProtocol(ws.protocol || 'Default (No specific protocol)');
-        setLatency(Date.now() - startTime);
-        reconnectAttemptsRef.current = 0; // successfully connected, reset retries count
-
-        setTerminalLines(prev => [
-          ...prev,
-          { type: 'success', text: `Connected to ${targetUrl} (البث الفوري نشط الآن) 🟢`, timestamp: getFormattedTime() },
-          { type: 'system', text: `Session Active. Use the CLI input below or GUI panel to send frames.`, timestamp: getFormattedTime() },
-          { type: 'system', text: `Enter messages to send. Type Ctrl+C or 'exit' command to close connection.`, timestamp: getFormattedTime() }
-        ]);
-      };
-
-      ws.onmessage = (event) => {
-        setRecvCount(p => p + 1);
-        const receivedText = typeof event.data === 'string' ? event.data : '[Binary FrameData]';
-        
-        // Output inline
-        setTerminalLines(prev => [
-          ...prev,
-          { type: 'output', text: `< ${receivedText}`, timestamp: getFormattedTime() }
-        ]);
-      };
-
-      ws.onerror = (event) => {
-        setConnectionStatus('error');
-        setTerminalLines(prev => [
-          ...prev,
-          { type: 'error', text: `WebSocket Connection Error: تعذر الاتصال بـ ${targetUrl}. يرجى التحقق من صحة الرابط أو تصريح مفتاح API الممرر.`, timestamp: getFormattedTime() }
-        ]);
-      };
-
-      ws.onclose = (event) => {
-        setConnectionStatus('disconnected');
-        setSocket(null);
-        let detail = '';
-        if (event && event.code) {
-          detail = ` (كود الإغلاق: ${event.code}${event.reason ? ` - السبب: ${event.reason}` : ''})`;
-        }
-        setTerminalLines(prev => [
-          ...prev,
-          { type: 'system', text: `Disconnected from ${targetUrl} (تم فصل قناة الاتصال الإلكتروني)${detail} 🛑`, timestamp: getFormattedTime() }
-        ]);
-
-        // Trigger automatic reconnect if it's not a manual disconnect
-        if (!isManualDisconnectRef.current) {
-          if (reconnectAttemptsRef.current < 5) {
-            const delay = Math.min(30000, Math.pow(2, reconnectAttemptsRef.current) * 2000 + (Math.random() * 1000));
-            reconnectAttemptsRef.current += 1;
-
-            setTerminalLines(prev => [
-              ...prev,
-              { type: 'system', text: `[إعادة المحاولة تلقائياً] جاري محاولة إعادة الاتصال التلقائي ${reconnectAttemptsRef.current}/5 بعد ${Math.round(delay / 100) / 10} ثانية... ⏳`, timestamp: getFormattedTime() }
-            ]);
-
-            reconnectTimeoutRef.current = setTimeout(() => {
-              initiateConnection(targetUrl, true);
-            }, delay);
-          } else {
-            setTerminalLines(prev => [
-              ...prev,
-              { type: 'error', text: `[إعادة المحاولة تلقائياً] 🛑 استنفدت قناة الاتصال المحاولات الـ 5 المتاحة لإعادة الاتصال التلقائي. يرجى الاتصال يدوياً.`, timestamp: getFormattedTime() }
-            ]);
+          setTerminalLines(prev => [
+            ...prev,
+            { type: 'success', text: `Connected to ${targetUrl} (البث الفوري نشط الآن) 🟢`, timestamp: getFormattedTime() },
+            { type: 'system', text: `Session Active. StableWebSocket is managing connection with auto-reconnects.`, timestamp: getFormattedTime() },
+            { type: 'system', text: `Enter messages to send. Type Ctrl+C or 'exit' command to close connection.`, timestamp: getFormattedTime() }
+          ]);
+        },
+        onMessage: (event: any) => {
+          setRecvCount(p => p + 1);
+          const receivedText = typeof event.data === 'string' ? event.data : '[Binary FrameData]';
+          
+          // Output inline
+          setTerminalLines(prev => [
+            ...prev,
+            { type: 'output', text: `< ${receivedText}`, timestamp: getFormattedTime() }
+          ]);
+        },
+        onError: (event: any) => {
+          setConnectionStatus('error');
+          setTerminalLines(prev => [
+            ...prev,
+            { type: 'error', text: `WebSocket Connection Error: تعذر الاتصال بـ ${targetUrl} أو فقد الاتصال مؤقتاً. StableWS سيحاول المعالجة.`, timestamp: getFormattedTime() }
+          ]);
+        },
+        onClose: (event: any) => {
+          setConnectionStatus('disconnected');
+          let detail = '';
+          if (event && event.code) {
+            detail = ` (كود الإغلاق: ${event.code}${event.reason ? ` - السبب: ${event.reason}` : ''})`;
           }
+          setTerminalLines(prev => [
+            ...prev,
+            { type: 'system', text: `Disconnected from ${targetUrl} (تم فصل قناة الاتصال الإلكتروني)${detail} 🛑`, timestamp: getFormattedTime() }
+          ]);
         }
-      };
+      });
+      
+      ws.connect();
+      setSocket(ws);
 
     } catch (err: any) {
       setConnectionStatus('error');
@@ -403,12 +362,8 @@ export default function WscatModule() {
       reconnectTimeoutRef.current = null;
     }
     if (socket) {
-      socket.onopen = null;
-      socket.onmessage = null;
-      socket.onerror = null;
-      socket.onclose = null;
       try {
-        if (socket.readyState === WebSocket.OPEN) {
+        if (socket.getReadyState() === WebSocket.OPEN) {
           socket.close();
         }
       } catch (e) {}
@@ -417,7 +372,7 @@ export default function WscatModule() {
 
   // Send message
   const sendSocketMessage = (textToSend: string) => {
-    if (!socket || socket.readyState !== WebSocket.OPEN) {
+    if (!socket || socket.getReadyState() !== WebSocket.OPEN) {
       setTerminalLines(prev => [
         ...prev,
         { type: 'error', text: `Error: Cannot send message. Connection is closed.`, timestamp: getFormattedTime() }
