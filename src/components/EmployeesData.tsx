@@ -54,7 +54,7 @@ const normalizeEmployee = (emp: any): Employee => {
   };
 };
 
-export default function EmployeesData({ tasks }: { cases: Case[], tasks: Task[], clients?: Client[], onUpdateState?: (t: string, d: any) => void }) {
+export default function EmployeesData({ cases, tasks, clients, onUpdateState }: { cases: Case[], tasks: Task[], clients?: Client[], onUpdateState?: (t: string, d: any) => void }) {
   const { user, profile } = useSupabase();
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [loading, setLoading] = useState(true);
@@ -1078,8 +1078,8 @@ export default function EmployeesData({ tasks }: { cases: Case[], tasks: Task[],
                      </button>
                      <button 
                        onClick={async () => {
-                         const username = `emp-${emp.nationalId?.slice(-4) || Math.floor(1000+Math.random()*9000)}`;
-                         const password = `Work@${Math.floor(1000+Math.random()*9000)}`;
+                         const username = `emp-${emp.nationalId?.slice(-4) || Math.floor(1000+Math.random()*9000)}`.trim();
+                         const password = `Work@${Math.floor(1000+Math.random()*9000)}`.trim();
                          
                          const { error } = await supabase
                            .from('employees')
@@ -1087,15 +1087,24 @@ export default function EmployeesData({ tasks }: { cases: Case[], tasks: Task[],
                            .eq('id', emp.id);
                          
                          if (!error) {
-                           alert(`تم تحديث بيانات دخول الموظف بنجاح:\n\nاسم المستخدم: ${username}\nكلمة المرور: ${password}`);
+                           alert(`✅ تم حفظ بيانات دخول الموظف:\nاسم المستخدم: ${username}\nكلمة المرور: ${password}`);
                            
                            setEmployees(prev => {
                              const updated = prev.map(e => String(e.id) === String(emp.id) ? { ...e, username, password } : e);
                              localStorage.setItem('employees_backup', JSON.stringify(updated));
                              return updated;
                            });
+
+                           if (onUpdateState) {
+                             onUpdateState('employees', {
+                               ...emp,
+                               username,
+                               password
+                             });
+                           }
                          } else {
-                           alert('حدث خطأ أثناء توليد بيانات الدخول.');
+                           console.error('[Save Employee Credentials Error]', error);
+                           alert('فشل في حفظ بيانات الدخول: ' + error.message);
                          }
                        }}
                        className="px-4 py-3 bg-white text-slate-700 border border-slate-200 rounded-xl font-black text-xs hover:bg-slate-50 transition-all shadow-sm"

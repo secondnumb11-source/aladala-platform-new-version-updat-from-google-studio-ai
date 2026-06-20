@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+  <meta charset="UTF-8">
+  <title>منصة العدالة — مزامنة ناجز</title>
+  <style>
+    body {
+      width: 320px;
+      font-family: Arial, sans-serif;
+      padding: 16px;
+      background: #0f172a;
+      color: #f1f5f9;
+      margin: 0;
+      box-sizing: border-box;
+    }
+    .header {
+      text-align: center;
+      margin-bottom: 16px;
+      border-bottom: 1px solid #334155;
+      padding-bottom: 12px;
+    }
+    .title {
+      font-size: 18px;
+      font-weight: bold;
+      color: #fbbf24;
+      margin: 0;
+    }
+    .subtitle {
+      font-size: 11px;
+      color: #94a3b8;
+      margin-top: 4px;
+    }
+    .status-box {
+      background: #1e293b;
+      border-radius: 8px;
+      padding: 10px;
+      margin-bottom: 16px;
+      font-size: 13px;
+      line-height: 1.4;
+      border: 1px solid #334155;
+      text-align: center;
+    }
+    .btn {
+      display: block;
+      width: 100%;
+      background: #fbbf24;
+      color: #0f172a;
+      border: none;
+      padding: 10px;
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: bold;
+      border-radius: 6px;
+      cursor: pointer;
+      text-align: center;
+      transition: background 0.2s;
+    }
+    .btn:hover {
+      background: #f59e0b;
+    }
+    .btn:disabled {
+      background: #475569;
+      color: #94a3b8;
+      cursor: not-allowed;
+    }
+    .results-box {
+      margin-top: 16px;
+      background: #1e293b;
+      border-radius: 8px;
+      border: 1px solid #334155;
+    }
+    .hint {
+      font-size: 11px;
+      color: #64748b;
+      text-align: center;
+      margin-top: 12px;
+      line-height: 1.4;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1 class="title">⚖️ منصة العدالة</h1>
+    <div class="subtitle">مزامنة وسحب بيانات ناجز دون وسيط</div>
+  </div>
+
+  <div class="status-box" id="status">
+    ⏳ جاري التحقق من حالة الصفحة...
+  </div>
+
+  <button class="btn" id="extractBtn">⚡ سحب ومزامنة البيانات الحالية</button>
+
+  <div id="results" class="results-box"></div>
+
+  <div class="hint">
+    قم بتسجيل الدخول إلى حسابك في ناجز أولاً، ثم اذهب إلى صفحة (الحالات/قضاياي) أو (جلساتي) واضغط على زر السحب.
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

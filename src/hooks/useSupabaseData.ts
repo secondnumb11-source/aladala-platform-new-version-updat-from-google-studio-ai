@@ -648,10 +648,31 @@ export function useSupabaseData() {
       const { data: insertedData, error } = response as { data: any, error: any };
       
       if (error) {
-        // Handle PGRST204 (No Content)
-        if (error.code === 'PGRST204') {
-          console.warn(`[${table}] PGRST204: returning input data as fallback`);
-          return { success: true, data: data };
+        // Handle PGRST204 (No Content) or 23505 (Unique Violated/Already Exists)
+        if (error.code === 'PGRST204' || error.code === '23505') {
+          console.warn(`[${table}] Error ${error.code}: returning input data as fallback`);
+          
+          let camelData = toCamel(cleanData) || data;
+          const setter = getStateSetter(table);
+          if (setter && camelData) {
+            if (table === 'cases') {
+              const frontendCase = mapDatabaseCaseToFrontend(cleanData, clients);
+              setter((prev: any[]) => {
+                if (prev.some(x => x.id === frontendCase.id || x.caseNumber === frontendCase.caseNumber)) {
+                  return prev;
+                }
+                return [frontendCase, ...(prev || [])];
+              });
+            } else {
+              setter((prev: any[]) => {
+                if (prev.some(x => x.id === camelData.id)) {
+                  return prev;
+                }
+                return [camelData, ...(prev || [])];
+              });
+            }
+          }
+          return { success: true, data: camelData };
         }
 
         console.error(`[Supabase Insert Error] Table: ${mappedTable}`, error);

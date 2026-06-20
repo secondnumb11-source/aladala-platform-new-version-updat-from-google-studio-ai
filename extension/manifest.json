@@ -1,0 +1,35 @@
+{
+  "manifest_version": 3,
+  "name": "منصة العدالة — مزامنة ناجز",
+  "version": "2.0",
+  "description": "يقرأ بياناتك من ناجز بعد تسجيل دخولك ويزامنها مع المنصة — بدون API Key",
+  "permissions": [
+    "activeTab",
+    "scripting",
+    "storage",
+    "tabs"
+  ],
+  "host_permissions": [
+    "https://www.najiz.sa/*",
+    "https://najiz.sa/*",
+    "https://*.najiz.sa/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": [
+        "https://www.najiz.sa/*",
+        "https://najiz.sa/*",
+        "https://*.najiz.sa/*"
+      ],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "منصة العدالة — مزامنة ناجز"
+  },
+  "background": {
+    "service_worker": "background.js"
+  }
+}

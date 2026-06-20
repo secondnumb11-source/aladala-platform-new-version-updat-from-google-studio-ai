@@ -133,240 +133,366 @@ export default function ExtensionDownloadSection({
     const currentHost = window.location.origin;
     switch (fileName) {
       case "manifest.json":
-        return JSON.stringify({
-          manifest_version: 3,
-          name: "مزامنة العدالة - Najiz Sync Pro",
-          version: "2.6.0",
-          description: "أداة المزامنة الذكية فورية الاتصال بمكتب العدالة - تدعم كافة صفحات ناجز",
-          permissions: ["storage", "activeTab"],
-          host_permissions: ["<all_urls>"],
-          background: { 
-            service_worker: "background.js" 
-          },
-          content_scripts: [{
-            matches: ["*://najiz.sa/*", "*://*.najiz.sa/*"],
-            js: ["content.js"],
-            css: ["content.css"],
-            run_at: "document_idle"
-          }],
-          action: { 
-            default_title: "العدالة - مزامنة ناجز",
-            default_popup: "popup.html"
-          },
-          icons: {
-            "128": "icon.png"
-          }
-        }, null, 2);
+        return `{
+  "manifest_version": 3,
+  "name": "منصة العدالة — مزامنة ناجز",
+  "version": "2.0",
+  "description": "يقرأ بياناتك من ناجز بعد تسجيل دخولك ويزامنها مع المنصة — بدون API Key",
+  "permissions": [
+    "activeTab",
+    "scripting",
+    "storage",
+    "tabs"
+  ],
+  "host_permissions": [
+    "https://www.najiz.sa/*",
+    "https://najiz.sa/*",
+    "https://*.najiz.sa/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": [
+        "https://www.najiz.sa/*",
+        "https://najiz.sa/*",
+        "https://*.najiz.sa/*"
+      ],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "منصة العدالة — مزامنة ناجز"
+  },
+  "background": {
+    "service_worker": "background.js"
+  }
+}`;
 
       case "background.js":
-        return `chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-  if (message.action === 'fetchNajizSync') {
-    fetch(message.url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': message.apiKey
-      },
-      body: JSON.stringify(message.body)
-    })
-    .then(async (res) => {
-      const isJson = res.headers.get('content-type')?.includes('application/json');
-      const data = isJson ? await res.json() : null;
-      if (!res.ok) {
-        const errorText = data ? (data.error || data.message) : await res.text();
-        throw new Error(errorText || 'HTTP ' + res.status);
-      }
-      return data;
-    })
-    .then(data => {
-      sendResponse({ success: true, message: data.message, state: data.state });
-    })
-    .catch(err => {
-      sendResponse({ success: false, error: err.message });
-    });
-    return true; // Keep message channel open for async response
-  } else if (message.action === 'notify') {
-    chrome.notifications.create({
-      type: 'basic',
-      iconUrl: 'icon.png',
-      title: 'مزامنة مكتب العدالة',
-      message: message.text
-    });
-  } else if (message.action === 'logError') {
-    chrome.storage.local.get(['errorLogs'], function(result) {
-      const logs = result.errorLogs || [];
-      logs.unshift({ time: new Date().toLocaleString('ar-SA'), message: message.text, type: 'error' });
-      chrome.storage.local.set({ errorLogs: logs.slice(0, 50) });
-    });
-  } else if (message.action === 'logSuccess') {
-    chrome.storage.local.get(['errorLogs'], function(result) {
-      const logs = result.errorLogs || [];
-      logs.unshift({ time: new Date().toLocaleString('ar-SA'), message: message.text, type: 'success' });
-      chrome.storage.local.set({ errorLogs: logs.slice(0, 50) });
-    });
+        return `// background.js — لا يحتاج API Key
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  if (message.action === 'contentScriptReady') {
+    console.log('[العدالة] Script جاهز على:', message.url);
   }
+  sendResponse({ received: true });
+  return true;
 });`;
 
       case "content.js":
-        return `const injectAlAdalahStyles = () => {
-    if (document.getElementById('aladalah-sync-styles')) return;
-    const s = document.createElement('style');
-    s.id = 'aladalah-sync-styles';
-    s.textContent = ".aladalah-sync-btn{position:fixed;bottom:30px;right:30px;z-index:999999;background:linear-gradient(135deg,#0c2461 0%,#1e3a8a 100%);color:#fff;border:2px solid #d4af37;padding:12px 24px;border-radius:12px;font-weight:900;cursor:pointer;box-shadow:0 10px 20px rgba(0,0,0,0.3);direction:rtl; transition: all 0.3s ease; text-align: center; font-family: sans-serif;}.aladalah-sync-btn:hover{transform:translateY(-5px);border-color:#fbbf24;}";
-    document.head.appendChild(s);
-};
+        return `// content.js — قارئ بيانات ناجز
+// لا يحتاج API Key — يقرأ الصفحة مباشرة من جلسة المستخدم المسجل
+(function () {
+  'use strict';
 
-const injectAlAdalahBtn = () => {
-    if (document.querySelector('.aladalah-sync-btn')) return;
-    
-    const alBtn = document.createElement('button');
-    alBtn.innerHTML = '⚖️ مزامنة ذكية فورية مع العدالة';
-    alBtn.className = 'aladalah-sync-btn';
-    
-    alBtn.onclick = async () => {
-        alBtn.innerText = '⏳ جاري القراءة والتحليل بالـ AI...';
-        alBtn.disabled = true;
-        try {
-            const keyData = await new Promise(r => chrome.storage.local.get(['activeApiKey'], r)).catch(() => ({}));
-            const activeKey = keyData.activeApiKey || '${apiKey}';
-            
-            const pageText = document.body.innerText;
-            
-            chrome.runtime.sendMessage({
-                action: 'fetchNajizSync',
-                url: '${currentHost}/api/najiz-sync',
-                apiKey: activeKey,
-                body: { 
-                    apiKey: activeKey, 
-                    rawText: pageText.substring(0, 100000), 
-                    syncType: 'universal_full_page_sync',
-                    sourceUrl: window.location.href
-                }
-            }, (response) => {
-                if (chrome.runtime.lastError) {
-                    alert('⚠️ خطأ اتصال خلفية الإضافة: ' + chrome.runtime.lastError.message);
-                    alBtn.innerText = '⚠️ فشل الاتصال';
-                } else if (response && response.success) {
-                    alert('✅ تم بنجاح! ' + (response.message || 'تم مزامنة وتوصيل البيانات بالعدالة بمطابقة فورية.'));
-                    alBtn.innerText = '✅ تم التزامن';
-                } else {
-                    alert('⚠️ خطأ في المزامنة: ' + (response ? response.error : 'استجابة غير صالحة من السيرفر'));
-                    alBtn.innerText = '⚠️ فشل المزامنة';
-                }
-                setTimeout(() => {
-                    alBtn.innerText = '⚖️ مزامنة ذكية فورية مع العدالة';
-                    alBtn.disabled = false;
-                }, 5000);
-            });
-            return;
-        } catch (e) {
-            alert('⚠️ خطأ: ' + e.message);
-            alBtn.innerText = '⚠️ فشل الارتباط';
-        }
-        setTimeout(() => { 
-            alBtn.innerText = '⚖️ مزامنة ذكية فورية مع العدالة'; 
-            alBtn.disabled = false; 
-        }, 5000);
+  function extractAllPageData() {
+    const data = {
+      cases: [],
+      hearings: [],
+      powers_of_attorney: [],
+      executions: [],
+      clients: [],
+      pageUrl: window.location.href,
+      pageTitle: document.title,
+      scrapedAt: new Date().toISOString(),
+      needsApiKey: false
     };
-    
-    document.body.appendChild(alBtn);
-};
 
-chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-    if (request.action === "scrapeData") {
-        try {
-            const casesScraped = [];
-            const hearingsScraped = [];
-            const cards = document.querySelectorAll('tr, .najiz-table-row, .case-card, .najiz-card, .application-card, div.card, .detail-row');
-            
-            cards.forEach((el) => {
-                const text = el.innerText || "";
-                const caseMatch = text.match(/\\b(4[2345]\\d{6,8})\\b/);
-                if (caseMatch) {
-                    const caseNo = caseMatch[1];
-                    if (!casesScraped.some(c => c.caseNumber === caseNo)) {
-                        let courtName = "المحكمة العامة بالرياض";
-                        if (text.includes("عمال") || text.includes("عمالية")) {
-                            courtName = "المحكمة العمالية بالرياض";
-                        } else if (text.includes("تجار") || text.includes("تجارية")) {
-                            courtName = "المحكمة التجارية بجدة";
-                        } else if (text.includes("جزاء") || text.includes("جزائية")) {
-                            courtName = "المحكمة الجزائية بمكة المكرمة";
-                        } else if (text.includes("تنفيذ")) {
-                            courtName = "محكمة التنفيذ بالدمام";
-                        } else if (text.includes("أحوال") || text.includes("شخصية")) {
-                            courtName = "محكمة الأحوال الشخصية بالمدينة المنورة";
-                        }
+    const bodyText = document.body?.innerText || '';
 
-                        let title = "دعوى عمالية ومطالبة بمستحقات مالية";
-                        if (text.includes("توريد")) title = "دعوى مطالبة في عقد توريد سلع";
-                        if (text.includes("شرك")) title = "نزاع تجاري حول تصفية أرصدة شركة";
-                        if (text.includes("عقار") || text.includes("إيجار")) title = "دعوى استحقاق أجرة عقار وإخلاء";
-                        
-                        casesScraped.push({
-                            caseNumber: caseNo,
-                            caseName: title,
-                            courtName: courtName,
-                            opponentName: "مؤسسة النقل والتشغيل الوطنية للخدمات",
-                            clientName: "شركة نادك للتنمية الزراعية",
-                            stage: "litigation",
-                            status: "active"
-                        });
+    const caseNumberPatterns = [
+      /\\d{4}\/\\d{1,2}\/\\d+/g,
+      /\\d{4}\/\\d{4,}/g,
+      /(?<!\\d)\\d{10}(?!\\d)/g,
+      /(?<!\\d)\\d{9}(?!\\d)/g,
+    ];
 
-                        const dateMatch = text.match(/\\b(144\\d|202\\d)[-/\\. ]\\d{2}[-/\\. ]\\d{2}\\b/) || text.match(/\\b\\d{2}[-/\\. ]\\d{2}[-/\\. ](144\\d|202\\d)\\b/);
-                        if (dateMatch) {
-                            hearingsScraped.push({
-                                caseNumber: caseNo,
-                                date: dateMatch[0],
-                                time: "09:30 صباحاً",
-                                courtName: courtName,
-                                status: "upcoming"
-                            });
-                        }
-                    }
-                }
+    const foundCaseNumbers = new Set();
+    caseNumberPatterns.forEach(pattern => {
+      const matches = bodyText.match(pattern) || [];
+      matches.forEach(m => foundCaseNumbers.add(m.trim()));
+    });
+
+    const tables = document.querySelectorAll('table');
+    tables.forEach(table => {
+      const headers = Array.from(table.querySelectorAll('th'))
+        .map(th => th.innerText?.trim().toLowerCase() || '');
+
+      const isCaseTable = headers.some(h =>
+        h.includes('قضية') || h.includes('دعوى') ||
+        h.includes('رقم') || h.includes('حالة') ||
+        h.includes('محكمة') || h.includes('case')
+      );
+
+      const isHearingTable = headers.some(h =>
+        h.includes('جلسة') || h.includes('موعد') ||
+        h.includes('تاريخ') || h.includes('hearing')
+      );
+
+      const rows = table.querySelectorAll('tbody tr');
+      rows.forEach(row => {
+        const cells = Array.from(row.querySelectorAll('td'))
+          .map(td => td.innerText?.trim() || '');
+
+        if (cells.length === 0 || cells.every(c => !c)) return;
+
+        const rowText = cells.join(' ');
+        const dateMatch = rowText.match(
+          /\\d{1,2}[\\/\\-]\\d{1,2}[\\/\\-]\\d{4}|\\d{4}[\\/\\-]\\d{1,2}[\\/\\-]\\d{1,2}/
+        );
+        const caseNumMatch = rowText.match(/\\d{4}\\/\\d+|\\d{10,}|\\d{9}/);
+
+        if (isCaseTable || caseNumMatch) {
+          const caseNum = caseNumMatch?.[0] || '';
+          if (!data.cases.find(c => c.caseNumber === caseNum)) {
+            data.cases.push({
+              caseNumber: caseNum,
+              caseName: cells.find(c =>
+                c.length > 4 && !/^\\d+$/.test(c) && !c.includes('/')
+              ) || '',
+              status: cells.find(c =>
+                c.includes('قيد') || c.includes('منتهي') ||
+                c.includes('نشط') || c.includes('مقيد') ||
+                c.includes('محكوم') || c.includes('مؤجل') ||
+                c.includes('مشطوب') || c.includes('موقوف')
+              ) || '',
+              court: cells.find(c => c.includes('محكمة')) || '',
+              date: dateMatch?.[0] || '',
+              rawCells: cells
             });
-
-            if (casesScraped.length === 0) {
-                casesScraped.push({
-                    caseNumber: "441728192",
-                    caseName: "نزاع حول عقد تصنيع خط تجميع آلي",
-                    courtName: "المحكمة التجارية بالرياض - الدائرة الخامسة",
-                    opponentName: "مؤسسة الابتكار الهندسي للحلول التقنية",
-                    clientName: "شركة نادك للتنمية الزراعية",
-                    stage: "litigation",
-                    status: "pending_session"
-                });
-                hearingsScraped.push({
-                    caseNumber: "441728192",
-                    date: new Date(Date.now() + 86400000 * 5).toISOString().split('T')[0],
-                    time: "11:15 صباحاً",
-                    courtName: "المحكمة التجارية بالرياض - الدائرة الخامسة",
-                    status: "upcoming"
-                });
-            }
-
-            sendResponse({
-                success: true,
-                cases: casesScraped,
-                hearings: hearingsScraped,
-                clients: [{ name: "شركة نادك للتنمية الزراعية", nationalId: "1010065271" }],
-                rawText: document.body.innerText || ""
-            });
-        } catch (err) {
-            sendResponse({ success: false, error: err.message });
+          }
         }
+
+        if (isHearingTable || (dateMatch && rowText.includes('جلسة'))) {
+          data.hearings.push({
+            date: dateMatch?.[0] || '',
+            caseNumber: caseNumMatch?.[0] || '',
+            court: cells.find(c => c.includes('محكمة')) || '',
+            status: cells.find(c =>
+              c.includes('قادمة') || c.includes('منتهية') ||
+              c.includes('مؤجلة') || c.includes('ملغاة')
+            ) || '',
+            hall: cells.find(c => c.includes('قاعة') || c.includes('دائرة')) || '',
+            rawCells: cells
+          });
+        }
+      });
+    });
+
+    const cardSelectors = [
+      '.card', '.case-card', '[class*="case-card"]',
+      '.list-item', '[class*="list-item"]',
+      '.MuiCard-root', '.MuiPaper-root',
+      '[class*="CaseItem"]', '[class*="caseItem"]',
+      '[class*="CaseRow"]', '[class*="caseRow"]',
+      '[data-testid*="case"]', '[data-cy*="case"]',
+      '.case-row', '.hearing-row',
+      '[class*="RequestCard"]', '[class*="requestCard"]'
+    ];
+
+    cardSelectors.forEach(selector => {
+      try {
+        document.querySelectorAll(selector).forEach(card => {
+          const text = card.innerText?.trim() || '';
+          if (!text || text.length < 5) return;
+
+          const caseNumMatch = text.match(/\\d{4}\\/\\d+|\\d{10,}|\\d{9}/);
+          const dateMatch = text.match(
+            /\\d{1,2}[\\/\\-]\\d{1,2}[\\/\\-]\\d{4}|\\d{4}[\\/\\-]\\d{1,2}[\\/\\-]\\d{1,2}/
+          );
+
+          if (caseNumMatch) {
+            const caseNum = caseNumMatch[0];
+            if (!data.cases.find(c => c.caseNumber === caseNum)) {
+              data.cases.push({
+                caseNumber: caseNum,
+                caseName: text.split('\\n')[0]?.substring(0, 100) || '',
+                date: dateMatch?.[0] || '',
+                rawText: text.substring(0, 300)
+              });
+            }
+          }
+
+          if (text.includes('جلسة') && dateMatch) {
+            if (!data.hearings.find(h =>
+              h.date === dateMatch[0] && h.caseNumber === (caseNumMatch?.[0] || '')
+            )) {
+              data.hearings.push({
+                date: dateMatch[0],
+                caseNumber: caseNumMatch?.[0] || '',
+                rawText: text.substring(0, 300)
+              });
+            }
+          }
+
+          if (text.includes('وكالة')) {
+            const poaNum = text.match(/\\d{6,}/)?.[0];
+            data.powers_of_attorney.push({
+              poaNumber: poaNum || '',
+              text: text.substring(0, 300),
+              expiryDate: dateMatch?.[0] || ''
+            });
+          }
+
+          if (text.includes('تنفيذ')) {
+            data.executions.push({
+              executionNumber: caseNumMatch?.[0] || '',
+              text: text.substring(0, 200)
+            });
+          }
+        });
+      } catch (e) {}
+    });
+
+    const nameSelectors = [
+      '.user-name', '.username', '[class*="userName"]',
+      '[class*="user-name"]', '[class*="UserName"]',
+      '.profile-name', '[class*="profileName"]',
+      'header [class*="name"]', '.nav [class*="name"]',
+      '[class*="WelcomeUser"]', '[class*="welcomeUser"]',
+      '.greeting', '[class*="greeting"]',
+      'span[class*="Name"]', 'p[class*="Name"]'
+    ];
+
+    for (const sel of nameSelectors) {
+      try {
+        const el = document.querySelector(sel);
+        if (el?.innerText?.trim()) {
+          data.clients.push({
+            name: el.innerText.trim(),
+            source: 'najiz_logged_user'
+          });
+          break;
+        }
+      } catch (e) {}
     }
-    return true;
-});
 
-injectAlAdalahStyles();
-injectAlAdalahBtn();
+    const welcomeMatch = bodyText.match(
+      /(?:مرحباً|أهلاً|مرحبا)[،,\\s]+([^\\n،,]{3,40})/
+    );
+    if (welcomeMatch && data.clients.length === 0) {
+      data.clients.push({
+        name: welcomeMatch[1].trim(),
+        source: 'najiz_welcome_text'
+      });
+    }
 
-setInterval(() => {
-    injectAlAdalahStyles();
-    injectAlAdalahBtn();
-}, 2000);`;
+    const urlCaseMatch = window.location.href.match(
+      /[?&](?:caseId|case_id|id|caseNo|case)=([^&]+)/i
+    );
+    if (urlCaseMatch) {
+      const urlCaseNum = urlCaseMatch[1];
+      if (!data.cases.find(c => c.caseNumber === urlCaseNum)) {
+        data.cases.push({
+          caseNumber: urlCaseNum,
+          source: 'url_parameter'
+        });
+      }
+    }
+
+    data.summary = {
+      totalCases: data.cases.length,
+      totalHearings: data.hearings.length,
+      totalPOAs: data.powers_of_attorney.length,
+      totalExecutions: data.executions.length,
+      hasUserInfo: data.clients.length > 0,
+      pageUrl: window.location.href,
+      scrapedAt: data.scrapedAt
+    };
+
+    return data;
+  }
+
+  chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
+    if (
+      request.action === 'extractData' ||
+      request.action === 'scrape' ||
+      request.action === 'getData' ||
+      request.action === 'sync'
+    ) {
+      const doExtract = () => {
+        try {
+          const result = extractAllPageData();
+          const hasData =
+            result.cases.length > 0 ||
+            result.hearings.length > 0 ||
+            result.powers_of_attorney.length > 0;
+
+          if (hasData) {
+            sendResponse({ success: true, data: result });
+          } else {
+            setTimeout(() => {
+              const retryResult = extractAllPageData();
+              const retryHasData =
+                retryResult.cases.length > 0 ||
+                retryResult.hearings.length > 0 ||
+                retryResult.powers_of_attorney.length > 0;
+
+              sendResponse({
+                success: retryHasData,
+                data: retryResult,
+                message: retryHasData
+                  ? 'تم السحب بنجاح'
+                  : 'لم يتم العثور على بيانات في هذه الصفحة. انتقل إلى صفحة قضاياي أو جلساتي'
+              });
+            }, 3000);
+          }
+        } catch (err) {
+          sendResponse({
+            success: false,
+            error: err.message,
+            message: 'خطأ في قراءة الصفحة: ' + err.message
+          });
+        }
+      };
+
+      if (document.readyState !== 'complete') {
+        window.addEventListener('load', doExtract, { once: true });
+      } else {
+        doExtract();
+      }
+
+      return true;
+    }
+
+    if (request.action === 'ping') {
+      sendResponse({
+        success: true,
+        active: true,
+        isNajiz: window.location.href.includes('najiz.sa'),
+        url: window.location.href
+      });
+      return true;
+    }
+
+    if (request.action === 'getPageInfo') {
+      sendResponse({
+        success: true,
+        url: window.location.href,
+        title: document.title,
+        isNajiz: window.location.href.includes('najiz.sa'),
+        isLoggedIn: !!document.querySelector(
+          '.user-name, [class*="userName"], [class*="user-name"], [class*="profile"]'
+        ),
+        readyState: document.readyState
+      });
+      return true;
+    }
+  });
+
+  console.log(
+    '[منصة العدالة] ✅ Script جاهز — بدون API Key — يقرأ بيانات المستخدم المسجل مباشرة'
+  );
+
+  try {
+    chrome.runtime.sendMessage({
+      action: 'contentScriptReady',
+      url: window.location.href,
+      isNajiz: window.location.href.includes('najiz.sa')
+    });
+  } catch (e) {}
+
+})();`;
 
       case "content.css":
         return `.aladalah-sync-btn {
@@ -401,72 +527,98 @@ setInterval(() => {
 <html dir="rtl" lang="ar">
 <head>
   <meta charset="UTF-8">
-  <title>المزامنة الذكية</title>
+  <title>منصة العدالة — مزامنة ناجز</title>
   <style>
-    body { width: 320px; font-family: 'Segoe UI', Tahoma, sans-serif; padding: 16px; background: #07132c; color: #fff; text-align: right; margin: 0; }
-    h3 { margin: 0; color: #d4af37; font-size: 16px; text-align: center; }
-    p.subtitle { font-size: 11px; color: #94a3b8; margin: 4px 0 16px 0; text-align: center;}
-    
-    .tabs { display: flex; border-bottom: 1px solid #1e293b; margin-bottom: 12px; }
-    .tab { flex: 1; text-align: center; padding: 8px 0; font-size: 13px; cursor: pointer; color: #94a3b8; }
-    .tab.active { color: #d4af37; border-bottom: 2px solid #d4af37; font-weight: bold; }
-    
-    .panel { display: none; }
-    .panel.active { display: block; }
-    
-    .input-grp { margin-bottom: 12px; }
-    .input-grp label { display: block; font-size: 11px; color: #cbd5e1; margin-bottom: 4px; }
-    .input-grp input { width: 100%; box-sizing: border-box; padding: 8px; background: #0f172a; border: 1px solid #334155; color: #fff; border-radius: 4px; font-size: 12px; }
-    .btn { background: #d4af37; color: #0b1e33; border: none; padding: 8px 12px; font-size: 12px; border-radius: 4px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 8px; }
-    .btn:hover { background: #aa8c2c; }
-    .btn-secondary { background: #1e293b; color: #fff; border: 1px solid #334155; margin-top: 8px; }
-    .btn-secondary:hover { background: #334155; }
-    .api-key-display { background: #0f172a; border: 1px solid #10b981; padding: 6px; border-radius: 4px; font-size: 10px; color: #10b981; word-break: break-all; margin-bottom: 10px;}
-    
-    .logs-container { max-height: 200px; overflow-y: auto; background: #0f172a; border-radius: 4px; border: 1px solid #334155; }
-    .log-item { padding: 8px; border-bottom: 1px solid #1e293b; font-size: 11px; }
-    .log-item:last-child { border-bottom: none; }
-    .log-error { border-right: 3px solid #ef4444; background: rgba(239, 68, 68, 0.05); }
-    .log-success { border-right: 3px solid #10b981; background: rgba(16, 185, 129, 0.05); }
-    .log-time { font-size: 9px; color: #64748b; margin-bottom: 2px; }
-    .no-logs { padding: 20px; text-align: center; color: #64748b; font-size: 11px; }
+    body {
+      width: 320px;
+      font-family: Arial, sans-serif;
+      padding: 16px;
+      background: #0f172a;
+      color: #f1f5f9;
+      margin: 0;
+      box-sizing: border-box;
+    }
+    .header {
+      text-align: center;
+      margin-bottom: 16px;
+      border-bottom: 1px solid #334155;
+      padding-bottom: 12px;
+    }
+    .title {
+      font-size: 18px;
+      font-weight: bold;
+      color: #fbbf24;
+      margin: 0;
+    }
+    .subtitle {
+      font-size: 11px;
+      color: #94a3b8;
+      margin-top: 4px;
+    }
+    .status-box {
+      background: #1e293b;
+      border-radius: 8px;
+      padding: 10px;
+      margin-bottom: 16px;
+      font-size: 13px;
+      line-height: 1.4;
+      border: 1px solid #334155;
+      text-align: center;
+    }
+    .btn {
+      display: block;
+      width: 100%;
+      background: #fbbf24;
+      color: #0f172a;
+      border: none;
+      padding: 10px;
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: bold;
+      border-radius: 6px;
+      cursor: pointer;
+      text-align: center;
+      transition: background 0.2s;
+    }
+    .btn:hover {
+      background: #f59e0b;
+    }
+    .btn:disabled {
+      background: #475569;
+      color: #94a3b8;
+      cursor: not-allowed;
+    }
+    .results-box {
+      margin-top: 16px;
+      background: #1e293b;
+      border-radius: 8px;
+      border: 1px solid #334155;
+    }
+    .hint {
+      font-size: 11px;
+      color: #64748b;
+      text-align: center;
+      margin-top: 12px;
+      line-height: 1.4;
+    }
   </style>
 </head>
 <body>
-  <h3>مكتب العدالة</h3>
-  <p class="subtitle">أداة المزامنة الذكية</p>
-  
-  <div class="tabs">
-    <div class="tab active" id="tab-settings">الإعدادات العلوية</div>
-    <div class="tab" id="tab-logs">سجل المزامنة</div>
-  </div>
-  
-  <div class="panel active" id="panel-settings">
-    <div style="margin-bottom: 16px; padding: 12px; border-radius: 8px; border: 1.5px solid #d4af37; background: rgba(212, 175, 55, 0.05); text-align: center;">
-      <button class="btn" id="syncCurrentPageBtn" style="background: linear-gradient(135deg, #d4af37, #aa8c2c); color: #07132c; font-weight: 900; box-shadow: 0 4px 10px rgba(212, 175, 55, 0.3); border: none; padding: 10px; border-radius: 6px; width: 100%; font-size: 13px; cursor: pointer;">⚖️ مزامنة الصفحة الحالية بالـ AI 🧠</button>
-      <div id="syncStatusMsg" style="margin-top: 6px; font-size: 11px; font-weight: bold; color: #d4af37; display: none;"></div>
-    </div>
-
-    <div class="input-grp">
-      <label>رمز الربط النشط (API Key):</label>
-      <div class="api-key-display" id="apiKeyDisplay">${apiKey}</div>
-    </div>
-    
-    <div class="input-grp">
-      <label>تحديد مفتاح API (اختياري، للتبديل بين البيئات):</label>
-      <input type="text" id="customApiKey" placeholder="أدخل مفتاح العدالة هنا...">
-    </div>
-    <button class="btn" id="saveKeyBtn">حفظ المفتاح النشط</button>
-    <button class="btn btn-secondary" id="resetKeyBtn">استعادة المفتاح الافتراضي</button>
-
-    <div style="font-size: 10px; margin-top: 16px; color: #64748b; text-align: center;">انتقل إلى بوابة ناجز لتفعيل المزامنة.</div>
+  <div class="header">
+    <h1 class="title">⚖️ منصة العدالة</h1>
+    <div class="subtitle">مزامنة وسحب بيانات ناجز دون وسيط</div>
   </div>
 
-  <div class="panel" id="panel-logs">
-    <div class="logs-container" id="logsList">
-      <div class="no-logs">جاري التحميل...</div>
-    </div>
-    <button class="btn btn-secondary" id="clearLogsBtn" style="margin-top: 8px;">مسح السجل</button>
+  <div class="status-box" id="status">
+    ⏳ جاري التحقق من حالة الصفحة...
+  </div>
+
+  <button class="btn" id="extractBtn">⚡ سحب ومزامنة البيانات الحالية</button>
+
+  <div id="results" class="results-box"></div>
+
+  <div class="hint">
+    قم بتسجيل الدخول إلى حسابك في ناجز أولاً، ثم اذهب إلى صفحة (الحالات/قضاياي) أو (جلساتي) واضغط على زر السحب.
   </div>
 
   <script src="popup.js"></script>
@@ -474,171 +626,101 @@ setInterval(() => {
 </html>`;
 
       case "popup.js":
-        return `document.addEventListener('DOMContentLoaded', () => {
-    const tabSettings = document.getElementById('tab-settings');
-    const tabLogs = document.getElementById('tab-logs');
-    const panelSettings = document.getElementById('panel-settings');
-    const panelLogs = document.getElementById('panel-logs');
-    const logsList = document.getElementById('logsList');
-    const customApiKeyInput = document.getElementById('customApiKey');
-    const apiKeyDisplay = document.getElementById('apiKeyDisplay');
-    
-    const defaultApiKey = '${apiKey}';
+        return `// popup.js — بدون API Key — يرسل البيانات للخادم فقط
+document.addEventListener('DOMContentLoaded', async () => {
+  const statusEl = document.getElementById('status');
+  const extractBtn = document.getElementById('extractBtn');
+  const resultsEl = document.getElementById('results');
 
-    chrome.storage.local.get(['activeApiKey'], function(result) {
-        if (result.activeApiKey) {
-            apiKeyDisplay.innerText = result.activeApiKey;
-            customApiKeyInput.value = result.activeApiKey;
-        } else {
-            apiKeyDisplay.innerText = defaultApiKey;
+  const setStatus = (msg, type = 'info') => {
+    if (!statusEl) return;
+    statusEl.textContent = msg;
+    statusEl.style.color =
+      type === 'error' ? '#ef4444' :
+      type === 'success' ? '#22c55e' :
+      type === 'warning' ? '#f59e0b' : '#94a3b8';
+  };
+
+  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+  const isNajiz = tab?.url?.includes('najiz.sa');
+
+  if (!isNajiz) {
+    setStatus('❌ يرجى فتح موقع ناجز أولاً', 'error');
+    if (extractBtn) extractBtn.disabled = true;
+    return;
+  }
+
+  setStatus('✅ أنت على موقع ناجز — جاهز للسحب', 'success');
+
+  extractBtn?.addEventListener('click', async () => {
+    setStatus('⏳ جارٍ قراءة بياناتك من الصفحة...', 'info');
+    if (extractBtn) extractBtn.disabled = true;
+
+    try {
+      const response = await chrome.tabs.sendMessage(
+        tab.id,
+        { action: 'extractData' }
+      );
+
+      if (response?.success && response.data) {
+        const d = response.data;
+        const summary = d.summary;
+
+        setStatus(
+          \`✅ تم: \${summary.totalCases} قضية | \${summary.totalHearings} جلسة | \${summary.totalPOAs} وكالة\`,
+          'success'
+        );
+
+        const serverUrl = await getServerUrl();
+        if (serverUrl) {
+          await fetch(\`\${serverUrl}/api/najiz-sync\`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              scrapedData: d,
+              source: 'chrome_extension_user_session',
+              noApiKeyNeeded: true
+            })
+          });
         }
-    });
 
-    document.getElementById('saveKeyBtn').addEventListener('click', () => {
-        const val = customApiKeyInput.value.trim();
-        if (val) {
-            chrome.storage.local.set({ activeApiKey: val }, () => {
-                apiKeyDisplay.innerText = val;
-                alert('تم حفظ مفتاح API بنجاح.');
-            });
+        if (resultsEl) {
+          resultsEl.innerHTML = \`
+            <div style="direction:rtl; font-family:Arial; font-size:12px; padding:8px;">
+              <p>📁 القضايا: <strong>\${summary.totalCases}</strong></p>
+              <p>📅 الجلسات: <strong>\${summary.totalHearings}</strong></p>
+              <p>📜 الوكالات: <strong>\${summary.totalPOAs}</strong></p>
+              <p>⚡ التنفيذ: <strong>\${summary.totalExecutions}</strong></p>
+              <p style="color:#22c55e; margin-top:8px;">✅ تمت المزامنة مع النظام</p>
+            </div>
+          \`;
         }
-    });
 
-    document.getElementById('resetKeyBtn').addEventListener('click', () => {
-        chrome.storage.local.remove('activeApiKey', () => {
-            apiKeyDisplay.innerText = defaultApiKey;
-            customApiKeyInput.value = '';
-            alert('تم استعادة المفتاح الافتراضي.');
-        });
-    });
-
-    function loadLogs() {
-        chrome.storage.local.get(['errorLogs'], function(result) {
-            const logs = result.errorLogs || [];
-            if (logs.length === 0) {
-                logsList.innerHTML = '<div class="no-logs">لا توجد سجلات مزامنة حالياً.</div>';
-                return;
-            }
-            
-            logsList.innerHTML = logs.map(log => \`
-                <div class="log-item \${log.type === 'error' ? 'log-error' : 'log-success'}">
-                     <div class="log-time">\${log.time || ''}</div>
-                     <div>\${log.message}</div>
-                </div>
-            \`).join('');
-        });
+      } else {
+        setStatus(
+          response?.message || '⚠️ انتقل إلى صفحة "قضاياي" ثم اضغط السحب',
+          'warning'
+        );
+      }
+    } catch (err) {
+      if (err.message?.includes('Could not establish connection')) {
+        setStatus('⚠️ أعد تحميل صفحة ناجز ثم حاول مرة أخرى', 'warning');
+      } else {
+        setStatus('❌ خطأ: ' + err.message, 'error');
+      }
+    } finally {
+      if (extractBtn) extractBtn.disabled = false;
     }
+  });
+});
 
-    document.getElementById('clearLogsBtn').addEventListener('click', () => {
-        chrome.storage.local.set({ errorLogs: [] }, () => {
-            loadLogs();
-        });
+async function getServerUrl() {
+  return new Promise(resolve => {
+    chrome.storage.local.get('serverUrl', data => {
+      resolve(data.serverUrl || '\${currentHost}');
     });
-
-    tabSettings.addEventListener('click', () => {
-        tabSettings.classList.add('active');
-        tabLogs.classList.remove('active');
-        panelSettings.classList.add('active');
-        panelLogs.classList.remove('active');
-    });
-
-    tabLogs.addEventListener('click', () => {
-        tabLogs.classList.add('active');
-        tabSettings.classList.remove('active');
-        panelLogs.classList.add('active');
-        panelSettings.classList.remove('active');
-        loadLogs();
-    });
-
-    const syncCurrentPageBtn = document.getElementById('syncCurrentPageBtn');
-    const syncStatusMsg = document.getElementById('syncStatusMsg');
-
-    if (syncCurrentPageBtn && syncStatusMsg) {
-        syncCurrentPageBtn.addEventListener('click', async () => {
-            syncStatusMsg.style.display = 'block';
-            syncStatusMsg.style.color = '#cbd5e1';
-            syncStatusMsg.innerText = '⏳ جاري الكشف عن التبويب النشط...';
-            syncCurrentPageBtn.disabled = true;
-
-            try {
-                const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-                if (!tab) {
-                    syncStatusMsg.style.color = '#ef4444';
-                    syncStatusMsg.innerText = '⚠️ لم يتم العثور على تبويب نشط.';
-                    syncCurrentPageBtn.disabled = false;
-                    return;
-                }
-                
-                if (!tab.url || !tab.url.includes('najiz.sa')) {
-                    syncStatusMsg.style.color = '#f59e0b';
-                    syncStatusMsg.innerText = '⚠️ يرجى تفعيل الزر أثناء تصفح ناجز najiz.sa';
-                    syncCurrentPageBtn.disabled = false;
-                    return;
-                }
-
-                syncStatusMsg.innerText = '⏳ جاري تجميع محتوى الصفحة...';
-                
-                chrome.tabs.sendMessage(tab.id, { action: "scrapeData" }, (response) => {
-                    if (chrome.runtime.lastError) {
-                        syncStatusMsg.style.color = '#ef4444';
-                        syncStatusMsg.innerText = '⚠️ خطأ الاتصال. أعد تحميل صفحة ناجز وحاول مجدداً.';
-                        syncCurrentPageBtn.disabled = false;
-                        return;
-                    }
-
-                    if (response && response.success) {
-                        syncStatusMsg.innerText = '🚀 جاري إرسال البيانات والتحليل بالسيرفر...';
-                        
-                        chrome.storage.local.get(['activeApiKey'], (result) => {
-                            const activeKey = result.activeApiKey || defaultApiKey;
-                            const payload = {
-                                apiKey: activeKey,
-                                syncType: 'popup_smart_full_sync',
-                                cases: response.cases,
-                                hearings: response.hearings,
-                                clients: response.clients,
-                                rawText: response.rawText || "",
-                                sourceUrl: tab.url,
-                                scrapedAt: new Date().toISOString()
-                            };
-
-                            chrome.runtime.sendMessage({
-                                action: 'fetchNajizSync',
-                                url: '${currentHost}/api/najiz-sync',
-                                apiKey: activeKey,
-                                body: payload
-                            }, (apiRes) => {
-                                if (chrome.runtime.lastError) {
-                                    syncStatusMsg.style.color = '#ef4444';
-                                    syncStatusMsg.innerText = '❌ خطأ: ' + chrome.runtime.lastError.message;
-                                    chrome.runtime.sendMessage({ action: 'logError', text: 'خطأ اتصال: ' + chrome.runtime.lastError.message });
-                                } else if (apiRes && apiRes.success) {
-                                    syncStatusMsg.style.color = '#10b981';
-                                    syncStatusMsg.innerText = '✅ تم التزامن وتحليل البيانات بنجاح!';
-                                    chrome.runtime.sendMessage({ action: 'logSuccess', text: 'مزامنة ناجحة من التبويب: ' + tab.url });
-                                } else {
-                                    const errMsg = apiRes ? apiRes.error : 'استجابة سلبية من السيرفر';
-                                    syncStatusMsg.style.color = '#ef4444';
-                                    syncStatusMsg.innerText = '⚠️ فشل الربط: ' + errMsg;
-                                    chrome.runtime.sendMessage({ action: 'logError', text: 'فشلت المزامنة: ' + errMsg });
-                                }
-                                syncCurrentPageBtn.disabled = false;
-                            });
-                        });
-                    } else {
-                        syncStatusMsg.style.color = '#ef4444';
-                        syncStatusMsg.innerText = '⚠️ لم يستجب محرك الكشط ببيانات صالحة.';
-                        syncCurrentPageBtn.disabled = false;
-                    }
-                });
-            } catch (err) {
-                syncStatusMsg.style.color = '#ef4444';
-                syncStatusMsg.innerText = '⚠️ عطل عام: ' + err.message;
-                syncCurrentPageBtn.disabled = false;
-            }
-        });
-    }
-});`;
+  });
+}`;
 
       case "icon.png":
         return "صورة أيقونة الإضافة (أيقونة ميزان العدالة - يتم إنشاؤها ورسمها تلقائياً عند النقر لضمان كفاءة التحميل).";

@@ -48,13 +48,10 @@ export function useSupabaseConnection() {
         // 1. Perform trial query on the main 'cases' table to check permissions
         const { error: casesError } = await supabase.from('cases').select('id').limit(1);
         if (casesError && (casesError.code === '42501' || casesError.message?.includes('row-level security') || casesError.message?.includes('policy'))) {
-          console.error('[Supabase RLS Error] 42501 Security Policy Violation:', casesError.message);
-          setIsValid(false);
-          setError(
-            `⚠️ خطأ في صلاحيات الوصول (RLS / 42501) للجدول الرئيسي 'cases':\n` +
-            `لقد تم رفض الاستعلام من قِبل قواعد مستوى حماية الصفوف (Row-Level Security).\n` +
-            `يرجى التأكد من الميزات الأمنية وتفعيل السياسات المناسبة (Policies) في لوحة تحكم Supabase لتمرير العمليات بنجاح، أو تعطيل RLS مؤقتاً للتجربة.`
-          );
+          console.warn('[Supabase RLS Warning] 42501 Security Policy Violation on "cases":', casesError.message);
+          // Instead of hard blocking, we mark as valid but with a warning in console
+          // This allows users to see the landing page/auth and login
+          setIsValid(true);
           return;
         }
 

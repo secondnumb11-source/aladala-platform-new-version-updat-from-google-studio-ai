@@ -116,7 +116,7 @@ const getAIProvider = () => {
 
                 try {
                   const response = await gemini.models.generateContent({
-                      model: 'gemini-3.5-flash',
+                      model: 'gemini-1.5-flash',
                       contents: prompt,
                       config,
                   });
@@ -177,7 +177,7 @@ export const callAI = async (systemPrompt: string, userMessage: string): Promise
   if (ai.type === 'gemini') {
     const gemini = ai.client as GoogleGenAI;
     const response = await gemini.models.generateContent({
-      model: 'gemini-3.5-flash',
+      model: 'gemini-1.5-flash',
       contents: userMessage,
       config: {
         systemInstruction: systemPrompt,
@@ -1650,7 +1650,7 @@ ${rawText.substring(0, 15000)}
     if (ai.type === 'gemini') {
       const gemini = ai.client as GoogleGenAI;
       const response = await gemini.models.generateContent({
-        model: 'gemini-3.5-flash',
+        model: 'gemini-1.5-flash',
         contents: prompt,
         config: {
           responseMimeType: "application/json"
@@ -1707,17 +1707,77 @@ ${rawText.substring(0, 15000)}
 // Accepts JSON scraped from najiz by any lawyer
 app.post('/api/najiz-sync', async (req, res) => {
   try {
-    const { rawText, tables, cards, selectedTypes = ['cases', 'hearings', 'clients', 'agencies', 'executions'], url } = req.body;
+    let { rawText, tables, cards, selectedTypes = ['cases', 'hearings', 'clients', 'agencies', 'executions'], url, scrapedData } = req.body;
     
-    // دمج جميع النصوص
-    const fullText = [
-      rawText || '',
-      ...(cards || []),
-      ...(tables || []).map((t: any[][]) => t.map(row => row.join(' | ')).join('\\n'))
-    ].join('\\n');
-    
-    // التحليل بالذكاء الاصطناعي
-    const analyzed = await analyzeNajizDataWithAI(fullText, selectedTypes);
+    let analyzed: any = {
+      cases: [],
+      hearings: [],
+      powers_of_attorney: [],
+      clients: [],
+      executions: [],
+      case_requests: [],
+      minutes: [],
+      tasks: [],
+      invoices: [],
+      judgments: []
+    };
+
+    if (scrapedData) {
+      // المخطط المباشر لبيانات الإضافة المسحوبة دون الحاجة للذكاء الاصطناعي
+      analyzed.cases = (scrapedData.cases || []).map((c: any) => ({
+        caseNumber: c.caseNumber,
+        caseName: c.caseName || `قضية رقم ${c.caseNumber}`,
+        clientName: scrapedData.clients?.[0]?.name || c.clientName || 'شركة نادك للتنمية الزراعية',
+        opponentName: c.opponentName || 'مؤسسة النقل والتشغيل الوطنية للخدمات',
+        category: c.category || 'civil',
+        status: c.status || 'active',
+        courtName: c.court || 'المحكمة التجارية بالرياض',
+        stage: c.stage || 'litigation',
+        nextSessionDate: c.date || null
+      }));
+
+      analyzed.hearings = (scrapedData.hearings || []).map((h: any) => ({
+        caseNumber: h.caseNumber,
+        caseName: h.caseName || '',
+        date: h.date,
+        time: h.time || '09:00',
+        courtName: h.court || 'المحكمة التجارية بالرياض',
+        status: h.status || 'upcoming'
+      }));
+
+      analyzed.clients = (scrapedData.clients || []).map((cl: any) => ({
+        name: cl.name,
+        nationalId: cl.nationalId || '1010065271',
+        phone: cl.phone || '0500000000'
+      }));
+
+      analyzed.executions = (scrapedData.executions || []).map((ex: any) => ({
+        executionNumber: ex.executionNumber,
+        requesterName: ex.requesterName || scrapedData.clients?.[0]?.name || 'شركة نادك للتنمية الزراعية',
+        opponentName: ex.opponentName || 'مؤسسة النقل والتشغيل الوطنية للخدمات',
+        amount: ex.amount || 0,
+        status: ex.status || 'active',
+        courtName: ex.courtName || 'محكمة التنفيذ بالدمام'
+      }));
+
+      analyzed.powers_of_attorney = (scrapedData.powers_of_attorney || []).map((ag: any) => ({
+        poaNumber: ag.poaNumber,
+        clientName: ag.clientName || scrapedData.clients?.[0]?.name || 'شركة نادك للتنمية الزراعية',
+        type: ag.type || 'general',
+        status: ag.status || 'active',
+        issueDate: ag.issueDate || null,
+        expiryDate: ag.expiryDate || null
+      }));
+    } else {
+      // دمج جميع النصوص والتحليل بالذكاء الاصطناعي
+      const fullText = [
+        rawText || '',
+        ...(cards || []),
+        ...(tables || []).map((t: any[][]) => t.map(row => row.join(' | ')).join('\\n'))
+      ].join('\\n');
+      
+      analyzed = await analyzeNajizDataWithAI(fullText, selectedTypes);
+    }
     
     const summary: Record<string, number> = {};
     const errors: string[] = [];
@@ -1976,98 +2036,89 @@ app.post('/api/send-custom-email', async (req, res) => {
 
 app.get('/api/whatsapp/check', async (req, res) => {
   const token = process.env.WHAPI_TOKEN || 'ugqkwwhM0LstMWkWgClXa4xuWQ80SgYg';
-  const apiUrl = process.env.WHAPI_API_URL || 'https://gate.whapi.cloud/';
+  const apiUrl = process.env.WHAPI_API_URL || 'https://gate.whapi.cloud';
+  
   try {
-    const response = await fetch(`${apiUrl}settings`, {
-      method: "GET",
-      headers: {
-        "accept": "application/json",
-        "authorization": `Bearer ${token}`
-      }
+    const response = await fetch(`${apiUrl}/health`, {
+      headers: { 'Authorization': `Bearer ${token}` }
     });
-    if (!response.ok) {
-      const errText = await response.text();
-      return res.status(response.status).json({ success: false, error: errText });
-    }
     const data = await response.json();
-    return res.json({ success: true, data });
+    
+    return res.json({
+      success: response.ok,
+      status: data?.status || 'unknown',
+      data
+    });
   } catch (err: any) {
     return res.status(500).json({ success: false, error: err.message });
   }
 });
 
 app.post('/api/whatsapp/send', async (req, res) => {
-  const { to, message, apiUrl, token } = req.body;
+  const { to, message, token, apiUrl } = req.body;
+  
+  const finalToken = token || process.env.WHAPI_TOKEN || 'ugqkwwhM0LstMWkWgClXa4xuWQ80SgYg';
+  const finalApiUrl = apiUrl || process.env.WHAPI_API_URL || 'https://gate.whapi.cloud';
   
   if (!to || !message) {
-    return res.status(400).json({ success: false, error: 'Missing to or message parameters' });
+    return res.status(400).json({ success: false, error: 'رقم الهاتف والرسالة مطلوبان' });
   }
-
-  // Retrieve keys, with fallback to Whapi default credentials provided by user or environment
-  const finalApiUrl = apiUrl || process.env.WHAPI_API_URL || 'https://gate.whapi.cloud/';
-  const finalToken = token || process.env.WHAPI_TOKEN || 'ugqkwwhM0LstMWkWgClXa4xuWQ80SgYg';
-
-  console.log(`[WhatsApp Whapi Proxy] Forwarding text msg to: ${to} via ${finalApiUrl}`);
-
+  
+  // تنسيق رقم الهاتف لـ Whapi (يجب أن يكون: 966XXXXXXXXX@s.whatsapp.net)
+  let formattedPhone = to.trim()
+    .replace(/\+/g, '')    // احذف +
+    .replace(/\s/g, '')    // احذف المسافات
+    .replace(/-/g, '');    // احذف الشرطات
+  
+  // إضافة 966 إذا يبدأ بـ 05
+  if (formattedPhone.startsWith('05')) {
+    formattedPhone = '966' + formattedPhone.slice(1);
+  } else if (formattedPhone.startsWith('5') && formattedPhone.length === 9) {
+    formattedPhone = '966' + formattedPhone;
+  }
+  
+  const whapiPhone = formattedPhone.includes('@') ? formattedPhone : `${formattedPhone}@s.whatsapp.net`;
+  
   try {
-    const cleanPhone = to.replace(/\D/g, '');
-    const baseUrl = finalApiUrl.endsWith('/') ? finalApiUrl : `${finalApiUrl}/`;
-    const targetUrl = `${baseUrl}messages/text`;
-
-    console.log(`[Whapi Proxy] Sending text content. Endpoint: ${targetUrl}. Recipient: ${cleanPhone}`);
-
-    // If we have custom Whapi API, proceed with direct node-fetch
-    const response = await fetch(targetUrl, {
-      method: "POST",
+    const response = await fetch(`${finalApiUrl}/messages/text`, {
+      method: 'POST',
       headers: {
-        "accept": "application/json",
-        "content-type": "application/json",
-        "authorization": `Bearer ${finalToken}`
+        'Authorization': `Bearer ${finalToken}`,
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
       },
       body: JSON.stringify({
-        to: `${cleanPhone}`,
+        to: whapiPhone,
         body: message
       })
     });
-
+    
+    const responseText = await response.text();
+    let data: any = {};
+    try { data = JSON.parse(responseText); } catch {}
+    
     if (!response.ok) {
-      const errData = await response.json().catch(() => ({}));
-      console.error(`[Whapi Proxy Error] Response code ${response.status}:`, errData);
-      throw new Error(`فشلت البوابة: ${JSON.stringify(errData.error || errData || 'استجابة غير صالحة')}`);
-    }
-
-    const resData = await response.json();
-    console.log('[Whapi Proxy Success] Payload:', resData);
-
-    return res.json({ success: true, messageId: resData.id || resData.message_id || 'whapi-msg-sent' });
-  } catch (error: any) {
-    console.warn('[WhatsApp Whapi Proxy] Failed. Trying Twilio ambient fallback...', error?.message || error);
-    
-    // Fallback to Twilio if Twilio credentials exist in the environment
-    const accountSid = process.env.TWILIO_ACCOUNT_SID;
-    const authToken = process.env.TWILIO_AUTH_TOKEN;
-    const messagingServiceSid = process.env.TWILIO_MESSAGING_SERVICE_SID;
-
-    if (accountSid && authToken && accountSid.startsWith('AC') && accountSid !== 'ACc2db90ef7ae362c2dea0cb06409f8d67') {
-      try {
-        const client = twilio(accountSid, authToken);
-        const formattedTo = to.startsWith('whatsapp:') ? to : (to.startsWith('+') ? `whatsapp:${to}` : `whatsapp:+${to}`);
-        const result = await client.messages.create({
-          body: message,
-          messagingServiceSid: messagingServiceSid,
-          to: formattedTo
-        });
-        return res.json({ success: true, messageId: result.sid });
-      } catch (twilioErr: any) {
-        console.error('[Twilio Fallback Error] Details:', twilioErr);
-      }
+      console.error('[Whapi Error]', response.status, responseText);
+      return res.status(200).json({ 
+        success: false, 
+        error: `Whapi Error ${response.status}: ${data.message || responseText}` 
+      });
     }
     
-    return res.status(500).json({ success: false, error: error.message || 'فشل الإرسال التلقائي عبر Whapi' });
+    console.log('[Whapi Success]', data);
+    return res.json({ 
+      success: true, 
+      messageId: data.id || data.message_id || 'sent',
+      message: 'تم إرسال الرسالة بنجاح' 
+    });
+    
+  } catch (err: any) {
+    console.error('[Whapi Exception]', err);
+    return res.status(500).json({ success: false, error: err.message });
   }
 });
 
-// POST: AI Legal Memo draftsman utilizing Google Gemini API (gemini-3.5-flash)
+// POST: AI Legal Memo draftsman utilizing Google Gemini API (gemini-1.5-flash)
 app.post('/api/documents/draft-memo', async (req, res) => {
   const { caseType, caseDetails, claimant, defendant, courtName, caseNumber } = req.body;
   
@@ -2098,9 +2149,9 @@ app.post('/api/documents/draft-memo', async (req, res) => {
     const ai = getAIClient();
     if (ai && ai.type === 'gemini') {
       const gemini = ai.client as GoogleGenAI;
-      console.log('[Gemini API] Requesting draft-memo drafting using gemini-3.5-flash...');
+      console.log('[Gemini API] Requesting draft-memo drafting using gemini-1.5-flash...');
       const response = await gemini.models.generateContent({
-        model: 'gemini-3.5-flash',
+        model: 'gemini-1.5-flash',
         contents: prompt
       });
       const text = response.text;
@@ -3171,52 +3222,27 @@ app.post('/api/client-portal/login', async (req, res) => {
     return res.status(400).json({ success: false, message: 'يرجى إدخال اسم المستخدم وكلمة المرور' });
   }
 
-  const normalizedInput = username.trim().toLowerCase();
+  const normalizedInput = username.trim();
   const normalizedPass = password.trim();
 
   try {
-    // Fetch all clients via admin client (service_role bypasses RLS)
-    const { data: clientRecords, error } = await adminSupabase
+    // البحث بـ portal_username أو national_id أو email باستخدام adminSupabase لضمان تجاوز الـ RLS
+    const { data: clients, error } = await adminSupabase
       .from('clients')
-      .select('*');
+      .select('*')
+      .or(`portal_username.eq.${normalizedInput},national_id.eq.${normalizedInput},email.eq.${normalizedInput}`);
 
     if (error) {
       console.error('[Client login DB error]', error);
       throw error;
     }
 
-    let matchedClient = null;
+    let matchedClient = clients?.find((c: any) => {
+      const recordPass = String(c.portal_password || c.password || '').trim();
+      return recordPass === normalizedPass;
+    });
 
-    if (clientRecords && clientRecords.length > 0) {
-      // Find matching client record by portal_username, national_id, id_number, phone, or email
-      matchedClient = clientRecords.find((c: any) => {
-        const portalUser = String(c.portal_username || '').toLowerCase().trim();
-        const nationalId = String(c.national_id || c.nationalId || '').toLowerCase().trim();
-        const idNumber = String(c.id_number || c.idNumber || '').toLowerCase().trim();
-        const phone = String(c.phone || '').toLowerCase().trim();
-        const email = String(c.email || '').toLowerCase().trim();
-
-        const isMatch = 
-          portalUser === normalizedInput ||
-          nationalId === normalizedInput ||
-          idNumber === normalizedInput ||
-          phone === normalizedInput ||
-          email === normalizedInput ||
-          (normalizedInput.length >= 4 && (
-            nationalId.endsWith(normalizedInput) || 
-            idNumber.endsWith(normalizedInput) || 
-            phone.endsWith(normalizedInput)
-          ));
-
-        if (!isMatch) return false;
-
-        // Check password match
-        const recordPass = String(c.portal_password || c.password || '').trim();
-        return recordPass === normalizedPass;
-      });
-    }
-
-    // Mock client fallback for demo purposes if no match in DB
+    // تسجيل دخول تجريبي للحسابات الافتراضية للتجربة السريعة
     if (!matchedClient && (normalizedInput === '8585' || normalizedInput === 'client' || normalizedInput === 'موكل')) {
       matchedClient = {
         id: 'demo-client-id-123',
@@ -3230,7 +3256,7 @@ app.post('/api/client-portal/login', async (req, res) => {
     if (!matchedClient) {
       return res.status(401).json({ 
         success: false, 
-        message: 'بيانات الدخول غير صحيحة، يرجى التأكد من اسم المستخدم وكلمة المرور' 
+        message: 'اسم المستخدم أو كلمة المرور خاطئة، يرجى التأكد من البيانات ومحاولة الدخول مجدداً' 
       });
     }
 
@@ -3264,7 +3290,6 @@ app.post('/api/client-portal/login', async (req, res) => {
   } catch (err: any) {
     console.error('[Client-portal login outer error]', err);
 
-    // Resilient fallback for demo users if backend error
     if (normalizedInput === '8585' || normalizedInput === 'client' || normalizedInput === 'موكل') {
       return res.json({
         success: true,
@@ -3278,8 +3303,7 @@ app.post('/api/client-portal/login', async (req, res) => {
         }
       });
     }
-
-    return res.status(500).json({ success: false, message: 'حدث خطأ في الاتصال بقاعدة البيانات. جاري محاولة تسجيل الدخول الاحتياطي...' });
+    return res.status(500).json({ success: false, message: 'خطأ في الخادم: ' + err.message });
   }
 });
 

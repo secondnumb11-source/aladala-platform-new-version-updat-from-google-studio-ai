@@ -865,7 +865,8 @@ export default function ClientsModule({
                              .update({
                                portal_username: username,
                                portal_password: password,
-                               active_portal: true
+                               active_portal: true,
+                               updated_at: new Date().toISOString()
                              })
                              .eq('id', c.id);
                            
@@ -875,9 +876,14 @@ export default function ClientsModule({
                            }
                            
                            // تحديث State
-                           onUpdateState('clients', { ...c, portalUsername: username, portalPassword: password, activePortal: true });
+                           onUpdateState('clients', {
+                             ...c,
+                             portalUsername: username.trim(),
+                             portalPassword: password.trim(),
+                             activePortal: true
+                           });
                            
-                           alert(`تم توليد بيانات الدخول:\nاسم المستخدم: ${username}\nكلمة المرور: ${password}`);
+                           alert(`✅ تم حفظ بيانات الدخول في قاعدة البيانات:\nاسم المستخدم: ${username}\nكلمة المرور: ${password}`);
                          }}
                          className="flex-1 bg-slate-800 text-white font-black py-3.5 rounded-xl text-[11px] flex items-center justify-center gap-2 transition-all shadow-md active:scale-95"
                        >

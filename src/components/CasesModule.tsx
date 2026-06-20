@@ -447,6 +447,65 @@ export default React.memo(function CasesModule({
     return () => window.removeEventListener('adalah-advanced-config-updated', handleThemeEvent);
   }, []);
 
+  // إضافة جلب البيانات المباشر من قاعدة البيانات لضمان ظهور قضايا ناجز والقضايا الجديدة
+  useEffect(() => {
+    const loadCasesFromDB = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('cases')
+          .select('*')
+          .eq('archived', false)
+          .order('created_at', { ascending: false });
+        
+        if (error) {
+          console.error('[Cases Load Error]', error);
+          return;
+        }
+        
+        if (data && data.length > 0) {
+          // تحويل البيانات من snake_case إلى camelCase
+          const mappedCases = data.map(c => ({
+            id: c.id,
+            caseNumber: c.case_number,
+            caseName: c.title || c.case_name || 'قضية ناجز',
+            category: c.category || 'other',
+            stage: c.stage || 'litigation',
+            status: c.status || 'active',
+            clientName: c.client_name || 'عميل ناجز',
+            clientId: c.client_id,
+            opponentName: c.opponent_name || '',
+            courtName: c.court_name || '',
+            nextSessionDate: c.next_session_at ? c.next_session_at.split('T')[0] : '',
+            nextSessionTime: c.next_session_time || '',
+            summary: c.summary || '',
+            details: c.details || '',
+            isNajizSync: c.is_najiz_sync || false,
+            najizCaseNumber: c.najiz_case_number,
+            priority: c.priority || 'medium',
+            isConfidential: c.is_confidential || false,
+            archived: c.archived || false,
+            createdAt: c.created_at
+          }));
+          
+          // دمج مع القضايا الموجودة في الـ State (لتجنب التكرار)
+          // القضايا من DB لها أولوية. handleUpdateGlobalState سيتولى التحديث الآمن
+          for (const mc of mappedCases) {
+            const alreadyExists = cases.some(x => x.id === mc.id || (x.caseNumber === mc.caseNumber && x.caseNumber));
+            if (!alreadyExists) {
+              onUpdateState('cases', mc);
+            }
+          }
+          
+          console.log(`[Cases] تم تحميل ${mappedCases.length} قضية من قاعدة البيانات`);
+        }
+      } catch (err) {
+        console.error('[Cases DB Load Exception]', err);
+      }
+    };
+    
+    loadCasesFromDB();
+  }, [cases.length]); // إعادة التحميل عند تغير الطول لضمان المزامنة
+
   const getInteractiveCaseStyles = (category: string, status: string) => {
     let arabicCategoryName = 'أخرى / عامة';
     switch (category) {
