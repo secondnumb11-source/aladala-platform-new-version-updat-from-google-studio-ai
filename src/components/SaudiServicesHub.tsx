@@ -3,7 +3,7 @@ import {
   Gavel, Scale, FileText, Landmark, Calculator, Mail, 
   Handshake, ShieldAlert, CircleDot, ChevronLeft, HelpCircle, 
   Download, Send, Check, RefreshCw, ExternalLink, Search, Globe, ChevronRight,
-  Sun, Moon, Users, Briefcase
+  Sun, Moon, Users, Briefcase, ShieldCheck, CheckCircle2
 } from "lucide-react";
 import { motion } from "motion/react";
 import CourtMapAndServices from "@/components/CourtMapAndServices";
@@ -243,68 +243,29 @@ export default function SaudiServicesHub({
   ];
 
   const calculateInheritance = () => {
-    let currentEstate = estateAmount;
-    const details = [];
-    const hasChildren = (sonsCount + daughtersCount) > 0;
-    
-    if (hasMother) {
-      const share = hasChildren ? (1/6) : (1/3);
-      const val = Math.round(estateAmount * share);
-      currentEstate -= val;
-      details.push({ relation: "الأم", fraction: hasChildren ? "1/6 (فرض)" : "1/3 (فرض)", amount: val });
-    }
-    if (hasFather) {
-      const share = hasChildren ? (1/6) : (1/6); // Simplification
-      const val = Math.round(estateAmount * share);
-      currentEstate -= val;
-      details.push({ relation: "الأب", fraction: "1/6 (فرض + تعصيب إن وجد)", amount: val });
-    }
-    if (hasWife) {
-      const share = hasChildren ? (1/8) : (1/4);
-      const val = Math.round(estateAmount * share);
-      currentEstate -= val;
-      details.push({ relation: "الزوجة", fraction: hasChildren ? "1/8 (فرض)" : "1/4 (فرض)", amount: val });
-    }
-    if (sonsCount > 0 || daughtersCount > 0) {
-      const totalParts = (sonsCount * 2) + daughtersCount;
-      const partVal = currentEstate / totalParts;
-      if (sonsCount > 0) details.push({ relation: `للذكر (${sonsCount})`, fraction: "تعصيباً", amount: Math.round(partVal * 2) * sonsCount });
-      if (daughtersCount > 0) details.push({ relation: `للأنثى (${daughtersCount})`, fraction: "تعصيباً", amount: Math.round(partVal) * daughtersCount });
-    }
-    setSharesResult(details);
+    // Redirect to MOJ Inheritance Calculator for real unified data
+    window.open(`https://www.moj.gov.sa/ar/eServices/Pages/Inheritencecalculator.aspx`, '_blank');
   };
 
   const draftAppealTemplate = () => {
-    const header = `صاحب الفضيلة رئيس محكمة الاستئناف بالرياض الموقر،\nالسلام عليكم ورحمة الله وبركاته،\nموضوع اللائحة الاعتراضية قيد الدعوى رقم (${appealCaseNumber || "441029393"})`;
-    const body = appealReason === "procedural_error" 
-      ? `نتقدم لفضيلتكم بلائحة الاعتراض نظراً لوجود بطلان إجرائي شاب الحكم المستأنف حيث لم يتم تبليغ موكلنا بموعد الجلسة بصورة صحيحة وبما يتعارض مع نظام المرافعات.`
-      : `نود الإشارة لفضيلتكم إلى قصور جسيم في تسبيب الحكم وإغفال مستندات جوهرية تم دفعها تشتمل على مستند براءة الذمة المالية الموثقة.`;
-    const footer = `\n\nلذا نطلب من فضيلتكم نقض الحكم وإعادة النظر فيه بما يتوافق مع الأصول الشرعية والنظامية.`;
-    setAppealText(`${header}\n\n${body}${footer}`);
-    setAppealDrafted(true);
-  };
-
-  const executeResidentQuery = () => {
-    setResidentResult({
-      status: "إقامة سارية الصلاحية",
-      borderEntry: "مطار الملك خالد الدولي",
-      employer: "شركة النخبة للمقاولات المحدودة",
-      violations: "لا توجد سوابق جنائية أو قيود حدودية نشطة"
-    });
-  };
-
-  const executeExecutionQuery = () => {
-    setExecutionResult({
-      status: "قيد المتابعة - المادة 34",
-      judge: "فضيلة الشيخ محمد السلمان",
-      claimAmount: "1,240,000 ر.س",
-      sanctionsApplied: ["منع من السفر", "إيقاف الخدمات الحكومية", "المنع من التعامل مع المنشآت المالية"]
-    });
+    // Redirect to Najiz statement of claim / objection
+    window.open(`https://najiz.sa/applications/landing/services/3`, '_blank');
   };
 
   const handleDeedSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setIsDeedSubmitted(true);
+    // Redirect to Real Estate Deed Update service on Najiz
+    window.open(`https://najiz.sa/applications/landing/services/49`, '_blank');
+  };
+
+  const executeResidentQuery = () => {
+    // Redirect to Absher or Muqeem for real data
+    window.open(`https://www.absher.sa/wps/portal/individuals/Home`, '_blank');
+  };
+
+  const executeExecutionQuery = () => {
+    // Redirect to Najiz execution inquiry for real data
+    window.open(`https://najiz.sa/applications/landing/services/1`, '_blank');
   };
 
   // Filter portals based on search query
@@ -464,17 +425,17 @@ export default function SaudiServicesHub({
                     </div>
 
                     <div>
-                      <h3 className="text-xs font-black text-slate-950 group-hover/card:text-amber-400 font-black transition-colors">
+                      <h3 className="text-xs font-black text-slate-950 group-hover/card:text-amber-500 transition-colors">
                         {portal.name}
                       </h3>
-                      <span className="text-[11px] text-slate-200 font-bold font-bold font-mono tracking-wider">
+                      <span className="text-[11px] text-slate-500 font-black font-mono tracking-wider">
                         {portal.domain}
                       </span>
                     </div>
                   </div>
 
                   {/* Portal description */}
-                  <p className="text-[11.5px] text-slate-950 font-black leading-relaxed text-justify min-h-[50px]">
+                  <p className="text-[11.5px] text-slate-900 font-black leading-relaxed text-justify min-h-[50px]">
                     {portal.desc}
                   </p>
                 </div>
@@ -619,7 +580,7 @@ export default function SaudiServicesHub({
                <ShieldAlert className="w-8 h-8 text-blue-600" />
              </div>
              <div className="flex-1 space-y-3">
-               <h3 className="text-sm font-black text-slate-900">التحقق من الوثائق الرسمية (منصة وثيق)</h3>
+               <h3 className={`text-sm font-black ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>التحقق من الوثائق الرسمية (منصة وثيق)</h3>
                <p className="text-xs text-slate-500 font-medium">الاستعلام المباشر عن صحة وسريان الوثائق والمستندات الحكومية عبر بوابة وثيق.</p>
                <div className="flex gap-2 mt-4">
                  <input 
@@ -633,37 +594,40 @@ export default function SaudiServicesHub({
                    onClick={() => openWatheeqVerification(watheeqDocNumber)}
                    className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl px-5 font-black text-xs transition-colors shrink-0 flex items-center gap-2"
                  >
-                   تحقق الآن <ExternalLink className="w-3 h-3" />
+                   تحقق الآن <ShieldCheck className="w-3.5 h-3.5 text-blue-200" />
                  </button>
                </div>
              </div>
            </div>
            
-           {/* MOJ Case Verification */}
-           <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm flex flex-col md:flex-row gap-6 items-start">
-             <div className="shrink-0 w-16 h-16 bg-emerald-50 rounded-2xl flex items-center justify-center border border-emerald-100">
-               <Gavel className="w-8 h-8 text-emerald-600" />
-             </div>
-             <div className="flex-1 space-y-3">
-               <h3 className="text-sm font-black text-slate-900">استعلام تفاصيل القضية (ناجز / وزارة العدل)</h3>
-               <p className="text-xs text-slate-500 font-medium">الاستعلام المباشر عن حالة ومواعيد جلسات القضايا المرفوعة بالرقم المرجعي.</p>
-               <div className="flex gap-2 mt-4">
-                 <input 
-                   type="text" 
-                   value={najizCaseNumber}
-                   onChange={e => setNajizCaseNumber(e.target.value)}
-                   placeholder="أدخل رقم القضية المرجعي"
-                   className="flex-1 bg-slate-50 border border-slate-300 rounded-xl p-3 text-xs font-bold text-slate-900 focus:border-emerald-500 focus:outline-none"
-                 />
-                 <button 
-                   onClick={() => searchNajizCase(najizCaseNumber)}
-                   className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl px-5 font-black text-xs transition-colors shrink-0 flex items-center gap-2"
-                 >
-                   استعلام القضية <ExternalLink className="w-3 h-3" />
-                 </button>
-               </div>
-             </div>
-           </div>
+            {/* MOJ Case Verification */}
+            <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm flex flex-col md:flex-row gap-6 items-start">
+              <div className="shrink-0 w-16 h-16 bg-emerald-50 rounded-2xl flex items-center justify-center border border-emerald-100">
+                <Gavel className="w-8 h-8 text-emerald-600" />
+              </div>
+              <div className="flex-1 space-y-3">
+                <div className="flex items-center gap-2">
+                  <h3 className="text-sm font-black text-slate-900">استعلام تفاصيل القضية (ناجز / وزارة العدل)</h3>
+                  <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                </div>
+                <p className="text-xs text-slate-500 font-medium font-sans">الاستعلام المباشر عن حالة ومواعيد جلسات القضايا المرفوعة بالرقم المرجعي والموثقة من وزارة العدل.</p>
+                <div className="flex gap-2 mt-4">
+                  <input 
+                    type="text" 
+                    value={najizCaseNumber}
+                    onChange={e => setNajizCaseNumber(e.target.value)}
+                    placeholder="أدخل رقم القضية المرجعي"
+                    className="flex-1 bg-slate-50 border border-slate-300 rounded-xl p-3 text-xs font-bold text-slate-900 focus:border-emerald-500 focus:outline-none"
+                  />
+                  <button 
+                    onClick={() => searchNajizCase(najizCaseNumber)}
+                    className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl px-5 font-black text-xs transition-colors shrink-0 flex items-center gap-2"
+                  >
+                    استعلام القضية <CheckCircle2 className="w-3.5 h-3.5 text-emerald-200" />
+                  </button>
+                </div>
+              </div>
+            </div>
 
            {/* MC CR Check */}
            <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm flex flex-col md:flex-row gap-6 items-start">
@@ -685,7 +649,7 @@ export default function SaudiServicesHub({
                    onClick={() => checkCommercialRegistry(crNumber)}
                    className="bg-sky-600 hover:bg-sky-700 text-white rounded-xl px-5 font-black text-xs transition-colors shrink-0 flex items-center gap-2"
                  >
-                   استعلام السجل <ExternalLink className="w-3 h-3" />
+                   استعلام السجل <ShieldCheck className="w-3.5 h-3.5 text-sky-200" />
                  </button>
                </div>
              </div>
@@ -722,7 +686,7 @@ export default function SaudiServicesHub({
               <h3 className="text-sm font-bold flex items-center gap-1.5 mt-1 border-r-4 border-amber-600 pr-2 text-slate-950">
                 الأدوات المعتمدة للتحقق والمساندة القضائية الذكية
               </h3>
-              <p className="text-slate-200 font-bold text-xs mt-1">
+              <p className={`${isDarkCards ? 'text-white' : 'text-slate-200'} font-bold text-xs mt-1`}>
                 مجموعة من الأدوات المتطورة لحساب المواريث الشرعية، تحديث الصكوك العقارية الرقمية، التحقق والاستعلام عن الحدود، ومتابعة سندات التنفيذ.
               </p>
             </div>

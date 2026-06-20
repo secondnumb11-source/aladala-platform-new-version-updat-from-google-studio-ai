@@ -4,11 +4,12 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { Calendar, Clock, Bell, Timer, CalendarRange, ShieldCheck, ArrowUpRight } from 'lucide-react';
+import { Calendar, Clock, Bell, Timer, CalendarRange, ShieldCheck, ArrowUpRight, Loader2 } from 'lucide-react';
 import { addDays, format, differenceInDays } from 'date-fns';
 import { ar } from 'date-fns/locale';
 import { useSystemData } from '../../hooks/useSystemData';
 import CaseClientSelector from '../shared/CaseClientSelector';
+import { supabase } from '../../lib/supabase';
 
 export default function AIDeadlinesTool() {
   const { cases, clients } = useSystemData();
@@ -17,6 +18,15 @@ export default function AIDeadlinesTool() {
   
   const [judgmentDate, setJudgmentDate] = useState(new Date().toISOString().split('T')[0]);
   const [type, setType] = useState<'appeal' | 'execution' | 'objection'>('appeal');
+  const [isFetchingJudgments, setIsFetchingJudgments] = useState(false);
+  const [isAnalyzingAI, setIsAnalyzingAI] = useState(false);
+  const [judgmentSource, setJudgmentSource] = useState<'manual' | 'ai'>('manual');
+  const [aiAnalysis, setAiAnalysis] = useState<{
+    deadlineDays: number;
+    legalReasoning: string;
+    advice: string;
+    priority: string;
+  } | null>(null);
   
   const deadlinesMap = {
     appeal: 30,
@@ -26,13 +36,71 @@ export default function AIDeadlinesTool() {
 
   const selectedCase = cases.find(c => c.id === selectedCaseId);
 
-  useEffect(() => {
-    if (selectedCase?.lastSessionDate) {
-      setJudgmentDate(selectedCase.lastSessionDate);
+  const fetchAIAnalysis = async (date: string, t: string, cTitle: string) => {
+    setIsAnalyzingAI(true);
+    try {
+      const response = await fetch('/api/ai/analyze-deadline', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          judgmentDate: date,
+          type: t,
+          caseTitle: cTitle,
+          judgmentSummary: selectedCase?.summary
+        })
+      });
+      const data = await response.json();
+      setAiAnalysis(data);
+    } catch (err) {
+      console.error('AI Analysis failed:', err);
+    } finally {
+      setIsAnalyzingAI(false);
     }
-  }, [selectedCase]);
+  };
 
-  const deadlineDate = addDays(new Date(judgmentDate), deadlinesMap[type]);
+  useEffect(() => {
+    const fetchJudgments = async () => {
+      if (!selectedCaseId) return;
+      setIsFetchingJudgments(true);
+      try {
+        const { data, error } = await supabase
+          .from('case_judgments')
+          .select('judgment_date')
+          .eq('case_id', selectedCaseId)
+          .not('judgment_date', 'is', null)
+          .order('judgment_date', { ascending: false })
+          .limit(1);
+
+        if (error) throw error;
+
+        if (data && data.length > 0) {
+          setJudgmentDate(data[0].judgment_date);
+          setJudgmentSource('ai');
+          fetchAIAnalysis(data[0].judgment_date, type, selectedCase?.title || '');
+        } else if (selectedCase?.lastSessionDate) {
+          setJudgmentDate(selectedCase.lastSessionDate);
+          setJudgmentSource('manual');
+          fetchAIAnalysis(selectedCase.lastSessionDate, type, selectedCase?.title || '');
+        }
+      } catch (err) {
+        console.error('Error fetching judgements for case:', err);
+      } finally {
+        setIsFetchingJudgments(false);
+      }
+    };
+    
+    fetchJudgments();
+  }, [selectedCaseId, type]);
+
+  // When type changes, we keep current date unless we are missing it
+  useEffect(() => {
+    if (!judgmentDate) {
+        setJudgmentDate(new Date().toISOString().split('T')[0]);
+    }
+  }, [type, judgmentDate]);
+
+  const effectiveDeadlineDays = aiAnalysis ? aiAnalysis.deadlineDays : deadlinesMap[type];
+  const deadlineDate = addDays(new Date(judgmentDate || new Date()), effectiveDeadlineDays);
   const daysRemaining = differenceInDays(deadlineDate, new Date());
   const isExpired = daysRemaining < 0;
 
@@ -42,11 +110,11 @@ export default function AIDeadlinesTool() {
       <div className="bg-slate-900 border border-slate-800 p-8 rounded-[2.5rem] shadow-2xl relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-6 text-high-contrast-light-bg">
         <div className="absolute top-0 right-0 w-64 h-64 bg-amber-500/5 blur-[100px] rounded-full translate-x-32 -translate-y-32"></div>
         <div className="relative z-10">
-          <h2 className="text-2xl font-black text-white flex items-center gap-4">
+          <h2 className="text-2xl font-black text-white flex items-center gap-4 drop-shadow-sm">
             <CalendarRange className="w-8 h-8 text-amber-500" />
             حاسبة المهل والمدد النظامية
           </h2>
-          <p className="text-slate-200 mt-1 font-bold">حساب تلقائي لمدد الاستئناف والاعتراض وفق الأنظمة القضائية السعودية.</p>
+          <p className="text-slate-200 mt-1 font-bold">حساب تلقائي لمدد الاستئناف والاعتراض وفق الأنظمة القضائية السعودية ومزامنة لتواريخ الأحكام.</p>
         </div>
         <div className="relative z-10 flex gap-2">
           <div className="bg-slate-800 px-6 py-3 rounded-2xl border border-slate-700 flex flex-col items-center min-w-[120px]">
@@ -66,7 +134,12 @@ export default function AIDeadlinesTool() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         {/* Settings Panel */}
         <div className="lg:col-span-5 space-y-6">
-          <div className="bg-white border border-slate-200 p-8 rounded-[2rem] shadow-lg space-y-8">
+          <div className="bg-white border border-slate-200 p-8 rounded-[2rem] shadow-lg space-y-8 relative">
+            {isFetchingJudgments && (
+               <div className="absolute inset-0 bg-white/70 backdrop-blur-sm z-50 rounded-[2rem] flex items-center justify-center">
+                 <Loader2 className="w-8 h-8 text-amber-500 animate-spin" />
+               </div>
+            )}
             <div className="space-y-4">
               <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest block">نوع القيد/المهلة النظامية</label>
               <div className="grid grid-cols-1 gap-3">
@@ -97,13 +170,19 @@ export default function AIDeadlinesTool() {
             </div>
 
             <div className="space-y-4">
-              <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest block">تاريخ صدور الحكم / القرار</label>
+              <div className="flex justify-between items-end">
+                 <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest block">تاريخ صدور الحكم / القرار</label>
+                 {judgmentSource === 'ai' && <span className="text-[9px] bg-emerald-50 text-emerald-600 px-2 py-0.5 rounded font-black">AI استيراد تلقائي</span>}
+              </div>
               <div className="relative">
                 <Calendar className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5" />
                 <input 
                   type="date"
-                  value={judgmentDate}
-                  onChange={(e) => setJudgmentDate(e.target.value)}
+                  value={judgmentDate || ''}
+                  onChange={(e) => {
+                     setJudgmentDate(e.target.value);
+                     setJudgmentSource('manual');
+                  }}
                   className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl py-4 pr-14 pl-5 text-sm font-bold text-slate-900 focus:outline-none focus:border-amber-500 transition-all font-sans"
                 />
               </div>
@@ -139,14 +218,26 @@ export default function AIDeadlinesTool() {
 
             <div className="grid grid-cols-2 gap-4 w-full relative z-10">
               <div className="bg-slate-50 p-6 rounded-3xl border border-slate-100">
-                <p className="text-[10px] text-slate-500 font-black uppercase mb-2">تاريخ البداية</p>
-                <p className="text-sm font-black text-slate-900">{format(new Date(judgmentDate), 'yyyy/MM/dd')}</p>
+                <p className="text-[10px] text-slate-500 font-black uppercase mb-2">تاريخ البداية (الحكم)</p>
+                <p className="text-sm font-black text-slate-900">{judgmentDate ? format(new Date(judgmentDate), 'yyyy/MM/dd') : 'غير محدد'}</p>
               </div>
               <div className="bg-slate-50 p-6 rounded-3xl border border-slate-100">
-                <p className="text-[10px] text-slate-500 font-black uppercase mb-2">المدة الاجمالية</p>
-                <p className="text-sm font-black text-slate-900">{deadlinesMap[type]} يوماً</p>
+                <p className="text-[10px] text-slate-500 font-black uppercase mb-2">المدة المقررة نظاماً</p>
+                <p className="text-sm font-black text-slate-900">{effectiveDeadlineDays} يوماً</p>
               </div>
             </div>
+
+            {aiAnalysis && (
+              <div className="w-full bg-amber-50 p-6 rounded-3xl border border-amber-100 space-y-3 text-right">
+                <div className="flex items-center gap-2 text-amber-800">
+                   <ShieldCheck className="w-5 h-5 text-amber-600" />
+                   <h4 className="text-xs font-black">التحليل القانوني للذكاء الاصطناعي (Gemini):</h4>
+                </div>
+                <p className="text-[11px] text-slate-800 font-bold leading-relaxed">
+                  {aiAnalysis.legalReasoning}
+                </p>
+              </div>
+            )}
 
             {!isExpired && (
               <div className="w-full bg-slate-50 p-6 rounded-3xl border border-slate-100 flex items-start gap-4 text-right">
@@ -154,9 +245,9 @@ export default function AIDeadlinesTool() {
                   <ShieldCheck className="w-6 h-6" />
                 </div>
                 <div>
-                  <h4 className="text-sm font-black text-slate-900">نصيحة المساعد القانوني:</h4>
+                  <h4 className="text-sm font-black text-slate-900">نصيحة المساعد القانوني (AI):</h4>
                   <p className="text-[10px] text-slate-600 mt-1 leading-relaxed font-bold">
-                    تبقي وقت كافٍ لتجهيز {type === 'appeal' ? 'اللائحة الاعتراضية' : 'طلب التنفيذ'}. ننصح بالبدء في جرد الأسانيد ومراجعة الحكم قبل مرور 15 يوماً من الآن لتفادي الازدحام.
+                    {aiAnalysis?.advice || `تبقي وقت كافٍ لتجهيز ${type === 'appeal' ? 'اللائحة الاعتراضية' : 'طلب التنفيذ'}. النظام يوصي بتجهيز المستندات قبل اقتراب الموعد النهائي بـ 5 أيام.`}
                   </p>
                 </div>
               </div>
@@ -169,11 +260,13 @@ export default function AIDeadlinesTool() {
                   <ArrowUpRight className="w-6 h-6" />
                </div>
                <div>
-                  <h4 className="font-black text-white text-base">تقديم استئناف عبر ناجز</h4>
-                  <p className="text-slate-300 text-[10px] font-bold">انتقل مباشرة لبوابة الخدمات العدلية.</p>
+                  <h4 className="font-black text-white text-base">تقديم استئناف أو تنفيذ عبر ناجز</h4>
+                  <p className="text-slate-300 text-[10px] font-bold">انتقل مباشرة لبوابة الخدمات العدلية لتنفيذ الإجراء.</p>
                </div>
             </div>
-            <button className="bg-white text-slate-950 px-6 py-3 rounded-xl text-xs font-black shadow-lg hover:bg-slate-200 transition-all">الذهاب لناجز ↗️</button>
+            <a href="https://najiz.sa/" target="_blank" rel="noopener noreferrer" className="bg-white text-slate-950 px-6 py-3 rounded-xl text-xs font-black shadow-lg hover:bg-slate-200 transition-all flex items-center gap-1.5 focus:outline-none focus:ring-2 focus:ring-amber-500">
+               الذهاب لناجز <ArrowUpRight className="w-3 h-3" />
+            </a>
           </div>
         </div>
       </div>

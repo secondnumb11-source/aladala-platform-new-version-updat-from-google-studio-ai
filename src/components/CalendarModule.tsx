@@ -26,7 +26,13 @@ interface CalendarModuleProps {
   onUpdateState?: (type: string, data: any) => void;
 }
 
-export default function CalendarModule({ cases, hearings, tasks, invoices = [], onUpdateState }: CalendarModuleProps) {
+export default function CalendarModule({ 
+  cases = [], 
+  hearings = [], 
+  tasks = [], 
+  invoices = [], 
+  onUpdateState 
+}: CalendarModuleProps) {
   const [selectedDate, setSelectedDate] = useState<string>("2026-06-12");
   const [syncGoogle, setSyncGoogle] = useState(false);
   const [syncOutlook, setSyncOutlook] = useState(false);
@@ -45,23 +51,58 @@ export default function CalendarModule({ cases, hearings, tasks, invoices = [], 
   const [addingSuccess, setAddingSuccess] = useState(false);
 
   // Real-time conflict inspector for proposed input before submission
+  const parseDateSafe = (dateStr: string, timeStr?: string) => {
+    try {
+      if (!dateStr) return null;
+      let cleanTime = (timeStr || '09:00:00').toString();
+      
+      const isPM = cleanTime.includes('مساء');
+      const digits = cleanTime.match(/\d+/g);
+      if (digits && digits.length >= 2) {
+        let h = parseInt(digits[0]);
+        let m = parseInt(digits[1]);
+        if (isPM && h < 12) h += 12;
+        if (!isPM && h === 12) h = 0;
+        cleanTime = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:00`;
+      } else if (digits && digits.length === 1) {
+        let h = parseInt(digits[0]);
+        if (isPM && h < 12) h += 12;
+        if (!isPM && h === 12) h = 0;
+        cleanTime = `${h.toString().padStart(2, '0')}:00:00`;
+      } else if (!cleanTime.includes(':')) {
+        cleanTime = '09:00:00';
+      }
+
+      const d = new Date(`${dateStr}T${cleanTime}`);
+      return isNaN(d.getTime()) ? null : d;
+    } catch (e) {
+      return null;
+    }
+  };
+
   const checkInstantConflict = () => {
     if (!newTitle.trim()) return null;
     
+    if (!hearings || !Array.isArray(hearings)) return null;
+
     // Check conflicts against existing hearings
     for (const h of hearings) {
-      if (h.date === newDate && h.status !== 'canceled' && h.hearingStatus !== 'canceled') {
-        const sameTime = h.time.replace(/\s+/g, '') === newTime.replace(/\s+/g, '');
+      if (h && h.date === newDate && h.status !== 'canceled' && h.hearingStatus !== 'canceled') {
+        const hTimeParsed = parseDateSafe(h.date, h.time);
+        const newTimeParsed = parseDateSafe(newDate, newTime);
+        
+        const sameTime = hTimeParsed && newTimeParsed && hTimeParsed.getTime() === newTimeParsed.getTime();
         const sameClient = newClient.trim() && (
-          h.caseName.includes(newClient) || 
+          (h.caseName || '').includes(newClient) || 
           (cases.find(c => c.caseNumber === h.caseNumber)?.clientName || '').includes(newClient)
         );
-        const diffCourt = newCourt.trim() && h.courtName.trim() && h.courtName.split(' ')[0] !== newCourt.split(' ')[0];
+        const hCourt = h.courtName ? String(h.courtName).trim() : '';
+        const diffCourt = newCourt.trim() && hCourt && hCourt.split(' ')[0] !== newCourt.split(' ')[0];
         
         if (sameTime) {
           return {
             type: "time_clash",
-            message: `⚠️ تنبيه تعارض فوري: التاريخ والوقت متعارض مع جلسة أخرى في نفس الوقت (${h.caseName}) في تمام الساعة ${h.time}!`
+            message: `⚠️ تنبيه تعارض فوري: التاريخ والوقت متعارض مع جلسة أخرى في نفس الوقت (${h.caseName || 'جلسة أخرى'}) في تمام الساعة ${h.time || ''}!`
           };
         }
         if (sameClient) {
@@ -70,10 +111,10 @@ export default function CalendarModule({ cases, hearings, tasks, invoices = [], 
             message: `⚠️ تعارض عملاء: العميل (${newClient}) لديه التزام قضائي نشط آخر بنفس التاريخ (${newDate})!`
           };
         }
-        if (diffCourt && h.time.replace(/\s+/g, '') === newTime.replace(/\s+/g, '')) {
+        if (diffCourt && sameTime) {
           return {
             type: "geographical_clash",
-            message: `⚠️ تعارض مباعدة جغرافية: المحكمة مختلفة متباعدة بمدينة أخرى في نفس الوقت (${h.courtName} مقابل ${newCourt})!`
+            message: `⚠️ تعارض مباعدة جغرافية: المحكمة مختلفة متباعدة بمدينة أخرى في نفس الوقت (${h.courtName || ''} مقابل ${newCourt})!`
           };
         }
       }
@@ -82,7 +123,7 @@ export default function CalendarModule({ cases, hearings, tasks, invoices = [], 
     // Check against existing tasks
     for (const t of tasks) {
       if (t.dueDate === newDate && t.status !== 'completed' && t.status !== 'done') {
-        const sameTitle = t.title.includes(newTitle) || newTitle.includes(t.title);
+        const sameTitle = t.title && (t.title.includes(newTitle) || newTitle.includes(t.title));
         if (sameTitle) {
           return {
             type: "commitment_clash",
@@ -154,8 +195,8 @@ export default function CalendarModule({ cases, hearings, tasks, invoices = [], 
       fullName: "المحكمة التجارية بالرياض - الدائرة الثالثة",
       city: "الرياض",
       coordinates: { x: "50%", y: "45%" },
-      trialsCount: hearings.filter(h => h.courtName.includes("الرياض")).length || 2,
-      casesLinked: cases.filter(c => c.courtName.includes("الرياض")),
+      trialsCount: (hearings || []).filter(h => h && h.courtName && String(h.courtName).includes("الرياض")).length || 2,
+      casesLinked: (cases || []).filter(c => c && c.courtName && String(c.courtName).includes("الرياض")),
       workingHours: "08:00 ص - 02:30 م",
       portalLink: "https://najiz.sa",
     },
@@ -165,8 +206,8 @@ export default function CalendarModule({ cases, hearings, tasks, invoices = [], 
       fullName: "المحكمة العمالية بجدة - الدائرة السابعة",
       city: "جدة",
       coordinates: { x: "20%", y: "60%" },
-      trialsCount: hearings.filter(h => h.courtName.includes("جدة")).length || 1,
-      casesLinked: cases.filter(c => c.courtName.includes("جدة")),
+      trialsCount: (hearings || []).filter(h => h && h.courtName && String(h.courtName).includes("جدة")).length || 1,
+      casesLinked: (cases || []).filter(c => c && c.courtName && String(c.courtName).includes("جدة")),
       workingHours: "08:00 ص - 02:30 م",
       portalLink: "https://najiz.sa",
     },
@@ -176,8 +217,8 @@ export default function CalendarModule({ cases, hearings, tasks, invoices = [], 
       fullName: "محكمة التنفيذ بالدمام - الدائرة الأولى",
       city: "الدمام",
       coordinates: { x: "75%", y: "35%" },
-      trialsCount: hearings.filter(h => h.courtName.includes("الدمام")).length || 1,
-      casesLinked: cases.filter(c => c.courtName.includes("الدمام")),
+      trialsCount: (hearings || []).filter(h => h && h.courtName && String(h.courtName).includes("الدمام")).length || 1,
+      casesLinked: (cases || []).filter(c => c && c.courtName && String(c.courtName).includes("الدمام")),
       workingHours: "08:00 ص - 02:30 م",
       portalLink: "https://najiz.sa",
     }
@@ -187,8 +228,8 @@ export default function CalendarModule({ cases, hearings, tasks, invoices = [], 
   const juneDays = Array.from({ length: 30 }, (_, i) => {
     const dayNum = i + 1;
     const dateStr = `2026-06-${dayNum < 10 ? '0' + dayNum : dayNum}`;
-    const dayHearings = hearings.filter(h => h.date === dateStr);
-    const dayTasks = tasks.filter(t => t.dueDate === dateStr);
+    const dayHearings = (hearings || []).filter(h => h && h.date === dateStr);
+    const dayTasks = (tasks || []).filter(t => t && t.dueDate === dateStr);
     return {
       dayNum,
       dateStr,
@@ -198,16 +239,18 @@ export default function CalendarModule({ cases, hearings, tasks, invoices = [], 
   });
 
   // Calculate hearings in the next 24 hours (Smart Reminders)
-  const now = new Date("2026-06-08T15:22:19Z"); // Current local time as per metadata
-  const upcoming24hHearings = hearings.filter(h => {
-    const hDate = new Date(h.date + 'T' + (h.time.includes('صباحاً') ? h.time.replace('صباحاً', '').trim() : h.time.replace('مساءً', '').trim()));
+  const now = new Date(); 
+  const upcoming24hHearings = (hearings || []).filter(h => {
+    if (!h || !h.date) return false;
+    const hDate = parseDateSafe(h.date, h.time);
+    if (!hDate) return false;
     const diffMs = hDate.getTime() - now.getTime();
     const diffHours = diffMs / (1000 * 60 * 60);
     return diffHours >= 0 && diffHours <= 24;
   });
 
   const updateHearingStatus = (hearingId: string, newStatus: string) => {
-    const hearing = hearings.find(h => h.id === hearingId);
+    const hearing = (hearings || []).find(h => h && h.id === hearingId);
     if (hearing && onUpdateState) {
       onUpdateState('hearings', { ...hearing, hearingStatus: newStatus });
       alert(`تم تحديث حالة الجلسة إلى: ${newStatus}`);
@@ -340,32 +383,37 @@ export default function CalendarModule({ cases, hearings, tasks, invoices = [], 
 
   // Overlap and conflict checking algorithm for Saudi court sessions (agenda conflicts)
   const agendaConflicts = [];
-  for (let i = 0; i < hearings.length; i++) {
-    for (let j = i + 1; j < hearings.length; j++) {
-      const h1 = hearings[i];
-      const h2 = hearings[j];
-      
-      if (h1.date === h2.date && h1.status !== 'canceled' && h2.status !== 'canceled') {
-        const caseObj1 = cases.find(c => c.caseNumber === h1.caseNumber);
-        const caseObj2 = cases.find(c => c.caseNumber === h2.caseNumber);
+  if (hearings && Array.isArray(hearings)) {
+    for (let i = 0; i < hearings.length; i++) {
+      for (let j = i + 1; j < hearings.length; j++) {
+        const h1 = hearings[i];
+        const h2 = hearings[j];
         
-        const sameClient = caseObj1 && caseObj2 && (caseObj1.clientId === caseObj2.clientId || caseObj1.clientName === caseObj2.clientName);
-        const differentCourts = h1.courtName.split(' ')[0] !== h2.courtName.split(' ')[0]; // different courts e.g. Commercial vs Labour!
-        const sameTime = h1.time === h2.time || h1.time.replace(/\s+/g, '') === h2.time.replace(/\s+/g, '');
-
-        if (sameTime || sameClient || differentCourts) {
-          agendaConflicts.push({
-            id: `conflict-${h1.id}-${h2.id}`,
-            hearingA: h1,
-            hearingB: h2,
-            type: sameTime ? 'time_clash' : sameClient ? 'client_clash' : 'geographical_clash',
-            clientName: caseObj1?.clientName || h1.caseName || "موكل المكتب",
-            reason: sameTime 
-              ? `تعليق ميعاد: تعارض ميعاد الجلسة الأولى لحضور (${h1.caseName}) مع ميعاد الجلسة الثانية (${h2.caseName}) بنفس التوقيت في تمام الساعة (${h1.time}).`
-              : sameClient 
-              ? `تضارب عملاء: العميل (${caseObj1?.clientName || h1.caseName}) لديه جلستان قضائيتان مختلفتان مبرمتان بنفس التاريخ (${h1.date}) مما يصعب تمثيله المزدوج.`
-              : `تعارض جغرافي قضائي: المحامي مسند إليه حضور بالدائرة (${h1.courtName}) والجلسة الأخرى بمدينة متباعدة في (${h2.courtName}) في نفس اليوم!`
-          });
+        if (h1 && h2 && h1.date === h2.date && h1.status !== 'canceled' && h2.status !== 'canceled') {
+          const caseObj1 = cases.find(c => c.caseNumber === h1.caseNumber);
+          const caseObj2 = cases.find(c => c.caseNumber === h2.caseNumber);
+          
+          const sameClient = caseObj1 && caseObj2 && (caseObj1.clientId === caseObj2.clientId || caseObj1.clientName === caseObj2.clientName);
+          const differentCourts = h1.courtName && h2.courtName && String(h1.courtName).split(' ')[0] !== String(h2.courtName).split(' ')[0]; 
+          
+          const h1TimeParsed = parseDateSafe(h1.date, h1.time);
+          const h2TimeParsed = parseDateSafe(h2.date, h2.time);
+          const sameTime = h1TimeParsed && h2TimeParsed && h1TimeParsed.getTime() === h2TimeParsed.getTime();
+  
+          if (sameTime || sameClient || differentCourts) {
+            agendaConflicts.push({
+              id: `conflict-${h1.id}-${h2.id}`,
+              hearingA: h1,
+              hearingB: h2,
+              type: sameTime ? 'time_clash' : sameClient ? 'client_clash' : 'geographical_clash',
+              clientName: caseObj1?.clientName || h1.caseName || "موكل المكتب",
+              reason: sameTime 
+                ? `تعليق ميعاد: تعارض ميعاد الجلسة الأولى لحضور (${h1.caseName}) مع ميعاد الجلسة الثانية (${h2.caseName}) بنفس التوقيت في تمام الساعة (${h1.time}).`
+                : sameClient 
+                ? `تضارب عملاء: العميل (${caseObj1?.clientName || h1.caseName}) لديه جلستان قضائيتان مختلفتان مبرمتان بنفس التاريخ (${h1.date}) مما يصعب تمثيله المزدوج.`
+                : `تعارض جغرافي قضائي: المحامي مسند إليه حضور بالدائرة (${h1.courtName}) والجلسة الأخرى بمدينة متباعدة في (${h2.courtName}) في نفس اليوم!`
+            });
+          }
         }
       }
     }

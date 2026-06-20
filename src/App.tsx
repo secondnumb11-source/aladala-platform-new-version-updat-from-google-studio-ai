@@ -230,13 +230,43 @@ function AppContent() {
   }, [refresh]);
 
   const [showHearingsModal, setShowHearingsModal] = useState(false);
+  
+  // Helper for safe hearing date parsing
+  const parseHearingDate = (date: string, time?: string) => {
+    try {
+      if (!date) return null;
+      // Sanitize time if it contains Arabic markers
+      let cleanTime = time || '09:00:00';
+      if (cleanTime.includes('صباح') || cleanTime.includes('مساء')) {
+        const isPM = cleanTime.includes('مساء');
+        const digits = cleanTime.match(/\d+/g);
+        if (digits && digits.length >= 2) {
+          let h = parseInt(digits[0]);
+          let m = parseInt(digits[1]);
+          if (isPM && h < 12) h += 12;
+          if (!isPM && h === 12) h = 0;
+          cleanTime = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:00`;
+        } else {
+          cleanTime = '09:00:00';
+        }
+      }
+      const d = new Date(`${date}T${cleanTime}`);
+      return isNaN(d.getTime()) ? null : d;
+    } catch (e) {
+      return null;
+    }
+  };
+
   const upcomingHearings = React.useMemo(() => {
     const now = new Date();
     const twentyFourHoursFromNow = new Date(now.getTime() + 24 * 60 * 60 * 1000);
     
+    if (!hearings || !Array.isArray(hearings)) return [];
+
     return hearings.filter(h => {
-      if (h.status !== 'upcoming') return false;
-      const hearingDate = new Date(`${h.date}T${h.time || '09:00:00'}`);
+      if (!h || h.status !== 'upcoming') return false;
+      const hearingDate = parseHearingDate(h.date, h.time);
+      if (!hearingDate) return false;
       return hearingDate > now && hearingDate <= twentyFourHoursFromNow;
     });
   }, [hearings]);

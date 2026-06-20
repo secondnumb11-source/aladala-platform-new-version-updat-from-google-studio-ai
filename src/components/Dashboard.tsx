@@ -96,6 +96,8 @@ import html2canvas from 'html2canvas';
 import { NajizWidget } from './NajizWidget';
 
 import { NajizPerformanceWidget, AgenciesAlertWidget, OverdueTasksWidget, DeadlinesWidget, UpcomingHearingsList, EmployeePerformanceKPI } from './dashboard/DashboardWidgets';
+import AppealCountdownWidget from './dashboard/AppealCountdownWidget';
+import { getContrastText, TEXT_COLORS } from '@/utils/contrastUtils';
 
 const GaugeMeter = React.memo(({ percentage, color = '#b8860b', label }: { percentage: number, color?: string, label: string }) => {
   const radius = 42;
@@ -122,29 +124,35 @@ const GaugeMeter = React.memo(({ percentage, color = '#b8860b', label }: { perce
   );
 });
 
-export const SummaryWidget = ({ icon, title, description, badgeValue, children }: { icon: React.ReactNode, title: string, description: string, badgeValue?: string | number, children: React.ReactNode }) => (
-  <div className="bg-[#0b1329] border-2 border-[#D4AF37]/50 rounded-3xl p-6 flex flex-col h-full overflow-hidden relative">
-    <div className="flex items-center justify-between mb-4 relative z-10">
-      <div className="flex items-center gap-3">
-        <div className="p-3 bg-gradient-to-br from-[#D4AF37] to-[#FACC15] text-white rounded-2xl shadow-lg ring-2 ring-[#D4AF37]/30">
-          {icon}
+export const SummaryWidget = ({ icon, title, description, badgeValue, children }: { icon: React.ReactNode, title: string, description: string, badgeValue?: string | number, children: React.ReactNode }) => {
+  const bgClass = "#0b1329";
+  const textColor = getContrastText(bgClass);
+  const secondaryColor = TEXT_COLORS.goldBright;
+
+  return (
+    <div className={`bg-[${bgClass}] border-2 border-[#D4AF37]/50 rounded-3xl p-6 flex flex-col h-full overflow-hidden relative`}>
+      <div className="flex items-center justify-between mb-4 relative z-10">
+        <div className="flex items-center gap-3">
+          <div className="p-3 bg-gradient-to-br from-[#D4AF37] to-[#FACC15] text-white rounded-2xl shadow-lg ring-2 ring-[#D4AF37]/30">
+            {icon}
+          </div>
+          <div>
+            <h4 className={`font-black ${textColor} text-base tracking-tight`}>{title}</h4>
+            <p className={`text-[11px] ${secondaryColor} font-bold mt-0.5`}>{description}</p>
+          </div>
         </div>
-        <div>
-          <h4 className="font-black text-[#FFFFFF] text-base tracking-tight">{title}</h4>
-          <p className="text-[11px] text-[#FACC15] font-bold mt-0.5">{description}</p>
-        </div>
+        {badgeValue !== undefined && (
+          <span className={`font-mono text-xl font-black text-transparent bg-clip-text bg-gradient-to-r from-[#D4AF37] to-[#FACC15]`}>
+            {badgeValue}
+          </span>
+        )}
       </div>
-      {badgeValue !== undefined && (
-        <span className="font-mono text-xl font-black text-transparent bg-clip-text bg-gradient-to-r from-[#D4AF37] to-[#FACC15]">
-          {badgeValue}
-        </span>
-      )}
+      <div className={`flex-1 bg-[#090f20] rounded-2xl p-4 border border-[#D4AF37]/20 relative z-10 ${getContrastText('#090f20')} font-bold`}>
+        {children}
+      </div>
     </div>
-    <div className="flex-1 bg-[#090f20] rounded-2xl p-4 border border-[#D4AF37]/20 relative z-10 text-[#FFFFFF] font-bold">
-      {children}
-    </div>
-  </div>
-);
+  );
+};
 
 interface DashboardProps {
   cases: Case[];
@@ -221,11 +229,11 @@ const DashboardClock = ({ style = 'digital', color = '#D4AF37' }: { style?: stri
   return (
     <div className="p-4 bg-gradient-to-br from-slate-900 to-slate-800 rounded-3xl border border-[#D4AF37]/30 shadow-2xl flex flex-col items-center justify-center min-w-[180px]">
       <div className="flex items-center gap-2 mb-1">
-        <ClockIcon className="w-3.5 h-3.5 text-[#FACC15] font-black" />
-        <span className="text-[10px] font-black text-[#FACC15] font-black uppercase tracking-widest">الوقت الحالي</span>
+        <ClockIcon className={`w-3.5 h-3.5 ${TEXT_COLORS.goldBright} font-black`} />
+        <span className={`text-[10px] font-black ${TEXT_COLORS.goldBright} font-black uppercase tracking-widest`}>الوقت الحالي</span>
       </div>
-      <span className="text-3xl font-black text-white tabular-nums tracking-tighter">{timeString}</span>
-      <div className="mt-2 text-[11px] font-bold text-white bg-white/10 py-1 px-3 rounded-full">{dateString}</div>
+      <span className={`text-3xl font-black ${getContrastText('#0f172a')} tabular-nums tracking-tighter`}>{timeString}</span>
+      <div className={`mt-2 text-[11px] font-bold ${getContrastText('#1e293b')} bg-white/10 py-1 px-3 rounded-full`}>{dateString}</div>
     </div>
   );
 };
@@ -420,7 +428,8 @@ const Dashboard = function Dashboard({
     { id: 'taskSuggestions', name: 'اقتراحات المهام AI', icon: <Sparkles className="w-4 h-4" /> },
     { id: 'agenciesAlerts', name: 'تنبيهات الوكالات', icon: <ShieldCheck className="w-4 h-4" /> },
     { id: 'overdueTasks', name: 'المهام المتأخرة', icon: <AlertTriangle className="w-4 h-4" /> },
-    { id: 'deadlinesWidget', name: 'مهل الاستئناف', icon: <ClockIcon className="w-4 h-4" /> },
+    { id: 'deadlinesWidget', name: 'مهل الاستئناف (AI)', icon: <ClockIcon className="w-4 h-4" /> },
+    { id: 'appealCountdownWidget', name: 'عداد الاستئناف البصري', icon: <Zap className="w-4 h-4" /> },
     { id: 'kpiCases', name: 'إحصائيات القضايا', icon: <Briefcase className="w-4 h-4" /> },
     { id: 'kpiClients', name: 'إحصائيات الموكلين', icon: <Users className="w-4 h-4" /> },
     { id: 'kpiInvoices', name: 'الفواتير الغير مسددة', icon: <DollarSign className="w-4 h-4" /> },
@@ -823,7 +832,7 @@ const Dashboard = function Dashboard({
           </div>
         </div>
         <div className="text-right">
-          <span className="block text-[10px] font-black text-slate-400 uppercase">إجمالي الشهر</span>
+          <span className="block text-[10px] font-black text-slate-100 uppercase">إجمالي الشهر</span>
           <strong className="text-sm font-black text-[#0B2545]">{whatsappStats.reduce((acc, curr) => acc + curr.sent, 0)}</strong>
         </div>
       </div>
@@ -833,7 +842,7 @@ const Dashboard = function Dashboard({
             <Loader2 className="w-6 h-6 animate-spin text-emerald-500" />
           </div>
         ) : whatsappStats.length === 0 ? (
-          <div className="h-full flex items-center justify-center text-[10px] font-bold text-slate-400">
+          <div className="h-full flex items-center justify-center text-[10px] font-bold text-slate-100">
             لا توجد بيانات إرسال لهذا الشهر حتى الآن
           </div>
         ) : (
@@ -969,7 +978,8 @@ const Dashboard = function Dashboard({
       { id: 'taskSuggestions', visible: true, order: 11, size: 'full' },
       { id: 'legalPerformanceMetrics', visible: true, order: 12, size: 'half' },
       { id: 'summaryInvoicesAI', visible: true, order: 13, size: 'half' },
-      { id: 'deadlinesWidget', visible: true, order: 14, size: 'half' },
+      { id: 'deadlinesWidget', visible: false, order: 14, size: 'half' },
+      { id: 'appealCountdownWidget', visible: true, order: 14.5, size: 'half' },
       { id: 'summaryPlatform', visible: true, order: 15, size: 'half' },
       { id: 'summaryCases', visible: true, order: 16, size: 'half' },
       { id: 'summaryKPI', visible: true, order: 17, size: 'half' },
@@ -1041,7 +1051,8 @@ const Dashboard = function Dashboard({
       { id: 'taskSuggestions', visible: true, order: 11, size: 'full' },
       { id: 'legalPerformanceMetrics', visible: true, order: 12, size: 'half' },
       { id: 'summaryInvoicesAI', visible: true, order: 13, size: 'half' },
-      { id: 'deadlinesWidget', visible: true, order: 14, size: 'half' },
+      { id: 'deadlinesWidget', visible: false, order: 14, size: 'half' },
+      { id: 'appealCountdownWidget', visible: true, order: 14.5, size: 'half' },
       { id: 'summaryPlatform', visible: true, order: 15, size: 'half' },
       { id: 'summaryCases', visible: true, order: 16, size: 'half' },
       { id: 'summaryKPI', visible: true, order: 17, size: 'half' },
@@ -1317,7 +1328,7 @@ const Dashboard = function Dashboard({
 
               {/* Chart container */}
               <div className="py-8 flex flex-col items-center">
-                <h3 className="text-sm font-bold text-slate-400 mb-4">توزيع جلسات الشهر الجاري الكلي: [ {sessionStatsData.total} جلسات ]</h3>
+                <h3 className="text-sm font-black text-amber-400 mb-4">توزيع جلسات الشهر الجاري الكلي: [ {sessionStatsData.total} جلسات ]</h3>
                 
                 <div className="w-full h-64 md:h-72">
                   <ResponsiveContainer width="100%" height="100%">
@@ -1345,12 +1356,12 @@ const Dashboard = function Dashboard({
                 {sessionStatsData.chartData.map((stat, idx) => (
                   <div key={idx} className="bg-white/5 border border-white/5 p-4 rounded-2xl relative overflow-hidden flex flex-col justify-between">
                     <div className="flex justify-between items-start">
-                      <span className="text-xs text-slate-400 font-bold">{stat.name}</span>
+                      <span className="text-xs text-slate-100 font-bold">{stat.name}</span>
                       <span className="h-2 w-2 rounded-full" style={{ backgroundColor: stat.color }} />
                     </div>
                     <div className="mt-2 flex items-baseline gap-2">
                       <span className="text-3xl font-black text-white font-mono">{stat.count}</span>
-                      <span className="text-[10px] text-slate-400 font-medium">جلسة</span>
+                      <span className="text-[10px] text-white font-medium">جلسة</span>
                     </div>
                     <p className="text-[9.5px] text-slate-500 font-bold mt-1.5 leading-relaxed">{stat.description}</p>
                   </div>
@@ -2083,6 +2094,28 @@ const Dashboard = function Dashboard({
                 </EnhancedSortableWidgetWrapper>
               );
 
+              if (widget.id === 'appealCountdownWidget') return (
+                <EnhancedSortableWidgetWrapper 
+                  widgetColor={widget.color} 
+                  onChangeColor={handleUpdateWidgetColor} 
+                  className={getWidgetClassName(widget.size)} 
+                  key="appealCountdownWidget" 
+                  id="appealCountdownWidget" 
+                  isCustomizing={isCustomizing} 
+                  widgetSize={widget.size} 
+                  onResize={handleUpdateWidgetSize}
+                >
+                  <div className={`h-full relative ${isCustomizing ? 'opacity-80 ring-2 ring-dashed ring-amber-400 rounded-[2.5rem]' : ''}`}>
+                    {isCustomizing && (
+                      <div className="absolute inset-0 bg-amber-500/10 z-50 flex items-center justify-center rounded-[2.5rem]">
+                        <GripVertical className="w-8 h-8 text-amber-500 animate-pulse" />
+                      </div>
+                    )}
+                    <AppealCountdownWidget />
+                  </div>
+                </EnhancedSortableWidgetWrapper>
+              );
+
               if (widget.id === 'summaryInvoicesAI') return (
                 <EnhancedSortableWidgetWrapper widgetColor={widget.color} onChangeColor={handleUpdateWidgetColor} className={getWidgetClassName(widget.size)} key="summaryInvoicesAI" id="summaryInvoicesAI" isCustomizing={isCustomizing} widgetSize={widget.size} onResize={handleUpdateWidgetSize}>
                   <div className={`h-full relative ${isCustomizing ? 'opacity-80 ring-2 ring-dashed ring-amber-400 rounded-3xl' : ''}`}>
@@ -2478,7 +2511,7 @@ const Dashboard = function Dashboard({
                           </AreaChart>
                         </ResponsiveContainer>
                         {(!whatsappStats || whatsappStats.length === 0) && !loadingStats && (
-                          <div className="flex flex-col items-center justify-center h-full text-slate-400 -mt-20">
+                          <div className="flex flex-col items-center justify-center h-full text-white -mt-20">
                              <MessageSquare className="w-8 h-8 mb-2 opacity-20" />
                              <p className="text-xs font-bold">لا توجد بيانات سجلات لهذا الشهر حتى الآن</p>
                           </div>
@@ -2785,6 +2818,19 @@ const Dashboard = function Dashboard({
                         )}
                       </div>
                     </div>
+                  </div>
+                </EnhancedSortableWidgetWrapper>
+              );
+
+              if (widget.id === 'appealCountdownWidget') return (
+                <EnhancedSortableWidgetWrapper widgetColor={widget.color} onChangeColor={handleUpdateWidgetColor} className={getWidgetClassName(widget.size)} key="appealCountdownWidget" id="appealCountdownWidget" isCustomizing={isCustomizing} widgetSize={widget.size} onResize={handleUpdateWidgetSize}>
+                  <div className={`h-full relative ${isCustomizing ? 'opacity-80 ring-2 ring-dashed ring-amber-400 rounded-[2.5rem]' : ''}`}>
+                    {isCustomizing && (
+                      <div className="absolute inset-0 bg-amber-500/5 z-50 flex items-center justify-center rounded-[2.5rem]">
+                        <GripVertical className="w-8 h-8 text-amber-500 animate-pulse" />
+                      </div>
+                    )}
+                    <AppealCountdownWidget />
                   </div>
                 </EnhancedSortableWidgetWrapper>
               );

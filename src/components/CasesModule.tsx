@@ -2149,24 +2149,6 @@ export default React.memo(function CasesModule({
             />
           ) : (
               <div className="space-y-8 animate-fade-in duration-700">
-                {/* Strategic Litigation Timeline - Linked Data */}
-                <div className="bg-white border-2 border-slate-100 rounded-[2.5rem] p-4 shadow-sm overflow-hidden hover:border-[#D4AF37]/30 transition-all">
-                  <Suspense fallback={<div className="h-48 flex items-center justify-center bg-slate-50 rounded-3xl animate-pulse"><Loader2 className="w-8 h-8 text-slate-300 animate-spin" /></div>}>
-                     <div className="mb-4 px-4 flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                           <div className="p-2 bg-slate-900 text-white rounded-xl shadow-lg">
-                              <Calendar className="w-5 h-5 text-amber-400" />
-                           </div>
-                           <div>
-                              <h3 className="text-base font-black text-slate-900">التسلسل الزمني الاستراتيجي للمقاضاة</h3>
-                              <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-0.5 font-bold">Synchronized Case Milestones & Hearings</p>
-                           </div>
-                        </div>
-                     </div>
-                     <TimelineD3 hearings={state.hearings || []} tasks={state.tasks || []} cases={cases} />
-                  </Suspense>
-                </div>
-
                 {/* List View of all cases */}
                   
                 {!isFocusMode && filterBarMarkup}

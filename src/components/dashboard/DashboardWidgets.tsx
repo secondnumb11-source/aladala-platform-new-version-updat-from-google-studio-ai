@@ -1,4 +1,5 @@
 import React from 'react';
+import { supabase } from '@/lib/supabase';
 import { 
   ShieldCheck, CheckCircle2, TrendingUp, Users, Calendar, Scale, Clock, 
   Activity, AlertTriangle, Cpu, Search, Zap, AlertCircle, FileText, 
@@ -147,32 +148,128 @@ export const OverdueTasksWidget = ({ tasks }: { tasks: any[] }) => {
 };
 
 export const DeadlinesWidget = ({ cases }: { cases: any[] }) => {
-  const critical = cases.filter(c => c.status === 'primary_judgment' || c.priority === 'high');
+  const [smartDeadlines, setSmartDeadlines] = React.useState<any[]>([]);
+  const [isLoading, setIsLoading] = React.useState(true);
+
+  React.useEffect(() => {
+    const fetchJudgmentsAndAnalyze = async () => {
+      try {
+        const { data: judgments, error } = await supabase
+          .from('case_judgments')
+          .select('id, case_id, judgment_date, judgment_type, case_number, document_name')
+          .not('judgment_date', 'is', null)
+          .order('judgment_date', { ascending: false })
+          .limit(20);
+
+        if (error) throw error;
+
+          const analyzed = await Promise.all((judgments || []).map(async (j) => {
+            // Attempt to get AI analysis for each judgment or fallback
+            let deadlineDays = 30; // Default
+            let aiReasoning = 'تم حساب المهلة بناءً على المادة 187 من نظام المرافعات الشرعية (30 يوماً للاستئناف).';
+            
+            try {
+              const aiRes = await fetch('/api/ai/analyze-deadline', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  judgmentDate: j.judgment_date,
+                  type: 'appeal',
+                  caseTitle: j.document_name
+                })
+              });
+              if (aiRes.ok) {
+                const aiData = await aiRes.json();
+                deadlineDays = aiData.deadlineDays || 30;
+                aiReasoning = aiData.legalReasoning;
+              }
+            } catch (e) {
+              console.warn('AI analysis failed for widget:', e);
+            }
+
+            const jDate = new Date(j.judgment_date);
+            const deadline = new Date(jDate);
+            deadline.setDate(deadline.getDate() + deadlineDays);
+            
+            const timeDiff = deadline.getTime() - new Date().getTime();
+            const daysRemaining = Math.ceil(timeDiff / (1000 * 3600 * 24));
+            
+            return {
+              ...j,
+              deadline,
+              daysRemaining,
+              isCritical: daysRemaining > 0 && daysRemaining <= 7,
+              isExpired: daysRemaining < 0,
+              aiReasoning
+            };
+          }));
+
+          setSmartDeadlines(analyzed.filter(j => !j.isExpired).sort((a, b) => a.daysRemaining - b.daysRemaining).slice(0, 4));
+      } catch (err) {
+        console.error('Error fetching deadlines:', err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchJudgmentsAndAnalyze();
+  }, []);
 
   return (
-    <div className="bg-white border-amber-200 rounded-[2.5rem] p-8 shadow-sm h-full flex flex-col border-b-4 border-b-amber-500">
-      <div className="flex items-center justify-between mb-6">
-        <h3 className="font-black text-amber-400 font-black text-lg flex items-center gap-2">
+    <div className="bg-[#0b1329] border border-amber-500/30 rounded-[2.5rem] p-8 shadow-2xl h-full flex flex-col relative overflow-hidden">
+      {/* Dark background requires bright yellow/white texts */}
+      <div className="absolute top-0 right-0 w-64 h-64 bg-amber-500/5 blur-[80px] rounded-full translate-x-32 -translate-y-32"></div>
+      
+      <div className="flex items-center justify-between mb-6 relative z-10">
+        <h3 className="font-black text-amber-400 text-lg flex items-center gap-2 drop-shadow-md">
           <Clock className="w-5 h-5" />
-          مهل استحقاق عدلية
+          حاسبة المهل النظامية (AI)
         </h3>
-        <span className="text-[10px] font-black text-amber-400 font-black bg-amber-50 px-2.5 py-1 rounded-xl">حرجة</span>
+        <span className="text-[10px] font-black text-slate-900 bg-amber-400 px-3 py-1.5 rounded-xl shadow-lg animate-pulse">مزامنة فورية</span>
       </div>
-      <div className="space-y-4 flex-1">
-        {critical.length > 0 ? (
-          critical.slice(0, 3).map((c, i) => (
-            <div key={i} className="p-4 bg-slate-50 border border-slate-100 rounded-2xl hover:bg-white hover:shadow-md transition-all">
-              <div className="flex justify-between items-center mb-1.5">
-                <span className="text-[11px] font-black text-amber-400 font-black bg-amber-50 px-2 py-0.5 rounded-lg animate-pulse">تنتهي قريباً</span>
-                <span className="text-[10px] font-mono text-slate-200 font-bold font-bold">#{c.caseNumber}</span>
+      
+      <div className="space-y-4 flex-1 relative z-10">
+        {isLoading ? (
+          <div className="flex-1 flex flex-col items-center justify-center text-center opacity-70">
+            <Cpu size={40} className="mb-4 text-amber-400 animate-spin-slow" />
+            <p className="text-sm font-black text-white">يتم التحليل الذكي للقرارات...</p>
+          </div>
+        ) : smartDeadlines.length > 0 ? (
+          smartDeadlines.map((c, i) => (
+            <div key={i} className="p-4 bg-slate-900/50 backdrop-blur-md border border-amber-500/20 rounded-2xl hover:bg-slate-900 transition-all hover:border-amber-400 group">
+              <div className="flex justify-between items-center mb-2">
+                <span className={`text-[11px] font-black px-2 py-0.5 rounded-lg shadow-sm tracking-widest uppercase ${c.isCritical ? 'bg-rose-500 text-white animate-pulse' : 'bg-amber-400 text-slate-900'}`}>
+                  {c.isCritical ? 'حرج جداً' : 'نشط'}
+                </span>
+                <span className="text-[10px] font-mono text-amber-200 font-bold bg-white/5 px-2 py-1 rounded">قضية #{c.case_number}</span>
               </div>
-              <h4 className="text-xs font-black text-slate-800 line-clamp-1">{c.caseName}</h4>
+              <h4 className="text-sm font-black text-white line-clamp-1 mb-2 drop-shadow-md">{c.document_name || c.judgment_type}</h4>
+              
+              <div className="flex items-center justify-between">
+                <div className="flex flex-col">
+                  <span className="text-[9px] font-black text-white/50 mb-0.5 uppercase tracking-wider">تاريخ الحكم</span>
+                  <span className="text-xs font-bold text-white shadow-sm">{new Date(c.judgment_date).toLocaleDateString('ar-SA')}</span>
+                </div>
+                
+                <div className="bg-slate-950 px-4 py-2 rounded-xl border border-slate-800 text-center flex flex-col justify-center items-center">
+                   <span className="text-xl font-black text-amber-400 drop-shadow-md leading-none">{c.daysRemaining}</span>
+                   <span className="text-[9px] font-black text-amber-200/60 mt-1 uppercase">يوم متبقي</span>
+                </div>
+              </div>
+              
+              <div className="mt-3 p-2.5 bg-amber-500/10 rounded-xl border border-amber-500/20 flex gap-2 items-start shrink-0">
+                <Sparkles size={12} className="text-amber-400 mt-0.5 shrink-0" />
+                <p className="text-[10px] text-amber-100 font-bold leading-relaxed">{c.aiReasoning}</p>
+              </div>
             </div>
           ))
         ) : (
-          <div className="flex-1 flex flex-col items-center justify-center text-center opacity-40">
-            <Layout size={40} className="mb-4" />
-            <p className="text-xs font-black">لا توجد مهل قريبة</p>
+          <div className="flex-1 flex flex-col items-center justify-center text-center">
+            <div className="w-16 h-16 bg-emerald-500/10 text-emerald-400 rounded-full flex flex-col items-center justify-center mb-4 border border-emerald-500/20 shadow-[0_0_15px_rgba(16,185,129,0.2)]">
+              <CheckCircle2 size={32} />
+            </div>
+            <p className="text-sm font-black text-white drop-shadow">جميع المهل ضمن النطاق الآمن</p>
+            <p className="text-[10px] font-bold text-white/50 mt-2">لا توجد مواعيد استئناف قريبة للاستجابة.</p>
           </div>
         )}
       </div>

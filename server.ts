@@ -77,10 +77,9 @@ const callGemini = async (
     });
 
     const response = await ai.models.generateContent({
-      model: 'gemini-3.5-flash',
-      contents: userMessage,
+      model: 'gemini-1.5-flash',
+      contents: `System: ${systemPrompt}\n\nUser: ${userMessage}`,
       config: {
-        systemInstruction: systemPrompt,
         maxOutputTokens: maxTokens,
         temperature: 0.7,
       }
@@ -1059,6 +1058,51 @@ app.use((req, res, next) => {
     return;
   }
   next();
+});
+
+// AI Deadlines Analysis Endpoint
+app.post('/api/ai/analyze-deadline', async (req, res) => {
+  const { judgmentDate, type, caseTitle, judgmentSummary } = req.body;
+  
+  const systemPrompt = `أنت خبير قانوني في الأنظمة القضائية السعودية ومستشار آلي متقدم. 
+مهمتك هي تحليل تاريخ الحكم ونوعه وتقديم المدة القانونية الصحيحة للاستئناف أو الاعتراض بناءً على نظام المرافعات الشرعية ونظام الإجراءات الجزائية أو نظام المحاكم التجارية السعودي.
+
+القواعد الأساسية:
+1. مدة الاستئناف العادية هي 30 يوماً من تاريخ التبلغ بالحكم أو صدوره (حسب النظام).
+2. القضايا المستعجلة مدة الاستئناف فيها 10 أيام.
+3. الاعتراض أمام المحكمة العليا مدته 30 يوماً.
+4. طلب التنفيذ ليس له مدة تقادم قصيرة ولكنه يتطلب صيرورة الحكم نهائياً.
+
+يجب أن تعيد النتيجة بتنسيق JSON:
+{
+  "deadlineDays": 30,
+  "legalReasoning": "نص شرح النظام القانوني هنا بالعربي",
+  "priority": "normal" | "high" | "critical",
+  "advice": "نصائح إجرائية للمحامي"
+}`;
+
+  const userMessage = `تحليل مهلة قانونية لـ:
+نوع الإجراء: ${type}
+تاريخ الحكم: ${judgmentDate}
+عنوان القضية: ${caseTitle || 'غير محدد'}
+ملخص الحكم: ${judgmentSummary || 'غير موجود'}
+`;
+
+  try {
+    const result = await callGemini(systemPrompt, userMessage);
+    // Clean JSON from markdown blocks if any
+    const cleanedJson = result.replace(/```json|```/g, '').trim();
+    res.json(JSON.parse(cleanedJson));
+  } catch (err: any) {
+    console.error('[AI Deadline Analysis Error]', err);
+    // Fallback logic if AI fails
+    res.json({
+      deadlineDays: type === 'appeal' ? 30 : 10,
+      legalReasoning: "تم الحساب بناءً على القواعد العامة لنظام المرافعات (30 يوماً للاستئناف) لتعذر الاتصال بالمحلل الرقمي.",
+      priority: "normal",
+      advice: "يرجى مراجعة صك الحكم للتأكد من نوع القضية (مستعجلة أم عادية)."
+    });
+  }
 });
 
 // Mock/In-Memory Saudi Legal DB state
@@ -2748,8 +2792,9 @@ app.get('/api/ai/test-mock', async (req, res) => {
 });
 
 app.post('/api/ai/chat', async (req, res) => {
-  const { message, messages } = req.body;
+  const { message, messages, context, caseContext } = req.body;
   const userMsg = message || messages?.[messages.length - 1]?.content;
+  const systemPrompt = context || 'أنت مساعد قانوني متخصص في القانون السعودي. أجب باللغة العربية.';
 
   if (!userMsg) {
     return res.status(400).json({
@@ -2759,11 +2804,14 @@ app.post('/api/ai/chat', async (req, res) => {
   }
 
   try {
-    const result = await callGemini(
-      'أنت مساعد قانوني متخصص في القانون السعودي. أجب باللغة العربية.',
-      userMsg
-    );
-    return res.json({ success: true, result, response: result });
+    const promptWithContext = caseContext ? `${userMsg}\n\nسياق القضية الإضافي:\n${caseContext}` : userMsg;
+    const result = await callGemini(systemPrompt, promptWithContext);
+    
+    return res.json({ 
+      success: true, 
+      result, 
+      response: result 
+    });
   } catch (err: any) {
     console.error('[AI Chat Error]', err.message);
     return res.status(500).json({

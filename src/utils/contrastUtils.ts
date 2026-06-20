@@ -6,8 +6,8 @@
 export const getContrastText = (bgClass: string): string => {
   // خلفيات داكنة جداً → نص أبيض
   const veryDark = [
-    '#050e21', '#0a1628', '#020813',
-    'slate-900', 'slate-800', 'slate-700',
+    '#050e21', '#0a1628', '#020813', '#0f172a',
+    'slate-950', 'slate-900', 'slate-800', 'slate-700',
     'gray-900', 'gray-800', 'zinc-900',
     'neutral-900', 'black', 'dark',
     'indigo-900', 'blue-900', 'purple-900',

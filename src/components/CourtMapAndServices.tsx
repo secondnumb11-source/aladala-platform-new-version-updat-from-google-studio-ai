@@ -99,7 +99,7 @@ export default function CourtMapAndServices({
               <MapPin className="text-yellow-300 w-4 h-4 animate-bounce" />
               <span>{t.title}</span>
             </h3>
-            <p className={`text-xs mt-0.5 ${theme === "light" ? "text-slate-200 font-bold" : "text-yellow-100 font-bold"}`}>{t.sub}</p>
+            <p className={`text-xs mt-0.5 ${theme === "light" ? "text-slate-200 font-bold" : "text-white font-bold opacity-90"}`}>{t.sub}</p>
           </div>
 
           <div className={`text-center py-1.5 text-xs font-sans font-bold border rounded-lg ${
@@ -292,7 +292,7 @@ export default function CourtMapAndServices({
                 <Gavel className="w-4 h-4 text-yellow-300 animate-pulse" />
                 <span>{t.rightHeader}</span>
               </h3>
-              <p className={`text-xs mt-0.5 ${theme === "light" ? "text-slate-100" : "text-yellow-100 font-bold"}`}>{t.rightSub}</p>
+              <p className={`text-xs mt-0.5 ${theme === "light" ? "text-slate-100" : "text-white font-bold opacity-90"}`}>{t.rightSub}</p>
             </div>
 
             {/* Render embedded SaudiServicesHub list */}

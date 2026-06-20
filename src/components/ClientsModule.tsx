@@ -58,6 +58,8 @@ export default function ClientsModule({
   const [syncError, setSyncError] = useState<string | null>(null);
 
   // Form values for new client
+  const [clientType, setClientType] = useState<"new" | "existing">("new");
+  const [selectedCaseId, setSelectedCaseId] = useState<string>("");
   const [newName, setNewName] = useState("");
   const [newIsCompany, setNewIsCompany] = useState(true);
   const [newNationalId, setNewNationalId] = useState("");
@@ -334,12 +336,18 @@ export default function ClientsModule({
     e.preventDefault();
     if (!newName) return;
 
+    if (clientType === 'existing' && !selectedCaseId) {
+      alert("الرجاء اختيار القضية المرتبطة بالعميل الحالي.");
+      return;
+    }
+
     const token = generateUUID();
     const genUser = generateUsername(newName, newNationalId || "");
     const genPass = generatePassword();
+    const generatedClientId = generateUUID();
 
     const newCl = {
-      id: generateUUID(),
+      id: generatedClientId,
       name: newName,
       isCompany: newIsCompany,
       nationalId: newNationalId,
@@ -351,11 +359,39 @@ export default function ClientsModule({
       portalLink: `/portal?token=${token}`,
       status: normalizeClientStatus('active'),
       activePortal: true,
-      permittedCases: []
+      permittedCases: clientType === 'existing' && selectedCaseId ? [selectedCaseId] : []
     };
 
     const success = await handleSaveClient(newCl);
     if (success) {
+      if (clientType === 'existing' && selectedCaseId) {
+        const linkedCase = (cases || []).find(c => c.id === selectedCaseId);
+        if (linkedCase) {
+          try {
+            // Update the case with the new client's identity
+            // We use both camelCase and snake_case to cover schema variations
+            await supabase.from("cases").update({
+              clientId: generatedClientId,
+              clientName: newName,
+              client_id: generatedClientId,
+              client_name: newName
+            }).eq("id", selectedCaseId);
+
+            if (onUpdateState) {
+              onUpdateState("cases", {
+                ...linkedCase,
+                clientId: generatedClientId,
+                clientName: newName,
+                client_id: generatedClientId,
+                client_name: newName
+              });
+            }
+          } catch (err) {
+            console.error("Error updating case link:", err);
+          }
+        }
+      }
+
       setIsAdding(false);
       setNewName("");
       setNewNationalId("");
@@ -363,6 +399,8 @@ export default function ClientsModule({
       setNewEmail("");
       setNewUsername("");
       setNewPassword("");
+      setSelectedCaseId("");
+      setClientType("new");
     }
   };
 
@@ -1006,6 +1044,48 @@ export default function ClientsModule({
 
             <form onSubmit={handleCreateClient} className="p-8 space-y-8">
               <div className="space-y-6">
+                {/* تصنيف العميل: جديد أو حالي */}
+                <div className="bg-slate-50 border border-slate-200 p-5 rounded-2xl space-y-4">
+                  <label className="text-xs font-black text-slate-700 block uppercase tracking-widest">
+                    نوع ودرجة الموكل (جديد / حالي مرتبط بقضية)
+                  </label>
+                  <select
+                    value={clientType}
+                    onChange={(e) => {
+                      const val = e.target.value as "new" | "existing";
+                      setClientType(val);
+                      if (val === "new") {
+                        setSelectedCaseId("");
+                      }
+                    }}
+                    className="w-full bg-white border border-slate-200 rounded-xl py-3 px-4 text-xs font-bold text-slate-900 focus:outline-none focus:border-amber-500 transition-all"
+                  >
+                    <option value="new">عميل جديد بالمنظومة</option>
+                    <option value="existing">عميل حالي (ربط بقضية نشطة)</option>
+                  </select>
+
+                  {clientType === "existing" && (
+                    <div className="space-y-2 pt-2 animate-in slide-in-from-top-2 duration-200">
+                      <label className="text-[11px] font-black text-slate-600 block">
+                        اختر القضية النشطة لربطها بهذا العميل وتهيئة البوابة:
+                      </label>
+                      <select
+                        value={selectedCaseId}
+                        onChange={(e) => setSelectedCaseId(e.target.value)}
+                        required={clientType === "existing"}
+                        className="w-full bg-white border border-slate-200 rounded-xl py-3 px-4 text-xs font-bold text-slate-900 focus:outline-none focus:border-amber-500 transition-all"
+                      >
+                        <option value="">-- اختر القضية من القائمة --</option>
+                        {(cases || []).map((c) => (
+                          <option key={c.id} value={c.id}>
+                            {c.caseNumber} - {c.caseName || 'قضية بدون مسمى'} ({c.clientName || 'بدون عميل مرتبط'})
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
+                </div>
+
                 <div className="space-y-2">
                   <label className="text-xs font-black text-slate-700 uppercase tracking-widest">
                     الاسم الكامل للموكل / الكيان

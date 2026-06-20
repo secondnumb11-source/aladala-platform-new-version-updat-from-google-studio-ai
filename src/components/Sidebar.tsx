@@ -77,6 +77,7 @@ interface SidebarItem {
 }
 
 import { useSupabase } from '@/contexts/SupabaseContext';
+import { getContrastText, TEXT_COLORS } from '@/utils/contrastUtils';
 
 export default function Sidebar({
   currentTab,
@@ -214,10 +215,9 @@ export default function Sidebar({
   const allItems: SidebarItem[] = [
     { id: 'dashboard', name: 'لوحة المعلومات الرئيسية', icon: LayoutDashboard },
     { id: 'cases', name: 'إدارة القضايا', icon: Briefcase },
-    { id: 'case-judgments', name: 'الأحكام والمذكرات', icon: Scale },
+    { id: 'case-judgments', name: 'الأحكام وضبط الجلسات والمذكرات', icon: Scale },
     { id: 'executions', name: 'طلبات التنفيذ', icon: Scale },
     { id: 'calendar', name: 'تقويم مواعيد الجلسات', icon: BookOpen },
-    { id: 'documents', name: 'أرشيف المستندات', icon: FileText },
     
     { id: 'clients', name: 'سجل العملاء والموكلين', icon: Users },
     { id: 'client-portal', name: 'بوابة العملاء', icon: UserCheck },
@@ -232,6 +232,7 @@ export default function Sidebar({
     { id: 'saudi-hub', name: 'بوابة الخدمات الحكوميه', icon: Landmark },
     { id: 'smart-services', name: 'خدمات المسانده والتحقق', icon: ShieldAlert },
     { id: 'court-map', name: 'دليل المحاكم', icon: Compass },
+    { id: 'documents', name: 'أرشيف المستندات', icon: FileText },
 
     { id: 'najiz', name: 'الربط مع ناجز', icon: Link2 },
     { id: 'audit-logs', name: 'سجل العمليات', icon: FileText },
@@ -273,6 +274,10 @@ export default function Sidebar({
     { id: 'client', name: customRoles?.subscriber || 'العميل (العدالة) 👤' },
   ];
 
+  const mainBg = '#020617'; // slate-950
+  const mainText = getContrastText(mainBg);
+  const goldText = TEXT_COLORS.goldBright;
+
   return (
     <>
       {/* Sidebar Drawers - Positioned fixedly on mobile, sticky structurally on desktop */}
@@ -280,7 +285,7 @@ export default function Sidebar({
         style={{ width: `${sidebarWidth}px` }}
         className={`fixed lg:sticky top-0 right-0 lg:right-auto lg:left-auto h-screen z-40 bg-slate-950/70 backdrop-blur-2xl border-l border-white/5 transform transition-transform duration-300 lg:translate-x-0 ${
           mobileOpen ? 'translate-x-0' : 'translate-x-full'
-        } flex flex-col justify-between lg:shadow-none overflow-x-hidden overflow-y-hidden shrink-0`}
+        } flex flex-col justify-between lg:shadow-none overflow-x-hidden overflow-y-hidden shrink-0 text-right`}
         dir="rtl"
       >
         {/* Resize Handle */}
@@ -307,10 +312,10 @@ export default function Sidebar({
                     )}
                   </div>
                   <div className="flex flex-col">
-                    <h2 className="font-display font-black text-amber-500 tracking-tight leading-tight text-base drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]">
+                    <h2 className={`font-display font-black ${goldText} tracking-tight leading-tight text-base drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]`}>
                       {officeName}
                     </h2>
-                    <h3 className="text-[11px] text-white font-extrabold tracking-wide mt-1 leading-normal uppercase">
+                    <h3 className={`text-[11px] ${mainText} font-extrabold tracking-wide mt-1 leading-normal uppercase`}>
                       لإدارة مكاتب المحاماة المعتمدة
                     </h3>
                   </div>
@@ -351,7 +356,7 @@ export default function Sidebar({
                         onClick={() => setIsEditingUserName(true)}
                         title="اضغط لتعديل اسمك"
                       >
-                        <span className="text-[10px] font-black text-white leading-tight">مرحباً</span>
+                        <span className="text-[10px] font-black leading-tight text-white">مرحباً</span>
                         <span className="text-[11px] font-black text-amber-400 truncate max-w-[80px]" title={userName}>
                           {userName}
                         </span>
@@ -443,7 +448,7 @@ export default function Sidebar({
             {[
               {
                 title: 'المنظومة القضائية وإدارة العمل',
-                itemIds: ['dashboard', 'cases', 'executions', 'calendar', 'documents']
+                itemIds: ['dashboard', 'cases', 'executions', 'calendar']
               },
               {
                 title: 'العملاء والشؤون الخارجية',
@@ -459,7 +464,7 @@ export default function Sidebar({
               },
               {
                 title: 'خدمات المسانده والتحقق الذكي',
-                itemIds: ['saudi-hub', 'smart-services', 'court-map']
+                itemIds: ['saudi-hub', 'smart-services', 'court-map', 'documents']
               },
               {
                 title: 'التكامل والإعدادات',
@@ -513,7 +518,7 @@ export default function Sidebar({
                       whileHover={{ scale: 1.5, rotate: 180 }}
                       transition={{ duration: 0.3 }}
                     ></motion.span>
-                    <h3 className="text-[10px] font-black text-white uppercase tracking-widest drop-shadow-[0_1px_2px_rgba(0,0,0,1)]">{cat.title}</h3>
+                    <h3 className={`text-[10px] font-black ${mainText} uppercase tracking-widest drop-shadow-[0_1px_2px_rgba(0,0,0,1)]`}>{cat.title}</h3>
                   </div>
                   <div className="space-y-1">
                     {allowedItems.map((item, itemIdx) => {

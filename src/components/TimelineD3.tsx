@@ -55,6 +55,15 @@ export default function TimelineD3({ hearings, tasks, cases = [] }: TimelineD3Pr
     // Convert cases to timeline events
     if (cases && Array.isArray(cases)) {
       cases.forEach(c => {
+        // Filter out cases that might be considered "fake" or "test" data
+        const isFake = !c.caseNumber || 
+                       c.caseNumber.toLowerCase().includes('test') || 
+                       c.caseNumber.toLowerCase().includes('dummy') || 
+                       c.caseNumber.includes('تجربة') || 
+                       c.caseNumber.includes('وهمي');
+        
+        if (isFake) return;
+
         // 1. Creation date milestone
         if (c.createdAt) {
           list.push({
@@ -62,32 +71,19 @@ export default function TimelineD3({ hearings, tasks, cases = [] }: TimelineD3Pr
             date: new Date(c.createdAt),
             rawDate: c.createdAt,
             time: '08:00 ص',
-            title: `تأسيس وحوسبة الدعوى: ${c.caseName || 'ملف دعوى جديد'}`,
+            title: `تأسيس ملف الدعوى: ${c.caseName || c.title || 'ملف دعوى'}`,
             type: 'case-creation',
             caseNumber: c.caseNumber,
-            courtName: c.courtName || 'مكتب المحاماة والعدالة',
-            hallNumber: `تأسيس وحوسبة الملف القضائي رقم ${c.caseNumber} - تصنيف ${c.category || 'عام'}`,
+            courtName: c.courtName || 'مكتب المحاماة',
+            hallNumber: `تأسيس وحوسبة الملف القضائي رقم ${c.caseNumber}`,
             status: 'completed',
             notes: c.details || ''
           });
         }
-        // 2. Next Session milestone
-        if (c.nextSessionDate) {
-          list.push({
-            id: `case-next-sess-${c.id}`,
-            date: new Date(c.nextSessionDate),
-            rawDate: c.nextSessionDate,
-            time: '09:00 ص',
-            title: `جلسة قادمة مجدولة للدعوى (${c.caseNumber})`,
-            type: 'hearing',
-            caseNumber: c.caseNumber,
-            courtName: c.courtName || 'المحكمة العامة',
-            hallNumber: `الدائرة القضائية المختصة بنظر الدعوى`,
-            status: 'upcoming',
-            notes: `مزامنة الجلسات التلقائية المربوطة بنظام ناجز`
-          });
-        }
-        // 3. Appeal Deadline milestone
+        
+        // Note: NEXT SESSION milestone is removed to avoid duplicates with real Hearing records
+        
+        // 2. Appeal Deadline milestone
         if (c.appeal_deadline) {
           list.push({
             id: `case-appeal-${c.id}`,
@@ -98,9 +94,9 @@ export default function TimelineD3({ hearings, tasks, cases = [] }: TimelineD3Pr
             type: 'deadline',
             caseNumber: c.caseNumber,
             courtName: 'مهلة نظامية',
-            hallNumber: `آخر موعد نظامي لتقديم لائحة الاعتراض والاستئناف القضائي على الحكم الابتدائي`,
+            hallNumber: `آخر موعد لتقديم لائحة الاعتراض والاستئناف`,
             status: 'warning',
-            notes: `حسب المدد المنصوص عليها بنظام المرافعات الشرعية`
+            notes: `حسب المدد المنصوص عليها نظاماً`
           });
         }
       });
