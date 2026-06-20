@@ -277,227 +277,66 @@ export const verifyEmployeeCredentials = async (
   username: string,
   password: string
 ): Promise<{ success: boolean; data?: any; error?: string }> => {
-  
   const trimmedUser = username.trim();
   const trimmedPass = password.trim();
-  
+
   if (!trimmedUser || !trimmedPass) {
-    return { 
-      success: false, 
-      error: 'يرجى إدخال اسم المستخدم وكلمة المرور' 
-    };
+    return { success: false, error: 'يرجى إدخال بيانات الدخول' };
   }
-  
-  // المحاولة الأولى: عبر الخادم
+
+  // محاولة 1: عبر الخادم
   try {
+    const controller = new AbortController();
+    setTimeout(() => controller.abort(), 8000);
     const response = await fetch('/api/employee-portal/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ 
-        username: trimmedUser, 
-        password: trimmedPass 
-      }),
-      signal: AbortSignal.timeout(8000)
+      body: JSON.stringify({ username: trimmedUser, password: trimmedPass }),
+      signal: controller.signal
     });
-    
     if (response.ok) {
       const result = await response.json();
-      if (result.success) {
-        return {
-          success: true,
-          data: {
-            id: result.employee.id,
-            name: result.employee.name,
-            role: result.employee.role || 'employee',
-            jobTitle: result.employee.jobTitle || result.employee.job_title,
-            employeeCode: result.employee.employeeCode,
-            permissions: result.employee.permissions || [],
-            sidebarConfig: result.employee.permissions || [
-              'dashboard','cases','tasks','documents','ai'
-            ]
-          }
-        };
-      }
-      if (response.status === 401) {
-        return { 
-          success: false, 
-          error: 'اسم المستخدم أو كلمة المرور غير صحيحة' 
-        };
-      }
+      if (result.success) return { success: true, data: result.employee };
+      if (response.status === 401) return { success: false, error: result.message };
     }
-  } catch (serverErr) {
-    console.warn('[Employee Auth] Server unavailable, trying Supabase...');
-  }
-  
-  // المحاولة الثانية: مباشرة من Supabase
+  } catch(e) { console.warn('[Auth] Server unavailable'); }
+
+  // محاولة 2: Supabase مباشرة
   try {
-    // اختبر الاتصال أولاً
-    const { data: testData, error: testError } = await supabase
+    const { data: allEmps, error } = await supabase
       .from('employees')
-      .select('id')
-      .limit(1);
+      .select('*');
 
-    console.log('[Auth Test]', { testData, testError });
+    if (error) throw error;
 
-    // إذا فشل الاتصال
-    if (testError) {
-      console.error('[Auth] Supabase connection failed:', testError);
-      
-      // fallback لـ localStorage
-      const backup = localStorage.getItem('employees_backup');
-      if (backup) {
-        try {
-          const authBackup = JSON.parse(backup);
-          const localMatch = authBackup.find((emp: any) => {
-            const empUser = (emp.username || '').trim().toLowerCase();
-            const empPass = (emp.password || '').trim();
-            const empEmail = (emp.email || '').trim().toLowerCase();
-            const empCode = (emp.employeeCode || emp.employee_code || '').trim();
-            
-            const userMatch = 
-              empUser === trimmedUser.toLowerCase() ||
-              empEmail === trimmedUser.toLowerCase() ||
-              empCode === trimmedUser;
-            
-            return userMatch && empPass === trimmedPass;
-          });
-          
-          if (localMatch) {
-            return {
-              success: true,
-              data: {
-                id: localMatch.id,
-                name: localMatch.name,
-                role: localMatch.role || 'employee',
-                jobTitle: localMatch.jobTitle || localMatch.job_title || '',
-                employeeCode: localMatch.employeeCode || localMatch.employee_code || '',
-                permissions: localMatch.permissions || [
-                  'dashboard','cases','tasks','documents','ai'
-                ],
-                sidebarConfig: localMatch.permissions || [
-                  'dashboard','cases','tasks','documents','ai'
-                ]
-              }
-            };
-          }
-        } catch (e) {}
-      }
-    }
-
-    const { data: employees, error } = await supabase
-      .from('employees')
-      .select('*')
-      .or(
-        'status.eq.active,' +
-        'status.eq.نشط,' +
-        'status.eq.نشيط,' +
-        'status.eq.فعال,' +
-        'status.eq.مفعل'
-      );
-    
-    if (error) {
-      console.error('[Employee Supabase Error]', error);
-      
-      // محاولة البحث في النسخ الاحتياطي المحلي حتى عند فشل جلب القائمة الكاملة
-      try {
-        const backup = JSON.parse(localStorage.getItem('employees_backup') || '[]');
-        const localMatch = backup.find((emp: any) => {
-          const empUser = (emp.username || '').trim().toLowerCase();
-          const empPass = (emp.password || '').trim();
-          const userMatch = 
-            empUser === trimmedUser.toLowerCase() ||
-            (emp.email || '').toLowerCase() === trimmedUser.toLowerCase() ||
-            (emp.employeeCode || '').trim() === trimmedUser;
-          
-          return userMatch && empPass === trimmedPass;
-        });
-        
-        if (localMatch) {
-          return {
-            success: true,
-            data: {
-              id: localMatch.id,
-              name: localMatch.name,
-              role: localMatch.role || 'employee',
-              jobTitle: localMatch.jobTitle || '',
-              employeeCode: localMatch.employeeCode || '',
-              permissions: localMatch.permissions || ['dashboard','cases','tasks','documents','ai'],
-              sidebarConfig: localMatch.permissions || ['dashboard','cases','tasks','documents','ai']
-            }
-          };
-        }
-      } catch (e) {}
-
-      return { 
-        success: false, 
-        error: 'تعذر الاتصال بقاعدة البيانات' 
-      };
-    }
-    
-    if (!employees || employees.length === 0) {
-      return { 
-        success: false, 
-        error: 'لا يوجد موظفون مسجلون في النظام' 
-      };
-    }
-    
-    const matched = employees.find(emp => {
-      const dbUser = (
-        emp.username || ''
-      ).trim().toLowerCase();
-      
+    const activeStatuses = ['active','نشط','نشيط','فعال','مفعّل','مفعل'];
+    const matched = (allEmps || []).find(emp => {
+      const dbUser = (emp.username || '').trim().toLowerCase();
       const dbEmail = (emp.email || '').trim().toLowerCase();
-      const dbCode = (emp.employee_code || emp.employeeCode || '').trim();
+      const dbCode = (emp.employee_code || '').trim();
       const dbPhone = (emp.phone || '').trim();
-      const dbNationalId = (emp.national_id || emp.nationalId || '').trim();
+      const dbNatId = (emp.national_id || '').trim();
       const dbPass = (emp.password || '').trim();
-      
-      const usernameMatch = 
+
+      const userMatch =
         dbUser === trimmedUser.toLowerCase() ||
         dbEmail === trimmedUser.toLowerCase() ||
         dbCode === trimmedUser ||
         dbPhone === trimmedUser ||
-        dbNationalId === trimmedUser;
-      
-      const passwordMatch = dbPass === trimmedPass;
-      
-      return usernameMatch && passwordMatch;
+        dbNatId === trimmedUser;
+
+      return userMatch && dbPass === trimmedPass;
     });
 
-    const isActive = (status: string) => {
-      const activeValues = [
-        'active','نشط','نشيط','فعال','مفعّل','مفعل'
-      ];
-      return activeValues.includes(status?.trim() || '');
-    };
-
-    if (matched && !isActive(matched.status)) {
-      return {
-        success: false,
-        error: 'هذا الحساب معطّل. تواصل مع المسؤول'
-      };
-    }
-    
     if (!matched) {
-      // محاولة ثالثة: من localStorage backup
+      // محاولة 3: localStorage backup
       try {
-        const backup = JSON.parse(
-          localStorage.getItem('employees_backup') || '[]'
-        );
+        const backup = JSON.parse(localStorage.getItem('employees_backup') || '[]');
         const localMatch = backup.find((emp: any) => {
-          const empUser = (emp.username || '').trim().toLowerCase();
-          const empPass = (emp.password || '').trim();
-          const empEmail = (emp.email || '').trim().toLowerCase();
-          const empCode = (emp.employeeCode || '').trim();
-          
-          const userMatch = 
-            empUser === trimmedUser.toLowerCase() ||
-            empEmail === trimmedUser.toLowerCase() ||
-            empCode === trimmedUser;
-          
-          return userMatch && empPass === trimmedPass;
+          const user = (emp.username || '').trim().toLowerCase();
+          const pass = (emp.password || '').trim();
+          return user === trimmedUser.toLowerCase() && pass === trimmedPass;
         });
-        
         if (localMatch) {
           return {
             success: true,
@@ -505,25 +344,31 @@ export const verifyEmployeeCredentials = async (
               id: localMatch.id,
               name: localMatch.name,
               role: localMatch.role || 'employee',
-              jobTitle: localMatch.jobTitle || '',
+              jobTitle: localMatch.jobTitle || localMatch.job_title || '',
               employeeCode: localMatch.employeeCode || '',
-              permissions: localMatch.permissions || [
-                'dashboard','cases','tasks','documents','ai'
-              ],
-              sidebarConfig: localMatch.permissions || [
-                'dashboard','cases','tasks','documents','ai'
-              ]
+              permissions: localMatch.permissions || ['dashboard','cases','tasks'],
+              sidebarConfig: localMatch.permissions || ['dashboard','cases','tasks'],
+              assignedCases: localMatch.assignedCases || [],
+              assignedClients: localMatch.assignedClients || []
             }
           };
         }
-      } catch (e) {}
-      
-      return { 
-        success: false, 
-        error: 'اسم المستخدم أو كلمة المرور غير صحيحة' 
-      };
+      } catch(e) {}
+      return { success: false, error: 'اسم المستخدم أو كلمة المرور غير صحيحة' };
     }
-    
+
+    // حفظ إعدادات البوابة من portal_configurations
+    let portalConfig = null;
+    try {
+      const { data: config } = await supabase
+        .from('portal_configurations')
+        .select('*')
+        .eq('entity_type', 'employee')
+        .eq('entity_id', matched.id)
+        .maybeSingle();
+      portalConfig = config;
+    } catch(e) {}
+
     return {
       success: true,
       data: {
@@ -531,21 +376,15 @@ export const verifyEmployeeCredentials = async (
         name: matched.name,
         role: matched.role || 'employee',
         jobTitle: matched.job_title || matched.jobTitle || '',
-        employeeCode: matched.employee_code || matched.employeeCode || '',
-        permissions: matched.permissions || [
-          'dashboard','cases','tasks','documents','ai'
-        ],
-        sidebarConfig: matched.sidebar_config || matched.permissions || [
-          'dashboard','cases','tasks','documents','ai'
-        ]
+        employeeCode: matched.employee_code || '',
+        permissions: portalConfig?.permissions || matched.permissions || ['dashboard','cases','tasks'],
+        sidebarConfig: portalConfig?.permissions || matched.sidebar_config || matched.permissions || ['dashboard','cases','tasks'],
+        assignedCases: portalConfig?.assigned_cases || matched.assigned_case_ids || [],
+        assignedClients: portalConfig?.assigned_clients || matched.assigned_client_ids || []
       }
     };
-    
-  } catch (err: any) {
-    console.error('[Employee Auth Exception]', err);
-    return { 
-      success: false, 
-      error: 'حدث خطأ في الاتصال. تأكد من اتصالك بالإنترنت' 
-    };
+
+  } catch(err: any) {
+    return { success: false, error: 'خطأ في الاتصال: ' + err.message };
   }
 };

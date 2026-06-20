@@ -448,7 +448,7 @@ export default function Sidebar({
             {[
               {
                 title: 'المنظومة القضائية وإدارة العمل',
-                itemIds: ['dashboard', 'cases', 'executions', 'calendar']
+                itemIds: ['dashboard', 'cases', 'case-judgments', 'executions', 'calendar']
               },
               {
                 title: 'العملاء والشؤون الخارجية',

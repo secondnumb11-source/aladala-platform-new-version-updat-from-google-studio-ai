@@ -189,6 +189,24 @@ export default function EmployeePortal({
   const [isSaving, setIsSaving] = useState(false);
   const [showPass, setShowPass] = useState(false);
 
+  const [availableCases, setAvailableCases] = useState<any[]>([]);
+  const [availableClients, setAvailableClients] = useState<any[]>([]);
+
+  useEffect(() => {
+    Promise.all([
+      supabase.from('cases')
+        .select('id, case_number, title, client_name, status')
+        .eq('archived', false)
+        .order('created_at', { ascending: false }),
+      supabase.from('clients')
+        .select('id, name, phone, status')
+        .eq('status', 'active')
+    ]).then(([casesRes, clientsRes]) => {
+      if (casesRes.data) setAvailableCases(casesRes.data);
+      if (clientsRes.data) setAvailableClients(clientsRes.data);
+    });
+  }, []);
+
   // Portal State Logging for Employees
   const [loggedInEmployee, setLoggedInEmployee] = useState<Employee | null>(() => {
     try {
@@ -346,12 +364,63 @@ export default function EmployeePortal({
 
     try {
       console.log('Attempting to save employee config:', selectedConfigEmployee.id, updates);
-      await supabase.from('employees').upsert({ id: selectedConfigEmployee.id, ...updates });
+      
+      // 1. تحديث بيانات الموظف
+      const { error: empError } = await supabase
+        .from('employees')
+        .update({
+          username: updates.username,
+          password: updates.password,
+          permissions: updates.permissions,
+          assigned_case_ids: updates.assignedCases,
+          assigned_client_ids: updates.assignedClients,
+          sidebar_modules: updates.permissions,
+          active_portal: true,
+          portal_configured: true,
+          portal_config_date: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', selectedConfigEmployee.id);
+
+      if (empError) throw empError;
+
+      // 2. حفظ في جدول portal_configurations
+      const { error: configError } = await supabase
+        .from('portal_configurations')
+        .upsert({
+          entity_type: 'employee',
+          entity_id: selectedConfigEmployee.id,
+          username: updates.username,
+          password: updates.password,
+          permissions: updates.permissions,
+          assigned_cases: updates.assignedCases,
+          assigned_clients: updates.assignedClients,
+          is_active: true,
+          configured_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        }, { onConflict: 'entity_type,entity_id' });
+
+      if (configError) throw configError;
+
+      // 3. تحديث localStorage
+      try {
+        const backup = JSON.parse(localStorage.getItem('employees_backup') || '[]');
+        const idx = backup.findIndex((e: any) => e.id === selectedConfigEmployee.id);
+        const updatedBackup = {
+          ...selectedConfigEmployee,
+          ...updates,
+          activePortal: true,
+          portalConfigured: true
+        };
+        if (idx >= 0) backup[idx] = updatedBackup;
+        else backup.push(updatedBackup);
+        localStorage.setItem('employees_backup', JSON.stringify(backup));
+      } catch (e) {}
       
       // Update the local list to ensure immediate responsiveness
       setEmployees(prev => prev.map(e => e.id === selectedConfigEmployee.id ? { ...e, ...updates } : e));
       
-      alert('تم حفظ البيانات ومزامنة الصلاحيات لبوابة الموظف بنجاح ✅');
+      alert(`✅ تم حفظ إعدادات البوابة نهائياً\n👤 ${updates.username}\n🔑 ${updates.password}`);
       setTimeout(() => setSelectedConfigEmployee(null), 100);
       
     } catch (err: any) {
@@ -1179,40 +1248,70 @@ export default function EmployeePortal({
                         />
 
                         {/* 3. Custom Multi-Select Dropdown for Assigned Cases */}
-                        <CustomMultiSelectDropdown 
-                          label="إسناد وتعيين القضايا تحت مراجعته"
-                          placeholder="تحديد القضايا من المنسدلة..."
-                          icon={Briefcase}
-                          themeColor="indigo"
-                          selectedIds={selectedConfigEmployee.assignedCases || []}
-                          items={cases.map(c => ({
-                            id: c.id,
-                            name: c.caseName,
-                            info: `${c.caseNumber} - ${c.clientName}`
-                          }))}
-                          onChange={(ids) => {
-                            const updatedEmp = { ...selectedConfigEmployee, assignedCases: ids };
-                            setSelectedConfigEmployee(updatedEmp);
-                          }}
-                        />
+                        <div>
+                          <label className="text-xs font-bold text-slate-800 mb-3 flex items-center gap-2">
+                            <Briefcase className="w-4 h-4 text-indigo-600" />
+                            📁 القضايا المخصصة للموظف
+                          </label>
+                          <div className="max-h-48 overflow-y-auto space-y-2 bg-slate-50 rounded-2xl p-4 border border-slate-200">
+                            {(availableCases.length > 0 ? availableCases : cases).map(c => (
+                              <label key={c.id} className="flex items-center gap-3 cursor-pointer bg-white p-2.5 rounded-xl border border-slate-100 hover:border-indigo-300 transition-colors">
+                                <input
+                                  type="checkbox"
+                                  checked={(selectedConfigEmployee.assignedCases || []).includes(c.id)}
+                                  onChange={e => {
+                                    const ids = selectedConfigEmployee.assignedCases || [];
+                                    const updatedEmp = { 
+                                      ...selectedConfigEmployee, 
+                                      assignedCases: e.target.checked ? [...ids, c.id] : ids.filter(id => id !== c.id) 
+                                    };
+                                    setSelectedConfigEmployee(updatedEmp);
+                                  }}
+                                  className="w-4 h-4 text-indigo-600 rounded border-slate-300 focus:ring-indigo-600 focus:ring-2"
+                                />
+                                <span className="text-slate-800 text-xs font-bold">
+                                  #{c.case_number || c.caseNumber} — {c.title || c.caseName || c.client_name || c.clientName}
+                                </span>
+                              </label>
+                            ))}
+                            {availableCases.length === 0 && cases.length === 0 && (
+                              <span className="text-xs text-slate-500">لا توجد قضايا متاحة..</span>
+                            )}
+                          </div>
+                        </div>
 
                         {/* 4. Custom Multi-Select Dropdown for Assigned Clients */}
-                        <CustomMultiSelectDropdown 
-                          label="إسناد العملاء المرتبطين بالمتابعة"
-                          placeholder="اختر العملاء من المنسدلة..."
-                          icon={Users}
-                          themeColor="emerald"
-                          selectedIds={selectedConfigEmployee.assignedClients || []}
-                          items={clients.map(cl => ({
-                            id: cl.id,
-                            name: cl.name,
-                            info: cl.email || cl.phone
-                          }))}
-                          onChange={(ids) => {
-                            const updatedEmp = { ...selectedConfigEmployee, assignedClients: ids };
-                            setSelectedConfigEmployee(updatedEmp);
-                          }}
-                        />
+                        <div>
+                          <label className="text-xs font-bold text-slate-800 mb-3 flex items-center gap-2 mt-4">
+                            <Users className="w-4 h-4 text-emerald-600" />
+                            👥 إسناد العملاء المرتبطين
+                          </label>
+                          <div className="max-h-48 overflow-y-auto space-y-2 bg-slate-50 rounded-2xl p-4 border border-slate-200">
+                            {(availableClients.length > 0 ? availableClients : clients).map(cl => (
+                              <label key={cl.id} className="flex items-center gap-3 cursor-pointer bg-white p-2.5 rounded-xl border border-slate-100 hover:border-emerald-300 transition-colors">
+                                <input
+                                  type="checkbox"
+                                  checked={(selectedConfigEmployee.assignedClients || []).includes(cl.id)}
+                                  onChange={e => {
+                                    const ids = selectedConfigEmployee.assignedClients || [];
+                                    const updatedEmp = { 
+                                      ...selectedConfigEmployee, 
+                                      assignedClients: e.target.checked ? [...ids, cl.id] : ids.filter(id => id !== cl.id) 
+                                    };
+                                    setSelectedConfigEmployee(updatedEmp);
+                                  }}
+                                  className="w-4 h-4 text-emerald-600 rounded border-slate-300 focus:ring-emerald-600 focus:ring-2"
+                                />
+                                <span className="text-slate-800 text-xs font-bold">
+                                  {cl.name} <span className="text-slate-400 mr-2 text-[10px] font-normal">{cl.phone || cl.email}</span>
+                                </span>
+                              </label>
+                            ))}
+                            {availableClients.length === 0 && clients.length === 0 && (
+                              <span className="text-xs text-slate-500">لا يوجد عملاء متاحون..</span>
+                            )}
+                          </div>
+                        </div>
 
                       </div>
                     </div>

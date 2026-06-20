@@ -22,8 +22,10 @@ import {
   Loader2,
   Briefcase,
   ChevronRight,
-  Search
+  Search,
+  Scale
 } from 'lucide-react';
+import { getContrastText } from '@/utils/contrastUtils';
 import { motion, AnimatePresence } from 'motion/react';
 import { Case, Client, Invoice, Message, Hearing, Contract, Document } from '@/types';
 import { generateUUID } from '@/lib/uuid';
@@ -452,7 +454,37 @@ export default function ClientPortal({
     }
     return c.clientId === viewingClient.id;
   };
-  const clientCases = (isUnauthorizedClient || !viewingClient) ? [] : (cases || []).filter(isCasePermitted);
+  
+  const [clientCases, setClientCases] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (viewingClient && viewingClient.id) {
+      const loadClientCases = async () => {
+        const { data } = await supabase
+          .from('cases')
+          .select('*')
+          .eq('client_id', viewingClient.id)
+          .eq('archived', false);
+          
+        if (data && data.length > 0) {
+          const mapped = data.map(d => ({
+            ...d,
+            caseNumber: d.case_number,
+            caseName: d.title,
+            clientId: d.client_id,
+            courtName: d.court_name,
+            clientName: viewingClient.name
+          }));
+          setClientCases(mapped);
+        } else {
+          setClientCases((cases || []).filter(isCasePermitted));
+        }
+      };
+      loadClientCases();
+    } else {
+      setClientCases([]);
+    }
+  }, [viewingClient, cases]);
 
   // Permitted Case Filter dropdown selection state
   const [selectedCaseFilterId, setSelectedCaseFilterId] = useState<string>('all');
@@ -726,7 +758,7 @@ export default function ClientPortal({
     <div className="space-y-6 text-right" dir="rtl">
       
           {/* Dynamic Configuration and Simulation Selector Console (Visible only to legal staff) */}
-          {!(currentUser?.role === 'client' || currentUser?.role === 'subscriber') && (
+          {!(currentUser?.role === 'client' || currentUser?.role === 'subscriber') && !isLoggedIn && (
             <div className="bg-white border border-slate-305 rounded-3xl p-6 shadow-md space-y-6">
               <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-slate-205 pb-4">
                 <div className="flex items-center gap-3">
@@ -1218,28 +1250,173 @@ export default function ClientPortal({
               </div>
             ) : (
               filteredClientCases.map((cs, index) => (
-                <div key={index} className="bg-slate-50 border border-slate-300 rounded-2xl p-6 space-y-5 transition-all">
-                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                    <div className="space-y-1">
-                      <span className="text-xs bg-white text-indigo-800 px-2 py-0.5 rounded-md border border-indigo-200 font-mono font-bold">
+                <div key={index} className="bg-slate-50 border border-slate-300 rounded-3xl p-6 sm:p-8 space-y-6 transition-all shadow-md">
+                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-4 border-b border-slate-200">
+                    <div className="space-y-1.5">
+                      <span className={`text-xs bg-indigo-50 text-indigo-800 px-3 py-1 rounded-lg border border-indigo-200 font-mono font-bold ${getContrastText('bg-white')}`}>
                         ملف دعوى رقم: {cs.caseNumber}
                       </span>
-                      <h3 className="font-display font-semibold text-base text-slate-950  mt-2">{cs.caseName}</h3>
+                      <h3 className={`font-display font-black text-lg ${getContrastText('bg-slate-50')} mt-2`}>{cs.caseName}</h3>
                     </div>
 
-                    <div className="flex items-center gap-2 text-xs font-semibold text-slate-900  bg-white px-3 py-1.5 rounded-xl border border-slate-300 shadow-sm">
-                      <MapPin className="w-3.5 h-3.5 text-indigo-600" />
-                      {cs.courtName}
+                    <div className="flex flex-col items-end gap-2">
+                       <div className={`flex items-center gap-2 text-xs font-black ${getContrastText('bg-white')} bg-white px-4 py-2 rounded-xl border border-slate-300 shadow-sm`}>
+                        <MapPin className="w-4 h-4 text-indigo-600" />
+                        {cs.courtName}
+                       </div>
+                       <div className={`flex items-center gap-2 text-[11px] font-black ${getContrastText('bg-slate-50')}`}>
+                          الحالة: <span className="text-amber-600">{cs.status === 'active' ? 'نشطة' : cs.status === 'closed' ? 'مغلقة' : 'قيد المراجعة'}</span> • 
+                          المرحلة: <span className="text-indigo-600">{cs.stage === 'litigation' ? 'ترافع' : cs.stage === 'appeals' ? 'استئناف' : cs.stage === 'execution' ? 'تنفيذ' : 'تحضير'}</span>
+                       </div>
                     </div>
                   </div>
 
-                  <p className="text-xs text-slate-900  font-medium leading-relaxed">
-                    {cs.summary}
-                  </p>
+                  {/* Summary/Short Description */}
+                  <div className="space-y-2">
+                    <span className="text-xs font-black text-slate-800 uppercase block">ملخص وموضوع الدعوى</span>
+                    <p className={`text-xs font-medium leading-relaxed bg-white/70 p-4 rounded-xl border border-slate-200 shadow-inner ${getContrastText('bg-slate-50')}`}>
+                      {cs.summary || 'تفاصيل الدعوى وموضوعها غير مدون.'}
+                    </p>
+                  </div>
+
+                  {/* Complete Dynamic Database Details Grid */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+                    
+                    {/* Column 1: Litigation & Opponents */}
+                    <div className="space-y-4">
+                      <h4 className="text-xs font-black text-indigo-800 border-b border-indigo-100 pb-2">👥 أطراف الخصومة والوكالة</h4>
+                      
+                      <div className="grid grid-cols-2 gap-3 text-xs">
+                        <div>
+                          <span className="text-slate-500 block text-[10px]">المدعي (الموكل):</span>
+                          <span className="font-extrabold text-slate-900">{cs.clientName || 'غير مقيد'}</span>
+                        </div>
+                        <div>
+                          <span className="text-slate-500 block text-[10px]">المدعى عليه (الخصم):</span>
+                          <span className="font-extrabold text-rose-700">{cs.opponentName || 'غير مقيد'}</span>
+                        </div>
+                        {cs.opponentNationalId && (
+                          <div className="col-span-2">
+                            <span className="text-slate-500 block text-[10px]">هوية/سجل الخصم:</span>
+                            <span className="font-extrabold text-slate-900 font-mono">{cs.opponentNationalId}</span>
+                          </div>
+                        )}
+                        {cs.powerOfAttorneyNumber && (
+                          <div className="col-span-2">
+                            <span className="text-slate-500 block text-[10px]">رقم الوكالة الشرعية:</span>
+                            <span className="font-mono bg-slate-50 px-2 py-0.5 rounded border border-slate-200 text-indigo-700 font-bold">{cs.powerOfAttorneyNumber}</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Column 2: Court Info & Circuits */}
+                    <div className="space-y-4">
+                      <h4 className="text-xs font-black text-indigo-800 border-b border-indigo-100 pb-2">⚖️ تفاصيل الدائرة وقاضي الموضوع</h4>
+                      
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                        <div>
+                          <span className="text-slate-500 block text-[10px]">رقم الدائرة القضائية:</span>
+                          <span className="font-extrabold text-slate-900">{cs.circuitNumber || 'الدائرة الأولى'}</span>
+                        </div>
+                        <div>
+                          <span className="text-slate-500 block text-[10px]">ناظر القضية (القاضي):</span>
+                          <span className="font-extrabold text-slate-900">{cs.judgeName || cs.judge_name || 'فضيلة الشيخ' || 'قيد التعيين'}</span>
+                        </div>
+                        {cs.court_case_number && (
+                          <div>
+                            <span className="text-slate-500 block text-[10px]">رقم القضية بالمحكمة:</span>
+                            <span className="font-mono font-extrabold text-slate-900">{cs.court_case_number}</span>
+                          </div>
+                        )}
+                        {cs.najiz_case_id && (
+                          <div>
+                            <span className="text-slate-500 block text-[10px]">رقم القضية ناجز:</span>
+                            <span className="font-mono font-extrabold text-amber-600">{cs.najiz_case_id}</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Full width: Important dates & milestones */}
+                    <div className="col-span-1 md:col-span-2 border-t border-slate-150 pt-4 grid grid-cols-1 sm:grid-cols-3 gap-4">
+                      <div className="bg-slate-50 p-3 rounded-xl border border-slate-200 text-xs">
+                        <span className="text-slate-500 block text-[9px] font-bold">تاريخ القيد الأولي:</span>
+                        <div className="flex items-center gap-1.5 mt-1">
+                          <Calendar className="w-3.5 h-3.5 text-slate-400" />
+                          <span className="font-mono font-black text-slate-900">{cs.startDate || cs.createdAt?.substring(0,10) || 'قيد الرفع الإلكتروني'}</span>
+                        </div>
+                      </div>
+
+                      <div className="bg-slate-50 p-3 rounded-xl border border-slate-200 text-xs">
+                        <span className="text-slate-500 block text-[9px] font-bold">تاريخ الجلسة السابقة:</span>
+                        <div className="flex items-center gap-1.5 mt-1">
+                          <Eye className="w-3.5 h-3.5 text-slate-450" />
+                          <span className="font-mono font-black text-slate-900">{cs.lastSessionDate || 'جلسة أولى تحضيرية'}</span>
+                        </div>
+                      </div>
+
+                      <div className="bg-rose-50/50 p-3 rounded-xl border border-rose-100 text-xs">
+                        <span className="text-rose-600 block text-[9px] font-bold">ميعاد الجلسة القادمة:</span>
+                        <div className="flex items-center gap-1.5 mt-1">
+                          <Clock className="w-3.5 h-3.5 text-rose-600" />
+                          <span className="font-mono font-black text-rose-700">{cs.nextSessionDate ? `${cs.nextSessionDate} ${cs.nextSessionTime || ''}` : 'بانتظار الإدراج'}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Judgment & Appeals (If exists) */}
+                    {(cs.judgment_date || cs.judgment_summary || cs.appeal_deadline || cs.execution_number) && (
+                      <div className="col-span-1 md:col-span-2 bg-[#050e21]/5 border border-indigo-100 p-4 rounded-xl space-y-3">
+                        <h4 className="text-xs font-black text-[#050e21] flex items-center gap-1.5">
+                          <Scale className="w-4 h-4 text-[#050e21]" />
+                          <span>خلاصة الحكم القضائي وتدابير الاعتراض</span>
+                        </h4>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 text-xs">
+                          {cs.judgment_date && (
+                            <div>
+                              <span className="text-slate-500 block text-[10px]">تاريخ صدور الحكم:</span>
+                              <span className="font-mono font-bold text-slate-900">{cs.judgment_date}</span>
+                            </div>
+                          )}
+                          {cs.appeal_deadline && (
+                            <div>
+                              <span className="text-slate-500 block text-[10px] text-rose-600 font-bold">انتهاء مدة الاعتراض بالاستئناف:</span>
+                              <span className="font-mono font-extrabold text-rose-700">{cs.appeal_deadline}</span>
+                            </div>
+                          )}
+                          {cs.execution_number && (
+                            <div>
+                              <span className="text-slate-500 block text-[10px]">رقم طلب التنفيذ:</span>
+                              <span className="font-mono font-extrabold text-indigo-700">{cs.execution_number}</span>
+                            </div>
+                          )}
+                          {cs.judgment_summary && (
+                            <div className="col-span-1 sm:col-span-2 md:col-span-3 bg-white p-3 rounded-lg border border-slate-200 mt-1">
+                              <span className="text-slate-500 block text-[10px] font-bold mb-1">منطوق وخلاصة الحكم الصادر:</span>
+                              <p className="text-[11px] text-slate-800 leading-normal font-sans">{cs.judgment_summary}</p>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Detailed Claims/Facts section */}
+                    {cs.details && (
+                      <div className="col-span-1 md:col-span-2 bg-indigo-50/20 border border-slate-200 p-4 rounded-xl">
+                        <span className="text-xs font-black text-indigo-900 block mb-2">📄 عريضة وجدول طلبات الدعوى التفصيلية</span>
+                        <div className="text-xs text-slate-800 leading-relaxed max-h-48 overflow-y-auto whitespace-pre-line bg-white/70 p-3 rounded-lg border border-slate-100 font-sans" style={{ scrollbarWidth: 'thin' }}>
+                          {cs.details}
+                        </div>
+                      </div>
+                    )}
+
+                  </div>
 
                   {/* Visual tracker dots for client */}
                   <div className="border-t border-slate-300 pt-5">
-                    <span className="text-xs text-slate-900  block mb-4 font-bold uppercase tracking-wider">الجدول الزمني للإجراءات الشرعية الحالية</span>
+                    <span className="text-xs text-slate-900 block mb-4 font-bold uppercase tracking-wider">الجدول الزمني للإجراءات الشرعية الحالية</span>
                     <div className="grid grid-cols-4 gap-3">
                       {[
                         { label: 'اللائحة', active: true },
@@ -1248,10 +1425,10 @@ export default function ClientPortal({
                         { label: 'طلب تنفيذ', active: cs.stage === 'execution' }
                       ].map((step, idx) => (
                         <div key={idx} className="relative">
-                          <div className={`p-3 rounded-xl text-center text-xs font-bold transition-all ${
+                          <div className={`p-3 rounded-xl text-center text-xs font-extrabold transition-all ${
                             step.active 
                             ? 'bg-indigo-700 text-white shadow-lg shadow-indigo-200' 
-                            : 'bg-slate-200 text-slate-900'
+                            : 'bg-slate-200 text-slate-800'
                           } `}>
                             {step.label}
                           </div>
@@ -1304,133 +1481,7 @@ export default function ClientPortal({
             )}
           </div>
 
-          {/* Urgent Contract Notification Banner */}
-          {activeContract.status === 'pending' && (
-            <div className="bg-amber-500 border border-amber-500 text-amber-200 p-4.5 rounded-2xl flex items-start gap-3.5 shadow-sm animate-pulse">
-              <span className="text-xl">⚠️</span>
-              <div>
-                <strong className="text-xs font-black block text-amber-900">تنبيه قانوني معلق: لديك عقد تمثيل رقمي جديد بانتظار توقيعك</strong>
-                <p className="text-xs text-slate-900 mt-1 font-bold leading-normal">
-                  يرجى قراءة بنود العقد أدناه والمصادقة عليه باستخدام رمز التحقق المرسل لهاتفك {activeContract.phone} لإتمام التفعيل ونظر الدعوى.
-                </p>
-              </div>
-            </div>
-          )}
 
-          {/* Secure Client Electronic Signature space */}
-          <div className="card-professional bg-white border-slate-300 shadow-xl shadow-slate-200/20 space-y-6">
-            <div className="flex items-center gap-4 border-b border-slate-300 pb-5">
-              <div className="p-3 bg-slate-100 text-slate-900 rounded-xl text-lg">
-                📜
-              </div>
-              <div>
-                <h3 className="font-display font-black text-slate-900 tracking-tight">توثيق ومصادقة العقود الإلكترونية بـ OTP</h3>
-                <p className="text-xs text-slate-900 mt-0.5 font-bold">محمي ومصادق بموجب الأنظمة والتعاملات الرقمية السعودية</p>
-              </div>
-            </div>
-
-            {/* Contract Draft Viewer */}
-            <div className="bg-slate-50 border border-slate-300 p-5 rounded-2xl space-y-4">
-              <span className="text-xs text-slate-900 bg-white border border-slate-300 px-3 py-1 rounded-md font-bold inline-block font-sans">
-                مسودة العقد الرقمي الموحد
-              </span>
-              <h4 className="font-black text-xs text-slate-900 leading-tight">{activeContract.title}</h4>
-              <p className="text-xs text-slate-900 leading-relaxed font-bold max-h-48 overflow-y-auto whitespace-pre-line bg-white p-4.5 border border-slate-300 rounded-xl custom-scrollbar font-sans">
-                {activeContract.content}
-              </p>
-            </div>
-
-            {isSigned || activeContract.status === 'signed' ? (
-              <div className="bg-emerald-50 border border-emerald-200 p-6 rounded-2xl flex items-center gap-5">
-                <div className="h-12 w-12 rounded-full bg-emerald-600 text-white flex items-center justify-center shadow-lg shadow-emerald-600/20">
-                  <CheckCircle className="w-6 h-6" />
-                </div>
-                <div>
-                  <h4 className="font-bold text-sm text-slate-900">تم توقيع وتصديق العقد بنجاح</h4>
-                  <p className="text-xs text-emerald-800 mt-1 font-bold leading-relaxed">
-                    الموقع المعتمد: {signerName || (activeContract && activeContract.signerName) || viewingClient?.name}
-                  </p>
-                  <p className="text-xs text-slate-900 mt-0.5 font-mono leading-tight">
-                    البصمة الزمنية: {activeContract.signedAt || new Date().toISOString()} • التحقق: OTP عبر WhatsApp • متوافق مع نظام التعاملات الإلكترونية السعودي
-                  </p>
-                </div>
-              </div>
-            ) : (
-              <div className="bg-slate-50 p-6 border border-slate-300 rounded-2xl space-y-6">
-                <p className="text-xs text-slate-900 leading-relaxed font-bold">
-                  بصفتك الطرف الثاني للدراسة والتمثيل، يرجى كتابة اسمك الثلاثي الكامل تمهيداً لطلب رمز التحقق OTP المرسل للواتساب في خطوة واحدة آمنة.
-                </p>
-
-                <form onSubmit={handleVerifyAndSign} className="space-y-4">
-                  
-                  {/* Step A: Signer Name input */}
-                  <div className="space-y-2">
-                    <label className="text-sm text-slate-900 block font-bold uppercase tracking-wider">الاسم الكامل للموقع (ثلاثي كما في الهوية):</label>
-                    <input 
-                      type="text"
-                      placeholder="اكتب اسمك الثلاثي هنا للتوثيق..."
-                      value={signerName}
-                      onChange={(e) => setSignerName(e.target.value)}
-                      required
-                      className="w-full bg-white text-slate-900 text-xs py-3 px-4 border border-slate-300 rounded-xl outline-none placeholder:text-slate-900 focus:border-primary focus:ring-1 focus:ring-primary/20 transition-all font-bold"
-                    />
-                  </div>
-
-                  {/* Step B: OTP WhatsApp Dispatcher */}
-                  <div className="space-y-3 bg-white border border-slate-300 rounded-xl p-4">
-                    <span className="text-xs text-slate-900 font-bold block">بوابة مصادقة رقم هاتف الواتساب:</span>
-                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-                      <strong className="text-xs text-slate-900 tracking-widest block font-mono">{activeContract.phone}</strong>
-                      <button 
-                        type="button"
-                        onClick={handleRequestOtp}
-                        disabled={isOtpSending}
-                        className={`text-xs py-2 px-4 rounded-lg font-black transition-all shadow-md ${
-                          otpSent 
-                          ? 'bg-emerald-600 text-white' 
-                          : 'bg-primary text-white'
-                        }`}
-                      >
-                        {isOtpSending ? 'جاري التوليد وفحص الواتساب...' : otpSent ? 'إعادة إرسال رمز OTP 📲' : 'أرسل رمز التحقق OTP للواتساب 📱'}
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Step C: Enter OTP verifying field */}
-                  {otpSent && (
-                    <div className="space-y-3 p-4 bg-white border border-slate-300 rounded-xl animate-fade-in">
-                      <label className="text-sm text-slate-900 block font-black">رمز التحقق OTP المستدعى بمنتج الواتساب:</label>
-                      <input 
-                        type="text"
-                        placeholder="أدخل الرمز المكون من 4 أرقام الموضح في نافذة المحاكاة..."
-                        value={enteredOtp}
-                        onChange={(e) => setEnteredOtp(e.target.value)}
-                        required
-                        className="w-full bg-slate-50 text-xs py-3 px-4 border border-slate-300 rounded-xl outline-none text-slate-900 focus:border-slate-500 placeholder:text-slate-900 transition-all font-bold tracking-widest text-center"
-                      />
-                      {otpError && (
-                        <p className="text-xs text-rose-600 font-bold leading-normal">{otpError}</p>
-                      )}
-                    </div>
-                  )}
-
-                  <div className="border border-dashed border-slate-300 rounded-xl h-24 bg-slate-50 flex items-center justify-center cursor-crosshair group transition-colors">
-                    <div className="text-center space-y-1">
-                      <Edit2 className="w-5 h-5 text-slate-900 mx-auto" />
-                      <p className="text-xs text-slate-900 font-bold">بصمة التوقيع الرقمي ومطابقة الـ IP تفاعلياً</p>
-                    </div>
-                  </div>
-
-                  <button 
-                    type="submit"
-                    className="w-full bg-indigo-700 text-white font-black py-4 rounded-xl text-xs transition-all shadow-lg active:scale-[0.98] cursor-pointer"
-                  >
-                    توقيع ومصادقة العقد إلكترونياً رسمياً ✓
-                  </button>
-                </form>
-              </div>
-            )}
-          </div>
 
         </div>
 

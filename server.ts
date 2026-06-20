@@ -1780,200 +1780,172 @@ app.post('/api/najiz-sync', async (req, res) => {
   const { scrapedData, pageType, source, timestamp } = req.body;
 
   if (!scrapedData) {
-    return res.status(400).json({
-      success: false, message: 'لا توجد بيانات'
+    return res.status(400).json({ success: false, message: 'لا بيانات' });
+  }
+
+  const totalIncoming =
+    (scrapedData.cases?.length || 0) +
+    (scrapedData.hearings?.length || 0) +
+    (scrapedData.powers_of_attorney?.length || 0) +
+    (scrapedData.executions?.length || 0);
+
+  // إذا لا توجد بيانات حقيقية — لا نُظهر نجاح كاذب
+  if (totalIncoming === 0) {
+    return res.json({
+      success: false,
+      message: 'لم تُوجد بيانات للمزامنة في هذه الصفحة',
+      totalSynced: 0,
+      results: {}
     });
   }
 
+  const crypto = await import('crypto');
   const results = {
-    cases: { added: 0, updated: 0, errors: 0, ids: [] as string[] },
-    hearings: { added: 0, errors: 0, ids: [] as string[] },
-    poa: { added: 0, errors: 0, ids: [] as string[] },
-    executions: { added: 0, errors: 0, ids: [] as string[] }
+    cases: { added: 0, updated: 0, errors: 0 },
+    hearings: { added: 0, errors: 0 },
+    poa: { added: 0, errors: 0 },
+    executions: { added: 0, errors: 0 }
   };
 
-  const crypto = await import('crypto');
+  // حفظ القضايا
+  for (const c of (scrapedData.cases || [])) {
+    if (!c.caseNumber?.trim()) continue;
+    try {
+      const { data: existing } = await adminSupabase
+        .from('cases')
+        .select('id, status')
+        .eq('case_number', c.caseNumber.trim())
+        .maybeSingle();
 
-  // ===== حفظ القضايا =====
-  if (Array.isArray(scrapedData.cases)) {
-    for (const c of scrapedData.cases) {
-      if (!c.caseNumber?.trim()) continue;
-      try {
-        const { data: existing } = await adminSupabase
-          .from('cases')
-          .select('id, status')
-          .eq('case_number', c.caseNumber.trim())
-          .maybeSingle();
-
-        if (existing) {
-          await adminSupabase.from('cases').update({
-            status: c.status || existing.status || 'قيد النظر',
-            court_name: c.court || undefined,
-            next_session_at: c.nextHearing
-              ? (() => {
-                try {
-                  return new Date(c.nextHearing).toISOString();
-                } catch { return undefined; }
-              })()
-              : undefined,
-            is_najiz_sync: true,
-            last_sync_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-          }).eq('id', existing.id);
-          results.cases.updated++;
-          results.cases.ids.push(existing.id);
-        } else {
-          const newId = crypto.randomUUID();
-          const { error } = await adminSupabase
-            .from('cases').insert({
-              id: newId,
-              case_number: c.caseNumber.trim(),
-              najiz_case_number: c.caseNumber.trim(),
-              title: c.caseName || `قضية ${c.caseNumber}`,
-              client_name: c.clientName || '',
-              status: c.status || 'قيد النظر',
-              category: c.category || 'civil',
-              stage: c.stage || 'litigation',
-              court_name: c.court || '',
-              next_session_at: c.nextHearing
-                ? (() => {
-                  try {
-                    return new Date(c.nextHearing).toISOString();
-                  } catch { return null; }
-                })()
-                : null,
-              is_najiz_sync: true,
-              last_sync_at: new Date().toISOString(),
-              metadata: JSON.stringify({
-                source: source || 'najiz_extension',
-                scrapedAt: timestamp
-              }),
-              archived: false,
-              created_at: new Date().toISOString(),
-              updated_at: new Date().toISOString()
-            });
-          if (!error) {
-            results.cases.added++;
-            results.cases.ids.push(newId);
-          } else {
-            console.error('[Sync Cases Insert]', error.message);
-            results.cases.errors++;
-          }
-        }
-      } catch(err: any) {
-        console.error('[Sync Cases]', err.message);
-        results.cases.errors++;
-      }
-    }
-  }
-
-  // ===== حفظ الجلسات =====
-  if (Array.isArray(scrapedData.hearings)) {
-    for (const h of scrapedData.hearings) {
-      if (!h.date?.trim()) continue;
-      try {
-        const newId = crypto.randomUUID();
-        await adminSupabase.from('hearings').upsert({
-          id: newId,
-          case_number: h.caseNumber || '',
-          date: h.date,
-          time: h.time || '09:00',
-          court_name: h.court || '',
-          hall: h.hall || '',
-          status: 'upcoming',
+      if (existing) {
+        await adminSupabase.from('cases').update({
+          status: c.status || existing.status,
+          court_name: c.court || undefined,
+          next_session_at: c.nextHearing ? (() => {
+            try { return new Date(c.nextHearing).toISOString(); }
+            catch { return undefined; }
+          })() : undefined,
           is_najiz_sync: true,
+          last_sync_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        }).eq('id', existing.id);
+        results.cases.updated++;
+      } else {
+        const { error } = await adminSupabase.from('cases').insert({
+          id: crypto.randomUUID(),
+          case_number: c.caseNumber.trim(),
+          najiz_case_number: c.caseNumber.trim(),
+          title: c.caseName || `قضية ${c.caseNumber}`,
+          client_name: c.clientName || '',
+          status: c.status || 'قيد النظر',
+          category: c.category || 'civil',
+          stage: 'litigation',
+          court_name: c.court || '',
+          next_session_at: c.nextHearing ? (() => {
+            try { return new Date(c.nextHearing).toISOString(); }
+            catch { return null; }
+          })() : null,
+          is_najiz_sync: true,
+          last_sync_at: new Date().toISOString(),
+          archived: false,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
-        }, { onConflict: 'case_number,date',
-             ignoreDuplicates: false });
-        results.hearings.added++;
-        results.hearings.ids.push(newId);
-      } catch(err: any) {
-        results.hearings.errors++;
+        });
+        if (!error) results.cases.added++;
+        else results.cases.errors++;
       }
+    } catch(err: any) {
+      results.cases.errors++;
     }
   }
 
-  // ===== حفظ الوكالات =====
-  if (Array.isArray(scrapedData.powers_of_attorney)) {
-    for (const p of scrapedData.powers_of_attorney) {
-      if (!p.poaNumber?.trim()) continue;
-      try {
-        const newId = crypto.randomUUID();
-        await adminSupabase
-          .from('powers_of_attorney').upsert({
-            id: newId,
-            poa_number: p.poaNumber.trim(),
-            type: p.type || 'general',
-            status: p.status || 'active',
-            issue_date: p.issueDate || null,
-            expiry_date: p.expiryDate || null,
-            principal_name: p.principalName || '',
-            is_najiz_sync: true,
-            najiz_sync_date: new Date().toISOString(),
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-          }, { onConflict: 'poa_number',
-               ignoreDuplicates: false });
-        results.poa.added++;
-      } catch(err: any) {
-        results.poa.errors++;
-      }
-    }
+  // حفظ الجلسات
+  for (const h of (scrapedData.hearings || [])) {
+    if (!h.date?.trim()) continue;
+    try {
+      await adminSupabase.from('hearings').upsert({
+        id: crypto.randomUUID(),
+        case_number: h.caseNumber || '',
+        date: h.date,
+        time: h.time || '09:00',
+        court_name: h.court || '',
+        hall: h.hall || '',
+        status: 'upcoming',
+        is_najiz_sync: true,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      }, { onConflict: 'case_number,date', ignoreDuplicates: true });
+      results.hearings.added++;
+    } catch { results.hearings.errors++; }
   }
 
-  // ===== حفظ طلبات التنفيذ =====
-  if (Array.isArray(scrapedData.executions)) {
-    for (const e of scrapedData.executions) {
-      if (!e.executionNumber?.trim()) continue;
-      try {
-        const newId = crypto.randomUUID();
-        await adminSupabase.from('executions').upsert({
-          id: newId,
-          execution_number: e.executionNumber.trim(),
-          status: e.status || 'pending',
-          amount: e.amount || 0,
-          court_name: e.court || '',
-          requester_name: e.requesterName || '',
-          issue_date: e.issueDate || null,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        }, { onConflict: 'execution_number',
-             ignoreDuplicates: false });
-        results.executions.added++;
-      } catch(err: any) {
-        results.executions.errors++;
-      }
-    }
+  // حفظ الوكالات
+  for (const p of (scrapedData.powers_of_attorney || [])) {
+    if (!p.poaNumber?.trim()) continue;
+    try {
+      await adminSupabase.from('powers_of_attorney').upsert({
+        id: crypto.randomUUID(),
+        poa_number: p.poaNumber.trim(),
+        type: p.type || 'general',
+        status: p.status || 'active',
+        issue_date: p.issueDate || null,
+        expiry_date: p.expiryDate || null,
+        is_najiz_sync: true,
+        najiz_sync_date: new Date().toISOString(),
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      }, { onConflict: 'poa_number', ignoreDuplicates: true });
+      results.poa.added++;
+    } catch { results.poa.errors++; }
   }
 
-  // ===== تسجيل المزامنة =====
+  // حفظ التنفيذ
+  for (const e of (scrapedData.executions || [])) {
+    if (!e.executionNumber?.trim()) continue;
+    try {
+      await adminSupabase.from('executions').upsert({
+        id: crypto.randomUUID(),
+        execution_number: e.executionNumber.trim(),
+        status: e.status || 'pending',
+        amount: parseFloat(e.amount) || 0,
+        court_name: e.court || '',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      }, { onConflict: 'execution_number', ignoreDuplicates: true });
+      results.executions.added++;
+    } catch { results.executions.errors++; }
+  }
+
   const totalSynced =
     results.cases.added + results.cases.updated +
     results.hearings.added + results.poa.added +
     results.executions.added;
 
+  // تسجيل في سجل المزامنة
   try {
     await adminSupabase.from('najiz_sync_logs').insert({
       id: crypto.randomUUID(),
       sync_type: pageType || 'unknown',
       status: totalSynced > 0 ? 'success' : 'empty',
       records_synced: totalSynced,
-      raw_data: JSON.stringify({ results, source }),
+      raw_data: JSON.stringify({ results, source, totalIncoming }),
       created_at: new Date().toISOString()
     });
   } catch(e) {}
 
-  console.log('[Najiz Sync]', results);
+  console.log('[Najiz Sync] Results:', results);
+
+  // رسالة واضحة حسب النتيجة الفعلية
+  const message = totalSynced > 0
+    ? `✅ تمت المزامنة الحقيقية: ${totalSynced} سجل جديد`
+    : `⚠️ لم تُضَف بيانات جديدة (قد تكون موجودة مسبقاً)`;
 
   return res.json({
-    success: true,
-    message: totalSynced > 0
-      ? `تمت المزامنة: ${totalSynced} سجل`
-      : 'لم تُوجد بيانات للمزامنة',
+    success: totalSynced > 0 || totalIncoming > 0,
+    message,
     totalSynced,
-    results,
-    timestamp: new Date().toISOString()
+    totalIncoming,
+    results
   });
 });
 

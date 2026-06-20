@@ -443,6 +443,44 @@ const Dashboard = function Dashboard({
 
   const [employees, setEmployees] = useState<any[]>([]);
   const [agencies, setAgencies] = useState<any[]>([]);
+  const [upcomingDeadlines, setUpcomingDeadlines] = useState<any[]>([]);
+
+  useEffect(() => {
+    const loadDeadlines = async () => {
+      const { data: judgments } = await supabase
+        .from('case_documents')
+        .select('case_number, case_name, judgment_date, judgment_type')
+        .eq('document_type', 'judgment')
+        .not('judgment_date', 'is', null);
+
+      if (judgments) {
+        const today = new Date();
+        const deadlines = judgments
+          .map(j => {
+            if (!j.judgment_date) return null;
+            const judgDate = new Date(j.judgment_date);
+            const appealDeadline = new Date(judgDate);
+            appealDeadline.setDate(appealDeadline.getDate() + 30);
+            const daysLeft = Math.ceil(
+              (appealDeadline.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
+            );
+            return {
+              ...j,
+              appealDeadline: appealDeadline.toLocaleDateString('ar-SA'),
+              daysLeft,
+              isUrgent: daysLeft <= 7 && daysLeft > 0,
+              isExpired: daysLeft <= 0
+            };
+          })
+          .filter(Boolean)
+          .filter(d => d && !d.isExpired)
+          .sort((a: any, b: any) => a.daysLeft - b.daysLeft)
+          .slice(0, 5);
+        setUpcomingDeadlines(deadlines);
+      }
+    };
+    loadDeadlines();
+  }, []);
 
   useEffect(() => {
     const backup = localStorage.getItem('employees_backup');
@@ -2036,60 +2074,40 @@ const Dashboard = function Dashboard({
               );
               if (widget.id === 'deadlinesWidget') return (
                 <EnhancedSortableWidgetWrapper widgetColor={widget.color} onChangeColor={handleUpdateWidgetColor} className={getWidgetClassName(widget.size)} key="deadlinesWidget" id="deadlinesWidget" isCustomizing={isCustomizing} widgetSize={widget.size} onResize={handleUpdateWidgetSize}>
-                  <div className={`h-full relative ${isCustomizing ? 'opacity-80 ring-2 ring-dashed ring-amber-400 rounded-3xl' : ''}`}>
+                  <div className={`h-full relative ${isCustomizing ? 'opacity-80 ring-2 ring-dashed ring-red-400 rounded-3xl' : ''}`}>
                     {isCustomizing && (
-                      <div className="absolute inset-0 bg-amber-500/5 z-50 flex items-center justify-center rounded-3xl">
-                        <GripVertical className="w-8 h-8 text-amber-500 animate-pulse" />
+                      <div className="absolute inset-0 bg-red-500/5 z-50 flex items-center justify-center rounded-3xl">
+                        <GripVertical className="w-8 h-8 text-red-500 animate-pulse" />
                       </div>
                     )}
-                    <SummaryWidget icon={<ClockIcon className="w-5 h-5 text-[#fbbf24]" />} title="تنبيهات مهل الاستئناف" description="المواعيد الزمنية النظامية للقضايا الفعالة">
-                      <div className="space-y-3 mt-1 max-h-[220px] overflow-y-auto custom-scrollbar">
-                         {(() => {
-                           const criticalCases = cases.filter((c: any) => 
-                             c.status === 'primary_judgment' || 
-                             c.status === 'final_judgment' || 
-                             c.status === 'appeal' ||
-                             c.priority === 'high'
-                           );
-
-                           if (criticalCases.length === 0) {
-                             return (
-                               <div className="text-center py-4 text-xs text-slate-200 font-bold">
-                                 ✅ لا توجد قضايا بمهل حرجة حالياً.
-                               </div>
-                             );
-                           }
-
-                           return criticalCases.slice(0, 3).map((c: any, index: number) => {
-                             const baseDateStr = c.lastSessionDate || c.createdAt || '2026-06-01';
-                             let baseDate = new Date();
-                             try {
-                               baseDate = new Date(baseDateStr);
-                             } catch(e){}
-                             const deadlineDate = new Date(baseDate.getTime() + 30 * 24 * 60 * 60 * 1000);
-                             const today = new Date();
-                             const diffTime = deadlineDate.getTime() - today.getTime();
-                             const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                             const isOverdue = diffDays < 0;
-
-                             return (
-                               <div key={c.id || index} className="bg-slate-900 p-3 rounded-xl border border-slate-800 space-y-1.5 shadow-sm text-right">
-                                 <div className="flex items-center justify-between text-[10px]">
-                                   <span className={`font-black uppercase tracking-wider ${isOverdue ? 'text-rose-400 animate-pulse' : 'text-[#fbbf24]'}`}>
-                                     {isOverdue ? `منتهية منذ ${Math.abs(diffDays)} يوم!` : `تبقّى ${diffDays} يوم`}
-                                   </span>
-                                   <span className="text-white font-mono font-bold">رقم {c.caseNumber || 'غير محدد'}</span>
-                                 </div>
-                                 <h5 className="text-[11px] font-black text-[#fbbf24] line-clamp-1">{c.caseName}</h5>
-                                 <p className="text-[10px] text-white font-bold leading-relaxed">
-                                   قضية {c.clientName || 'العميل'}. تنتهي مهلة الاستئناف النظامية بتاريخ {deadlineDate.toISOString().split('T')[0]}
-                                 </p>
-                                </div>
-                             );
-                           });
-                         })()}
+                    <div className="bg-[#0a1628] border border-red-500/20 rounded-2xl p-5 h-full">
+                      <div className="flex items-center gap-2 mb-4">
+                        <Clock className="w-5 h-5 text-red-400" />
+                        <h3 className="text-white font-black text-sm">مهل الاستئناف القادمة</h3>
                       </div>
-                    </SummaryWidget>
+                      {upcomingDeadlines.length === 0 ? (
+                        <p className="text-slate-500 text-xs">لا توجد مهل قريبة</p>
+                      ) : (
+                        <div className="space-y-3">
+                          {upcomingDeadlines.map((d: any, i) => (
+                            <div key={i} className={`flex items-center justify-between p-3 rounded-xl border ${d.isUrgent ? 'bg-red-500/10 border-red-500/30' : 'bg-slate-900 border-slate-800'}`}>
+                              <div>
+                                <p className="text-white text-xs font-bold">#{d.case_number}</p>
+                                <p className="text-slate-400 text-[10px] line-clamp-1">{d.case_name}</p>
+                              </div>
+                              <div className="text-right shrink-0 mr-2">
+                                <p className={`text-xs font-black ${d.isUrgent ? 'text-red-400' : 'text-amber-400'}`}>
+                                  {d.daysLeft} يوم
+                                </p>
+                                <p className="text-slate-500 text-[10px]">
+                                  {d.appealDeadline}
+                                </p>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </EnhancedSortableWidgetWrapper>
               );

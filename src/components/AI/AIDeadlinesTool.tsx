@@ -7,14 +7,11 @@ import React, { useState, useEffect } from 'react';
 import { Calendar, Clock, Bell, Timer, CalendarRange, ShieldCheck, ArrowUpRight, Loader2 } from 'lucide-react';
 import { addDays, format, differenceInDays } from 'date-fns';
 import { ar } from 'date-fns/locale';
-import { useSystemData } from '../../hooks/useSystemData';
-import CaseClientSelector from '../shared/CaseClientSelector';
 import { supabase } from '../../lib/supabase';
 
 export default function AIDeadlinesTool() {
-  const { cases, clients } = useSystemData();
-  const [selectedCaseId, setSelectedCaseId] = useState('');
-  const [selectedClientId, setSelectedClientId] = useState('');
+  const [judgmentCases, setJudgmentCases] = useState<any[]>([]);
+  const [selectedCase, setSelectedCase] = useState<any>(null);
   
   const [judgmentDate, setJudgmentDate] = useState(new Date().toISOString().split('T')[0]);
   const [type, setType] = useState<'appeal' | 'execution' | 'objection'>('appeal');
@@ -34,65 +31,53 @@ export default function AIDeadlinesTool() {
     objection: 60
   };
 
-  const selectedCase = cases.find(c => c.id === selectedCaseId);
+  useEffect(() => {
+    const loadJudgmentCases = async () => {
+      const { data } = await supabase
+        .from('case_documents')
+        .select('case_number, case_name, judgment_date, judgment_type, court_name')
+        .eq('document_type', 'judgment')
+        .not('judgment_date', 'is', null)
+        .order('judgment_date', { ascending: false });
 
-  const fetchAIAnalysis = async (date: string, t: string, cTitle: string) => {
+      if (data) setJudgmentCases(data);
+    };
+    loadJudgmentCases();
+  }, []);
+
+  const calculateDeadlines = async () => {
+    if (!selectedCase) return;
     setIsAnalyzingAI(true);
+    setJudgmentSource('ai');
+    setJudgmentDate(selectedCase.judgment_date);
+
     try {
       const response = await fetch('/api/ai/analyze-deadline', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          judgmentDate: date,
-          type: t,
-          caseTitle: cTitle,
-          judgmentSummary: selectedCase?.summary
+          judgmentDate: selectedCase.judgment_date,
+          type: type,
+          caseTitle: selectedCase.case_name,
+          judgmentType: selectedCase.judgment_type,
+          courtName: selectedCase.court_name
         })
       });
       const data = await response.json();
-      setAiAnalysis(data);
-    } catch (err) {
-      console.error('AI Analysis failed:', err);
+      if (data) setAiAnalysis(data);
+    } catch(err: any) {
+      console.error('خطأ في الحساب', err);
     } finally {
       setIsAnalyzingAI(false);
     }
   };
 
   useEffect(() => {
-    const fetchJudgments = async () => {
-      if (!selectedCaseId) return;
-      setIsFetchingJudgments(true);
-      try {
-        const { data, error } = await supabase
-          .from('case_judgments')
-          .select('judgment_date')
-          .eq('case_id', selectedCaseId)
-          .not('judgment_date', 'is', null)
-          .order('judgment_date', { ascending: false })
-          .limit(1);
+    if (selectedCase) {
+        calculateDeadlines();
+    }
+  }, [selectedCase, type]);
 
-        if (error) throw error;
-
-        if (data && data.length > 0) {
-          setJudgmentDate(data[0].judgment_date);
-          setJudgmentSource('ai');
-          fetchAIAnalysis(data[0].judgment_date, type, selectedCase?.title || '');
-        } else if (selectedCase?.lastSessionDate) {
-          setJudgmentDate(selectedCase.lastSessionDate);
-          setJudgmentSource('manual');
-          fetchAIAnalysis(selectedCase.lastSessionDate, type, selectedCase?.title || '');
-        }
-      } catch (err) {
-        console.error('Error fetching judgements for case:', err);
-      } finally {
-        setIsFetchingJudgments(false);
-      }
-    };
-    
-    fetchJudgments();
-  }, [selectedCaseId, type]);
-
-  // When type changes, we keep current date unless we are missing it
   useEffect(() => {
     if (!judgmentDate) {
         setJudgmentDate(new Date().toISOString().split('T')[0]);
@@ -124,12 +109,21 @@ export default function AIDeadlinesTool() {
         </div>
       </div>
       
-      <CaseClientSelector
-        selectedCaseId={selectedCaseId}
-        selectedClientId={selectedClientId}
-        onCaseSelect={(c: any) => setSelectedCaseId(c.id)}
-        onClientSelect={(cl: any) => setSelectedClientId(cl.id)}
-      />
+      <select
+        value={selectedCase?.case_number || ''}
+        onChange={e => {
+          const c = judgmentCases.find(j => j.case_number === e.target.value);
+          setSelectedCase(c || null);
+        }}
+        className="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-amber-500"
+      >
+        <option value="">— اختر قضية من النظام —</option>
+        {judgmentCases.map((c, i) => (
+          <option key={i} value={c.case_number}>
+            #{c.case_number} — {c.case_name} | حكم: {c.judgment_date}
+          </option>
+        ))}
+      </select>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         {/* Settings Panel */}

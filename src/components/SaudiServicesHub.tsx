@@ -574,86 +574,106 @@ export default function SaudiServicesHub({
       {/* Watheeq / External Search */}
       {activeTab === "watheeq" && (
         <div className="space-y-6 animate-fade-in text-right" dir="rtl">
-           {/* Watheeq Verification */}
-           <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm flex flex-col md:flex-row gap-6 items-start">
-             <div className="shrink-0 w-16 h-16 bg-blue-50 rounded-2xl flex items-center justify-center border border-blue-100">
-               <ShieldAlert className="w-8 h-8 text-blue-600" />
-             </div>
-             <div className="flex-1 space-y-3">
-               <h3 className={`text-sm font-black ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>التحقق من الوثائق الرسمية (منصة وثيق)</h3>
-               <p className="text-xs text-slate-500 font-medium">الاستعلام المباشر عن صحة وسريان الوثائق والمستندات الحكومية عبر بوابة وثيق.</p>
-               <div className="flex gap-2 mt-4">
-                 <input 
-                   type="text" 
-                   value={watheeqDocNumber}
-                   onChange={e => setWatheeqDocNumber(e.target.value)}
-                   placeholder="أدخل رقم الوثيقة المرجعي (مثل: 4xxxxxxxxx)"
-                   className="flex-1 bg-slate-50 border border-slate-300 rounded-xl p-3 text-xs font-bold text-slate-900 focus:border-blue-500 focus:outline-none"
-                 />
-                 <button 
-                   onClick={() => openWatheeqVerification(watheeqDocNumber)}
-                   className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl px-5 font-black text-xs transition-colors shrink-0 flex items-center gap-2"
-                 >
-                   تحقق الآن <ShieldCheck className="w-3.5 h-3.5 text-blue-200" />
-                 </button>
-               </div>
-             </div>
-           </div>
-           
-            {/* MOJ Case Verification */}
-            <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm flex flex-col md:flex-row gap-6 items-start">
-              <div className="shrink-0 w-16 h-16 bg-emerald-50 rounded-2xl flex items-center justify-center border border-emerald-100">
-                <Gavel className="w-8 h-8 text-emerald-600" />
-              </div>
-              <div className="flex-1 space-y-3">
-                <div className="flex items-center gap-2">
-                  <h3 className="text-sm font-black text-slate-900">استعلام تفاصيل القضية (ناجز / وزارة العدل)</h3>
-                  <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-                </div>
-                <p className="text-xs text-slate-500 font-medium font-sans">الاستعلام المباشر عن حالة ومواعيد جلسات القضايا المرفوعة بالرقم المرجعي والموثقة من وزارة العدل.</p>
-                <div className="flex gap-2 mt-4">
-                  <input 
-                    type="text" 
-                    value={najizCaseNumber}
-                    onChange={e => setNajizCaseNumber(e.target.value)}
-                    placeholder="أدخل رقم القضية المرجعي"
-                    className="flex-1 bg-slate-50 border border-slate-300 rounded-xl p-3 text-xs font-bold text-slate-900 focus:border-emerald-500 focus:outline-none"
-                  />
-                  <button 
-                    onClick={() => searchNajizCase(najizCaseNumber)}
-                    className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl px-5 font-black text-xs transition-colors shrink-0 flex items-center gap-2"
-                  >
-                    استعلام القضية <CheckCircle2 className="w-3.5 h-3.5 text-emerald-200" />
-                  </button>
-                </div>
-              </div>
-            </div>
+          {(() => {
+            const VERIFIED_SERVICES = [
+              {
+                name: 'التحقق من صحة وثيقة',
+                url: 'https://watheeq.gov.sa',
+                searchUrl: (query: string) =>
+                  `https://watheeq.gov.sa/ar/inquiries/documentInquiry?documentNumber=${encodeURIComponent(query)}`,
+                icon: '📄',
+                description: 'التحقق من الوثائق الرسمية عبر منصة وثيقة'
+              },
+              {
+                name: 'استعلام القضايا — ناجز',
+                url: 'https://www.najiz.sa',
+                searchUrl: (query: string) =>
+                  `https://www.najiz.sa/applications/lawsuit`,
+                icon: '⚖️',
+                description: 'الاستعلام عن القضايا عبر بوابة ناجز'
+              },
+              {
+                name: 'السجل التجاري',
+                url: 'https://mc.gov.sa',
+                searchUrl: (query: string) =>
+                  `https://mc.gov.sa/ar/eservices/Pages/serviceDetails.aspx?sID=107`,
+                icon: '🏢',
+                description: 'التحقق من السجل التجاري — وزارة التجارة'
+              },
+              {
+                name: 'نفاذ — الهوية الرقمية',
+                url: 'https://www.nafath.gov.sa',
+                searchUrl: (query: string) =>
+                  `https://www.nafath.gov.sa`,
+                icon: '🪪',
+                description: 'التحقق من الهوية الوطنية'
+              },
+              {
+                name: 'منصة بلدي',
+                url: 'https://balady.gov.sa',
+                searchUrl: (query: string) =>
+                  `https://balady.gov.sa`,
+                icon: '🏛️',
+                description: 'الاستعلام عن التراخيص البلدية'
+              },
+              {
+                name: 'وزارة الموارد البشرية',
+                url: 'https://hrsd.gov.sa',
+                searchUrl: (query: string) =>
+                  `https://hrsd.gov.sa/ar/eservices`,
+                icon: '👷',
+                description: 'الاستعلام عن بيانات العمالة والتأشيرات'
+              },
+              {
+                name: 'التحقق من صحة العقد',
+                url: 'https://www.moj.gov.sa',
+                searchUrl: (query: string) =>
+                  `https://www.moj.gov.sa/ar/eServices/Pages/InquiryAboutCase.aspx`,
+                icon: '📋',
+                description: 'الاستعلام عن القضايا — وزارة العدل'
+              }
+            ];
 
-           {/* MC CR Check */}
-           <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm flex flex-col md:flex-row gap-6 items-start">
-             <div className="shrink-0 w-16 h-16 bg-sky-50 rounded-2xl flex items-center justify-center border border-sky-100">
-               <Briefcase className="w-8 h-8 text-sky-600" />
-             </div>
-             <div className="flex-1 space-y-3">
-               <h3 className="text-sm font-black text-slate-900">الاستعلام عن بيانات السجل التجاري (وزارة التجارة)</h3>
-               <p className="text-xs text-slate-500 font-medium">مراجعة سريان وملكيات ومخالفات السجلات التجارية للشركاء والأطراف.</p>
-               <div className="flex gap-2 mt-4">
-                 <input 
-                   type="text" 
-                   value={crNumber}
-                   onChange={e => setCrNumber(e.target.value)}
-                   placeholder="أدخل رقم السجل التجاري"
-                   className="flex-1 bg-slate-50 border border-slate-300 rounded-xl p-3 text-xs font-bold text-slate-900 focus:border-sky-500 focus:outline-none"
-                 />
-                 <button 
-                   onClick={() => checkCommercialRegistry(crNumber)}
-                   className="bg-sky-600 hover:bg-sky-700 text-white rounded-xl px-5 font-black text-xs transition-colors shrink-0 flex items-center gap-2"
-                 >
-                   استعلام السجل <ShieldCheck className="w-3.5 h-3.5 text-sky-200" />
-                 </button>
-               </div>
-             </div>
-           </div>
+            const handleServiceSearch = (service: any, query: string) => {
+              const url = service.searchUrl(query);
+              window.open(url, '_blank', 'noopener,noreferrer');
+            };
+
+            return VERIFIED_SERVICES.map((srv, i) => {
+              // Creating local state inside map is bad practice, so we will use simple inputs that call handleSearch with value
+              return (
+                <div key={i} className="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm flex flex-col md:flex-row gap-6 items-start">
+                  <div className="shrink-0 w-16 h-16 bg-blue-50/50 rounded-2xl flex items-center justify-center border border-blue-100 text-3xl">
+                    {srv.icon}
+                  </div>
+                  <div className="flex-1 space-y-3 w-full">
+                    <h3 className="text-sm font-black text-slate-900">{srv.name}</h3>
+                    <p className="text-xs text-slate-500 font-medium">{srv.description}</p>
+                    <div className="flex gap-2 mt-4 w-full">
+                      <input 
+                        id={`input-service-${i}`}
+                        type="text" 
+                        placeholder="أدخل رقم الاستعلام..."
+                        className="flex-1 bg-slate-50 border border-slate-300 rounded-xl p-3 text-xs font-bold text-slate-900 focus:border-blue-500 focus:outline-none"
+                        onKeyDown={(e: any) => {
+                          if (e.key === 'Enter') handleServiceSearch(srv, e.target.value);
+                        }}
+                      />
+                      <button 
+                        onClick={() => {
+                          const val = (document.getElementById(`input-service-${i}`) as HTMLInputElement)?.value;
+                          handleServiceSearch(srv, val);
+                        }}
+                        className="bg-slate-900 hover:bg-slate-800 text-white rounded-xl px-5 font-black text-xs transition-colors shrink-0 flex items-center gap-2"
+                      >
+                        بحث سريع <ShieldCheck className="w-3 h-3 text-amber-500" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              );
+            });
+          })()}
         </div>
       )}
 

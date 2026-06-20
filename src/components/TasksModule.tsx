@@ -138,34 +138,34 @@ export default function TasksModule({
   const [taskType, setTaskType] = useState<'drafting' | 'hearing' | 'client_meeting' | 'audit' | 'other'>('drafting');
   const [teamMembers, setTeamMembers] = useState<any[]>([]);
   const [realEmployees, setRealEmployees] = useState<any[]>([]);
+  const [realCases, setRealCases] = useState<any[]>([]);
+  const [dataLoaded, setDataLoaded] = useState(false);
   const [selectedEmployeeId, setSelectedEmployeeId] = useState('');
+  const [selectedCaseId, setSelectedCaseId] = useState('');
   const [selectedEmployeeName, setSelectedEmployeeName] = useState('');
 
-  const loadRealEmployees = async () => {
+  const loadRealData = async () => {
     try {
-      const { data, error } = await supabase
-        .from('employees')
-        .select('id, name, role, job_title, status, avatar_url, employee_code')
-        .in('status', ['active', 'نشط', 'فعال'])
-        .order('name');
-
-      if (error) {
-        console.error('[Tasks] Error loading employees:', error);
-        return;
-      }
-
-      if (data && data.length > 0) {
-        setRealEmployees(data);
-        console.log('[Tasks] تم تحميل', data.length, 'موظف');
-      }
-    } catch (err: any) {
-      console.error('[Tasks] Exception:', err);
+      const [empRes, casesRes] = await Promise.all([
+        supabase.from('employees')
+          .select('id, name, role, job_title, status, employee_code, avatar_url')
+          .in('status', ['active', 'نشط', 'فعال'])
+          .order('name'),
+        supabase.from('cases')
+          .select('id, case_number, title, client_name, status, category')
+          .eq('archived', false)
+          .order('created_at', { ascending: false })
+          .limit(100)
+      ]);
+      if (empRes.data) setRealEmployees(empRes.data);
+      if (casesRes.data) setRealCases(casesRes.data);
+      setDataLoaded(true);
+    } catch(err: any) {
+      console.error('[Tasks] Load error:', err.message);
     }
   };
 
-  useEffect(() => {
-    loadRealEmployees();
-  }, []);
+  useEffect(() => { loadRealData(); }, []);
 
   // Smart Sorting and Notification Alerts state
   const [smartAlertSortEnabled, setSmartAlertSortEnabled] = useState(true);
@@ -709,16 +709,17 @@ export default function TasksModule({
     const selectedEmp = realEmployees.find(
       e => e.id === selectedEmployeeId
     );
+    const selectedCase = realCases.find(c => c.id === selectedCaseId);
 
     const payload = {
       id: generateUUID(),
-      title: taskTitle,
-      description: taskDesc || null,
+      title: taskTitle.trim() || 'مهمة جديدة',
+      description: taskDesc.trim() || null,
       status: 'todo',
       priority: taskPriority || 'medium',
       due_date: `${taskDueDate}T${taskDueTime}`,
-      case_id: null,
-      case_number: taskCase || null,
+      case_id: selectedCase?.id || null,
+      case_number: selectedCase?.case_number || taskCase || null,
       employee_id: selectedEmp?.id || selectedEmployeeId || null,
       assigned_to: selectedEmp?.name || selectedEmployeeName || null,
       created_at: new Date().toISOString(),
@@ -731,7 +732,11 @@ export default function TasksModule({
 
     if (error) {
       console.error('[Save Task Error]', error);
-      alert('فشل حفظ المهمة: ' + error.message);
+      if (error.code === '42501') {
+        alert('خطأ في صلاحيات قاعدة البيانات. يرجى التواصل مع الدعم.');
+      } else {
+        alert('فشل حفظ المهمة: ' + error.message);
+      }
       return;
     }
 
@@ -1567,13 +1572,19 @@ export default function TasksModule({
                 <div>
                   <label className="text-sm text-[#fbbf24]  block mb-1 font-black">مرتبطة برقم قضية:</label>
                   <select 
-                    value={taskCase}
-                    onChange={(e) => setTaskCase(e.target.value)}
+                    value={selectedCaseId}
+                    onChange={(e) => {
+                      const c = realCases.find(caseItem => caseItem.id === e.target.value);
+                      setSelectedCaseId(e.target.value);
+                      setTaskCase(c?.case_number || '');
+                    }}
                     className="w-full bg-slate-800 border border-slate-700 rounded-xl py-2 px-2 text-xs text-white  font-bold"
                   >
                     <option value="">غير مرتبطة بقضية عامة</option>
-                    {cases.map((c) => (
-                      <option key={c.id} value={c.caseNumber}>{c.caseNumber} - {c.category === 'commercial' ? 'تجاري' : c.category === 'labor' ? 'عمالي' : 'أخرى'}</option>
+                    {realCases.map((c) => (
+                      <option key={c.id} value={c.id}>
+                        {c.case_number} - {c.title || c.client_name}
+                      </option>
                     ))}
                   </select>
                 </div>

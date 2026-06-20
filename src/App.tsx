@@ -216,18 +216,21 @@ function AppContent() {
 
   // الاستماع لأحداث المزامنة
   useEffect(() => {
-    const handleNajizSync = () => {
-      console.log('[App] إعادة تحميل بعد مزامنة ناجز');
-      refresh(); // إعادة جلب جميع البيانات
-    };
-  
-    window.addEventListener('najiz_sync_complete', handleNajizSync);
-    return () => {
-      window.removeEventListener(
-        'najiz_sync_complete', handleNajizSync
-      );
-    };
-  }, [refresh]);
+  const handleNajizSync = async (event: Event) => {
+    const customEvent = event as CustomEvent;
+    console.log('[App] Najiz sync detected, refreshing...');
+    await refresh();
+    // إظهار إشعار نجاح
+    window.dispatchEvent(new CustomEvent('show_success_toast', {
+      detail: {
+        message: `تمت مزامنة بيانات ناجز بنجاح`
+      }
+    }));
+  };
+
+  window.addEventListener('najiz_sync_complete', handleNajizSync);
+  return () => window.removeEventListener('najiz_sync_complete', handleNajizSync);
+}, [refresh]);
 
   const [showHearingsModal, setShowHearingsModal] = useState(false);
   

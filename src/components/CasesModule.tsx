@@ -1861,7 +1861,7 @@ export default React.memo(function CasesModule({
         <div className="bg-[#050e21] p-8 rounded-[2.5rem] border border-slate-800 shadow-2xl mb-10 relative z-20 space-y-6">
           <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
             <div className="flex-1 min-w-[320px] relative w-full">
-              <Search className="absolute right-5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-700" />
+              <Search className="absolute right-5 top-1/2 -translate-y-1/2 w-5 h-5 text-amber-400" />
               <input 
                 type="text" 
                 placeholder="البحث في القضايا، الموكلين، أو أرقام الصكوك..." 
@@ -1873,7 +1873,7 @@ export default React.memo(function CasesModule({
 
             <div className="flex gap-4 w-full md:w-auto">
               <div className="relative">
-                <span className="absolute -top-2 right-4 bg-[#050e21] px-2 text-[10px] font-black text-amber-500/80 uppercase">آخر جلسة</span>
+                <span className="absolute -top-2 right-4 bg-[#050e21] px-2 text-[10px] font-black text-amber-400 uppercase">آخر جلسة</span>
                 <input 
                   type="date"
                   value={lastSessionFilter}
@@ -1882,12 +1882,12 @@ export default React.memo(function CasesModule({
                 />
               </div>
               <div className="relative">
-                <span className="absolute -top-2 right-4 bg-[#050e21] px-2 text-[10px] font-black text-indigo-500/80 uppercase">الموعد القادم</span>
+                <span className="absolute -top-2 right-4 bg-[#050e21] px-2 text-[10px] font-black text-amber-400 uppercase">الموعد القادم</span>
                 <input 
                   type="date"
                   value={nextAppointmentFilter}
                   onChange={(e) => setNextAppointmentFilter(e.target.value)}
-                  className="bg-[#0c1a35] border border-slate-700/50 rounded-xl py-2.5 px-4 text-[10px] font-black text-white outline-none focus:border-indigo-500/50 transition-all"
+                  className="bg-[#0c1a35] border border-slate-700/50 rounded-xl py-2.5 px-4 text-[10px] font-black text-white outline-none focus:border-amber-500/50 transition-all"
                 />
               </div>
             </div>
@@ -1896,22 +1896,22 @@ export default React.memo(function CasesModule({
               <div className="flex bg-slate-900 border border-slate-800 p-1 rounded-2xl">
                 <button 
                   onClick={() => setViewMode('grid')}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-xl text-[10px] font-black uppercase transition-all ${viewMode === 'grid' ? 'bg-amber-600 text-white shadow-lg' : 'text-slate-700'}`}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-xl text-[10px] font-black uppercase transition-all ${viewMode === 'grid' ? 'bg-amber-600 text-white shadow-lg' : 'text-white'}`}
                 >
                   <Layers className="w-4 h-4" />
                   <span>عرض المربعات</span>
                 </button>
                 <button 
                   onClick={() => setViewMode('table')}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-xl text-[10px] font-black uppercase transition-all ${viewMode === 'table' ? 'bg-amber-600 text-white shadow-lg' : 'text-slate-700'}`}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-xl text-[10px] font-black uppercase transition-all ${viewMode === 'table' ? 'bg-amber-600 text-white shadow-lg' : 'text-white'}`}
                 >
                   <FileText className="w-4 h-4" />
                   <span>عرض القائمة</span>
                 </button>
               </div>
               <div className="bg-slate-900 border border-slate-800 px-5 py-3 rounded-2xl flex items-center gap-3">
-                <span className="text-[10px] text-slate-700 font-black uppercase tracking-widest">إجمالي القضايا:</span>
-                <span className="text-lg font-mono text-amber-500 font-black leading-none">{(cases || []).length}</span>
+                <span className="text-[10px] text-white font-black uppercase tracking-widest">إجمالي القضايا:</span>
+                <span className="text-lg font-mono text-amber-400 font-black leading-none">{(cases || []).length}</span>
               </div>
               <button 
                 onClick={() => setIsGraphsOpen(!isGraphsOpen)}
@@ -1942,12 +1942,12 @@ export default React.memo(function CasesModule({
                   className={`flex items-center gap-3 px-5 py-3 rounded-2xl text-xs font-black transition-all border shrink-0 relative group ${
                     isActive 
                       ? 'bg-amber-600 text-white border-amber-500 shadow-xl shadow-amber-600/20' 
-                      : 'bg-[#0c1a35] text-white font-black font-bold border-slate-800[#0e2145]'
+                      : 'bg-[#0c1a35] text-white font-bold border-slate-800 hover:bg-[#0e2145]'
                   }`}
                 >
-                  <Icon className={`w-4 h-4 ${isActive ? 'text-white' : 'text-amber-500'}`} />
+                  <Icon className={`w-4 h-4 ${isActive ? 'text-white' : 'text-amber-400'}`} />
                   <span>{cat.label}</span>
-                  <span className={`text-[10px] px-2 py-0.5 rounded-lg font-mono ${isActive ? 'bg-white/20' : 'bg-slate-800 text-slate-700'}`}>
+                  <span className={`text-[10px] px-2 py-0.5 rounded-lg font-mono ${isActive ? 'bg-white/20 text-white' : 'bg-slate-800 text-white'}`}>
                     {count}
                   </span>
                 </button>
@@ -1959,7 +1959,7 @@ export default React.memo(function CasesModule({
           <div className="pt-4 border-t border-slate-800/60 mt-4">
             <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
               <div className="flex items-center gap-2">
-                <span className="text-[10px] text-amber-500 font-black uppercase tracking-widest bg-amber-500/10 px-2 py-1 rounded">وسوم المستندات الذكية</span>
+                <span className="text-[10px] text-amber-400 font-black uppercase tracking-widest bg-amber-500/10 px-2 py-1 rounded">وسوم المستندات الذكية</span>
                 <p className="text-[11px] text-white font-black font-bold font-bold">فلترة سريعة للقضايا بواسطة وسوم المستندات التلقائية المكتشفة بالذكاء الاصطناعي (AI):</p>
               </div>
               {selectedDocTag !== 'all' && (
@@ -1995,8 +1995,8 @@ export default React.memo(function CasesModule({
                     onClick={() => setSelectedDocTag(tagItem.id)}
                     className={`px-3 py-2 rounded-xl text-[10px] font-black border transition-all cursor-pointer flex items-center gap-1.5 whitespace-nowrap ${
                       isActive
-                        ? 'bg-amber-600/25 text-amber-400 border-amber-500/60 shadow-lg shadow-amber-500/5'
-                        : 'bg-[#0c1a35] text-white font-black font-bold border-slate-800/80'
+                        ? 'bg-amber-600 text-white border-amber-500 shadow-lg shadow-amber-500/10'
+                        : 'bg-[#0c1a35] text-white hover:text-amber-300 border-slate-700'
                     }`}
                   >
                     <span>{tagItem.label}</span>
