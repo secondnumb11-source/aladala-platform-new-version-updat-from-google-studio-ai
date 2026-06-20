@@ -23,6 +23,7 @@ import {
 } from 'lucide-react';
 import { Case, Client, Invoice, Message, Hearing, Contract, Document } from '@/types';
 import { generateUUID } from '@/lib/uuid';
+import { supabase } from '@/lib/supabase';
 import { verifyClientCredentials } from "@/lib/auth-utils";
 
 interface ClientPortalProps {
@@ -431,6 +432,47 @@ export default function ClientPortal({
     }, 1000);
   };
 
+  const handleSavePortalCredentials = async (
+    client: any, 
+    username: string, 
+    password: string
+  ) => {
+    // فقط حدّث حقول البوابة — لا ترسل nationalId
+    const { error } = await supabase
+      .from('clients')
+      .update({
+        portal_username: username.trim(),
+        portal_password: password.trim(),
+        active_portal: true,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', client.id);
+    
+    if (error) {
+      console.error('[Portal Credentials Error]', error);
+      alert('فشل حفظ بيانات الدخول: ' + error.message);
+      return false;
+    }
+    
+    // تحديث State
+    onUpdateState('clients', {
+      ...client,
+      portalUsername: username.trim(),
+      portal_username: username.trim(),
+      portalPassword: password.trim(),
+      portal_password: password.trim(),
+      activePortal: true,
+      active_portal: true
+    });
+    
+    alert(
+      '✅ تم حفظ بيانات بوابة العميل:\n' +
+      '👤 اسم المستخدم: ' + username + '\n' +
+      '🔑 كلمة المرور: ' + password
+    );
+    return true;
+  };
+
   const handleVerifyAndSign = (e: React.FormEvent) => {
     e.preventDefault();
     if (!signerName) {
@@ -638,21 +680,34 @@ export default function ClientPortal({
               {/* VIEW B: PORTAL PERMISSION CONFIGURATION FORM */}
               {selectedConfigClientId && (
                 <form 
-                  onSubmit={(e) => {
+                  onSubmit={async (e) => {
                     e.preventDefault();
                     const clientSelected = clients.find(c => c.id === selectedConfigClientId);
                     if (!clientSelected) return;
 
-                    // Update Client portal credentials with specific selection cases list
-                    const updatedClient: Client = {
+                    // Update Client portal credentials and permissions
+                    const success = await handleSavePortalCredentials(
+                      clientSelected,
+                      configUsername.trim(),
+                      configPassword.trim()
+                    );
+
+                    if (!success) return;
+
+                    // Sync state for permissions separately if needed, or update handleSavePortalCredentials
+                    const updatedWithPerms = {
                       ...clientSelected,
                       portalUsername: configUsername.trim(),
+                      portal_username: configUsername.trim(),
                       portalPassword: configPassword.trim(),
+                      portal_password: configPassword.trim(),
+                      activePortal: true,
+                      active_portal: true,
                       permittedCases: configCheckedCases,
                       permittedCasePermissions: configPermissions
                     };
 
-                    onUpdateState('clients', updatedClient);
+                    onUpdateState('clients', updatedWithPerms);
 
                     // Sync database for direct link
                     configCheckedCases.forEach(caseId => {
@@ -683,7 +738,7 @@ export default function ClientPortal({
                     alert(`✅ تم بنجاح تفعيل البوابة وتهيئة صلاحيات الأمن المعتمدة!\nالعميل: ${clientSelected.name}\nاسم المستخدم: ${configUsername}\nكلمة المرور: ${configPassword}\nقضايا مرخص بمطالعتها: ${configCheckedCases.length}\n\n[تم بث إشعار الـ WhatsApp بالرابط الآمن الموحد والدخول المباشر للتحديثات بنجاح]`);
                     
                     // Exit config tab by selecting default simulated client
-                    setSelectedSimulatedClient(updatedClient);
+                    setSelectedSimulatedClient(updatedWithPerms as any);
                     setSelectedConfigClientId('');
                   }}
                   className="bg-slate-50 border border-slate-300 p-6 rounded-2xl space-y-6 animate-fade-in"

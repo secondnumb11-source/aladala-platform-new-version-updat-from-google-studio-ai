@@ -53,9 +53,70 @@ import { supabaseMiddleware } from './src/utils/supabase/middleware.js';
 import { query } from './src/lib/db.js';
 
 // AI Configuration and Client Factory
+const callGemini = async (
+  systemPrompt: string,
+  userMessage: string,
+  maxTokens: number = 2048
+): Promise<string> => {
+  const apiKey = process.env.GEMINI_API_KEY || '';
+
+  if (!apiKey) {
+    throw new Error(
+      'GEMINI_API_KEY غير موجود. يرجى إضافته في متغيرات البيئة.'
+    );
+  }
+
+  try {
+    const { GoogleGenAI } = await import('@google/genai');
+    const ai = new GoogleGenAI({ 
+      apiKey,
+      httpOptions: {
+        headers: { 'User-Agent': 'aistudio-build' }
+      }
+    });
+
+    const response = await ai.models.generateContent({
+      model: 'gemini-3.5-flash',
+      contents: userMessage,
+      config: {
+        systemInstruction: systemPrompt,
+        maxOutputTokens: maxTokens,
+        temperature: 0.7,
+      }
+    });
+
+    const text = response.text;
+
+    if (!text) {
+      throw new Error('Gemini أرجع استجابة فارغة');
+    }
+
+    return text;
+
+  } catch (err: any) {
+    console.error('[Gemini Error]', err.message);
+
+    // رسائل خطأ واضحة
+    if (err.message?.includes('API_KEY_INVALID') ||
+        err.message?.includes('invalid api key')) {
+      throw new Error('مفتاح Gemini غير صحيح. تحقق من GEMINI_API_KEY');
+    }
+    if (err.message?.includes('QUOTA_EXCEEDED') ||
+        err.message?.includes('quota')) {
+      throw new Error('تجاوزت الحصة المسموحة في Gemini. حاول لاحقاً');
+    }
+    if (err.message?.includes('network') ||
+        err.message?.includes('fetch')) {
+      throw new Error('خطأ في الشبكة. تحقق من الاتصال');
+    }
+
+    throw new Error('خطأ في Gemini: ' + err.message);
+  }
+};
+
+// Polyfill old getAIClient for existing routes if any
 const getAIClient = () => {
   const geminiKey = process.env.GEMINI_API_KEY;
-  
   if (geminiKey) {
     return { 
       type: 'gemini', 
@@ -70,12 +131,8 @@ const getAIClient = () => {
   return null;
 };
 
-// Polyfill old getAIProvider so existing routes don't break during transition or if we only patch some
+// Polyfill old getAIProvider so existing routes don't break
 const getAIProvider = () => {
-  const ai = getAIClient();
-  if (!ai) return null;
-  
-  // Force all providers through Gemini polyfill
   return {
     type: 'openai',
     client: {
@@ -83,60 +140,22 @@ const getAIProvider = () => {
         completions: {
           create: async (params: any) => {
             const system = params.messages.find((m: any) => m.role === 'system')?.content || '';
-            const msgs = params.messages.filter((m: any) => m.role !== 'system').map((m: any) => ({ role: m.role, content: m.content }));
-            
-            const gemini = ai.client as GoogleGenAI;
-            const formattedMsgs = msgs.map((m: any) => `${m.role === 'user' ? 'User' : 'Model'}: ${m.content}`).join('\n\n');
-            const prompt = formattedMsgs || 'Hello';
-                
-            // Detect if JSON output response format is needed - either by openai parameter or prompt keywords
-            const isJsonNeeded = 
-              (params.response_format?.type === 'json_object') || 
-              prompt.toLowerCase().includes('json') || 
-              system.toLowerCase().includes('json');
-
-            const config: any = {};
-            if (system) {
-              config.systemInstruction = system;
-            }
-            if (isJsonNeeded) {
-              config.responseMimeType = 'application/json';
-            }
-
-            try {
-              const response = await gemini.models.generateContent({
-                  model: 'gemini-1.5-flash',
-                  contents: prompt,
-                  config,
-              });
-              return { choices: [{ message: { content: response.text } }] };
-            } catch (err: any) {
-              throw new Error(`Gemini API Error: ${err.message}`);
-            }
+            const userMsg = params.messages.filter((m: any) => m.role === 'user').map((m: any) => m.content).join('\n');
+            const result = await callGemini(system, userMsg);
+            return { choices: [{ message: { content: result } }] };
           }
         }
       },
       embeddings: {
         create: async (params: any) => {
-          const gemini = ai.client as GoogleGenAI;
-          try {
-            const response = await gemini.models.embedContent({
-              model: 'gemini-embedding-2-preview',
-              contents: params.input,
-            });
-            return { data: [{ embedding: response.embeddings?.[0]?.values || [] }] };
-          } catch (err: any) {
-            try {
-              // Fallback to text-embedding-004 if preview is unavailable
-              const responseBackup = await gemini.models.embedContent({
-                model: 'text-embedding-004',
-                contents: params.input,
-              });
-              return { data: [{ embedding: responseBackup.embeddings?.[0]?.values || [] }] };
-            } catch (err2: any) {
-              throw new Error(`Gemini Embed API Error: ${err.message}`);
-            }
-          }
+          const geminiKey = process.env.GEMINI_API_KEY;
+          if (!geminiKey) throw new Error('GEMINI_API_KEY missing');
+          const ai = new GoogleGenAI({ apiKey: geminiKey });
+          const response = await ai.models.embedContent({
+            model: 'gemini-embedding-2-preview',
+            contents: params.input,
+          });
+          return { data: [{ embedding: response.embeddings?.[0]?.values || [] }] };
         }
       }
     }
@@ -144,21 +163,7 @@ const getAIProvider = () => {
 };
 
 export const callAI = async (systemPrompt: string, userMessage: string): Promise<string> => {
-  const ai = getAIClient();
-  
-  if (!ai) {
-    throw new Error('لم يتم تكوين مفتاح الذكاء الاصطناعي (Gemini)');
-  }
-  
-  const gemini = ai.client as GoogleGenAI;
-  const response = await gemini.models.generateContent({
-    model: 'gemini-1.5-flash',
-    contents: userMessage,
-    config: {
-      systemInstruction: systemPrompt,
-    }
-  });
-  return response.text || '';
+  return callGemini(systemPrompt, userMessage);
 };
 
 /* __filename and __dirname are derived automatically by the bundler or runtime */
@@ -2288,61 +2293,30 @@ app.get('/api/search', (req, res) => {
 // AI-based Legal Deadline Watcher: Analyze Sessions for specific preparation tasks & milestones
 app.post('/api/ai/analyze-deadlines', async (req, res) => {
   const { hearings } = req.body;
-  console.log(`Legal Deadline Watcher: Analyzing ${hearings?.length || 0} session(s).`);
-
   if (!hearings || !Array.isArray(hearings) || hearings.length === 0) {
     return res.json({ success: true, analysis: [] });
   }
 
-  const aiProvider = getAIProvider();
-  let responseData = [];
-
-  if (aiProvider && aiProvider.type === 'openai') {
-    try {
-      const openai = aiProvider.client as OpenAI;
-      const systemPrompt = `أنت الخبير القانوني والذكي الاصطناعي الأفضل لمراقبة الجلسات وتتبع المهل القانونية (Legal Deadline Watcher) في المحاكم القضائية في المملكة العربية السعودية (تجاري، عمالي، عام، إلخ).
+  try {
+    const systemPrompt = `أنت الخبير القانوني والذكي الاصطناعي الأفضل لمراقبة الجلسات وتتبع المهل القانونية (Legal Deadline Watcher) في المحاكم القضائية في المملكة العربية السعودية (تجاري، عمالي، عام، إلخ).
 مهمتك هي قراءة معلومات الجلسات المرفقة وتوليد خطة عمل تحضيرية منظمة تشتمل على معالم (milestones) ومهام تحضير عاجلة ومحددة زمنياً قبل تاريخ كل جلسة لتجنب فوات المهل النظامية وفق الأنظمة السعودية.
 
 يجب أن تعود بالإجابة بصيغة JSON تماماً كقائمة كائنات داخل مصفوفة رئيسية، وكل كائن يمثل جلسة بالخصائص التالية:
-- hearingId: string (معرف الجلسة الممرر)
-- caseNumber: string (رقم القضية)
-- caseName: string (اسم القضية)
-- analysis: string (تحليل مقتضب للموقف القانوني لمهلة هذه الجلسة والأنظمة المعنية مثل نظام المعاملات المدنية أو نظام العمل)
-- priority: string (قيمة معينة: "critical" أو "high")
-- milestones: قائمة من الكائنات تحتوي على:
-  - daysBefore: number (عدد الأيام المطلوبة قبل الجلسة لإنهاء المهمة، مثلاً 5 أو 3 أو 1)
-  - title: string (اسم المَعلم أو المهمة، مثل "صياغة الدفع بانتفاء القوة القهرية")
-  - action: string (الخطوة التنفيذية القانونية الدقيقة، مثل "دراسة المادة 112 وإيداع المذكرة")
-  - status: string ("pending")
+- hearingId: string
+- caseNumber: string
+- caseName: string
+- analysis: string
+- priority: string
+- milestones: array of { daysBefore: number, title: string, action: string, status: string }`;
 
-الرجاء عدم إخراج أي كود ترويجي أو لغوي أو ترويسات برمجية مثل \`\`\`json. صِغ الـ JSON بدقة واجعله متوافقاً وقابلاً للمطالبة والتحليل المباشر.`;
-
-      const completion = await openai.chat.completions.create({
-        model: 'gpt-4o',
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: `حلل هذه الجلسات وأرجع قائمة بالـ JSON: ${JSON.stringify(hearings)}` }
-        ],
-        temperature: 0.2
-      });
-
-      const responseText = completion.choices[0]?.message?.content || "";
-      console.log("OpenAI Deadline Analysis Response:", responseText);
-      
-      if (responseText) {
-        const cleaned = responseText.replace(/\`\`\`json\n?|\`\`\`\n?/g, '').trim();
-        responseData = JSON.parse(cleaned);
-        return res.json({ success: true, analysis: responseData });
-      } else {
-        return res.json({ success: false, error: "فشل استخراج البيانات." });
-      }
-    } catch (e: any) {
-      console.warn("Error calling OpenAI API for deadline analysis:", e.message);
-      return res.json({ success: false, error: "فشل الاتصال بالذكاء الاصطناعي." });
-    }
+    const responseText = await callGemini(systemPrompt, `حلل هذه الجلسات وأرجع قائمة بالـ JSON: ${JSON.stringify(hearings)}`);
+    const cleaned = responseText.replace(/```json\n?|```\n?/g, '').trim();
+    const data = JSON.parse(cleaned);
+    return res.json({ success: true, analysis: data });
+  } catch (err: any) {
+    console.error('[AI Deadlines Error]', err.message);
+    return res.status(500).json({ success: false, error: err.message || 'فشل تحليل المهل القانونية' });
   }
-
-  return res.json({ success: false, error: "لم يتم تكوين مزود الذكاء الاصطناعي." });
 });
 
 app.post('/api/ai/visualize-contract', async (req, res) => {
@@ -2463,13 +2437,13 @@ app.post('/api/ai/classify-case', async (req, res) => {
 }`;
 
   try {
-    const rawResult = await callAI(systemPrompt, `وصف القضية المراد تصنيفها بدقة:\n${description}`);
+    const rawResult = await callGemini(systemPrompt, `وصف القضية المراد تصنيفها بدقة:\n${description}`);
     let resultJson;
     try {
       const cleaned = rawResult.replace(/```json\n?|```\n?/g, '').trim();
       resultJson = JSON.parse(cleaned);
     } catch (e) {
-      // fallback parsing
+      console.warn('Fallback parsing for classification', e);
       resultJson = {
         category: (description.includes('زوج') || description.includes('طلاق') || description.includes('ورث') || description.includes('تركة')) ? 'personal_status' : ((description.includes('عقد') || description.includes('شركة') || description.includes('تجار')) ? 'commercial' : 'civil'),
         categoryAr: "تصنيف تلقائي استرشادي لعدم استلام JSON متكامل",
@@ -2481,7 +2455,8 @@ app.post('/api/ai/classify-case', async (req, res) => {
     }
     res.json({ success: true, classification: resultJson });
   } catch (err: any) {
-    res.status(500).json({ success: false, error: err.message });
+    console.error('[AI Classify Error]', err.message);
+    res.status(500).json({ success: false, error: err.message || 'خطأ في تصنيف القضية' });
   }
 });
 
@@ -2588,40 +2563,28 @@ app.get('/api/ai/test-mock', async (req, res) => {
 });
 
 app.post('/api/ai/chat', async (req, res) => {
+  const { message, messages } = req.body;
+  const userMsg = message || messages?.[messages.length - 1]?.content;
+
+  if (!userMsg) {
+    return res.status(400).json({
+      success: false,
+      error: 'الرسالة مطلوبة'
+    });
+  }
+
   try {
-    const { messages } = req.body;
-    const userMsg = messages?.[messages.length - 1]?.content || "مرحباً";
-
-    console.log("Chat Advisor entry:", userMsg);
-    
-    const provider = getAIProvider();
-    if (provider && provider.type === 'openai') {
-      try {
-        let responseText = "";
-        const openai = provider.client as OpenAI;
-        const completion = await openai.chat.completions.create({
-          model: "gpt-4o",
-          messages: [
-            { role: "system", content: "أنت المستشار القانوني والمرافع المسؤول بمكتب العدالة للمحاماة والاستشارات القانونية بالمملكة العربية السعودية. تحلى بالدقة والموضوعية مستنداً إلى الأنظمة واللوائح السعودية الصادرة مرخراً." },
-            ...messages
-          ],
-          temperature: 0.3
-        });
-        responseText = completion.choices[0].message.content || "";
-        console.log("Gemini API Response length:", responseText.length);
-
-        if (responseText) {
-          return res.json({ success: true, response: responseText });
-        }
-      } catch (e: any) {
-        console.log("AI Chat fallback triggered:", e.message || e);
-        return res.json({ success: false, error: "تعطل الاتصال بالذكاء الاصطناعي." });
-      }
-    }
-    return res.json({ success: false, error: "لم يتم تكوين مزود الذكاء الاصطناعي." });
-  } catch (globalErr: any) {
-    console.error("Critical error in /api/ai/chat:", globalErr);
-    res.json({ success: false, error: globalErr.message || "Unknown server error" });
+    const result = await callGemini(
+      'أنت مساعد قانوني متخصص في القانون السعودي. أجب باللغة العربية.',
+      userMsg
+    );
+    return res.json({ success: true, result, response: result });
+  } catch (err: any) {
+    console.error('[AI Chat Error]', err.message);
+    return res.status(500).json({
+      success: false,
+      error: err.message || 'خطأ في الذكاء الاصطناعي'
+    });
   }
 });
 
@@ -2633,43 +2596,23 @@ app.post('/api/ai/summarize', async (req, res) => {
     return res.status(400).json({ success: false, error: "الرجاء كتابة أو إرفاق نص المستند المراد تلخيصه" });
   }
 
-  const provider = getAIProvider();
-  if (provider && provider.type === 'openai') {
-    try {
-      const systemInstruction = `أنت المستشار القانوني الأول والخبير بصياغة وتلخيص محاضر الجلسات القضائية واللوائح في المملكة العربية السعودية.
+  try {
+    const systemInstruction = `أنت المستشار القانوني الأول والخبير بصياغة وتلخيص محاضر الجلسات القضائية واللوائح في المملكة العربية السعودية.
 مهمتك هي قراءة وضبط وثيقة القضية أو محضر جلسة الضبط الممررة وتلخيصها صياغة رصينة بلغة قانونية سليمة بهيئة "موجز قانوني موجز ومبني على نقاط (Concise Bulleted Legal Brief)".
 
 يجب تقسيم الصياغة بالتفصيل والوضوح إلى الأبواب التالية بلغة عربية فصحى وبنقاط مصقولة:
-1. **الوقائع الجوهرية وموضوع النزاع:** تلخيص من ضد من، وما هو لب المشكلة والمطالبات المالية أو الموضوعية.
-2. **الأسانيد والبينات المطبقة:** جرد العقود والمراسلات والاعترافات أو المستندات المكتشفة بالنص.
-3. **التكييف النظامي للمطالبة:** ذكر الأنظمة والمواد القانونية السعودية ذات الصلة (مثل نظام المعاملات المدنية، نظام التجارة، نظام العمل، أو الشريعة).
-4. **التوصيات والإجراءات المقترحة لمكتبنا:** الخطوات الملموسة والعملية التالية (صياغة رد جوابي عاجل، الاستناد إلى بند كذا، توفير بينة كذا).
+1. **الوقائع الجوهرية وموضوع النزاع**
+2. **الأسانيد والبينات المطبقة**
+3. **التكييف النظامي للمطالبة**
+4. **التوصيات والإجراءات المقترحة لمكتبنا**`;
 
-ركز تماماً على جوهر القضية واجعل الصياغة غاية في الفخامة والوضوح والمهنية العالية.`;
-
-      let responseText = "";
-      const prompt = `اسم الوثيقة: ${documentName || 'غير مصنف'}\n\nنص الوثيقة الكامل:\n${documentText}`;
-
-      const gemini = provider.client as GoogleGenAI;
-      const response = await gemini.models.generateContent({
-        model: 'gemini-1.5-flash',
-        contents: prompt,
-        config: {
-          systemInstruction: systemInstruction,
-        }
-      });
-      const summaryText = response.text || "";
-
-      if (summaryText) {
-        return res.json({ success: true, summary: summaryText });
-      }
-    } catch (e: any) {
-      console.log("AI Summarize fallback triggered");
-      return res.json({ success: false, error: "تعطل الاتصال بالذكاء الاصطناعي." });
-    }
+    const prompt = `اسم الوثيقة: ${documentName || 'غير مصنف'}\n\nنص الوثيقة الكامل:\n${documentText}`;
+    const summaryText = await callGemini(systemInstruction, prompt);
+    return res.json({ success: true, summary: summaryText });
+  } catch (err: any) {
+    console.error('[AI Summarize Error]', err.message);
+    return res.status(500).json({ success: false, error: err.message || 'فشل تلخيص المستند' });
   }
-
-  return res.json({ success: false, error: "لم يتم تكوين مزود الذكاء الاصطناعي." });
 });
 
 app.post('/api/ai/gateway-test', async (req: any, res: any) => {

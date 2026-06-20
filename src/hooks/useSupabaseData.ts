@@ -72,14 +72,17 @@ const DB_COLUMNS: Record<string, string[]> = {
     'details', 'created_at', 'updated_at'
   ],
   employees: [
-    'id', 'name', 'role', 'email', 'phone', 'status',
-    'salary', 'department', 'join_date', 'created_at', 'updated_at',
-    'national_id', 'username', 'password', 'custom_login_token',
-    'portal_link', 'qualification', 'birth_date', 'manager', 'nationality',
-    'national_id_expiry', 'start_date', 'end_date', 'branch', 'allowances', 'deductions', 'base_salary',
-    'job_title', 'notes', 'najiz_api_key', 'assigned_cases',
-    'assigned_clients', 'permissions', 'feature_access',
-    'sidebar_config', 'avatar_url', 'employee_code'
+    'id', 'name', 'role', 'job_title', 'email', 'phone',
+    'status', 'salary', 'base_salary', 'allowances',
+    'deductions', 'department', 'branch', 'join_date',
+    'start_date', 'end_date', 'national_id', 'username',
+    'password', 'custom_login_token', 'portal_link',
+    'qualification', 'birth_date', 'manager', 'nationality',
+    'national_id_expiry', 'notes', 'permissions',
+    'feature_access', 'sidebar_config', 'avatar_url',
+    'employee_code', 'najiz_api_key', 'assigned_cases',
+    'assigned_clients', 'active_portal', 'created_at',
+    'updated_at'
   ],
   powers_of_attorney: [
     'id', 'client_id', 'poa_number', 'issue_date', 'expiry_date',
@@ -120,13 +123,34 @@ const sanitizePayload = (tableName: string, data: any): Record<string, any> => {
 
   // ثانياً: معالجة خاصة لحقول مختلفة الاسم بين الكود وقاعدة البيانات
   if (tableName === 'clients') {
-    // nationalId في الكود → id_number في قاعدة البيانات
-    if (snaked.national_id && !snaked.id_number) {
-      snaked.id_number = snaked.national_id;
+    // national_id اختياري — لا ترفض إذا كان فارغاً
+    if (snaked.national_id !== undefined) {
+      snaked.id_number = snaked.national_id || null;
+    } else if (data.nationalId !== undefined) {
+      snaked.id_number = data.nationalId || null;
+    }
+    
+    // portal credentials — مهمة عند ضبط البوابة
+    if (snaked.portal_username !== undefined) {
+      snaked.portal_username = snaked.portal_username || null;
+    }
+    if (snaked.portal_password !== undefined) {
+      snaked.portal_password = snaked.portal_password || null;
+    }
+    if (snaked.active_portal !== undefined) {
+      snaked.active_portal = !!snaked.active_portal;
     }
   }
 
   if (tableName === 'cases') {
+    // courtName → court_name
+    if (snaked.court_name === undefined && data.courtName !== undefined) {
+      snaked.court_name = data.courtName;
+    }
+    if (snaked.court_name === undefined) {
+      snaked.court_name = null;
+    }
+
     // caseName → title
     if (snaked.case_name && !snaked.title) {
       snaked.title = snaked.case_name;

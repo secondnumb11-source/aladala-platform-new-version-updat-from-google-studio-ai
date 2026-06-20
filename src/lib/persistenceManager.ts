@@ -19,21 +19,26 @@ export function validatePayload(table: 'cases' | 'clients' | 'tasks', data: any,
   }
 
   if (table === 'cases') {
-    // Required fields: caseNumber, caseName, clientName, courtName
-    const required = ['caseNumber', 'caseName', 'clientName', 'courtName'];
+    // Required fields: caseNumber, caseName, clientName
+    const required = ['caseNumber', 'caseName', 'clientName'];
     for (const field of required) {
       if (isUpdate && data[field] === undefined) continue; // Partial updates can skip omitted fields
       if (data[field] === undefined || data[field] === null || String(data[field]).trim() === '') {
+        const arabicField: Record<string, string> = {
+          caseNumber: 'رقم القضية',
+          caseName: 'اسم القضية',
+          clientName: 'اسم الموكل'
+        };
         return {
           isValid: false,
           field,
-          message: `الحقل ${field} مطلوب للقضية ولا يمكن أن يكون فارغاً (Schema Violation)`
+          message: `الحقل ${arabicField[field] || field} مطلوب للقضية ولا يمكن أن يكون فارغاً`
         };
       }
     }
   } else if (table === 'clients') {
-    // Required fields: name, nationalId, phone
-    const required = ['name', 'nationalId', 'phone'];
+    // Required fields: name, phone
+    const required = ['name', 'phone'];
     for (const field of required) {
       if (isUpdate && data[field] === undefined) continue; // Partial updates can skip omitted fields
       if (data[field] === undefined || data[field] === null || String(data[field]).trim() === '') {

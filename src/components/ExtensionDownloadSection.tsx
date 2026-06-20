@@ -20,7 +20,10 @@ import {
   Laptop,
   Terminal,
   Info,
-  Cpu
+  Cpu,
+  Code,
+  Upload,
+  Zap
 } from "lucide-react";
 import { useState } from "react";
 import JSZip from "jszip";

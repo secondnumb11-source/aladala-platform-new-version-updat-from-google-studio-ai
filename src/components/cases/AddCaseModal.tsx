@@ -24,7 +24,7 @@ export default function AddCaseModal({ isOpen, onClose, clients, onUpdateState }
   const [newStage, setNewStage] = useState('litigation');
   const [newClientName, setNewClientName] = useState('');
   const [newOpponent, setNewOpponent] = useState('');
-  const [newCourt, setNewCourt] = useState('المحكمة التجارية بالرياض');
+  const [newCourt, setNewCourt] = useState('');
   const [newNextDate, setNewNextDate] = useState('2026-06-15');
   const [newNextTime, setNewNextTime] = useState('09:30 صباحاً');
   const [newDetails, setNewDetails] = useState('');

@@ -433,120 +433,184 @@ export default function EmployeesData({
   };
 
   const handleSaveEmployee = async (employeeData: any) => {
+    if (!employeeData.name?.trim()) {
+      alert('اسم الموظف مطلوب');
+      return false;
+    }
+
     try {
-      // توليد username وpassword تلقائياً إذا لم يوجدا
-      const username =
-        employeeData.username ||
-        `emp-${(employeeData.nationalId || employeeData.national_id || "").slice(-4)}-${Math.floor(100 + Math.random() * 900)}`;
-      const password =
-        employeeData.password ||
+      // توليد بيانات الدخول تلقائياً إذا لم تكن موجودة
+      const username = employeeData.username?.trim() ||
+        `emp-${Date.now().toString().slice(-6)}`;
+      const password = employeeData.password?.trim() ||
         `WORK-${Math.floor(1000 + Math.random() * 9000)}`;
-      const employeeCode =
-        employeeData.employeeCode ||
+      const employeeCode = employeeData.employeeCode?.trim() ||
+        employeeData.employee_code?.trim() ||
         `EMP-${Math.floor(100 + Math.random() * 900)}`;
 
-      const payload = {
+      // بناء الـ payload بحقول اختيارية
+      const payload: Record<string, any> = {
         id: employeeData.id,
-        name: employeeData.name,
-        role: employeeData.role || employeeData.jobTitle || "موظف",
-        job_title:
-          employeeData.jobTitle || employeeData.job_title || employeeData.role,
-        email: employeeData.email || null,
-        phone: employeeData.phone || null,
-        status: employeeData.status || "active",
-        salary: employeeData.salary || 0,
-        department: employeeData.department || null,
-        branch: employeeData.branch || null,
-        national_id:
-          employeeData.nationalId || employeeData.national_id || null,
+        name: employeeData.name.trim(),
+        role: employeeData.role || 
+              employeeData.jobTitle || 
+              'موظف',
+        job_title: employeeData.jobTitle || 
+                   employeeData.job_title || 
+                   employeeData.role || 
+                   'موظف',
+        status: employeeData.status || 'active',
         username: username,
         password: password,
         employee_code: employeeCode,
         active_portal: true,
-        permissions: employeeData.permissions || [
-          "dashboard",
-          "cases",
-          "tasks",
-          "documents",
-          "ai",
-        ],
-        join_date: employeeData.joinDate || employeeData.join_date || null,
-        notes: employeeData.notes || null,
-        updated_at: new Date().toISOString(),
+        permissions: JSON.stringify(
+          employeeData.permissions || 
+          ['dashboard','cases','tasks','documents','ai']
+        ),
+        updated_at: new Date().toISOString()
       };
 
-      // تحقق إذا الموظف موجود
-      const { data: existing } = await supabase
-        .from("employees")
-        .select("id")
-        .eq("id", employeeData.id)
-        .maybeSingle();
-
-      let error;
-
-      if (existing) {
-        // تحديث
-        const { error: updateError } = await supabase
-          .from("employees")
-          .update(payload)
-          .eq("id", employeeData.id);
-        error = updateError;
-      } else {
-        // إنشاء جديد
-        const { error: insertError } = await supabase.from("employees").insert({
-          ...payload,
-          created_at: new Date().toISOString(),
-        });
-        error = insertError;
+      // الحقول الاختيارية — فقط إذا كانت موجودة
+      if (employeeData.email?.trim()) {
+        payload.email = employeeData.email.trim();
+      }
+      if (employeeData.phone?.trim()) {
+        payload.phone = employeeData.phone.trim();
+      }
+      if (employeeData.nationalId?.trim() || 
+          employeeData.national_id?.trim()) {
+        payload.national_id = 
+          employeeData.nationalId?.trim() || 
+          employeeData.national_id?.trim();
+      }
+      if (employeeData.salary) {
+        payload.salary = Number(employeeData.salary) || 0;
+      }
+      if (employeeData.department?.trim()) {
+        payload.department = employeeData.department.trim();
+      }
+      if (employeeData.branch?.trim()) {
+        payload.branch = employeeData.branch.trim();
+      }
+      if (employeeData.joinDate || employeeData.join_date) {
+        payload.join_date = 
+          employeeData.joinDate || employeeData.join_date;
+      }
+      if (employeeData.notes?.trim()) {
+        payload.notes = employeeData.notes.trim();
+      }
+      if (employeeData.avatarUrl || employeeData.avatar_url) {
+        payload.avatar_url = 
+          employeeData.avatarUrl || employeeData.avatar_url;
       }
 
-      if (error) {
-        console.error("[Save Employee Error]", error);
-        alert("فشل في حفظ بيانات الموظف: " + error.message);
+      // تحقق من وجود الموظف في قاعدة البيانات
+      const { data: existing, error: checkError } = await supabase
+        .from('employees')
+        .select('id')
+        .eq('id', employeeData.id)
+        .maybeSingle();
+
+      let dbError = null;
+
+      if (existing) {
+        // تحديث موظف موجود
+        const { error } = await supabase
+          .from('employees')
+          .update(payload)
+          .eq('id', employeeData.id);
+        dbError = error;
+      } else {
+        // إنشاء موظف جديد
+        const { error } = await supabase
+          .from('employees')
+          .insert({
+            ...payload,
+            created_at: new Date().toISOString()
+          });
+        dbError = error;
+      }
+
+      if (dbError) {
+        console.error('[Save Employee DB Error]', dbError);
+        
+        // رسائل خطأ واضحة
+        if (dbError.code === '42501') {
+          alert(
+            'خطأ في صلاحيات قاعدة البيانات.\n' +
+            'يرجى التواصل مع المسؤول لإصلاح سياسات RLS.'
+          );
+        } else if (dbError.code === '23505') {
+          alert(
+            'يوجد موظف آخر بنفس البيانات (username أو national_id).\n' +
+            'يرجى تغيير اسم المستخدم وإعادة المحاولة.'
+          );
+        } else {
+          alert('فشل حفظ بيانات الموظف: ' + dbError.message);
+        }
         return false;
       }
 
       // تحديث localStorage كـ backup
-      const backup = JSON.parse(
-        localStorage.getItem("employees_backup") || "[]",
-      );
-      const idx = backup.findIndex((e: any) => e.id === employeeData.id);
+      try {
+        const backup = JSON.parse(
+          localStorage.getItem('employees_backup') || '[]'
+        );
+        const fullEmployee = {
+          ...employeeData,
+          username,
+          password,
+          employeeCode,
+          activePortal: true
+        };
+        const idx = backup.findIndex(
+          (e: any) => e.id === employeeData.id
+        );
+        if (idx >= 0) backup[idx] = fullEmployee;
+        else backup.push(fullEmployee);
+        localStorage.setItem(
+          'employees_backup', 
+          JSON.stringify(backup)
+        );
+      } catch(e) {}
+
+      // تحديث State
       const updatedEmployee = {
         ...employeeData,
         username,
         password,
         employeeCode,
+        activePortal: true
       };
-      if (idx >= 0) backup[idx] = updatedEmployee;
-      else backup.push(updatedEmployee);
-      localStorage.setItem("employees_backup", JSON.stringify(backup));
-
-      // تحديث State
+      
       if (onUpdateState) {
-        onUpdateState("employees", updatedEmployee);
+        onUpdateState('employees', updatedEmployee);
       }
+
       setEmployees((prev) => {
         const exists = prev.find((e) => e.id === employeeData.id);
-        const updated = exists
+        const updatedList = exists
           ? prev.map((e) =>
               e.id === employeeData.id ? normalizeEmployee(updatedEmployee) : e,
             )
           : [...prev, normalizeEmployee(updatedEmployee)];
-        return updated;
+        return updatedList;
       });
 
       alert(
-        `✅ تم حفظ بيانات الموظف بنجاح\n\n` +
-          `👤 اسم المستخدم: ${username}\n` +
-          `🔑 كلمة المرور: ${password}\n` +
-          `🆔 كود الموظف: ${employeeCode}\n\n` +
-          `يمكن للموظف الآن تسجيل الدخول من بوابة الموظفين`,
+        '✅ تم حفظ بيانات الموظف بنجاح\n\n' +
+        '👤 اسم المستخدم: ' + username + '\n' +
+        '🔑 كلمة المرور: ' + password + '\n' +
+        '🆔 كود الموظف: ' + employeeCode + '\n\n' +
+        '✅ يمكن للموظف الدخول من بوابة الموظفين'
       );
 
       return true;
+
     } catch (err: any) {
-      console.error("[Save Employee Exception]", err);
-      alert("خطأ غير متوقع: " + err.message);
+      console.error('[Save Employee Exception]', err);
+      alert('خطأ غير متوقع: ' + err.message);
       return false;
     }
   };
@@ -599,30 +663,12 @@ export default function EmployeesData({
   const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Strict Verification for National ID / Iqama
-    const nid = (formData.nationalId || "").trim();
-    if (!nid) {
-      alert("⚠️ الرجاء إدخال رقم الهوية الوطنية أو الإقامة للموظف.");
-      return;
-    }
-    if (!/^[12]\d{9}$/.test(nid)) {
-      alert(
-        "⚠️ خطأ في رقم الهوية الوطنية/الإقامة: يجب أن يتكون من 10 خانات رقمية تماماً ويبدأ بـ 1 أو 2.",
-      );
-      return;
-    }
-
-    if (!formData.name || !formData.name.trim()) {
-      alert("⚠️ الرجاء إدخال الاسم الكامل للموظف.");
-      return;
-    }
-
     const tempId = formData.id || generateUUID();
     const empData = {
       ...formData,
       id: tempId,
-      nationalId: nid,
-      national_id: nid,
+      nationalId: (formData.nationalId || "").trim(),
+      national_id: (formData.nationalId || "").trim(),
     };
 
     const success = await handleSaveEmployee(empData);

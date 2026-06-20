@@ -4,7 +4,7 @@ import { Joyride, STATUS, Step } from 'react-joyride';
 const JoyrideAny = Joyride as any;
 import { 
   Download, Zap, CheckCircle2, Copy, Bot, Rocket, 
-  BookOpen, Key, Link2, Settings, ShieldCheck, 
+  BookOpen, Key, Link2, Settings, ShieldCheck, Loader2,
   Database, Users, Calendar, FileText, ClipboardList, Briefcase, ExternalLink,
   ChevronDown, X, Chrome, Info, HelpCircle, Sparkles, Code
 } from 'lucide-react';
@@ -12,6 +12,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
 import { useSupabaseData } from '@/hooks/useSupabaseData';
+import ExtensionDownloadSection from './ExtensionDownloadSection';
 
 interface NajizExtensionHubProps {
   currentUser: any;
@@ -134,7 +135,7 @@ export default function NajizExtensionHub({ currentUser, onUpdateState }: NajizE
       try {
         return JSON.parse(saved);
       } catch (e) {
-        // Fallback if parsing fails
+        return ['cases', 'hearings', 'agencies', 'executions', 'clients', 'case_requests', 'minutes'];
       }
     }
     return ['cases', 'hearings', 'agencies', 'executions', 'clients', 'case_requests', 'minutes'];
@@ -1656,7 +1657,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
               
               <button
                  id="settings-btn"
-                 onClick={() => setShowSettings(!showSettings)}
+                 onClick={() => setIsSettingsOpen(!isSettingsOpen)}
                  className="p-6 bg-yellow-400 text-black rounded-3xl hover:bg-yellow-500 transition-all shadow-xl active:scale-95"
               >
                 <Settings className="w-7 h-7" />
@@ -1926,7 +1927,10 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
           </div>
         )}
       </AnimatePresence>
-      <ExtensionDownloadSection />
+      <ExtensionDownloadSection 
+        apiKey={customApiKey || "ADALAH-DEMO-KEY"} 
+        lawyerName={currentUser?.name || "المحامي"} 
+      />
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
         

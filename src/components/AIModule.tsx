@@ -80,10 +80,10 @@ export default function AIModule({ onUpdateState, cases = [], invoices = [], ini
       if (data.success && data.classification) {
         setClassificationResult(data.classification);
       } else {
-        setClassificationError(data.error || 'عذراً، فشل تصنيف القضية.');
+        setClassificationError(data.error || data.message || 'عذراً، فشل تصنيف القضية.');
       }
     } catch (err: any) {
-      setClassificationError('حدث خطأ غير متوقع أثناء الاتصال بالخادم الذكي.');
+      setClassificationError(err.message || 'حدث خطأ غير متوقع أثناء الاتصال بالخادم الذكي.');
     } finally {
       setIsClassifying(false);
     }
@@ -115,20 +115,20 @@ export default function AIModule({ onUpdateState, cases = [], invoices = [], ini
       if (data.success) {
         setChatHistory(prev => [...prev, {
           sender: 'bot',
-          text: data.response,
+          text: data.result || data.response,
           time: new Date().toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' })
         }]);
       } else {
         setChatHistory(prev => [...prev, {
           sender: 'bot',
-          text: data.error || "عذراً زميلي، تعطل الاتصال بالخادم.",
+          text: data.error || data.message || "عذراً زميلي، تعطل الاتصال بالخادم.",
           time: "الآن"
         }]);
       }
     } catch (e: any) {
       setChatHistory(prev => [...prev, {
         sender: 'bot',
-        text: typeof e?.message === 'string' ? e.message : "عذراً زميلي، تعطل الاتصال بالخادم، جاري الارتداد للتلخيص المحلي المعرب.",
+        text: e.message || "عذراً زميلي، تعطل الاتصال بالخادم، جاري الارتداد للتلخيص المحلي المعرب.",
         time: "الآن"
       }]);
     } finally {
@@ -202,7 +202,7 @@ export default function AIModule({ onUpdateState, cases = [], invoices = [], ini
                   <div className="w-3 h-3 bg-emerald-500 rounded-full animate-pulse"></div>
                   <h4 className="text-sm font-black text-slate-900">غرفة المشورة القانونية المباشرة</h4>
                 </div>
-                <div className="text-[10px] font-black text-slate-200 font-bold uppercase tracking-widest">Powered by Gemini 1.5 Pro</div>
+                <div className="text-[10px] font-black text-slate-200 font-bold uppercase tracking-widest">Powered by Gemini 3.5</div>
               </div>
 
               <div className="flex-1 overflow-y-auto p-8 space-y-6 bg-slate-50/30">
