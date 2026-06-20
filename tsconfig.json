@@ -24,6 +24,6 @@
     "types": ["vite/client"],
     "noEmit": true
   },
-  "include": ["src/**/*", "server.ts"],
+  "include": ["src/**/*", "server.ts", "api/**/*"],
   "exclude": ["page.tsx", "utils/**/*"]
 }
