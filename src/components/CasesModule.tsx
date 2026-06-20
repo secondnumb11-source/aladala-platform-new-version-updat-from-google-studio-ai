@@ -17,6 +17,7 @@ import {
   FileText, 
   DollarSign, 
   Clock, 
+  Loader2,
   Share2,
   Trash2,
   Eye,
@@ -71,6 +72,8 @@ import EnhancedCaseDetail from './cases/EnhancedCaseDetail';
 import { jsPDF } from 'jspdf';
 
 const CaseAnalyticsDashboard = React.lazy(() => import('./cases/CaseAnalyticsDashboard'));
+const TimelineD3 = React.lazy(() => import('./TimelineD3'));
+import { Suspense } from 'react';
 
 export const getCaseDocumentTags = (c: Case): string[] => {
   const tags: string[] = ['مفهرس_آلياً'];
@@ -412,6 +415,7 @@ interface CasesModuleProps {
   onSelectCase: (caseObj: Case | null) => void;
   selectedCase: Case | null;
   archivedNotice?: { count: number; onRestore: () => void; onClose: () => void };
+  onDeleteCase?: (id: string | number) => void;
 }
 
 import { useRenderPerformance } from '../lib/PerformanceOptimizer';
@@ -424,7 +428,8 @@ export default React.memo(function CasesModule({
   onUpdateState,
   onSelectCase,
   selectedCase,
-  archivedNotice
+  archivedNotice,
+  onDeleteCase
 }: CasesModuleProps) {
   const { state, setStateData } = useAppState();
   const draft = state.case_form_draft;
@@ -2144,6 +2149,24 @@ export default React.memo(function CasesModule({
             />
           ) : (
               <div className="space-y-8 animate-fade-in duration-700">
+                {/* Strategic Litigation Timeline - Linked Data */}
+                <div className="bg-white border-2 border-slate-100 rounded-[2.5rem] p-4 shadow-sm overflow-hidden hover:border-[#D4AF37]/30 transition-all">
+                  <Suspense fallback={<div className="h-48 flex items-center justify-center bg-slate-50 rounded-3xl animate-pulse"><Loader2 className="w-8 h-8 text-slate-300 animate-spin" /></div>}>
+                     <div className="mb-4 px-4 flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                           <div className="p-2 bg-slate-900 text-white rounded-xl shadow-lg">
+                              <Calendar className="w-5 h-5 text-amber-400" />
+                           </div>
+                           <div>
+                              <h3 className="text-base font-black text-slate-900">التسلسل الزمني الاستراتيجي للمقاضاة</h3>
+                              <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-0.5 font-bold">Synchronized Case Milestones & Hearings</p>
+                           </div>
+                        </div>
+                     </div>
+                     <TimelineD3 hearings={state.hearings || []} tasks={state.tasks || []} cases={cases} />
+                  </Suspense>
+                </div>
+
                 {/* List View of all cases */}
                   
                 {!isFocusMode && filterBarMarkup}
@@ -2173,6 +2196,7 @@ export default React.memo(function CasesModule({
                   onUpdateCaseStatus={(c, newStatus) => {
                     onUpdateState('cases', { ...c, status: newStatus });
                   }}
+                  onDeleteCase={onDeleteCase}
                 />
               </div>
             )}

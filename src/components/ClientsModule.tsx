@@ -82,18 +82,171 @@ export default function ClientsModule({
     alert("تم حذف الموكل بنجاح");
   };
 
+  const normalizeClientStatus = (status: string): string => {
+    const map: Record<string, string> = {
+      'نشط': 'active',
+      'فعال': 'active',
+      'غير نشط': 'inactive',
+      'محظور': 'banned',
+    };
+    return map[status] || status || 'active';
+  };
+
+  const handleSaveClient = async (clientData: any) => {
+    if (!clientData.name?.trim()) {
+      alert('اسم العميل مطلوب');
+      return false;
+    }
+
+    try {
+      // توليد بيانات الدخول تلقائياً
+      const portalUsername = clientData.portalUsername ||
+        clientData.portal_username ||
+        `client-${Date.now().toString().slice(-6)}`;
+
+      const portalPassword = clientData.portalPassword ||
+        clientData.portal_password ||
+        `ADAL-${Math.floor(1000 + Math.random() * 9000)}`;
+
+      // بناء payload بدون حقول مطلوبة غير موجودة
+      const payload: Record<string, any> = {
+        id: clientData.id,
+        name: clientData.name.trim(),
+        status: 'active',
+        is_company: clientData.isCompany ||
+          clientData.is_company || false,
+        portal_username: portalUsername,
+        portal_password: portalPassword,
+        active_portal: clientData.activePortal ||
+          clientData.active_portal || true,
+        permitted_cases: clientData.permittedCases ||
+          clientData.permitted_cases || [],
+        updated_at: new Date().toISOString()
+      };
+
+      // الحقول الاختيارية
+      if (clientData.phone?.trim()) {
+        payload.phone = clientData.phone.trim();
+      }
+      if (clientData.email?.trim()) {
+        payload.email = clientData.email.trim();
+      }
+      if (clientData.nationalId?.trim() ||
+          clientData.national_id?.trim()) {
+        payload.national_id =
+          clientData.nationalId?.trim() ||
+          clientData.national_id?.trim();
+        payload.id_number = payload.national_id;
+      }
+      if (clientData.address?.trim()) {
+        payload.address = clientData.address.trim();
+      }
+      if (clientData.najizId?.trim() ||
+          clientData.najiz_id?.trim()) {
+        payload.najiz_id =
+          clientData.najizId?.trim() ||
+          clientData.najiz_id?.trim();
+      }
+
+      // تحقق من وجود العميل
+      const { data: existing } = await supabase
+        .from('clients')
+        .select('id')
+        .eq('id', clientData.id)
+        .maybeSingle();
+
+      let dbError = null;
+
+      if (existing) {
+        const { error } = await supabase
+          .from('clients')
+          .update(payload)
+          .eq('id', clientData.id);
+        dbError = error;
+      } else {
+        const { error } = await supabase
+          .from('clients')
+          .insert({
+            ...payload,
+            created_at: new Date().toISOString()
+          });
+        dbError = error;
+      }
+
+      if (dbError) {
+        console.error('[Save Client Error]', dbError);
+        if (dbError.code === '42501') {
+          alert('خطأ في صلاحيات قاعدة البيانات (RLS)');
+        } else if (dbError.code === '23505') {
+          alert('يوجد عميل آخر بنفس البيانات');
+        } else {
+          alert('فشل حفظ العميل: ' + dbError.message);
+        }
+        return false;
+      }
+
+      // تحديث localStorage backup
+      try {
+        const backup = JSON.parse(
+          localStorage.getItem('clients_backup') || '[]'
+        );
+        const fullClient = {
+          ...clientData,
+          portalUsername,
+          portalPassword,
+          activePortal: true,
+          status: 'active'
+        };
+        const idx = backup.findIndex(
+          (c: any) => c.id === clientData.id
+        );
+        if (idx >= 0) backup[idx] = fullClient;
+        else backup.push(fullClient);
+        localStorage.setItem(
+          'clients_backup',
+          JSON.stringify(backup)
+        );
+      } catch(e) {}
+
+      // تحديث State
+      const updatedClient = {
+        ...clientData,
+        portalUsername,
+        portal_username: portalUsername,
+        portalPassword,
+        portal_password: portalPassword,
+        activePortal: true,
+        active_portal: true,
+        status: 'active'
+      };
+
+      onUpdateState('clients', updatedClient);
+
+      alert(
+        '✅ تم حفظ بيانات العميل بنجاح\n\n' +
+        '👤 اسم المستخدم: ' + portalUsername + '\n' +
+        '🔑 كلمة المرور: ' + portalPassword + '\n\n' +
+        '✅ يمكن للعميل الدخول من بوابة العملاء'
+      );
+
+      return true;
+
+    } catch (err: any) {
+      console.error('[Save Client Exception]', err);
+      alert('خطأ غير متوقع: ' + err.message);
+      return false;
+    }
+  };
+
   const handleUpdateClientSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingClient) return;
 
-    const res = await onUpdateState("clients", editingClient);
-    if (res && res.success === false && res.errorType === "validation") {
-      alert(`فشل التحقق من صحة البيانات: ${res.message}`);
-      return;
-    }
+    const success = await handleSaveClient(editingClient);
 
-    setEditingClient(null);
-    alert("✅ تم تعديل بيانات الموكل بنجاح.");
+    if (success) {
+      setEditingClient(null);
+    }
   };
   interface MessageTemplate {
     id: string;
@@ -179,13 +332,13 @@ export default function ClientsModule({
 
   const handleCreateClient = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newName || !newNationalId) return;
+    if (!newName) return;
 
     const token = generateUUID();
-    const genUser = generateUsername(newName, newNationalId);
+    const genUser = generateUsername(newName, newNationalId || "");
     const genPass = generatePassword();
 
-    const newCl: Client = {
+    const newCl = {
       id: generateUUID(),
       name: newName,
       isCompany: newIsCompany,
@@ -196,23 +349,21 @@ export default function ClientsModule({
       portalPassword: newPassword || genPass,
       portalToken: token,
       portalLink: `/portal?token=${token}`,
+      status: normalizeClientStatus('active'),
+      activePortal: true,
+      permittedCases: []
     };
 
-    const res = await onUpdateState("clients", newCl);
-    if (res && res.success === false && res.errorType === "validation") {
-      alert(`فشل التحقق من صحة البيانات: ${res.message}`);
-      return;
+    const success = await handleSaveClient(newCl);
+    if (success) {
+      setIsAdding(false);
+      setNewName("");
+      setNewNationalId("");
+      setNewPhone("+9665");
+      setNewEmail("");
+      setNewUsername("");
+      setNewPassword("");
     }
-
-    setIsAdding(false);
-    setNewName("");
-    setNewNationalId("");
-    setNewPhone("+9665");
-    setNewEmail("");
-    setNewUsername("");
-    setNewPassword("");
-
-    alert(`✅ تم إضافة الموكل ${newCl.name} بنجاح.`);
   };
 
   const handleTriggerWhatsApp = () => {
@@ -351,50 +502,69 @@ export default function ClientsModule({
     }
   };
 
-  const handleGenerateAndSaveCredentials = async (client: any) => {
-    // توليد بيانات الدخول
-    const username = `client-${(client.nationalId || client.national_id || client.id || "").slice(-4)}-${Math.floor(100 + Math.random() * 900)}`;
-    const password = `ADAL-${Math.floor(1000 + Math.random() * 9000)}`;
+  const handleGenerateClientPortal = async (client: any) => {
+    const username =
+      `client-${(client.nationalId || client.national_id || client.id || '').slice(-4)}-${Math.floor(100 + Math.random() * 900)}`;
+    const password =
+      `ADAL-${Math.floor(1000 + Math.random() * 9000)}`;
 
     try {
-      // 1. حفظ في Supabase مباشرة
-      const { error: updateError } = await supabase
-        .from("clients")
+      const { error } = await supabase
+        .from('clients')
         .update({
           portal_username: username,
           portal_password: password,
           active_portal: true,
-          updated_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
         })
-        .eq("id", client.id);
+        .eq('id', client.id);
 
-      if (updateError) {
-        console.error("[Save Credentials Error]", updateError);
-        alert("فشل في حفظ بيانات الدخول: " + updateError.message);
+      if (error) {
+        alert('فشل: ' + error.message);
         return;
       }
 
-      // 2. تحديث State المحلي
-      onUpdateState("clients", {
+      // تحديث localStorage
+      try {
+        const backup = JSON.parse(
+          localStorage.getItem('clients_backup') || '[]'
+        );
+        const idx = backup.findIndex(
+          (c: any) => c.id === client.id
+        );
+        const updated = {
+          ...client,
+          portalUsername: username,
+          portalPassword: password,
+          activePortal: true
+        };
+        if (idx >= 0) backup[idx] = updated;
+        else backup.push(updated);
+        localStorage.setItem(
+          'clients_backup',
+          JSON.stringify(backup)
+        );
+      } catch(e) {}
+
+      onUpdateState('clients', {
         ...client,
         portalUsername: username,
         portal_username: username,
         portalPassword: password,
         portal_password: password,
         activePortal: true,
-        active_portal: true,
+        active_portal: true
       });
 
-      // 3. إظهار البيانات للمستخدم
       alert(
-        `✅ تم حفظ بيانات الدخول بنجاح في قاعدة البيانات\n\n` +
-          `👤 اسم المستخدم: ${username}\n` +
-          `🔑 كلمة المرور: ${password}\n\n` +
-          `يمكن للعميل الآن تسجيل الدخول من بوابة العملاء`,
+        '✅ تم توليد بيانات بوابة العميل:\n\n' +
+        '👤 اسم المستخدم: ' + username + '\n' +
+        '🔑 كلمة المرور: ' + password + '\n\n' +
+        'أرسل هذه البيانات للعميل للدخول لبوابته'
       );
+
     } catch (err: any) {
-      console.error("[Generate Credentials Exception]", err);
-      alert("خطأ غير متوقع: " + err.message);
+      alert('خطأ: ' + err.message);
     }
   };
 
@@ -1113,7 +1283,7 @@ export default function ClientsModule({
 
                   <div className="flex flex-col gap-3">
                     <button
-                      onClick={() => handleGenerateAndSaveCredentials(c)}
+                      onClick={() => handleGenerateClientPortal(c)}
                       className="flex-1 bg-slate-800 text-white font-black py-3.5 rounded-xl text-[11px] flex items-center justify-center gap-2 transition-all shadow-md active:scale-95"
                     >
                       <ShieldCheck className="w-4 h-4" />

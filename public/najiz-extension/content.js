@@ -5,11 +5,72 @@
 
   // تحديد نوع الصفحة الحالية
   function getPageType() {
-    const url = window.location.href;
-    if (url.includes('/lawsuit')) return 'cases';
-    if (url.includes('/wekalat') || url.includes('/procurations')) return 'poa';
-    if (url.includes('/iexecution')) return 'executions';
-    if (url.includes('/appointment-requests')) return 'hearings';
+    const url = window.location.href.toLowerCase();
+    const path = window.location.pathname.toLowerCase();
+    const hash = window.location.hash.toLowerCase();
+    const full = url + path + hash;
+  
+    // قضايا — كل الروابط الممكنة
+    if (
+      full.includes('/lawsuit') ||
+      full.includes('/cases') ||
+      full.includes('/qadaya') ||
+      full.includes('/القضايا') ||
+      full.includes('lawsuit') ||
+      document.title.includes('قضاي') ||
+      document.title.includes('دعاو') ||
+      document.querySelector('[class*="lawsuit"]') ||
+      document.querySelector('[class*="LawSuit"]')
+    ) return 'cases';
+  
+    // مواعيد الجلسات
+    if (
+      full.includes('/appointment') ||
+      full.includes('/jalsat') ||
+      full.includes('/جلسات') ||
+      full.includes('appointment-request') ||
+      full.includes('hearing') ||
+      document.title.includes('جلس') ||
+      document.title.includes('موعد') ||
+      document.querySelector('[class*="appointment"]') ||
+      document.querySelector('[class*="Appointment"]')
+    ) return 'hearings';
+  
+    // الوكالات
+    if (
+      full.includes('/wekalat') ||
+      full.includes('/wakala') ||
+      full.includes('/وكالات') ||
+      full.includes('procuration') ||
+      full.includes('attorney') ||
+      document.title.includes('وكال') ||
+      document.querySelector('[class*="wekalat"]') ||
+      document.querySelector('[class*="Wekalat"]') ||
+      document.querySelector('[class*="procuration"]')
+    ) return 'poa';
+  
+    // التنفيذ
+    if (
+      full.includes('/iexecution') ||
+      full.includes('/execution') ||
+      full.includes('/tanfiz') ||
+      full.includes('/تنفيذ') ||
+      document.title.includes('تنفيذ') ||
+      document.querySelector('[class*="execution"]') ||
+      document.querySelector('[class*="Execution"]')
+    ) return 'executions';
+  
+    // محاولة الكشف من محتوى الصفحة
+    const bodyText = document.body?.innerText || '';
+    if (bodyText.includes('رقم الدعوى') ||
+        bodyText.includes('الدعاوى القضائية')) return 'cases';
+    if (bodyText.includes('تاريخ الجلسة') ||
+        bodyText.includes('مواعيد الجلسات')) return 'hearings';
+    if (bodyText.includes('رقم الوكالة') ||
+        bodyText.includes('الوكالات القضائية')) return 'poa';
+    if (bodyText.includes('طلب التنفيذ') ||
+        bodyText.includes('طلبات التنفيذ')) return 'executions';
+  
     return 'unknown';
   }
 
@@ -38,111 +99,154 @@
   function extractCases() {
     const cases = [];
     const seen = new Set();
-
-    // من الجداول
-    document.querySelectorAll('table').forEach(table => {
-      const rows = table.querySelectorAll('tbody tr, tr:not(:first-child)');
-      rows.forEach(row => {
-        const cells = Array.from(row.querySelectorAll('td'))
-          .map(td => td.innerText?.trim() || '');
-        if (cells.length < 2) return;
-        const rowText = cells.join(' ');
-        const caseNum = rowText.match(/\d{4}\/\d{1,2}\/\d+|\d{4}\/\d{4,}|\d{10,}/)?.[0];
-        if (!caseNum || seen.has(caseNum)) return;
-        seen.add(caseNum);
-
-        const dateMatch = rowText.match(
-          /\d{1,2}[\/\-]\d{1,2}[\/\-]\d{4}|\d{4}[\/\-]\d{1,2}[\/\-]\d{1,2}/
-        );
-
-        cases.push({
-          caseNumber: caseNum,
-          najizCaseNumber: caseNum,
-          caseName: cells.find(c =>
-            c.length > 5 && !/^\d+[\/\-]?\d*$/.test(c) &&
-            !c.includes('محكمة')
-          ) || 'قضية من ناجز',
-          status: cells.find(c =>
-            ['قيد','منتهي','نشط','مقيد','محكوم','مؤجل',
-             'مشطوب','موقوف','صدر','جديد'].some(k => c.includes(k))
-          ) || 'قيد النظر',
-          court: cells.find(c => c.includes('محكمة')) || '',
-          category: cells.find(c =>
-            ['تجاري','عمالي','مدني','جزائي','أحوال','إداري',
-             'تنفيذ'].some(k => c.includes(k))
-          ) || 'مدني',
-          nextSessionDate: dateMatch?.[0] || '',
-          stage: 'litigation',
-          isNajizSync: true,
-          source: 'najiz_extension',
-          rawCells: cells
-        });
-      });
-    });
-
-    // من البطاقات
-    const cardSelectors = [
-      '[class*="CaseCard"]','[class*="case-card"]',
-      '[class*="CaseItem"]','[class*="caseItem"]',
-      '[class*="RequestCard"]','[class*="ListItem"]',
-      '[class*="MuiCard"]','[class*="MuiPaper"]',
-      '[data-testid*="case"]','.case','.lawsuit-item'
+  
+    // === استخراج من كل نص في الصفحة ===
+    const allText = document.body?.innerText || '';
+  
+    // استخراج جميع أرقام القضايا الممكنة
+    const patterns = [
+      /\d{4}\/\d{1,2}\/\d{4,}/g,   // 1446/ق/12345
+      /\d{4}\/\d{5,}/g,              // 2024/12345
+      /(?<!\d)\d{10}(?!\d)/g,        // 10 أرقام
+      /(?<!\d)\d{9}(?!\d)/g,         // 9 أرقام
     ];
-
-    cardSelectors.forEach(sel => {
-      try {
-        document.querySelectorAll(sel).forEach(card => {
-          const text = card.innerText?.trim() || '';
-          if (!text || text.length < 10) return;
-          const caseNum = text.match(/\d{4}\/\d+|\d{10,}|\d{9}/)?.[0];
-          if (!caseNum || seen.has(caseNum)) return;
-          seen.add(caseNum);
-
-          const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
-          const dateMatch = text.match(
-            /\d{1,2}[\/\-]\d{1,2}[\/\-]\d{4}|\d{4}[\/\-]\d{1,2}[\/\-]\d{1,2}/
-          );
-
-          cases.push({
-            caseNumber: caseNum,
-            najizCaseNumber: caseNum,
-            caseName: lines.find(l =>
-              l.length > 5 && !/^\d+[\/\-]?\d*$/.test(l)
-            ) || 'قضية من ناجز',
-            status: lines.find(l =>
-              ['قيد','منتهي','نشط','مقيد','محكوم',
-               'مؤجل','مشطوب'].some(k => l.includes(k))
-            ) || 'قيد النظر',
-            nextSessionDate: dateMatch?.[0] || '',
-            isNajizSync: true,
-            source: 'najiz_extension'
-          });
-        });
-      } catch(e) {}
-    });
-
-    // fallback من النص
-    if (cases.length === 0) {
-      const text = document.body?.innerText || '';
-      const nums = [...new Set(
-        text.match(/\d{4}\/\d{1,2}\/\d+|\d{4}\/\d{4,}/g) || []
-      )];
-      nums.forEach(num => {
+  
+    patterns.forEach(pattern => {
+      const matches = allText.match(pattern) || [];
+      matches.forEach(num => {
         if (!seen.has(num)) {
           seen.add(num);
+          // البحث عن السياق حول الرقم
+          const idx = allText.indexOf(num);
+          const context = allText.substring(
+            Math.max(0, idx - 200),
+            Math.min(allText.length, idx + 400)
+          );
+          const lines = context.split('\n')
+            .map(l => l.trim()).filter(Boolean);
+  
           cases.push({
             caseNumber: num,
             najizCaseNumber: num,
-            caseName: 'قضية من ناجز',
-            status: 'قيد النظر',
+            caseName: lines.find(l =>
+              l.length > 10 &&
+              !/^\d+[\/\-]?\d*$/.test(l) &&
+              !l.includes('ريال') &&
+              !l.includes('هجري')
+            ) || 'قضية من ناجز',
+            status: lines.find(l =>
+              ['قيد','منتهي','نشط','مقيد','محكوم',
+               'مؤجل','مشطوب','موقوف','صدر','جديد',
+               'مباشرة','بانتظار'].some(k => l.includes(k))
+            ) || 'قيد النظر',
+            court: lines.find(l => l.includes('محكمة')) || '',
+            category: detectCategory(context),
+            nextHearing: extractDate(context) || '',
             isNajizSync: true,
-            source: 'najiz_text'
+            source: 'najiz_content_script'
           });
         }
       });
-    }
-
+    });
+  
+    // === من الجداول ===
+    document.querySelectorAll('table, [class*="Table"]')
+      .forEach(table => {
+      const rows = table.querySelectorAll(
+        'tr, [class*="Row"], [class*="row"]'
+      );
+      rows.forEach((row, i) => {
+        if (i === 0) return;
+        const cells = Array.from(
+          row.querySelectorAll('td, [class*="Cell"]')
+        ).map(c => c.innerText?.trim() || '');
+        if (cells.length < 2) return;
+  
+        const rowText = cells.join(' ');
+        const caseNum = rowText.match(
+          /\d{4}\/\d+|\d{10,}|\d{9}/
+        )?.[0];
+  
+        if (caseNum && !seen.has(caseNum)) {
+          seen.add(caseNum);
+          const dateMatch = extractDate(rowText);
+          cases.push({
+            caseNumber: caseNum,
+            najizCaseNumber: caseNum,
+            caseName: cells.find(c =>
+              c.length > 5 &&
+              !/^\d+[\/\-]?\d*$/.test(c) &&
+              !c.includes('محكمة')
+            ) || 'قضية من ناجز',
+            status: cells.find(c =>
+              ['قيد','منتهي','نشط','مقيد','محكوم',
+               'مؤجل','مشطوب','موقوف'].some(k => c.includes(k))
+            ) || 'قيد النظر',
+            court: cells.find(c => c.includes('محكمة')) || '',
+            category: detectCategory(rowText),
+            nextHearing: dateMatch || '',
+            isNajizSync: true,
+            source: 'najiz_table'
+          });
+        }
+      });
+    });
+  
+    // === من البطاقات والعناصر الديناميكية ===
+    const allElements = document.querySelectorAll(
+      '[class*="Card"],[class*="card"],[class*="Item"],' +
+      '[class*="Row"],[class*="List"],[class*="Case"],' +
+      '[data-testid],[aria-label],.MuiCard-root,' +
+      '.MuiPaper-root,.MuiListItem-root'
+    );
+  
+    allElements.forEach(el => {
+      const text = el.innerText?.trim() || '';
+      if (text.length < 5 || text.length > 2000) return;
+      const caseNum = text.match(
+        /\d{4}\/\d+|\d{10,}|\d{9}/
+      )?.[0];
+      if (!caseNum || seen.has(caseNum)) return;
+      seen.add(caseNum);
+  
+      const lines = text.split('\n')
+        .map(l => l.trim()).filter(Boolean);
+      cases.push({
+        caseNumber: caseNum,
+        najizCaseNumber: caseNum,
+        caseName: lines.find(l =>
+          l.length > 5 && !/^\d+[\/\-]?\d*$/.test(l)
+        ) || 'قضية من ناجز',
+        status: lines.find(l =>
+          ['قيد','منتهي','نشط','محكوم',
+           'مؤجل','مشطوب'].some(k => l.includes(k))
+        ) || 'قيد النظر',
+        nextHearing: extractDate(text) || '',
+        isNajizSync: true,
+        source: 'najiz_dynamic'
+      });
+    });
+  
     return cases;
+  }
+  
+  // دوال مساعدة
+  function extractDate(text) {
+    const m = text.match(
+      /\d{1,2}[\/\-]\d{1,2}[\/\-]\d{4}|' +
+      '\d{4}[\/\-]\d{1,2}[\/\-]\d{1,2}/
+    );
+    return m?.[0] || '';
+  }
+  
+  function detectCategory(text) {
+    if (text.includes('تجاري')) return 'commercial';
+    if (text.includes('عمالي') || text.includes('عمل')) return 'labor';
+    if (text.includes('جزائي') || text.includes('جنائي')) return 'criminal';
+    if (text.includes('أحوال') || text.includes('أسرة')) return 'personal_status';
+    if (text.includes('إداري') || text.includes('مظالم')) return 'administrative';
+    if (text.includes('تنفيذ')) return 'execution';
+    return 'civil';
   }
 
   // ===== استخراج بيانات الوكالات =====

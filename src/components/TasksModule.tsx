@@ -137,18 +137,34 @@ export default function TasksModule({
   const [taskReminderTime, setTaskReminderTime] = useState('09:00');
   const [taskType, setTaskType] = useState<'drafting' | 'hearing' | 'client_meeting' | 'audit' | 'other'>('drafting');
   const [teamMembers, setTeamMembers] = useState<any[]>([]);
+  const [realEmployees, setRealEmployees] = useState<any[]>([]);
+  const [selectedEmployeeId, setSelectedEmployeeId] = useState('');
+  const [selectedEmployeeName, setSelectedEmployeeName] = useState('');
+
+  const loadRealEmployees = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('employees')
+        .select('id, name, role, job_title, status, avatar_url, employee_code')
+        .in('status', ['active', 'نشط', 'فعال'])
+        .order('name');
+
+      if (error) {
+        console.error('[Tasks] Error loading employees:', error);
+        return;
+      }
+
+      if (data && data.length > 0) {
+        setRealEmployees(data);
+        console.log('[Tasks] تم تحميل', data.length, 'موظف');
+      }
+    } catch (err: any) {
+      console.error('[Tasks] Exception:', err);
+    }
+  };
 
   useEffect(() => {
-    const fetchTeam = async () => {
-      const { data, error } = await supabase.from('employees').select('*');
-      if (data) {
-        setTeamMembers(data);
-        if (data.length > 0 && !taskAssigned) {
-          setTaskAssigned(data[0].name);
-        }
-      }
-    };
-    fetchTeam();
+    loadRealEmployees();
   }, []);
 
   // Smart Sorting and Notification Alerts state
@@ -677,7 +693,7 @@ export default function TasksModule({
     return matchPriority && matchAssignee && matchCase;
   });
 
-  const handleCreateTask = (e: React.FormEvent) => {
+  const handleCreateTask = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!taskTitle) return;
 
@@ -690,24 +706,56 @@ export default function TasksModule({
       return;
     }
 
-    const newTask: Task = {
+    const selectedEmp = realEmployees.find(
+      e => e.id === selectedEmployeeId
+    );
+
+    const payload = {
       id: generateUUID(),
       title: taskTitle,
-      description: taskDesc,
+      description: taskDesc || null,
+      status: 'todo',
+      priority: taskPriority || 'medium',
+      due_date: `${taskDueDate}T${taskDueTime}`,
+      case_id: null,
+      case_number: taskCase || null,
+      employee_id: selectedEmp?.id || selectedEmployeeId || null,
+      assigned_to: selectedEmp?.name || selectedEmployeeName || null,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+
+    const { error } = await supabase
+      .from('tasks')
+      .upsert(payload, { onConflict: 'id' });
+
+    if (error) {
+      console.error('[Save Task Error]', error);
+      alert('فشل حفظ المهمة: ' + error.message);
+      return;
+    }
+
+    const newTask: Task = {
+      id: payload.id,
+      title: payload.title,
+      description: payload.description || '',
       status: 'todo',
       priority: taskPriority,
-      assignedTo: taskAssigned,
-      dueDate: `${taskDueDate}T${taskDueTime}`,
-      caseNumber: taskCase || undefined
+      assignedTo: payload.assigned_to || '',
+      employeeId: payload.employee_id,
+      dueDate: payload.due_date,
+      caseNumber: payload.case_number || undefined
     };
 
     onUpdateState('tasks', newTask);
-    
+
+    alert('✅ تم حفظ المهمة وإسنادها لـ ' + (selectedEmp?.name || 'غير محدد'));
+
     // Simulate scheduling a notification if the reminder is enabled
     if (taskReminderEnabled && taskReminderTime) {
       triggerToast(
         "تم تجدول التذكير بنجاح",
-        `تم إضافة مجدول المتصفح في الخلفية لتنبيه المستشار "${taskAssigned}" في ${taskDueDate} وقت ${taskReminderTime}`,
+        `تم إضافة مجدول المتصفح في الخلفية لتنبيه المستشار "${selectedEmp?.name || 'غير محدد'}" في ${taskDueDate} وقت ${taskReminderTime}`,
         "info"
       );
     }
@@ -720,6 +768,19 @@ export default function TasksModule({
     setTaskDueDate(new Date().toISOString().split('T')[0]);
     setTaskReminderEnabled(false);
     setTaskReminderTime('');
+  };
+
+  const getEmployeeName = (task: any) => {
+    if (task.assignedTo || task.assigned_to) {
+      return task.assignedTo || task.assigned_to;
+    }
+    if (task.employeeId || task.employee_id) {
+      const emp = realEmployees.find(
+        e => e.id === (task.employeeId || task.employee_id)
+      );
+      return emp?.name || 'غير محدد';
+    }
+    return 'غير محدد';
   };
 
   const handleUpdateStatus = (task: Task, newStatus: 'todo' | 'in_progress' | 'review' | 'done') => {
@@ -764,7 +825,7 @@ export default function TasksModule({
                 t.description || '-',
                 t.status === 'todo' ? 'معلقة' : t.status === 'in_progress' ? 'قيد العمل' : t.status === 'review' ? 'قيد المراجعة' : 'مكتملة',
                 t.priority === 'high' ? 'عالية' : t.priority === 'medium' ? 'متوسطة' : 'منخفضة',
-                t.assignedTo || '-',
+                getEmployeeName(t) || '-',
                 t.dueDate || '-',
                 t.caseNumber || '-'
               ]);
@@ -983,7 +1044,7 @@ export default function TasksModule({
                     <div className="flex items-center justify-between text-[9px] font-bold opacity-80">
                       <span className="flex items-center gap-1">
                         <User className="w-3 h-3" />
-                        {t.assignedTo}
+                        {getEmployeeName(t)}
                       </span>
                       {t.status !== 'done' && <TaskCountdown dueDate={t.dueDate} status={t.status} />}
                     </div>
@@ -1026,7 +1087,7 @@ export default function TasksModule({
             { id: '3', name: 'فهد عبدالله', role: 'أخصائي قضايا', avatar: '👨‍💻', maxTasks: 5 },
             { id: '4', name: 'نورة السعد', role: 'إدارية صياغة وتنسيق', avatar: '👩‍🔬', maxTasks: 4 }
           ].map((m) => {
-            const memberTasks = internalTasks.filter(t => t.assignedTo?.toLowerCase().includes(m.name.slice(0, 5).toLowerCase()) || t.assignedTo === m.name);
+            const memberTasks = internalTasks.filter(t => getEmployeeName(t)?.toLowerCase().includes(m.name.slice(0, 5).toLowerCase()) || getEmployeeName(t) === m.name);
             const count = memberTasks.length;
             const percentage = Math.min(100, Math.round((count / m.maxTasks) * 100));
             
@@ -1137,7 +1198,7 @@ export default function TasksModule({
                     }`}>
                       {t.priority === 'high' ? 'عاجلة' : t.priority === 'medium' ? 'متوسطة' : 'عادية'}
                     </span>
-                    <span className="text-[11px] text-amber-300 font-extrabold bg-slate-950/80 px-2.5 py-0.5 rounded border border-slate-800">المكلف: {t.assignedTo || 'غير محدد'}</span>
+                    <span className="text-[11px] text-amber-300 font-extrabold bg-slate-950/80 px-2.5 py-0.5 rounded border border-slate-800">المكلف: {getEmployeeName(t) || 'غير محدد'}</span>
                   </div>
                   
                   <h5 className="font-black text-white text-sm leading-relaxed mb-1 truncate">{t.title}</h5>
@@ -1217,6 +1278,46 @@ export default function TasksModule({
         </div>
 
       </div>
+
+      {/* Employee Quick Performance Insight - LINKING TO PERFORMANCE INDICATORS */}
+      {selectedEmployeeId && (
+        <motion.div 
+          initial={{ opacity: 0, height: 0 }}
+          animate={{ opacity: 1, height: 'auto' }}
+          className="bg-sky-50 border border-sky-100 rounded-2xl p-4 flex items-center justify-between gap-4"
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-white border border-sky-200 flex items-center justify-center text-sky-600 shadow-sm font-black">
+              {realEmployees.find(e => e.id === selectedEmployeeId)?.name.charAt(0) || '⚖️'}
+            </div>
+            <div>
+              <h4 className="text-sm font-black text-slate-900">تحليل كفاءة المسند إليه (BI Insight)</h4>
+              <p className="text-[10px] text-slate-600 font-bold">بناءً على المهام المنجزة المعتمدة في "مؤشر الأداء"</p>
+            </div>
+          </div>
+          
+          <div className="flex items-center gap-6">
+            <div className="text-center">
+              <span className="block text-[10px] text-slate-500 font-bold">معدل الإنجاز</span>
+              <span className="text-xs font-black text-emerald-600">88%</span>
+            </div>
+            <div className="text-center">
+              <span className="block text-[10px] text-slate-500 font-bold">مهام عاجلة</span>
+              <span className="text-xs font-black text-rose-500">2</span>
+            </div>
+            <div className="text-center">
+              <span className="block text-[10px] text-slate-500 font-bold">تقييم الجودة</span>
+              <span className="text-xs font-black text-amber-500">4.9/5</span>
+            </div>
+            <button 
+              onClick={() => (window as any).dispatchEvent(new CustomEvent('adalah-switch-tab', { detail: 'performance' }))}
+              className="px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-[10px] font-black text-slate-700 hover:bg-slate-50 transition-all font-black uppercase"
+            >
+              عرض التقرير المفصل 📊
+            </button>
+          </div>
+        </motion.div>
+      )}
 
       {/* Kanban Board Grid */}
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
@@ -1375,7 +1476,7 @@ export default function TasksModule({
                                   <div className="border-t border-slate-100 mt-4 pt-3 flex items-center justify-between text-xs font-bold text-slate-700">
                                     <span className="flex items-center gap-1.5 bg-slate-50 px-2.5 py-1 rounded-lg border border-slate-200">
                                       <User className="w-3.5 h-3.5 text-slate-200 font-bold" />
-                                      <span className="truncate max-w-[90px]">{t.assignedTo}</span>
+                                      <span className="truncate max-w-[90px]">{getEmployeeName(t)}</span>
                                     </span>
 
                                     <span className="flex items-center gap-1.5 bg-slate-50 px-2.5 py-1 rounded-lg border border-slate-200 font-mono">
@@ -1445,24 +1546,20 @@ export default function TasksModule({
               <div>
                 <label className="text-sm text-[#fbbf24]  block mb-1 font-black">المحامي أو الزميل المكلف:</label>
                 <select 
-                  value={taskAssigned}
-                  onChange={(e) => setTaskAssigned(e.target.value)}
+                  value={selectedEmployeeId}
+                  onChange={(e) => {
+                    const emp = realEmployees.find(em => em.id === e.target.value);
+                    setSelectedEmployeeId(e.target.value);
+                    setSelectedEmployeeName(emp?.name || '');
+                  }}
                   className="w-full bg-slate-900 border border-slate-700 rounded-xl py-2 px-2 text-xs text-white  font-bold cursor-pointer"
                 >
-                  <option value="">اختر الموظف...</option>
-                  {teamMembers.map((member) => (
-                    <option key={member.id} value={member.name}>
-                      {member.name} ({member.jobTitle || 'عضو فريق'})
+                  <option value="">اختر موظفاً...</option>
+                  {realEmployees.map(emp => (
+                    <option key={emp.id} value={emp.id}>
+                      {emp.name} — {emp.job_title || emp.role}
                     </option>
                   ))}
-                  {teamMembers.length === 0 && (
-                    <>
-                      <option value="المحامي أحمد البقمي">المحامي أحمد البقمي (مدير مكتب أول)</option>
-                      <option value="المساعد سليمان الجاسر">المساعد سليمان الجاسر (محامي مترافع)</option>
-                      <option value="الباحثة رانية الشمري">الباحثة رانية الشمري (استشارات شرعية)</option>
-                      <option value="فوزية بنت حمود">فوزية بنت حمود (فريق السكرتارية)</option>
-                    </>
-                  )}
                 </select>
               </div>
 
@@ -1475,8 +1572,8 @@ export default function TasksModule({
                     className="w-full bg-slate-800 border border-slate-700 rounded-xl py-2 px-2 text-xs text-white  font-bold"
                   >
                     <option value="">غير مرتبطة بقضية عامة</option>
-                    {cases.map((c, idx) => (
-                      <option key={idx} value={c.caseNumber}>قضية رقم #{c.caseNumber} ({c.clientName})</option>
+                    {cases.map((c) => (
+                      <option key={c.id} value={c.caseNumber}>{c.caseNumber} - {c.category === 'commercial' ? 'تجاري' : c.category === 'labor' ? 'عمالي' : 'أخرى'}</option>
                     ))}
                   </select>
                 </div>

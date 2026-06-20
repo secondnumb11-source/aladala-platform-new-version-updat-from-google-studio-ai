@@ -7,6 +7,8 @@ import React, { useState, useEffect } from 'react';
 import { LawLink } from '@/types';
 import { supabase } from '@/lib/supabase';
 import { toCamel, toSnake } from '@/utils/schemaMapping';
+import { TEXT_COLORS, getContrastText, getDynamicTextColor } from '../utils/contrastUtils';
+import AuditLogs from './AuditLogs';
 import { 
   Settings as SettingsIcon, 
   Mail, 
@@ -135,10 +137,29 @@ export default function Settings({
 }: SettingsProps) {
   const { profile } = useSupabase();
   
-  const [activeSettingsTab, setActiveSettingsTab] = useState<'general' | 'db-issues'>('general');
+  const [activeSettingsTab, setActiveSettingsTab] = useState<'general' | 'db-issues' | 'whatsapp'>('general');
   const [failedLogs, setFailedLogs] = useState<any[]>([]);
   const [resubmittingId, setResubmittingId] = useState<string | null>(null);
   const [resubmitStatus, setResubmitStatus] = useState<Record<string, { success: boolean; message: string }>>({});
+  const [whatsappLogs, setWhatsappLogs] = useState<any[]>([]);
+  const [loadingWhatsappLogs, setLoadingWhatsappLogs] = useState(false);
+
+  const fetchWhatsappLogs = async () => {
+    setLoadingWhatsappLogs(true);
+    try {
+      const res = await fetch('/api/whatsapp/logs');
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success) {
+          setWhatsappLogs(data.logs);
+        }
+      }
+    } catch (err) {
+      console.error('Failed to fetch whatsapp logs', err);
+    } finally {
+      setLoadingWhatsappLogs(false);
+    }
+  };
 
   const loadLogs = () => {
     const data = localStorage.getItem('failed_persistence_logs');
@@ -807,6 +828,7 @@ export default function Settings({
   useEffect(() => {
     fetchConfig();
     fetchLawLinks();
+    fetchWhatsappLogs();
     
     // Load SMTP details from dynamic local state of browser
     const localHost = localStorage.getItem('SMTP_HOST');
@@ -1108,10 +1130,109 @@ export default function Settings({
             </span>
           )}
         </button>
+        <button
+          type="button"
+          onClick={() => setActiveSettingsTab('whatsapp')}
+          className={`px-6 py-3 text-xs font-black transition-all border-b-2 flex items-center gap-2 ${
+            activeSettingsTab === 'whatsapp' 
+              ? 'border-emerald-600 text-emerald-600 font-extrabold' 
+              : 'border-transparent text-slate-500 hover:text-slate-800'
+          }`}
+        >
+          <MessageSquare className="w-4 h-4" />
+          <span>سجل نشاط الواتساب اليومي</span>
+        </button>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         
+        {activeSettingsTab === 'whatsapp' && (
+          <div className="lg:col-span-12 space-y-6 overflow-hidden mt-6">
+             <div className="bg-white border border-slate-200 rounded-[2.5rem] p-6 md:p-10 shadow-sm">
+                <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 pb-6 border-b border-slate-100 gap-4">
+                   <div>
+                      <h2 className={`text-2xl font-black ${getDynamicTextColor('bg-white')}`}>سجلات إرسال الواتساب (WhatsApp API Audit)</h2>
+                      <p className={`text-sm ${getDynamicTextColor('bg-white')} font-bold mt-1 opacity-70`}>تتبع حي لآخر 10 عمليات إرسال عبر المنصة مع حالة الإرسال والتوقيت.</p>
+                   </div>
+                   <button 
+                     onClick={fetchWhatsappLogs}
+                     className="flex items-center justify-center gap-2 px-5 py-3 bg-slate-950 hover:bg-slate-800 text-white rounded-xl transition-all shadow-md font-black text-xs"
+                   >
+                     <RefreshCw className={`w-4 h-4 ${loadingWhatsappLogs ? 'animate-spin' : ''}`} />
+                     <span>تحديث السجل فَوْراً</span>
+                   </button>
+                </div>
+
+                <div className="overflow-x-auto rounded-2xl border border-slate-100">
+                   <table className="w-full text-right border-collapse">
+                      <thead>
+                         <tr className="bg-slate-50 border-b border-slate-200">
+                            <th className={`p-4 text-xs font-black ${getDynamicTextColor('bg-slate-50')} uppercase tracking-wider`}>الموكل / المعرف</th>
+                            <th className={`p-4 text-xs font-black ${getDynamicTextColor('bg-slate-50')} uppercase tracking-wider border-r border-slate-200/50`}>الحالة التشغيلية</th>
+                            <th className={`p-4 text-xs font-black ${getDynamicTextColor('bg-slate-50')} uppercase tracking-wider border-r border-slate-200/50`}>توقيت البث</th>
+                            <th className={`p-4 text-xs font-black ${getDynamicTextColor('bg-slate-50')} uppercase tracking-wider border-r border-slate-200/50`}>رقم التواصل</th>
+                            <th className={`p-4 text-xs font-black ${getDynamicTextColor('bg-slate-50')} uppercase tracking-wider border-r border-slate-200/50`}>محتوى المراسلة</th>
+                         </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100 italic">
+                         {loadingWhatsappLogs ? (
+                            <tr>
+                               <td colSpan={5} className="p-20 text-center">
+                                  <RefreshCw className="w-12 h-12 animate-spin text-emerald-500 mx-auto" />
+                                  <p className="mt-4 text-xs font-black text-slate-400">جاري استرجاع البيانات من سجلات API...</p>
+                               </td>
+                            </tr>
+                         ) : whatsappLogs.length === 0 ? (
+                            <tr>
+                               <td colSpan={5} className="p-20 text-center text-slate-500 font-bold">لا تتوفر سجلات إرسال في قاعدة البيانات حالياً.</td>
+                            </tr>
+                         ) : (
+                            whatsappLogs.slice(0, 10).map((log: any) => (
+                               <tr key={log.id} className="hover:bg-slate-50/50 transition-colors group">
+                                  <td className={`p-4 text-sm font-black ${getDynamicTextColor('bg-white')} truncate max-w-[150px]`}>{log.client_id || 'هوية مجهولة'}</td>
+                                  <td className="p-4 border-r border-slate-200/50">
+                                     <span className={`px-4 py-1.5 rounded-full text-[10px] font-black border flex items-center gap-1.5 w-fit ${
+                                       log.status === 'success' 
+                                          ? 'bg-emerald-50 text-emerald-700 border-emerald-200' 
+                                          : 'bg-rose-50 text-rose-700 border-rose-200'
+                                     }`}>
+                                        <div className={`w-1.5 h-1.5 rounded-full ${log.status === 'success' ? 'bg-emerald-500' : 'bg-rose-500'}`} />
+                                        {log.status === 'success' ? 'تم الإرسال والوصول بنجاح' : 'فشل الإرسال (خطأ تقني)'}
+                                     </span>
+                                  </td>
+                                  <td className={`p-4 text-xs font-mono font-black ${getDynamicTextColor('bg-white')} border-r border-slate-200/50`}>
+                                     {new Date(log.created_at).toLocaleString('ar-SA', { hour: '2-digit', minute: '2-digit', second: '2-digit', day: '2-digit', month: '2-digit' })}
+                                  </td>
+                                  <td className={`p-4 text-xs font-mono font-black ${getDynamicTextColor('bg-white')} border-r border-slate-200/50`}>{log.phone_number}</td>
+                                  <td className={`p-4 text-xs ${getDynamicTextColor('bg-white')} font-bold opacity-80 truncate max-w-[280px] border-r border-slate-200/50`}>
+                                     {log.message}
+                                  </td>
+                               </tr>
+                            ))
+                         )}
+                      </tbody>
+                   </table>
+                </div>
+                
+                {/* Embedded General AuditLogs underneath */}
+                <div className="mt-20 pt-12 border-t-8 border-slate-900 border-double">
+                   <div className="flex items-center gap-4 mb-10">
+                      <div className="w-12 h-12 bg-slate-950 text-white rounded-2xl flex items-center justify-center shadow-lg">
+                        <ShieldAlert className="w-6 h-6" />
+                      </div>
+                      <div>
+                        <h3 className="text-2xl font-black text-slate-900 leading-none">حوكمة تشغيل النظام (System Governance & Audit)</h3>
+                        <p className="text-sm font-bold text-slate-500 mt-2">رؤية تقنية شاملة لكافة الحركات والوصول الإداري لقاعدة البيانات والواجهات البرمجية.</p>
+                      </div>
+                   </div>
+                   <div className="scale-100 border-[12px] border-slate-50 rounded-[3.5rem] overflow-hidden shadow-[0_30px_60px_-12px_rgba(0,0,0,0.12)] bg-slate-50">
+                    <AuditLogs />
+                   </div>
+                </div>
+             </div>
+          </div>
+        )}
+
         {activeSettingsTab === 'db-issues' ? (
           <div className="lg:col-span-12 space-y-6 text-right" dir="rtl">
             <div className="bg-white border border-slate-800 rounded-3xl p-6 shadow-sm space-y-6">
@@ -2888,17 +3009,83 @@ export default function Settings({
             </div>
           </div>
 
+          {/* WhatsApp Activity Log Card */}
+          <div className="bg-white border border-slate-800 rounded-2xl p-6 space-y-4 shadow-sm" id="whatsapp-activity-log-card" dir="rtl">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+              <div className="flex items-center gap-2">
+                <Activity className={`w-5 h-5 ${TEXT_COLORS.onLight}`} />
+                <h2 className={`text-sm font-bold ${TEXT_COLORS.onLight} font-sans`}>سجل العمليات (WhatsApp Activity Log)</h2>
+              </div>
+              <button 
+                onClick={fetchWhatsappLogs}
+                disabled={loadingWhatsappLogs}
+                className="text-xs bg-slate-100 hover:bg-slate-200 text-slate-900 px-3 py-1.5 rounded-lg font-bold flex items-center gap-1.5 transition-colors"
+              >
+                <RefreshCw className={`w-3.5 h-3.5 ${loadingWhatsappLogs ? 'animate-spin' : ''}`} />
+                تحديث السجل
+              </button>
+            </div>
+
+            <p className={`text-xs ${TEXT_COLORS.onLightSecondary} leading-relaxed text-right`}>
+              يعرض هذا السجل آخر 10 عمليات تمت بنجاح أو فشل عبر API الواتساب، مع توضيح حالة كل عملية لتتبع الإشعارات المرسلة للموكلين.
+            </p>
+
+            <div className="overflow-hidden border border-slate-800 rounded-xl">
+              <table className="w-full text-right text-xs">
+                <thead className="bg-slate-900 text-white">
+                  <tr>
+                    <th className="p-3">رقم المستلم</th>
+                    <th className="p-3">الرسالة</th>
+                    <th className="p-3">الحالة</th>
+                    <th className="p-3">التوقيت</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-800 bg-white">
+                  {whatsappLogs.length > 0 ? whatsappLogs.map((log) => (
+                    <tr key={log.id} className="hover:bg-slate-50 transition-colors">
+                      <td className="p-3 font-mono font-bold text-slate-900">{log.recipient_phone}</td>
+                      <td className="p-3 max-w-[200px] truncate text-slate-900" title={log.message}>{log.message}</td>
+                      <td className="p-3">
+                        <span className={`px-2 py-0.5 rounded-full font-black text-[10px] ${
+                          log.status === 'success' 
+                            ? 'bg-emerald-100 text-emerald-900' 
+                            : 'bg-rose-100 text-rose-800'
+                        }`}>
+                          {log.status === 'success' ? '✓ نجاح' : '✗ فشل'}
+                        </span>
+                        {log.error_message && (
+                          <div className="text-[10px] text-rose-700 mt-1 max-w-[150px] truncate" title={log.error_message}>
+                            {log.error_message}
+                          </div>
+                        )}
+                      </td>
+                      <td className="p-3 text-slate-900 font-bold">
+                        {new Date(log.created_at).toLocaleString('ar-SA')}
+                      </td>
+                    </tr>
+                  )) : (
+                    <tr>
+                      <td colSpan={4} className="p-10 text-center text-slate-500 font-bold">
+                        لا توجد سجلات عمليات واتساب حالياً.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
           {/* Cloud Calendar Sync Integration Card */}
           <div className="bg-white border border-slate-800 rounded-2xl p-6 space-y-4 shadow-sm">
             <div className="flex items-center justify-between border-b border-slate-800 pb-3">
               <div className="flex items-center gap-2">
-                <CalendarIcon className="w-5 h-5 text-primary" />
-                <h2 className="text-sm font-bold text-slate-900 font-sans">تكامل التقويمات السحابية (Google & Outlook Calendar Sync)</h2>
+                <CalendarIcon className="w-5 h-5 text-amber-900" />
+                <h2 className={`text-sm font-bold ${TEXT_COLORS.onLight} font-sans`}>تكامل التقويمات السحابية (Google & Outlook Calendar Sync)</h2>
               </div>
-              <span className="text-xs bg-sky-50 text-sky-600 px-2 py-0.5 rounded font-bold font-mono">Cloud Sync Web-OAuth</span>
+              <span className={`text-xs bg-sky-50 ${TEXT_COLORS.onLight} px-2 py-0.5 rounded font-bold font-mono`}>Cloud Sync Web-OAuth</span>
             </div>
 
-            <p className="text-xs text-slate-900 leading-relaxed text-right">
+            <p className={`text-xs ${TEXT_COLORS.onLightSecondary} leading-relaxed text-right`}>
               قم بتمكين المزامنة ثنائية الاتجاه لنقل ومتابعة جميع الجلسات القضائية والالتزامات المسجلة في الأجندة مع حسابات Google أو Outlook الخاصة بالعملاء والمحاميين والمستشاريين القانونيين مباشرة لضمان عدم فوات أي موعد.
             </p>
 

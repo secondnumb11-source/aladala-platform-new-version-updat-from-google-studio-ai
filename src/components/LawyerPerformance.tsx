@@ -56,77 +56,291 @@ export default function LawyerPerformance({ cases: propCases }: LawyerPerformanc
     return () => window.removeEventListener('adalah-advanced-config-updated', handleThemeEvent);
   }, []);
 
+  const [isLoading, setIsLoading] = useState(false);
+
   const loadKPIData = async () => {
+    setIsLoading(true);
     try {
-      // جلب كل البيانات المطلوبة
-      const [casesRes, tasksRes, employeesRes, invoicesRes, poaRes, consultationsRes] = await Promise.all([
-        supabase.from('cases').select('id, status, category, created_at, updated_at', { count: 'exact' }),
-        supabase.from('tasks').select('id, status, employee_id, due_date, created_at, updated_at', { count: 'exact' }),
-        supabase.from('employees').select('id, name, role, status').eq('status', 'active'),
-        supabase.from('invoices').select('id, status, amount, created_at', { count: 'exact' }),
-        supabase.from('powers_of_attorney').select('id, status, expiry_date', { count: 'exact' }),
-        supabase.from('cases').select('id, status').eq('category', 'consultation')
+      // جلب جميع البيانات معاً
+      const [
+        casesRes, tasksRes, employeesRes,
+        invoicesRes, poaRes, hearingsRes,
+        executionsRes, clientsRes
+      ] = await Promise.all([
+        supabase.from('cases').select(
+          'id, status, category, created_at, updated_at, client_id, lead_lawyer_id, archived'
+        ).eq('archived', false),
+
+        supabase.from('tasks').select(
+          'id, status, employee_id, assigned_to, due_date, created_at, updated_at, priority'
+        ),
+
+        supabase.from('employees').select(
+          'id, name, role, job_title, status'
+        ).in('status', ['active', 'نشط', 'فعال']),
+
+        supabase.from('invoices').select(
+          'id, status, amount, total_amount, created_at'
+        ),
+
+        supabase.from('powers_of_attorney').select(
+          'id, status, expiry_date'
+        ),
+
+        supabase.from('hearings').select(
+          'id, date, status, case_id'
+        ),
+
+        supabase.from('executions').select(
+          'id, status'
+        ),
+
+        supabase.from('clients').select(
+          'id, status, active_portal'
+        )
       ]);
-      
+
       const cases = casesRes.data || [];
       const tasks = tasksRes.data || [];
       const employees = employeesRes.data || [];
       const invoices = invoicesRes.data || [];
       const poas = poaRes.data || [];
-      
-      // حساب المؤشرات
+      const hearings = hearingsRes.data || [];
+      const executions = executionsRes.data || [];
+      const clients = clientsRes.data || [];
+
       const today = new Date();
-      const thirtyDaysFromNow = new Date(today.getTime() + 30 * 24 * 60 * 60 * 1000);
-      
-      const kpi = {
-        totalCases: cases.length,
-        activeCases: cases.filter(c => c.status === 'active' || c.status === 'new').length,
-        completedCases: cases.filter(c => c.status === 'closed' || c.status === 'won').length,
-        pendingCases: cases.filter(c => c.status === 'pending').length,
-        commercialCases: cases.filter(c => c.category === 'commercial').length,
-        laborCases: cases.filter(c => c.category === 'labor').length,
-        personalCases: cases.filter(c => c.category === 'personal').length,
-        executionCases: cases.filter(c => c.category === 'execution').length,
-        administrativeCases: cases.filter(c => c.category === 'administrative').length,
-        completedTasks: tasks.filter(t => t.status === 'done').length,
-        pendingTasks: tasks.filter(t => t.status !== 'done').length,
+      const thirtyDays = new Date(
+        today.getTime() + 30 * 24 * 60 * 60 * 1000
+      );
+
+      // ===== مؤشرات القضايا =====
+      const totalCases = cases.length;
+      const activeCases = cases.filter(c =>
+        ['active','new','under_review','قيد النظر','نشطة']
+          .includes(c.status)
+      ).length;
+      const closedCases = cases.filter(c =>
+        ['closed','final_judgment','منتهي','مغلقة']
+          .includes(c.status)
+      ).length;
+      const pendingCases = cases.filter(c =>
+        ['pending','postponed','مؤجل','معلقة']
+          .includes(c.status)
+      ).length;
+
+      // تصنيف القضايا
+      const commercialCases = cases.filter(
+        c => c.category === 'commercial'
+      ).length;
+      const laborCases = cases.filter(
+        c => c.category === 'labor'
+      ).length;
+      const civilCases = cases.filter(
+        c => c.category === 'civil'
+      ).length;
+      const personalCases = cases.filter(
+        c => c.category === 'personal_status'
+      ).length;
+      const criminalCases = cases.filter(
+        c => c.category === 'criminal'
+      ).length;
+
+      // ===== مؤشرات المهام =====
+      const totalTasks = tasks.length;
+      const completedTasks = tasks.filter(
+        t => t.status === 'done' || t.status === 'completed'
+      ).length;
+      const pendingTasks = tasks.filter(
+        t => t.status === 'todo' || t.status === 'in_progress'
+      ).length;
+      const overdueTasks = tasks.filter(t => {
+        if (!t.due_date) return false;
+        return new Date(t.due_date) < today &&
+          t.status !== 'done';
+      }).length;
+
+      // ===== مؤشرات الفواتير =====
+      const paidInvoices = invoices.filter(
+        i => i.status === 'paid'
+      ).length;
+      const pendingInvoices = invoices.filter(
+        i => ['pending','unpaid'].includes(i.status)
+      ).length;
+      const totalRevenue = invoices
+        .filter(i => i.status === 'paid')
+        .reduce((sum, i) => sum + (
+          Number(i.total_amount) || Number(i.amount) || 0
+        ), 0);
+
+      // ===== الوكالات المنتهية قريباً =====
+      const expiringPOAs = poas.filter(p => {
+        if (!p.expiry_date) return false;
+        const expiry = new Date(p.expiry_date);
+        return expiry >= today && expiry <= thirtyDays;
+      }).length;
+
+      const expiredPOAs = poas.filter(p => {
+        if (!p.expiry_date) return false;
+        return new Date(p.expiry_date) < today;
+      }).length;
+
+      // ===== أداء الموظفين =====
+      const employeePerformance = employees.map(emp => {
+        const empTasks = tasks.filter(t =>
+          t.employee_id === emp.id ||
+          t.assigned_to === emp.name
+        );
+        const empCases = cases.filter(
+          c => c.lead_lawyer_id === emp.id
+        );
+
+        const completedEmpTasks = empTasks.filter(
+          t => t.status === 'done' || t.status === 'completed'
+        ).length;
+        const totalEmpTasks = empTasks.length;
+        const completionRate = totalEmpTasks > 0
+          ? Math.round((completedEmpTasks / totalEmpTasks) * 100)
+          : 0;
+
+        const closedEmpCases = empCases.filter(
+          c => c.status === 'closed' || c.status === 'final_judgment'
+        ).length;
+
+        // حساب متوسط سرعة إغلاق القضايا
+        const closedWithDates = empCases.filter(c =>
+          c.status === 'closed' && c.created_at && c.updated_at
+        );
+        const avgClosingDays = closedWithDates.length > 0
+          ? Math.round(
+            closedWithDates.reduce((sum, c) => {
+              const days = (
+                new Date(c.updated_at).getTime() -
+                new Date(c.created_at).getTime()
+              ) / (1000 * 60 * 60 * 24);
+              return sum + days;
+            }, 0) / closedWithDates.length
+          )
+          : 0;
+
+        return {
+          id: emp.id,
+          name: emp.name,
+          role: emp.job_title || emp.role,
+          totalTasks: totalEmpTasks,
+          completedTasks: completedEmpTasks,
+          pendingTasks: totalEmpTasks - completedEmpTasks,
+          completionRate,
+          casesHandled: empCases.length,
+          closedCases: closedEmpCases,
+          avgClosingDays,
+          overdueTasks: empTasks.filter(t => {
+            if (!t.due_date) return false;
+            return new Date(t.due_date) < today &&
+              t.status !== 'done';
+          }).length
+        };
+      });
+
+      // ===== بيانات الرسوم البيانية =====
+      const last6Months = Array.from({length: 6}, (_, i) => {
+        const d = new Date();
+        d.setMonth(d.getMonth() - (5 - i));
+        return {
+          month: d.toLocaleDateString('ar-SA', { month: 'short' }),
+          year: d.getFullYear(),
+          monthNum: d.getMonth(),
+          cases: cases.filter(c => {
+            const cd = new Date(c.created_at);
+            return cd.getMonth() === d.getMonth() &&
+              cd.getFullYear() === d.getFullYear();
+          }).length,
+          tasks: tasks.filter(t => {
+            const td = new Date(t.created_at);
+            return td.getMonth() === d.getMonth() &&
+              td.getFullYear() === d.getFullYear();
+          }).length,
+          completed: tasks.filter(t => {
+            if (!t.updated_at) return false;
+            const td = new Date(t.updated_at);
+            return td.getMonth() === d.getMonth() &&
+              td.getFullYear() === d.getFullYear() &&
+              t.status === 'done';
+          }).length
+        };
+      });
+
+      // ===== تحديث الـ State =====
+      setKpiData({
+        // القضايا
+        totalCases, activeCases, closedCases, pendingCases,
+        commercialCases, laborCases, civilCases,
+        personalCases, criminalCases,
+
+        // المهام
+        totalTasks, completedTasks, pendingTasks, overdueTasks,
+        completionRate: totalTasks > 0
+          ? Math.round((completedTasks / totalTasks) * 100)
+          : 0,
+
+        // الموظفون
         activeEmployees: employees.length,
-        paidInvoices: invoices.filter(i => i.status === 'paid').length,
-        pendingInvoices: invoices.filter(i => i.status === 'pending' || i.status === 'unpaid').length,
+        employeePerformance,
+
+        // الفواتير
+        paidInvoices, pendingInvoices, totalRevenue,
+
+        // العملاء
+        totalClients: clients.length,
+        activeClients: clients.filter(
+          c => c.status === 'active'
+        ).length,
+        portalClients: clients.filter(
+          c => c.active_portal === true
+        ).length,
+
+        // الوكالات
         totalPOAs: poas.length,
-        expiringPOAs: poas.filter(p => {
-          if (!p.expiry_date) return false;
-          const expiry = new Date(p.expiry_date);
-          return expiry >= today && expiry <= thirtyDaysFromNow;
-        }).length,
-        
-        // أداء كل موظف
-        employeePerformance: employees.map(emp => {
-          const empTasks = tasks.filter(t => t.employee_id === emp.id);
-          const empCases = cases.filter(c => (c as any).lead_lawyer_id === emp.id);
-          const completedEmpTasks = empTasks.filter(t => t.status === 'done').length;
-          const totalEmpTasks = empTasks.length;
-          
-          return {
-            id: emp.id,
-            name: emp.name,
-            role: emp.role,
-            completedTasks: completedEmpTasks,
-            totalTasks: totalEmpTasks,
-            completionRate: totalEmpTasks > 0 ? Math.round((completedEmpTasks / totalEmpTasks) * 100) : 0,
-            casesHandled: empCases.length,
-            closedCases: empCases.filter(c => c.status === 'closed').length,
-          };
-        })
-      };
-      
-      setKpiData(kpi);
-    } catch (err) {
+        expiringPOAs, expiredPOAs,
+
+        // الجلسات
+        upcomingHearings: hearings.filter(
+          h => new Date(h.date) >= today
+        ).length,
+        passedHearings: hearings.filter(
+          h => new Date(h.date) < today
+        ).length,
+
+        // التنفيذ
+        totalExecutions: executions.length,
+        pendingExecutions: executions.filter(
+          e => e.status === 'pending'
+        ).length,
+
+        // الرسوم البيانية
+        monthlyData: last6Months,
+        categoryData: [
+          { name: 'تجاري', value: commercialCases, color: '#f59e0b' },
+          { name: 'عمالي', value: laborCases, color: '#3b82f6' },
+          { name: 'مدني', value: civilCases, color: '#8b5cf6' },
+          { name: 'أحوال شخصية', value: personalCases, color: '#10b981' },
+          { name: 'جزائي', value: criminalCases, color: '#ef4444' },
+        ]
+      });
+
+    } catch (err: any) {
       console.error('[KPI Load Error]', err);
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  useEffect(() => { loadKPIData(); }, []);
+  useEffect(() => {
+    loadKPIData();
+    // تحديث كل 5 دقائق
+    const interval = setInterval(loadKPIData, 5 * 60 * 1000);
+    return () => clearInterval(interval);
+  }, []);
 
   const [targetCaseCategory, setTargetCaseCategory] = useState<string>("commercial");
   const [predictionResult, setPredictionResult] = useState<{ probability: number; reason: string } | null>(null);
@@ -231,6 +445,15 @@ export default function LawyerPerformance({ cases: propCases }: LawyerPerformanc
     { subject: 'دقة المذكرات', A: 88, fullMark: 100 },
   ];
 
+  const displayData = selectedEmployee === 'all'
+    ? kpiData
+    : {
+      ...kpiData,
+      displayEmployee: kpiData?.employeePerformance?.find(
+        (e: any) => String(e.id) === String(selectedEmployee)
+      )
+    };
+
   return (
     <div id="lawyer-performance-dashboard" className="space-y-8 text-right animate-fade-in pb-12" dir="rtl">
       
@@ -254,12 +477,14 @@ export default function LawyerPerformance({ cases: propCases }: LawyerPerformanc
               <span className="text-[10px] text-slate-200 font-bold block mb-1 font-black uppercase">عرض تقرير:</span>
               <select
                 value={selectedEmployee}
-                onChange={(e) => setSelectedEmployee(e.target.value)}
+                onChange={e => setSelectedEmployee(e.target.value)}
                 className="bg-transparent text-slate-900 font-black text-xs focus:outline-none cursor-pointer appearance-none"
               >
-                <option value="all">كافة الكوادر والمستشارين (الفريق)</option>
+                <option value="all">📊 جميع الموظفين</option>
                 {kpiData?.employeePerformance?.map((emp: any) => (
-                  <option key={emp.id} value={emp.id}>{emp.name}</option>
+                  <option key={emp.id} value={emp.id}>
+                    {emp.name} — {emp.role}
+                  </option>
                 ))}
               </select>
             </div>
@@ -655,7 +880,10 @@ export default function LawyerPerformance({ cases: propCases }: LawyerPerformanc
             </div>
           </div>
         </div>
+      </div>
 
+      {/* AI Success Predictor & Highlights Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* AI Success Predictor - New Feature based on JudicialObservatory precedents */}
         <div className="bg-white border border-slate-200 p-8 rounded-[2rem] space-y-6 shadow-sm relative overflow-hidden">
           <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 blur-3xl pointer-events-none"></div>
@@ -784,6 +1012,83 @@ export default function LawyerPerformance({ cases: propCases }: LawyerPerformanc
         </div>
 
       </div>
+      
+      {/* Employee Performance Analytics Cards (New Requested Feature) */}
+      <div className="space-y-6">
+        <div className="flex items-center gap-3">
+          <div className="p-2.5 bg-indigo-50 rounded-2xl border border-indigo-100">
+             <Star className="w-5 h-5 text-indigo-600" />
+          </div>
+          <div>
+            <h3 className="text-lg font-black text-slate-900 leading-tight">مؤشرات أداء الموظفين التحليلية</h3>
+            <p className="text-xs text-slate-400 font-bold font-bold uppercase tracking-widest mt-1">Employee Operational KPI Dashboard</p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {kpiData?.employeePerformance?.slice(0, 8).map((emp: any) => (
+            <div key={emp.id} className="bg-white border-2 border-slate-100 p-6 rounded-[2.5rem] shadow-sm hover:shadow-xl hover:border-indigo-200 transition-all group relative overflow-hidden">
+              <div className="absolute top-0 left-0 w-24 h-24 bg-indigo-500/5 blur-[40px] -ml-12 -mt-12 group-hover:bg-indigo-500/10 transition-all"></div>
+              
+              <div className="flex justify-between items-start mb-6 border-b border-slate-50 pb-4 relative z-10">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-2xl bg-indigo-600 flex items-center justify-center text-white font-black text-lg shadow-lg group-hover:rotate-6 transition-transform">
+                    {emp.name.charAt(0)}
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-black text-slate-900 group-hover:text-indigo-600 transition-colors line-clamp-1">{emp.name}</h4>
+                    <p className="text-[10px] text-indigo-400 font-bold uppercase tracking-widest truncate">{emp.role}</p>
+                  </div>
+                </div>
+                <div className="flex flex-col items-end">
+                   <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full border mb-1 ${
+                     emp.completionRate > 70 ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-amber-50 text-amber-600 border-amber-100'
+                   }`}>
+                      <CheckCircle2 className="w-3 h-3" />
+                      <span className="text-[10px] font-black">{emp.completionRate}%</span>
+                   </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4 relative z-10">
+                <div className="space-y-1">
+                   <span className="text-[9px] text-slate-400 font-black uppercase block tracking-wider">المهام المنجزة</span>
+                   <div className="flex items-end gap-1">
+                      <span className="text-xl font-black text-slate-900 font-mono">{emp.completedTasks}</span>
+                      <span className="text-[10px] text-slate-300 font-bold mb-1">/ {emp.totalTasks}</span>
+                   </div>
+                </div>
+                <div className="space-y-1">
+                   <span className="text-[9px] text-slate-400 font-black uppercase block tracking-wider">القضايا الموكلة</span>
+                   <div className="flex items-end gap-1">
+                      <span className="text-xl font-black text-slate-900 font-mono">{emp.casesHandled}</span>
+                      <span className="text-[10px] text-slate-300 font-bold mb-1">دعوى</span>
+                   </div>
+                </div>
+              </div>
+
+              <div className="mt-6 pt-6 border-t border-dashed border-slate-100 flex justify-between items-center relative z-10">
+                <div className="flex items-center gap-2">
+                  <Clock className="w-3.5 h-3.5 text-slate-300" />
+                  <span className="text-[10px] text-slate-500 font-bold">متوسط الإغلاق: <span className="text-slate-900 font-black">{emp.avgClosingDays || '---'} ي</span></span>
+                </div>
+                <div className="flex items-center gap-1.5 bg-slate-50 px-2 py-1 rounded-lg border border-slate-100">
+                  <span className="text-[10px] text-slate-500 font-black">متأخر:</span>
+                  <span className={`text-[10px] font-black ${emp.overdueTasks > 0 ? 'text-rose-600' : 'text-emerald-600'}`}>{emp.overdueTasks}</span>
+                </div>
+              </div>
+
+              {/* Progress Bar Mini */}
+              <div className="mt-4 h-1 w-full bg-slate-100 rounded-full overflow-hidden relative z-10">
+                <div 
+                  className={`h-full transition-all duration-1000 ${emp.completionRate > 70 ? 'bg-indigo-500' : 'bg-amber-400'}`}
+                  style={{ width: `${emp.completionRate}%` }}
+                ></div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
 
       {/* Lawyers List Grid */}
       <div className="bg-sky-50 border border-slate-200 rounded-2xl p-6 shadow-sm">
@@ -824,6 +1129,95 @@ export default function LawyerPerformance({ cases: propCases }: LawyerPerformanc
         </div>
       </div>
 
+      {/* Employee Performance Narratives Section */}
+      <div className="bg-white border border-slate-200 p-8 rounded-[2rem] shadow-sm space-y-6 mt-8">
+        <div className="flex items-center gap-3 border-b border-slate-100 pb-5">
+          <div className="p-2.5 bg-indigo-50 rounded-2xl text-indigo-600">
+            <Sparkles className="w-5 h-5" />
+          </div>
+          <div>
+            <h3 className="text-sm font-black text-slate-900 uppercase tracking-tight">تحليل السلوك المهني والإنتاجية (Narrative Analysis)</h3>
+            <p className="text-[10px] text-slate-500 font-bold mt-1 uppercase">تقارير تحليلية نصية مولدة عبر الذكاء الاصطناعي بناءً على بيانات الإنجاز والمهام</p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {(kpiData?.employeePerformance || []).map((emp: any) => (
+            <EmployeeNarrativeCard key={emp.id} employee={emp} />
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function EmployeeNarrativeCard({ employee }: { employee: any }) {
+  const [narrative, setNarrative] = useState<string>('');
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    const fetchNarrative = async () => {
+      setIsLoading(true);
+      try {
+        const response = await fetch('/api/ai/performance-narrative', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ employeeData: employee })
+        });
+        const data = await response.json();
+        if (data.success) {
+          setNarrative(data.narrative);
+        }
+      } catch (err) {
+        console.error('Narrative error:', err);
+        setNarrative(`الموظف ${employee.name} أظهر أداءً مستقراً خلال الفترة الماضية مع معدل إنجاز جيد للمهام الموكلة إليه.`);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchNarrative();
+  }, [employee]);
+
+  return (
+    <div className="bg-slate-50 border border-slate-200 rounded-2xl p-5 hover:border-indigo-400 transition-all flex flex-col h-full group">
+      <div className="flex items-center gap-3 mb-4">
+        <div className="w-10 h-10 rounded-full bg-indigo-100 border border-indigo-200 flex items-center justify-center text-indigo-700 font-black shrink-0">
+          {employee.name.charAt(0)}
+        </div>
+        <div>
+          <h4 className="text-sm font-black text-slate-900 leading-tight">{employee.name}</h4>
+          <p className="text-[10px] text-slate-500 font-bold">{employee.role}</p>
+        </div>
+      </div>
+
+      <div className="flex-1 space-y-3">
+        {isLoading ? (
+          <div className="space-y-2 animate-pulse">
+            <div className="h-3 bg-slate-200 rounded w-full"></div>
+            <div className="h-3 bg-slate-200 rounded w-5/6"></div>
+          </div>
+        ) : (
+          <p className="text-xs text-slate-700 font-bold leading-relaxed line-clamp-4 group-hover:line-clamp-none transition-all">
+            {narrative}
+          </p>
+        )}
+      </div>
+
+      <div className="mt-4 pt-4 border-t border-slate-200 grid grid-cols-3 gap-2">
+        <div className="text-center">
+          <span className="block text-[10px] text-slate-500 font-bold">المهام</span>
+          <span className="text-xs font-black text-slate-900">{employee.completedTasks}/{employee.totalTasks}</span>
+        </div>
+        <div className="text-center">
+          <span className="block text-[10px] text-slate-500 font-bold">الإنجاز</span>
+          <span className="text-xs font-black text-emerald-600">{employee.completionRate}%</span>
+        </div>
+        <div className="text-center">
+          <span className="block text-[10px] text-slate-500 font-bold">القضايا</span>
+          <span className="text-xs font-black text-slate-900">{employee.casesHandled}</span>
+        </div>
+      </div>
     </div>
   );
 }

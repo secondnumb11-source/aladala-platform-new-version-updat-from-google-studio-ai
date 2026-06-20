@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   Lock, 
   User, 
@@ -19,8 +19,12 @@ import {
   Activity,
   Edit2,
   ShieldAlert,
-  Loader2
+  Loader2,
+  Briefcase,
+  ChevronRight,
+  Search
 } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
 import { Case, Client, Invoice, Message, Hearing, Contract, Document } from '@/types';
 import { generateUUID } from '@/lib/uuid';
 import { supabase } from '@/lib/supabase';
@@ -37,6 +41,130 @@ interface ClientPortalProps {
   onUpdateState: (type: string, data: any) => void;
   currentUser?: { role: string; id: string; name: string } | null;
   onNavigate?: (tab: string) => void;
+}
+
+interface ClientCasesDropdownProps {
+  label: string;
+  placeholder: string;
+  cases: Case[];
+  selectedIds: string[];
+  onChange: (ids: string[]) => void;
+}
+
+function ClientCasesDropdown({
+  label,
+  placeholder,
+  cases,
+  selectedIds,
+  onChange,
+}: ClientCasesDropdownProps) {
+  const [isOpen, setIsOpen] = useState(false);
+  const [search, setSearch] = useState('');
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleOutsideClick = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleOutsideClick);
+    return () => document.removeEventListener('mousedown', handleOutsideClick);
+  }, []);
+
+  const filteredItems = (cases || []).filter(c => 
+    (c.caseName || '').toLowerCase().includes(search.toLowerCase()) || 
+    (c.caseNumber || '').toLowerCase().includes(search.toLowerCase()) ||
+    (c.clientName && c.clientName.toLowerCase().includes(search.toLowerCase()))
+  );
+
+  const toggleItem = (id: string) => {
+    const isSelected = selectedIds.includes(id);
+    if (isSelected) {
+      onChange(selectedIds.filter(x => x !== id));
+    } else {
+      onChange([...selectedIds, id]);
+    }
+  };
+
+  const selectedCases = (cases || []).filter(c => selectedIds.includes(c.id) || selectedIds.includes(c.caseNumber));
+
+  return (
+    <div className="space-y-1.5 w-full relative" ref={dropdownRef}>
+      <label className="text-xs font-black text-slate-800 block pr-1 flex items-center gap-1.5">
+        <Briefcase className="w-4 h-4 text-amber-500" />
+        {label}
+      </label>
+      
+      <div 
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-full bg-white border border-slate-300 rounded-xl px-4 py-3 text-xs font-bold text-slate-950 cursor-pointer hover:border-slate-400 transition-all flex items-center justify-between select-none shadow-sm"
+      >
+        <div className="flex flex-wrap gap-1.5 max-w-[90%] overflow-hidden truncate">
+          {selectedCases.length === 0 ? (
+            <span className="text-slate-200 font-bold font-bold">{placeholder}</span>
+          ) : (
+            selectedCases.map((cs, i) => (
+              <span key={i} className="text-[10px] px-2.5 py-1 rounded-lg bg-amber-50 text-amber-800 border border-amber-100 font-black">
+                {cs.caseName}
+              </span>
+            ))
+          )}
+        </div>
+        <ChevronRight className={`w-4 h-4 text-slate-205 font-bold transform transition-transform ${isOpen ? 'rotate-90' : '-rotate-90'}`} />
+      </div>
+
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div 
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="absolute z-50 w-full mt-2 bg-white border border-slate-200 rounded-2xl shadow-xl overflow-hidden max-h-72 flex flex-col"
+          >
+            <div className="p-3 bg-slate-50 border-b border-slate-100 flex items-center gap-2">
+              <Search className="w-4 h-4 text-slate-205 font-bold shrink-0" />
+              <input 
+                type="text"
+                placeholder="ابحث برقم القضية أو الاسم..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="w-full bg-transparent border-none text-xs text-slate-900 outline-none font-bold"
+                onClick={(e) => e.stopPropagation()}
+              />
+            </div>
+            <div className="overflow-y-auto flex-1 divide-y divide-slate-100">
+              {filteredItems.length === 0 ? (
+                <div className="p-4 text-center text-xs text-slate-200 font-bold">لا توجد قضايا مطابقة</div>
+              ) : (
+                filteredItems.map((cs) => {
+                  const isSelected = selectedIds.includes(cs.id) || selectedIds.includes(cs.caseNumber);
+                  return (
+                    <div 
+                      key={cs.id}
+                      onClick={() => toggleItem(cs.id)}
+                      className="p-3 hover:bg-slate-50 flex items-center justify-between cursor-pointer transition-all"
+                    >
+                      <div className="flex flex-col gap-0.5 text-right">
+                        <span className="text-xs font-black text-slate-900">{cs.caseName}</span>
+                        <span className="text-[10px] text-slate-200 font-bold font-mono">{cs.caseNumber} • {cs.courtName || 'المحكمة'}</span>
+                      </div>
+                      <input 
+                        type="checkbox"
+                        checked={isSelected}
+                        readOnly
+                        className="w-4 h-4 text-primary rounded border-slate-300"
+                      />
+                    </div>
+                  );
+                })
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
 }
 
 export default function ClientPortal({
@@ -796,7 +924,7 @@ export default function ClientPortal({
                         <button
                           type="button"
                           onClick={() => setConfigPassword(`Pass@${Math.floor(1000 + Math.random() * 9000)}`)}
-                          className="bg-slate-200 text-slate-900 text-[10px] px-3 py-1 rounded-xl shadow border border-slate-300 font-bold"
+                          className="bg-slate-200 text-slate-900 text-[10px] px-3 py-1 rounded-xl shadow border border-slate-300 font-bold shrink-0"
                         >
                           توليد ⚡
                         </button>
@@ -846,60 +974,68 @@ export default function ClientPortal({
                     </span>
                     
                     <p className="text-xs text-slate-900 font-bold">بموجب إرشادات البوابة، حدد واحدة أو أكثر من الدعاوى النشطة المراد التصريح للعميل بالدخول إليها ومتابعة تحديثاتها وجلساتها المجدولة:</p>
+                    
+                    <ClientCasesDropdown
+                      label="المحفظة القضائية والملفات المصرح بها للعميل"
+                      placeholder="تحديد واختيار القضايا من القائمة المنسدلة..."
+                      cases={cases}
+                      selectedIds={configCheckedCases}
+                      onChange={(ids) => {
+                        setConfigCheckedCases(ids);
+                        const nextPerms = { ...configPermissions };
+                        ids.forEach(id => {
+                          if (!nextPerms[id]) {
+                            const foundCase = cases.find(c => c.id === id || c.caseNumber === id);
+                            if (foundCase) {
+                              nextPerms[foundCase.id] = 'view';
+                            } else {
+                              nextPerms[id] = 'view';
+                            }
+                          }
+                        });
+                        Object.keys(nextPerms).forEach(id => {
+                          if (!ids.includes(id)) delete nextPerms[id];
+                        });
+                        setConfigPermissions(nextPerms);
+                      }}
+                    />
 
-                    <div className="max-h-60 overflow-y-auto space-y-3 pr-2 custom-scrollbar border p-3 rounded-xl bg-slate-50">
-                      {cases.map((cs) => {
-                        const isChecked = configCheckedCases.includes(cs.id) || configCheckedCases.includes(cs.caseNumber);
-                        const currentPerm = configPermissions[cs.id] || 'view';
-
-                        return (
-                          <div key={cs.id} className="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-white p-3.5 rounded-xl border border-slate-200 gap-3 shadow-sm">
-                            <div className="flex items-center gap-3">
-                              <input
-                                type="checkbox"
-                                id={`cs-chk-${cs.id}`}
-                                checked={isChecked}
-                                onChange={(e) => {
-                                  if (e.target.checked) {
-                                    setConfigCheckedCases(prev => [...prev, cs.id]);
-                                    setConfigPermissions(prev => ({ ...prev, [cs.id]: 'view' }));
-                                  } else {
-                                    setConfigCheckedCases(prev => prev.filter(id => id !== cs.id));
-                                    const nextPerms = { ...configPermissions };
-                                    delete nextPerms[cs.id];
-                                    setConfigPermissions(nextPerms);
-                                  }
-                                }}
-                                className="w-4.5 h-4.5 text-primary bg-slate-100 border-slate-300 rounded focus:ring-primary focus:ring-1"
-                              />
-                              <label htmlFor={`cs-chk-${cs.id}`} className="text-xs font-black text-slate-900 cursor-pointer">
-                                {cs.caseName} <span className="text-slate-900 font-mono font-bold text-[11px] block sm:inline sm:mr-2">({cs.courtName} • رقم: {cs.caseNumber})</span>
-                              </label>
-                            </div>
-
-                            {/* Dropdown to choose permission: Read only or Read & write */}
-                            {isChecked && (
-                              <div className="flex items-center gap-2">
-                                <span className="text-[10px] text-slate-900 block font-bold">مستوى الترخيص للعميل:</span>
-                                <select
-                                  value={currentPerm}
-                                  onChange={(e) => {
-                                    setConfigPermissions(prev => ({
-                                      ...prev,
-                                      [cs.id]: e.target.value as any
-                                    }));
-                                  }}
-                                  className="bg-slate-100 border border-slate-300 text-[11px] font-bold px-2 py-1.5 rounded-lg text-slate-900 outline-none"
-                                >
-                                  <option value="view">الاطلاع فقط (لقراءة الدعاوى واستعراض المستندات)</option>
-                                  <option value="edit">الاطلاع والتعديل (يتيح إرفاق لوائح وبث استفسارات)</option>
-                                </select>
+                    {configCheckedCases.length > 0 && (
+                      <div className="space-y-3 pt-3">
+                        <span className="text-xs font-black text-slate-900 block">تحديد تراخيص الاطلاع والتعديل للقضايا المضافة:</span>
+                        <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
+                          {configCheckedCases.map(caseId => {
+                            const cs = cases.find(c => c.id === caseId || c.caseNumber === caseId);
+                            if (!cs) return null;
+                            const currentPerm = configPermissions[cs.id] || configPermissions[cs.caseNumber] || 'view';
+                            return (
+                              <div key={cs.id} className="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-slate-50 p-3.5 rounded-xl border border-slate-200 gap-3">
+                                <span className="text-xs font-bold text-slate-950 truncate">
+                                  ⚖️ {cs.caseName} <span className="text-slate-500 font-mono font-bold text-[10px] mr-1 block sm:inline">({cs.caseNumber})</span>
+                                </span>
+                                <div className="flex items-center gap-2">
+                                  <span className="text-[10px] text-slate-705 block font-bold">الصلاحية العدلية:</span>
+                                  <select
+                                    value={currentPerm}
+                                    onChange={(e) => {
+                                      setConfigPermissions(prev => ({
+                                        ...prev,
+                                        [cs.id]: e.target.value as any,
+                                        ...(cs.caseNumber ? { [cs.caseNumber]: e.target.value as any } : {})
+                                      }));
+                                    }}
+                                    className="bg-white border border-slate-300 text-[11px] font-bold px-2 py-1.5 rounded-lg text-slate-950 outline-none"
+                                  >
+                                    <option value="view">الاطلاع فقط (لقراءة الدعاوى واستعراض المستندات)</option>
+                                    <option value="edit">الاطلاع والتعديل (يتيح إرفاق لوائح وبث استفسارات)</option>
+                                  </select>
+                                </div>
                               </div>
-                            )}
-                          </div>
-                        );
-                      })}
-                    </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
                   </div>
 
                   <button

@@ -214,6 +214,7 @@ export default function Sidebar({
   const allItems: SidebarItem[] = [
     { id: 'dashboard', name: 'لوحة المعلومات الرئيسية', icon: LayoutDashboard },
     { id: 'cases', name: 'إدارة القضايا', icon: Briefcase },
+    { id: 'case-judgments', name: 'الأحكام والمذكرات', icon: Scale },
     { id: 'executions', name: 'طلبات التنفيذ', icon: Scale },
     { id: 'calendar', name: 'تقويم مواعيد الجلسات', icon: BookOpen },
     { id: 'documents', name: 'أرشيف المستندات', icon: FileText },

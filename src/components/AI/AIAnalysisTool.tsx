@@ -6,6 +6,8 @@
 import React, { useState } from 'react';
 import { motion } from 'motion/react';
 import { Search, FileSearch, ShieldCheck, AlertCircle, TrendingUp, Info, ListChecks, Gavel, Cpu, RefreshCw, BarChart3, Target } from 'lucide-react';
+import { useSystemData } from '@/hooks/useSystemData';
+import CaseClientSelector from '../shared/CaseClientSelector';
 
 export default function AIAnalysisTool() {
   const [analysisType, setAnalysisType] = useState<'case' | 'contract' | 'judgment'>('case');
@@ -13,14 +15,28 @@ export default function AIAnalysisTool() {
   const [result, setResult] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(false);
 
+  const { cases, clients } = useSystemData();
+  const [selectedCase, setSelectedCase] = useState<any>(null);
+  const [selectedClient, setSelectedClient] = useState<any>(null);
+
   const handleAnalyze = async () => {
-    if (!content.trim()) return;
+    if (!content.trim() && !selectedCase) return;
     setIsLoading(true);
     setResult(null);
 
     try {
+      const caseContext = selectedCase ? 
+        `بيانات القضية المرفقة:
+        رقم القضية: ${selectedCase.case_number}
+        طبيعة القضية: ${selectedCase.title}
+        مرحلة القضية: ${selectedCase.stage}
+        تصنيف القضية: ${selectedCase.category}
+        الملخص المتوفر: ${selectedCase.summary || ''}` : '';
+
       const promptMap = {
         case: `بصفتك محللاً قانونياً ذكياً وخبيراً في الأنظمة السعودية والقضاء المقارن، قم بتحليل صحيفة الدعوى التالية ومقارنتها بالسوابق القضائية المتوفرة:
+        
+        ${caseContext}
         ${content}
         
         المطلوب:
@@ -79,6 +95,15 @@ export default function AIAnalysisTool() {
           </div>
 
           <div className="bg-white border border-slate-200 p-6 rounded-3xl shadow-lg space-y-6">
+            <div className="mb-4">
+              <CaseClientSelector
+                selectedCaseId={selectedCase?.id}
+                selectedClientId={selectedClient?.id}
+                onCaseSelect={setSelectedCase}
+                onClientSelect={setSelectedClient}
+              />
+            </div>
+
             <div className="flex bg-slate-50 p-1.5 rounded-2xl border border-slate-100">
               {[
                 { id: 'case', label: 'تحليل دعوى', icon: <Target className="w-4 h-4" /> },
@@ -105,7 +130,7 @@ export default function AIAnalysisTool() {
               value={content}
               onChange={(e) => setContent(e.target.value)}
               placeholder={
-                analysisType === 'case' ? "أدخل تفاصيل الدعوى وادعاءات الخصم..." :
+                analysisType === 'case' ? "أدخل تفاصيل إضافية للدعوى وادعاءات الخصم..." :
                 analysisType === 'contract' ? "الصق نص العقد هنا لفحصه..." :
                 "أدخل نص الحكم القضائي لاستخراج الزبدة..."
               }
@@ -114,7 +139,7 @@ export default function AIAnalysisTool() {
 
             <button 
               onClick={handleAnalyze}
-              disabled={isLoading || !content.trim()}
+              disabled={isLoading || (!content.trim() && !selectedCase)}
               className="w-full bg-slate-900 text-white py-4 rounded-2xl text-xs font-black shadow-xl transition-all flex items-center justify-center gap-3 disabled:opacity-50"
             >
               {isLoading ? (

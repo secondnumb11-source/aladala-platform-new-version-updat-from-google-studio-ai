@@ -23,16 +23,21 @@ import {
   Sun,
   Moon
 } from 'lucide-react';
+import { useSystemData } from '@/hooks/useSystemData';
+import CaseClientSelector from '../shared/CaseClientSelector';
 
 interface AIDraftingToolProps {
   onDraftGenerated?: (text: string) => void;
   cases?: any[];
 }
 
-export default function AIDraftingTool({ onDraftGenerated, cases = [] }: AIDraftingToolProps) {
+export default function AIDraftingTool({ onDraftGenerated }: AIDraftingToolProps) {
+  const { cases, clients, employees } = useSystemData();
+  const [selectedCase, setSelectedCase] = useState<any>(null);
+  const [selectedClient, setSelectedClient] = useState<any>(null);
+
   const [draftType, setDraftType] = useState<'pleading' | 'appeal' | 'defense' | 'contract' | 'reminder'>('pleading');
   const [facts, setFacts] = useState('');
-  const [selectedCaseId, setSelectedCaseId] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [output, setOutput] = useState('');
   const [copied, setCopied] = useState(false);
@@ -66,54 +71,40 @@ export default function AIDraftingTool({ onDraftGenerated, cases = [] }: AIDraft
     });
   };
 
-  const handleLoadCase = (caseId: string) => {
-    setSelectedCaseId(caseId);
-    if (!caseId) {
-      setFacts('');
-      return;
-    }
-    const c = cases.find(curr => curr.id === caseId);
-    if (c) {
-      const summary = `اسم الدعوى: ${c.caseName}\nرقم القضية: ${c.caseNumber}\nالمحكمة: ${c.court || 'غير محددة'}\nملخص الموضوع: ${c.description || 'لا يوجد وصف متاح'}\nالحالة الحالية: ${c.status}`;
-      setFacts(summary);
-    }
-  };
-
   const handleDraft = async () => {
-    if (!facts.trim()) return;
+    if (!facts.trim() && !selectedCase && !selectedClient) return;
     setIsLoading(true);
     setOutput('');
 
     try {
-      const res = await fetch('/api/ai/chat', {
+      const contextData = selectedCase ? {
+        caseNumber: selectedCase.case_number,
+        caseName: selectedCase.title,
+        clientName: selectedCase.client_name || selectedClient?.name || '',
+        clientNationalId: selectedClient?.national_id || '',
+        opponentName: selectedCase.opponent_name || '',
+        courtName: selectedCase.court_name || '',
+        category: selectedCase.category,
+        stage: selectedCase.stage,
+        summary: selectedCase.summary || '',
+        agreedFees: selectedCase.agreed_fees || 0,
+      } : {};
+
+      const res = await fetch('/api/ai/draft', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          messages: [{
-            role: 'user',
-            content: `بصفتك مستشاراً قانونياً خبيراً بالأنظمة السعودية (نظام المرافعات الشرعية، نظام المعاملات المدنية، نظام الشركات الجديد)، قم بصياغة ${
-              draftType === 'pleading' ? 'صحيفة دعوى أولية' :
-              draftType === 'appeal' ? 'لائحة اعتراضية (استئناف)' :
-              draftType === 'defense' ? 'مذكرة دفاع جوابية' :
-              draftType === 'contract' ? 'مسودة عقد نظامي' :
-              'إنذار عدلي / خطاب تذكير'
-            } بناءً على الوقائع التالية:
-            
-            ${facts}
-            
-            المطلوب:
-            - صياغة احترافية بلغة قانونية رصينة.
-            - الاستناد إلى المواد النظامية ذات العلاقة.
-            - التنسيق المناسب للتقديم عبر منصة ناجز.
-            - ذكر الأسانيد والطلبات بوضوح.`
-          }]
+          type: draftType,
+          details: facts,
+          caseContext: contextData,
+          clientContext: selectedClient || {}
         })
       });
 
       const data = await res.json();
       if (data.success) {
-        setOutput(data.response);
-        onDraftGenerated?.(data.response);
+        setOutput(data.result || data.response);
+        onDraftGenerated?.(data.result || data.response);
       } else {
         setOutput(data.error || 'حدث خطأ أثناء الصياغة. يرجى المحاولة لاحقاً.');
       }
@@ -194,17 +185,27 @@ export default function AIDraftingTool({ onDraftGenerated, cases = [] }: AIDraft
 
           <div className="bg-white border border-slate-200 p-6 rounded-3xl shadow-lg space-y-5">
             <div>
-              <label className="text-[10px] font-black text-slate-200 font-bold uppercase tracking-widest mb-3 block">تحميل تفاصيل قضية مسجلة</label>
-              <select
-                value={selectedCaseId}
-                onChange={(e) => handleLoadCase(e.target.value)}
-                className="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl text-xs font-bold text-slate-700 outline-none focus:border-amber-500 transition-all mb-4"
-              >
-                <option value="">بدء صياغة حرة (بدون قضية مرجعية)...</option>
-                {cases.map(c => (
-                  <option key={c.id} value={c.id}>{c.caseName} - {c.caseNumber}</option>
-                ))}
-              </select>
+              <div className="mb-4">
+                <CaseClientSelector
+                  selectedCaseId={selectedCase?.id}
+                  selectedClientId={selectedClient?.id}
+                  onCaseSelect={(c) => {
+                    setSelectedCase(c);
+                    // ملء البيانات تلقائياً من القضية
+                    setFacts(
+                      `القضية رقم: ${c.case_number}\n` +
+                      `الموكل: ${c.client_name}\n` +
+                      `الخصم: ${c.opponent_name || ''}\n` +
+                      `المحكمة: ${c.court_name || ''}\n` +
+                      `التصنيف: ${c.category}\n` +
+                      `الملخص: ${c.summary || ''}`
+                    );
+                  }}
+                  onClientSelect={(cl) => {
+                    setSelectedClient(cl);
+                  }}
+                />
+              </div>
 
               <label className="text-[10px] font-black text-slate-200 font-bold uppercase tracking-widest mb-3 block">نوع المستند المطلوب صياغته</label>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
@@ -232,19 +233,19 @@ export default function AIDraftingTool({ onDraftGenerated, cases = [] }: AIDraft
             </div>
 
             <div>
-              <label className="text-[10px] font-black text-slate-200 font-bold uppercase tracking-widest mb-3 block">الوقائع والبيانات الجوهرية</label>
+              <label className="text-[10px] font-black text-slate-200 font-bold uppercase tracking-widest mb-3 block">الوقائع والبيانات الجوهرية (اختياري / مكمل)</label>
               <textarea 
                 rows={8}
                 value={facts}
                 onChange={(e) => setFacts(e.target.value)}
-                placeholder="أدخل تفاصيل القضية، الوقائع، المبالغ، والطلبات هنا..."
+                placeholder="أدخل تفاصيل إضافية عن القضية أو السياق..."
                 className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl py-4 px-5 text-sm font-bold text-slate-900 outline-none focus:border-amber-500 focus:ring-4 focus:ring-amber-500/10 transition-all font-sans leading-relaxed"
               />
             </div>
 
             <button 
               onClick={handleDraft}
-              disabled={isLoading || !facts.trim()}
+              disabled={isLoading || (!facts.trim() && !selectedCase)}
               className="w-full bg-amber-500 text-slate-950 py-4 rounded-2xl text-xs font-black shadow-xl shadow-amber-500/20 active:scale-[0.98] transition-all flex items-center justify-center gap-3 disabled:opacity-50 cursor-pointer"
             >
               {isLoading ? (

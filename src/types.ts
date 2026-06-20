@@ -155,6 +155,7 @@ export interface Task {
   timerActive?: boolean;
   timerDuration?: number; // in minutes
   targetCompletionTime?: string; // ISO string
+  employeeId?: string;
 }
 
 export interface Employee {

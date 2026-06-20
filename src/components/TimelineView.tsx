@@ -7,7 +7,8 @@ import {
   History, 
   TrendingUp,
   MapPin,
-  Scale
+  Scale,
+  AlertCircle
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Case, Hearing, Task } from '@/types';
@@ -38,6 +39,49 @@ export default function TimelineView({ cases, hearings, tasks }: TimelineViewPro
         icon: <Scale className="w-4 h-4" />,
         color: h.status === 'completed' ? 'bg-emerald-500' : 'bg-amber-500'
       });
+    });
+
+    // Add Cases Milestones
+    cases.forEach(c => {
+      if (c.createdAt) {
+        events.push({
+          id: `case-creation-${c.id}`,
+          type: 'case-creation',
+          date: new Date(c.createdAt),
+          title: `تأسيس ملف الدعوى: ${c.caseName || 'ملف دعوى جديد'}`,
+          subtitle: `تأسيس وحوسبة الملف القضائي رقم ${c.caseNumber} وتفعيل المزامنة التلقائية`,
+          status: 'completed',
+          caseNumber: c.caseNumber,
+          icon: <CheckCircle2 className="w-4 h-4" />,
+          color: 'bg-violet-500'
+        });
+      }
+      if (c.nextSessionDate) {
+        events.push({
+          id: `case-next-session-${c.id}`,
+          type: 'hearing',
+          date: new Date(c.nextSessionDate),
+          title: `جلسة قادمة مجدولة للدعوى (${c.caseNumber})`,
+          subtitle: `جلسة مرافعة ونظر معلنة عبر بوابة ناجز المحوسبة`,
+          status: 'upcoming',
+          caseNumber: c.caseNumber,
+          icon: <Scale className="w-4 h-4" />,
+          color: 'bg-amber-500'
+        });
+      }
+      if (c.appeal_deadline) {
+        events.push({
+          id: `case-appeal-${c.id}`,
+          type: 'deadline',
+          date: new Date(c.appeal_deadline),
+          title: `انتهاء مهلة الاستئناف للدعوى (${c.caseNumber})`,
+          subtitle: `تحذير مهلة نظامية حاسمة لتقديم لائحة الاعتراض والاستئناف القضائي`,
+          status: 'warning',
+          caseNumber: c.caseNumber,
+          icon: <AlertCircle className="w-4 h-4" />,
+          color: 'bg-rose-500'
+        });
+      }
     });
 
     // Add Tasks

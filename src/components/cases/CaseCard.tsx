@@ -24,6 +24,7 @@ interface CaseCardProps {
   onArchiveToggle?: (c: Case) => void;
   selectedRole?: string;
   onUpdateCaseStatus?: (c: Case, newStatus: string) => void;
+  onDeleteCase?: (id: string | number) => void;
 }
 
 // ==========================================
@@ -164,7 +165,8 @@ export default function CaseCard({
   daysLeft = 999,
   onArchiveToggle,
   selectedRole,
-  onUpdateCaseStatus
+  onUpdateCaseStatus,
+  onDeleteCase
 }: CaseCardProps) {
   const [isHovered, setIsHovered] = useState(false);
 
@@ -426,23 +428,44 @@ export default function CaseCard({
           )}
 
           {/* GRID ROW 6: MANAGEMENT ARCHIVING PERMISSIONS CONTROLS */}
-          {onArchiveToggle && (selectedRole === 'admin' || selectedRole === 'lawyer') && (
-            <div className="flex justify-start gap-2 pt-2 border-t border-dashed border-slate-700/10">
-              <button
-                type="button"
-                id={`btn-archive-${c.id}`}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onArchiveToggle(c);
-                }}
-                className={`text-[10px] font-bold px-3 py-1.5 rounded-lg border transition-all ${
-                  c.archived
-                    ? (isHighContrast ? 'bg-emerald-100 hover:bg-emerald-200 border-emerald-300 text-emerald-900' : 'bg-emerald-500/10 border-emerald-500/25 text-emerald-400 hover:bg-emerald-500/20')
-                    : (isHighContrast ? 'bg-slate-100 hover:bg-slate-200 border-slate-300 text-slate-800' : 'bg-white/5 border-white/10 text-white/55 hover:text-white hover:bg-white/10')
-                }`}
-              >
-                {c.archived ? 'استعادة ملف الدعوى' : 'نقل القضية للأرشيف'}
-              </button>
+          {(onArchiveToggle || onDeleteCase) && (selectedRole === 'admin' || selectedRole === 'lawyer') && (
+            <div className="flex justify-between items-center pt-2 border-t border-dashed border-slate-700/10">
+              {onArchiveToggle && (
+                <button
+                  type="button"
+                  id={`btn-archive-${c.id}`}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onArchiveToggle(c);
+                  }}
+                  className={`text-[10px] font-bold px-3 py-1.5 rounded-lg border transition-all ${
+                    c.archived
+                      ? (isHighContrast ? 'bg-emerald-100 hover:bg-emerald-200 border-emerald-300 text-emerald-900' : 'bg-emerald-500/10 border-emerald-500/25 text-emerald-400 hover:bg-emerald-500/20')
+                      : (isHighContrast ? 'bg-slate-100 hover:bg-slate-200 border-slate-300 text-slate-800' : 'bg-white/5 border-white/10 text-white/55 hover:text-white hover:bg-white/10')
+                  }`}
+                >
+                  {c.archived ? 'استعادة ملف الدعوى' : 'نقل القضية للأرشيف'}
+                </button>
+              )}
+
+              {onDeleteCase && (
+                <button
+                  type="button"
+                  id={`btn-delete-${c.id}`}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onDeleteCase(c.id);
+                  }}
+                  className={`text-[10px] font-bold px-3 py-1.5 rounded-lg border transition-all flex items-center gap-1.5 cursor-pointer ${
+                    isHighContrast 
+                      ? 'bg-rose-100 hover:bg-rose-200 border-rose-300 text-rose-900' 
+                      : 'bg-rose-500/10 border-rose-500/25 text-rose-400 hover:bg-rose-500/20'
+                  }`}
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                  <span>حذف الدعوى</span>
+                </button>
+              )}
             </div>
           )}
         </div>

@@ -432,6 +432,27 @@ export default function EmployeesData({
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  const normalizeStatus = (status: string): string => {
+    const statusMap: Record<string, string> = {
+      'نشط': 'active',
+      'نشيط': 'active',
+      'فعال': 'active',
+      'مفعّل': 'active',
+      'مفعل': 'active',
+      'نشط ✓': 'active',
+      'غير نشط': 'inactive',
+      'معطّل': 'inactive',
+      'معطل': 'inactive',
+      'موقوف': 'inactive',
+      'محظور': 'banned',
+      'مؤقت': 'pending',
+      'قيد المراجعة': 'pending',
+      'إجازة': 'vacation',
+      'مستقيل': 'resigned',
+    };
+    return statusMap[status] || status || 'active';
+  };
+
   const handleSaveEmployee = async (employeeData: any) => {
     if (!employeeData.name?.trim()) {
       alert('اسم الموظف مطلوب');
@@ -459,7 +480,7 @@ export default function EmployeesData({
                    employeeData.job_title || 
                    employeeData.role || 
                    'موظف',
-        status: employeeData.status || 'active',
+        status: normalizeStatus(employeeData.status || 'active'),
         username: username,
         password: password,
         employee_code: employeeCode,
@@ -1274,12 +1295,12 @@ export default function EmployeesData({
                   </div>
                   <div
                     className={`px-4 py-2 rounded-xl text-[10px] font-black tracking-wide shadow-sm flex items-center justify-center shrink-0 ${
-                      emp.status === "نشط"
+                      (emp.status === "active" || emp.status === "نشط")
                         ? "bg-emerald-50 text-emerald-700"
                         : "bg-amber-50 text-amber-400 font-black"
                     }`}
                   >
-                    {emp.status}
+                    {emp.status === 'active' ? 'نشط' : (emp.status === 'inactive' ? 'غير نشط' : (emp.status === 'vacation' ? 'في إجازة' : (emp.status === 'resigned' ? 'مستقيل' : emp.status || 'نشط')))}
                   </div>
                 </div>
 

@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import * as d3 from 'd3';
-import { Hearing, Task } from '@/types';
+import { Case, Hearing, Task } from '@/types';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   Maximize2, 
@@ -21,9 +21,10 @@ import {
 interface TimelineD3Props {
   hearings: Hearing[];
   tasks: Task[];
+  cases?: Case[];
 }
 
-export default function TimelineD3({ hearings, tasks }: TimelineD3Props) {
+export default function TimelineD3({ hearings, tasks, cases = [] }: TimelineD3Props) {
   const svgRef = useRef<SVGSVGElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -51,6 +52,60 @@ export default function TimelineD3({ hearings, tasks }: TimelineD3Props) {
       });
     });
 
+    // Convert cases to timeline events
+    if (cases && Array.isArray(cases)) {
+      cases.forEach(c => {
+        // 1. Creation date milestone
+        if (c.createdAt) {
+          list.push({
+            id: `case-create-${c.id}`,
+            date: new Date(c.createdAt),
+            rawDate: c.createdAt,
+            time: '08:00 ص',
+            title: `تأسيس وحوسبة الدعوى: ${c.caseName || 'ملف دعوى جديد'}`,
+            type: 'case-creation',
+            caseNumber: c.caseNumber,
+            courtName: c.courtName || 'مكتب المحاماة والعدالة',
+            hallNumber: `تأسيس وحوسبة الملف القضائي رقم ${c.caseNumber} - تصنيف ${c.category || 'عام'}`,
+            status: 'completed',
+            notes: c.details || ''
+          });
+        }
+        // 2. Next Session milestone
+        if (c.nextSessionDate) {
+          list.push({
+            id: `case-next-sess-${c.id}`,
+            date: new Date(c.nextSessionDate),
+            rawDate: c.nextSessionDate,
+            time: '09:00 ص',
+            title: `جلسة قادمة مجدولة للدعوى (${c.caseNumber})`,
+            type: 'hearing',
+            caseNumber: c.caseNumber,
+            courtName: c.courtName || 'المحكمة العامة',
+            hallNumber: `الدائرة القضائية المختصة بنظر الدعوى`,
+            status: 'upcoming',
+            notes: `مزامنة الجلسات التلقائية المربوطة بنظام ناجز`
+          });
+        }
+        // 3. Appeal Deadline milestone
+        if (c.appeal_deadline) {
+          list.push({
+            id: `case-appeal-${c.id}`,
+            date: new Date(c.appeal_deadline),
+            rawDate: c.appeal_deadline,
+            time: '23:59 م',
+            title: `انتهاء مهلة الاستئناف للدعوى (${c.caseNumber})`,
+            type: 'deadline',
+            caseNumber: c.caseNumber,
+            courtName: 'مهلة نظامية',
+            hallNumber: `آخر موعد نظامي لتقديم لائحة الاعتراض والاستئناف القضائي على الحكم الابتدائي`,
+            status: 'warning',
+            notes: `حسب المدد المنصوص عليها بنظام المرافعات الشرعية`
+          });
+        }
+      });
+    }
+
     // Convert tasks to timeline events
     tasks.forEach(t => {
       if (t.dueDate) {
@@ -72,7 +127,7 @@ export default function TimelineD3({ hearings, tasks }: TimelineD3Props) {
 
     // Sort chronologically ascending
     return list.sort((a, b) => a.date.getTime() - b.date.getTime());
-  }, [hearings, tasks]);
+  }, [hearings, tasks, cases]);
 
   // Filtered list of events
   const filteredEvents = React.useMemo(() => {
@@ -195,6 +250,8 @@ export default function TimelineD3({ hearings, tasks }: TimelineD3Props) {
       .attr('cy', chartHeight / 2)
       .attr('r', d => d.id === selectedEventId ? 9 : 6)
       .attr('fill', d => {
+        if (d.type === 'case-creation') return '#8B5CF6'; // Violet for creation
+        if (d.type === 'deadline') return '#EF4444';      // Red for critical warnings
         if (d.type === 'hearing') {
           return d.status === 'completed' ? '#10B981' : '#F59E0B';
         }
@@ -444,12 +501,20 @@ export default function TimelineD3({ hearings, tasks }: TimelineD3Props) {
               >
                 <div className="md:col-span-2 space-y-2.5">
                   <div className="flex items-center gap-2">
-                    <span className={`w-2.5 h-2.5 rounded-full ${selectedEvent.type === 'hearing' ? 'bg-amber-500' : 'bg-blue-600'}`}></span>
+                    <span className={`w-2.5 h-2.5 rounded-full ${
+                      selectedEvent.type === 'case-creation' ? 'bg-violet-500' :
+                      selectedEvent.type === 'deadline' ? 'bg-red-500' :
+                      selectedEvent.type === 'hearing' ? 'bg-amber-500' : 'bg-blue-600'
+                    }`}></span>
                     <h4 className="text-sm font-extrabold text-[#0B2545]">{selectedEvent.title}</h4>
                   </div>
 
-                  <p className="text-[11px] text-slate-700 font-bold leading-relaxed">
-                    {selectedEvent.type === 'hearing' 
+                  <p className="text-[11px] text-slate-700 font-bold leading-relaxed text-right">
+                    {selectedEvent.type === 'case-creation' 
+                      ? `تم تأسيس ملف القضية بنجاح على منصة نظام العدالة والمحاماة، وبدء مزامنة جدول المواعيد والمذكرات تلقائياً عبر الربط مع منصتي ناجز وبوابة ديوان المظالم.`
+                      : selectedEvent.type === 'deadline'
+                      ? `تحذير مهلة نظامية حاسمة: ينتهي الموعد النهائي المحدد لاستئناف الدعوى وتقديم الدفوع الاعتراضية بحكم القانون في الموعد المذكور أدناه. يرجى المسارعة بإنهاء المتطلبات لضمان عدم ضياع الحق القضائي.`
+                      : selectedEvent.type === 'hearing' 
                       ? selectedEvent.notes || `هذه الجلسة القضائية مجدولة للنظر والمرافعة في القضية المقيدة برقم ${selectedEvent.caseNumber}. يرجى مراجعة ملف القضية وتجهيز العريضة ومذكرة الدفاع مسبقاً.`
                       : selectedEvent.hallNumber || `هذه المهمة القضائية مكلفة للعمل والمراجعة المباشرة لإكمال مستندات القضية ومرافعة الإجراءات في موعد لا يتجاوز التاريخ المحدد.`
                     }
@@ -479,13 +544,21 @@ export default function TimelineD3({ hearings, tasks }: TimelineD3Props) {
                   
                   <div className="space-y-0.5 z-10">
                     <span className="text-[9.5px] font-black uppercase tracking-widest block timeline-bright-yellow">حالة الإجراء الاستراتيجي</span>
-                    <h3 className="text-sm font-black timeline-bright-white">{selectedEvent.type === 'hearing' ? 'جلسة مقاضاة' : 'مستند قضائي هام'}</h3>
+                    <h3 className="text-sm font-black timeline-bright-white">
+                      {selectedEvent.type === 'case-creation' ? 'تأسيس ملف الدعوى' : 
+                       selectedEvent.type === 'deadline' ? 'مهلة استئناف نظامية' :
+                       selectedEvent.type === 'hearing' ? 'جلسة مقاضاة مرئية' : 'مستند قضائي هام'}
+                    </h3>
                   </div>
 
                   <div className="flex items-center justify-between mt-4 z-10">
                     <div className="space-y-0.5">
                       <span className="text-[9px] block timeline-text-slate-200">تصنيف الإشعار</span>
-                      <span className="text-[10px] font-bold timeline-bright-yellow">{selectedEvent.type === 'hearing' ? 'إشعار مباشر من ناجز' : 'إجراء داخلي مكلف'}</span>
+                      <span className="text-[10px] font-bold timeline-bright-yellow">
+                        {selectedEvent.type === 'case-creation' ? 'إجراء تأسيس آلي' :
+                         selectedEvent.type === 'deadline' ? 'تحذير مهلة حاسمة 🚨' :
+                         selectedEvent.type === 'hearing' ? 'إشعار مباشر من ناجز' : 'إجراء داخلي مكلف'}
+                      </span>
                     </div>
                     
                     <span className={`px-2 py-1 rounded-lg text-[10.5px] font-black ${

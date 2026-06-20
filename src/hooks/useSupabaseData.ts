@@ -22,11 +22,13 @@ const DB_COLUMNS: Record<string, string[]> = {
   ],
   clients: [
     'id', 'name', 'phone', 'email',
-    'id_number', 'najiz_id', 'address',
-    'status', 'last_sync_at', 'created_at', 'updated_at',
-    'is_company', 'portal_token', 'portal_link', 'portal_username',
-    'portal_password', 'active_portal', 'permitted_cases',
-    'permitted_case_permissions'
+    'id_number', 'national_id', 'najiz_id',
+    'address', 'is_company', 'status',
+    'portal_token', 'portal_link',
+    'portal_username', 'portal_password',
+    'active_portal', 'permitted_cases',
+    'permitted_case_permissions',
+    'last_sync_at', 'created_at', 'updated_at'
   ],
   cases: [
     'id', 'client_id', 'case_number', 'najiz_case_number',
@@ -110,6 +112,18 @@ const DB_COLUMNS: Record<string, string[]> = {
   ],
 };
 
+const normalizeStatusField = (value: any): string => {
+  if (!value) return 'active';
+  const map: Record<string, string> = {
+    'نشط': 'active', 'نشيط': 'active',
+    'فعال': 'active', 'مفعّل': 'active',
+    'مفعل': 'active',
+    'غير نشط': 'inactive', 'معطّل': 'inactive',
+    'معطل': 'inactive', 'موقوف': 'inactive',
+  };
+  return map[String(value)] || String(value) || 'active';
+};
+
 /**
  * يحوّل البيانات إلى snake_case ثم يحذف كل حقل
  * غير موجود في جدول Supabase الفعلي.
@@ -120,6 +134,11 @@ const sanitizePayload = (tableName: string, data: any): Record<string, any> => {
 
   // أولاً: حوّل camelCase إلى snake_case
   const snaked = toSnake(data) || {};
+
+  // تطبيع تلقائي لحقل status إذا كان موجوداً
+  if ('status' in snaked) {
+    snaked.status = normalizeStatusField(snaked.status);
+  }
 
   // ثانياً: معالجة خاصة لحقول مختلفة الاسم بين الكود وقاعدة البيانات
   if (tableName === 'clients') {
@@ -210,6 +229,10 @@ const sanitizePayload = (tableName: string, data: any): Record<string, any> => {
     if (snaked[col] !== undefined) {
       sanitized[col] = snaked[col];
     }
+  }
+
+  if ('status' in sanitized) {
+    sanitized.status = normalizeStatusField(sanitized.status);
   }
 
   return sanitized;

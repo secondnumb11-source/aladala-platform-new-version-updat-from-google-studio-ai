@@ -127,112 +127,189 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // زر السحب
   extractBtn?.addEventListener('click', async () => {
-    if (!currentPage) {
-      setStatus('⚠️ اذهب لإحدى صفحات ناجز أولاً', 'warning');
-      return;
-    }
-
-    setStatus(`⏳ جارٍ سحب ${currentPage.section}...`, 'info');
-    setProgress(true, '🔄 ينتظر تحميل البيانات...');
+    setStatus('⏳ جارٍ الانتظار لتحميل الصفحة...', 'info');
+    setProgress(true, '⌛ انتظر...');
     extractBtn.disabled = true;
-
+  
     try {
+      // حقن content.js أولاً
       try {
         await chrome.scripting.executeScript({
           target: { tabId: tab.id },
           files: ['content.js']
         });
-        await new Promise(r => setTimeout(r, 1500));
-      } catch(e) {}
-
-      setProgress(true, `⏳ يقرأ ${currentPage.section}...`);
-
-      const response = await Promise.race([
-        chrome.tabs.sendMessage(tab.id, { action: 'extractData' }),
-        new Promise((_, reject) =>
-          setTimeout(() => reject(new Error('timeout')), 25000)
-        )
-      ]);
-
+      } catch(e) {
+        console.log('Content script already injected');
+      }
+  
+      // انتظار 3 ثوانٍ لتحميل البيانات الديناميكية
+      setProgress(true, '⏳ انتظر تحميل البيانات (3 ثوانٍ)...');
+      await new Promise(r => setTimeout(r, 3000));
+  
+      // طلب السحب مع retry
+      let response = null;
+      let attempts = 0;
+  
+      while (attempts < 3) {
+        attempts++;
+        setProgress(true, `🔄 محاولة ${attempts}/3...`);
+  
+        try {
+          response = await Promise.race([
+            chrome.tabs.sendMessage(
+              tab.id, { action: 'extractData' }
+            ),
+            new Promise((_, reject) =>
+              setTimeout(
+                () => reject(new Error('timeout')), 15000
+              )
+            )
+          ]);
+  
+          // إذا وجدنا بيانات توقف
+          if (response?.success && response?.data?.summary?.hasData) {
+            break;
+          }
+  
+          // انتظر ثانيتين وأعد المحاولة
+          if (attempts < 3) {
+            setProgress(true, `⏳ لم تُوجد بيانات — إعادة المحاولة...`);
+            await new Promise(r => setTimeout(r, 2000));
+          }
+  
+        } catch(err) {
+          if (attempts === 3) throw err;
+          await new Promise(r => setTimeout(r, 2000));
+        }
+      }
+  
       setProgress(false);
-
-      if (response?.success && response.data) {
+  
+      if (response?.data) {
         const d = response.data;
         const s = d.summary;
-
-        const counts = {
-          cases: s.totalCases,
-          poa: s.totalPOAs,
-          executions: s.totalExecutions,
-          hearings: s.totalHearings
-        };
-
-        const total = counts[s.pageType] || 0;
-
-        setStatus(
-          `✅ تم سحب ${total} سجل من ${currentPage.section}`,
-          'success'
-        );
-
-        if (resultsEl) {
-          resultsEl.innerHTML = `
-            <div style="direction:rtl;font-size:12px;padding:10px;
-              background:#0a1628;border-radius:8px;margin-top:8px;">
-              <p style="color:#f59e0b;font-weight:bold;margin:0 0 8px">
-                📊 نتائج سحب ${currentPage.section}
-              </p>
-              ${s.totalCases > 0 ?
-                `<p style="color:#fff;margin:3px 0">
-                  📁 القضايا: <strong>${s.totalCases}</strong>
-                  <span style="color:#22c55e;font-size:10px">
-                    ← إدارة القضايا
-                  </span>
-                </p>` : ''}
-              ${s.totalHearings > 0 ?
-                `<p style="color:#fff;margin:3px 0">
-                  📅 الجلسات: <strong>${s.totalHearings}</strong>
-                  <span style="color:#22c55e;font-size:10px">
-                    ← مواعيد الجلسات
-                  </span>
-                </p>` : ''}
-              ${s.totalPOAs > 0 ?
-                `<p style="color:#fff;margin:3px 0">
-                  📜 الوكالات: <strong>${s.totalPOAs}</strong>
-                  <span style="color:#22c55e;font-size:10px">
-                    ← قسم الوكالات
-                  </span>
-                </p>` : ''}
-              ${s.totalExecutions > 0 ?
-                `<p style="color:#fff;margin:3px 0">
-                  ⚡ التنفيذ: <strong>${s.totalExecutions}</strong>
-                  <span style="color:#22c55e;font-size:10px">
-                    ← طلبات التنفيذ
-                  </span>
-                </p>` : ''}
-              <p style="color:#22c55e;margin:8px 0 0;font-weight:bold">
-                ✅ تمت المزامنة مع النظام
-              </p>
-            </div>
-          `;
+        const total = (s.totalCases || 0) +
+          (s.totalHearings || 0) +
+          (s.totalPOAs || 0) +
+          (s.totalExecutions || 0);
+  
+        if (total > 0) {
+          setStatus(`✅ تم سحب ${total} سجل`, 'success');
+  
+          // عرض النتائج
+          if (resultsEl) {
+            resultsEl.innerHTML = buildResultHTML(d);
+          }
+  
+          // إرسال للخادم
+          const serverUrl = await getServerUrl();
+          setProgress(true, '📡 جارٍ المزامنة مع النظام...');
+  
+          try {
+            const syncRes = await fetch(
+              `${serverUrl}/api/najiz-sync`,
+              {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  scrapedData: d,
+                  pageType: d.pageType || 'unknown',
+                  source: 'chrome_extension',
+                  timestamp: new Date().toISOString()
+                })
+              }
+            );
+  
+            if (syncRes.ok) {
+              const syncResult = await syncRes.json();
+              setProgress(false);
+              setStatus(
+                `✅ تمت المزامنة — ${syncResult.results ? JSON.stringify(syncResult.results) : 'نجح'}`,
+                'success'
+              );
+            } else {
+              setProgress(false);
+              setStatus('⚠️ السحب نجح لكن المزامنة فشلت', 'warning');
+            }
+          } catch(syncErr) {
+            setProgress(false);
+            setStatus('⚠️ السحب نجح — تعذر الاتصال بالخادم', 'warning');
+          }
+  
+        } else {
+          setProgress(false);
+          setStatus(
+            '⚠️ لم تُوجد بيانات — تأكد أن الصفحة محملة بالكامل',
+            'warning'
+          );
+  
+          if (resultsEl) {
+            resultsEl.innerHTML = buildNoDataHTML(d.pageType, tab.url);
+          }
         }
-
-      } else {
-        setStatus(
-          response?.message ||
-          `⚠️ لم تُوجد بيانات — انتظر تحميل ${currentPage.section} كاملاً`,
-          'warning'
-        );
       }
+  
     } catch(err) {
       setProgress(false);
-      setStatus(
-        err.message === 'timeout'
-          ? '⚠️ انتهت المهلة — انتظر تحميل الصفحة وأعد المحاولة'
-          : '❌ خطأ: ' + err.message,
-        'error'
-      );
+      if (err.message === 'timeout') {
+        setStatus('⚠️ انتهت المهلة — الصفحة تحمّل ببطء، أعد المحاولة', 'warning');
+      } else {
+        setStatus('❌ ' + err.message, 'error');
+      }
     } finally {
       extractBtn.disabled = false;
     }
   });
+
+  function buildResultHTML(d) {
+    const s = d.summary;
+    const sections = [
+      s.totalCases > 0 && `<p>📁 القضايا: <strong>${s.totalCases}</strong> → إدارة القضايا</p>`,
+      s.totalHearings > 0 && `<p>📅 الجلسات: <strong>${s.totalHearings}</strong> → مواعيد الجلسات</p>`,
+      s.totalPOAs > 0 && `<p>📜 الوكالات: <strong>${s.totalPOAs}</strong> → قسم الوكالات</p>`,
+      s.totalExecutions > 0 && `<p>⚡ التنفيذ: <strong>${s.totalExecutions}</strong> → طلبات التنفيذ</p>`,
+    ].filter(Boolean).join('');
+  
+    return `
+      <div style="background:#0a1628;border-radius:8px;
+        padding:10px;margin-top:8px;direction:rtl;font-size:12px">
+        <p style="color:#f59e0b;font-weight:bold;margin:0 0 8px">
+          📊 نتائج السحب
+        </p>
+        <div style="color:#fff;line-height:1.8">${sections}</div>
+        <p style="color:#22c55e;margin:8px 0 0;font-weight:bold">
+          ✅ جارٍ المزامنة مع الأقسام...
+        </p>
+      </div>`;
+  }
+  
+  function buildNoDataHTML(pageType, url) {
+    const guides = {
+      cases: 'https://najiz.sa/applications/lawsuit',
+      hearings: 'https://najiz.sa/applications/appointment-requests/',
+      poa: 'https://najiz.sa/applications/wekalat/procurations-query',
+      executions: 'https://najiz.sa/applications/iexecution',
+      unknown: 'https://najiz.sa'
+    };
+  
+    const targetUrl = guides[pageType] || guides.unknown;
+  
+    return `
+      <div style="background:#0a1628;border-radius:8px;
+        padding:10px;margin-top:8px;direction:rtl;font-size:11px">
+        <p style="color:#f59e0b;margin:0 0 6px">⚠️ لم تُوجد بيانات</p>
+        <p style="color:#94a3b8;margin:0 0 8px">
+          الصفحة الحالية: ${url?.substring(0,50)}...
+        </p>
+        <p style="color:#94a3b8;margin:0 0 8px">
+          تأكد أن الصفحة محملة بالكامل ثم أعد المحاولة
+        </p>
+        <a href="${targetUrl}" target="_blank"
+          style="display:block;background:#1e3a5f;color:#f59e0b;
+          padding:6px;border-radius:6px;text-align:center;
+          text-decoration:none;font-weight:bold;">
+          🔗 اذهب للصفحة الصحيحة
+        </a>
+      </div>`;
+  }
 });

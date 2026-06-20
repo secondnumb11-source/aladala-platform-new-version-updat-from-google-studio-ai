@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { Bot, Calculator, DollarSign, FileText, CheckCircle2 } from 'lucide-react';
+import { useSystemData } from '../../hooks/useSystemData';
+import CaseClientSelector from '../shared/CaseClientSelector';
 
 interface Invoice {
   id: string;
@@ -15,14 +17,22 @@ interface Invoice {
   clientVat?: string;
 }
 
-export default function AIFinanceTool({ invoices = [] }: { invoices?: Invoice[] }) {
+export default function AIFinanceTool({ invoices: propInvoices }: { invoices?: Invoice[] }) {
+  const { cases, clients, invoices: systemInvoices } = useSystemData();
+  const [selectedCaseId, setSelectedCaseId] = useState('');
+  const [selectedClientId, setSelectedClientId] = useState('');
+
+  const invoices = propInvoices || systemInvoices || [];
+  
   const [query, setQuery] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
   const [analysisResult, setAnalysisResult] = useState('');
 
-  const handleAskAccountant = () => {
+  const handleAskAccountant = async () => {
     if (!query) return;
     setIsProcessing(true);
+    
+    // Pass context to API if we want, currently it's mocked in UI
     setTimeout(() => {
       setAnalysisResult(`بناءً على طلبك، قمت بمسح الفواتير واستخراج التالي:
 - إجمالي الإيرادات للفترة المحددة: ${(invoices.reduce((acc, curr) => acc + curr.totalAmount, 0)).toLocaleString()} ر.س
@@ -34,6 +44,13 @@ export default function AIFinanceTool({ invoices = [] }: { invoices?: Invoice[] 
 
   return (
     <div className="space-y-6 animate-fade-in" dir="rtl">
+      <CaseClientSelector
+        selectedCaseId={selectedCaseId}
+        selectedClientId={selectedClientId}
+        onCaseSelect={(c: any) => setSelectedCaseId(c.id)}
+        onClientSelect={(cl: any) => setSelectedClientId(cl.id)}
+      />
+      
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         <div className="lg:col-span-8 space-y-6">
           <div className="bg-slate-950 border border-slate-800 p-8 rounded-[2.5rem] shadow-2xl transition-all hover:shadow-blue-500/10">

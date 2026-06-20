@@ -6,7 +6,7 @@
 import React from 'react';
 import { List } from 'react-window';
 const VirtualList = List as any;
-import { ChevronLeft } from 'lucide-react';
+import { ChevronLeft, Trash2 } from 'lucide-react';
 import { Case } from '@/types';
 import CaseCard from './CaseCard';
 import { CaseClassificationTags } from '../CasesModule';
@@ -28,6 +28,7 @@ interface CasesListProps {
   onArchiveToggle?: (c: Case) => void;
   selectedRole?: string;
   onUpdateCaseStatus?: (c: Case, newStatus: string) => void;
+  onDeleteCase?: (id: string | number) => void;
 }
 
 export default function CasesList({
@@ -46,7 +47,8 @@ export default function CasesList({
   visibleCount,
   onArchiveToggle,
   selectedRole,
-  onUpdateCaseStatus
+  onUpdateCaseStatus,
+  onDeleteCase
 }: CasesListProps) {
   if (filteredCases.length === 0) {
     return (
@@ -139,7 +141,21 @@ export default function CasesList({
                   </select>
                 </div>
                 <div className={`flex-[1] px-4 text-[10px] font-black font-mono tracking-widest truncate ${isHighContrast ? 'text-emerald-900' : 'text-emerald-400'}`}>{c.nextSessionDate || '---'}</div>
-                <div className="flex-[0.5] px-4 text-right">
+                <div className="flex-[0.5] px-4 text-right flex items-center justify-end gap-2">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onDeleteCase && onDeleteCase(c.id);
+                    }}
+                    className={`p-1.5 rounded-lg border transition-all ${
+                      isHighContrast 
+                        ? 'bg-rose-50 border-rose-200 text-rose-600 hover:bg-rose-100' 
+                        : 'bg-rose-500/10 border-rose-500/20 text-rose-400 hover:bg-rose-500/20'
+                    }`}
+                    title="حذف القضية نهائياً"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
                   <ChevronLeft className="w-4 h-4 transition-all rotate-180 inline-block drop-shadow-sm text-slate-700" />
                 </div>
               </div>
@@ -169,6 +185,7 @@ export default function CasesList({
           onArchiveToggle={onArchiveToggle}
           selectedRole={selectedRole}
           onUpdateCaseStatus={onUpdateCaseStatus}
+          onDeleteCase={onDeleteCase}
         />
       ))}
     </div>

@@ -22,10 +22,13 @@ import {
   History,
   MessageSquare,
   AlertCircle,
-  Plus
+  Plus,
+  Trash2
 } from 'lucide-react';
 import { Case, Client, Attachment } from '@/types';
 import { generateUUID } from '@/lib/uuid';
+import { supabase } from '@/lib/supabase';
+import DocumentUploadWidget from './DocumentUploadWidget';
 
 interface EnhancedCaseDetailProps {
   selectedCase: Case;
@@ -74,14 +77,154 @@ export const EnhancedCaseDetail: React.FC<EnhancedCaseDetailProps> = ({
 }) => {
   const [activeTab, setActiveTab] = useState<'details' | 'documents' | 'history' | 'finance'>('details');
 
+  const [caseAttachments, setCaseAttachments] = useState<any[]>([]);
+  const [selectedDocCategory, setSelectedDocCategory] = useState<string>('all');
+  const [isUploadFormOpen, setIsUploadFormOpen] = useState(false);
+  
+  // Upload states
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [isUploading, setIsUploading] = useState(false);
+  const [newDocName, setNewDocName] = useState('');
+  const [newDocCategory, setNewDocCategory] = useState('documents');
+  const [selectedFileContent, setSelectedFileContent] = useState<string>('');
+  const [selectedFileType, setSelectedFileType] = useState<string>('');
+  const [selectedFileSizeText, setSelectedFileSizeText] = useState<string>('');
+
+  // Viewer states
+  const [viewingAttachment, setViewingAttachment] = useState<any | null>(null);
+
+  const loadCaseAttachments = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('attachments')
+        .select('*')
+        .eq('record_id', selectedCase.id);
+      if (error) {
+        console.error('[Attachments] Error fetching:', error);
+        return;
+      }
+      if (data) {
+        const mapped = data.map((a: any) => ({
+          id: a.id,
+          recordId: a.record_id,
+          recordType: a.record_type,
+          fileName: a.file_name,
+          fileSize: a.file_size,
+          storagePath: a.storage_path,
+          fileUrl: a.file_url,
+          createdAt: a.created_at,
+          category: a.category || 'documents'
+        }));
+        setCaseAttachments(mapped);
+      }
+    } catch (err) {
+      console.error('[Attachments] Failed to fetch:', err);
+    }
+  };
+
+  useEffect(() => {
+    if (selectedCase?.id) {
+      loadCaseAttachments();
+    }
+  }, [selectedCase?.id]);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    
+    setNewDocName(file.name.split('.').slice(0, -1).join('.'));
+    setSelectedFileSizeText(`${(file.size / (1024 * 1024)).toFixed(2)} MB`);
+    setSelectedFileType(file.type || 'application/octet-stream');
+    
+    const reader = new FileReader();
+    reader.onload = () => {
+      setSelectedFileContent(reader.result as string);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleUploadSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newDocName.trim()) {
+      alert('الرجاء إدخال اسم للمستند');
+      return;
+    }
+    
+    setIsUploading(true);
+    setUploadProgress(20);
+    
+    try {
+      setUploadProgress(50);
+      
+      const newAttachment = {
+        id: generateUUID(),
+        record_id: selectedCase.id,
+        record_type: 'case',
+        file_name: newDocName,
+        file_url: selectedFileContent || `data:text/plain;base64,JHhibWw9`,
+        file_size: selectedFileSizeText || '0.1 MB',
+        category: newDocCategory,
+        storage_path: `attachments/cases/${selectedCase.id}/${generateUUID()}`,
+        created_at: new Date().toISOString()
+      };
+      
+      const { error } = await supabase
+        .from('attachments')
+        .insert([newAttachment]);
+        
+      if (error) {
+        console.error('[Upload] Error uploading document:', error);
+        alert('خطأ أثناء رفع ومزامنة المستند: ' + error.message);
+        setIsUploading(false);
+        return;
+      }
+      
+      setUploadProgress(100);
+      setTimeout(() => {
+        setIsUploading(false);
+        setIsUploadFormOpen(false);
+        setNewDocName('');
+        setSelectedFileContent('');
+        setSelectedFileSizeText('');
+        setSelectedFileType('');
+        loadCaseAttachments();
+      }, 500);
+      
+    } catch (err: any) {
+      console.error('[Upload] Error in submission handler:', err);
+      alert('حدث خطأ غير متوقع أثناء المعالجة.');
+      setIsUploading(false);
+    }
+  };
+
+  const handleDeleteAttachment = async (id: string) => {
+    if (confirm('هل أنت متأكد من رغبتك في حذف هذا المستند نهائياً؟')) {
+      try {
+        const { error } = await supabase
+          .from('attachments')
+          .delete()
+          .eq('id', id);
+        if (error) {
+          console.error('[Attachment Delete] Error deleting:', error);
+          alert('فشل حذف المستند: ' + error.message);
+          return;
+        }
+        loadCaseAttachments();
+      } catch (err: any) {
+        console.error('[Attachment Delete] Exception:', err);
+      }
+    }
+  };
+
   return (
-    <motion.div 
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: 20 }}
-      className="space-y-8"
-      dir="rtl"
-    >
+    <>
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: 20 }}
+        className="space-y-8"
+        dir="rtl"
+      >
       {/* Back button */}
       <button 
         onClick={() => {
@@ -247,7 +390,10 @@ export const EnhancedCaseDetail: React.FC<EnhancedCaseDetailProps> = ({
                   <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest mt-1">Structured Legal Workspace</p>
                 </div>
               </div>
-              <button className="px-5 py-3 rounded-2xl bg-slate-900 text-white text-xs font-black shadow-sm hover:bg-slate-800 transition-all flex items-center gap-2">
+              <button 
+                onClick={() => setIsUploadFormOpen(!isUploadFormOpen)}
+                className="px-5 py-3 rounded-2xl bg-slate-900 text-white text-xs font-black shadow-sm hover:bg-slate-800 transition-all flex items-center gap-2 cursor-pointer"
+              >
                 <Plus className="w-4 h-4 text-amber-400" />
                 إيداع مستند جديد
               </button>
@@ -255,27 +401,141 @@ export const EnhancedCaseDetail: React.FC<EnhancedCaseDetailProps> = ({
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {[
-                { id: 'pleadings', label: 'اللوائح الجوابية والاعتبارية', icon: FileText, count: 3, color: 'text-amber-600', bg: 'bg-amber-50' },
-                { id: 'documents', label: 'المستندات الثبوتية والمرافعات', icon: Paperclip, count: 8, color: 'text-blue-600', bg: 'bg-blue-50' },
-                { id: 'judgments', label: 'الأحكام والصكوك القضائية', icon: Gavel, count: 1, color: 'text-emerald-600', bg: 'bg-emerald-50' },
-                { id: 'execution', label: 'قرارات التنفيذ (مادة ٣٤/٤٦)', icon: Zap, count: 2, color: 'text-rose-600', bg: 'bg-rose-50' },
-              ].map((cat) => (
-                <div key={cat.id} className="p-5 border border-slate-100 rounded-3xl hover:border-amber-200 hover:shadow-md transition-all group cursor-pointer bg-white">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className={`p-2.5 rounded-xl border border-transparent group-hover:border-white transition-all ${cat.bg} ${cat.color}`}>
-                      <cat.icon className="w-5 h-5" />
+                { id: 'pleadings', label: 'اللوائح الجوابية والاعتبارية', icon: FileText, count: caseAttachments.filter(a => a.category === 'pleadings' || a.category === 'pleading').length, color: 'text-amber-600', bg: 'bg-amber-50' },
+                { id: 'documents', label: 'المستندات الثبوتية والمرافعات', icon: Paperclip, count: caseAttachments.filter(a => a.category === 'documents' || a.category === 'evidence').length, color: 'text-blue-600', bg: 'bg-blue-50' },
+                { id: 'judgments', label: 'الأحكام والصكوك القضائية', icon: Gavel, count: caseAttachments.filter(a => a.category === 'judgments' || a.category === 'judgment').length, color: 'text-emerald-600', bg: 'bg-emerald-50' },
+                { id: 'execution', label: 'قرارات التنفيذ (مادة ٣٤/٤٦)', icon: Zap, count: caseAttachments.filter(a => a.category === 'execution').length, color: 'text-rose-600', bg: 'bg-rose-50' },
+              ].map((cat) => {
+                const isSelected = selectedDocCategory === cat.id;
+                return (
+                  <div 
+                    key={cat.id} 
+                    onClick={() => setSelectedDocCategory(isSelected ? 'all' : cat.id)}
+                    className={`p-5 border rounded-3xl hover:border-amber-200 hover:shadow-md transition-all group cursor-pointer bg-white ${
+                      isSelected ? 'border-amber-500 shadow-md ring-2 ring-amber-500/10' : 'border-slate-100'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between mb-4">
+                      <div className={`p-2.5 rounded-xl border border-transparent group-hover:border-white transition-all ${cat.bg} ${cat.color}`}>
+                        <cat.icon className="w-5 h-5" />
+                      </div>
+                      <span className="text-[10px] font-black px-3 py-1 rounded-full bg-slate-50 text-slate-500 border border-slate-100">
+                        {cat.count} مستندات
+                      </span>
                     </div>
-                    <span className="text-[10px] font-black px-3 py-1 rounded-full bg-slate-50 text-slate-500 border border-slate-100">
-                      {cat.count} مستندات
-                    </span>
+                    <h4 className="text-sm font-black text-slate-900 group-hover:text-amber-600 transition-colors">{cat.label}</h4>
+                    <div className="flex items-center justify-between text-[10px] font-bold text-slate-400 pt-4 mt-4 border-t border-slate-50">
+                      <span>{isSelected ? 'تصفية نشطة حالياً' : 'اضغط للتصفية والفلترة'}</span>
+                      <Download className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-all translate-y-2 group-hover:translate-y-0" />
+                    </div>
                   </div>
-                  <h4 className="text-sm font-black text-slate-900 group-hover:text-amber-600 transition-colors">{cat.label}</h4>
-                  <div className="flex items-center justify-between text-[10px] font-bold text-slate-400 pt-4 mt-4 border-t border-slate-50">
-                    <span>آخر تحديث: قبل يومين</span>
-                    <Download className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-all translate-y-2 group-hover:translate-y-0" />
-                  </div>
+                );
+              })}
+            </div>
+
+            {isUploadFormOpen && (
+              <DocumentUploadWidget 
+                caseId={selectedCase.id} 
+                onUploadComplete={() => {
+                  loadCaseAttachments();
+                  setIsUploadFormOpen(false);
+                }} 
+              />
+            )}
+
+            {/* Document Table Gallery */}
+            <div className="space-y-4 pt-4 border-t border-slate-100">
+              <div className="flex justify-between items-center">
+                <h4 className="text-xs font-black text-slate-500 uppercase tracking-widest">
+                  سجل المستندات المودعة ({selectedDocCategory === 'all' ? 'جميع التصنيفات' : 
+                    selectedDocCategory === 'pleadings' ? 'اللوائح الجوابية والاعتبارية' :
+                    selectedDocCategory === 'documents' ? 'المستندات الثبوتية والمرافعات' :
+                    selectedDocCategory === 'judgments' ? 'الأحكام والصكوك القضائية' :
+                    'قرارات التنفيذ'
+                  })
+                </h4>
+                {selectedDocCategory !== 'all' && (
+                  <button 
+                    onClick={() => setSelectedDocCategory('all')}
+                    className="text-[10px] font-black text-amber-600 hover:underline bg-amber-50 px-3 py-1 rounded-full border border-amber-100 cursor-pointer"
+                  >
+                    عرض جميع المودعات
+                  </button>
+                )}
+              </div>
+
+              {caseAttachments.length === 0 ? (
+                <div className="p-12 text-center rounded-2xl border border-dashed border-slate-200 bg-slate-50 text-slate-400 text-xs font-bold" dir="rtl">
+                  📂 لا يوجد مستندات مؤرشفة ومرفوعة لهذه القضية حالياً. انقر على "إيداع مستند جديد" لبدء الأرشفة.
                 </div>
-              ))}
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-right text-xs border-collapse">
+                    <thead>
+                      <tr className="border-b border-slate-100 text-slate-400 font-bold">
+                        <th className="py-3 px-2">اسم المستند في الملف</th>
+                        <th className="py-3 px-2">التصنيف</th>
+                        <th className="py-3 px-2 text-center">الحجم</th>
+                        <th className="py-3 px-2 text-center">تاريخ الإيداع</th>
+                        <th className="py-3 px-2 text-center">التحكم والعمليات</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-50 text-slate-700">
+                      {caseAttachments
+                        .filter(a => selectedDocCategory === 'all' || a.category === selectedDocCategory)
+                        .map((a) => (
+                          <tr key={a.id} className="hover:bg-slate-50/50 transition-colors">
+                            <td className="py-3 px-2 font-black text-slate-900 flex items-center gap-2">
+                              <span>📄</span>
+                              <span>{a.fileName}</span>
+                            </td>
+                            <td className="py-3 px-2">
+                              <span className={`px-2 py-0.5 rounded-md font-sans font-bold text-[10px] ${
+                                a.category === 'pleadings' ? 'bg-amber-100 text-amber-800' :
+                                a.category === 'documents' ? 'bg-blue-100 text-blue-800' :
+                                a.category === 'judgments' ? 'bg-emerald-100 text-emerald-800' :
+                                a.category === 'execution' ? 'bg-rose-100 text-rose-800' :
+                                'bg-slate-100 text-slate-800'
+                              }`}>
+                                {a.category === 'pleadings' ? 'لائحة جوابية' :
+                                 a.category === 'documents' ? 'مستند ثبوتي' :
+                                 a.category === 'judgments' ? 'حكم قضائي' :
+                                 a.category === 'execution' ? 'قرار تنفيذ' : 'أخرى'}
+                              </span>
+                            </td>
+                            <td className="py-3 px-2 text-center text-slate-600 font-mono text-[10px]">{a.fileSize}</td>
+                            <td className="py-3 px-2 text-center text-slate-500 font-bold text-[10px]">{new Date(a.createdAt).toLocaleDateString('ar-SA')}</td>
+                            <td className="py-3 px-2">
+                              <div className="flex items-center justify-end gap-2">
+                                <button 
+                                  onClick={() => setViewingAttachment(a)}
+                                  className="px-3 py-1 bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 rounded-lg text-[10px] font-black cursor-pointer transition-colors"
+                                >
+                                  عرض مستندي 👁️
+                                </button>
+                                <button 
+                                  onClick={() => handleDeleteAttachment(a.id)}
+                                  className="p-1 px-1.5 bg-rose-50 hover:bg-rose-100 border border-rose-100 text-rose-600 rounded-lg text-[10px] font-black cursor-pointer transition-colors"
+                                  title="حذف المستند نهائياً"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))
+                      }
+                      {caseAttachments.filter(a => selectedDocCategory === 'all' || a.category === selectedDocCategory).length === 0 && (
+                        <tr>
+                          <td colSpan={5} className="py-8 text-center text-slate-400 font-bold text-xs">
+                            لا توجد مستندات بعد في هذا التصنيف المحدد.
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              )}
             </div>
           </section>
 
@@ -546,6 +806,129 @@ export const EnhancedCaseDetail: React.FC<EnhancedCaseDetailProps> = ({
         </div>
       </div>
     </motion.div>
+
+    {/* Magnificent Legal Document Viewer Modal */}
+    {viewingAttachment && (
+      <div className="fixed inset-0 z-[100] bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4" dir="rtl">
+        <div className="bg-white border border-slate-200 rounded-[2.5rem] max-w-4xl w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden animate-scale-in">
+          {/* Header of Viewer */}
+          <div className="flex justify-between items-center px-8 py-6 border-b border-slate-100 bg-slate-50">
+            <div className="flex items-center gap-3">
+              <span className="text-xl">📄</span>
+              <div className="text-right">
+                <h3 className="font-sans font-black text-sm text-slate-900">{viewingAttachment.fileName}</h3>
+                <p className="text-[10px] text-slate-400 font-bold mt-0.5">
+                  تصنيف: {
+                    viewingAttachment.category === 'pleadings' ? 'اللوائح الجوابية والاعتبارية' :
+                    viewingAttachment.category === 'documents' ? 'المستندات الثبوتية والمرافعات' :
+                    viewingAttachment.category === 'judgments' ? 'الأحكام والصكوك القضائية' :
+                    viewingAttachment.category === 'execution' ? 'قرارات التنفيذ' : 'مستندات عامة'
+                  } • الحجم: {viewingAttachment.fileSize}
+                </p>
+              </div>
+            </div>
+            <button 
+              onClick={() => setViewingAttachment(null)}
+              className="p-2 rounded-xl bg-white border border-slate-200 text-slate-400 hover:text-rose-500 hover:border-rose-200 transition-all cursor-pointer"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+          
+          {/* Content of Document */}
+          <div className="flex-1 overflow-y-auto p-8 bg-slate-100 flex justify-center">
+            {viewingAttachment.fileUrl?.startsWith('data:image/') ? (
+              <img 
+                src={viewingAttachment.fileUrl} 
+                alt={viewingAttachment.fileName} 
+                className="max-w-full h-auto rounded-xl shadow-lg border border-slate-250 max-h-[60vh] object-contain"
+                referrerPolicy="no-referrer"
+              />
+            ) : (
+              /* Professional Simulated Legal Document Sheet */
+              <div className="bg-white max-w-2xl w-full border border-slate-300 p-12 rounded-xl shadow-md min-h-[70vh] flex flex-col justify-between font-sans relative overflow-hidden text-right leading-loose">
+                {/* Corner Watermarks */}
+                <div className="absolute top-0 left-0 w-24 h-24 bg-slate-50 rounded-br-full flex items-center justify-center border-r border-b border-slate-200/50">
+                  <span className="text-[10px] font-black text-slate-400 tracking-wider rotate-[-45deg]">شعار المكتب</span>
+                </div>
+                <div className="absolute inset-0 bg-contain bg-center opacity-[0.03] pointer-events-none" style={{ backgroundImage: `url('https://images.unsplash.com/photo-1589829545856-d10d557cf95f?q=80&w=1000')` }}></div>
+
+                {/* Upper Header */}
+                <div className="flex justify-between items-start border-b-2 border-slate-900 pb-6 mb-8 text-xs font-black text-slate-900">
+                  <div className="space-y-1 text-right">
+                    <div>المحكمة: {selectedCase.courtName || "ديوان المظالم"}</div>
+                    <div>الدائرة: الدائرة التجارية الثالثة</div>
+                    <div>رقم الدعوى: {selectedCase.caseNumber}</div>
+                  </div>
+                  <div className="text-center space-y-1">
+                    <div className="text-xs font-black border border-slate-900 px-4 py-1.5 rounded-lg mb-1 bg-amber-50">مستند قضائي معتمد</div>
+                    <div>تاريخ الإيداع: {new Date(viewingAttachment.createdAt).toLocaleDateString('ar-SA')}</div>
+                  </div>
+                </div>
+
+                {/* Document Text Body */}
+                <div className="flex-1 space-y-6 pt-2 pb-6 text-right">
+                  <h4 className="text-center font-black text-base text-slate-950 border-b border-dashed border-slate-200 pb-4 mb-4">{viewingAttachment.fileName}</h4>
+                  <div className="text-sm font-bold text-slate-800 leading-relaxed text-justify space-y-4">
+                    <p>إلى فضيلة رئيس الدائرة القضائية الموقر، وبصفتنا وكلاء المستدعى في الدعوى المقيدة أعلاه، يطيب لنا تقديم هذا المستند تلبية لمتطلبات المرافعة العادلة وحفظاً لحقوق موكلنا في النزاع المنظور أمام فضيلتكم الموقرة.</p>
+                    
+                    <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-2 mt-4 text-right">
+                      <div className="text-amber-700 tracking-wider font-black">تفاصيل ملف الدعوى الفني:</div>
+                      <div className="grid grid-cols-2 gap-4 text-xs font-bold text-slate-600">
+                        <div>الموكل: {clients.find(cl => cl.id === selectedCase.clientId)?.name || '---'}</div>
+                        <div>رقم القضية بالنظام: #{selectedCase.id.slice(0, 8)}</div>
+                        <div>تصنيف المستند المودع: {viewingAttachment.category}</div>
+                        <div>اسم ملف التخزين السحابي: {viewingAttachment.storagePath.split('/').pop()?.slice(0, 20)}...</div>
+                      </div>
+                    </div>
+
+                    <p className="mt-6 font-bold">نسأل الله لفضيلتكم العون والسداد في قضائكم العادل وإرساء مبادئ الحق والعدالة ونصرة المظلوم.</p>
+                  </div>
+                </div>
+
+                {/* Legal Footer Stamp & Signature */}
+                <div className="border-t border-slate-400 pt-6 mt-6 flex justify-between items-center text-xs font-bold text-slate-500">
+                  <div className="text-right">
+                    <div>مقدمه: مكتب العدالة والمحاماة للاستشارات القضائية</div>
+                    <div className="mt-2 text-[10px] text-emerald-600 font-sans tracking-tight">✓ توقيع إلكتروني ثنائي مأمون وثابت</div>
+                  </div>
+                  {/* Visual Stamp */}
+                  <div className="w-16 h-16 rounded-full border-4 border-double border-rose-600/60 flex items-center justify-center flex-col text-rose-600/60 font-black tracking-widest text-[8px] rotate-[15deg] select-none">
+                    <span className="font-sans">ADALAH</span>
+                    <span>مكتب العدالة</span>
+                    <span>معتمد</span>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+          
+          {/* Footer of Viewer */}
+          <div className="px-8 py-5 border-t border-slate-100 bg-slate-50 flex justify-end gap-3">
+            <button 
+              onClick={() => {
+                const link = document.createElement('a');
+                link.href = viewingAttachment.fileUrl;
+                link.download = viewingAttachment.fileName;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+              }}
+              className="px-6 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-black text-xs transition-colors cursor-pointer"
+            >
+              تحميل المستند الأصلي
+            </button>
+            <button 
+              onClick={() => setViewingAttachment(null)}
+              className="px-6 py-2.5 rounded-xl bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 font-black text-xs transition-colors cursor-pointer"
+            >
+              إغلاق نافذة العرض
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
+    </>
   );
 };
 

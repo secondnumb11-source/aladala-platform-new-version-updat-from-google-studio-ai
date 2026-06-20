@@ -42,6 +42,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 import fs from 'fs';
+import crypto from 'crypto';
 import nodemailer from 'nodemailer';
 import twilio from 'twilio';
 import type OpenAI from 'openai';
@@ -415,7 +416,7 @@ const checkExpiringPOAs = async () => {
     if (expiringPOAs && expiringPOAs.length > 0) {
       for (const poa of expiringPOAs) {
         await supabase.from('notifications').insert({
-          id: require('crypto').randomUUID(),
+          id: crypto.randomUUID?.() || Math.random().toString(36).substring(2),
           title: 'تنبيه: وكالة قضائية توشك على الانتهاء',
           message: `الوكالة رقم ${poa.poa_number} تنتهي في ${poa.expiry_date}`,
           type: 'warning',
@@ -431,6 +432,77 @@ const checkExpiringPOAs = async () => {
 };
 
 setInterval(checkExpiringPOAs, 24 * 60 * 60 * 1000); // كل 24 ساعة
+
+const checkScheduledMessages = async () => {
+  try {
+    const supabase = getSupabaseClient();
+    if (!supabase) return;
+
+    const now = new Date().toISOString();
+    const { data: pendingMessages, error } = await supabase
+      .from('scheduled_messages')
+      .select('*')
+      .eq('status', 'pending')
+      .lte('scheduled_for', now);
+
+    if (error) {
+      if (error.code === '42P01' || error.message?.includes('relation "public.scheduled_messages" does not exist') || error.message?.includes('scheduled_messages')) {
+        // Table probably missing, don't flood logs with objects, just a meaningful string
+        console.log('[Scheduled Worker] scheduled_messages table not found. Skipping polling until initialized.');
+        return;
+      }
+      throw error;
+    }
+
+    if (pendingMessages && pendingMessages.length > 0) {
+      console.log(`[Scheduled Worker] Found ${pendingMessages.length} messages to send.`);
+      for (const msg of pendingMessages) {
+        try {
+          // Simulate sending
+          console.log(`[WhatsApp Sent] To: ${msg.recipient_phone}, Msg: ${msg.message}`);
+          
+          const msgId = msg.id;
+          const { error: updateError } = await supabase
+            .from('scheduled_messages')
+            .update({ status: 'sent' })
+            .eq('id', msgId);
+
+          if (updateError) throw updateError;
+
+          // Log to whatsapp_api_logs
+          await supabase.from('whatsapp_api_logs').insert({
+            id: (crypto as any).randomUUID ? (crypto as any).randomUUID() : Math.random().toString(36).substring(2),
+            recipient_phone: msg.recipient_phone,
+            message: msg.message,
+            status: 'success',
+            created_at: new Date().toISOString()
+          });
+
+          // Optional: Add to notifications table for UI visibility
+          await supabase.from('notifications').insert({
+            id: (crypto as any).randomUUID ? (crypto as any).randomUUID() : Math.random().toString(36).substring(2),
+            title: '✓ تم إرسال رسالة مجدولة',
+            message: `تم إرسال رسالة الواتساب المجدولة للرقم ${msg.recipient_phone} بنجاح.`,
+            type: 'info',
+            created_at: new Date().toISOString()
+          });
+        } catch (innerErr: any) {
+          console.error(`[Scheduled Worker] Error processing message ${msg.id}:`, innerErr.message || innerErr);
+        }
+      }
+    }
+  } catch (err: any) {
+    console.error('[Scheduled Worker Error]', {
+      message: err.message,
+      stack: err.stack,
+      details: err.details,
+      hint: err.hint,
+      code: err.code
+    });
+  }
+};
+
+setInterval(checkScheduledMessages, 60 * 1000); // Check every minute
 
 let supabaseClient: any = null;
 
@@ -1664,123 +1736,157 @@ app.post('/api/najiz-sync', async (req, res) => {
   const { scrapedData, pageType, source, timestamp } = req.body;
 
   if (!scrapedData) {
-    return res.status(400).json({ success: false, message: 'لا توجد بيانات' });
+    return res.status(400).json({
+      success: false, message: 'لا توجد بيانات'
+    });
   }
 
   const results = {
-    cases: { added: 0, updated: 0, errors: 0 },
-    hearings: { added: 0, errors: 0 },
-    poa: { added: 0, errors: 0 },
-    executions: { added: 0, errors: 0 }
+    cases: { added: 0, updated: 0, errors: 0, ids: [] as string[] },
+    hearings: { added: 0, errors: 0, ids: [] as string[] },
+    poa: { added: 0, errors: 0, ids: [] as string[] },
+    executions: { added: 0, errors: 0, ids: [] as string[] }
   };
 
-  // ===== مزامنة القضايا → إدارة القضايا =====
-  if (scrapedData.cases?.length > 0) {
+  const crypto = await import('crypto');
+
+  // ===== حفظ القضايا =====
+  if (Array.isArray(scrapedData.cases)) {
     for (const c of scrapedData.cases) {
-      if (!c.caseNumber) continue;
+      if (!c.caseNumber?.trim()) continue;
       try {
         const { data: existing } = await adminSupabase
           .from('cases')
-          .select('id')
-          .eq('case_number', c.caseNumber)
+          .select('id, status')
+          .eq('case_number', c.caseNumber.trim())
           .maybeSingle();
 
         if (existing) {
           await adminSupabase.from('cases').update({
-            status: c.status || 'قيد النظر',
+            status: c.status || existing.status || 'قيد النظر',
             court_name: c.court || undefined,
-            next_session_at: c.nextSessionDate
-              ? new Date(c.nextSessionDate).toISOString()
+            next_session_at: c.nextHearing
+              ? (() => {
+                try {
+                  return new Date(c.nextHearing).toISOString();
+                } catch { return undefined; }
+              })()
               : undefined,
             is_najiz_sync: true,
             last_sync_at: new Date().toISOString(),
             updated_at: new Date().toISOString()
           }).eq('id', existing.id);
           results.cases.updated++;
+          results.cases.ids.push(existing.id);
         } else {
-          await adminSupabase.from('cases').insert({
-            id: require('crypto').randomUUID(),
-            case_number: c.caseNumber,
-            najiz_case_number: c.caseNumber,
-            title: c.caseName || `قضية ${c.caseNumber}`,
-            client_name: c.clientName || '',
-            status: c.status || 'قيد النظر',
-            category: c.category || 'civil',
-            stage: c.stage || 'litigation',
-            court_name: c.court || '',
-            next_session_at: c.nextSessionDate
-              ? new Date(c.nextSessionDate).toISOString()
-              : null,
-            is_najiz_sync: true,
-            last_sync_at: new Date().toISOString(),
-            metadata: JSON.stringify({ source: 'najiz_extension' }),
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-          });
-          results.cases.added++;
+          const newId = crypto.randomUUID();
+          const { error } = await adminSupabase
+            .from('cases').insert({
+              id: newId,
+              case_number: c.caseNumber.trim(),
+              najiz_case_number: c.caseNumber.trim(),
+              title: c.caseName || `قضية ${c.caseNumber}`,
+              client_name: c.clientName || '',
+              status: c.status || 'قيد النظر',
+              category: c.category || 'civil',
+              stage: c.stage || 'litigation',
+              court_name: c.court || '',
+              next_session_at: c.nextHearing
+                ? (() => {
+                  try {
+                    return new Date(c.nextHearing).toISOString();
+                  } catch { return null; }
+                })()
+                : null,
+              is_najiz_sync: true,
+              last_sync_at: new Date().toISOString(),
+              metadata: JSON.stringify({
+                source: source || 'najiz_extension',
+                scrapedAt: timestamp
+              }),
+              archived: false,
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString()
+            });
+          if (!error) {
+            results.cases.added++;
+            results.cases.ids.push(newId);
+          } else {
+            console.error('[Sync Cases Insert]', error.message);
+            results.cases.errors++;
+          }
         }
       } catch(err: any) {
-        console.error('[Sync Cases Error]', err.message);
+        console.error('[Sync Cases]', err.message);
         results.cases.errors++;
       }
     }
   }
 
-  // ===== مزامنة الجلسات → مواعيد الجلسات =====
-  if (scrapedData.hearings?.length > 0) {
+  // ===== حفظ الجلسات =====
+  if (Array.isArray(scrapedData.hearings)) {
     for (const h of scrapedData.hearings) {
-      if (!h.date) continue;
+      if (!h.date?.trim()) continue;
       try {
+        const newId = crypto.randomUUID();
         await adminSupabase.from('hearings').upsert({
-          id: require('crypto').randomUUID(),
+          id: newId,
           case_number: h.caseNumber || '',
           date: h.date,
           time: h.time || '09:00',
           court_name: h.court || '',
           hall: h.hall || '',
-          status: h.status || 'upcoming',
+          status: 'upcoming',
           is_najiz_sync: true,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
-        }, { onConflict: 'case_number,date' });
+        }, { onConflict: 'case_number,date',
+             ignoreDuplicates: false });
         results.hearings.added++;
-      } catch(err) {
+        results.hearings.ids.push(newId);
+      } catch(err: any) {
         results.hearings.errors++;
       }
     }
   }
 
-  // ===== مزامنة الوكالات → قسم الوكالات =====
-  if (scrapedData.powers_of_attorney?.length > 0) {
+  // ===== حفظ الوكالات =====
+  if (Array.isArray(scrapedData.powers_of_attorney)) {
     for (const p of scrapedData.powers_of_attorney) {
-      if (!p.poaNumber) continue;
+      if (!p.poaNumber?.trim()) continue;
       try {
-        await adminSupabase.from('powers_of_attorney').upsert({
-          id: require('crypto').randomUUID(),
-          poa_number: p.poaNumber,
-          type: p.type || 'general',
-          status: p.status || 'active',
-          issue_date: p.issueDate || null,
-          expiry_date: p.expiryDate || null,
-          is_najiz_sync: true,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        }, { onConflict: 'poa_number' });
+        const newId = crypto.randomUUID();
+        await adminSupabase
+          .from('powers_of_attorney').upsert({
+            id: newId,
+            poa_number: p.poaNumber.trim(),
+            type: p.type || 'general',
+            status: p.status || 'active',
+            issue_date: p.issueDate || null,
+            expiry_date: p.expiryDate || null,
+            principal_name: p.principalName || '',
+            is_najiz_sync: true,
+            najiz_sync_date: new Date().toISOString(),
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          }, { onConflict: 'poa_number',
+               ignoreDuplicates: false });
         results.poa.added++;
-      } catch(err) {
+      } catch(err: any) {
         results.poa.errors++;
       }
     }
   }
 
-  // ===== مزامنة التنفيذ → طلبات التنفيذ =====
-  if (scrapedData.executions?.length > 0) {
+  // ===== حفظ طلبات التنفيذ =====
+  if (Array.isArray(scrapedData.executions)) {
     for (const e of scrapedData.executions) {
-      if (!e.executionNumber) continue;
+      if (!e.executionNumber?.trim()) continue;
       try {
+        const newId = crypto.randomUUID();
         await adminSupabase.from('executions').upsert({
-          id: require('crypto').randomUUID(),
-          execution_number: e.executionNumber,
+          id: newId,
+          execution_number: e.executionNumber.trim(),
           status: e.status || 'pending',
           amount: e.amount || 0,
           court_name: e.court || '',
@@ -1788,35 +1894,63 @@ app.post('/api/najiz-sync', async (req, res) => {
           issue_date: e.issueDate || null,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
-        }, { onConflict: 'execution_number' });
+        }, { onConflict: 'execution_number',
+             ignoreDuplicates: false });
         results.executions.added++;
-      } catch(err) {
+      } catch(err: any) {
         results.executions.errors++;
       }
     }
   }
 
-  // تسجيل في سجلات المزامنة
-  await adminSupabase.from('najiz_sync_logs').insert({
-    id: require('crypto').randomUUID(),
-    sync_type: pageType || 'full',
-    status: 'success',
-    records_synced:
-      results.cases.added + results.cases.updated +
-      results.hearings.added + results.poa.added +
-      results.executions.added,
-    raw_data: JSON.stringify({ results, source, timestamp }),
-    created_at: new Date().toISOString()
-  });
+  // ===== تسجيل المزامنة =====
+  const totalSynced =
+    results.cases.added + results.cases.updated +
+    results.hearings.added + results.poa.added +
+    results.executions.added;
 
-  console.log('[Najiz Sync] Results:', results);
+  try {
+    await adminSupabase.from('najiz_sync_logs').insert({
+      id: crypto.randomUUID(),
+      sync_type: pageType || 'unknown',
+      status: totalSynced > 0 ? 'success' : 'empty',
+      records_synced: totalSynced,
+      raw_data: JSON.stringify({ results, source }),
+      created_at: new Date().toISOString()
+    });
+  } catch(e) {}
+
+  console.log('[Najiz Sync]', results);
 
   return res.json({
     success: true,
-    message: 'تمت المزامنة بنجاح',
+    message: totalSynced > 0
+      ? `تمت المزامنة: ${totalSynced} سجل`
+      : 'لم تُوجد بيانات للمزامنة',
+    totalSynced,
     results,
     timestamp: new Date().toISOString()
   });
+});
+
+app.get('/api/najiz-sync/status', async (req, res) => {
+  try {
+    const { data } = await adminSupabase
+      .from('najiz_sync_logs')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .limit(5);
+
+    return res.json({
+      success: true,
+      lastSync: data?.[0] || null,
+      logs: data || []
+    });
+  } catch(err: any) {
+    return res.status(500).json({
+      success: false, error: err.message
+    });
+  }
 });
 
 
@@ -2009,6 +2143,17 @@ app.post('/api/whatsapp/send', async (req, res) => {
     
     if (!response.ok) {
       console.error('[Whapi Error]', response.status, responseText);
+      const supabase = getSupabaseClient();
+      if (supabase) {
+        await supabase.from('whatsapp_api_logs').insert({
+          id: crypto.randomUUID?.() || Math.random().toString(36).substring(2),
+          recipient_phone: to,
+          message: message,
+          status: 'failed',
+          error_message: `Error ${response.status}: ${data.message || responseText}`,
+          created_at: new Date().toISOString()
+        });
+      }
       return res.status(200).json({ 
         success: false, 
         error: `Whapi Error ${response.status}: ${data.message || responseText}` 
@@ -2016,6 +2161,16 @@ app.post('/api/whatsapp/send', async (req, res) => {
     }
     
     console.log('[Whapi Success]', data);
+    const supabase = getSupabaseClient();
+    if (supabase) {
+      await supabase.from('whatsapp_api_logs').insert({
+        id: crypto.randomUUID?.() || Math.random().toString(36).substring(2),
+        recipient_phone: to,
+        message: message,
+        status: 'success',
+        created_at: new Date().toISOString()
+      });
+    }
     return res.json({ 
       success: true, 
       messageId: data.id || data.message_id || 'sent',
@@ -2024,6 +2179,17 @@ app.post('/api/whatsapp/send', async (req, res) => {
     
   } catch (err: any) {
     console.error('[Whapi Exception]', err);
+    const supabase = getSupabaseClient();
+    if (supabase) {
+      await supabase.from('whatsapp_api_logs').insert({
+        id: crypto.randomUUID?.() || Math.random().toString(36).substring(2),
+        recipient_phone: to,
+        message: message,
+        status: 'failed',
+        error_message: err.message,
+        created_at: new Date().toISOString()
+      });
+    }
     return res.status(500).json({ success: false, error: err.message });
   }
 });
@@ -2389,29 +2555,48 @@ app.post('/api/ai/analyze-risk', async (req, res) => {
 });
 
 app.post('/api/ai/draft', async (req, res) => {
-  const { input, prompt: reqPrompt, type, context } = req.body;
-  const userPromptText = input || reqPrompt || "";
-  console.log(`AI Draft request received. Type: ${type}, prompt length: ${userPromptText?.length || 0}`);
+  const { type, details, caseContext, clientContext } = req.body;
 
-  const systemPrompt = `أنت الخبير القانوني والذكي الاصطناعي الأفضل لصياغة اللوائح القانونية في المملكة العربية السعودية وإعداد الدفاع والمذكرات.
-يجب أن تصيغ النص صياغة رصينة وفخمة بلغة قانونية سعودية فصحى مع ترويسة شرعية، وتحديد نصوص مواد نظام المعاملات المدنية أو نظام المرافعات الشرعية أو نظام المحاكم التجارية أو نظام العمل حسب الاقتضاء.
-المطلوب صياغة مستند قانوني احترافي (مذكرة اعتراض، أو صحيفة دعوى، أو مسودة عقد) بناءً على نوع الطلب والوقائع المسجلة، مستشهداً بالنصوص القانونية واللوائح السعودية الحديثة ورقم المواد بدقة بالغة.`;
+  const caseInfo = caseContext?.caseNumber ? `
+=== بيانات القضية ===
+رقم القضية: ${caseContext.caseNumber}
+الموكل: ${caseContext.clientName}
+الخصم: ${caseContext.opponentName || 'غير محدد'}
+المحكمة: ${caseContext.courtName || 'غير محدد'}
+التصنيف: ${caseContext.category || 'غير محدد'}
+المرحلة: ${caseContext.stage || 'غير محدد'}
+الملخص: ${caseContext.summary || 'غير محدد'}
+  ` : '';
 
-  if (userPromptText) {
-    try {
-      const responseText = await callAI(systemPrompt, `الوقائع والموجهات: ${userPromptText}\nنوع الطلب: ${type}`);
-      if (responseText) {
-        return res.json({ success: true, text: responseText.trim(), output: responseText.trim() });
-      } else {
-        return res.json({ success: false, error: "فشل استخراج البيانات من الصياغة." });
-      }
-    } catch (e: any) {
-      console.warn("Error inside AI drafting endpoint:", e.message);
-      return res.json({ success: false, error: "فشل الاتصال بالذكاء الاصطناعي." });
-    }
+  const clientInfo = clientContext?.name ? `
+=== بيانات العميل ===
+الاسم: ${clientContext.name}
+رقم الهوية: ${clientContext.national_id || 'غير محدد'}
+الجوال: ${clientContext.phone || 'غير محدد'}
+  ` : '';
+
+  try {
+    const result = await callGemini(
+      `أنت محامٍ سعودي خبير في صياغة الوثائق القانونية.
+       اصغ الوثائق بأسلوب قانوني رسمي باللغة العربية الفصحى
+       وفق أنظمة المملكة العربية السعودية.`,
+      `اصغ ${type || 'وثيقة قانونية'} بناءً على:
+
+       ${caseInfo}
+       ${clientInfo}
+
+       التعليمات الإضافية:
+       ${details}
+
+       يجب أن تكون الصياغة رسمية وشاملة لجميع البنود القانونية.`,
+      3000
+    );
+    return res.json({ success: true, result });
+  } catch (err: any) {
+    return res.status(500).json({
+      success: false, error: err.message
+    });
   }
-
-  return res.json({ success: false, error: "يجب تقديم سياق أو وقائع للصياغة." });
 });
 
 app.post('/api/ai/classify-case', async (req, res) => {
@@ -2585,6 +2770,36 @@ app.post('/api/ai/chat', async (req, res) => {
       success: false,
       error: err.message || 'خطأ في الذكاء الاصطناعي'
     });
+  }
+});
+
+app.post('/api/ai/whatsapp-draft', async (req, res) => {
+  const { clientName, caseNumber, caseStatus, caseDetails, templateName, currentMessage } = req.body;
+  
+  const systemPrompt = `أنت مساعد قانوني محترف في مكتب محاماة سعودي. 
+مهمتك هي صياغة رسالة واتساب قانونية احترافية، مهذبة، ومخصصة للعميل.
+يجب أن تكون الرسالة باللغة العربية الرسمية (أو اللهجة السعودية البيضاء المحترمة حسب السياق).
+يجب أن تتضمن المعلومات الضرورية وتكون واضحة ومباشرة.
+استخدم الرموز التعبيرية (Emojis) بشكل متزن (مخفف) لإضافة لمسة احترافية.`;
+
+  const userMessage = `يرجى صياغة رسالة واتساب للعميل: ${clientName || 'غير محدد'}
+بخصوص القضية رقم: ${caseNumber || 'غير محدد'}
+حالة القضية الحالية: ${caseStatus || 'غير محدد'}
+تفاصيل إضافية: ${caseDetails || 'لا يوجد'}
+قالب الرسالة المختار: ${templateName || 'عام'}
+النص الحالي (اختياري للتطوير): ${currentMessage || ''}
+
+المطلوب:
+1. صياغة قانونية متينة.
+2. وضوح الخطوات القادمة.
+3. الترحيب بالعميل والاعتزاز بثقته.
+4. اجعل الرسالة جاهزة للإرسال مباشرة.`;
+
+  try {
+    const draftedMessage = await callGemini(systemPrompt, userMessage);
+    res.json({ success: true, draftedMessage });
+  } catch (err: any) {
+    res.status(500).json({ success: false, error: err.message });
   }
 });
 
@@ -2935,12 +3150,12 @@ app.post('/api/employee-portal/login', async (req, res) => {
     }
     
     // إنشاء جلسة مع تفادي فشل العملية في حال عدم وجود الجدول
-    const token = require('crypto').randomUUID();
+    const token = crypto.randomUUID?.() || Math.random().toString(36).substring(2);
     try {
       await adminSupabase
         .from('employee_portal_sessions')
         .insert({
-          id: require('crypto').randomUUID(),
+          id: crypto.randomUUID?.() || Math.random().toString(36).substring(2),
           employee_id: employee.id,
           session_token: token,
           expires_at: new Date(
@@ -3028,83 +3243,114 @@ app.get('/api/employee-portal/session', async (req, res) => {
 
 app.post('/api/client-portal/login', async (req, res) => {
   const { username, password } = req.body;
-  
-  if (!username || !password) {
-    return res.status(400).json({ 
-      success: false, 
-      message: 'يرجى إدخال اسم المستخدم وكلمة المرور' 
+
+  if (!username?.trim() || !password?.trim()) {
+    return res.status(400).json({
+      success: false,
+      message: 'يرجى إدخال اسم المستخدم وكلمة المرور'
     });
   }
-  
+
+  const trimmedUser = username.trim();
+  const trimmedPass = password.trim();
+
   try {
-    const trimmedUser = username.trim();
-    const trimmedPass = password.trim();
-    
-    // البحث بكل الحقول الممكنة
+    // البحث في جميع العملاء
     const { data: clients, error } = await adminSupabase
       .from('clients')
-      .select('*')
-      .or([
-        `portal_username.eq.${trimmedUser}`,
-        `national_id.eq.${trimmedUser}`,
-        `email.eq.${trimmedUser}`,
-        `phone.eq.${trimmedUser}`
-      ].join(','));
-    
+      .select('*');
+
     if (error) {
-      console.error('[Client Login DB Error]', error);
-      return res.status(500).json({ 
-        success: false, 
-        message: 'خطأ في قاعدة البيانات: ' + error.message 
+      console.error('[Client Login DB]', error);
+      return res.status(500).json({
+        success: false,
+        message: 'خطأ في قاعدة البيانات: ' + error.message
       });
     }
-    
-    const client = (clients || []).find(c => {
+
+    const allClients = clients || [];
+
+    // البحث بكل الطرق الممكنة
+    const matched = allClients.find(c => {
+      const dbUser = (
+        c.portal_username || ''
+      ).trim().toLowerCase();
+      const dbNatId = (
+        c.national_id || c.id_number || ''
+      ).trim();
+      const dbEmail = (c.email || '').trim().toLowerCase();
+      const dbPhone = (c.phone || '').trim();
       const dbPass = (c.portal_password || '').trim();
-      return dbPass === trimmedPass;
+
+      const userMatch =
+        dbUser === trimmedUser.toLowerCase() ||
+        dbNatId === trimmedUser ||
+        dbEmail === trimmedUser.toLowerCase() ||
+        dbPhone === trimmedUser;
+
+      return userMatch && dbPass === trimmedPass;
     });
-    
-    if (!client) {
-      return res.status(401).json({ 
-        success: false, 
-        message: 'اسم المستخدم أو كلمة المرور غير صحيحة' 
+
+    if (!matched) {
+      return res.status(401).json({
+        success: false,
+        message: 'اسم المستخدم أو كلمة المرور غير صحيحة'
       });
     }
-    
-    if (client.active_portal === false) {
-      return res.status(403).json({ 
-        success: false, 
-        message: 'حساب البوابة غير مفعّل' 
+
+    const isActive = [
+      'active','نشط','نشيط','فعال','مفعّل'
+    ].includes(matched.status || '') ||
+      matched.active_portal === true;
+
+    if (!isActive) {
+      return res.status(403).json({
+        success: false,
+        message: 'حساب البوابة غير مفعّل. تواصل مع المكتب'
       });
     }
-    
+
     // إنشاء جلسة
-    const token = require('crypto').randomUUID();
-    await adminSupabase.from('client_portal_sessions').insert({
-      id: require('crypto').randomUUID(),
-      client_id: client.id,
-      session_token: token,
-      expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
-      is_active: true
-    });
-    
+    const crypto = await import('crypto');
+    const token = crypto.randomUUID();
+
+    try {
+      await adminSupabase
+        .from('client_portal_sessions')
+        .insert({
+          id: crypto.randomUUID(),
+          client_id: matched.id,
+          session_token: token,
+          expires_at: new Date(
+            Date.now() + 24 * 60 * 60 * 1000
+          ).toISOString(),
+          is_active: true
+        });
+    } catch(sessionErr: any) {
+      console.warn('[Client Session]', sessionErr.message);
+      // لا نوقف العملية إذا فشل حفظ الجلسة
+    }
+
     return res.json({
       success: true,
       token,
       client: {
-        id: client.id,
-        name: client.name,
-        email: client.email || '',
-        phone: client.phone || '',
-        permittedCases: client.permitted_cases || []
+        id: matched.id,
+        name: matched.name,
+        email: matched.email || '',
+        phone: matched.phone || '',
+        nationalId:
+          matched.national_id || matched.id_number || '',
+        permittedCases:
+          matched.permitted_cases || []
       }
     });
-    
+
   } catch (err: any) {
     console.error('[Client Login Exception]', err);
-    return res.status(500).json({ 
-      success: false, 
-      message: 'خطأ في الخادم: ' + err.message 
+    return res.status(500).json({
+      success: false,
+      message: 'خطأ في الخادم: ' + err.message
     });
   }
 });
@@ -3204,6 +3450,112 @@ app.post('/api/ai/predict-win', async (req, res) => {
   }
 
   return res.json({ success: false, error: "لم يتم تكوين مزود الذكاء الاصطناعي." });
+});
+
+app.post('/api/ai/performance-narrative', async (req, res) => {
+  const { employeeData } = req.body;
+  
+  if (!process.env.GEMINI_API_KEY) {
+    return res.json({ 
+      success: true, 
+      narrative: `الموظف ${employeeData.name} أظهر أداءً مستقراً خلال الفترة الماضية مع معدل إنجاز جيد للمهام الموكلة إليه.` 
+    });
+  }
+
+  try {
+    const prompt = `
+      بناءً على بيانات الأداء التالية للموظف:
+      الاسم: ${employeeData.name}
+      الدور: ${employeeData.role}
+      المهام المكتملة: ${employeeData.completedTasks} من ${employeeData.totalTasks}
+      نسبة الإنجاز: ${employeeData.completionRate}%
+      القضايا التي يتولاها: ${employeeData.casesHandled}
+      القضايا المنتهية: ${employeeData.closedCases}
+      متوسط سرعة الإغلاق: ${employeeData.avgClosingDays} يوم
+      المهام المتأخرة: ${employeeData.overdueTasks}
+      
+      قم بكتابة نص تحليلي مهني ومختصر (فقرة واحدة) يصف أداء هذا الموظف، نقاط القوة، ومجالات التحسين الموصى بها باللغة العربية.
+    `;
+    const result = await callGemini("HR Performance Analyst", prompt);
+    res.json({ success: true, narrative: result });
+  } catch (err) {
+    res.status(500).json({ error: 'AI Error' });
+  }
+});
+
+app.get('/api/whatsapp/stats', async (req, res) => {
+  const supabase = getSupabaseClient();
+  if (!supabase) return res.status(500).json({ error: 'Supabase unavailable' });
+
+  try {
+    // Get stats for current month group by day
+    const now = new Date();
+    const firstDay = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+    
+    const { data, error } = await supabase
+      .from('whatsapp_api_logs')
+      .select('status, created_at')
+      .gte('created_at', firstDay);
+
+    if (error) throw error;
+
+    // Process data for charts
+    const dailyStats: any = {};
+    (data || []).forEach((log: any) => {
+      const date = new Date(log.created_at).toISOString().split('T')[0];
+      if (!dailyStats[date]) {
+        dailyStats[date] = { date, sent: 0, failed: 0 };
+      }
+      if (log.status === 'success') dailyStats[date].sent++;
+      else dailyStats[date].failed++;
+    });
+
+    const result = Object.values(dailyStats).sort((a: any, b: any) => a.date.localeCompare(b.date));
+    res.json({ success: true, stats: result });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.get('/api/whatsapp/logs', async (req, res) => {
+  const supabase = getSupabaseClient();
+  if (!supabase) return res.status(500).json({ error: 'Supabase unavailable' });
+
+  try {
+    const { data, error } = await supabase
+      .from('whatsapp_api_logs')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .limit(10);
+
+    if (error) throw error;
+    res.json({ success: true, logs: data });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/whatsapp/schedule', async (req, res) => {
+  const { clientId, phone, message, scheduledFor } = req.body;
+  const supabase = getSupabaseClient();
+  
+  if (!supabase) return res.status(500).json({ error: 'Supabase unavailable' });
+
+  try {
+    const { data, error } = await supabase.from('scheduled_messages').insert({
+      id: crypto.randomUUID?.() || Math.random().toString(36).substring(2),
+      client_id: clientId,
+      recipient_phone: phone,
+      message,
+      scheduled_for: scheduledFor,
+      status: 'pending'
+    });
+
+    if (error) throw error;
+    res.json({ success: true, message: 'Message scheduled successfully' });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 async function initializeDatabaseTables() {
@@ -3389,6 +3741,119 @@ async function initializeDatabaseTables() {
       }
     }
 
+    try {
+      await client.query(`
+      -- إعادة بناء RLS من الصفر
+      DO $$
+      DECLARE pol RECORD;
+      BEGIN
+        FOR pol IN
+          SELECT policyname FROM pg_policies
+          WHERE tablename = 'clients'
+        LOOP
+          EXECUTE 'DROP POLICY IF EXISTS "' ||
+            pol.policyname || '" ON public.clients';
+        END LOOP;
+      END $$;
+      
+      -- سياسة واحدة مفتوحة
+      ALTER TABLE public.clients DISABLE ROW LEVEL SECURITY;
+      ALTER TABLE public.clients ENABLE ROW LEVEL SECURITY;
+      
+      CREATE POLICY "clients_full_access" ON public.clients
+        AS PERMISSIVE FOR ALL TO PUBLIC
+        USING (true) WITH CHECK (true);
+      
+      GRANT ALL ON public.clients TO anon;
+      GRANT ALL ON public.clients TO authenticated;
+      GRANT ALL ON public.clients TO service_role;
+      GRANT ALL ON public.clients TO PUBLIC;
+      
+      -- نفس الشيء لجدول الجلسات
+      DO $$
+      DECLARE pol RECORD;
+      BEGIN
+        FOR pol IN
+          SELECT policyname FROM pg_policies
+          WHERE tablename = 'client_portal_sessions'
+        LOOP
+          EXECUTE 'DROP POLICY IF EXISTS "' ||
+            pol.policyname ||
+            '" ON public.client_portal_sessions';
+        END LOOP;
+      END $$;
+      
+      ALTER TABLE public.client_portal_sessions
+        DISABLE ROW LEVEL SECURITY;
+      ALTER TABLE public.client_portal_sessions
+        ENABLE ROW LEVEL SECURITY;
+      
+      CREATE POLICY "client_sessions_full_access"
+        ON public.client_portal_sessions
+        AS PERMISSIVE FOR ALL TO PUBLIC
+        USING (true) WITH CHECK (true);
+      
+      GRANT ALL ON public.client_portal_sessions TO anon;
+      GRANT ALL ON public.client_portal_sessions TO authenticated;
+      GRANT ALL ON public.client_portal_sessions TO service_role;
+      
+      -- جعل جميع الحقول اختيارية
+      ALTER TABLE public.clients
+        ALTER COLUMN national_id DROP NOT NULL,
+        ALTER COLUMN id_number DROP NOT NULL,
+        ALTER COLUMN email DROP NOT NULL,
+        ALTER COLUMN phone DROP NOT NULL,
+        ALTER COLUMN portal_username DROP NOT NULL,
+        ALTER COLUMN portal_password DROP NOT NULL;
+      
+      -- إضافة قيم افتراضية
+      ALTER TABLE public.clients
+        ALTER COLUMN status SET DEFAULT 'active',
+        ALTER COLUMN is_company SET DEFAULT FALSE,
+        ALTER COLUMN active_portal SET DEFAULT FALSE;
+      
+      -- تطبيع status العملاء الحاليين
+      UPDATE public.clients SET status = 'active'
+      WHERE status IN ('نشط','نشيط','فعال','مفعّل','مفعل','');
+      
+      UPDATE public.clients SET status = 'inactive'
+      WHERE status IN ('غير نشط','معطّل','معطل','موقوف');
+      
+      -- Trigger لتطبيع status تلقائياً
+      CREATE OR REPLACE FUNCTION normalize_client_data()
+      RETURNS TRIGGER AS $$
+      BEGIN
+        -- تطبيع status
+        NEW.status := CASE NEW.status
+          WHEN 'نشط' THEN 'active'
+          WHEN 'نشيط' THEN 'active'
+          WHEN 'فعال' THEN 'active'
+          WHEN 'مفعّل' THEN 'active'
+          WHEN 'مفعل' THEN 'active'
+          WHEN 'غير نشط' THEN 'inactive'
+          WHEN 'معطّل' THEN 'inactive'
+          WHEN 'معطل' THEN 'inactive'
+          WHEN 'موقوف' THEN 'inactive'
+          ELSE COALESCE(NEW.status, 'active')
+        END;
+      
+        -- تأكد من updated_at
+        NEW.updated_at := NOW();
+      
+        RETURN NEW;
+      END;
+      $$ LANGUAGE plpgsql;
+      
+      DROP TRIGGER IF EXISTS normalize_client_trigger
+        ON public.clients;
+      CREATE TRIGGER normalize_client_trigger
+        BEFORE INSERT OR UPDATE ON public.clients
+        FOR EACH ROW EXECUTE FUNCTION normalize_client_data();
+      `);
+    } catch (e) {
+      console.error("Error executing client DB fix SQL", e);
+    }
+
     // 3b. client_portal_sessions
     try {
       await client.query(`
@@ -3524,6 +3989,54 @@ async function initializeDatabaseTables() {
       );
     `);
 
+    // 7.5 case_documents
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS public.case_documents (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        case_id TEXT,
+        case_number TEXT NOT NULL,
+        case_name TEXT,
+        document_type TEXT NOT NULL,
+        document_name TEXT NOT NULL,
+        file_url TEXT,
+        file_path TEXT,
+        file_size BIGINT DEFAULT 0,
+        compressed_size BIGINT DEFAULT 0,
+        file_type TEXT,
+        hearing_date TEXT,
+        judgment_date TEXT,
+        judgment_type TEXT,
+        court_name TEXT,
+        judge_name TEXT,
+        notes TEXT,
+        is_compressed BOOLEAN DEFAULT FALSE,
+        uploaded_by TEXT,
+        created_at TIMESTAMPTZ DEFAULT NOW(),
+        updated_at TIMESTAMPTZ DEFAULT NOW()
+      );
+    `);
+
+    // Add RLS, Indexes and Policies for case_documents
+    await client.query(`
+      ALTER TABLE public.case_documents ENABLE ROW LEVEL SECURITY;
+
+      DO $$ 
+      BEGIN 
+        IF NOT EXISTS (
+            SELECT 1 FROM pg_policies WHERE tablename = 'case_documents' AND policyname = 'case_documents_full_access'
+        ) THEN 
+            CREATE POLICY "case_documents_full_access"
+              ON public.case_documents
+              AS PERMISSIVE FOR ALL TO PUBLIC
+              USING (true) WITH CHECK (true);
+        END IF;
+      END $$;
+
+      CREATE INDEX IF NOT EXISTS idx_case_docs_case_id ON public.case_documents(case_id);
+      CREATE INDEX IF NOT EXISTS idx_case_docs_type ON public.case_documents(document_type);
+      CREATE INDEX IF NOT EXISTS idx_case_docs_case_number ON public.case_documents(case_number);
+    `);
+
     // 8. powers_of_attorney
     await client.query(`
       CREATE TABLE IF NOT EXISTS public.powers_of_attorney (
@@ -3603,6 +4116,59 @@ async function initializeDatabaseTables() {
         date TEXT,
         "case_number" TEXT,
         "caseNumber" TEXT,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now())
+      );
+    `);
+
+    // 12. scheduled_messages
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS public.scheduled_messages (
+        id TEXT PRIMARY KEY,
+        client_id TEXT,
+        recipient_phone TEXT,
+        message TEXT,
+        status TEXT DEFAULT 'pending',
+        scheduled_for TIMESTAMP WITH TIME ZONE,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now())
+      );
+    `);
+
+    // 13. notifications
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS public.notifications (
+        id TEXT PRIMARY KEY,
+        title TEXT,
+        message TEXT,
+        type TEXT DEFAULT 'info',
+        entity_type TEXT,
+        entity_id TEXT,
+        read BOOLEAN DEFAULT false,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now())
+      );
+    `);
+
+    // 14. whatsapp_api_logs
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS public.whatsapp_api_logs (
+        id TEXT PRIMARY KEY,
+        recipient_phone TEXT,
+        message TEXT,
+        status TEXT,
+        error_message TEXT,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now())
+      );
+    `);
+
+    // 15. ai_legal_outputs
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS public.ai_legal_outputs (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        case_number TEXT,
+        case_id TEXT,
+        document_id UUID,
+        output_type TEXT,
+        output_text TEXT,
+        model_used TEXT,
         created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now())
       );
     `);

@@ -318,7 +318,29 @@ const Dashboard = function Dashboard({
   const [dataError, setDataError] = useState(false);
   const [themeTick, setThemeTick] = useState(Date.now());
   const [performancePeriod, setPerformancePeriod] = useState<'monthly' | 'yearly'>('monthly');
-  const [performanceTab, setPerformanceTab] = useState<'overview' | 'trends' | 'comparison'>('overview');
+  const [performanceTab, setPerformanceTab] = useState<'overview' | 'trends' | 'comparison' | 'whatsapp'>('overview');
+  const [whatsappStats, setWhatsappStats] = useState<any[]>([]);
+  const [loadingStats, setLoadingStats] = useState(false);
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      setLoadingStats(true);
+      try {
+        const res = await fetch('/api/whatsapp/stats');
+        if (res.ok) {
+          const data = await res.json();
+          if (data.success) {
+            setWhatsappStats(data.stats);
+          }
+        }
+      } catch (err) {
+        console.error('Failed to fetch whatsapp stats', err);
+      } finally {
+        setLoadingStats(false);
+      }
+    };
+    fetchStats();
+  }, []);
   const [isHighContrast, setIsHighContrast] = useState(() => document.body.classList.contains('high-contrast-mode'));
   const [isCustomizing, setIsCustomizing] = useState(false);
   const [isLibraryOpen, setIsLibraryOpen] = useState(false);
@@ -406,7 +428,8 @@ const Dashboard = function Dashboard({
     { id: 'partnerAnalytics', name: 'تحليلات الشريك', icon: <Crown className="w-4 h-4" /> },
     { id: 'efficiency', name: 'كفاءة العمليات', icon: <TrendingUp className="w-4 h-4" /> },
     { id: 'appealsReminder', name: 'مواعيد الاستئناف', icon: <AlertCircle className="w-4 h-4" /> },
-    { id: 'timelineCard', name: 'الجدول الزمني', icon: <Calendar className="w-4 h-4" /> }
+    { id: 'timelineCard', name: 'الجدول الزمني', icon: <Calendar className="w-4 h-4" /> },
+    { id: 'whatsappActivityChart', name: 'نشاط الواتساب اليومي', icon: <MessageCircle className="w-4 h-4" /> }
   ];
 
   const [employees, setEmployees] = useState<any[]>([]);
@@ -787,6 +810,84 @@ const Dashboard = function Dashboard({
     </div>
   );
 
+  const whatsappActivityWidgetMarkup = (
+    <div className="bg-white border border-slate-200 rounded-[2rem] p-5 shadow-sm space-y-4 hover:-translate-y-2 hover:shadow-[0_20px_35px_rgba(212,175,55,0.15)] hover:scale-[1.01] transition-all duration-300">
+      <div className="flex items-center justify-between border-b pb-4 border-slate-100">
+        <div className="flex items-center gap-3">
+          <div className="p-2 bg-emerald-100 text-emerald-700 rounded-xl">
+            <MessageSquare className="w-5 h-5" />
+          </div>
+          <div>
+            <h3 className="font-extrabold text-[#0B2545] text-sm">نشاط إرسال الواتساب</h3>
+            <p className="text-slate-500 font-bold text-[10px]">إحصائيات الإرسال اليومي خلال الشهر الحالي</p>
+          </div>
+        </div>
+        <div className="text-right">
+          <span className="block text-[10px] font-black text-slate-400 uppercase">إجمالي الشهر</span>
+          <strong className="text-sm font-black text-[#0B2545]">{whatsappStats.reduce((acc, curr) => acc + curr.sent, 0)}</strong>
+        </div>
+      </div>
+      <div className="h-48 pt-2">
+        {loadingStats ? (
+          <div className="h-full flex items-center justify-center">
+            <Loader2 className="w-6 h-6 animate-spin text-emerald-500" />
+          </div>
+        ) : whatsappStats.length === 0 ? (
+          <div className="h-full flex items-center justify-center text-[10px] font-bold text-slate-400">
+            لا توجد بيانات إرسال لهذا الشهر حتى الآن
+          </div>
+        ) : (
+          <ResponsiveContainer width="100%" height="100%">
+            <AreaChart data={whatsappStats}>
+              <defs>
+                <linearGradient id="colorSent" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#10b981" stopOpacity={0.3}/>
+                  <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
+                </linearGradient>
+                <linearGradient id="colorFailed" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#ef4444" stopOpacity={0.3}/>
+                  <stop offset="95%" stopColor="#ef4444" stopOpacity={0}/>
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+              <XAxis 
+                dataKey="date" 
+                tickFormatter={(val) => val.split('-')[2]} 
+                style={{ fontSize: '10px', fontWeight: 'bold' }}
+                tickLine={false}
+                axisLine={false}
+              />
+              <YAxis hide />
+              <RechartsTooltip 
+                contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)', direction: 'rtl' }}
+                labelStyle={{ fontWeight: 'bold', marginBottom: '4px' }}
+              />
+              <Area 
+                type="monotone" 
+                dataKey="sent" 
+                name="تم الإرسال" 
+                stroke="#10b981" 
+                fillOpacity={1} 
+                fill="url(#colorSent)" 
+                strokeWidth={3} 
+              />
+              <Area 
+                type="monotone" 
+                dataKey="failed" 
+                name="فشل الإرسال" 
+                stroke="#ef4444" 
+                fillOpacity={1} 
+                fill="url(#colorFailed)" 
+                strokeWidth={2}
+                strokeDasharray="5 5"
+              />
+            </AreaChart>
+          </ResponsiveContainer>
+        )}
+      </div>
+    </div>
+  );
+
   const courtDistributionData = React.useMemo(() => {
     const counts: Record<string, number> = {};
     hearings.forEach(h => {
@@ -875,6 +976,7 @@ const Dashboard = function Dashboard({
       { id: 'legalRiskMatrix', visible: true, order: 18, size: 'half' },
       { id: 'summaryCalendar', visible: true, order: 19, size: 'half' },
       { id: 'partnerAnalytics', visible: true, order: 20, size: 'half' },
+      { id: 'whatsappActivityChart', visible: true, order: 20.2, size: 'half' },
       { id: 'casesStatusDist', visible: true, order: 20.5, size: 'half' },
       { id: 'efficiency', visible: true, order: 21, size: 'half' },
       { id: 'agenda', visible: true, order: 22, size: 'full' },
@@ -946,6 +1048,7 @@ const Dashboard = function Dashboard({
       { id: 'legalRiskMatrix', visible: true, order: 18, size: 'half' },
       { id: 'summaryCalendar', visible: true, order: 19, size: 'half' },
       { id: 'partnerAnalytics', visible: true, order: 20, size: 'half' },
+      { id: 'whatsappActivityChart', visible: true, order: 20.2, size: 'half' },
       { id: 'casesStatusDist', visible: true, order: 20.5, size: 'half' },
       { id: 'efficiency', visible: true, order: 21, size: 'half' },
       { id: 'agenda', visible: true, order: 22, size: 'full' },
@@ -1431,7 +1534,7 @@ const Dashboard = function Dashboard({
           className="w-full relative z-10"
         >
           <Suspense fallback={<div className="h-64 flex items-center justify-center animate-pulse bg-slate-100 dark:bg-slate-800 rounded-3xl"><div className="w-8 h-8 rounded-full border-4 border-amber-500 border-t-transparent animate-spin"/></div>}>
-            <TimelineD3 hearings={hearings} tasks={tasks} />
+            <TimelineD3 hearings={hearings} tasks={tasks} cases={cases} />
           </Suspense>
         </motion.div>
       )}
@@ -1539,6 +1642,9 @@ const Dashboard = function Dashboard({
 
                 case 'partnerAnalytics':
                   return wrapWidget(partnerAnalyticsWidgetMarkup);
+                
+                case 'whatsappActivityChart':
+                  return wrapWidget(whatsappActivityWidgetMarkup);
 
               }
               
@@ -2135,6 +2241,12 @@ const Dashboard = function Dashboard({
                       >
                         مقارنة السوق (المرصد القضائي 🇸🇦)
                       </button>
+                      <button
+                        onClick={() => setPerformanceTab('whatsapp')}
+                        className={`px-4 py-2 text-xs font-black rounded-xl transition-all ${performanceTab === 'whatsapp' ? 'bg-slate-900 text-white border border-slate-800 shadow-sm' : 'text-slate-700 bg-slate-50'}`}
+                      >
+                        إحصائيات الواتساب 📱
+                      </button>
                     </div>
 
                     {/* Tab Views */}
@@ -2312,6 +2424,65 @@ const Dashboard = function Dashboard({
                             <p className="text-[11px] text-amber-400 font-black font-black">حضور وعمل والتزام كامل تزامناً مع تبليغات وتذكيرات ناجز الفورية.</p>
                           </div>
                         </div>
+                      </div>
+                    )}
+
+                    {performanceTab === 'whatsapp' && (
+                      <div className="h-[300px] mt-4 text-right" dir="rtl">
+                        <div className="mb-4 flex items-center justify-between">
+                          <h3 className="text-sm font-black text-slate-800">نشاط رسائل الواتساب اليومي (الشهر الحالي)</h3>
+                          {loadingStats && <RefreshCw className="w-4 h-4 animate-spin text-amber-500" />}
+                        </div>
+                        <ResponsiveContainer width="100%" height="90%">
+                          <AreaChart data={whatsappStats} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+                            <defs>
+                              <linearGradient id="colorSent" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="5%" stopColor="#10b981" stopOpacity={0.3}/>
+                                <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
+                              </linearGradient>
+                            </defs>
+                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+                            <XAxis 
+                              dataKey="date" 
+                              stroke="#94a3b8" 
+                              fontSize={10} 
+                              fontStyle="bold"
+                              tickFormatter={(tick) => tick && typeof tick === 'string' ? tick.split('-')[2] : tick}
+                            />
+                            <YAxis stroke="#94a3b8" fontSize={10} fontStyle="bold" />
+                            <RechartsTooltip 
+                              allowEscapeViewBox={{ x: true, y: true }}
+                              content={({ active, payload, label }) => {
+                                if (active && payload && payload.length) {
+                                  return (
+                                    <div className="bg-slate-900 border border-emerald-500/30 p-3 rounded-xl shadow-xl text-right text-xs text-white min-w-[150px]" dir="rtl">
+                                      <p className="font-black text-amber-400 mb-1 border-b border-white/10 pb-1">{label}</p>
+                                      <p className="font-bold flex justify-between gap-4 mb-1">
+                                        <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-emerald-500"></span> ناجحة:</span>
+                                        <span className="text-emerald-400">{payload[0].value}</span>
+                                      </p>
+                                      {payload[1] && (
+                                        <p className="font-bold flex justify-between gap-4">
+                                          <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-rose-500"></span> فاشلة:</span>
+                                          <span className="text-rose-400">{payload[1].value}</span>
+                                        </p>
+                                      )}
+                                    </div>
+                                  );
+                                }
+                                return null;
+                              }}
+                            />
+                            <Area type="monotone" dataKey="sent" name="ناجحة" stroke="#10b981" fillOpacity={1} fill="url(#colorSent)" strokeWidth={3} />
+                            <Area type="monotone" dataKey="failed" name="فاشلة" stroke="#f43f5e" fillOpacity={0} strokeWidth={2} strokeDasharray="5 5" />
+                          </AreaChart>
+                        </ResponsiveContainer>
+                        {(!whatsappStats || whatsappStats.length === 0) && !loadingStats && (
+                          <div className="flex flex-col items-center justify-center h-full text-slate-400 -mt-20">
+                             <MessageSquare className="w-8 h-8 mb-2 opacity-20" />
+                             <p className="text-xs font-bold">لا توجد بيانات سجلات لهذا الشهر حتى الآن</p>
+                          </div>
+                        )}
                       </div>
                     )}
 
@@ -2528,7 +2699,7 @@ const Dashboard = function Dashboard({
                       </div>
                     )}
                     <Suspense fallback={<div className="h-64 flex items-center justify-center animate-pulse bg-slate-100 dark:bg-slate-800 rounded-3xl"><div className="w-8 h-8 rounded-full border-4 border-amber-500 border-t-transparent animate-spin"/></div>}>
-                      <TimelineD3 hearings={hearings} tasks={tasks} />
+                      <TimelineD3 hearings={hearings} tasks={tasks} cases={cases} />
                     </Suspense>
                   </div>
                 </EnhancedSortableWidgetWrapper>

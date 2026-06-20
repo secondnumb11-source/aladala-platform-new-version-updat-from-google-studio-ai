@@ -2206,3 +2206,184 @@ body.high-contrast-mode .text-\[\#FFFFFF\] {
 body.high-contrast-mode .text-\[\#FACC15\] {
     color: var(--primary) !important;
 }
+
+
+/* ==========================================
+   إصلاح تباين النصوص — منصة العدالة
+   ========================================== */
+
+/* نصوص على خلفيات داكنة */
+.bg-slate-900 p, .bg-slate-900 span,
+.bg-slate-900 label, .bg-slate-900 h1,
+.bg-slate-900 h2, .bg-slate-900 h3,
+.bg-slate-900 h4, .bg-slate-900 h5,
+.bg-slate-900 td, .bg-slate-900 th,
+.bg-slate-900 li, .bg-slate-900 div:not([class*="bg-"]) {
+  color: #e2e8f0 !important;
+}
+
+.bg-slate-800 p, .bg-slate-800 span,
+.bg-slate-800 label, .bg-slate-800 h1,
+.bg-slate-800 h2, .bg-slate-800 h3,
+.bg-slate-800 td, .bg-slate-800 li {
+  color: #e2e8f0 !important;
+}
+
+/* الخلفيات المخصصة الداكنة */
+[style*="background: #050e21"] *:not([class*="text-"]),
+[style*="background-color: #050e21"] *:not([class*="text-"]),
+[class*="bg-[#050e21]"] *:not([class*="text-"]) {
+  color: #f1f5f9;
+}
+
+/* نصوص على خلفيات فاتحة */
+.bg-white p:not([class*="text-"]),
+.bg-white span:not([class*="text-"]),
+.bg-white label:not([class*="text-"]),
+.bg-white h1:not([class*="text-"]),
+.bg-white h2:not([class*="text-"]),
+.bg-white h3:not([class*="text-"]),
+.bg-white td:not([class*="text-"]),
+.bg-white li:not([class*="text-"]) {
+  color: #1e293b !important;
+}
+
+.bg-slate-50 *:not([class*="text-"]),
+.bg-gray-50 *:not([class*="text-"]),
+.bg-gray-100 *:not([class*="text-"]),
+.bg-slate-100 *:not([class*="text-"]) {
+  color: #1e293b;
+}
+
+/* إصلاح الشارات والبادجز */
+.badge, [class*="badge"],
+[class*="Badge"] {
+  font-weight: 700 !important;
+}
+
+/* تحسين قراءة النصوص الصغيرة */
+.text-xs { letter-spacing: 0.01em; }
+.text-[10px], .text-[11px] {
+  letter-spacing: 0.02em;
+  font-weight: 600 !important;
+}
+
+/* تباين الحقول */
+input, select, textarea {
+  color: #ffffff !important;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: #64748b !important;
+}
+
+/* إصلاح النصوص على خلفيات ملونة متوسطة */
+.bg-amber-500 *, .bg-amber-600 *,
+.bg-yellow-500 *, .bg-yellow-600 * {
+  color: #000000 !important;
+  font-weight: 700 !important;
+}
+
+.bg-blue-500 *, .bg-blue-600 *,
+.bg-green-500 *, .bg-green-600 *,
+.bg-red-500 *, .bg-red-600 *,
+.bg-purple-500 *, .bg-purple-600 *,
+.bg-indigo-500 *, .bg-indigo-600 *,
+.bg-teal-500 *, .bg-teal-600 *,
+.bg-emerald-500 *, .bg-emerald-600 * {
+  color: #ffffff !important;
+}
+
+/* إصلاح خلفيات الخضراء والحمراء الفاتحة */
+.bg-green-50 *, .bg-green-100 *,
+.bg-emerald-50 *, .bg-emerald-100 * {
+  color: #064e3b !important;
+}
+
+.bg-red-50 *, .bg-red-100 *,
+.bg-rose-50 *, .bg-rose-100 * {
+  color: #7f1d1d !important;
+}
+
+.bg-blue-50 *, .bg-blue-100 *,
+.bg-indigo-50 *, .bg-indigo-100 * {
+  color: #1e3a8a !important;
+}
+
+.bg-amber-50 *, .bg-amber-100 *,
+.bg-yellow-50 *, .bg-yellow-100 * {
+  color: #78350f !important;
+}
+
+.bg-orange-50 *, .bg-orange-100 * {
+  color: #7c2d12 !important;
+}
+
+.bg-purple-50 *, .bg-purple-100 *,
+.bg-violet-50 *, .bg-violet-100 * {
+  color: #4c1d95 !important;
+}
+
+/* إصلاح الجداول */
+table { border-collapse: collapse; }
+
+thead th {
+  color: #ffffff !important;
+  font-weight: 700 !important;
+  background-color: #0f172a !important;
+}
+
+tbody tr:nth-child(even) {
+  background-color: rgba(255,255,255,0.03);
+}
+
+tbody td {
+  color: #e2e8f0 !important;
+}
+
+/* الجداول على خلفية بيضاء */
+.bg-white thead th {
+  color: #1e293b !important;
+  background-color: #f8fafc !important;
+}
+
+.bg-white tbody td {
+  color: #374151 !important;
+}
+
+/* إصلاح الـ Tooltips */
+[role="tooltip"],
+[data-tooltip] {
+  color: #ffffff !important;
+  background-color: #1e293b !important;
+}
+
+/* إصلاح الـ Modals */
+.modal-content,
+[class*="modal"],
+[class*="Modal"] {
+  color: #e2e8f0;
+}
+
+/* الإشعارات */
+[class*="toast"],
+[class*="Toast"],
+[class*="notification"],
+[class*="Notification"] {
+  color: #ffffff !important;
+}
+
+/* إصلاح الأزرار */
+button:not([class*="text-"]) {
+  color: inherit;
+}
+
+/* الروابط */
+a:not([class*="text-"]) {
+  color: #f59e0b;
+}
+
+a:hover:not([class*="text-"]) {
+  color: #fcd34d;
+}

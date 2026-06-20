@@ -53,6 +53,7 @@ const NajizExtensionHub = React.lazy(() => import('@/components/NajizExtensionHu
 const ClientPortal = React.lazy(() => import('@/components/ClientPortal'));
 const AuditLogs = React.lazy(() => import('@/components/AuditLogs'));
 const Settings = React.lazy(() => import('@/components/Settings'));
+const CaseJudgmentsModule = React.lazy(() => import('@/components/CaseJudgmentsModule'));
 const GCalSyncSettings = React.lazy(() => import('@/components/GCalSyncSettings'));
 const WhatsappTemplates = React.lazy(() => import('@/components/WhatsappTemplates'));
 const LawyerPerformance = React.lazy(() => import('@/components/LawyerPerformance'));
@@ -212,6 +213,21 @@ function AppContent() {
     setInvoices,
     setEmployees
   } = useSupabaseData();
+
+  // الاستماع لأحداث المزامنة
+  useEffect(() => {
+    const handleNajizSync = () => {
+      console.log('[App] إعادة تحميل بعد مزامنة ناجز');
+      refresh(); // إعادة جلب جميع البيانات
+    };
+  
+    window.addEventListener('najiz_sync_complete', handleNajizSync);
+    return () => {
+      window.removeEventListener(
+        'najiz_sync_complete', handleNajizSync
+      );
+    };
+  }, [refresh]);
 
   const [showHearingsModal, setShowHearingsModal] = useState(false);
   const upcomingHearings = React.useMemo(() => {
@@ -1671,7 +1687,20 @@ function AppContent() {
                 onUpdateState={handleUpdateGlobalState}
                 onSelectCase={setSelectedCase}
                 selectedCase={selectedCase}
+                onDeleteCase={async (id) => {
+                  if (confirm("هل أنت متأكد من رغبتك في حذف هذه القضية وكافة بياناتها نهائياً من قاعدة البيانات؟")) {
+                    await deleteRecord('cases', id);
+                    await refresh();
+                  }
+                }}
                 archivedNotice={showArchivedNotice ? { count: lastArchivedCount, onRestore: handleRestoreArchived, onClose: () => setShowArchivedNotice(false) } : undefined}
+              />
+            )}
+
+            {currentTab === 'case-judgments' && (
+              <CaseJudgmentsModule
+                cases={employeeFilteredCases}
+                selectedRole={selectedRole}
               />
             )}
 
