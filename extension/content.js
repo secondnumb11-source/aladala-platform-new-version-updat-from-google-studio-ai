@@ -1,173 +1,186 @@
-// content.js — قارئ بيانات ناجز
-// لا يحتاج API Key — يقرأ الصفحة مباشرة من جلسة المستخدم المسجل
 (function () {
   'use strict';
 
-  // =============================================
-  // الدالة الرئيسية — تقرأ ما يراه المستخدم في صفحته
-  // =============================================
-  function extractAllPageData() {
-    const data = {
+  // انتظار ظهور عنصر في الصفحة
+  function waitForElement(selector, timeout = 10000) {
+    return new Promise((resolve, reject) => {
+      const el = document.querySelector(selector);
+      if (el) return resolve(el);
+
+      const observer = new MutationObserver(() => {
+        const found = document.querySelector(selector);
+        if (found) {
+          observer.disconnect();
+          resolve(found);
+        }
+      });
+
+      observer.observe(document.body, {
+        childList: true,
+        subtree: true
+      });
+
+      setTimeout(() => {
+        observer.disconnect();
+        reject(new Error('Timeout: Element not found: ' + selector));
+      }, timeout);
+    });
+  }
+
+  // انتظار تحميل البيانات الديناميكية
+  function waitForData(timeout = 15000) {
+    return new Promise((resolve) => {
+      let elapsed = 0;
+      const interval = setInterval(() => {
+        elapsed += 500;
+        const text = document.body?.innerText || '';
+        const hasData = (
+          /\d{4}\/\d+/.test(text) ||
+          /\d{10}/.test(text) ||
+          document.querySelectorAll('table tr').length > 2 ||
+          document.querySelectorAll('[class*="card"]').length > 0 ||
+          document.querySelectorAll('[class*="Card"]').length > 0 ||
+          document.querySelectorAll('[class*="item"]').length > 3
+        );
+
+        if (hasData || elapsed >= timeout) {
+          clearInterval(interval);
+          resolve(hasData);
+        }
+      }, 500);
+    });
+  }
+
+  // الدالة الرئيسية لاستخراج البيانات
+  async function extractNajizData() {
+    // انتظر تحميل البيانات
+    await waitForData(12000);
+
+    // انتظر إضافي للصفحات البطيئة
+    await new Promise(r => setTimeout(r, 2000));
+
+    const result = {
       cases: [],
       hearings: [],
       powers_of_attorney: [],
       executions: [],
       clients: [],
+      rawText: '',
       pageUrl: window.location.href,
       pageTitle: document.title,
-      scrapedAt: new Date().toISOString(),
-      needsApiKey: false  // تأكيد: لا يحتاج API Key
+      scrapedAt: new Date().toISOString()
     };
 
-    // =============================================
-    // الطريقة 1: قراءة النصوص الخام من الصفحة
-    // =============================================
     const bodyText = document.body?.innerText || '';
+    result.rawText = bodyText.substring(0, 5000);
 
-    // استخراج أرقام القضايا بكل الصيغ الممكنة
-    const caseNumberPatterns = [
-      /\d{4}\/\d{1,2}\/\d+/g,     // 1446/ق/12345
-      /\d{4}\/\d{4,}/g,            // 2024/12345
-      /(?<!\d)\d{10}(?!\d)/g,      // 10 أرقام متتالية
-      /(?<!\d)\d{9}(?!\d)/g,       // 9 أرقام
-    ];
-
-    const foundCaseNumbers = new Set();
-    caseNumberPatterns.forEach(pattern => {
-      const matches = bodyText.match(pattern) || [];
-      matches.forEach(m => foundCaseNumbers.add(m.trim()));
-    });
-
-    // =============================================
-    // الطريقة 2: قراءة الجداول
-    // =============================================
-    const tables = document.querySelectorAll('table');
+    // ===== استخراج القضايا من الجداول =====
+    const tables = document.querySelectorAll('table, [class*="Table"], [class*="table"]');
     tables.forEach(table => {
-      const headers = Array.from(table.querySelectorAll('th'))
-        .map(th => th.innerText?.trim().toLowerCase() || '');
+      const rows = table.querySelectorAll('tr');
+      rows.forEach((row, i) => {
+        if (i === 0) return; // تخطي الـ header
+        const cells = Array.from(row.querySelectorAll('td, [class*="Cell"], [class*="cell"]'))
+          .map(c => c.innerText?.trim() || '');
 
-      const isCaseTable = headers.some(h =>
-        h.includes('قضية') || h.includes('دعوى') ||
-        h.includes('رقم') || h.includes('حالة') ||
-        h.includes('محكمة') || h.includes('case')
-      );
-
-      const isHearingTable = headers.some(h =>
-        h.includes('جلسة') || h.includes('موعد') ||
-        h.includes('تاريخ') || h.includes('hearing')
-      );
-
-      const rows = table.querySelectorAll('tbody tr');
-      rows.forEach(row => {
-        const cells = Array.from(row.querySelectorAll('td'))
-          .map(td => td.innerText?.trim() || '');
-
-        if (cells.length === 0 || cells.every(c => !c)) return;
+        if (cells.length < 2) return;
 
         const rowText = cells.join(' ');
-        const dateMatch = rowText.match(
-          /\d{1,2}[\/\-]\d{1,2}[\/\-]\d{4}|\d{4}[\/\-]\d{1,2}[\/\-]\d{1,2}/
-        );
-        const caseNumMatch = rowText.match(/\d{4}\/\d+|\d{10,}|\d{9}/);
+        const caseNum = rowText.match(/\d{4}\/\d+|\d{10,}|\d{9}/)?.[0];
+        const dateMatch = rowText.match(/\d{1,2}[\/\-]\d{1,2}[\/\-]\d{4}|\d{4}[\/\-]\d{1,2}[\/\-]\d{1,2}/);
 
-        if (isCaseTable || caseNumMatch) {
-          const caseNum = caseNumMatch?.[0] || '';
-          if (!data.cases.find(c => c.caseNumber === caseNum)) {
-            data.cases.push({
-              caseNumber: caseNum,
-              caseName: cells.find(c =>
-                c.length > 4 && !/^\d+$/.test(c) && !c.includes('/')
-              ) || '',
-              status: cells.find(c =>
-                c.includes('قيد') || c.includes('منتهي') ||
-                c.includes('نشط') || c.includes('مقيد') ||
-                c.includes('محكوم') || c.includes('مؤجل') ||
-                c.includes('مشطوب') || c.includes('موقوف')
-              ) || '',
-              court: cells.find(c => c.includes('محكمة')) || '',
-              date: dateMatch?.[0] || '',
-              rawCells: cells
-            });
-          }
+        if (caseNum && !result.cases.find(c => c.caseNumber === caseNum)) {
+          result.cases.push({
+            caseNumber: caseNum,
+            caseName: cells.find(c =>
+              c.length > 4 &&
+              !/^\d+$/.test(c) &&
+              !c.includes('/') &&
+              !c.includes('-')
+            ) || '',
+            status: cells.find(c =>
+              ['قيد', 'منتهي', 'نشط', 'مقيد', 'محكوم',
+               'مؤجل', 'مشطوب', 'موقوف', 'صدر'].some(k => c.includes(k))
+            ) || '',
+            court: cells.find(c => c.includes('محكمة')) || '',
+            nextHearing: dateMatch?.[0] || '',
+            category: cells.find(c =>
+              ['تجاري', 'عمالي', 'مدني', 'جزائي', 'أحوال'].some(k => c.includes(k))
+            ) || '',
+            rawCells: cells
+          });
         }
 
-        if (isHearingTable || (dateMatch && rowText.includes('جلسة'))) {
-          data.hearings.push({
-            date: dateMatch?.[0] || '',
-            caseNumber: caseNumMatch?.[0] || '',
+        // استخراج الجلسات
+        if (dateMatch && (
+          rowText.includes('جلسة') ||
+          rowText.includes('موعد') ||
+          table.innerText?.includes('جلسة')
+        )) {
+          result.hearings.push({
+            date: dateMatch[0],
+            caseNumber: caseNum || '',
             court: cells.find(c => c.includes('محكمة')) || '',
             status: cells.find(c =>
-              c.includes('قادمة') || c.includes('منتهية') ||
-              c.includes('مؤجلة') || c.includes('ملغاة')
-            ) || '',
-            hall: cells.find(c => c.includes('قاعة') || c.includes('دائرة')) || '',
-            rawCells: cells
+              ['قادمة', 'منتهية', 'مؤجلة', 'ملغاة'].some(k => c.includes(k))
+            ) || 'قادمة',
+            hall: cells.find(c => c.includes('قاعة') || c.includes('دائرة')) || ''
           });
         }
       });
     });
 
-    // =============================================
-    // الطريقة 3: قراءة البطاقات والعناصر الديناميكية
-    // =============================================
+    // ===== استخراج من البطاقات الديناميكية =====
     const cardSelectors = [
-      '.card', '.case-card', '[class*="case-card"]',
-      '.list-item', '[class*="list-item"]',
-      '.MuiCard-root', '.MuiPaper-root',
+      '[class*="CaseCard"]', '[class*="case-card"]', '[class*="caseCard"]',
+      '[class*="RequestCard"]', '[class*="requestCard"]',
       '[class*="CaseItem"]', '[class*="caseItem"]',
+      '[class*="ListItem"]', '[class*="list-item"]',
       '[class*="CaseRow"]', '[class*="caseRow"]',
+      '[class*="MuiCard"]', '[class*="MuiPaper"]',
+      '[class*="ant-card"]', '[class*="el-card"]',
       '[data-testid*="case"]', '[data-cy*="case"]',
-      '.case-row', '.hearing-row',
-      '[class*="RequestCard"]', '[class*="requestCard"]'
+      '.case', '.case-item', '.case-card',
+      '[class*="lawsuit"]', '[class*="claim"]'
     ];
 
     cardSelectors.forEach(selector => {
       try {
         document.querySelectorAll(selector).forEach(card => {
           const text = card.innerText?.trim() || '';
-          if (!text || text.length < 5) return;
+          if (!text || text.length < 10) return;
 
-          const caseNumMatch = text.match(/\d{4}\/\d+|\d{10,}|\d{9}/);
-          const dateMatch = text.match(
-            /\d{1,2}[\/\-]\d{1,2}[\/\-]\d{4}|\d{4}[\/\-]\d{1,2}[\/\-]\d{1,2}/
-          );
+          const caseNum = text.match(/\d{4}\/\d+|\d{10,}|\d{9}/)?.[0];
+          const dateMatch = text.match(/\d{1,2}[\/\-]\d{1,2}[\/\-]\d{4}|\d{4}[\/\-]\d{1,2}[\/\-]\d{1,2}/);
 
-          if (caseNumMatch) {
-            const caseNum = caseNumMatch[0];
-            if (!data.cases.find(c => c.caseNumber === caseNum)) {
-              data.cases.push({
-                caseNumber: caseNum,
-                caseName: text.split('\n')[0]?.substring(0, 100) || '',
-                date: dateMatch?.[0] || '',
-                rawText: text.substring(0, 300)
-              });
-            }
-          }
-
-          if (text.includes('جلسة') && dateMatch) {
-            if (!data.hearings.find(h =>
-              h.date === dateMatch[0] && h.caseNumber === (caseNumMatch?.[0] || '')
-            )) {
-              data.hearings.push({
-                date: dateMatch[0],
-                caseNumber: caseNumMatch?.[0] || '',
-                rawText: text.substring(0, 300)
-              });
-            }
+          if (caseNum && !result.cases.find(c => c.caseNumber === caseNum)) {
+            const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
+            result.cases.push({
+              caseNumber: caseNum,
+              caseName: lines.find(l =>
+                l.length > 5 && !/^\d+[\/\-]?\d*$/.test(l)
+              ) || '',
+              status: lines.find(l =>
+                ['قيد', 'منتهي', 'نشط', 'مقيد', 'محكوم',
+                 'مؤجل', 'مشطوب', 'موقوف'].some(k => l.includes(k))
+              ) || '',
+              nextHearing: dateMatch?.[0] || '',
+              rawText: text.substring(0, 300)
+            });
           }
 
           if (text.includes('وكالة')) {
             const poaNum = text.match(/\d{6,}/)?.[0];
-            data.powers_of_attorney.push({
+            result.powers_of_attorney.push({
               poaNumber: poaNum || '',
               text: text.substring(0, 300),
-              expiryDate: dateMatch?.[0] || ''
+              expiryDate: text.match(/\d{1,2}[\/\-]\d{1,2}[\/\-]\d{4}/)?.[0] || ''
             });
           }
 
           if (text.includes('تنفيذ')) {
-            data.executions.push({
-              executionNumber: caseNumMatch?.[0] || '',
+            result.executions.push({
+              number: caseNum || '',
               text: text.substring(0, 200)
             });
           }
@@ -175,168 +188,128 @@
       } catch (e) {}
     });
 
-    // =============================================
-    // الطريقة 4: قراءة اسم المستخدم المسجل
-    // =============================================
+    // ===== استخراج من النص الخام =====
+    if (result.cases.length === 0) {
+      const allCaseNums = bodyText.match(/\d{4}\/\d{1,2}\/\d+|\d{4}\/\d{4,}/g) || [];
+      const uniqueNums = [...new Set(allCaseNums)];
+      uniqueNums.forEach(num => {
+        if (!result.cases.find(c => c.caseNumber === num)) {
+          result.cases.push({
+            caseNumber: num,
+            caseName: '',
+            status: '',
+            nextHearing: '',
+            source: 'text_extraction'
+          });
+        }
+      });
+    }
+
+    // ===== استخراج اسم المستخدم =====
     const nameSelectors = [
-      '.user-name', '.username', '[class*="userName"]',
-      '[class*="user-name"]', '[class*="UserName"]',
-      '.profile-name', '[class*="profileName"]',
-      'header [class*="name"]', '.nav [class*="name"]',
+      '[class*="userName"]', '[class*="user-name"]',
+      '[class*="UserName"]', '[class*="profileName"]',
       '[class*="WelcomeUser"]', '[class*="welcomeUser"]',
-      '.greeting', '[class*="greeting"]',
-      'span[class*="Name"]', 'p[class*="Name"]'
+      '[class*="greeting"]', '.user-name', '.profile-name',
+      'header [class*="name"]', 'nav [class*="name"]'
     ];
 
     for (const sel of nameSelectors) {
       try {
         const el = document.querySelector(sel);
         if (el?.innerText?.trim()) {
-          data.clients.push({
+          result.clients.push({
             name: el.innerText.trim(),
-            source: 'najiz_logged_user'
+            source: 'profile'
           });
           break;
         }
       } catch (e) {}
     }
 
-    // البحث عن "مرحباً" في الصفحة
-    const welcomeMatch = bodyText.match(
-      /(?:مرحباً|أهلاً|مرحبا)[،,\s]+([^\n،,]{3,40})/
-    );
-    if (welcomeMatch && data.clients.length === 0) {
-      data.clients.push({
-        name: welcomeMatch[1].trim(),
-        source: 'najiz_welcome_text'
-      });
-    }
-
-    // =============================================
-    // الطريقة 5: أرقام القضايا من الـ URL
-    // =============================================
-    const urlCaseMatch = window.location.href.match(
-      /[?&](?:caseId|case_id|id|caseNo|case)=([^&]+)/i
-    );
-    if (urlCaseMatch) {
-      const urlCaseNum = urlCaseMatch[1];
-      if (!data.cases.find(c => c.caseNumber === urlCaseNum)) {
-        data.cases.push({
-          caseNumber: urlCaseNum,
-          source: 'url_parameter'
+    // البحث في النص عن "مرحباً"
+    if (result.clients.length === 0) {
+      const welcomeMatch = bodyText.match(
+        /(?:مرحباً?|أهلاً?)[،,\s]+([^\n،,\d]{3,40})/
+      );
+      if (welcomeMatch) {
+        result.clients.push({
+          name: welcomeMatch[1].trim(),
+          source: 'welcome_text'
         });
       }
     }
 
-    // =============================================
-    // ملخص النتائج
-    // =============================================
-    data.summary = {
-      totalCases: data.cases.length,
-      totalHearings: data.hearings.length,
-      totalPOAs: data.powers_of_attorney.length,
-      totalExecutions: data.executions.length,
-      hasUserInfo: data.clients.length > 0,
-      pageUrl: window.location.href,
-      scrapedAt: data.scrapedAt
+    result.summary = {
+      totalCases: result.cases.length,
+      totalHearings: result.hearings.length,
+      totalPOAs: result.powers_of_attorney.length,
+      totalExecutions: result.executions.length,
+      hasUser: result.clients.length > 0,
+      pageUrl: window.location.href
     };
 
-    return data;
+    return result;
   }
 
-  // =============================================
-  // الاستماع لأوامر الـ Extension
-  // =============================================
-  chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
+  // ===== الاستماع للأوامر =====
+  chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
-    // أمر السحب الرئيسي
-    if (
-      request.action === 'extractData' ||
-      request.action === 'scrape' ||
-      request.action === 'getData' ||
-      request.action === 'sync'
-    ) {
-      const doExtract = () => {
+    if (['extractData', 'scrape', 'getData', 'sync'].includes(request.action)) {
+
+      (async () => {
         try {
-          const result = extractAllPageData();
-
-          const hasData =
-            result.cases.length > 0 ||
-            result.hearings.length > 0 ||
-            result.powers_of_attorney.length > 0;
+          const data = await extractNajizData();
+          const hasData = data.cases.length > 0 ||
+            data.hearings.length > 0 ||
+            data.powers_of_attorney.length > 0;
 
           if (hasData) {
-            sendResponse({ success: true, data: result });
+            sendResponse({ success: true, data });
           } else {
-            // انتظر 3 ثوانٍ للصفحات الديناميكية ثم حاول مرة أخرى
-            setTimeout(() => {
-              const retryResult = extractAllPageData();
-              const retryHasData =
-                retryResult.cases.length > 0 ||
-                retryResult.hearings.length > 0 ||
-                retryResult.powers_of_attorney.length > 0;
-
-              sendResponse({
-                success: retryHasData,
-                data: retryResult,
-                message: retryHasData
-                  ? 'تم السحب بنجاح'
-                  : 'لم يتم العثور على بيانات في هذه الصفحة. انتقل إلى صفحة قضاياي أو جلساتي'
-              });
-            }, 3000);
+            // إرشاد المستخدم
+            sendResponse({
+              success: false,
+              data,
+              message: getHelpMessage()
+            });
           }
         } catch (err) {
           sendResponse({
             success: false,
             error: err.message,
-            message: 'خطأ في قراءة الصفحة: ' + err.message
+            message: 'خطأ في القراءة: ' + err.message
           });
         }
-      };
+      })();
 
-      // إذا الصفحة لم تكتمل، انتظر
-      if (document.readyState !== 'complete') {
-        window.addEventListener('load', doExtract, { once: true });
-      } else {
-        doExtract();
-      }
-
-      return true; // مطلوب للـ async
-    }
-
-    // فحص الاتصال
-    if (request.action === 'ping') {
-      sendResponse({
-        success: true,
-        active: true,
-        isNajiz: window.location.href.includes('najiz.sa'),
-        url: window.location.href
-      });
       return true;
     }
 
-    // معلومات الصفحة
-    if (request.action === 'getPageInfo') {
+    if (request.action === 'ping') {
       sendResponse({
         success: true,
         url: window.location.href,
-        title: document.title,
         isNajiz: window.location.href.includes('najiz.sa'),
-        isLoggedIn: !!document.querySelector(
-          '.user-name, [class*="userName"], [class*="user-name"], [class*="profile"]'
-        ),
-        readyState: document.readyState
+        title: document.title
       });
       return true;
     }
   });
 
-  // تأكيد تشغيل الـ Script
-  console.log(
-    '[منصة العدالة] ✅ Script جاهز — بدون API Key — يقرأ بيانات المستخدم المسجل مباشرة'
-  );
+  function getHelpMessage() {
+    const url = window.location.href;
+    if (url.includes('najiz.sa')) {
+      if (!url.includes('/Cases') && !url.includes('/Hearings') && !url.includes('/case')) {
+        return 'يرجى الانتقال إلى صفحة "قضاياي" أو "جلساتي" على ناجز ثم اضغط سحب البيانات مرة أخرى';
+      }
+      return 'انتظر تحميل الصفحة كاملاً ثم اضغط سحب البيانات مرة أخرى';
+    }
+    return 'يرجى فتح موقع ناجز أولاً: www.najiz.sa';
+  }
 
-  // إشعار background بالجاهزية
+  console.log('[العدالة] ✅ Content Script جاهز على:', window.location.href);
+
   try {
     chrome.runtime.sendMessage({
       action: 'contentScriptReady',

@@ -136,8 +136,8 @@ export default function ExtensionDownloadSection({
         return `{
   "manifest_version": 3,
   "name": "منصة العدالة — مزامنة ناجز",
-  "version": "2.0",
-  "description": "يقرأ بياناتك من ناجز بعد تسجيل دخولك ويزامنها مع المنصة — بدون API Key",
+  "version": "3.0",
+  "description": "سحب بيانات القضايا من ناجز ومزامنتها مع منصة العدالة",
   "permissions": [
     "activeTab",
     "scripting",
@@ -147,7 +147,8 @@ export default function ExtensionDownloadSection({
   "host_permissions": [
     "https://www.najiz.sa/*",
     "https://najiz.sa/*",
-    "https://*.najiz.sa/*"
+    "https://*.najiz.sa/*",
+    "https://aladala-platform-rnuz.onrender.com/*"
   ],
   "content_scripts": [
     {
@@ -157,12 +158,13 @@ export default function ExtensionDownloadSection({
         "https://*.najiz.sa/*"
       ],
       "js": ["content.js"],
-      "run_at": "document_idle"
+      "run_at": "document_idle",
+      "all_frames": false
     }
   ],
   "action": {
     "default_popup": "popup.html",
-    "default_title": "منصة العدالة — مزامنة ناجز"
+    "default_title": "العدالة — سحب ناجز"
   },
   "background": {
     "service_worker": "background.js"
@@ -170,10 +172,20 @@ export default function ExtensionDownloadSection({
 }`;
 
       case "background.js":
-        return `// background.js — لا يحتاج API Key
+        return `// background.js - منصة العدالة v3.0
+const APP_SERVER = 'https://aladala-platform-rnuz.onrender.com';
+
+chrome.runtime.onInstalled.addListener(() => {
+  chrome.storage.local.set({ serverUrl: APP_SERVER });
+  console.log('[العدالة] تم تثبيت الإضافة بنجاح');
+});
+
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.action === 'contentScriptReady') {
-    console.log('[العدالة] Script جاهز على:', message.url);
+    console.log('[العدالة] Script جاهز:', message.url);
+  }
+  if (message.action === 'setServerUrl') {
+    chrome.storage.local.set({ serverUrl: message.url });
   }
   sendResponse({ received: true });
   return true;

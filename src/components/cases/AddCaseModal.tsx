@@ -53,51 +53,14 @@ export default function AddCaseModal({ isOpen, onClose, clients, onUpdateState }
 
     setIsSubmitting(true);
     try {
-      // 1. إيجاد أو إنشاء العميل
-      let linkedClientId = null;
-      const existingClient = clients.find(c => c.name === newClientName);
-      
-      if (existingClient) {
-        linkedClientId = existingClient.id;
-      } else {
-        // إنشاء عميل جديد
-        const newClientId = generateUUID();
-        const { error: clientError } = await supabase
-          .from('clients')
-          .insert({
-            id: newClientId,
-            name: newClientName.trim(),
-            national_id: newPlaintiffNationalId || null,
-            id_number: newPlaintiffNationalId || null,
-            phone: newPlaintiffPhone || null,
-            is_company: newClientType === 'company',
-            status: 'active',
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-          });
-        
-        if (!clientError) {
-          linkedClientId = newClientId;
-          // تحديث State العملاء
-          await onUpdateState('clients', {
-            id: newClientId,
-            name: newClientName.trim(),
-            nationalId: newPlaintiffNationalId || '',
-            phone: newPlaintiffPhone || ''
-          });
-        } else {
-          console.error('[AddCase Client Supabase Error]', clientError);
-        }
-      }
-
-      // 2. إنشاء القضية
       const caseId = generateUUID();
-      const casePayload = {
+      const casePayload: any = {
         id: caseId,
         case_number: newCaseNumber.trim(),
         title: newCaseName.trim(),
         case_name: newCaseName.trim(),
-        client_id: linkedClientId,
+        client_id: null,        // ← ابدأ بـ null دائماً
+        client_name: newClientName.trim(),   // ← احفظ الاسم كنص
         category: newCategory,
         stage: newStage,
         status: 'new',
@@ -120,6 +83,41 @@ export default function AddCaseModal({ isOpen, onClose, clients, onUpdateState }
         updated_at: new Date().toISOString()
       };
 
+      // أضف العميل أولاً إذا لم يكن موجوداً
+      let finalClientId = null;
+      const existingClient = clients.find(c => c.name === newClientName);
+
+      if (existingClient) {
+        finalClientId = existingClient.id;
+      } else {
+        const newClientId = generateUUID();
+        const { error: clientErr } = await supabase
+          .from('clients')
+          .insert({
+            id: newClientId,
+            name: newClientName.trim(),
+            status: 'active',
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          });
+        
+        if (!clientErr) {
+          finalClientId = newClientId;
+          // تحديث State العمراء
+          await onUpdateState('clients', {
+            id: newClientId,
+            name: newClientName.trim(),
+            nationalId: newPlaintiffNationalId || '',
+            phone: newPlaintiffPhone || ''
+          });
+        } else {
+          console.error('[AddCase Client Supabase Error]', clientErr);
+        }
+      }
+
+      // الآن أضف القضية مع client_id الصحيح
+      casePayload.client_id = finalClientId;
+
       const { error: caseError } = await supabase
         .from('cases')
         .insert(casePayload);
@@ -139,7 +137,7 @@ export default function AddCaseModal({ isOpen, onClose, clients, onUpdateState }
         stage: newStage,
         status: 'new',
         clientName: newClientName.trim(),
-        clientId: linkedClientId,
+        clientId: finalClientId,
         opponentName: newOpponent || 'طرف مجهول (خصم)',
         opponentNationalId: newOpponentNationalId,
         courtName: newCourt,
@@ -156,7 +154,7 @@ export default function AddCaseModal({ isOpen, onClose, clients, onUpdateState }
       await onUpdateState('cases', frontendCase);
 
       // 4. إنشاء جلسة أولية إذا كان هناك موعد
-      if (newNextDate && linkedClientId) {
+      if (newNextDate && finalClientId) {
         await supabase.from('hearings').insert({
           id: generateUUID(),
           case_id: caseId,

@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "منصة العدالة — مزامنة ناجز",
-  "version": "2.0",
-  "description": "يقرأ بياناتك من ناجز بعد تسجيل دخولك ويزامنها مع المنصة — بدون API Key",
+  "version": "3.0",
+  "description": "سحب بيانات القضايا من ناجز ومزامنتها مع منصة العدالة",
   "permissions": [
     "activeTab",
     "scripting",
@@ -12,7 +12,8 @@
   "host_permissions": [
     "https://www.najiz.sa/*",
     "https://najiz.sa/*",
-    "https://*.najiz.sa/*"
+    "https://*.najiz.sa/*",
+    "https://aladala-platform-rnuz.onrender.com/*"
   ],
   "content_scripts": [
     {
@@ -22,12 +23,13 @@
         "https://*.najiz.sa/*"
       ],
       "js": ["content.js"],
-      "run_at": "document_idle"
+      "run_at": "document_idle",
+      "all_frames": false
     }
   ],
   "action": {
     "default_popup": "popup.html",
-    "default_title": "منصة العدالة — مزامنة ناجز"
+    "default_title": "العدالة — سحب ناجز"
   },
   "background": {
     "service_worker": "background.js"

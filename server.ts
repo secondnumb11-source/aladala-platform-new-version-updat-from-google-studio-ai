@@ -3044,86 +3044,65 @@ app.post('/api/team/members', (req, res) => res.json({ success: true }));
 // تسجيل دخول الموظف
 app.post('/api/employee-portal/login', async (req, res) => {
   const { username, password } = req.body;
+  
   if (!username || !password) {
-    return res.status(400).json({ success: false, message: 'يرجى إدخال اسم المستخدم وكلمة المرور' });
+    return res.status(400).json({ 
+      success: false, 
+      message: 'يرجى إدخال اسم المستخدم وكلمة المرور' 
+    });
   }
-
-  const normalizedInput = username.trim().toLowerCase();
-  const normalizedPass = password.trim();
-
+  
   try {
-    // Fetch all employees via admin client (service_role bypasses RLS)
-    const { data: employeeRecords, error } = await adminSupabase
+    const trimmedUser = username.trim();
+    const trimmedPass = password.trim();
+    
+    // البحث بكل الحقول
+    const { data: employees, error } = await adminSupabase
       .from('employees')
-      .select('*');
-
+      .select('*')
+      .eq('status', 'active')
+      .or([
+        `username.eq.${trimmedUser}`,
+        `email.eq.${trimmedUser}`,
+        `employee_code.eq.${trimmedUser}`,
+        `phone.eq.${trimmedUser}`,
+        `national_id.eq.${trimmedUser}`
+      ].join(','));
+    
     if (error) {
-      console.error('[Employee login DB error]', error);
-      throw error;
-    }
-
-    let matchedEmployee = null;
-
-    if (employeeRecords && employeeRecords.length > 0) {
-      // Find matching employee record by username, email, employee_code, phone or id suffix
-      matchedEmployee = employeeRecords.find((emp: any) => {
-        const empUser = String(emp.username || '').toLowerCase().trim();
-        const empEmail = String(emp.email || '').toLowerCase().trim();
-        const empCode = String(emp.employee_code || emp.employeeCode || '').toLowerCase().trim();
-        const empPhone = String(emp.phone || '').toLowerCase().trim();
-        const empId = String(emp.id || '').toLowerCase().trim();
-
-        const isMatch = 
-          empUser === normalizedInput ||
-          empEmail === normalizedInput ||
-          empCode === normalizedInput ||
-          empPhone === normalizedInput ||
-          empId === normalizedInput ||
-          (normalizedInput.length >= 4 && (
-            empCode.endsWith(normalizedInput) ||
-            empPhone.endsWith(normalizedInput)
-          ));
-
-        if (!isMatch) return false;
-
-        const recordPass = String(emp.password || '').trim();
-        return recordPass === normalizedPass;
+      console.error('[Employee Login DB Error]', error);
+      return res.status(500).json({ 
+        success: false, 
+        message: 'خطأ في قاعدة البيانات: ' + error.message 
       });
     }
-
-    // Dev/Fallback mock accounts if no match found in database or if database empty
-    if (!matchedEmployee) {
-      const isDemoUser = normalizedInput === 'tamer' || normalizedInput === 'adel';
-      if (isDemoUser) {
-        matchedEmployee = {
-          id: normalizedInput === 'tamer' ? 'demo-tamer-id' : 'demo-adel-id',
-          name: normalizedInput === 'tamer' ? 'المستشار تامر عثمان' : 'د. عادل القحطاني',
-          role: 'employee',
-          job_title: normalizedInput === 'tamer' ? 'مستشار قانوني متقدم' : 'مدير الإدارة القانونية',
-          employee_code: normalizedInput === 'tamer' ? 'EMP-TS-12' : 'EMP-AQ-11',
-          permissions: ['dashboard', 'cases', 'tasks', 'ai', 'documents']
-        };
-      }
-    }
-
-    if (!matchedEmployee) {
+    
+    const employee = (employees || []).find(emp => {
+      const dbPass = (emp.password || '').trim();
+      return dbPass === trimmedPass;
+    });
+    
+    if (!employee) {
       return res.status(401).json({ 
         success: false, 
-        message: 'اسم المستخدم أو كلمة المرور خاطئة، يرجى التأكد' 
+        message: 'اسم المستخدم أو كلمة المرور غير صحيحة' 
       });
     }
-
-    const token = require('crypto').randomUUID();
     
-    // Attempt tracking session, catch and ignore if session table doesn't exist yet
+    // إنشاء جلسة مع تفادي فشل العملية في حال عدم وجود الجدول
+    const token = require('crypto').randomUUID();
     try {
-      await adminSupabase.from('employee_portal_sessions').insert({
-        id: require('crypto').randomUUID(),
-        employee_id: matchedEmployee.id,
-        session_token: token,
-        expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
-        is_active: true
-      });
+      await adminSupabase
+        .from('employee_portal_sessions')
+        .insert({
+          id: require('crypto').randomUUID(),
+          employee_id: employee.id,
+          session_token: token,
+          expires_at: new Date(
+            Date.now() + 24 * 60 * 60 * 1000
+          ).toISOString(),
+          is_active: true
+        });
     } catch (sessionErr) {
       console.warn('[Employee Session save bypassed]', sessionErr);
     }
@@ -3132,36 +3111,23 @@ app.post('/api/employee-portal/login', async (req, res) => {
       success: true,
       token,
       employee: {
-        id: matchedEmployee.id,
-        name: matchedEmployee.name,
-        role: matchedEmployee.role || 'employee',
-        jobTitle: matchedEmployee.job_title || matchedEmployee.jobTitle || 'موظف المنصة',
-        employeeCode: matchedEmployee.employee_code || matchedEmployee.employeeCode || '',
-        permissions: matchedEmployee.permissions || matchedEmployee.sidebar_config || matchedEmployee.sidebarConfig || ['dashboard', 'cases', 'tasks', 'ai', 'documents']
+        id: employee.id,
+        name: employee.name,
+        role: employee.role || 'employee',
+        jobTitle: employee.job_title || employee.role,
+        employeeCode: employee.employee_code || '',
+        permissions: employee.permissions || [
+          'dashboard','cases','tasks','documents','ai'
+        ]
       }
     });
-
-  } catch (err: any) {
-    console.error('[Employee login outer exception]', err);
     
-    // Offline/Error Resilient fallback for dev mode
-    const isDemoUser = normalizedInput === 'tamer' || normalizedInput === 'adel';
-    if (isDemoUser) {
-      return res.json({
-        success: true,
-        token: `mock-offline-token-${normalizedInput}`,
-        employee: {
-          id: `demo-${normalizedInput}-id`,
-          name: normalizedInput === 'tamer' ? 'المستشار تامر عثمان' : 'د. عادل القحطاني',
-          role: 'employee',
-          jobTitle: normalizedInput === 'tamer' ? 'مستشار قانوني متقدم' : 'مدير الإدارة القانونية',
-          employeeCode: normalizedInput === 'tamer' ? 'EMP-TS-12' : 'EMP-AQ-11',
-          permissions: ['dashboard', 'cases', 'tasks', 'ai', 'documents']
-        }
-      });
-    }
-
-    return res.status(500).json({ success: false, message: 'حدث خطأ في الاتصال بقاعدة البيانات. جاري محاولة تسجيل الدخول الاحتياطي...' });
+  } catch (err: any) {
+    console.error('[Employee Login Exception]', err);
+    return res.status(500).json({ 
+      success: false, 
+      message: 'خطأ في الخادم: ' + err.message 
+    });
   }
 });
 
@@ -3215,95 +3181,86 @@ app.get('/api/employee-portal/session', async (req, res) => {
   }
 });
 
-// تسجيل دخول الموكلين/العملاء للبوابة الآمنة
 app.post('/api/client-portal/login', async (req, res) => {
   const { username, password } = req.body;
+  
   if (!username || !password) {
-    return res.status(400).json({ success: false, message: 'يرجى إدخال اسم المستخدم وكلمة المرور' });
+    return res.status(400).json({ 
+      success: false, 
+      message: 'يرجى إدخال اسم المستخدم وكلمة المرور' 
+    });
   }
-
-  const normalizedInput = username.trim();
-  const normalizedPass = password.trim();
-
+  
   try {
-    // البحث بـ portal_username أو national_id أو email باستخدام adminSupabase لضمان تجاوز الـ RLS
+    const trimmedUser = username.trim();
+    const trimmedPass = password.trim();
+    
+    // البحث بكل الحقول الممكنة
     const { data: clients, error } = await adminSupabase
       .from('clients')
       .select('*')
-      .or(`portal_username.eq.${normalizedInput},national_id.eq.${normalizedInput},email.eq.${normalizedInput}`);
-
+      .or([
+        `portal_username.eq.${trimmedUser}`,
+        `national_id.eq.${trimmedUser}`,
+        `email.eq.${trimmedUser}`,
+        `phone.eq.${trimmedUser}`
+      ].join(','));
+    
     if (error) {
-      console.error('[Client login DB error]', error);
-      throw error;
+      console.error('[Client Login DB Error]', error);
+      return res.status(500).json({ 
+        success: false, 
+        message: 'خطأ في قاعدة البيانات: ' + error.message 
+      });
     }
-
-    let matchedClient = clients?.find((c: any) => {
-      const recordPass = String(c.portal_password || c.password || '').trim();
-      return recordPass === normalizedPass;
+    
+    const client = (clients || []).find(c => {
+      const dbPass = (c.portal_password || '').trim();
+      return dbPass === trimmedPass;
     });
-
-    // تسجيل دخول تجريبي للحسابات الافتراضية للتجربة السريعة
-    if (!matchedClient && (normalizedInput === '8585' || normalizedInput === 'client' || normalizedInput === 'موكل')) {
-      matchedClient = {
-        id: 'demo-client-id-123',
-        name: 'شركة هامات الكبرى للاستثمار العلمي',
-        email: 'info@hamat-major.sa',
-        phone: '0551234567',
-        permitted_cases: ['all-cases']
-      };
-    }
-
-    if (!matchedClient) {
+    
+    if (!client) {
       return res.status(401).json({ 
         success: false, 
-        message: 'اسم المستخدم أو كلمة المرور خاطئة، يرجى التأكد من البيانات ومحاولة الدخول مجدداً' 
+        message: 'اسم المستخدم أو كلمة المرور غير صحيحة' 
       });
     }
-
-    const token = require('crypto').randomUUID();
-    const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
     
-    try {
-      await adminSupabase.from('client_portal_sessions').insert({
-        id: require('crypto').randomUUID(),
-        client_id: matchedClient.id,
-        session_token: token,
-        expires_at: expiresAt,
-        is_active: true
+    if (client.active_portal === false) {
+      return res.status(403).json({ 
+        success: false, 
+        message: 'حساب البوابة غير مفعّل' 
       });
-    } catch (sessionErr) {
-      console.warn('[Client session database save bypassed]', sessionErr);
     }
+    
+    // إنشاء جلسة
+    const token = require('crypto').randomUUID();
+    await adminSupabase.from('client_portal_sessions').insert({
+      id: require('crypto').randomUUID(),
+      client_id: client.id,
+      session_token: token,
+      expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+      is_active: true
+    });
     
     return res.json({
       success: true,
       token,
       client: {
-        id: matchedClient.id,
-        name: matchedClient.name || 'موكل المنصة المعتمد',
-        email: matchedClient.email || '',
-        phone: matchedClient.phone || '',
-        permittedCases: matchedClient.permitted_cases || matchedClient.permittedCases || []
+        id: client.id,
+        name: client.name,
+        email: client.email || '',
+        phone: client.phone || '',
+        permittedCases: client.permitted_cases || []
       }
     });
-
+    
   } catch (err: any) {
-    console.error('[Client-portal login outer error]', err);
-
-    if (normalizedInput === '8585' || normalizedInput === 'client' || normalizedInput === 'موكل') {
-      return res.json({
-        success: true,
-        token: `mock-offline-token-client`,
-        client: {
-          id: 'demo-client-id-123',
-          name: 'شركة هامات الكبرى للاستثمار العلمي',
-          email: 'info@hamat-major.sa',
-          phone: '0551234567',
-          permittedCases: ['all-cases']
-        }
-      });
-    }
-    return res.status(500).json({ success: false, message: 'خطأ في الخادم: ' + err.message });
+    console.error('[Client Login Exception]', err);
+    return res.status(500).json({ 
+      success: false, 
+      message: 'خطأ في الخادم: ' + err.message 
+    });
   }
 });
 

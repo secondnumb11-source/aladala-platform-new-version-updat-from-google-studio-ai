@@ -300,7 +300,7 @@ export default function UnifiedAuthLanding({ initialTab = "lawyer", language = "
       const { data, error: sbError } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: window.location.origin,
+          redirectTo: `${window.location.origin}/auth/callback`,
           skipBrowserRedirect: true
         }
       });
@@ -332,7 +332,7 @@ export default function UnifiedAuthLanding({ initialTab = "lawyer", language = "
           await supabase.auth.signInWithOAuth({
             provider: 'google',
             options: {
-              redirectTo: window.location.origin
+              redirectTo: `${window.location.origin}/auth/callback`
             }
           });
         } else {
