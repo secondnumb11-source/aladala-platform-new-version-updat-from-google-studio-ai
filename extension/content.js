@@ -1,321 +1,209 @@
 (function () {
   'use strict';
 
-  // انتظار ظهور عنصر في الصفحة
-  function waitForElement(selector, timeout = 10000) {
-    return new Promise((resolve, reject) => {
-      const el = document.querySelector(selector);
-      if (el) return resolve(el);
-
-      const observer = new MutationObserver(() => {
-        const found = document.querySelector(selector);
-        if (found) {
-          observer.disconnect();
-          resolve(found);
-        }
-      });
-
-      observer.observe(document.body, {
-        childList: true,
-        subtree: true
-      });
-
-      setTimeout(() => {
-        observer.disconnect();
-        reject(new Error('Timeout: Element not found: ' + selector));
-      }, timeout);
-    });
-  }
-
-  // انتظار تحميل البيانات الديناميكية
-  function waitForData(timeout = 15000) {
-    return new Promise((resolve) => {
-      let elapsed = 0;
-      const interval = setInterval(() => {
-        elapsed += 500;
-        const text = document.body?.innerText || '';
-        const hasData = (
-          /\d{4}\/\d+/.test(text) ||
-          /\d{10}/.test(text) ||
-          document.querySelectorAll('table tr').length > 2 ||
-          document.querySelectorAll('[class*="card"]').length > 0 ||
-          document.querySelectorAll('[class*="Card"]').length > 0 ||
-          document.querySelectorAll('[class*="item"]').length > 3
-        );
-
-        if (hasData || elapsed >= timeout) {
-          clearInterval(interval);
-          resolve(hasData);
-        }
-      }, 500);
-    });
-  }
-
-  // الدالة الرئيسية لاستخراج البيانات
-  async function extractNajizData() {
-    // انتظر تحميل البيانات
-    await waitForData(12000);
-
-    // انتظر إضافي للصفحات البطيئة
-    await new Promise(r => setTimeout(r, 2000));
-
-    const result = {
+  // ===== دالة استخراج البيانات حسب نوع الصفحة =====
+  async function extractByPageType() {
+    const url = window.location.href;
+    const data = {
       cases: [],
       hearings: [],
       powers_of_attorney: [],
       executions: [],
       clients: [],
-      rawText: '',
-      pageUrl: window.location.href,
-      pageTitle: document.title,
+      pageUrl: url,
       scrapedAt: new Date().toISOString()
     };
 
+    // انتظر قليلاً لتحميل المحتوى الديناميكي
+    await new Promise(r => setTimeout(r, 1000));
+
     const bodyText = document.body?.innerText || '';
-    result.rawText = bodyText.substring(0, 5000);
 
-    // ===== استخراج القضايا من الجداول =====
-    const tables = document.querySelectorAll('table, [class*="Table"], [class*="table"]');
-    tables.forEach(table => {
-      const rows = table.querySelectorAll('tr');
-      rows.forEach((row, i) => {
-        if (i === 0) return; // تخطي الـ header
-        const cells = Array.from(row.querySelectorAll('td, [class*="Cell"], [class*="cell"]'))
-          .map(c => c.innerText?.trim() || '');
-
-        if (cells.length < 2) return;
-
-        const rowText = cells.join(' ');
-        const caseNum = rowText.match(/\d{4}\/\d+|\d{10,}|\d{9}/)?.[0];
-        const dateMatch = rowText.match(/\d{1,2}[\/\-]\d{1,2}[\/\-]\d{4}|\d{4}[\/\-]\d{1,2}[\/\-]\d{1,2}/);
-
-        if (caseNum && !result.cases.find(c => c.caseNumber === caseNum)) {
-          result.cases.push({
-            caseNumber: caseNum,
-            caseName: cells.find(c =>
-              c.length > 4 &&
-              !/^\d+$/.test(c) &&
-              !c.includes('/') &&
-              !c.includes('-')
-            ) || '',
-            status: cells.find(c =>
-              ['قيد', 'منتهي', 'نشط', 'مقيد', 'محكوم',
-               'مؤجل', 'مشطوب', 'موقوف', 'صدر'].some(k => c.includes(k))
-            ) || '',
+    // 1. القضايا
+    if (url.includes('/lawsuit')) {
+      const rows = document.querySelectorAll('table tbody tr');
+      rows.forEach(row => {
+        const cells = Array.from(row.querySelectorAll('td')).map(c => c.innerText.trim());
+        if (cells.length >= 3) {
+          data.cases.push({
+            caseNumber: cells.find(c => /\d{4}\//.test(c)) || cells[0],
+            caseName: cells[1] || '',
+            status: cells.find(c => ['قيد', 'منتهي', 'نشط', 'محكوم'].some(k => c.includes(k))) || '',
             court: cells.find(c => c.includes('محكمة')) || '',
-            nextHearing: dateMatch?.[0] || '',
-            category: cells.find(c =>
-              ['تجاري', 'عمالي', 'مدني', 'جزائي', 'أحوال'].some(k => c.includes(k))
-            ) || '',
-            rawCells: cells
+            category: 'civil'
           });
         }
+      });
+    }
 
-        // استخراج الجلسات
-        if (dateMatch && (
-          rowText.includes('جلسة') ||
-          rowText.includes('موعد') ||
-          table.innerText?.includes('جلسة')
-        )) {
-          result.hearings.push({
+    // 2. الجلسات
+    if (url.includes('/appointment-requests')) {
+      const cards = document.querySelectorAll('.card, [class*="Card"]');
+      cards.forEach(card => {
+        const text = card.innerText;
+        const dateMatch = text.match(/\d{1,2}[\/-]\d{1,2}[\/-]\d{4}/);
+        const caseMatch = text.match(/\d{4}\/\d+/);
+        if (dateMatch) {
+          data.hearings.push({
             date: dateMatch[0],
-            caseNumber: caseNum || '',
-            court: cells.find(c => c.includes('محكمة')) || '',
-            status: cells.find(c =>
-              ['قادمة', 'منتهية', 'مؤجلة', 'ملغاة'].some(k => c.includes(k))
-            ) || 'قادمة',
-            hall: cells.find(c => c.includes('قاعة') || c.includes('دائرة')) || ''
-          });
-        }
-      });
-    });
-
-    // ===== استخراج من البطاقات الديناميكية =====
-    const cardSelectors = [
-      '[class*="CaseCard"]', '[class*="case-card"]', '[class*="caseCard"]',
-      '[class*="RequestCard"]', '[class*="requestCard"]',
-      '[class*="CaseItem"]', '[class*="caseItem"]',
-      '[class*="ListItem"]', '[class*="list-item"]',
-      '[class*="CaseRow"]', '[class*="caseRow"]',
-      '[class*="MuiCard"]', '[class*="MuiPaper"]',
-      '[class*="ant-card"]', '[class*="el-card"]',
-      '[data-testid*="case"]', '[data-cy*="case"]',
-      '.case', '.case-item', '.case-card',
-      '[class*="lawsuit"]', '[class*="claim"]'
-    ];
-
-    cardSelectors.forEach(selector => {
-      try {
-        document.querySelectorAll(selector).forEach(card => {
-          const text = card.innerText?.trim() || '';
-          if (!text || text.length < 10) return;
-
-          const caseNum = text.match(/\d{4}\/\d+|\d{10,}|\d{9}/)?.[0];
-          const dateMatch = text.match(/\d{1,2}[\/\-]\d{1,2}[\/\-]\d{4}|\d{4}[\/\-]\d{1,2}[\/\-]\d{1,2}/);
-
-          if (caseNum && !result.cases.find(c => c.caseNumber === caseNum)) {
-            const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
-            result.cases.push({
-              caseNumber: caseNum,
-              caseName: lines.find(l =>
-                l.length > 5 && !/^\d+[\/\-]?\d*$/.test(l)
-              ) || '',
-              status: lines.find(l =>
-                ['قيد', 'منتهي', 'نشط', 'مقيد', 'محكوم',
-                 'مؤجل', 'مشطوب', 'موقوف'].some(k => l.includes(k))
-              ) || '',
-              nextHearing: dateMatch?.[0] || '',
-              rawText: text.substring(0, 300)
-            });
-          }
-
-          if (text.includes('وكالة')) {
-            const poaNum = text.match(/\d{6,}/)?.[0];
-            result.powers_of_attorney.push({
-              poaNumber: poaNum || '',
-              text: text.substring(0, 300),
-              expiryDate: text.match(/\d{1,2}[\/\-]\d{1,2}[\/\-]\d{4}/)?.[0] || ''
-            });
-          }
-
-          if (text.includes('تنفيذ')) {
-            result.executions.push({
-              number: caseNum || '',
-              text: text.substring(0, 200)
-            });
-          }
-        });
-      } catch (e) {}
-    });
-
-    // ===== استخراج من النص الخام =====
-    if (result.cases.length === 0) {
-      const allCaseNums = bodyText.match(/\d{4}\/\d{1,2}\/\d+|\d{4}\/\d{4,}/g) || [];
-      const uniqueNums = [...new Set(allCaseNums)];
-      uniqueNums.forEach(num => {
-        if (!result.cases.find(c => c.caseNumber === num)) {
-          result.cases.push({
-            caseNumber: num,
-            caseName: '',
-            status: '',
-            nextHearing: '',
-            source: 'text_extraction'
+            caseNumber: caseMatch ? caseMatch[0] : '',
+            court: text.includes('محكمة') ? 'محكمة' : '',
+            status: 'upcoming'
           });
         }
       });
     }
 
-    // ===== استخراج اسم المستخدم =====
-    const nameSelectors = [
-      '[class*="userName"]', '[class*="user-name"]',
-      '[class*="UserName"]', '[class*="profileName"]',
-      '[class*="WelcomeUser"]', '[class*="welcomeUser"]',
-      '[class*="greeting"]', '.user-name', '.profile-name',
-      'header [class*="name"]', 'nav [class*="name"]'
-    ];
-
-    for (const sel of nameSelectors) {
-      try {
-        const el = document.querySelector(sel);
-        if (el?.innerText?.trim()) {
-          result.clients.push({
-            name: el.innerText.trim(),
-            source: 'profile'
+    // 3. الوكالات
+    if (url.includes('/wekalat')) {
+      const items = document.querySelectorAll('.list-item, tr');
+      items.forEach(item => {
+        const text = item.innerText;
+        const poaNum = text.match(/\d{9,}/);
+        if (poaNum) {
+          data.powers_of_attorney.push({
+            poaNumber: poaNum[0],
+            expiryDate: text.match(/\d{1,2}[\/-]\d{1,2}[\/-]\d{4}/)?.[0] || ''
           });
-          break;
         }
-      } catch (e) {}
+      });
     }
 
-    // البحث في النص عن "مرحباً"
-    if (result.clients.length === 0) {
-      const welcomeMatch = bodyText.match(
-        /(?:مرحباً?|أهلاً?)[،,\s]+([^\n،,\d]{3,40})/
-      );
-      if (welcomeMatch) {
-        result.clients.push({
-          name: welcomeMatch[1].trim(),
-          source: 'welcome_text'
-        });
-      }
+    // 4. التنفيذ
+    if (url.includes('/iexecution')) {
+      const rows = document.querySelectorAll('tr');
+      rows.forEach(row => {
+        const text = row.innerText;
+        const execNum = text.match(/\d{10,}/);
+        if (execNum) {
+          data.executions.push({
+            executionNumber: execNum[0],
+            text: text.substring(0, 100)
+          });
+        }
+      });
     }
 
-    result.summary = {
-      totalCases: result.cases.length,
-      totalHearings: result.hearings.length,
-      totalPOAs: result.powers_of_attorney.length,
-      totalExecutions: result.executions.length,
-      hasUser: result.clients.length > 0,
-      pageUrl: window.location.href
+    // استخراج اسم المستخدم
+    const nameEl = document.querySelector('.user-name, [class*="userName"]');
+    if (nameEl) {
+      data.clients.push({ name: nameEl.innerText.trim() });
+    }
+
+    data.summary = {
+      totalCases: data.cases.length,
+      totalHearings: data.hearings.length,
+      totalPOAs: data.powers_of_attorney.length,
+      totalExecutions: data.executions.length,
+      hasData: (data.cases.length + data.hearings.length + data.powers_of_attorney.length + data.executions.length) > 0
     };
 
-    return result;
+    return data;
   }
 
-  // ===== الاستماع للأوامر =====
+  // ===== الاستماع للرسائل =====
   chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-
-    if (['extractData', 'scrape', 'getData', 'sync'].includes(request.action)) {
-
-      (async () => {
-        try {
-          const data = await extractNajizData();
-          const hasData = data.cases.length > 0 ||
-            data.hearings.length > 0 ||
-            data.powers_of_attorney.length > 0;
-
-          if (hasData) {
-            sendResponse({ success: true, data });
-          } else {
-            // إرشاد المستخدم
-            sendResponse({
-              success: false,
-              data,
-              message: getHelpMessage()
-            });
-          }
-        } catch (err) {
-          sendResponse({
-            success: false,
-            error: err.message,
-            message: 'خطأ في القراءة: ' + err.message
-          });
-        }
-      })();
-
-      return true;
-    }
-
-    if (request.action === 'ping') {
-      sendResponse({
-        success: true,
-        url: window.location.href,
-        isNajiz: window.location.href.includes('najiz.sa'),
-        title: document.title
-      });
+    if (request.action === 'extractData') {
+      extractByPageType().then(data => sendResponse({ success: true, data }));
       return true;
     }
   });
 
-  function getHelpMessage() {
-    const url = window.location.href;
-    if (url.includes('najiz.sa')) {
-      if (!url.includes('/Cases') && !url.includes('/Hearings') && !url.includes('/case')) {
-        return 'يرجى الانتقال إلى صفحة "قضاياي" أو "جلساتي" على ناجز ثم اضغط سحب البيانات مرة أخرى';
+  console.log('[العدالة] ✅ Content Script v4.0 جاهز');
+
+  // =============================================
+  // مربع المزامنة العائم
+  // =============================================
+  function createFloatingWidget() {
+    if (document.getElementById('adala-widget')) return;
+
+    const SERVER = 'https://aladala-platform-rnuz.onrender.com';
+
+    const style = document.createElement('style');
+    style.textContent = `
+      #adala-widget { position: fixed; bottom: 24px; left: 24px; z-index: 999999; font-family: 'Arial', sans-serif; direction: rtl; }
+      #adala-toggle-btn { width: 56px; height: 56px; border-radius: 50%; background: linear-gradient(135deg, #f59e0b, #d97706); border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 20px rgba(245,158,11,0.5); transition: all 0.3s ease; font-size: 24px; color: #000; }
+      #adala-panel { display: none; position: absolute; bottom: 70px; left: 0; width: 280px; background: #050e21; border: 1px solid #1e3a5f; border-radius: 16px; padding: 0; box-shadow: 0 8px 32px rgba(0,0,0,0.6); overflow: hidden; animation: slideUp 0.3s ease; }
+      #adala-panel.open { display: block; }
+      @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+      .adala-header { background: linear-gradient(135deg, #0a1628, #1e3a5f); padding: 14px 16px; border-bottom: 1px solid #1e3a5f; }
+      .adala-header-title { color: #f59e0b; font-weight: bold; font-size: 14px; margin: 0; }
+      .adala-status-bar { padding: 8px 16px; background: #0a1628; border-bottom: 1px solid #1e3a5f; font-size: 11px; color: #94a3b8; text-align: center; }
+      .adala-buttons { padding: 10px; display: flex; flex-direction: column; gap: 6px; }
+      .adala-btn { width: 100%; padding: 10px 14px; border: 1px solid #1e3a5f; border-radius: 10px; background: #0a1628; color: #fff; font-size: 12px; font-weight: bold; cursor: pointer; text-align: right; transition: all 0.2s; display: flex; align-items: center; gap: 8px; }
+      .adala-btn:hover { background: #1e3a5f; border-color: #f59e0b; }
+      .adala-btn.primary { background: linear-gradient(135deg, #f59e0b22, #d97706); border-color: #f59e0b; color: #f59e0b; }
+      .adala-progress { display: none; padding: 6px 16px; font-size: 11px; color: #f59e0b; text-align: center; }
+      .adala-progress.show { display: block; }
+      .adala-result { display: none; padding: 10px 14px; margin: 0 10px 10px; background: #0f2744; border: 1px solid #1e3a5f; border-radius: 8px; font-size: 11px; color: #94a3b8; }
+    `;
+    document.head.appendChild(style);
+
+    const widget = document.createElement('div');
+    widget.id = 'adala-widget';
+    widget.innerHTML = `
+      <div id="adala-panel">
+        <div class="adala-header"><p class="adala-header-title">⚖️ منصة العدالة</p></div>
+        <div class="adala-status-bar" id="adala-status">اختر نوع المزامنة أدناه</div>
+        <div class="adala-progress" id="adala-progress">🔄 جارٍ سحب البيانات...</div>
+        <div class="adala-buttons">
+          <button class="adala-btn primary" data-action="all"><span>🔄</span><span>مزامنة جميع البيانات الآن</span></button>
+          <button class="adala-btn" data-action="cases"><span>📁</span><span>مزامنة القضايا</span></button>
+          <button class="adala-btn" data-action="hearings"><span>📅</span><span>مزامنة مواعيد الجلسات</span></button>
+          <button class="adala-btn" data-action="poa"><span>📜</span><span>مزامنة الوكالات</span></button>
+          <button class="adala-btn" data-action="executions"><span>⚡</span><span>مزامنة طلبات التنفيذ</span></button>
+        </div>
+        <div class="adala-result" id="adala-result"></div>
+      </div>
+      <button id="adala-toggle-btn">⚖️</button>
+    `;
+    document.body.appendChild(widget);
+
+    const panel = document.getElementById('adala-panel');
+    const toggleBtn = document.getElementById('adala-toggle-btn');
+    const statusEl = document.getElementById('adala-status');
+    const progressEl = document.getElementById('adala-progress');
+    const resultEl = document.getElementById('adala-result');
+    const buttons = widget.querySelectorAll('.adala-btn');
+
+    toggleBtn.onclick = () => {
+      panel.classList.toggle('open');
+      toggleBtn.textContent = panel.classList.contains('open') ? '✕' : '⚖️';
+    };
+
+    async function syncData(action) {
+      buttons.forEach(b => b.disabled = true);
+      progressEl.classList.add('show');
+      statusEl.textContent = '⏳ جارٍ المزامنة...';
+
+      try {
+        const data = await extractByPageType();
+        if (!data.summary.hasData && action !== 'all') {
+          statusEl.textContent = '⚠️ لا توجد بيانات في هذه الصفحة';
+        } else {
+          const res = await fetch(`${SERVER}/api/najiz-sync`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ scrapedData: data, pageType: action, source: 'widget_v4' })
+          });
+          statusEl.textContent = res.ok ? '✅ تمت المزامنة بنجاح' : '❌ فشلت المزامنة';
+        }
+      } catch (err) {
+        statusEl.textContent = '❌ خطأ في النظام';
+      } finally {
+        buttons.forEach(b => b.disabled = false);
+        progressEl.classList.remove('show');
       }
-      return 'انتظر تحميل الصفحة كاملاً ثم اضغط سحب البيانات مرة أخرى';
     }
-    return 'يرجى فتح موقع ناجز أولاً: www.najiz.sa';
+
+    buttons.forEach(btn => {
+      btn.onclick = () => syncData(btn.dataset.action);
+    });
   }
 
-  console.log('[العدالة] ✅ Content Script جاهز على:', window.location.href);
-
-  try {
-    chrome.runtime.sendMessage({
-      action: 'contentScriptReady',
-      url: window.location.href,
-      isNajiz: window.location.href.includes('najiz.sa')
-    });
-  } catch (e) {}
-
+  if (document.readyState === 'complete') {
+    setTimeout(createFloatingWidget, 1500);
+  } else {
+    window.addEventListener('load', () => setTimeout(createFloatingWidget, 1500));
+  }
 })();

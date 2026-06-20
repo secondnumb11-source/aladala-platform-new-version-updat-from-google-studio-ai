@@ -800,7 +800,6 @@ export default function NajizExtensionHub({ currentUser, onUpdateState }: NajizE
     (window as any).showToast?.('اكتملت محاكاة المزامنة بنجاح', 'success');
   };
 
-  // دالة توليد ملف ZIP كامل وجاهز للتحميل
   const generateExtensionZip = async () => {
     setDownloading(true);
     try {
@@ -813,39 +812,40 @@ export default function NajizExtensionHub({ currentUser, onUpdateState }: NajizE
 
       // ===== manifest.json =====
       ext.file('manifest.json', JSON.stringify({
-        manifest_version: 3,
-        name: "منصة العدالة — مزامنة ناجز",
-        version: "3.0",
-        description: "سحب بيانات القضايا من ناجز ومزامنتها مع منصة العدالة تلقائياً",
-        permissions: ["activeTab", "scripting", "storage", "tabs"],
-        host_permissions: [
+        "manifest_version": 3,
+        "name": "منصة العدالة — مزامنة ناجز",
+        "version": "4.0",
+        "description": "سحب القضايا والوكالات والتنفيذ والجلسات من ناجز ومزامنتها مع النظام",
+        "permissions": ["activeTab", "scripting", "storage", "tabs"],
+        "host_permissions": [
           "https://www.najiz.sa/*",
           "https://najiz.sa/*",
           "https://*.najiz.sa/*",
           "https://aladala-platform-rnuz.onrender.com/*"
         ],
-        content_scripts: [{
-          matches: [
-            "https://www.najiz.sa/*",
-            "https://najiz.sa/*",
-            "https://*.najiz.sa/*"
-          ],
-          js: ["content.js"],
-          run_at: "document_idle",
-          all_frames: false
-        }],
-        action: {
-          default_popup: "popup.html",
-          default_title: "العدالة — سحب ناجز"
+        "content_scripts": [
+          {
+            "matches": [
+              "https://www.najiz.sa/*",
+              "https://najiz.sa/*",
+              "https://*.najiz.sa/*"
+            ],
+            "js": ["content.js"],
+            "run_at": "document_idle",
+            "all_frames": false
+          }
+        ],
+        "action": {
+          "default_popup": "popup.html",
+          "default_title": "العدالة — سحب ناجز v4.0"
         },
-        background: {
-          service_worker: "background.js"
+        "background": {
+          "service_worker": "background.js"
         }
       }, null, 2));
 
       // ===== background.js =====
-      ext.file('background.js', `
-// background.js - منصة العدالة v3.0
+      ext.file('background.js', `// background.js - منصة العدالة v4.0
 const APP_SERVER = 'https://aladala-platform-rnuz.onrender.com';
 
 chrome.runtime.onInstalled.addListener(() => {
@@ -862,231 +862,495 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   }
   sendResponse({ received: true });
   return true;
-});
-`.trim());
+});`);
 
       // ===== content.js =====
-      ext.file('content.js', `
-(function () {
+      ext.file('content.js', `(function () {
   'use strict';
 
-  function waitForData(timeout = 15000) {
+  const SERVER = 'https://aladala-platform-rnuz.onrender.com';
+
+  // تحديد نوع الصفحة الحالية
+  function getPageType() {
+    const url = window.location.href;
+    if (url.includes('/lawsuit')) return 'cases';
+    if (url.includes('/wekalat') || url.includes('/procurations')) return 'poa';
+    if (url.includes('/iexecution')) return 'executions';
+    if (url.includes('/appointment-requests')) return 'hearings';
+    return 'unknown';
+  }
+
+  // انتظار تحميل البيانات الديناميكية
+  function waitForPageData(timeout = 15000) {
     return new Promise((resolve) => {
       let elapsed = 0;
-      const interval = setInterval(() => {
+      const check = setInterval(() => {
         elapsed += 500;
         const text = document.body?.innerText || '';
-        const hasData = (
-          /\\d{4}\\/\\d+/.test(text) ||
-          /\\d{10}/.test(text) ||
-          document.querySelectorAll('table tr').length > 2 ||
-          document.querySelectorAll('[class*="card"]').length > 0 ||
-          document.querySelectorAll('[class*="Card"]').length > 0 ||
-          document.querySelectorAll('[class*="item"]').length > 3
-        );
+        const tables = document.querySelectorAll('table tr').length;
+        const cards = document.querySelectorAll(
+          '[class*="card"],[class*="Card"],[class*="item"],[class*="Item"]'
+        ).length;
+        const hasData = tables > 2 || cards > 2 ||
+          /\\d{4}\\/\\d+/.test(text) || /\\d{9,}/.test(text);
         if (hasData || elapsed >= timeout) {
-          clearInterval(interval);
+          clearInterval(check);
           resolve(hasData);
         }
       }, 500);
     });
   }
 
-  async function extractNajizData() {
-    await waitForData(12000);
-    await new Promise(r => setTimeout(r, 2000));
+  // ===== استخراج بيانات القضايا =====
+  function extractCases() {
+    const cases = [];
+    const seen = new Set();
 
-    const result = {
-      cases: [],
-      hearings: [],
-      powers_of_attorney: [],
-      executions: [],
-      clients: [],
-      pageUrl: window.location.href,
-      pageTitle: document.title,
-      scrapedAt: new Date().toISOString()
-    };
+    // من الجداول
+    document.querySelectorAll('table').forEach(table => {
+      const rows = table.querySelectorAll('tbody tr, tr:not(:first-child)');
+      rows.forEach(row => {
+        const cells = Array.from(row.querySelectorAll('td'))
+          .map(td => td.innerText?.trim() || '');
+        if (cells.length < 2) return;
+        const rowText = cells.join(' ');
+        const caseNum = rowText.match(/\\d{4}\\/\\d{1,2}\\/\\d+|\\d{4}\\/\\d{4,}|\\d{10,}/)?.[0];
+        if (!caseNum || seen.has(caseNum)) return;
+        seen.add(caseNum);
 
-    const bodyText = document.body?.innerText || '';
+        const dateMatch = rowText.match(
+          /\\d{1,2}[\\/\\-]\\d{1,2}[\\/\\-]\\d{4}|\\d{4}[\\/\\-]\\d{1,2}[\\/\\-]\\d{1,2}/
+        );
 
-    // استخراج من الجداول
-    document.querySelectorAll('table, [class*="Table"], [class*="table"]')
-      .forEach(table => {
-        table.querySelectorAll('tr').forEach((row, i) => {
-          if (i === 0) return;
-          const cells = Array.from(
-            row.querySelectorAll('td, [class*="Cell"]')
-          ).map(c => c.innerText?.trim() || '');
-          if (cells.length < 2) return;
+        cases.push({
+          caseNumber: caseNum,
+          najizCaseNumber: caseNum,
+          caseName: cells.find(c =>
+            c.length > 5 && !/^\\d+[\\/\\-]?\\d*$/.test(c) &&
+            !c.includes('محكمة')
+          ) || 'قضية من ناجز',
+          status: cells.find(c =>
+            ['قيد','منتهي','نشط','مقيد','محكوم','مؤجل',
+             'مشطوب','موقوف','صدر','جديد'].some(k => c.includes(k))
+          ) || 'قيد النظر',
+          court: cells.find(c => c.includes('محكمة')) || '',
+          category: cells.find(c =>
+            ['تجاري','عمالي','مدني','جزائي','أحوال','إداري',
+             'تنفيذ'].some(k => c.includes(k))
+          ) || 'مدني',
+          nextSessionDate: dateMatch?.[0] || '',
+          stage: 'litigation',
+          isNajizSync: true,
+          source: 'najiz_extension'
+        });
+      });
+    });
 
-          const rowText = cells.join(' ');
-          const caseNum = rowText.match(/\\d{4}\\/\\d+|\\d{10,}|\\d{9}/)?.[0];
-          const dateMatch = rowText.match(
+    // من البطاقات
+    const cardSelectors = [
+      '[class*="CaseCard"]','[class*="case-card"]',
+      '[class*="CaseItem"]','[class*="caseItem"]',
+      '[class*="RequestCard"]','[class*="ListItem"]',
+      '[class*="MuiCard"]','[class*="MuiPaper"]',
+      '[data-testid*="case"]','.case','.lawsuit-item'
+    ];
+
+    cardSelectors.forEach(sel => {
+      try {
+        document.querySelectorAll(sel).forEach(card => {
+          const text = (card as HTMLElement).innerText?.trim() || '';
+          if (!text || text.length < 10) return;
+          const caseNum = text.match(/\\d{4}\\/\\d+|\\d{10,}|\\d{9}/)?.[0];
+          if (!caseNum || seen.has(caseNum)) return;
+          seen.add(caseNum);
+
+          const lines = text.split('\\n').map(l => l.trim()).filter(Boolean);
+          const dateMatch = text.match(
             /\\d{1,2}[\\/\\-]\\d{1,2}[\\/\\-]\\d{4}|\\d{4}[\\/\\-]\\d{1,2}[\\/\\-]\\d{1,2}/
           );
 
-          if (caseNum && !result.cases.find(c => c.caseNumber === caseNum)) {
-            result.cases.push({
-              caseNumber: caseNum,
-              caseName: cells.find(c =>
-                c.length > 4 && !/^\\d+$/.test(c) && !c.includes('/')
-              ) || '',
-              status: cells.find(c =>
-                ['قيد','منتهي','نشط','مقيد','محكوم',
-                 'مؤجل','مشطوب','موقوف'].some(k => c.includes(k))
-              ) || '',
-              court: cells.find(c => c.includes('محكمة')) || '',
-              nextHearing: dateMatch?.[0] || '',
-              rawCells: cells
-            });
-          }
-
-          if (dateMatch && rowText.includes('جلسة')) {
-            result.hearings.push({
-              date: dateMatch[0],
-              caseNumber: caseNum || '',
-              court: cells.find(c => c.includes('محكمة')) || '',
-              status: 'قادمة'
-            });
-          }
-        });
-      });
-
-    // استخراج من البطاقات
-    const cardSelectors = [
-      '[class*="CaseCard"]','[class*="case-card"]','[class*="caseCard"]',
-      '[class*="RequestCard"]','[class*="CaseItem"]','[class*="caseItem"]',
-      '[class*="ListItem"]','[class*="MuiCard"]','[class*="MuiPaper"]',
-      '[data-testid*="case"]','.case','.case-item','.case-card'
-    ];
-
-    cardSelectors.forEach(selector => {
-      try {
-        document.querySelectorAll(selector).forEach(card => {
-          const text = card.innerText?.trim() || '';
-          if (!text || text.length < 10) return;
-          const caseNum = text.match(/\\d{4}\\/\\d+|\\d{10,}|\\d{9}/)?.[0];
-          const dateMatch = text.match(
-            /\\d{1,2}[\\/\\-]\\d{1,2}[\\/\\-]\\d{4}/
-          );
-          if (caseNum && !result.cases.find(c => c.caseNumber === caseNum)) {
-            const lines = text.split('\\n').map(l => l.trim()).filter(Boolean);
-            result.cases.push({
-              caseNumber: caseNum,
-              caseName: lines.find(l =>
-                l.length > 5 && !/^\\d+[\\/\\-]?\\d*$/.test(l)
-              ) || '',
-              status: lines.find(l =>
-                ['قيد','منتهي','نشط','مقيد','محكوم',
-                 'مؤجل','مشطوب'].some(k => l.includes(k))
-              ) || '',
-              nextHearing: dateMatch?.[0] || ''
-            });
-          }
-          if (text.includes('وكالة')) {
-            result.powers_of_attorney.push({
-              poaNumber: text.match(/\\d{6,}/)?.[0] || '',
-              expiryDate: dateMatch?.[0] || ''
-            });
-          }
-          if (text.includes('تنفيذ')) {
-            result.executions.push({
-              number: caseNum || '',
-              text: text.substring(0, 200)
-            });
-          }
+          cases.push({
+            caseNumber: caseNum,
+            najizCaseNumber: caseNum,
+            caseName: lines.find(l =>
+              l.length > 5 && !/^\\d+[\\/\\-]?\\d*$/.test(l)
+            ) || 'قضية من ناجز',
+            status: lines.find(l =>
+              ['قيد','منتهي','نشط','مقيد','محكوم',
+               'مؤجل','مشطوب'].some(k => l.includes(k))
+            ) || 'قيد النظر',
+            nextSessionDate: dateMatch?.[0] || '',
+            isNajizSync: true,
+            source: 'najiz_extension'
+          });
         });
       } catch(e) {}
     });
 
-    // fallback: استخراج من النص
-    if (result.cases.length === 0) {
+    // fallback من النص
+    if (cases.length === 0) {
+      const text = document.body?.innerText || '';
       const nums = [...new Set(
-        bodyText.match(/\\d{4}\\/\\d{1,2}\\/\\d+|\\d{4}\\/\\d{4,}/g) || []
+        text.match(/\\d{4}\\/\\d{1,2}\\/\\d+|\\d{4}\\/\\d{4,}/g) || []
       )];
       nums.forEach(num => {
-        result.cases.push({ caseNumber: num, caseName: '', status: '' });
+        if (!seen.has(num)) {
+          seen.add(num);
+          cases.push({
+            caseNumber: num,
+            najizCaseNumber: num,
+            caseName: 'قضية من ناجز',
+            status: 'قيد النظر',
+            isNajizSync: true,
+            source: 'najiz_text'
+          });
+        }
       });
     }
 
-    // اسم المستخدم
-    const nameSelectors = [
-      '[class*="userName"]','[class*="user-name"]',
-      '[class*="profileName"]','[class*="WelcomeUser"]',
-      '.user-name','.profile-name',
-      'header [class*="name"]'
-    ];
-    for (const sel of nameSelectors) {
-      try {
-        const el = document.querySelector(sel);
-        if (el?.innerText?.trim()) {
-          result.clients.push({ name: el.innerText.trim(), source: 'profile' });
-          break;
-        }
-      } catch(e) {}
-    }
-    if (result.clients.length === 0) {
-      const m = bodyText.match(/(?:مرحباً?|أهلاً?)[،,\\s]+([^\\n،,\\d]{3,40})/);
-      if (m) result.clients.push({ name: m[1].trim(), source: 'welcome' });
+    return cases;
+  }
+
+  // ===== استخراج بيانات الوكالات =====
+  function extractPOA() {
+    const poas = [];
+    const seen = new Set();
+
+    document.querySelectorAll('table').forEach(table => {
+      table.querySelectorAll('tbody tr, tr:not(:first-child)').forEach(row => {
+        const cells = Array.from(row.querySelectorAll('td'))
+          .map(td => td.innerText?.trim() || '');
+        if (cells.length < 2) return;
+        const rowText = cells.join(' ');
+        const poaNum = rowText.match(/\\d{6,}/)?.[0];
+        if (!poaNum || seen.has(poaNum)) return;
+        seen.add(poaNum);
+
+        const dateMatch = rowText.match(
+          /\\d{1,2}[\\/\\-]\\d{1,2}[\\/\\-]\\d{4}|\\d{4}[\\/\\-]\\d{1,2}[\\/\\-]\\d{1,2}/g
+        );
+
+        poas.push({
+          poaNumber: poaNum,
+          type: cells.find(c =>
+            ['عامة','خاصة','قضائية','خاص','عام'].some(k => c.includes(k))
+          ) || 'عامة',
+          status: cells.find(c =>
+            ['سارية','منتهية','موقوفة','فعال','غير فعال']
+              .some(k => c.includes(k))
+          ) || 'سارية',
+          issueDate: dateMatch?.[0] || '',
+          expiryDate: dateMatch?.[1] || dateMatch?.[0] || '',
+          principalName: cells.find(c =>
+            c.length > 3 && !/^\\d+$/.test(c) &&
+            !['سارية','منتهية','عامة','خاصة'].includes(c)
+          ) || '',
+          isNajizSync: true,
+          source: 'najiz_extension'
+        });
+      });
+    });
+
+    // من البطاقات
+    document.querySelectorAll(
+      '[class*="Card"],[class*="card"],[class*="Item"],[class*="item"]'
+    ).forEach(card => {
+      const text = (card as HTMLElement).innerText?.trim() || '';
+      if (!text.includes('وكالة') && !text.includes('وكيل')) return;
+      const poaNum = text.match(/\\d{6,}/)?.[0];
+      if (!poaNum || seen.has(poaNum)) return;
+      seen.add(poaNum);
+
+      const dateMatch = text.match(
+        /\\d{1,2}[\\/\\-]\\d{1,2}[\\/\\-]\\d{4}|\\d{4}[\\/\\-]\\d{1,2}[\\/\\-]\\d{1,2}/g
+      );
+
+      poas.push({
+        poaNumber: poaNum,
+        type: 'عامة',
+        status: text.includes('منتهية') ? 'منتهية' : 'سارية',
+        expiryDate: dateMatch?.[0] || '',
+        isNajizSync: true,
+        source: 'najiz_extension'
+      });
+    });
+
+    return poas;
+  }
+
+  // ===== استخراج طلبات التنفيذ =====
+  function extractExecutions() {
+    const executions = [];
+    const seen = new Set();
+
+    document.querySelectorAll('table').forEach(table => {
+      table.querySelectorAll('tbody tr, tr:not(:first-child)').forEach(row => {
+        const cells = Array.from(row.querySelectorAll('td'))
+          .map(td => td.innerText?.trim() || '');
+        if (cells.length < 2) return;
+        const rowText = cells.join(' ');
+        const execNum = rowText.match(/\\d{4}\\/\\d+|\\d{9,}/)?.[0];
+        if (!execNum || seen.has(execNum)) return;
+        seen.add(execNum);
+
+        const dateMatch = rowText.match(
+          /\\d{1,2}[\\/\\-]\\d{1,2}[\\/\\-]\\d{4}/
+        );
+
+        executions.push({
+          executionNumber: execNum,
+          status: cells.find(c =>
+            ['منتهي','قيد','جديد','مكتمل','معلق','نشط']
+              .some(k => c.includes(k))
+          ) || 'قيد التنفيذ',
+          amount: cells.find(c => /[\\d,]+(\\.\\d+)?\\s*(ريال|ر\\.س|SAR)/.test(c)) || '',
+          court: cells.find(c => c.includes('محكمة')) || '',
+          requesterName: cells.find(c =>
+            c.length > 3 && !/^\\d+$/.test(c) &&
+            !c.includes('محكمة') && !c.includes('ريال')
+          ) || '',
+          issueDate: dateMatch?.[0] || '',
+          isNajizSync: true,
+          source: 'najiz_extension'
+        });
+      });
+    });
+
+    // من البطاقات
+    document.querySelectorAll(
+      '[class*="Card"],[class*="card"],[class*="Item"]'
+    ).forEach(card => {
+      const text = (card as HTMLElement).innerText?.trim() || '';
+      if (!text.includes('تنفيذ')) return;
+      const execNum = text.match(/\\d{4}\\/\\d+|\\d{9,}/)?.[0];
+      if (!execNum || seen.has(execNum)) return;
+      seen.add(execNum);
+
+      executions.push({
+        executionNumber: execNum,
+        status: text.includes('منتهي') ? 'منتهي' : 'قيد التنفيذ',
+        isNajizSync: true,
+        source: 'najiz_extension'
+      });
+    });
+
+    return executions;
+  }
+
+  // ===== استخراج مواعيد الجلسات =====
+  function extractHearings() {
+    const hearings = [];
+    const seen = new Set();
+
+    document.querySelectorAll('table').forEach(table => {
+      table.querySelectorAll('tbody tr, tr:not(:first-child)').forEach(row => {
+        const cells = Array.from(row.querySelectorAll('td'))
+          .map(td => td.innerText?.trim() || '');
+        if (cells.length < 2) return;
+        const rowText = cells.join(' ');
+
+        const dateMatch = rowText.match(
+          /\\d{1,2}[\\/\\-]\\d{1,2}[\\/\\-]\\d{4}|\\d{4}[\\/\\-]\\d{1,2}[\\/\\-]\\d{1,2}/
+        );
+        const timeMatch = rowText.match(/\\d{1,2}:\\d{2}/);
+        const caseNum = rowText.match(/\\d{4}\\/\\d+|\\d{9,}/)?.[0];
+
+        const key = \`\$\{caseNum\}-\$\{dateMatch?.[0]\}\`;
+        if (!dateMatch || seen.has(key)) return;
+        seen.add(key);
+
+        hearings.push({
+          caseNumber: caseNum || '',
+          date: dateMatch[0],
+          time: timeMatch?.[0] || '09:00',
+          court: cells.find(c => c.includes('محكمة')) || '',
+          hall: cells.find(c =>
+            c.includes('قاعة') || c.includes('دائرة')
+          ) || '',
+          status: cells.find(c =>
+            ['قادمة','منتهية','مؤجلة','ملغاة','جديد']
+              .some(k => c.includes(k))
+          ) || 'قادمة',
+          type: cells.find(c =>
+            ['ترافع','نطق','تدقيق','إيداع'].some(k => c.includes(k))
+          ) || '',
+          isNajizSync: true,
+          source: 'najiz_extension'
+        });
+      });
+    });
+
+    // من البطاقات
+    document.querySelectorAll(
+      '[class*="Appointment"],[class*="appointment"],' +
+      '[class*="Hearing"],[class*="hearing"],' +
+      '[class*="Session"],[class*="session"],' +
+      '[class*="Card"],[class*="card"]'
+    ).forEach(card => {
+      const text = (card as HTMLElement).innerText?.trim() || '';
+      if (text.length < 10) return;
+      const dateMatch = text.match(
+        /\\d{1,2}[\\/\\-]\\d{1,2}[\\/\\-]\\d{4}|\\d{4}[\\/\\-]\\d{1,2}[\\/\\-]\\d{1,2}/
+      );
+      const timeMatch = text.match(/\\d{1,2}:\\d{2}/);
+      const caseNum = text.match(/\\d{4}\\/\\d+|\\d{9,}/)?.[0];
+
+      if (!dateMatch) return;
+      const key = \`\$\{caseNum\}-\$\{dateMatch[0]\}\`;
+      if (seen.has(key)) return;
+      seen.add(key);
+
+      hearings.push({
+        caseNumber: caseNum || '',
+        date: dateMatch[0],
+        time: timeMatch?.[0] || '09:00',
+        court: text.match(/محكمة[^\\n،,]*/)?.[0] || '',
+        status: text.includes('مؤجل') ? 'مؤجلة' :
+                text.includes('منتهي') ? 'منتهية' : 'قادمة',
+        isNajizSync: true,
+        source: 'najiz_extension'
+      });
+    });
+
+    return hearings;
+  }
+
+  // ===== الدالة الرئيسية =====
+  async function extractByPageType() {
+    await waitForPageData(12000);
+    await new Promise(r => setTimeout(r, 2000));
+
+    const pageType = getPageType();
+    const url = window.location.href;
+    const result = {
+      pageType,
+      pageUrl: url,
+      cases: [],
+      hearings: [],
+      powers_of_attorney: [],
+      executions: [],
+      scrapedAt: new Date().toISOString()
+    };
+
+    switch (pageType) {
+      case 'cases':
+        result.cases = extractCases();
+        break;
+      case 'poa':
+        result.powers_of_attorney = extractPOA();
+        break;
+      case 'executions':
+        result.executions = extractExecutions();
+        break;
+      case 'hearings':
+        result.hearings = extractHearings();
+        break;
+      default:
+        // سحب شامل إذا لم تُعرف الصفحة
+        result.cases = extractCases();
+        result.hearings = extractHearings();
+        result.powers_of_attorney = extractPOA();
+        result.executions = extractExecutions();
     }
 
     result.summary = {
+      pageType,
       totalCases: result.cases.length,
       totalHearings: result.hearings.length,
       totalPOAs: result.powers_of_attorney.length,
       totalExecutions: result.executions.length,
-      hasUser: result.clients.length > 0,
-      pageUrl: window.location.href
+      hasData: (
+        result.cases.length +
+        result.hearings.length +
+        result.powers_of_attorney.length +
+        result.executions.length
+      ) > 0
     };
 
     return result;
   }
 
+  // ===== الاستماع للأوامر =====
   chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+
     if (['extractData','scrape','getData','sync'].includes(request.action)) {
       (async () => {
         try {
-          const data = await extractNajizData();
-          const hasData = data.cases.length > 0 ||
-            data.hearings.length > 0 ||
-            data.powers_of_attorney.length > 0;
+          const data = await extractByPageType();
 
-          sendResponse({
-            success: hasData,
-            data,
-            message: hasData ? 'تم السحب بنجاح' :
-              'اذهب لصفحة قضاياي على ناجز ثم اضغط سحب البيانات مرة أخرى'
-          });
+          if (data.summary.hasData) {
+            // إرسال للخادم لمزامنة الأقسام الصحيحة
+            try {
+              await fetch(\`\$\{SERVER\}/api/najiz-sync\`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  scrapedData: data,
+                  pageType: data.pageType,
+                  source: 'chrome_extension',
+                  timestamp: new Date().toISOString()
+                })
+              });
+            } catch(syncErr) {
+              console.warn('[العدالة] Sync failed:', syncErr.message);
+            }
+
+            sendResponse({ success: true, data });
+          } else {
+            sendResponse({
+              success: false,
+              data,
+              message: getPageGuide(data.pageType)
+            });
+          }
         } catch(err) {
-          sendResponse({
-            success: false,
-            error: err.message,
-            message: 'خطأ: ' + err.message
-          });
+          sendResponse({ success: false, error: err.message });
         }
       })();
       return true;
     }
+
     if (request.action === 'ping') {
+      const pt = getPageType();
       sendResponse({
         success: true,
         url: window.location.href,
-        isNajiz: window.location.href.includes('najiz.sa')
+        pageType: pt,
+        isNajiz: window.location.href.includes('najiz.sa'),
+        isTargetPage: pt !== 'unknown'
       });
+      return true;
+    }
+
+    if (request.action === 'getPageType') {
+      sendResponse({ pageType: getPageType() });
       return true;
     }
   });
 
-  console.log('[العدالة] ✅ جاهز على:', window.location.href);
+  function getPageGuide(pageType) {
+    const guides = {
+      cases: 'انتظر تحميل القضايا ثم اضغط سحب مرة أخرى',
+      poa: 'انتظر تحميل الوكالات ثم اضغط سحب مرة أخرى',
+      executions: 'انتظر تحميل طلبات التنفيذ ثم اضغط سحب',
+      hearings: 'انتظر تحميل المواعيد ثم اضغط سحب مرة أخرى',
+      unknown: 'اذهب لإحدى الصفحات المحددة في ناجز ثم اضغط سحب'
+    };
+    return guides[pageType] || guides.unknown;
+  }
+
+  console.log('[العدالة] ✅ جاهز | نوع الصفحة:', getPageType());
+
   try {
     chrome.runtime.sendMessage({
       action: 'contentScriptReady',
       url: window.location.href,
+      pageType: getPageType(),
       isNajiz: window.location.href.includes('najiz.sa')
     });
   } catch(e) {}
-})();
-`.trim());
+
+})();`);
 
       // ===== popup.html =====
       ext.file('popup.html', `<!DOCTYPE html>
@@ -1095,82 +1359,119 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 <meta charset="UTF-8">
 <title>العدالة - ناجز</title>
 <style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
-    width:320px;min-height:220px;padding:16px;
-    background:#050e21;color:white;
-    font-family:Arial,sans-serif;margin:0;
+    width: 340px;
+    min-height: 200px;
+    padding: 14px;
+    background: #050e21;
+    color: white;
+    font-family: Arial, sans-serif;
   }
   .header {
-    display:flex;align-items:center;gap:10px;
-    margin-bottom:16px;border-bottom:1px solid #1e3a5f;
-    padding-bottom:12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+    border-bottom: 1px solid #1e3a5f;
+    padding-bottom: 10px;
   }
-  .title { font-size:16px;font-weight:bold;color:#f59e0b; }
-  .subtitle { font-size:11px;color:#64748b;margin-top:2px; }
+  .title { font-size: 15px; font-weight: bold; color: #f59e0b; }
+  .subtitle { font-size: 10px; color: #475569; margin-top: 2px; }
   #status {
-    font-size:12px;margin-bottom:12px;padding:8px;
-    background:#0a1628;border-radius:8px;
-    text-align:center;color:#94a3b8;
+    font-size: 12px;
+    margin-bottom: 10px;
+    padding: 8px;
+    background: #0a1628;
+    border-radius: 8px;
+    text-align: center;
+    color: #94a3b8;
   }
+  #pageGuide {
+    font-size: 11px;
+    color: #475569;
+    margin-bottom: 8px;
+    padding: 6px 8px;
+    background: #0a1628;
+    border-radius: 6px;
+    border-right: 3px solid #f59e0b;
+  }
+  .section-title {
+    font-size: 10px;
+    color: #475569;
+    margin: 8px 0 4px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  #pageButtons { margin-bottom: 10px; }
   #extractBtn {
-    width:100%;padding:12px;background:#f59e0b;
-    color:#000;font-weight:bold;font-size:14px;
-    border:none;border-radius:10px;cursor:pointer;
-    transition:opacity 0.2s;
+    width: 100%;
+    padding: 11px;
+    background: #f59e0b;
+    color: #000;
+    font-weight: bold;
+    font-size: 13px;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: opacity 0.2s;
   }
-  #extractBtn:disabled { opacity:0.5;cursor:not-allowed; }
-  #extractBtn:hover:not(:disabled) { background:#d97706; }
+  #extractBtn:disabled { opacity: 0.5; cursor: not-allowed; }
+  #extractBtn:hover:not(:disabled) { background: #d97706; }
   #progress {
-    display:none;text-align:center;font-size:11px;
-    color:#f59e0b;margin-top:8px;
-    animation:pulse 1.5s infinite;
+    display: none;
+    text-align: center;
+    font-size: 11px;
+    color: #f59e0b;
+    margin-top: 6px;
+    animation: pulse 1.5s infinite;
   }
-  @keyframes pulse { 0%,100%{opacity:1}50%{opacity:0.5} }
-  #results { margin-top:8px; }
-  .instructions {
-    font-size:11px;color:#475569;margin-top:12px;
-    padding:8px;background:#0a1628;
-    border-radius:8px;line-height:1.6;
-  }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
+  #results { margin-top: 8px; }
 </style>
 </head>
 <body>
   <div class="header">
     <div>
       <div class="title">⚖️ منصة العدالة</div>
-      <div class="subtitle">مزامنة بيانات ناجز v3.0</div>
+      <div class="subtitle">مزامنة ناجز v4.0 — بدون API Key</div>
     </div>
   </div>
-  <div id="status">جارٍ التحقق...</div>
-  <button id="extractBtn">📥 سحب البيانات من ناجز</button>
+
+  <div id="status">جارٍ التحقق من الصفحة...</div>
+  <div id="pageGuide" style="display:none"></div>
+
+  <div class="section-title">📌 صفحات المزامنة</div>
+  <div id="pageButtons"></div>
+
+  <button id="extractBtn">📥 سحب ومزامنة البيانات</button>
   <div id="progress">🔄 جارٍ المعالجة...</div>
   <div id="results"></div>
-  <div class="instructions">
-    📌 <strong>الخطوات:</strong><br>
-    1. سجّل دخولك على ناجز<br>
-    2. اذهب إلى <strong>قضاياي</strong> أو <strong>جلساتي</strong><br>
-    3. انتظر تحميل الصفحة كاملاً<br>
-    4. اضغط <strong>سحب البيانات</strong>
-  </div>
+
   <script src="popup.js"></script>
 </body>
-</html>`.trim());
+</html>`);
 
       // ===== popup.js =====
-      ext.file('popup.js', `
-document.addEventListener('DOMContentLoaded', async () => {
+      ext.file('popup.js', `document.addEventListener('DOMContentLoaded', async () => {
   const statusEl = document.getElementById('status');
   const extractBtn = document.getElementById('extractBtn');
   const resultsEl = document.getElementById('results');
   const progressEl = document.getElementById('progress');
+  const pageGuideEl = document.getElementById('pageGuide');
+  const pageBtnsEl = document.getElementById('pageButtons');
+
+  const PAGES = [
+    { label: '📁 القضايا', url: 'https://najiz.sa/applications/lawsuit', section: 'إدارة القضايا' },
+    { label: '📜 الوكالات', url: 'https://najiz.sa/applications/wekalat/procurations-query', section: 'الوكالات' },
+    { label: '⚡ التنفيذ', url: 'https://najiz.sa/applications/iexecution', section: 'طلبات التنفيذ' },
+    { label: '📅 الجلسات', url: 'https://najiz.sa/applications/appointment-requests/', section: 'مواعيد الجلسات' }
+  ];
 
   const setStatus = (msg, type = 'info') => {
     if (!statusEl) return;
     statusEl.textContent = msg;
-    statusEl.style.color =
-      type === 'error' ? '#ef4444' :
-      type === 'success' ? '#22c55e' :
-      type === 'warning' ? '#f59e0b' : '#94a3b8';
+    statusEl.style.color = type === 'error' ? '#ef4444' : type === 'success' ? '#22c55e' : type === 'warning' ? '#f59e0b' : '#94a3b8';
   };
 
   const setProgress = (show, msg = '') => {
@@ -1181,141 +1482,81 @@ document.addEventListener('DOMContentLoaded', async () => {
   };
 
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-  const isNajiz = tab?.url?.includes('najiz.sa');
+  const currentUrl = tab?.url || '';
+  const isNajiz = currentUrl.includes('najiz.sa');
+
+  let currentPage = isNajiz ? PAGES.find(p => currentUrl.includes(p.url.replace('https://najiz.sa', ''))) : null;
 
   if (!isNajiz) {
     setStatus('❌ افتح موقع ناجز أولاً', 'error');
     if (extractBtn) extractBtn.disabled = true;
+    if (pageBtnsEl) {
+      pageBtnsEl.innerHTML = '<p style="color:#f59e0b;font-size:11px;margin:0 0 6px;font-weight:bold">🔗 انتقل مباشرة إلى:</p>' + 
+        PAGES.map(p => \`<a href="\$\{p.url\}" target="_blank" style="display:block;background:#0a1628;border:1px solid #1e3a5f;border-radius:8px;padding:6px 10px;color:#94a3b8;text-decoration:none;font-size:11px;margin-bottom:4px;">\$\{p.label\} ← \$\{p.section\}</a>\`).join('');
+    }
     return;
   }
 
-  setStatus('✅ أنت على ناجز — اذهب لقضاياي ثم اضغط سحب', 'success');
+  if (currentPage) {
+    setStatus(\`✅ صفحة \$\{currentPage.section\} — جاهز للسحب\`, 'success');
+    if (pageGuideEl) {
+      pageGuideEl.style.display = 'block';
+      pageGuideEl.innerHTML = \`<span style="color:#22c55e">●</span> سيتم إضافة البيانات إلى قسم <strong style="color:#f59e0b">\$\{currentPage.section\}</strong>\`;
+    }
+  } else {
+    setStatus('⚠️ اذهب لإحدى الصفحات أدناه للسحب', 'warning');
+  }
+
+  if (pageBtnsEl) {
+    pageBtnsEl.innerHTML = PAGES.map(p => {
+      const isActive = currentUrl.includes(p.url.replace('https://najiz.sa', ''));
+      return \`<a href="\$\{p.url\}" target="_blank" style="display:block;background:\$\{isActive ? '#1e3a5f' : '#0a1628'\};border:1px solid \$\{isActive ? '#f59e0b' : '#1e3a5f'\};border-radius:8px;padding:6px 10px;color:#fff;text-decoration:none;font-size:11px;margin-bottom:4px;">\$\{isActive ? '● ' : ''\}\$\{p.label\}<span style="color:#475569;float:left;font-size:10px">→ \$\{p.section\}</span></a>\`;
+    }).join('');
+  }
 
   extractBtn?.addEventListener('click', async () => {
-    setStatus('⏳ جارٍ الانتظار لتحميل البيانات...', 'info');
-    setProgress(true, '🔄 يقرأ الصفحة...');
+    if (!currentPage) { setStatus('⚠️ اذهب لإحدى صفحات ناجز أولاً', 'warning'); return; }
+    setStatus(\`⏳ جارٍ سحب \$\{currentPage.section\}...\`, 'info');
+    setProgress(true, '🔄 ينتظر تحميل البيانات...');
     extractBtn.disabled = true;
 
     try {
       try {
-        await chrome.scripting.executeScript({
-          target: { tabId: tab.id },
-          files: ['content.js']
-        });
-        await new Promise(r => setTimeout(r, 1000));
+        await chrome.scripting.executeScript({ target: { tabId: tab.id }, files: ['content.js'] });
+        await new Promise(r => setTimeout(r, 1500));
       } catch(e) {}
-
-      setProgress(true, '⏳ ينتظر تحميل البيانات...');
 
       const response = await Promise.race([
         chrome.tabs.sendMessage(tab.id, { action: 'extractData' }),
-        new Promise((_, reject) =>
-          setTimeout(() => reject(new Error('timeout')), 20000)
-        )
+        new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 25000))
       ]);
 
       setProgress(false);
-
       if (response?.success && response.data) {
         const s = response.data.summary;
-        setStatus(
-          'تم: ' + s.totalCases + ' قضية | ' +
-          s.totalHearings + ' جلسة | ' +
-          s.totalPOAs + ' وكالة', 'success'
-        );
-
+        setStatus(\`✅ تم سحب ومزامنة البيانات من \$\{currentPage.section\}\`, 'success');
         if (resultsEl) {
-          resultsEl.innerHTML =
-            '<div style="direction:rtl;font-size:12px;padding:10px;' +
-            'background:#0a1628;border-radius:8px;margin-top:8px;">' +
-            '<p style="color:#f59e0b;font-weight:bold;margin:0 0 8px">📊 نتائج السحب</p>' +
-            '<p style="color:#fff;margin:3px 0">📁 القضايا: <strong>' + s.totalCases + '</strong></p>' +
-            '<p style="color:#fff;margin:3px 0">📅 الجلسات: <strong>' + s.totalHearings + '</strong></p>' +
-            '<p style="color:#fff;margin:3px 0">📜 الوكالات: <strong>' + s.totalPOAs + '</strong></p>' +
-            '<p style="color:#fff;margin:3px 0">⚡ التنفيذ: <strong>' + s.totalExecutions + '</strong></p>' +
-            '<p style="color:#22c55e;margin:8px 0 0;font-weight:bold">✅ جارٍ المزامنة...</p>' +
-            '</div>';
+          resultsEl.innerHTML = \`<div style="direction:rtl;font-size:12px;padding:10px;background:#0a1628;border-radius:8px;margin-top:8px;"><p style="color:#f59e0b;font-weight:bold;margin:0 0 8px">📊 نتائج سحب \$\{currentPage.section\}</p>\$\{s.totalCases > 0 ? \`<p style="color:#fff;margin:3px 0">📁 القضايا: <strong>\$\{s.totalCases\}</strong></p>\` : ''\}\$\{s.totalHearings > 0 ? \`<p style="color:#fff;margin:3px 0">📅 الجلسات: <strong>\$\{s.totalHearings\}</strong></p>\` : ''\}\$\{s.totalPOAs > 0 ? \`<p style="color:#fff;margin:3px 0">📜 الوكالات: <strong>\$\{s.totalPOAs\}</strong></p>\` : ''\}\$\{s.totalExecutions > 0 ? \`<p style="color:#fff;margin:3px 0">⚡ التنفيذ: <strong>\$\{s.totalExecutions\}</strong></p>\` : ''\}<p style="color:#22c55e;margin:8px 0 0;font-weight:bold">✅ تمت المزامنة مع النظام</p></div>\`;
         }
-
-        const serverUrl = await new Promise(resolve => {
-          chrome.storage.local.get('serverUrl', d => {
-            resolve(d.serverUrl || 'https://aladala-platform-rnuz.onrender.com');
-          });
-        });
-
-        try {
-          await fetch(serverUrl + '/api/najiz-sync', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              scrapedData: response.data,
-              source: 'chrome_extension',
-              timestamp: new Date().toISOString()
-            })
-          });
-          setStatus('✅ تمت المزامنة مع النظام بنجاح', 'success');
-        } catch(e) {
-          console.warn('Sync error:', e.message);
-        }
-
       } else {
-        setStatus(
-          response?.message || '⚠️ اذهب لصفحة قضاياي أولاً',
-          'warning'
-        );
+        setStatus(response?.message || \`⚠️ لم تُوجد بيانات — انتظر تحميل \$\{currentPage.section\} كاملاً\`, 'warning');
       }
     } catch(err) {
       setProgress(false);
-      setStatus(
-        err.message === 'timeout'
-          ? '⚠️ انتهت المهلة — أعد المحاولة'
-          : '❌ ' + err.message,
-        'error'
-      );
+      setStatus(err.message === 'timeout' ? '⚠️ انتهت المهلة — أعد المحاولة' : '❌ خطأ: ' + err.message, 'error');
     } finally {
       extractBtn.disabled = false;
     }
   });
-});
-`.trim());
+});`);
 
-      // ===== README.md =====
-      ext.file('README.md', `# إضافة منصة العدالة — مزامنة ناجز v3.0
-
-## التثبيت
-1. افتح Chrome وادخل: chrome://extensions
-2. فعّل Developer mode
-3. اضغط Load unpacked
-4. اختر مجلد najiz-extension
-
-## الاستخدام
-1. سجّل دخولك على www.najiz.sa
-2. اذهب لصفحة "قضاياي" أو "جلساتي"
-3. انتظر تحميل الصفحة كاملاً
-4. اضغط أيقونة الإضافة
-5. اضغط "سحب البيانات"
-
-## الخادم
-${APP_SERVER}
-`.trim());
-
-      const blob = await zip.generateAsync({
-        type: 'blob',
-        compression: 'DEFLATE',
-        compressionOptions: { level: 9 }
-      });
-
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'najiz-extension-v3.zip';
-      a.click();
-      URL.revokeObjectURL(url);
-      
-      (window as any).showToast?.('تم توليد وتحميل إضافة ناجز v3.0 بنجاح.', 'success');
-    } catch (err: any) {
-      console.error(err);
-      (window as any).showToast?.('فشل توليد الملف: ' + err.message, 'error');
+      const content = await zip.generateAsync({ type: 'blob' });
+      const { saveAs } = (await import('file-saver')).default;
+      saveAs(content, 'adalah-najiz-extension-v4.zip');
+      (window as any).showToast?.('تم تجهيز وتحميل حزمة الإضافة v4.0 بنجاح', 'success');
+    } catch (error: any) {
+      console.error("Error generating extension ZIP:", error);
+      (window as any).showToast?.('حدث خطأ أثناء تجهيز الحزمة: ' + error.message, 'error');
     } finally {
       setDownloading(false);
     }
@@ -1355,7 +1596,7 @@ ${APP_SERVER}
   ];
 
   return (
-    <div className="p-8 max-w-7xl mx-auto space-y-8 animate-in fade-in duration-500 min-h-screen bg-slate-50 text-slate-900" dir="rtl">
+    <div className="p-8 max-w-7xl mx-auto space-y-12 animate-in fade-in duration-700 min-h-screen bg-[#FDFDFD]" dir="rtl">
       
       <JoyrideAny
         steps={joyrideSteps}
@@ -1376,7 +1617,75 @@ ${APP_SERVER}
           }
         }}
       />
-      {/* Live Dashboard Control Panel */}
+
+      {/* Royal Header Widget (Luminous Luxury with Dark Steps) */}
+      <section id="najiz-welcome" className="bg-[#FFFFFF] rounded-[3.5rem] p-12 lg:p-16 text-slate-900 shadow-2xl relative overflow-hidden border-4 border-yellow-400/10">
+        <div className="absolute top-0 right-0 w-full h-full bg-[radial-gradient(ellipse_at_top_right,rgba(250,204,21,0.05),transparent)] pointer-events-none" />
+        
+        <div className="relative z-10 space-y-12">
+          <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-10">
+            <div className="max-w-4xl space-y-6">
+              <div className="flex flex-wrap items-center gap-6">
+                <div className="bg-yellow-400 p-5 rounded-[2rem] shadow-xl shadow-yellow-400/20 group hover:scale-110 transition-transform">
+                  <Bot className="w-12 h-12 text-black" />
+                </div>
+                <div>
+                  <h1 className="text-4xl md:text-5xl font-black text-slate-900 tracking-tight leading-tight">
+                     الاستحواذ الرقمي الملكي على <span className="text-yellow-600 underline decoration-yellow-400/30 underline-offset-[12px]">بيانات ناجز</span>
+                  </h1>
+                  <p className="text-lg text-slate-500 font-bold mt-4 max-w-2xl">
+                    المحرك الذكي الأكثر تطوراً لمزامنة وحقن ملفات القضايا والجلسات والوكلاء من البوابة الرسمية إلى صلب مكتبك بضغطة زر واحدة.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-4 shrink-0">
+              <button 
+                onClick={generateExtensionZip}
+                disabled={downloading}
+                className="bg-black hover:bg-slate-900 text-white font-black text-lg px-10 py-6 rounded-3xl shadow-2xl transition-all flex items-center gap-4 active:scale-95 disabled:opacity-50 group"
+              >
+                {downloading ? (
+                   <Loader2 className="w-6 h-6 animate-spin" />
+                ) : (
+                   <Download className="w-6 h-6 group-hover:bounce transition-all text-yellow-400" />
+                )}
+                <span>{downloading ? 'جاري الصياغة...' : 'تحميل محرك الربط الذهبي'}</span>
+              </button>
+              
+              <button
+                 id="settings-btn"
+                 onClick={() => setShowSettings(!showSettings)}
+                 className="p-6 bg-yellow-400 text-black rounded-3xl hover:bg-yellow-500 transition-all shadow-xl active:scale-95"
+              >
+                <Settings className="w-7 h-7" />
+              </button>
+            </div>
+          </div>
+
+          {/* Interactive Steps (Dark Luxury) */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
+            {[
+              { step: 1, title: 'المصادقة الرسمية', desc: 'دخول بوابة ناجز عبر نفاذ الوطني بمستعرضك المعتاد لضمان شرعية الوصول.' },
+              { step: 2, title: 'حقن الأداة', desc: 'بمجرد تنشيط "العدالة" على المتصفح، سيظهر رادار السحب الذكي فوراً.' },
+              { step: 3, title: 'التدفق الملكي', desc: 'ضغطة زر واحدة كفيلة بنقل كل ما يهمك من سجلات إلى خوادم مكتبك بأمان تام.' }
+            ].map((s) => (
+              <div key={s.step} className="bg-[#0A0F1E] border-4 border-yellow-400/20 rounded-[2.5rem] p-10 flex flex-col space-y-4 hover:border-yellow-400/40 transition-all relative group overflow-hidden shadow-xl">
+                 <div className="absolute top-0 right-0 w-24 h-24 bg-yellow-400/[0.03] blur-3xl rounded-full" />
+                 <div className="flex items-center gap-5 relative z-10 font-black">
+                   <div className="w-12 h-12 rounded-2xl bg-yellow-400 text-black flex items-center justify-center text-xl shadow-lg shadow-yellow-400/20">{s.step}</div>
+                   <h4 className="text-white text-xl">{s.title}</h4>
+                 </div>
+                 <p className="text-slate-400 font-bold leading-relaxed relative z-10 pr-2">{s.desc}</p>
+                 <div className="absolute bottom-0 left-0 w-full h-1 bg-yellow-400/20 opacity-0 group-hover:opacity-100 transition-opacity" />
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Live Dashboard Control Panel (Dark Luxury Cards) */}
       <div id="sync-dashboard" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {[
           { id: 'cases', label: 'مزامنة القضايا', icon: Database, color: 'blue' },
@@ -1388,8 +1697,8 @@ ${APP_SERVER}
           return (
             <motion.button
               key={btn.id}
-              whileHover={{ scale: 1.05, translateY: -4 }}
-              whileTap={{ scale: 0.95 }}
+              whileHover={{ scale: 1.03, translateY: -4 }}
+              whileTap={{ scale: 0.98 }}
               onClick={() => {
                 if (status === 'idle') {
                   const showToast = (window as any).showToast || console.log;
@@ -1402,38 +1711,37 @@ ${APP_SERVER}
                   }, 2000);
                 }
               }}
-              className={`relative overflow-hidden p-6 rounded-[2.5rem] border-2 transition-all flex flex-col gap-4 text-right shadow-2xl
-                ${status === 'syncing' ? 'border-[#D4AF37] bg-slate-900 animate-pulse' : 
-                  status === 'success' ? 'border-emerald-500 bg-emerald-950' : 
-                  'border-[#D4AF37]/30 bg-[#063060] hover:border-[#D4AF37] shadow-[#063060]/20'}`}
+              className={`relative overflow-hidden p-8 rounded-[3rem] border-2 transition-all flex flex-col gap-5 text-right shadow-2xl
+                ${status === 'syncing' ? 'border-yellow-400 bg-[#0A0F1E] animate-pulse' : 
+                  status === 'success' ? 'border-emerald-400 bg-[#0A1A2F]' : 
+                  'border-white/10 bg-[#0F172A] hover:border-yellow-400 shadow-xl shadow-slate-200'}`}
             >
               <div className="flex items-center justify-between">
-                <div className={`p-3.5 rounded-2xl ${
-                  status === 'syncing' ? 'bg-[#D4AF37]/20 text-[#D4AF37]' :
-                  status === 'success' ? 'bg-emerald-500/20 text-emerald-400' :
-                  'bg-[#D4AF37]/10 text-[#FACC15]'}`}>
-                  <btn.icon className="w-7 h-7" />
+                <div className={`p-4 rounded-2xl ${
+                  status === 'syncing' ? 'bg-yellow-400/20 text-yellow-400' :
+                  status === 'success' ? 'bg-emerald-400/20 text-emerald-400' :
+                  'bg-yellow-400/10 text-yellow-400'}`}>
+                  <btn.icon className="w-8 h-8" />
                 </div>
-                <div className={`flex items-center gap-2 text-[10px] font-black px-3 py-1.5 rounded-full ${
-                  status === 'syncing' ? 'bg-[#D4AF37]/20 text-[#FACC15]' :
-                  status === 'success' ? 'bg-emerald-500/20 text-emerald-400' :
-                  'bg-white/10 text-[#FACC15]/80'}`}>
-                  <div className={`w-2 h-2 rounded-full ${
-                    status === 'syncing' ? 'bg-[#FACC15] animate-ping' :
+                <div className={`flex items-center gap-2 text-[12px] font-black px-4 py-2 rounded-full ${
+                  status === 'syncing' ? 'bg-yellow-400/20 text-yellow-400' :
+                  status === 'success' ? 'bg-emerald-400/20 text-emerald-400' :
+                  'bg-white/5 text-yellow-400'}`}>
+                  <div className={`w-2.5 h-2.5 rounded-full ${
+                    status === 'syncing' ? 'bg-yellow-400 animate-ping' :
                     status === 'success' ? 'bg-emerald-400' :
-                    'bg-[#D4AF37]'}`} />
-                  {status === 'syncing' ? 'جاري السحب...' : status === 'success' ? 'اكتمل بنجاح' : 'جاهز للربط'}
+                    'bg-yellow-400'}`} />
+                  {status === 'syncing' ? 'جاري السحب الفوري...' : status === 'success' ? 'اكتمل الربط' : 'جاهز للمزامنة'}
                 </div>
               </div>
               <div>
-                <h4 className={`font-black text-lg ${status === 'idle' ? 'text-white' : 'text-white'}`}>{btn.label}</h4>
-                <p className={`text-[10px] font-bold ${status === 'idle' ? 'text-[#FACC15]/70' : 'text-white/60'}`}>
-                  {syncHistory[btn.id]?.lastSync ? `آخر عملية: ${new Date(syncHistory[btn.id].lastSync!).toLocaleDateString('ar-SA')}` : 'انتظار الربط الأول'}
+                <h4 className="font-extrabold text-xl text-white tracking-wide">{btn.label}</h4>
+                <p className="text-[12px] font-black text-yellow-400/90 mt-1">
+                  {syncHistory[btn.id]?.lastSync ? `آخر مزامنة: ${new Date(syncHistory[btn.id].lastSync!).toLocaleDateString('ar-SA')}` : 'انتظار المزامنة الأولى'}
                 </p>
               </div>
               
-              {/* Luxury Glossy Overlay */}
-              <div className="absolute top-0 left-0 w-full h-1/2 bg-gradient-to-b from-white/5 to-transparent pointer-events-none" />
+              <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-white/10 via-transparent to-transparent pointer-events-none opacity-30" />
             </motion.button>
           );
         })}
@@ -1442,63 +1750,64 @@ ${APP_SERVER}
       {/* Sync History Table */}
       <motion.div 
         id="sync-history"
-        initial={{ opacity: 0, y: 20 }}
+        initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-white border-2 border-slate-100 rounded-[3rem] overflow-hidden shadow-xl"
+        className="bg-[#0F172A] border-4 border-yellow-400/20 rounded-[3.5rem] overflow-hidden shadow-2xl shadow-slate-300"
       >
-        <div className="p-8 border-b border-slate-50 bg-slate-50/50 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <div className="p-3 bg-indigo-500/10 text-indigo-600 rounded-2xl">
-              <Database className="w-6 h-6" />
+        <div className="p-10 border-b border-white/5 bg-white/5 flex items-center justify-between">
+          <div className="flex items-center gap-5">
+            <div className="p-4 bg-yellow-400/10 text-yellow-400 rounded-3xl border border-yellow-400/20">
+              <Database className="w-8 h-8" />
             </div>
             <div>
-              <h3 className="text-xl font-black text-slate-900">سجل شفافية البيانات</h3>
-              <p className="text-sm text-slate-400 font-bold">متابعة دقيقة لكل عملية استيراد من بوابة ناجز</p>
+              <h3 className="text-2xl font-black text-white tracking-tight">سجل شفافية المزامنة الملكي</h3>
+              <p className="text-sm text-yellow-400 font-black tracking-wide">متابعة دقيقة وفورية لكل قطرة بيانات متدفقة من بوابة ناجز</p>
             </div>
           </div>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-right">
             <thead>
-              <tr className="bg-slate-50/50 text-[11px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100">
-                <th className="px-8 py-4">القسم / التصنيف</th>
-                <th className="px-8 py-4 text-center">آخر عملية سحب</th>
-                <th className="px-8 py-4 text-center">سجلات مضافة</th>
-                <th className="px-8 py-4 text-center">سجلات محدثة</th>
-                <th className="px-8 py-4 text-center">الحالة الحالية</th>
+              <tr className="bg-white/5 text-[12px] font-black text-slate-300 uppercase tracking-[0.15em] border-b border-white/5">
+                <th className="px-10 py-6">القسم والمجال</th>
+                <th className="px-10 py-6 text-center">توقيت السحب الأخير</th>
+                <th className="px-10 py-6 text-center">سجلات مضافة</th>
+                <th className="px-10 py-6 text-center">سجلات محدثة</th>
+                <th className="px-10 py-6 text-center">الحالة التشغيلية</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-50">
+            <tbody className="divide-y divide-white/5">
               {[
-                { id: 'cases', label: 'القضايا والدعاوى', icon: Briefcase },
-                { id: 'hearings', label: 'الجلسات والمواعيد', icon: Calendar },
-                { id: 'agencies', label: 'الوكالات الشرعية', icon: Users },
-                { id: 'executions', label: 'طلبات التنفيذ', icon: Zap },
-                { id: 'clients', label: 'ملفات الموكلين', icon: Bot }
+                { id: 'cases', label: 'إدارة القضايا والدعاوى', icon: Briefcase },
+                { id: 'hearings', label: 'الجلسات والمواعيد القضائية', icon: Calendar },
+                { id: 'agencies', label: 'الوكالات والتوكيلات الشرعية', icon: Users },
+                { id: 'executions', label: 'طلبات التنفيذ والسداد', icon: Zap },
+                { id: 'clients', label: 'ملفات المستفيدين والموكلين', icon: Bot }
               ].map((item) => (
-                <tr key={item.id} className="hover:bg-slate-50 transition-colors">
-                  <td className="px-8 py-5">
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 bg-slate-100 text-slate-600 rounded-lg">
-                        <item.icon className="w-4 h-4" />
+                <tr key={item.id} className="hover:bg-white/5 transition-all group">
+                  <td className="px-10 py-6">
+                    <div className="flex items-center gap-4">
+                      <div className="p-2.5 bg-yellow-400/10 text-yellow-400 rounded-xl group-hover:scale-110 transition-transform">
+                        <item.icon className="w-5 h-5" />
                       </div>
-                      <span className="font-black text-slate-700 text-sm">{item.label}</span>
+                      <span className="font-extrabold text-white text-base">{item.label}</span>
                     </div>
                   </td>
-                  <td className="px-8 py-5 text-center font-bold text-slate-500 text-xs">
-                    {syncHistory[item.id]?.lastSync ? new Date(syncHistory[item.id].lastSync!).toLocaleString('ar-SA') : '---'}
+                  <td className="px-10 py-6 text-center font-bold text-slate-300 text-sm">
+                    {syncHistory[item.id]?.lastSync ? new Date(syncHistory[item.id].lastSync!).toLocaleString('ar-SA') : 'في انتظار أول ربط'}
                   </td>
-                  <td className="px-8 py-5 text-center font-black text-emerald-600 text-sm">
+                  <td className="px-10 py-6 text-center font-black text-emerald-400 text-lg">
                     {syncHistory[item.id]?.newCount || 0}
                   </td>
-                  <td className="px-8 py-5 text-center font-black text-amber-500 text-sm">
+                  <td className="px-10 py-6 text-center font-black text-yellow-400 text-lg">
                     {syncHistory[item.id]?.updatedCount || 0}
                   </td>
-                  <td className="px-8 py-5 text-center">
-                    <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black ${
-                      syncHistory[item.id]?.lastSync ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' : 'bg-slate-100 text-slate-400'
+                  <td className="px-10 py-6 text-center">
+                    <span className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-[11px] font-black tracking-wide ${
+                      syncHistory[item.id]?.lastSync ? 'bg-emerald-400/10 text-emerald-400 border border-emerald-400/30' : 'bg-white/5 text-slate-500 border border-white/5'
                     }`}>
-                      {syncHistory[item.id]?.lastSync ? 'متزامن' : 'غير متصل'}
+                      <div className={`w-2 h-2 rounded-full ${syncHistory[item.id]?.lastSync ? 'bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.5)]' : 'bg-slate-700'}`} />
+                      {syncHistory[item.id]?.lastSync ? 'متصل ومحمي' : 'غير نشط'}
                     </span>
                   </td>
                 </tr>
@@ -1617,279 +1926,132 @@ ${APP_SERVER}
           </div>
         )}
       </AnimatePresence>
-      
-      {/* Royal Header Widget (Deep Navy and Luxury Gold) */}
-      <div id="najiz-welcome" className="bg-[#0b0f19] rounded-[3rem] p-12 text-white shadow-2xl relative overflow-hidden border-2 border-[#D4AF37]/60">
-        <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(ellipse_at_top_right,rgba(212,175,55,0.08),transparent)] pointer-events-none" />
-        <div className="absolute -top-24 -right-12 w-80 h-80 bg-[#D4AF37]/10 blur-[100px] rounded-full pointer-events-none" />
-        
-        <div className="relative z-10 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-10">
-          <div className="max-w-4xl space-y-6">
-            <div className="flex flex-wrap items-center gap-4">
-              <div className="bg-amber-500/10 p-4 rounded-3xl border border-[#D4AF37] shadow-[0_5px_15px_rgba(212,175,55,0.3)]">
-                <Bot className="w-10 h-10 text-[#FACC15]" />
-              </div>
-              <div>
-                <h1 className="text-4xl md:text-5xl font-black text-[#ffffff] tracking-tight drop-shadow-md">
-                   الربط المباشر مع ناجز <span className="text-[#FACC15] underline decoration-[#D4AF37] decoration-4 underline-offset-8">بالـ AI الذكي</span>
-                </h1>
-                <p className="text-sm text-yellow-300 font-extrabold mt-2 tracking-wide block drop-shadow">مزامنة وترتيب ملفات القضايا والجلسات تلقائياً بضغطة زر واحدة وهيبة بصرية متناسقة.</p>
-              </div>
-            </div>
-
-            {/* Interactive Visual Step Roadmap & Tooltips */}
-            <div className="bg-[#0f172a] border border-[#D4AF37]/50 rounded-[2rem] p-6 lg:p-8 shadow-inner relative">
-              <div className="absolute top-3 left-6">
-                <span className="inline-flex items-center gap-1.5 bg-[#D4AF37]/25 border border-[#D4AF37] text-yellow-300 text-[11px] px-3 py-1 rounded-full font-black animate-pulse shadow-md">
-                  <SparklesIcon className="w-3.5 h-3.5 text-[#FACC15]" />
-                  بروتوكول السحب الآمن
-                </span>
-              </div>
-              
-              <h3 className="text-lg font-black text-[#FACC15] mb-5">خريطة خطوات التوجيه الذاتي (مرر لحقائق إضافية)</h3>
-              
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 relative">
-                {/* Step 1 */}
-                <div 
-                  className={`bg-[#1e293b] p-5 rounded-2xl border transition-all cursor-help relative ${hoveredStep === 1 ? 'border-[#FACC15] bg-[#1e293b]/90 shadow-[0_5px_20px_rgba(212,175,55,0.15)]' : 'border-[#D4AF37]/20'}`}
-                  onMouseEnter={() => setHoveredStep(1)}
-                  onMouseLeave={() => setHoveredStep(null)}
-                >
-                  <div className="flex items-center gap-3 mb-2">
-                    <span className="w-8 h-8 rounded-full bg-[#FACC15] text-[#060b13] font-black text-sm flex items-center justify-center shadow-md">1</span>
-                    <h4 className="font-bold text-[#FACC15] text-sm tracking-wide">تسجيل دخول ناجز الكلاسيكي</h4>
-                  </div>
-                  <p className="text-xs text-white font-black leading-relaxed mt-1">سجل بمصادقة نفاذ الوطني لدخول ناجز الاعتيادي بمستعرض الويب.</p>
-
-                  <AnimatePresence>
-                    {hoveredStep === 1 && (
-                      <motion.div 
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: 10 }}
-                        className="absolute bottom-full left-0 right-0 mb-3 bg-[#0b0f19] border-2 border-[#D4AF37] p-4 rounded-xl z-30 shadow-2xl text-xs font-bold text-white"
-                      >
-                        <p className="text-[#FACC15] font-black mb-1">🔐 تشفير كامل آمن:</p>
-                        الاتصال مرمز محلياً، لا نطلع على كلمة مرورك ولا يتم تناقل أي بيانات تم تسجيل الدخول بها لحفظ طاعة الصلاحيات والقوانين.
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </div>
-
-                {/* Step 2 */}
-                <div 
-                  className={`bg-[#1e293b] p-5 rounded-2xl border transition-all cursor-help relative ${hoveredStep === 2 ? 'border-[#FACC15] bg-[#1e293b]/90 shadow-[0_5px_20px_rgba(212,175,55,0.15)]' : 'border-[#D4AF37]/20'}`}
-                  onMouseEnter={() => setHoveredStep(2)}
-                  onMouseLeave={() => setHoveredStep(null)}
-                >
-                  <div className="flex items-center gap-3 mb-2">
-                    <span className="w-8 h-8 rounded-full bg-[#FACC15] text-[#060b13] font-black text-sm flex items-center justify-center shadow-md">2</span>
-                    <h4 className="font-bold text-[#FACC15] text-sm tracking-wide">بروز زر "العدالة" بالأسفل</h4>
-                  </div>
-                  <p className="text-xs text-white font-black leading-relaxed mt-1">سيظهر الزر الذهبي بشكل أنيق في ركن بوابة ناجز الأيمن السفلي.</p>
-
-                  <AnimatePresence>
-                    {hoveredStep === 2 && (
-                      <motion.div 
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: 10 }}
-                        className="absolute bottom-full left-0 right-0 mb-3 bg-[#0b0f19] border-2 border-[#D4AF37] p-4 rounded-xl z-30 shadow-2xl text-xs font-bold text-white"
-                      >
-                        <p className="text-[#FACC15] font-black mb-1">👑 تصميم فاخر عالي التباين:</p>
-                        الزر المدمج يعتمد على الهوية البصرية للديوان وبوابة ناجز ومتطابق مع معايير WCAG لتسهيل الرؤية لراحة بصر المحامي المجهد.
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </div>
-
-                {/* Step 3 */}
-                <div 
-                  className={`bg-[#1e293b] p-5 rounded-2xl border transition-all cursor-help relative ${hoveredStep === 3 ? 'border-[#FACC15] bg-[#1e293b]/90 shadow-[0_5px_20px_rgba(212,175,55,0.15)]' : 'border-[#D4AF37]/20'}`}
-                  onMouseEnter={() => setHoveredStep(3)}
-                  onMouseLeave={() => setHoveredStep(null)}
-                >
-                  <div className="flex items-center gap-3 mb-2">
-                    <span className="w-8 h-8 rounded-full bg-[#FACC15] text-[#060b13] font-black text-sm flex items-center justify-center shadow-md">3</span>
-                    <h4 className="font-bold text-[#FACC15] text-sm tracking-wide">كبسة سحب واحدة بالـ AI</h4>
-                  </div>
-                  <p className="text-xs text-white font-black leading-relaxed mt-1">توليد المزامنة الفورية للمكاتب والعملاء المصنفين تلقائياً بالذكاء الاصطناعي.</p>
-
-                  <AnimatePresence>
-                    {hoveredStep === 3 && (
-                      <motion.div 
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: 10 }}
-                        className="absolute bottom-full left-0 right-0 mb-3 bg-[#0b0f19] border-2 border-[#D4AF37] p-4 rounded-xl z-30 shadow-2xl text-xs font-bold text-white"
-                      >
-                        <p className="text-[#FACC15] font-black mb-1">🤖 توجيه ذكي مباشر:</p>
-                        سيقوم المساعد بقراءة السجلات بدقة متناهية وإدراج القضايا بالجلسات والوكلاء في ثوانٍ معدودة داخل مساحة عملك.
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </div>
-              </div>
-            </div>
-            
-            <div className="flex flex-wrap items-center gap-4 pt-4" id="download-btn">
-              <button 
-                onClick={generateExtensionZip}
-                disabled={downloading}
-                className="bg-[#D4AF37] hover:bg-[#FACC15] text-[#060b13] font-black text-lg px-8 py-5 rounded-2xl shadow-[0_10px_35px_rgba(212,175,55,0.5)] transition-all flex items-center gap-3 active:scale-95 disabled:opacity-50"
-              >
-                {downloading ? (
-                   <span className="flex items-center gap-2">جاري تجهيز حزمة المتصفح الذهبية... ⏳</span>
-                ) : (
-                   <>
-                     <Download className="w-6 h-6" />
-                     تحميل حزمة أداة المزامنة الذكية للمتصفح (.ZIP)
-                   </>
-                )}
-              </button>
-
-              <button 
-                id="settings-btn"
-                onClick={() => setIsSettingsOpen(true)}
-                className="bg-transparent hover:bg-white/10 text-white border-2 border-[#D4AF37] font-black text-lg px-6 py-5 rounded-2xl shadow-lg transition-all flex items-center gap-2 active:scale-95"
-              >
-                <Settings className="w-5 h-5 text-[#FACC15]" />
-                خيارات الاتصال والـ API
-              </button>
-            </div>
-          </div>
-          
-          <div className="hidden lg:flex flex-col items-center gap-4 p-8 bg-[#0b0f19] backdrop-blur-md border-2 border-[#D4AF37] rounded-[2.5rem] shadow-2xl shrink-0">
-             <div className="flex items-center gap-2">
-                <span className="text-sm font-black uppercase tracking-wider text-[#FACC15] drop-shadow font-sans">ربط المزامنة بالخيار الهجين</span>
-             </div>
-             <div className="text-5xl font-black text-[#FACC15] drop-shadow-[0_4px_10px_rgba(212,175,55,0.4)] font-mono">AI Sync</div>
-             <p className="text-xs font-black text-white text-center w-48 bg-[#D4AF37]/35 py-2.5 rounded-xl border-2 border-[#D4AF37] shadow-lg">الفرز التلقائي الفوري دون تداخل السجلات</p>
-          </div>
-        </div>
-      </div>
+      <ExtensionDownloadSection />
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
         
         {/* Left Side: Settings Panel, Configuration Status, Multi-select Target Types */}
         <div id="features-section" className="lg:col-span-1 space-y-6">
           
-          {/* Active Connection Status Badge */}
-          <div className="bg-[#0b0f19] border border-[#D4AF37]/50 rounded-[2.5rem] p-6 shadow-2xl text-white">
-            <h3 className="font-black text-[#FACC15] text-lg mb-4 flex items-center gap-2">
-              <ShieldCheck className="w-6 h-6 text-[#FACC15]" />
+          {/* Active Connection Status Badge (Imperial Dark) */}
+          <div className="bg-[#0A0F1E] border-4 border-yellow-400/20 rounded-[3rem] p-8 shadow-2xl text-white relative overflow-hidden group">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-yellow-400/5 blur-3xl rounded-full" />
+            <h3 className="font-black text-yellow-400 text-xl mb-6 flex items-center gap-3 relative z-10">
+              <ShieldCheck className="w-8 h-8 text-yellow-400" />
               الحالة الحالية والتفويض
             </h3>
             
-            <div className="space-y-4">
-              <div className="p-4 bg-emerald-500/10 border border-emerald-500/30 rounded-2xl">
-                <div className="flex justify-between items-center mb-1">
-                  <span className="text-xs font-bold text-white">نمط عمل الربط:</span>
-                  <span className="text-[10px] bg-emerald-500 text-white px-2 py-0.5 rounded-full font-black">نشط</span>
+            <div className="space-y-6 relative z-10">
+              <div className="p-6 bg-emerald-500/10 border-2 border-emerald-500/30 rounded-[1.5rem] shadow-inner">
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-xs font-black text-white uppercase tracking-widest leading-none">نمط عمل الربط:</span>
+                  <span className="text-[10px] bg-emerald-500 text-white px-3 py-1 rounded-full font-black shadow-lg">نشط الآن</span>
                 </div>
-                <p className="text-sm font-black text-emerald-400">
-                  {syncMode === 'personal' ? 'المزامنة الذاتية (الحساب الشخصي)' : 'المزامنة المقيدة (API Key)'}
+                <p className="text-lg font-black text-emerald-400">
+                  {syncMode === 'personal' ? 'المزامنة الذاتية الملكية' : 'المزامنة المقيدة (API Key)'}
                 </p>
                 {syncMode === 'apikey' && !customApiKey && (
-                  <p className="text-[10px] text-amber-400 mt-1 font-bold">⚠️ لم يتم إدخال مفتاح API - سيتم استخدام الوضع الافتراضي</p>
+                  <p className="text-[11px] text-yellow-400 mt-2 font-black">⚠️ لم يتم إدخال مفتاح API - سيتم استخدام الوضع الافتراضي</p>
                 )}
               </div>
 
-              <div className="p-4 bg-[#1e293b]/70 border border-[#D4AF37]/30 rounded-2xl text-[11px] font-black leading-relaxed text-yellow-300">
+              <div className="p-6 bg-white/5 border-2 border-yellow-400/20 rounded-[1.5rem] text-sm font-bold leading-relaxed text-yellow-100 shadow-md">
                 بمجرد تمديد الإضافة محلياً، تقوم بفحص المحتوى المالي والعمالي والجلسات في خادم ديوان المظالم أو ناجز ونقلها فوراً وفق الصلاحية المحددة.
               </div>
 
               {/* Web Worker Background Processing Switch */}
-              <div className="p-4 bg-yellow-500/5 border border-[#D4AF37]/30 rounded-2xl space-y-2">
+              <div className="p-6 bg-white/5 border-2 border-white/10 rounded-[2rem] space-y-4 shadow-xl">
                 <div className="flex justify-between items-center">
-                  <span className="text-xs font-black text-yellow-400">المزامنة الخلفية (Web Worker):</span>
+                  <span className="text-sm font-black text-white uppercase tracking-wider">المزامنة الخلفية (AI Worker):</span>
                   <button 
                     onClick={() => setBgProcessingEnabled(!bgProcessingEnabled)}
-                    className={`w-12 h-6 flex items-center rounded-full p-1 transition-all cursor-pointer ${bgProcessingEnabled ? 'bg-[#D4AF37]' : 'bg-[#1e293b]'}`}
+                    className={`w-14 h-7 flex items-center rounded-full p-1 transition-all cursor-pointer ${bgProcessingEnabled ? 'bg-yellow-400 shadow-[0_0_20px_rgba(250,204,21,0.4)]' : 'bg-slate-700'}`}
                   >
-                    <div className={`bg-[#060b13] w-4 h-4 rounded-full shadow-md transform transition-all duration-200 ${bgProcessingEnabled ? 'translate-x-6' : 'translate-x-0'}`} />
+                    <div className={`bg-white w-5 h-5 rounded-full shadow-lg transform transition-all duration-300 ${bgProcessingEnabled ? 'translate-x-7' : 'translate-x-0'}`} />
                   </button>
                 </div>
-                <p className="text-[10px] text-white font-black leading-relaxed">
-                  تفعيل المعالجة وتحليل مصفوفات النصوص الضخمة عبر خيوط متوازية لمنع تجمد الشاشة تماماً.
+                <p className="text-[11px] text-white font-black leading-relaxed opacity-80">
+                  تفعيل المعالجة وتحليل مصفوفات النصوص الضخمة عبر خيوط متوازية لمنع تجمد الشاشة تماماً وضمان تدفق العمل.
                 </p>
               </div>
             </div>
           </div>
 
-          {/* Enhanced Infographics & Security Benefits Section */}
-          <div className="bg-[#0b0f19] border border-[#D4AF37]/50 rounded-[2.5rem] p-8 shadow-2xl text-white space-y-8">
-            <div className="flex items-center gap-4 border-b border-[#D4AF37]/20 pb-4">
-              <div className="p-3 bg-[#D4AF37]/20 text-[#D4AF37] rounded-2xl">
-                <ShieldCheck className="w-6 h-6" />
+          {/* Enhanced Infographics & Security Benefits Section (Imperial Dark) */}
+          <div className="bg-[#0A0F1E] border-4 border-yellow-400/20 rounded-[3rem] p-10 shadow-2xl text-white space-y-10 relative overflow-hidden">
+            <div className="absolute bottom-0 left-0 w-32 h-32 bg-yellow-400/5 blur-3xl rounded-full" />
+            <div className="flex items-center gap-5 border-b-2 border-white/10 pb-6 relative z-10">
+              <div className="p-4 bg-yellow-400 text-black rounded-2xl shadow-xl">
+                <ShieldCheck className="w-8 h-8" />
               </div>
-              <h3 className="font-black text-[#FACC15] text-xl">دليل الربط الآمن والتثبيت</h3>
+              <h3 className="font-black text-white text-2xl">دليل الربط الآمن والتثبيت</h3>
             </div>
             
-            <div className="space-y-6">
+            <div className="space-y-6 relative z-10">
               {[
                 { 
                   title: "1. تفعيل وضع المطور", 
-                  desc: "افتح chrome://extensions وفعّل خيار 'Developer Mode' للسماح بتحميل الحزم المحلية.",
+                  desc: "افتح chrome://extensions وفعّل خيار 'Developer Mode' للسماح بتحميل الحزم المحلية المفتوحة.",
                   icon: Code,
-                  color: "blue"
+                  color: "text-blue-400"
                 },
                 { 
                   title: "2. فك حزمة الامتداد", 
-                  desc: "يجب استخراج ملف .ZIP المحمل في مجلد مستقل لضمان عمل كافة الملفات البرمجية.",
+                  desc: "يجب استخراج ملف .ZIP المحمل في مجلد مستقل لضمان عمل كافة الملفات البرمجية والأذونات.",
                   icon: Download,
-                  color: "amber"
+                  color: "text-yellow-400"
                 },
                 { 
                   title: "3. مزايا المزامنة التلقائية", 
-                  desc: "الوضع الافتراضي (بدون مفاتيح) يحمي خصوصيتك عبر تشفير البيانات محلياً قبل الترحيل.",
-                  icon: ShieldCheck,
-                  color: "emerald"
+                  desc: "الوضع الافتراضي المشفر يحمي خصوصيتك عبر تشفير البيانات محلياً قبل الترحيل الملكي.",
+                  icon: Zap,
+                  color: "text-emerald-400"
                 }
               ].map((step, i) => (
-                <div key={i} className="flex gap-4 p-4 bg-white/5 rounded-2xl border border-white/5 hover:border-[#D4AF37]/30 transition-all">
-                  <div className="p-3 rounded-xl bg-slate-800 text-[#D4AF37] h-fit">
-                    <step.icon className="w-5 h-5" />
+                <div key={i} className="flex gap-4 p-5 bg-white/5 rounded-[1.5rem] border-2 border-white/5 hover:border-yellow-400/30 transition-all group">
+                  <div className={`p-3 rounded-xl bg-slate-800 ${step.color} h-fit shadow-lg group-hover:scale-110 transition-transform`}>
+                    <step.icon className="w-6 h-6" />
                   </div>
                   <div>
-                    <h4 className="text-sm font-black text-white">{step.title}</h4>
-                    <p className="text-[10px] text-slate-400 font-bold leading-relaxed mt-1">{step.desc}</p>
+                    <h4 className="text-lg font-black text-white leading-tight mb-1">{step.title}</h4>
+                    <p className="text-xs text-slate-300 font-bold leading-relaxed">{step.desc}</p>
                   </div>
                 </div>
               ))}
             </div>
 
-            <div className="p-4 bg-[#D4AF37]/5 rounded-2xl border border-[#D4AF37]/20">
-              <div className="flex items-center gap-2 mb-2 text-[#FACC15]">
-                <Key className="w-4 h-4" />
-                <span className="text-[10px] font-black uppercase tracking-wider">تطبيق مفاتيح الربط</span>
+            <div className="p-5 bg-yellow-400/5 rounded-2xl border-2 border-yellow-400/30 relative z-10">
+              <div className="flex items-center gap-3 mb-3 text-yellow-400">
+                <Key className="w-5 h-5" />
+                <span className="text-xs font-black uppercase tracking-widest leading-none">بروتوكول تطبيق المفاتيح</span>
               </div>
-              <div className="space-y-1 bg-black/40 p-3 rounded-xl border border-white/5 font-mono text-[9px] text-slate-300">
-                <div className="flex justify-between items-center bg-white/5 p-1.5 rounded mb-1">
-                  <span className="opacity-60">System URL:</span>
-                  <span className="text-emerald-400 font-bold select-all truncate max-w-[120px]">{window.location.origin}</span>
+              <div className="space-y-2 bg-black/40 p-4 rounded-xl border border-white/5 font-mono text-[10px] text-white/90">
+                <div className="flex justify-between items-center bg-white/5 p-2 rounded-lg">
+                  <span className="opacity-60 text-yellow-400 font-black">System URL:</span>
+                  <span className="text-emerald-400 font-bold select-all truncate max-w-[140px] tracking-wider">{window.location.origin}</span>
                 </div>
-                <div className="flex justify-between items-center bg-white/5 p-1.5 rounded">
-                  <span className="opacity-60">API Status:</span>
-                  <span className={syncMode === 'personal' ? 'text-amber-400' : 'text-blue-400'}>
-                    {syncMode === 'personal' ? 'Keyless/Personal' : 'Enterprise API'}
+                <div className="flex justify-between items-center bg-white/5 p-2 rounded-lg">
+                  <span className="opacity-60 text-yellow-400 font-black">API Status:</span>
+                  <span className={syncMode === 'personal' ? 'text-amber-400 font-black' : 'text-blue-400 font-black'}>
+                    {syncMode === 'personal' ? 'Personal Cloud' : 'Enterprise API v4'}
                   </span>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Dynamic Checklist Multi-select Config Card inside React UI */}
-          <div className="bg-[#0b0f19] border border-[#D4AF37]/50 rounded-[2.5rem] p-6 shadow-2xl text-white space-y-4" id="config-card">
-             <div>
-                <h3 className="font-black text-[#FACC15] text-lg flex items-center gap-2">
-                   <ClipboardList className="w-6 h-6 text-[#FACC15]" />
+          {/* Checklist Config Card (Imperial Dark) */}
+          <div className="bg-[#0A0F1E] border-4 border-yellow-400/20 rounded-[3rem] p-8 shadow-2xl text-white space-y-8 relative overflow-hidden" id="config-card">
+             <div className="absolute top-0 left-0 w-24 h-24 bg-yellow-400/5 blur-2xl rounded-full" />
+             <div className="relative z-10 space-y-2">
+                <h3 className="font-black text-yellow-400 text-xl flex items-center gap-3">
+                   <ClipboardList className="w-8 h-8 text-yellow-400" />
                    تحديد بيانات السحب
                 </h3>
-                <p className="text-[11px] text-amber-100 font-semibold mt-1">اختر الأصناف المقررة للاستقبال بالأسفل. سيتم حظر وسحب أي صنف غير محدد آلياً.</p>
+                <p className="text-sm text-white font-bold opacity-80 leading-relaxed">اختر الأصناف المقررة للاستقبال بالأسفل. سيتم حظر أي صنف غير محدد آلياً.</p>
              </div>
 
-             <div className="space-y-3 pt-2">
+             <div className="space-y-4 pt-4 relative z-10">
                 {[
                   { value: 'cases', label: 'القضايا والدعاوى', icon: Briefcase },
                   { value: 'hearings', label: 'الجلسات والتواريخ القضائية', icon: Calendar },
@@ -1902,14 +2064,16 @@ ${APP_SERVER}
                     <button
                       key={item.value}
                       onClick={() => handleToggleSyncType(item.value)}
-                      className={`w-full flex items-center justify-between p-3.5 rounded-xl border text-right font-bold text-xs transition-all ${isChecked ? 'bg-[#D4AF37]/10 border-[#D4AF37] text-white shadow-md' : 'bg-[#1e293b]/40 border-white/10 text-slate-200 hover:text-white hover:bg-[#1e293b]/60'}`}
+                      className={`w-full flex items-center justify-between p-5 rounded-2xl border-2 text-right transition-all group ${isChecked ? 'bg-yellow-400/10 border-yellow-400 text-white shadow-[0_10px_30px_rgba(250,204,21,0.1)]' : 'bg-white/5 border-white/5 text-slate-400 hover:text-white hover:bg-white/10'}`}
                     >
-                      <div className="flex items-center gap-3">
-                        <item.icon className={`w-4 h-4 ${isChecked ? 'text-[#FACC15]' : 'text-slate-400'}`} />
-                        <span>{item.label}</span>
+                      <div className="flex items-center gap-4">
+                        <div className={`p-2 rounded-lg ${isChecked ? 'bg-yellow-400 text-black shadow-lg' : 'bg-white/5 text-slate-500'}`}>
+                          <item.icon className="w-5 h-5" />
+                        </div>
+                        <span className={`text-sm font-black ${isChecked ? 'text-white' : 'text-slate-300'}`}>{item.label}</span>
                       </div>
-                      <div className={`w-4 h-4 rounded flex items-center justify-center border ${isChecked ? 'bg-[#D4AF37] border-[#D4AF37]' : 'border-white/40'}`}>
-                        {isChecked && <CheckCircle2 className="w-3 h-3 text-[#060b13] stroke-[3]" />}
+                      <div className={`w-6 h-6 rounded-lg flex items-center justify-center border-2 transition-all ${isChecked ? 'bg-yellow-400 border-yellow-400 shadow-lg' : 'border-white/20'}`}>
+                        {isChecked && <CheckCircle2 className="w-4 h-4 text-black stroke-[4]" />}
                       </div>
                     </button>
                   );
@@ -1919,28 +2083,28 @@ ${APP_SERVER}
         </div>
 
         {/* Right Side: Tab Options and Interactive Simulator Console */}
-        <div className="lg:col-span-3 space-y-8">
+        <div className="lg:col-span-3 space-y-10">
           
-          {/* Main Workspace Navigation Tabbed Views */}
-          <div className="bg-[#0b0f19] border border-[#D4AF37]/50 rounded-[3rem] p-10 shadow-2xl relative">
-            <div className="absolute top-0 right-0 w-80 h-80 bg-blue-900/10 blur-[120px] rounded-full pointer-events-none" />
+          {/* Main Workspace Navigation (Imperial Dark) */}
+          <div className="bg-[#0A0F1E] border-8 border-yellow-400/20 rounded-[4rem] p-10 lg:p-16 shadow-2xl relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-yellow-400/[0.03] blur-[150px] rounded-full pointer-events-none" />
 
-            <div className="flex flex-wrap gap-2 border-b border-[#D4AF37]/30 mb-8 p-1.5 bg-[#1e293b]/50 rounded-2xl relative z-10">
+            <div className="flex flex-wrap gap-4 border-b-4 border-white/10 mb-12 p-3 bg-white/5 rounded-[2.5rem] relative z-10 shadow-inner">
               <button 
                 onClick={() => setActiveTab('instructions')}
-                className={`flex-1 py-4 px-6 text-sm md:text-base font-black transition-all rounded-xl ${activeTab === 'instructions' ? 'text-[#060b13] bg-[#D4AF37] shadow-lg shadow-[#D4AF37]/30' : 'text-[#ffffff] hover:bg-[#D4AF37]/10'}`}
+                className={`flex-1 py-6 px-8 text-lg font-black transition-all rounded-[1.8rem] border-b-4 ${activeTab === 'instructions' ? 'text-black bg-yellow-400 border-yellow-600 shadow-[0_15px_40px_rgba(250,204,21,0.3)]' : 'text-white hover:bg-white/10 border-transparent'}`}
               >
                 1. تثبيت وبدء العمل
               </button>
               <button 
                 onClick={() => setActiveTab('features')}
-                className={`flex-1 py-4 px-6 text-sm md:text-base font-black transition-all rounded-xl ${activeTab === 'features' ? 'text-[#060b13] bg-[#D4AF37] shadow-lg shadow-[#D4AF37]/30' : 'text-[#ffffff] hover:bg-[#D4AF37]/10'}`}
+                className={`flex-1 py-6 px-8 text-lg font-black transition-all rounded-[1.8rem] border-b-4 ${activeTab === 'features' ? 'text-black bg-yellow-400 border-yellow-600 shadow-[0_15px_40px_rgba(250,204,21,0.3)]' : 'text-white hover:bg-white/10 border-transparent'}`}
               >
                 2. مزايا وقدرات المزامنة
               </button>
               <button 
                 onClick={() => setActiveTab('keys')}
-                className={`flex-1 py-4 px-6 text-sm md:text-base font-black transition-all rounded-xl ${activeTab === 'keys' ? 'text-[#060b13] bg-[#D4AF37] shadow-lg shadow-[#D4AF37]/30' : 'text-[#ffffff] hover:bg-[#D4AF37]/10'}`}
+                className={`flex-1 py-6 px-8 text-lg font-black transition-all rounded-[1.8rem] border-b-4 ${activeTab === 'keys' ? 'text-black bg-yellow-400 border-yellow-600 shadow-[0_15px_40px_rgba(250,204,21,0.3)]' : 'text-white hover:bg-white/10 border-transparent'}`}
               >
                 3. محاكاة السحب بالـ (AI Simulator)
               </button>

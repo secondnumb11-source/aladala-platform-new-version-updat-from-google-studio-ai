@@ -19,8 +19,8 @@ export function validatePayload(table: 'cases' | 'clients' | 'tasks', data: any,
   }
 
   if (table === 'cases') {
-    // Required fields: caseNumber, caseName, clientName, clientId, courtName
-    const required = ['caseNumber', 'caseName', 'clientName', 'clientId', 'courtName'];
+    // Required fields: caseNumber, caseName, clientName, courtName
+    const required = ['caseNumber', 'caseName', 'clientName', 'courtName'];
     for (const field of required) {
       if (isUpdate && data[field] === undefined) continue; // Partial updates can skip omitted fields
       if (data[field] === undefined || data[field] === null || String(data[field]).trim() === '') {

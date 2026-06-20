@@ -46,115 +46,165 @@ export default function AddCaseModal({ isOpen, onClose, clients, onUpdateState }
 
   const handleCreateCase = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newCaseNumber || !newCaseName || !newClientName) {
-      setServerValidationError({ field: 'required', message: 'يرجى ملء جميع الحقول الإلزامية' });
+
+    if (!newCaseNumber.trim() || !newCaseName.trim() || !newClientName.trim()) {
+      setServerValidationError({
+        field: 'required',
+        message: 'يرجى ملء الحقول الإلزامية: رقم القضية، الاسم، الموكل'
+      });
       return;
     }
 
     setIsSubmitting(true);
+    setServerValidationError(null);
+
     try {
+      // === الخطوة 1: إيجاد أو إنشاء العميل ===
+      let finalClientId: string | null = null;
+      let finalClientName = newClientName.trim();
+
+      // ابحث عن العميل في القائمة الموجودة
+      const existingClient = clients.find(c =>
+        c.name === finalClientName ||
+        c.nationalId === newPlaintiffNationalId ||
+        (c as any).national_id === newPlaintiffNationalId
+      );
+
+      if (existingClient) {
+        finalClientId = existingClient.id;
+      } else {
+        // إنشاء عميل جديد في Supabase
+        const newClientId = generateUUID();
+        const { error: clientError } = await supabase
+          .from('clients')
+          .insert({
+            id: newClientId,
+            name: finalClientName,
+            id_number: newPlaintiffNationalId || null,
+            phone: newPlaintiffPhone || null,
+            is_company: newClientType === 'company',
+            status: 'active',
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          });
+
+        if (!clientError) {
+          finalClientId = newClientId;
+          // تحديث State العملاء
+          await onUpdateState('clients', {
+            id: newClientId,
+            name: finalClientName,
+            nationalId: newPlaintiffNationalId || '',
+            phone: newPlaintiffPhone || ''
+          });
+        } else {
+          console.warn('[AddCase] Client creation failed:', clientError.message);
+          // لا نوقف العملية — القضية ستُضاف بدون client_id
+        }
+      }
+
+      // === الخطوة 2: إنشاء القضية ===
       const caseId = generateUUID();
       const casePayload: any = {
         id: caseId,
         case_number: newCaseNumber.trim(),
         title: newCaseName.trim(),
-        case_name: newCaseName.trim(),
-        client_id: null,        // ← ابدأ بـ null دائماً
-        client_name: newClientName.trim(),   // ← احفظ الاسم كنص
-        category: newCategory,
-        stage: newStage,
+        // client_id اختياري — لا يوقف العملية إذا كان null
+        client_id: finalClientId,
+        client_name: finalClientName,
+        category: newCategory || 'civil',
+        stage: newStage || 'litigation',
         status: 'new',
-        priority: newPriority,
-        opponent_name: newOpponent || null,
-        opponent_national_id: newOpponentNationalId || null,
-        court_name: newCourt || null,
-        circuit_number: newCircuitNumber || null,
-        power_of_attorney_number: newPoANumber || null,
-        next_session_at: newNextDate ? new Date(newNextDate).toISOString() : null,
-        next_session_time: newNextTime || null,
-        summary: (newNajizNumber ? `[رقم الدعوى على ناجز: ${newNajizNumber}]\n` : '') + (newSummary || 'دعوى قضائية جديدة مضافة يدوياً عبر لوحة الإدارة.'),
-        details: newDetails || 'لا يوجد تفاصيل نظامية مدونة حالياً.',
+        priority: newPriority || 'medium',
+        opponent_name: newOpponent?.trim() || null,
+        opponent_national_id: newOpponentNationalId?.trim() || null,
+        court_name: newCourt?.trim() || null,
+        circuit_number: newCircuitNumber?.trim() || null,
+        power_of_attorney_number: newPoANumber?.trim() || null,
+        summary: newSummary?.trim() || null,
+        details: newDetails?.trim() || null,
         is_najiz_sync: !!newNajizNumber,
-        najiz_case_number: newNajizNumber || null,
+        najiz_case_number: newNajizNumber?.trim() || null,
         is_confidential: isConfidential,
         archived: false,
-        metadata: JSON.stringify({ addedManually: true }),
+        last_activity_at: new Date().toISOString(),
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       };
 
-      // أضف العميل أولاً إذا لم يكن موجوداً
-      let finalClientId = null;
-      const existingClient = clients.find(c => c.name === newClientName);
-
-      if (existingClient) {
-        finalClientId = existingClient.id;
-      } else {
-        const newClientId = generateUUID();
-        const { error: clientErr } = await supabase
-          .from('clients')
-          .insert({
-            id: newClientId,
-            name: newClientName.trim(),
-            status: 'active',
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-          });
-        
-        if (!clientErr) {
-          finalClientId = newClientId;
-          // تحديث State العمراء
-          await onUpdateState('clients', {
-            id: newClientId,
-            name: newClientName.trim(),
-            nationalId: newPlaintiffNationalId || '',
-            phone: newPlaintiffPhone || ''
-          });
-        } else {
-          console.error('[AddCase Client Supabase Error]', clientErr);
-        }
-      }
-
-      // الآن أضف القضية مع client_id الصحيح
-      casePayload.client_id = finalClientId;
-
-      const { error: caseError } = await supabase
+      // حفظ في Supabase
+      const { data: savedCase, error: caseError } = await supabase
         .from('cases')
-        .insert(casePayload);
+        .insert(casePayload)
+        .select()
+        .single();
 
       if (caseError) {
-        console.error('[AddCase Supabase Error]', caseError);
-        alert('فشل حفظ القضية في قاعدة البيانات: ' + caseError.message + '\n\nكود الخطأ: ' + caseError.code);
+        console.error('[AddCase] DB Error:', caseError);
+        
+        // رسالة خطأ واضحة
+        if (caseError.code === '42501') {
+          alert('خطأ في صلاحيات قاعدة البيانات (RLS). تواصل مع المسؤول.');
+        } else if (caseError.code === '23502') {
+          alert('حقل مطلوب فارغ: ' + caseError.message);
+        } else if (caseError.code === '23503') {
+          // foreign key error — حاول بدون client_id
+          const { data: savedCase2, error: caseError2 } = await supabase
+            .from('cases')
+            .insert({ ...casePayload, client_id: null })
+            .select()
+            .single();
+
+          if (caseError2) {
+            alert('فشل حفظ القضية: ' + caseError2.message);
+            return;
+          }
+          // نجح بدون client_id
+          await afterCaseSaved(caseId, savedCase2 || casePayload);
+          return;
+        } else {
+          alert('فشل حفظ القضية: ' + caseError.message);
+        }
         return;
       }
 
-      // 3. تحديث State المحلي (لعرضها فوراً بدون إعادة تحميل)
-      const frontendCase = {
-        id: caseId,
-        caseNumber: newCaseNumber.trim(),
-        caseName: newCaseName.trim(),
-        category: newCategory,
-        stage: newStage,
-        status: 'new',
-        clientName: newClientName.trim(),
-        clientId: finalClientId,
-        opponentName: newOpponent || 'طرف مجهول (خصم)',
-        opponentNationalId: newOpponentNationalId,
-        courtName: newCourt,
-        nextSessionDate: newNextDate || '',
-        nextSessionTime: newNextTime || '',
-        summary: (newNajizNumber ? `[رقم الدعوى على ناجز: ${newNajizNumber}]\n` : '') + (newSummary || 'دعوى قضائية جديدة مضافة يدوياً عبر لوحة الإدارة.'),
-        details: newDetails || 'لا يوجد تفاصيل نظامية مدونة حالياً.',
-        isNajizSync: !!newNajizNumber,
-        priority: newPriority,
-        isConfidential: isConfidential,
-        createdAt: new Date().toISOString()
-      };
+      await afterCaseSaved(caseId, savedCase || casePayload);
 
-      await onUpdateState('cases', frontendCase);
+    } catch (err: any) {
+      console.error('[AddCase Exception]', err);
+      alert('خطأ غير متوقع: ' + err.message);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
-      // 4. إنشاء جلسة أولية إذا كان هناك موعد
-      if (newNextDate && finalClientId) {
+  // دالة مساعدة بعد حفظ القضية
+  const afterCaseSaved = async (caseId: string, caseData: any) => {
+    // تحديث State المحلي فوراً
+    const frontendCase = {
+      id: caseId,
+      caseNumber: caseData.case_number || newCaseNumber,
+      caseName: caseData.title || newCaseName,
+      category: caseData.category || newCategory,
+      stage: caseData.stage || newStage,
+      status: 'new',
+      clientName: caseData.client_name || newClientName,
+      clientId: caseData.client_id || null,
+      opponentName: caseData.opponent_name || newOpponent,
+      courtName: caseData.court_name || newCourt,
+      nextSessionDate: newNextDate || '',
+      summary: caseData.summary || newSummary,
+      isNajizSync: !!newNajizNumber,
+      priority: caseData.priority || newPriority,
+      isConfidential: isConfidential,
+      createdAt: new Date().toISOString()
+    };
+
+    await onUpdateState('cases', frontendCase);
+
+    // إضافة جلسة أولى إذا كان هناك موعد
+    if (newNextDate) {
+      try {
         await supabase.from('hearings').insert({
           id: generateUUID(),
           case_id: caseId,
@@ -162,21 +212,19 @@ export default function AddCaseModal({ isOpen, onClose, clients, onUpdateState }
           case_name: newCaseName.trim(),
           date: newNextDate,
           time: newNextTime || '09:00',
-          court_name: newCourt || null,
+          court_name: newCourt?.trim() || null,
           status: 'upcoming',
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
         });
+      } catch (hearingErr: any) {
+        console.warn('[Hearing Save Warning]:', hearingErr.message);
+        // لا نوقف العملية إذا فشلت الجلسة
       }
-
-      onClose();
-      alert('✅ تم حفظ القضية بنجاح في قاعدة البيانات');
-    } catch (err: any) {
-      console.error('[AddCase Exception]', err);
-      alert('خطأ غير متوقع: ' + err.message);
-    } finally {
-      setIsSubmitting(false);
     }
+
+    onClose();
+    alert('✅ تم حفظ القضية بنجاح في قاعدة البيانات');
   };
 
   return (

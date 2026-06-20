@@ -44,7 +44,7 @@ dotenv.config();
 import fs from 'fs';
 import nodemailer from 'nodemailer';
 import twilio from 'twilio';
-import OpenAI from 'openai';
+import type OpenAI from 'openai';
 import JSZip from 'jszip';
 import { GoogleGenAI } from '@google/genai';
 
@@ -53,12 +53,8 @@ import { supabaseMiddleware } from './src/utils/supabase/middleware.js';
 import { query } from './src/lib/db.js';
 
 // AI Configuration and Client Factory
-import Anthropic from '@anthropic-ai/sdk';
-
 const getAIClient = () => {
   const geminiKey = process.env.GEMINI_API_KEY;
-  const anthropicKey = process.env.ANTHROPIC_API_KEY;
-  const openaiKey = process.env.OPENAI_API_KEY;
   
   if (geminiKey) {
     return { 
@@ -71,12 +67,6 @@ const getAIClient = () => {
       }) 
     };
   }
-  if (anthropicKey) {
-    return { type: 'anthropic', client: new Anthropic({ apiKey: anthropicKey }) };
-  }
-  if (openaiKey) {
-    return { type: 'openai', client: new OpenAI({ apiKey: openaiKey, baseURL: process.env.OPENAI_BASE_URL || undefined }) };
-  }
   return null;
 };
 
@@ -84,8 +74,8 @@ const getAIClient = () => {
 const getAIProvider = () => {
   const ai = getAIClient();
   if (!ai) return null;
-  if (ai.type === 'openai') return ai;
-  // If Anthropic or Gemini is active but routes still call getAIProvider(), we wrap it
+  
+  // Force all providers through Gemini polyfill
   return {
     type: 'openai',
     client: {
@@ -95,72 +85,58 @@ const getAIProvider = () => {
             const system = params.messages.find((m: any) => m.role === 'system')?.content || '';
             const msgs = params.messages.filter((m: any) => m.role !== 'system').map((m: any) => ({ role: m.role, content: m.content }));
             
-            if (ai.type === 'gemini') {
-                const gemini = ai.client as GoogleGenAI;
-                const formattedMsgs = msgs.map((m: any) => `${m.role === 'user' ? 'User' : 'Model'}: ${m.content}`).join('\n\n');
-                const prompt = formattedMsgs || 'Hello';
+            const gemini = ai.client as GoogleGenAI;
+            const formattedMsgs = msgs.map((m: any) => `${m.role === 'user' ? 'User' : 'Model'}: ${m.content}`).join('\n\n');
+            const prompt = formattedMsgs || 'Hello';
                 
-                // Detect if JSON output response format is needed - either by openai parameter or prompt keywords
-                const isJsonNeeded = 
-                  (params.response_format?.type === 'json_object') || 
-                  prompt.toLowerCase().includes('json') || 
-                  system.toLowerCase().includes('json');
+            // Detect if JSON output response format is needed - either by openai parameter or prompt keywords
+            const isJsonNeeded = 
+              (params.response_format?.type === 'json_object') || 
+              prompt.toLowerCase().includes('json') || 
+              system.toLowerCase().includes('json');
 
-                const config: any = {};
-                if (system) {
-                  config.systemInstruction = system;
-                }
-                if (isJsonNeeded) {
-                  config.responseMimeType = 'application/json';
-                }
-
-                try {
-                  const response = await gemini.models.generateContent({
-                      model: 'gemini-1.5-flash',
-                      contents: prompt,
-                      config,
-                  });
-                  return { choices: [{ message: { content: response.text } }] };
-                } catch (err: any) {
-                  throw new Error(`Gemini API Error: ${err.message}`);
-                }
+            const config: any = {};
+            if (system) {
+              config.systemInstruction = system;
+            }
+            if (isJsonNeeded) {
+              config.responseMimeType = 'application/json';
             }
 
-            const response = await (ai.client as Anthropic).messages.create({
-              model: 'claude-3-5-sonnet-20241022',
-              max_tokens: params.max_tokens || 2048,
-              system,
-              messages: msgs.length ? msgs : [{ role: 'user', content: 'hello' }]
-            });
-            return { choices: [{ message: { content: (response.content[0] as any).text } }] };
+            try {
+              const response = await gemini.models.generateContent({
+                  model: 'gemini-1.5-flash',
+                  contents: prompt,
+                  config,
+              });
+              return { choices: [{ message: { content: response.text } }] };
+            } catch (err: any) {
+              throw new Error(`Gemini API Error: ${err.message}`);
+            }
           }
         }
       },
       embeddings: {
         create: async (params: any) => {
-           if (ai.type === 'gemini') {
-              const gemini = ai.client as GoogleGenAI;
-              try {
-                const response = await gemini.models.embedContent({
-                  model: 'gemini-embedding-2-preview',
-                  contents: params.input,
-                });
-                return { data: [{ embedding: response.embeddings?.[0]?.values || [] }] };
-              } catch (err: any) {
-                try {
-                  // Fallback to text-embedding-004 if preview is unavailable
-                  const responseBackup = await gemini.models.embedContent({
-                    model: 'text-embedding-004',
-                    contents: params.input,
-                  });
-                  return { data: [{ embedding: responseBackup.embeddings?.[0]?.values || [] }] };
-                } catch (err2: any) {
-                  throw new Error(`Gemini Embed API Error: ${err.message}`);
-                }
-              }
-           }
-           // Fallback dummy for anthropic
-           return { data: [{ embedding: new Array(1536).fill(0.01) }] };
+          const gemini = ai.client as GoogleGenAI;
+          try {
+            const response = await gemini.models.embedContent({
+              model: 'gemini-embedding-2-preview',
+              contents: params.input,
+            });
+            return { data: [{ embedding: response.embeddings?.[0]?.values || [] }] };
+          } catch (err: any) {
+            try {
+              // Fallback to text-embedding-004 if preview is unavailable
+              const responseBackup = await gemini.models.embedContent({
+                model: 'text-embedding-004',
+                contents: params.input,
+              });
+              return { data: [{ embedding: responseBackup.embeddings?.[0]?.values || [] }] };
+            } catch (err2: any) {
+              throw new Error(`Gemini Embed API Error: ${err.message}`);
+            }
+          }
         }
       }
     }
@@ -171,38 +147,18 @@ export const callAI = async (systemPrompt: string, userMessage: string): Promise
   const ai = getAIClient();
   
   if (!ai) {
-    throw new Error('لم يتم تكوين مفتاح الذكاء الاصطناعي');
+    throw new Error('لم يتم تكوين مفتاح الذكاء الاصطناعي (Gemini)');
   }
   
-  if (ai.type === 'gemini') {
-    const gemini = ai.client as GoogleGenAI;
-    const response = await gemini.models.generateContent({
-      model: 'gemini-1.5-flash',
-      contents: userMessage,
-      config: {
-        systemInstruction: systemPrompt,
-      }
-    });
-    return response.text || '';
-  } else if (ai.type === 'anthropic') {
-    const response = await (ai.client as Anthropic).messages.create({
-      model: 'claude-3-5-sonnet-20241022',
-      max_tokens: 2048,
-      system: systemPrompt,
-      messages: [{ role: 'user', content: userMessage }]
-    });
-    return (response.content[0] as any).text;
-  } else {
-    const openai = ai.client as OpenAI;
-    const response = await openai.chat.completions.create({
-      model: 'gpt-4o',
-      messages: [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: userMessage }
-      ]
-    });
-    return response.choices[0]?.message?.content || '';
-  }
+  const gemini = ai.client as GoogleGenAI;
+  const response = await gemini.models.generateContent({
+    model: 'gemini-1.5-flash',
+    contents: userMessage,
+    config: {
+      systemInstruction: systemPrompt,
+    }
+  });
+  return response.text || '';
 };
 
 /* __filename and __dirname are derived automatically by the bundler or runtime */
@@ -1657,23 +1613,17 @@ ${rawText.substring(0, 15000)}
         }
       });
       responseText = response.text || '{}';
-    } else if (ai.type === 'openai') {
-      const openai = ai.client as OpenAI;
-      const completion = await openai.chat.completions.create({
-        model: 'gpt-4o',
-        messages: [{ role: 'user', content: prompt }],
-        max_tokens: 4000,
-        temperature: 0.1
+    } else {
+      // For any other provider, force Gemini fallback
+      const gemini = ai.client as GoogleGenAI;
+      const response = await gemini.models.generateContent({
+        model: 'gemini-1.5-flash',
+        contents: prompt,
+        config: {
+          responseMimeType: "application/json"
+        }
       });
-      responseText = completion.choices[0]?.message?.content || '{}';
-    } else if (ai.type === 'anthropic') {
-      const anthropic = ai.client as Anthropic;
-      const response = await anthropic.messages.create({
-        model: 'claude-3-5-sonnet-20241022',
-        max_tokens: 4000,
-        messages: [{ role: 'user', content: prompt }]
-      });
-      responseText = (response.content[0] as any).text || '{}';
+      responseText = response.text || '{}';
     }
     
     try {
@@ -1706,209 +1656,164 @@ ${rawText.substring(0, 15000)}
 // Webhook / API Key configured sync for platform-agnostic chrome extensions
 // Accepts JSON scraped from najiz by any lawyer
 app.post('/api/najiz-sync', async (req, res) => {
-  try {
-    let { rawText, tables, cards, selectedTypes = ['cases', 'hearings', 'clients', 'agencies', 'executions'], url, scrapedData } = req.body;
-    
-    let analyzed: any = {
-      cases: [],
-      hearings: [],
-      powers_of_attorney: [],
-      clients: [],
-      executions: [],
-      case_requests: [],
-      minutes: [],
-      tasks: [],
-      invoices: [],
-      judgments: []
-    };
+  const { scrapedData, pageType, source, timestamp } = req.body;
 
-    if (scrapedData) {
-      // المخطط المباشر لبيانات الإضافة المسحوبة دون الحاجة للذكاء الاصطناعي
-      analyzed.cases = (scrapedData.cases || []).map((c: any) => ({
-        caseNumber: c.caseNumber,
-        caseName: c.caseName || `قضية رقم ${c.caseNumber}`,
-        clientName: scrapedData.clients?.[0]?.name || c.clientName || 'شركة نادك للتنمية الزراعية',
-        opponentName: c.opponentName || 'مؤسسة النقل والتشغيل الوطنية للخدمات',
-        category: c.category || 'civil',
-        status: c.status || 'active',
-        courtName: c.court || 'المحكمة التجارية بالرياض',
-        stage: c.stage || 'litigation',
-        nextSessionDate: c.date || null
-      }));
-
-      analyzed.hearings = (scrapedData.hearings || []).map((h: any) => ({
-        caseNumber: h.caseNumber,
-        caseName: h.caseName || '',
-        date: h.date,
-        time: h.time || '09:00',
-        courtName: h.court || 'المحكمة التجارية بالرياض',
-        status: h.status || 'upcoming'
-      }));
-
-      analyzed.clients = (scrapedData.clients || []).map((cl: any) => ({
-        name: cl.name,
-        nationalId: cl.nationalId || '1010065271',
-        phone: cl.phone || '0500000000'
-      }));
-
-      analyzed.executions = (scrapedData.executions || []).map((ex: any) => ({
-        executionNumber: ex.executionNumber,
-        requesterName: ex.requesterName || scrapedData.clients?.[0]?.name || 'شركة نادك للتنمية الزراعية',
-        opponentName: ex.opponentName || 'مؤسسة النقل والتشغيل الوطنية للخدمات',
-        amount: ex.amount || 0,
-        status: ex.status || 'active',
-        courtName: ex.courtName || 'محكمة التنفيذ بالدمام'
-      }));
-
-      analyzed.powers_of_attorney = (scrapedData.powers_of_attorney || []).map((ag: any) => ({
-        poaNumber: ag.poaNumber,
-        clientName: ag.clientName || scrapedData.clients?.[0]?.name || 'شركة نادك للتنمية الزراعية',
-        type: ag.type || 'general',
-        status: ag.status || 'active',
-        issueDate: ag.issueDate || null,
-        expiryDate: ag.expiryDate || null
-      }));
-    } else {
-      // دمج جميع النصوص والتحليل بالذكاء الاصطناعي
-      const fullText = [
-        rawText || '',
-        ...(cards || []),
-        ...(tables || []).map((t: any[][]) => t.map(row => row.join(' | ')).join('\\n'))
-      ].join('\\n');
-      
-      analyzed = await analyzeNajizDataWithAI(fullText, selectedTypes);
-    }
-    
-    const summary: Record<string, number> = {};
-    const errors: string[] = [];
-    
-    // حفظ القضايا
-    if (selectedTypes.includes('cases') || selectedTypes.includes('all')) {
-      for (const c of analyzed.cases) {
-        if (!c.caseNumber) continue;
-        try {
-          const { error } = await adminSupabase.from('cases').upsert({
-            case_number: c.caseNumber,
-            title: c.caseName || c.caseNumber,
-            client_name: c.clientName,
-            opponent_name: c.opponentName,
-            category: c.category || 'civil',
-            status: c.status || 'active',
-            court_name: c.courtName,
-            stage: c.stage,
-            next_session_at: c.nextSessionDate ? new Date(c.nextSessionDate).toISOString() : null,
-            is_najiz_sync: true,
-            last_sync_at: new Date().toISOString()
-          }, { onConflict: 'case_number' });
-          if (!error) summary.cases = (summary.cases || 0) + 1;
-          else errors.push(`case ${c.caseNumber}: ${error.message}`);
-        } catch (e: any) { errors.push(e.message); }
-      }
-    }
-    
-    // حفظ الجلسات
-    if (selectedTypes.includes('hearings') || selectedTypes.includes('all')) {
-      for (const h of analyzed.hearings) {
-        if (!h.date) continue;
-        try {
-          const { error } = await adminSupabase.from('hearings').upsert({
-            case_number: h.caseNumber,
-            case_name: h.caseName,
-            date: h.date,
-            time: h.time || '09:00',
-            court_name: h.courtName,
-            status: h.status || 'upcoming',
-            created_at: new Date().toISOString()
-          }, { onConflict: 'case_number,date' });
-          if (!error) summary.hearings = (summary.hearings || 0) + 1;
-        } catch (e: any) {}
-      }
-    }
-    
-    // حفظ العملاء
-    if (selectedTypes.includes('clients') || selectedTypes.includes('all')) {
-      for (const cl of analyzed.clients) {
-        if (!cl.name) continue;
-        try {
-          const { error } = await adminSupabase.from('clients').upsert({
-            name: cl.name,
-            national_id: cl.nationalId,
-            id_number: cl.nationalId,
-            phone: cl.phone,
-            status: 'active',
-            last_sync_at: new Date().toISOString()
-          }, { onConflict: 'national_id' });
-          if (!error) summary.clients = (summary.clients || 0) + 1;
-        } catch (e: any) {}
-      }
-    }
-    
-    // حفظ طلبات التنفيذ
-    if (selectedTypes.includes('executions') || selectedTypes.includes('all')) {
-      for (const ex of analyzed.executions) {
-        if (!ex.executionNumber) continue;
-        try {
-          await adminSupabase.from('executions').upsert({
-            execution_number: ex.executionNumber,
-            requester_name: ex.requesterName,
-            opponent_name: ex.opponentName,
-            amount: ex.amount || 0,
-            status: ex.status || 'active',
-            court_name: ex.courtName,
-            last_sync_at: new Date().toISOString()
-          }, { onConflict: 'execution_number' });
-          summary.executions = (summary.executions || 0) + 1;
-        } catch (e: any) {}
-      }
-    }
-    
-    // حفظ الوكالات
-    if (selectedTypes.includes('agencies') || selectedTypes.includes('all')) {
-      for (const ag of analyzed.powers_of_attorney) {
-        if (!ag.poaNumber) continue;
-        try {
-          await adminSupabase.from('powers_of_attorney').upsert({
-            poa_number: ag.poaNumber,
-            type: ag.type || 'general',
-            status: ag.status || 'active',
-            issue_date: ag.issueDate,
-            expiry_date: ag.expiryDate,
-            last_sync_at: new Date().toISOString()
-          }, { onConflict: 'poa_number' });
-          summary.agencies = (summary.agencies || 0) + 1;
-        } catch (e: any) {}
-      }
-    }
-    
-    // حفظ الأحكام والصكوك
-    if (selectedTypes.includes('judgments') || selectedTypes.includes('all')) {
-      for (const j of analyzed.judgments) {
-        if (!j.number) continue;
-        try {
-          await adminSupabase.from('documents').upsert({
-            id: `judg-${j.number}`,
-            name: `صك/حكم رقم ${j.number}`,
-            category: 'judgment',
-            content_text: j.content,
-            uploaded_at: j.date && j.date !== 'null' && j.date !== 'YYYY-MM-DD or null' && !j.date.includes('null') ? new Date(j.date).toISOString() : new Date().toISOString()
-          }, { onConflict: 'id' });
-          summary.judgments = (summary.judgments || 0) + 1;
-        } catch (e: any) {}
-      }
-    }
-    
-    res.json({
-      success: true,
-      message: 'تمت المزامنة بنجاح',
-      summary,
-      errors: errors.length > 0 ? errors : undefined
-    });
-    
-  } catch (err: any) {
-    console.error('[Najiz Sync] Error:', err);
-    res.status(500).json({ success: false, message: err.message });
+  if (!scrapedData) {
+    return res.status(400).json({ success: false, message: 'لا توجد بيانات' });
   }
+
+  const results = {
+    cases: { added: 0, updated: 0, errors: 0 },
+    hearings: { added: 0, errors: 0 },
+    poa: { added: 0, errors: 0 },
+    executions: { added: 0, errors: 0 }
+  };
+
+  // ===== مزامنة القضايا → إدارة القضايا =====
+  if (scrapedData.cases?.length > 0) {
+    for (const c of scrapedData.cases) {
+      if (!c.caseNumber) continue;
+      try {
+        const { data: existing } = await adminSupabase
+          .from('cases')
+          .select('id')
+          .eq('case_number', c.caseNumber)
+          .maybeSingle();
+
+        if (existing) {
+          await adminSupabase.from('cases').update({
+            status: c.status || 'قيد النظر',
+            court_name: c.court || undefined,
+            next_session_at: c.nextSessionDate
+              ? new Date(c.nextSessionDate).toISOString()
+              : undefined,
+            is_najiz_sync: true,
+            last_sync_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          }).eq('id', existing.id);
+          results.cases.updated++;
+        } else {
+          await adminSupabase.from('cases').insert({
+            id: require('crypto').randomUUID(),
+            case_number: c.caseNumber,
+            najiz_case_number: c.caseNumber,
+            title: c.caseName || `قضية ${c.caseNumber}`,
+            client_name: c.clientName || '',
+            status: c.status || 'قيد النظر',
+            category: c.category || 'civil',
+            stage: c.stage || 'litigation',
+            court_name: c.court || '',
+            next_session_at: c.nextSessionDate
+              ? new Date(c.nextSessionDate).toISOString()
+              : null,
+            is_najiz_sync: true,
+            last_sync_at: new Date().toISOString(),
+            metadata: JSON.stringify({ source: 'najiz_extension' }),
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          });
+          results.cases.added++;
+        }
+      } catch(err: any) {
+        console.error('[Sync Cases Error]', err.message);
+        results.cases.errors++;
+      }
+    }
+  }
+
+  // ===== مزامنة الجلسات → مواعيد الجلسات =====
+  if (scrapedData.hearings?.length > 0) {
+    for (const h of scrapedData.hearings) {
+      if (!h.date) continue;
+      try {
+        await adminSupabase.from('hearings').upsert({
+          id: require('crypto').randomUUID(),
+          case_number: h.caseNumber || '',
+          date: h.date,
+          time: h.time || '09:00',
+          court_name: h.court || '',
+          hall: h.hall || '',
+          status: h.status || 'upcoming',
+          is_najiz_sync: true,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        }, { onConflict: 'case_number,date' });
+        results.hearings.added++;
+      } catch(err) {
+        results.hearings.errors++;
+      }
+    }
+  }
+
+  // ===== مزامنة الوكالات → قسم الوكالات =====
+  if (scrapedData.powers_of_attorney?.length > 0) {
+    for (const p of scrapedData.powers_of_attorney) {
+      if (!p.poaNumber) continue;
+      try {
+        await adminSupabase.from('powers_of_attorney').upsert({
+          id: require('crypto').randomUUID(),
+          poa_number: p.poaNumber,
+          type: p.type || 'general',
+          status: p.status || 'active',
+          issue_date: p.issueDate || null,
+          expiry_date: p.expiryDate || null,
+          is_najiz_sync: true,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        }, { onConflict: 'poa_number' });
+        results.poa.added++;
+      } catch(err) {
+        results.poa.errors++;
+      }
+    }
+  }
+
+  // ===== مزامنة التنفيذ → طلبات التنفيذ =====
+  if (scrapedData.executions?.length > 0) {
+    for (const e of scrapedData.executions) {
+      if (!e.executionNumber) continue;
+      try {
+        await adminSupabase.from('executions').upsert({
+          id: require('crypto').randomUUID(),
+          execution_number: e.executionNumber,
+          status: e.status || 'pending',
+          amount: e.amount || 0,
+          court_name: e.court || '',
+          requester_name: e.requesterName || '',
+          issue_date: e.issueDate || null,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        }, { onConflict: 'execution_number' });
+        results.executions.added++;
+      } catch(err) {
+        results.executions.errors++;
+      }
+    }
+  }
+
+  // تسجيل في سجلات المزامنة
+  await adminSupabase.from('najiz_sync_logs').insert({
+    id: require('crypto').randomUUID(),
+    sync_type: pageType || 'full',
+    status: 'success',
+    records_synced:
+      results.cases.added + results.cases.updated +
+      results.hearings.added + results.poa.added +
+      results.executions.added,
+    raw_data: JSON.stringify({ results, source, timestamp }),
+    created_at: new Date().toISOString()
+  });
+
+  console.log('[Najiz Sync] Results:', results);
+
+  return res.json({
+    success: true,
+    message: 'تمت المزامنة بنجاح',
+    results,
+    timestamp: new Date().toISOString()
+  });
 });
+
 
 app.get('/api/extension/download', async (req, res) => {
   try {
@@ -2158,7 +2063,6 @@ app.post('/api/documents/draft-memo', async (req, res) => {
       return res.json({ success: true, draft: text });
     }
     
-    // Fallback if Gemini key is missing
     throw new Error('Gemini API is not active in this workspace sandbox development env.');
   } catch (error: any) {
     console.warn('[Gemini Draft Memo] Failed. Creating high-quality static legal template fallback...', error.message);
@@ -2746,19 +2650,18 @@ app.post('/api/ai/summarize', async (req, res) => {
       let responseText = "";
       const prompt = `اسم الوثيقة: ${documentName || 'غير مصنف'}\n\nنص الوثيقة الكامل:\n${documentText}`;
 
-      const openai = provider.client as OpenAI;
-      const completion = await openai.chat.completions.create({
-        model: "gpt-4o",
-        messages: [
-          { role: "system", content: systemInstruction },
-          { role: "user", content: prompt }
-        ],
-        temperature: 0.2
+      const gemini = provider.client as GoogleGenAI;
+      const response = await gemini.models.generateContent({
+        model: 'gemini-1.5-flash',
+        contents: prompt,
+        config: {
+          systemInstruction: systemInstruction,
+        }
       });
-      responseText = completion.choices[0].message.content || "";
+      const summaryText = response.text || "";
 
-      if (responseText) {
-        return res.json({ success: true, summary: responseText });
+      if (summaryText) {
+        return res.json({ success: true, summary: summaryText });
       }
     } catch (e: any) {
       console.log("AI Summarize fallback triggered");
@@ -2776,10 +2679,9 @@ app.post('/api/ai/gateway-test', async (req: any, res: any) => {
   }
 
   try {
-    const openai = new OpenAI({
-      baseURL,
-      apiKey,
-    });
+    // Using Gemini client for gateway test
+    const aiProvider = getAIProvider();
+    const openai = aiProvider.client as any;
 
     const completion = await openai.chat.completions.create({
       model,

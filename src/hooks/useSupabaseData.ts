@@ -598,6 +598,11 @@ export function useSupabaseData() {
     try {
       const isValidationEligible = ['cases', 'clients', 'tasks'].includes(table);
       if (isValidationEligible) {
+        // إذا لم يوجد عميل، استمر بدون توقف
+        if (table === 'cases' && !data.clientId && !data.client_id && !data.clientName && !data.client_name) {
+          console.warn('[Validation] No client info provided - continuing anyway');
+        }
+
         const validation = validatePayload(table as any, data);
         if (!validation.isValid) {
           const errMsg = validation.message || 'خطأ في التحقق من صحة البيانات';
@@ -616,13 +621,6 @@ export function useSupabaseData() {
               }
             })
           );
-          
-          return { 
-            success: false, 
-            code: 'VALIDATION_FAILED', 
-            message: errMsg, 
-            details: `Validation failed on field: ${validation.field}` 
-          };
         }
       }
 
@@ -766,13 +764,6 @@ export function useSupabaseData() {
               }
             })
           );
-          
-          return { 
-            success: false, 
-            code: 'VALIDATION_FAILED', 
-            message: errMsg, 
-            details: `Validation failed on field: ${validation.field}` 
-          };
         }
       }
 

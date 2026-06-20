@@ -8,6 +8,7 @@ import { Search, AlertCircle, X, Wifi, Activity, AlertTriangle, Server, LogOut, 
 import Sidebar from '@/components/Sidebar';
 import CommandPalette from '@/components/CommandPalette';
 import ExtensionDownloadSection from '@/components/ExtensionDownloadSection';
+import { HearingsModal } from '@/components/HearingsModal';
 import Dashboard from '@/components/Dashboard';
 import MainLandingPage from '@/components/MainLandingPage';
 import NotificationsBell from '@/components/NotificationsBell';
@@ -211,6 +212,24 @@ function AppContent() {
     setInvoices,
     setEmployees
   } = useSupabaseData();
+
+  const [showHearingsModal, setShowHearingsModal] = useState(false);
+  const upcomingHearings = React.useMemo(() => {
+    const now = new Date();
+    const twentyFourHoursFromNow = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+    
+    return hearings.filter(h => {
+      if (h.status !== 'upcoming') return false;
+      const hearingDate = new Date(`${h.date}T${h.time || '09:00:00'}`);
+      return hearingDate > now && hearingDate <= twentyFourHoursFromNow;
+    });
+  }, [hearings]);
+
+  useEffect(() => {
+    if (upcomingHearings.length > 0) {
+      setShowHearingsModal(true);
+    }
+  }, [upcomingHearings]);
 
   const powersOfAttorney = agencies;
 
@@ -1407,6 +1426,12 @@ function AppContent() {
 
   return (
     <div className="flex flex-col h-screen max-h-screen overflow-hidden">
+      {showHearingsModal && (
+        <HearingsModal 
+          hearings={upcomingHearings} 
+          onClose={() => setShowHearingsModal(false)}
+        />
+      )}
       <GlobalCustomizationEngine />
       <CommandPalette 
         isOpen={isCommandPaletteOpen}

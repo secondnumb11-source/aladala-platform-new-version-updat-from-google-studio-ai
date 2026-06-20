@@ -136,14 +136,9 @@ export default function ExtensionDownloadSection({
         return `{
   "manifest_version": 3,
   "name": "منصة العدالة — مزامنة ناجز",
-  "version": "3.0",
-  "description": "سحب بيانات القضايا من ناجز ومزامنتها مع منصة العدالة",
-  "permissions": [
-    "activeTab",
-    "scripting",
-    "storage",
-    "tabs"
-  ],
+  "version": "4.0",
+  "description": "سحب القضايا والوكالات والتنفيذ والجلسات من ناجز ومزامنتها مع النظام",
+  "permissions": ["activeTab", "scripting", "storage", "tabs"],
   "host_permissions": [
     "https://www.najiz.sa/*",
     "https://najiz.sa/*",
@@ -164,7 +159,7 @@ export default function ExtensionDownloadSection({
   ],
   "action": {
     "default_popup": "popup.html",
-    "default_title": "العدالة — سحب ناجز"
+    "default_title": "العدالة — سحب ناجز v4.0"
   },
   "background": {
     "service_worker": "background.js"
@@ -192,318 +187,79 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 });`;
 
       case "content.js":
-        return `// content.js — قارئ بيانات ناجز
-// لا يحتاج API Key — يقرأ الصفحة مباشرة من جلسة المستخدم المسجل
-(function () {
+        return `(function () {
   'use strict';
 
-  function extractAllPageData() {
+  async function extractByPageType() {
+    const url = window.location.href;
     const data = {
-      cases: [],
-      hearings: [],
-      powers_of_attorney: [],
-      executions: [],
-      clients: [],
-      pageUrl: window.location.href,
-      pageTitle: document.title,
-      scrapedAt: new Date().toISOString(),
-      needsApiKey: false
+      cases: [], hearings: [], powers_of_attorney: [],
+      executions: [], clients: [], pageUrl: url,
+      scrapedAt: new Date().toISOString()
     };
-
-    const bodyText = document.body?.innerText || '';
-
-    const caseNumberPatterns = [
-      /\\d{4}\/\\d{1,2}\/\\d+/g,
-      /\\d{4}\/\\d{4,}/g,
-      /(?<!\\d)\\d{10}(?!\\d)/g,
-      /(?<!\\d)\\d{9}(?!\\d)/g,
-    ];
-
-    const foundCaseNumbers = new Set();
-    caseNumberPatterns.forEach(pattern => {
-      const matches = bodyText.match(pattern) || [];
-      matches.forEach(m => foundCaseNumbers.add(m.trim()));
-    });
-
-    const tables = document.querySelectorAll('table');
-    tables.forEach(table => {
-      const headers = Array.from(table.querySelectorAll('th'))
-        .map(th => th.innerText?.trim().toLowerCase() || '');
-
-      const isCaseTable = headers.some(h =>
-        h.includes('قضية') || h.includes('دعوى') ||
-        h.includes('رقم') || h.includes('حالة') ||
-        h.includes('محكمة') || h.includes('case')
-      );
-
-      const isHearingTable = headers.some(h =>
-        h.includes('جلسة') || h.includes('موعد') ||
-        h.includes('تاريخ') || h.includes('hearing')
-      );
-
-      const rows = table.querySelectorAll('tbody tr');
-      rows.forEach(row => {
-        const cells = Array.from(row.querySelectorAll('td'))
-          .map(td => td.innerText?.trim() || '');
-
-        if (cells.length === 0 || cells.every(c => !c)) return;
-
-        const rowText = cells.join(' ');
-        const dateMatch = rowText.match(
-          /\\d{1,2}[\\/\\-]\\d{1,2}[\\/\\-]\\d{4}|\\d{4}[\\/\\-]\\d{1,2}[\\/\\-]\\d{1,2}/
-        );
-        const caseNumMatch = rowText.match(/\\d{4}\\/\\d+|\\d{10,}|\\d{9}/);
-
-        if (isCaseTable || caseNumMatch) {
-          const caseNum = caseNumMatch?.[0] || '';
-          if (!data.cases.find(c => c.caseNumber === caseNum)) {
-            data.cases.push({
-              caseNumber: caseNum,
-              caseName: cells.find(c =>
-                c.length > 4 && !/^\\d+$/.test(c) && !c.includes('/')
-              ) || '',
-              status: cells.find(c =>
-                c.includes('قيد') || c.includes('منتهي') ||
-                c.includes('نشط') || c.includes('مقيد') ||
-                c.includes('محكوم') || c.includes('مؤجل') ||
-                c.includes('مشطوب') || c.includes('موقوف')
-              ) || '',
-              court: cells.find(c => c.includes('محكمة')) || '',
-              date: dateMatch?.[0] || '',
-              rawCells: cells
-            });
-          }
-        }
-
-        if (isHearingTable || (dateMatch && rowText.includes('جلسة'))) {
-          data.hearings.push({
-            date: dateMatch?.[0] || '',
-            caseNumber: caseNumMatch?.[0] || '',
+    await new Promise(r => setTimeout(r, 1000));
+    if (url.includes('/lawsuit')) {
+      document.querySelectorAll('table tbody tr').forEach(row => {
+        const cells = Array.from(row.querySelectorAll('td')).map(c => c.innerText.trim());
+        if (cells.length >= 3) {
+          data.cases.push({
+            caseNumber: cells.find(c => /\\d{4}\\//.test(c)) || cells[0],
+            caseName: cells[1] || '',
+            status: cells.find(c => ['قيد', 'منتهي', 'نشط', 'محكوم'].some(k => c.includes(k))) || '',
             court: cells.find(c => c.includes('محكمة')) || '',
-            status: cells.find(c =>
-              c.includes('قادمة') || c.includes('منتهية') ||
-              c.includes('مؤجلة') || c.includes('ملغاة')
-            ) || '',
-            hall: cells.find(c => c.includes('قاعة') || c.includes('دائرة')) || '',
-            rawCells: cells
+            category: 'civil'
           });
         }
       });
-    });
-
-    const cardSelectors = [
-      '.card', '.case-card', '[class*="case-card"]',
-      '.list-item', '[class*="list-item"]',
-      '.MuiCard-root', '.MuiPaper-root',
-      '[class*="CaseItem"]', '[class*="caseItem"]',
-      '[class*="CaseRow"]', '[class*="caseRow"]',
-      '[data-testid*="case"]', '[data-cy*="case"]',
-      '.case-row', '.hearing-row',
-      '[class*="RequestCard"]', '[class*="requestCard"]'
-    ];
-
-    cardSelectors.forEach(selector => {
-      try {
-        document.querySelectorAll(selector).forEach(card => {
-          const text = card.innerText?.trim() || '';
-          if (!text || text.length < 5) return;
-
-          const caseNumMatch = text.match(/\\d{4}\\/\\d+|\\d{10,}|\\d{9}/);
-          const dateMatch = text.match(
-            /\\d{1,2}[\\/\\-]\\d{1,2}[\\/\\-]\\d{4}|\\d{4}[\\/\\-]\\d{1,2}[\\/\\-]\\d{1,2}/
-          );
-
-          if (caseNumMatch) {
-            const caseNum = caseNumMatch[0];
-            if (!data.cases.find(c => c.caseNumber === caseNum)) {
-              data.cases.push({
-                caseNumber: caseNum,
-                caseName: text.split('\\n')[0]?.substring(0, 100) || '',
-                date: dateMatch?.[0] || '',
-                rawText: text.substring(0, 300)
-              });
-            }
-          }
-
-          if (text.includes('جلسة') && dateMatch) {
-            if (!data.hearings.find(h =>
-              h.date === dateMatch[0] && h.caseNumber === (caseNumMatch?.[0] || '')
-            )) {
-              data.hearings.push({
-                date: dateMatch[0],
-                caseNumber: caseNumMatch?.[0] || '',
-                rawText: text.substring(0, 300)
-              });
-            }
-          }
-
-          if (text.includes('وكالة')) {
-            const poaNum = text.match(/\\d{6,}/)?.[0];
-            data.powers_of_attorney.push({
-              poaNumber: poaNum || '',
-              text: text.substring(0, 300),
-              expiryDate: dateMatch?.[0] || ''
-            });
-          }
-
-          if (text.includes('تنفيذ')) {
-            data.executions.push({
-              executionNumber: caseNumMatch?.[0] || '',
-              text: text.substring(0, 200)
-            });
-          }
-        });
-      } catch (e) {}
-    });
-
-    const nameSelectors = [
-      '.user-name', '.username', '[class*="userName"]',
-      '[class*="user-name"]', '[class*="UserName"]',
-      '.profile-name', '[class*="profileName"]',
-      'header [class*="name"]', '.nav [class*="name"]',
-      '[class*="WelcomeUser"]', '[class*="welcomeUser"]',
-      '.greeting', '[class*="greeting"]',
-      'span[class*="Name"]', 'p[class*="Name"]'
-    ];
-
-    for (const sel of nameSelectors) {
-      try {
-        const el = document.querySelector(sel);
-        if (el?.innerText?.trim()) {
-          data.clients.push({
-            name: el.innerText.trim(),
-            source: 'najiz_logged_user'
-          });
-          break;
-        }
-      } catch (e) {}
     }
-
-    const welcomeMatch = bodyText.match(
-      /(?:مرحباً|أهلاً|مرحبا)[،,\\s]+([^\\n،,]{3,40})/
-    );
-    if (welcomeMatch && data.clients.length === 0) {
-      data.clients.push({
-        name: welcomeMatch[1].trim(),
-        source: 'najiz_welcome_text'
-      });
-    }
-
-    const urlCaseMatch = window.location.href.match(
-      /[?&](?:caseId|case_id|id|caseNo|case)=([^&]+)/i
-    );
-    if (urlCaseMatch) {
-      const urlCaseNum = urlCaseMatch[1];
-      if (!data.cases.find(c => c.caseNumber === urlCaseNum)) {
-        data.cases.push({
-          caseNumber: urlCaseNum,
-          source: 'url_parameter'
-        });
-      }
-    }
-
-    data.summary = {
-      totalCases: data.cases.length,
-      totalHearings: data.hearings.length,
-      totalPOAs: data.powers_of_attorney.length,
-      totalExecutions: data.executions.length,
-      hasUserInfo: data.clients.length > 0,
-      pageUrl: window.location.href,
-      scrapedAt: data.scrapedAt
-    };
-
+    const nameEl = document.querySelector('.user-name, [class*="userName"]');
+    if (nameEl) data.clients.push({ name: nameEl.innerText.trim() });
+    data.summary = { totalCases: data.cases.length, totalHearings: data.hearings.length, hasData: (data.cases.length + data.hearings.length) > 0 };
     return data;
   }
 
-  chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
-    if (
-      request.action === 'extractData' ||
-      request.action === 'scrape' ||
-      request.action === 'getData' ||
-      request.action === 'sync'
-    ) {
-      const doExtract = () => {
-        try {
-          const result = extractAllPageData();
-          const hasData =
-            result.cases.length > 0 ||
-            result.hearings.length > 0 ||
-            result.powers_of_attorney.length > 0;
-
-          if (hasData) {
-            sendResponse({ success: true, data: result });
-          } else {
-            setTimeout(() => {
-              const retryResult = extractAllPageData();
-              const retryHasData =
-                retryResult.cases.length > 0 ||
-                retryResult.hearings.length > 0 ||
-                retryResult.powers_of_attorney.length > 0;
-
-              sendResponse({
-                success: retryHasData,
-                data: retryResult,
-                message: retryHasData
-                  ? 'تم السحب بنجاح'
-                  : 'لم يتم العثور على بيانات في هذه الصفحة. انتقل إلى صفحة قضاياي أو جلساتي'
-              });
-            }, 3000);
-          }
-        } catch (err) {
-          sendResponse({
-            success: false,
-            error: err.message,
-            message: 'خطأ في قراءة الصفحة: ' + err.message
-          });
-        }
-      };
-
-      if (document.readyState !== 'complete') {
-        window.addEventListener('load', doExtract, { once: true });
-      } else {
-        doExtract();
-      }
-
-      return true;
-    }
-
-    if (request.action === 'ping') {
-      sendResponse({
-        success: true,
-        active: true,
-        isNajiz: window.location.href.includes('najiz.sa'),
-        url: window.location.href
-      });
-      return true;
-    }
-
-    if (request.action === 'getPageInfo') {
-      sendResponse({
-        success: true,
-        url: window.location.href,
-        title: document.title,
-        isNajiz: window.location.href.includes('najiz.sa'),
-        isLoggedIn: !!document.querySelector(
-          '.user-name, [class*="userName"], [class*="user-name"], [class*="profile"]'
-        ),
-        readyState: document.readyState
-      });
-      return true;
-    }
+  chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    if (request.action === 'extractData') { extractByPageType().then(d => sendResponse({ success: true, data: d })); return true; }
   });
 
-  console.log(
-    '[منصة العدالة] ✅ Script جاهز — بدون API Key — يقرأ بيانات المستخدم المسجل مباشرة'
-  );
-
-  try {
-    chrome.runtime.sendMessage({
-      action: 'contentScriptReady',
-      url: window.location.href,
-      isNajiz: window.location.href.includes('najiz.sa')
+  function createFloatingWidget() {
+    if (document.getElementById('adala-widget')) return;
+    const SERVER = 'https://aladala-platform-rnuz.onrender.com';
+    const style = document.createElement('style');
+    style.textContent = \`
+      #adala-widget { position: fixed; bottom: 24px; left: 24px; z-index: 999999; font-family: sans-serif; direction: rtl; }
+      #adala-toggle-btn { width: 56px; height: 56px; border-radius: 50%; background: linear-gradient(135deg, #f59e0b, #d97706); border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 20px rgba(0,0,0,0.3); font-size: 24px; }
+      #adala-panel { display: none; position: absolute; bottom: 70px; left: 0; width: 280px; background: #050e21; border: 1px solid #1e3a5f; border-radius: 16px; overflow: hidden; }
+      #adala-panel.open { display: block; }
+      .adala-header { background: #0a1628; padding: 14px; border-bottom: 1px solid #1e3a5f; color: #f59e0b; font-weight: bold; }
+      .adala-btn { width: 100%; padding: 12px; background: #0a1628; color: #fff; border: none; border-bottom: 1px solid #1e3a5f; cursor: pointer; text-align: right; }
+      .adala-btn:hover { background: #1e3a5f; }
+    \`;
+    document.head.appendChild(style);
+    const w = document.createElement('div');
+    w.id = 'adala-widget';
+    w.innerHTML = \`
+      <div id="adala-panel">
+        <div class="adala-header">⚖️ منصة العدالة</div>
+        <button class="adala-btn" data-action="all">🔄 مزامنة جميع البيانات</button>
+        <button class="adala-btn" data-action="cases">📁 مزامنة القضايا</button>
+        <button class="adala-btn" data-action="hearings">📅 مزامنة الجلسات</button>
+      </div>
+      <button id="adala-toggle-btn">⚖️</button>
+    \`;
+    document.body.appendChild(w);
+    const p = document.getElementById('adala-panel');
+    const b = document.getElementById('adala-toggle-btn');
+    b.onclick = () => p.classList.toggle('open');
+    w.querySelectorAll('.adala-btn').forEach(btn => {
+      btn.onclick = async () => {
+        const d = await extractByPageType();
+        await fetch(\`\${SERVER}/api/najiz-sync\`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ scrapedData: d, source: 'widget_v4' }) });
+        alert('تمت المزامنة');
+      };
     });
-  } catch (e) {}
-
+  }
+  if (document.readyState === 'complete') { createFloatingWidget(); } else { window.addEventListener('load', createFloatingWidget); }
 })();`;
 
       case "content.css":
@@ -538,201 +294,40 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         return `<!DOCTYPE html>
 <html dir="rtl" lang="ar">
 <head>
-  <meta charset="UTF-8">
-  <title>منصة العدالة — مزامنة ناجز</title>
-  <style>
-    body {
-      width: 320px;
-      font-family: Arial, sans-serif;
-      padding: 16px;
-      background: #0f172a;
-      color: #f1f5f9;
-      margin: 0;
-      box-sizing: border-box;
-    }
-    .header {
-      text-align: center;
-      margin-bottom: 16px;
-      border-bottom: 1px solid #334155;
-      padding-bottom: 12px;
-    }
-    .title {
-      font-size: 18px;
-      font-weight: bold;
-      color: #fbbf24;
-      margin: 0;
-    }
-    .subtitle {
-      font-size: 11px;
-      color: #94a3b8;
-      margin-top: 4px;
-    }
-    .status-box {
-      background: #1e293b;
-      border-radius: 8px;
-      padding: 10px;
-      margin-bottom: 16px;
-      font-size: 13px;
-      line-height: 1.4;
-      border: 1px solid #334155;
-      text-align: center;
-    }
-    .btn {
-      display: block;
-      width: 100%;
-      background: #fbbf24;
-      color: #0f172a;
-      border: none;
-      padding: 10px;
-      font-family: inherit;
-      font-size: 14px;
-      font-weight: bold;
-      border-radius: 6px;
-      cursor: pointer;
-      text-align: center;
-      transition: background 0.2s;
-    }
-    .btn:hover {
-      background: #f59e0b;
-    }
-    .btn:disabled {
-      background: #475569;
-      color: #94a3b8;
-      cursor: not-allowed;
-    }
-    .results-box {
-      margin-top: 16px;
-      background: #1e293b;
-      border-radius: 8px;
-      border: 1px solid #334155;
-    }
-    .hint {
-      font-size: 11px;
-      color: #64748b;
-      text-align: center;
-      margin-top: 12px;
-      line-height: 1.4;
-    }
-  </style>
+<meta charset="UTF-8">
+<title>العدالة - ناجز</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { width: 340px; min-height: 200px; padding: 14px; background: #050e21; color: white; font-family: sans-serif; }
+  .header { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; border-bottom: 1px solid #1e3a5f; padding-bottom: 10px; }
+  .title { font-size: 15px; font-weight: bold; color: #f59e0b; }
+  #status { font-size: 12px; padding: 8px; background: #0a1628; border-radius: 8px; text-align: center; color: #94a3b8; }
+  #extractBtn { width: 100%; padding: 11px; background: #f59e0b; color: #000; font-weight: bold; border: none; border-radius: 10px; cursor: pointer; }
+</style>
 </head>
 <body>
-  <div class="header">
-    <h1 class="title">⚖️ منصة العدالة</h1>
-    <div class="subtitle">مزامنة وسحب بيانات ناجز دون وسيط</div>
-  </div>
-
-  <div class="status-box" id="status">
-    ⏳ جاري التحقق من حالة الصفحة...
-  </div>
-
-  <button class="btn" id="extractBtn">⚡ سحب ومزامنة البيانات الحالية</button>
-
-  <div id="results" class="results-box"></div>
-
-  <div class="hint">
-    قم بتسجيل الدخول إلى حسابك في ناجز أولاً، ثم اذهب إلى صفحة (الحالات/قضاياي) أو (جلساتي) واضغط على زر السحب.
-  </div>
-
+  <div class="header"><div class="title">⚖️ منصة العدالة</div></div>
+  <div id="status">جاهز للمزامنة</div>
+  <button id="extractBtn">📥 سحب ومزامنة البيانات الآن</button>
   <script src="popup.js"></script>
 </body>
 </html>`;
 
       case "popup.js":
-        return `// popup.js — بدون API Key — يرسل البيانات للخادم فقط
-document.addEventListener('DOMContentLoaded', async () => {
+        return `document.addEventListener('DOMContentLoaded', async () => {
   const statusEl = document.getElementById('status');
   const extractBtn = document.getElementById('extractBtn');
-  const resultsEl = document.getElementById('results');
-
-  const setStatus = (msg, type = 'info') => {
-    if (!statusEl) return;
-    statusEl.textContent = msg;
-    statusEl.style.color =
-      type === 'error' ? '#ef4444' :
-      type === 'success' ? '#22c55e' :
-      type === 'warning' ? '#f59e0b' : '#94a3b8';
-  };
-
+  const SERVER = 'https://aladala-platform-rnuz.onrender.com';
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-  const isNajiz = tab?.url?.includes('najiz.sa');
-
-  if (!isNajiz) {
-    setStatus('❌ يرجى فتح موقع ناجز أولاً', 'error');
-    if (extractBtn) extractBtn.disabled = true;
-    return;
-  }
-
-  setStatus('✅ أنت على موقع ناجز — جاهز للسحب', 'success');
-
-  extractBtn?.addEventListener('click', async () => {
-    setStatus('⏳ جارٍ قراءة بياناتك من الصفحة...', 'info');
-    if (extractBtn) extractBtn.disabled = true;
-
+  extractBtn.onclick = async () => {
+    statusEl.textContent = '⏳ جاري السحب...';
     try {
-      const response = await chrome.tabs.sendMessage(
-        tab.id,
-        { action: 'extractData' }
-      );
-
-      if (response?.success && response.data) {
-        const d = response.data;
-        const summary = d.summary;
-
-        setStatus(
-          \`✅ تم: \${summary.totalCases} قضية | \${summary.totalHearings} جلسة | \${summary.totalPOAs} وكالة\`,
-          'success'
-        );
-
-        const serverUrl = await getServerUrl();
-        if (serverUrl) {
-          await fetch(\`\${serverUrl}/api/najiz-sync\`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              scrapedData: d,
-              source: 'chrome_extension_user_session',
-              noApiKeyNeeded: true
-            })
-          });
-        }
-
-        if (resultsEl) {
-          resultsEl.innerHTML = \`
-            <div style="direction:rtl; font-family:Arial; font-size:12px; padding:8px;">
-              <p>📁 القضايا: <strong>\${summary.totalCases}</strong></p>
-              <p>📅 الجلسات: <strong>\${summary.totalHearings}</strong></p>
-              <p>📜 الوكالات: <strong>\${summary.totalPOAs}</strong></p>
-              <p>⚡ التنفيذ: <strong>\${summary.totalExecutions}</strong></p>
-              <p style="color:#22c55e; margin-top:8px;">✅ تمت المزامنة مع النظام</p>
-            </div>
-          \`;
-        }
-
-      } else {
-        setStatus(
-          response?.message || '⚠️ انتقل إلى صفحة "قضاياي" ثم اضغط السحب',
-          'warning'
-        );
-      }
-    } catch (err) {
-      if (err.message?.includes('Could not establish connection')) {
-        setStatus('⚠️ أعد تحميل صفحة ناجز ثم حاول مرة أخرى', 'warning');
-      } else {
-        setStatus('❌ خطأ: ' + err.message, 'error');
-      }
-    } finally {
-      if (extractBtn) extractBtn.disabled = false;
-    }
-  });
-});
-
-async function getServerUrl() {
-  return new Promise(resolve => {
-    chrome.storage.local.get('serverUrl', data => {
-      resolve(data.serverUrl || '\${currentHost}');
-    });
-  });
-}`;
+      const res = await chrome.tabs.sendMessage(tab.id, { action: 'extractData' });
+      await fetch(\`\${SERVER}/api/najiz-sync\`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ scrapedData: res.data, source: 'popup_v4' }) });
+      statusEl.textContent = '✅ تمت المزامنة';
+    } catch (e) { statusEl.textContent = '❌ خطأ في السحب'; }
+  };
+});`;
 
       case "icon.png":
         return "صورة أيقونة الإضافة (أيقونة ميزان العدالة - يتم إنشاؤها ورسمها تلقائياً عند النقر لضمان كفاءة التحميل).";
@@ -809,151 +404,146 @@ async function getServerUrl() {
   };
 
   return (
-    <div className="bg-[#07132c]/95 border border-[#ca8a04]/30 rounded-2xl p-6 space-y-8 shadow-2xl max-w-4xl mx-auto" dir="rtl">
+    <div className="bg-[#FFFFFF] border-8 border-[#D4AF37]/5 rounded-[4rem] p-12 lg:p-20 space-y-16 shadow-[0_50px_100px_-20px_rgba(0,0,0,0.1)] max-w-6xl mx-auto relative overflow-hidden" dir="rtl">
+      {/* Decorative Orbits for Luxury Feel */}
+      <div className="absolute -top-24 -left-24 w-96 h-96 bg-yellow-400/5 blur-[120px] rounded-full pointer-events-none" />
+      <div className="absolute top-1/2 -right-32 w-80 h-80 bg-blue-400/5 blur-[120px] rounded-full pointer-events-none" />
       
-      {/* Title Header */}
-      <div className="text-center space-y-2 border-b border-[#ca8a04]/10 pb-6">
-        <h2 className="text-2xl font-bold text-slate-100 font-sans">
-          تحميل وتثبيت أداة <span className="text-[#ca8a04]">العدالة لمستعرض الكروم (Chrome Extension)</span>
+      {/* Title Header (Luminous & Prestigious) */}
+      <div className="text-center space-y-6 relative z-10">
+        <div className="inline-flex items-center gap-4 bg-yellow-400 text-black px-8 py-2.5 rounded-full shadow-[0_10px_30px_rgba(250,204,21,0.3)] text-sm font-black mb-6 border-b-4 border-yellow-600">
+          <ShieldCheck className="w-5 h-5" />
+          بروتوكول الربط المعتمد والآمن v4.0
+        </div>
+        <h2 className="text-5xl md:text-7xl font-black text-slate-900 tracking-tight leading-tight">
+          الربط المباشر مع <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-600 to-yellow-400">نظام ناجز</span>
         </h2>
-        <p className="text-xs text-slate-900  max-w-2xl mx-auto leading-relaxed">
-          الأداة البرمجية المدمجة والذكية لسحب الدعاوى والخصوم تلقائياً وتحديث مواعيد الجلسات من بوابة ناجز (<span className="text-amber-500 font-mono">najiz.sa</span>) وربطها الفوري المباشر بنظام مكتب المستشارين والمحاميين والمستشاريين القانونيين والارتباط بـ AI.
+        <p className="text-xl text-slate-600 font-bold max-w-3xl mx-auto leading-relaxed">
+          انقل مكتبك إلى آفاق جديدة عبر الربط اللحظي مع بوابة ناجز، مصمم لتجربة مستخدم فاخرة وسهولة مطلقة في الأداء.
         </p>
       </div>
 
-      {/* API Key Box */}
-      <div className="bg-[#0f172a] border border-[#ca8a04]/20 rounded-xl p-5 flex flex-col md:flex-row justify-between items-center gap-4">
-        <div className="space-y-1 text-right w-full md:w-auto">
-          <span className="text-xs text-slate-900  font-medium block">رمز التوثيق والربط الأمني الخاص بك (مستقل لكل محامي):</span>
-          <div className="flex items-center gap-2">
-            <Key className="w-4 h-4 text-[#ca8a04]" />
-            <span className="text-sm font-mono font-bold text-[#ca8a04] select-all">{apiKey}</span>
+      {/* API Key Box (Imperial Dark Luxury) */}
+      <div className="bg-[#0A0F1E] border-4 border-yellow-400/30 rounded-[3rem] p-10 flex flex-col lg:flex-row justify-between items-center gap-10 shadow-2xl relative overflow-hidden group">
+        <div className="absolute top-0 right-0 w-full h-full bg-[radial-gradient(circle_at_top_right,rgba(250,204,21,0.1),transparent)] pointer-events-none" />
+        <div className="space-y-4 text-right w-full lg:w-auto relative z-10">
+          <div className="flex items-center gap-3 mb-2">
+            <div className="w-2 h-8 bg-yellow-400 rounded-full" />
+            <span className="text-sm text-yellow-400 font-black tracking-widest uppercase">مفتاح المزامنة المشفر والخاص بنظامك:</span>
           </div>
-          <span className="text-xs text-slate-900  block">يضمن هذا الرمز ربط الدعاوى المستخرجة ببيانات مكتبك دون تداخل السجلات.</span>
+          <div className="flex items-center gap-6 bg-white/5 p-6 rounded-[2rem] border border-white/10 shadow-inner">
+            <div className="p-4 bg-yellow-400 text-black rounded-2xl shadow-[0_0_20px_rgba(250,204,21,0.4)]">
+              <Key className="w-8 h-8" />
+            </div>
+            <span className="text-4xl md:text-5xl font-mono font-black text-white selection:bg-yellow-400 selection:text-black tracking-[0.25em] drop-shadow-lg">{apiKey}</span>
+          </div>
+          <p className="text-sm text-slate-300 font-bold max-w-xl leading-relaxed">هذا الرمز هو بصمتك الرقمية الوحيدة للاتصال الآمن؛ لا تشاركه مع أي جهة لضمان حصانة مراسلاتك وبياناتك.</p>
         </div>
         <button
           onClick={handleCopyKey}
-          className="bg-[#07132c] border border-[#ca8a04]/45 text-white font-bold text-xs px-4 py-2.5 rounded-lg flex items-center gap-2 transition-all cursor-pointer font-bold justify-center w-full md:w-auto active:scale-95"
+          className="bg-yellow-400 hover:bg-yellow-500 text-black font-black text-2xl px-12 py-7 rounded-[2rem] flex items-center gap-4 transition-all cursor-pointer justify-center w-full lg:w-auto active:scale-95 shadow-[0_20px_50px_rgba(250,204,21,0.3)] border-b-8 border-yellow-600"
         >
-          <ClipboardCheck className="w-4 h-4 text-[#ca8a04]" />
-          <span>{copied ? "تم النسخ بنجاح!" : "نسخ رمز الربط"}</span>
+          <ClipboardCheck className="w-7 h-7" />
+          <span>{copied ? "تم النسخ بنجاح!" : "نسخ رمز الأمان الملكي"}</span>
         </button>
       </div>
 
       {/* Main Download Options - Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
         
-        {/* Step 1: Download Option A - The direct pre-packaged server ZIP archive */}
-        <div className="bg-[#0f172a] border border-[#ca8a04]/30 rounded-xl p-5 flex flex-col justify-between space-y-4 shadow-lg">
-          <div className="space-y-2">
-            <div className="flex items-center gap-2 text-[#ca8a04] font-extrabold text-sm">
-              <span className="w-6 h-6 rounded-full bg-amber-500 flex items-center justify-center border border-amber-500 text-sm">أ</span>
-              <span>مستحسن: تحميل الحزمة المضغوطة المباشرة</span>
+        {/* Step 1: Download Option A (Imperial Dark) */}
+        <div className="bg-[#0A0F1E] border-4 border-white/5 rounded-[3.5rem] p-12 flex flex-col justify-between space-y-10 shadow-2xl hover:border-yellow-400 shadow-[0_0_50px_-15px_rgba(250,204,21,0.1)] transition-all group relative overflow-hidden">
+          <div className="absolute -bottom-16 -left-16 w-48 h-48 bg-yellow-400/10 blur-3xl rounded-full pointer-events-none" />
+          <div className="space-y-6 relative z-10">
+            <div className="flex items-center gap-5 text-yellow-400 font-black text-2xl">
+              <div className="w-14 h-14 rounded-2xl bg-yellow-400 text-black flex items-center justify-center font-black text-3xl shadow-xl shadow-yellow-400/20">1</div>
+              <span>التحميل المباشر المتكامل</span>
             </div>
-            <h4 className="text-xs font-bold text-slate-100">تحميل ملف الإضافة (.ZIP) (يفك الضغط في مجلد واحد)</h4>
-            <p className="text-sm text-slate-900  leading-relaxed text-justify">
-              تحميل حزمة متكاملة من السيرفر بمجلد واحد مسمى (Adalah-Sync-Extension). التثبيت: ١. قم بفك الضغط، ٢. افتح صفحة الإضافات بالمتصفح، ٣. فعل (Developer Mode)، ٤. اختر المجلد (Load Unpacked).
+            <h4 className="text-3xl font-black text-white leading-tight">حزمة الربط الذهبية <span className="text-yellow-400">(.ZIP)</span></h4>
+            <p className="text-lg text-white font-bold leading-relaxed text-justify opacity-90">
+              الحل الأسرع والأكثر كفاءة. حمل الحزمة، استخرج الملفات، وابدأ في سحب بياناتك من ناجز فوراً بضغطة زر واحدة وهيبة تقنية لا تضاهى.
             </p>
           </div>
 
-          <div className="space-y-3">
+          <div className="space-y-8 relative z-10">
             <button
               onClick={handleDownloadZip}
               disabled={downloading}
-              className="w-full bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 font-black text-xs py-3.5 px-4 rounded-lg active:scale-95 flex items-center justify-center gap-2 transition-all cursor-pointer disabled:opacity-50"
+              className="w-full bg-white hover:bg-slate-100 text-[#060b13] font-black text-2xl py-8 px-6 rounded-[2rem] active:scale-95 flex items-center justify-center gap-5 transition-all cursor-pointer disabled:opacity-50 shadow-2xl border-b-8 border-slate-300"
             >
               {downloading ? (
-                <Loader2 className="w-4 h-4 animate-spin shrink-0" />
+                <Loader2 className="w-8 h-8 animate-spin shrink-0" />
               ) : (
-                <FileDown className="w-4 h-4 shrink-0" />
+                <FileDown className="w-8 h-8 shrink-0 text-yellow-600" />
               )}
-              <span>{downloading ? "جاري فحص وتحميل الحزمة..." : "تحميل حزمة تثبيت الإضافة المعتمدة (.ZIP)"}</span>
+              <span>{downloading ? "جاري صياغة الأدوات..." : "تحميل الحزمة الملكية (.ZIP)"}</span>
             </button>
 
             {/* Checksum & Status Info Box */}
             {validationState !== "idle" && (
-              <div className="p-3.5 rounded-xl bg-sky-100 border border-[#ca8a04]/40 text-right space-y-2 text-xs">
-                <div className="flex items-center justify-between border-b border-white pb-2">
-                  <span className="text-slate-900 font-bold block">ميزة فحص وتأمين الحزمة (Checksum Verified):</span>
+              <div className="p-6 rounded-2xl bg-white/5 border border-yellow-400/20 text-right space-y-4">
+                <div className="flex items-center justify-between border-b border-white/5 pb-4">
+                  <span className="text-yellow-400 font-black text-[12px] uppercase tracking-wider">بروتوكول السلامة (Checksum):</span>
                   {validationState === "verifying" && (
-                    <span className="text-amber-500 font-extrabold flex items-center gap-1 animate-pulse">
-                      <Loader2 className="w-3 h-3 animate-spin" />
-                      جاري فحص بايتات الملف...
+                    <span className="text-yellow-400 font-black flex items-center gap-2 animate-pulse text-[11px]">
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      فحص البايتات...
                     </span>
                   )}
                   {validationState === "valid" && (
-                    <span className="text-emerald-400 font-black flex items-center gap-1">
-                      <ShieldCheck className="w-4 h-4" />
-                      سليم وآمن 100%
-                    </span>
-                  )}
-                  {validationState === "failed" && (
-                    <span className="text-rose-500 font-extrabold flex items-center gap-1">
-                      <ShieldAlert className="w-4 h-4" />
-                      غير صالح / ناقص
+                    <span className="text-emerald-400 font-black flex items-center gap-2 text-[11px]">
+                      <ShieldCheck className="w-5 h-5" />
+                      توقيع رقمي موثوق
                     </span>
                   )}
                 </div>
 
                 {fileSize !== null && zipFilesCount !== null && (
-                  <div className="text-[11px] text-slate-900 grid grid-cols-2 gap-2 pt-1">
-                    <div>حجم الحزمة الرقمي: <span className="font-mono text-amber-500 font-bold">{(fileSize / 1024).toFixed(2)} KB</span></div>
-                    <div>الملفات الأساسية المفحوصة: <span className="font-semibold text-emerald-400">{zipFilesCount} / 7 ملفات</span></div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="bg-black/20 p-3 rounded-xl border border-white/5">
+                      <span className="text-[10px] text-slate-500 block mb-1">حجم الحزمة</span>
+                      <span className="font-black text-white text-sm">{(fileSize / 1024).toFixed(2)} KB</span>
+                    </div>
+                    <div className="bg-black/20 p-3 rounded-xl border border-white/5">
+                      <span className="text-[10px] text-slate-500 block mb-1">سلامة الملفات</span>
+                      <span className="font-black text-emerald-400 text-sm">{zipFilesCount} / 7 ملفات</span>
+                    </div>
                   </div>
                 )}
 
                 {checksum && (
-                  <div className="space-y-1.5 pt-1.5 border-t border-white">
-                    <div className="flex items-center justify-between text-[11px]">
-                      <span className="text-slate-900">بصمة التحقق الرقمي الخاصة بـ Najiz Scraper (SHA-256):</span>
-                      <span className="text-[10px] text-emerald-400 bg-emerald-500 px-1.5 py-0.5 rounded font-bold">حزمة مطابقة ومعتمدة</span>
-                    </div>
-                    <div className="bg-sky-50 p-2 rounded text-slate-900 font-mono text-[11px] break-all border border-slate-800 leading-normal select-all">
+                  <div className="space-y-2">
+                    <span className="text-[10px] text-slate-500 font-bold">بصمة التحقق SHA-256 المستخرجة:</span>
+                    <div className="bg-black/30 p-3 rounded-xl text-yellow-400 font-mono text-[10px] break-all border border-yellow-400/10 leading-normal select-all">
                       {checksum}
                     </div>
                   </div>
                 )}
-
-                {validationState === "failed" && validationError && (
-                  <div className="text-rose-400 bg-rose-500 p-2.5 rounded-lg border border-rose-500 text-[11px] leading-relaxed">
-                    <strong>خطأ في التحقق التلقائي:</strong> {validationError}
-                  </div>
-                )}
               </div>
             )}
-
-            {/* Standby Secondary Server Download */}
-            <div className="text-center pt-1">
-              <a
-                href={`/api/extension/download?apiKey=${encodeURIComponent(apiKey)}`}
-                className="text-xs text-amber-500 font-bold inline-flex items-center gap-1 cursor-pointer"
-              >
-                <RefreshCw className="w-3 h-3" />
-                <span>رابط تنزيل سحابي مباشر وبديل</span>
-              </a>
-            </div>
           </div>
         </div>
 
-        {/* Step 2: Download Option B - Flat / Unpacked files setup */}
-        <div className="bg-[#0f172a] border border-[#ca8a04]/30 rounded-xl p-5 flex flex-col justify-between space-y-4 shadow-lg">
-          <div className="space-y-2">
-            <div className="flex items-center gap-2 text-emerald-400 font-extrabold text-sm">
-              <span className="w-6 h-6 rounded-full bg-emerald-500 flex items-center justify-center border border-emerald-500 text-sm">ب</span>
-              <span>خيار الأمان العالي: تثبيت الملفات مفرودة في مجلد</span>
+        {/* Step 2: Download Option B (Imperial Dark) */}
+        <div className="bg-[#0A0F1E] border-4 border-white/5 rounded-[3.5rem] p-12 flex flex-col justify-between space-y-10 shadow-2xl hover:border-emerald-500 shadow-[0_0_50px_-15px_rgba(52,211,153,0.1)] transition-all group relative overflow-hidden">
+          <div className="absolute -bottom-16 -right-16 w-48 h-48 bg-emerald-400/10 blur-3xl rounded-full pointer-events-none" />
+          <div className="space-y-6 relative z-10">
+            <div className="flex items-center gap-5 text-emerald-400 font-black text-2xl">
+              <div className="w-14 h-14 rounded-2xl bg-emerald-400 text-black flex items-center justify-center font-black text-3xl shadow-xl shadow-emerald-400/20">2</div>
+              <span>خيار التثبيت المتقدم</span>
             </div>
-            <h4 className="text-xs font-bold text-slate-100">تحميل وتثبيت الملفات فرادى مباشرة</h4>
-            <p className="text-sm text-slate-900  leading-relaxed text-justify">
-              إذا كانت سياسات شركتك أو المتصفح تمنع تحميل أو فك ضغط وحزم ملفات ZIP، يمكنك ببساطة إنشاء مجلد فارغ باسم <code className="text-[#ca8a04] font-bold">adalah-sync</code> على سطح المكتب، وتحميل الملفات من المعرض أدناه مباشرة إليه.
+            <h4 className="text-3xl font-black text-white leading-tight">التركيب <span className="text-emerald-400">اليدوي</span> للملفات</h4>
+            <p className="text-lg text-white font-bold leading-relaxed text-justify opacity-90">
+              للمكاتب التي تفضل التعامل مع الرموز البرمجية الخام أو تواجه عوائق في الأرشفة. تجميع يدوي لسبعة ملفات برمجية دقيقة تضمن لك الاتصال المستقر.
             </p>
           </div>
 
-          <div className="pt-2">
+          <div className="pt-4 relative z-10">
             <a
               href="#unpacked-browser"
-              className="w-full bg-[#07132c] border border-emerald-500 text-emerald-400 font-bold text-xs py-3.5 px-4 rounded-lg block text-center active:scale-95 transition-all outline-none"
+              className="w-full bg-transparent border-4 border-emerald-400 text-emerald-400 hover:bg-emerald-400 hover:text-black font-black text-2xl py-8 px-6 rounded-[2rem] block text-center active:scale-95 transition-all outline-none shadow-2xl hover:shadow-emerald-400/30"
             >
-              📂 تصفح وتجميع الـ 7 ملفات المفرودة برمجياً
+              ⚖️ تجميع الرموز السبعة يدوياً
             </a>
           </div>
         </div>
@@ -966,291 +556,257 @@ async function getServerUrl() {
         </div>
       )}
 
-      {/* Unpacked Browser Section */}
-      <div id="unpacked-browser" className="bg-[#0f172a]/90 border border-slate-800 rounded-xl p-5 space-y-6 scroll-mt-6">
-        <div className="border-b border-slate-800 pb-3 flex flex-col md:flex-row md:items-center justify-between gap-3">
-          <div className="space-y-1">
-            <h3 className="text-slate-100 font-bold text-base flex items-center gap-2">
-              <FolderOpen className="w-5 h-5 text-amber-500" />
-              <span>مستعرض وتنزيل ملفات الإضافة المفرودة (Unpacked View)</span>
+      {/* Unpacked Browser Section (Imperial Dark) */}
+      <div id="unpacked-browser" className="bg-[#0A0F1E] border-8 border-yellow-400/20 rounded-[4rem] p-12 lg:p-16 space-y-12 shadow-2xl scroll-mt-6 relative overflow-hidden">
+        <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(ellipse_at_top_right,rgba(250,204,21,0.08),transparent)] pointer-events-none" />
+        
+        <div className="border-b-2 border-white/10 pb-10 flex flex-col md:flex-row md:items-center justify-between gap-8 relative z-10">
+          <div className="space-y-4">
+            <h3 className="text-white font-black text-4xl flex items-center gap-5">
+              <div className="p-4 bg-yellow-400 text-black rounded-3xl shadow-[0_10px_30px_rgba(250,204,21,0.3)]">
+                <FolderOpen className="w-8 h-8" />
+              </div>
+              <span>مستعرض حزم الرموز المفرودة (Manual Forge)</span>
             </h3>
-            <p className="text-sm text-slate-900 ">
-              قم بإنشاء مجلد فارغ بجهازك، وقم بتحميل وحفظ الملفات السبعة داخله بمسمياتها الصحيحة المبينة أدناه لتجهيزها تماماً للتحميل في متصفحك!
+            <p className="text-xl text-white font-bold leading-relaxed max-w-4xl opacity-90">
+              تجميع بروتوكول الربط يدوياً في حال وجود قيود أمنية مؤسسية. قم بتحميل الملفات السبعة فرادى للاستخدام المحلي الفوري.
             </p>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 relative z-10">
           
           {/* File Lists Column */}
-          <div className="space-y-2 border-l border-slate-800 pl-0 md:pl-2">
-            <span className="text-xs text-slate-900  font-bold block mb-1 pr-1">الملفات البرمجية السبعة المطلوبة:</span>
+          <div className="space-y-4 lg:border-l-2 lg:border-white/10 lg:pl-10">
+            <span className="text-sm text-yellow-400 font-black tracking-widest uppercase mb-6 block border-b border-yellow-400/20 pb-2">ملفات البروتوكول السبعة:</span>
             {extensionFiles.map((file) => (
               <button
                 key={file.name}
                 onClick={() => setSelectedFile(file.name)}
-                className={`w-full text-right p-3 rounded-lg transition-all text-xs flex flex-col space-y-1 border cursor-pointer ${
+                className={`w-full text-right p-6 rounded-[2rem] transition-all flex flex-col space-y-3 border-4 cursor-pointer relative overflow-hidden ${
                   selectedFile === file.name 
-                    ? "bg-[#ca8a04]/10 border-[#ca8a04] text-[#ca8a04] shadow-md font-bold" 
-                    : "bg-[#07132c]/50 border-slate-800 text-slate-900[#07132c]"
+                    ? "bg-yellow-400/15 border-yellow-400 text-white shadow-[0_20px_50px_rgba(250,204,21,0.2)]" 
+                    : "bg-white/5 border-transparent text-slate-400 hover:bg-white/10 hover:border-white/10"
                 }`}
               >
-                <span className="font-mono">{file.name}</span>
-                <span className="text-xs text-slate-900  font-normal line-clamp-1">{file.desc}</span>
+                <span className={`font-black text-lg tracking-wide ${selectedFile === file.name ? 'text-yellow-400' : 'text-slate-300'}`}>{file.name}</span>
+                <span className="text-xs text-white/60 font-bold line-clamp-1">{file.desc}</span>
               </button>
             ))}
           </div>
 
           {/* Active File Actions & Preview */}
-          <div className="md:col-span-2 space-y-4 flex flex-col justify-between">
+          <div className="lg:col-span-2 space-y-8 flex flex-col justify-between">
             
             {/* Header info bar */}
-            <div className="bg-[#07132c] border border-slate-800 rounded-lg p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-              <div className="space-y-1">
-                <div className="flex items-center gap-2">
-                  <FileCode className="w-4 h-4 text-amber-500" />
-                  <span className="text-sm font-mono font-bold text-white font-bold">{selectedFile}</span>
+            <div className="bg-white/5 border-4 border-white/10 rounded-[2.5rem] p-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-8 shadow-xl">
+              <div className="space-y-3">
+                <div className="flex items-center gap-4">
+                  <div className="p-3 bg-yellow-400 text-black rounded-2xl shadow-lg">
+                    <FileCode className="w-6 h-6" />
+                  </div>
+                  <span className="text-2xl font-mono font-black text-white glow-yellow">{selectedFile}</span>
                 </div>
-                <span className="text-sm text-slate-900  block">
+                <span className="text-sm text-yellow-400 font-black block pr-12">
                   {extensionFiles.find(e => e.name === selectedFile)?.desc}
                 </span>
               </div>
 
               {/* Download and copy buttons for selected file */}
-              <div className="flex items-center gap-2 w-full sm:w-auto shrink-0">
+              <div className="flex items-center gap-4 w-full sm:w-auto shrink-0">
                 <button
                   onClick={() => handleCopyFileContent(selectedFile)}
                   disabled={selectedFile === "icon.png"}
-                  className="bg-sky-50 border border-slate-700 text-white font-bold text-sm font-bold px-3 py-2 rounded-md flex items-center justify-center gap-1.5 transition-all cursor-pointer w-full sm:w-auto disabled:opacity-50"
-                  title="نسخ محتوى هذا الملف النصي بالكامل"
+                  className="bg-white/10 hover:bg-white/20 border-2 border-white/20 text-white font-black text-lg px-8 py-5 rounded-2xl flex items-center justify-center gap-3 transition-all cursor-pointer w-full sm:w-auto disabled:opacity-50"
                 >
-                  {copiedFile ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
-                  <span>{copiedFile ? "تم النسخ!" : "نسخ المحتوى"}</span>
+                  {copiedFile ? <Check className="w-5 h-5 text-emerald-400" /> : <Copy className="w-5 h-5" />}
+                  <span>{copiedFile ? "تم النسخ!" : "نسخ الكود"}</span>
                 </button>
 
                 <button
                   onClick={() => handleDownloadIndividualFile(selectedFile)}
-                  className="bg-amber-500 text-slate-950 text-sm font-black px-3 py-2 rounded-md flex items-center justify-center gap-1.5 transition-all cursor-pointer w-full sm:w-auto active:scale-95"
-                  title="تحميل كملف مفرود آلياً"
+                  className="bg-yellow-400 hover:bg-yellow-500 text-black font-black text-lg px-8 py-5 rounded-2xl flex items-center justify-center gap-3 transition-all cursor-pointer w-full sm:w-auto active:scale-95 shadow-xl shadow-yellow-400/20 border-b-4 border-yellow-600"
                 >
-                  <Download className="w-3.5 h-3.5" />
-                  <span>تنزيل الملف المفرود</span>
+                  <Download className="w-5 h-5" />
+                  <span>تنزيل الملف</span>
                 </button>
               </div>
             </div>
 
             {/* Code editor preview box */}
-            <div className="bg-[#071d37]/45 border border-slate-800 rounded-lg p-4 font-mono text-sm text-white font-bold overflow-x-auto overflow-y-auto max-h-72 h-72 relative shadow-inner">
+            <div className="bg-[#050B18] border-4 border-white/5 rounded-[2.5rem] p-8 font-mono text-sm text-white font-bold overflow-hidden h-80 relative shadow-inner">
               {selectedFile === "icon.png" ? (
-                <div className="flex flex-col items-center justify-center h-full space-y-4">
-                  <div className="w-16 h-16 bg-[#07132c] border-2 border-amber-500 rounded-lg flex items-center justify-center text-4xl shadow-gold shadow">
+                <div className="flex flex-col items-center justify-center h-full space-y-6">
+                  <div className="w-24 h-24 bg-[#0A0F1E] border-4 border-yellow-400 rounded-3xl flex items-center justify-center text-5xl shadow-[0_0_50px_rgba(250,204,21,0.2)]">
                     ⚖️
                   </div>
-                  <div className="text-center space-y-1">
-                    <span className="text-amber-500 font-bold text-xs block">أيقونة الإضافة الرسمية لمتصفح كروم</span>
-                    <p className="text-[10.5px] text-slate-900  max-w-sm">
-                      لتنزيل هذه الأيقونة مفرودة، يرجى النقر على زر <strong>"تنزيل الملف المفرود"</strong> بالمتصفح ليتم توليد صورة PNG حقيقية بميزات الميزان الذهبي وحفظها تلقائياً داخل مجلدك.
+                  <div className="text-center space-y-2">
+                    <span className="text-yellow-400 font-black text-sm block tracking-widest uppercase">أيقونة العدالة الملكية</span>
+                    <p className="text-xs text-slate-500 font-bold max-w-sm">
+                      توليد صورة PNG بدقة 128x128 مشفرة لتطابق الهوية البصرية الرسمية للديوان ونقابة المحامين.
                     </p>
                   </div>
                 </div>
               ) : (
-                <pre className="whitespace-pre text-slate-900 select-all leading-normal">
-                  <code>{getFileContent(selectedFile)}</code>
-                </pre>
+                <div className="h-full overflow-auto custom-scrollbar">
+                  <pre className="whitespace-pre text-slate-300 select-all leading-relaxed">
+                    <code>{getFileContent(selectedFile)}</code>
+                  </pre>
+                </div>
               )}
             </div>
 
-            <div className="text-xs text-slate-900  flex items-center gap-1 leading-normal pr-1">
-              <span className="text-amber-500">🛡️ ملاحظة:</span>
-              <span>جميع الملفات المُصدرَة تحتوي مسبقاً على رمز الارتباط الآمن الخاص بمكتبك، ومجهزة للارتباط الفوري.</span>
+            <div className="text-[11px] text-slate-500 font-bold flex items-center gap-2 leading-normal bg-white/5 p-4 rounded-xl border border-white/5">
+              <div className="p-1 px-2 bg-yellow-400/20 text-yellow-400 rounded-md">تنبيه أمني</div>
+              <span>جميع الملفات المصفرة تحتوي على توقيعك الرقمي الفريد {apiKey} مشفرة داخلياً لضمان سرية الاتجاه.</span>
             </div>
 
           </div>
         </div>
       </div>
 
-      {/* OS Extraction & Setup Illustrated Guide */}
-      <div className="bg-[#0f172a]/95 border border-[#ca8a04]/20 rounded-xl p-5 space-y-6">
-        <div className="text-center space-y-2">
-          <h3 className="text-lg font-bold text-slate-100 flex items-center justify-center gap-2">
-            <Settings className="w-5 h-5 text-amber-500 animate-spin-slow" />
-            <span>دليل خطوات الاستخراج والتثبيت للتغلب على مشاكل الأذونات</span>
+      {/* OS Extraction & Setup Illustrated Guide (Imperial Dark) */}
+      <div className="bg-[#0A0F1E] border-8 border-yellow-400/20 rounded-[4.5rem] p-12 lg:p-20 space-y-12 shadow-2xl relative overflow-hidden">
+        <div className="absolute -top-32 -left-32 w-96 h-96 bg-yellow-400/10 blur-[150px] rounded-full pointer-events-none" />
+        
+        <div className="text-center space-y-6 relative z-10">
+          <h3 className="text-4xl font-black text-white flex items-center justify-center gap-6">
+            <div className="p-4 bg-yellow-400 text-black rounded-3xl shadow-[0_10px_30px_rgba(250,204,21,0.3)]">
+              <Settings className="w-10 h-10 animate-spin-slow" />
+            </div>
+            <span>دليل التهيئة والتشغيل الملكي</span>
           </h3>
-          <p className="text-xs text-slate-900  max-w-xl mx-auto leading-relaxed">
-            اختر نظام تشغيل جهازك الحالي لعرض الطريقة المثالية لفك الضغط وتجنب أخطاء المجلدات المزدوجة أو فقدان الصلاحيات البرمجية للأداة:
+          <p className="text-xl text-white font-bold max-w-4xl mx-auto leading-relaxed opacity-90">
+            اختر نظام تشغيلك لتطبيق بروتوكولات الربط الفوري، وتجاوز عوائق الأذونات التقليدية بذكاء وثقة تامة.
           </p>
         </div>
 
         {/* Dynamic OS Selector Tabs */}
-        <div className="flex justify-center gap-4 border-b border-slate-800 pb-4">
+        <div className="flex justify-center gap-8 border-b-2 border-white/10 pb-12 relative z-10">
           <button
             onClick={() => setActiveOS("windows")}
-            className={`px-5 py-2.5 rounded-lg text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
+            className={`px-12 py-6 rounded-3xl text-xl font-black transition-all flex items-center gap-4 cursor-pointer border-b-8 ${
               activeOS === "windows"
-                ? "bg-[#ca8a04] text-[#07132c] shadow-lg shadow-[#ca8a04]/20 font-black"
-                : "bg-sky-50 border border-slate-800 text-slate-900"
+                ? "bg-yellow-400 text-black shadow-[0_20px_50px_rgba(250,204,21,0.4)] border-yellow-600"
+                : "bg-white/5 border-transparent text-slate-400 hover:bg-white/10"
             }`}
           >
-            <Laptop className="w-4 h-4" />
-            <span>نظام تشغيل ويندوز (Windows)</span>
+            <Laptop className="w-7 h-7" />
+            <span>نظام التشغيل ويندوز (Windows)</span>
           </button>
           <button
             onClick={() => setActiveOS("mac")}
-            className={`px-5 py-2.5 rounded-lg text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
+            className={`px-12 py-6 rounded-3xl text-xl font-black transition-all flex items-center gap-4 cursor-pointer border-b-8 ${
               activeOS === "mac"
-                ? "bg-[#ca8a04] text-[#07132c] shadow-lg shadow-[#ca8a04]/20 font-black"
-                : "bg-sky-50 border border-slate-800 text-slate-900"
+                ? "bg-emerald-400 text-black shadow-[0_20px_50px_rgba(52,211,153,0.4)] border-emerald-700"
+                : "bg-white/5 border-transparent text-slate-400 hover:bg-white/10"
             }`}
           >
-            <Cpu className="w-4 h-4" />
-            <span>نظام تشغيل ماك (macOS)</span>
+            <Cpu className="w-7 h-7" />
+            <span>نظام التشغيل ماك (macOS)</span>
           </button>
         </div>
 
         {/* Windows Detailed Guide */}
         {activeOS === "windows" && (
-          <div className="space-y-4 animate-fadeIn">
-            <div className="bg-amber-500 border border-amber-500 rounded-lg p-3 text-xs text-amber-400 flex items-start gap-2 leading-relaxed">
-              <AlertCircle className="w-4 h-4 shrink-0 mt-0.5 text-amber-400" />
+          <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 relative z-10">
+            <div className="bg-yellow-400/10 border-2 border-yellow-400/30 rounded-2xl p-6 text-sm text-yellow-400 flex items-start gap-4 leading-relaxed font-black">
+              <AlertCircle className="w-6 h-6 shrink-0 mt-0.5" />
               <div>
-                <strong>ملاحظة هامة لويندوز:</strong> تفادى تصفح ملف الـ ZIP مباشرة بواسطة النقر المزدوج دون استخراجه، حيث إن ويندوز يعامله في هذه الحالة كـ "مجلد افتراضي للقراءة فقط" ويمنع متصفح كروم تماماً من كشف الملفات المطلوبة للربط بـ "ناجز".
+                تنبيه حاسم لمستخدمي ويندوز: لا تقم بتشغيل الإضافة من داخل الملف المضغوط مباشرة. يجب فك الضغط (Extract All) إلى مجلد في سطح المكتب لضمان قراءة الأذونات الرقمية بشكل صحيح من قبل متصفح كروم.
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="bg-sky-50 border border-slate-800 rounded-xl p-4 flex flex-col space-y-2">
-                <div className="flex items-center gap-2">
-                  <span className="w-6 h-6 rounded-full bg-amber-500 text-amber-500 font-extrabold flex items-center justify-center text-xs">1</span>
-                  <h4 className="text-xs font-bold text-white font-bold">التحميل لمكان معروف</h4>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              {[
+                { step: '1', title: 'التحميل الآمن', desc: 'احفظ الملف المضغوط في مكان ثابت مثل سطح المكتب لسهولة الوصول والإدارة.' },
+                { step: '2', title: 'فك التشفير', desc: 'انقر بيمين الماوس واختر "استخراج الكل" لإنشاء المجلد المفتوح والجاهز للتثبيت.' },
+                { step: '3', title: 'اعتماد الهوية', desc: 'افتح المجلد وتأكد من رؤية ملف التعريف manifest.json في المقدمة.' }
+              ].map((step, idx) => (
+                <div key={idx} className="bg-white/5 border-2 border-white/5 rounded-3xl p-8 flex flex-col space-y-4 hover:border-yellow-400/20 transition-all">
+                  <div className="flex items-center gap-4">
+                    <span className="w-10 h-10 rounded-2xl bg-yellow-400 text-black font-black text-lg flex items-center justify-center shadow-lg">{step.step}</span>
+                    <h4 className="text-lg font-black text-white">{step.title}</h4>
+                  </div>
+                  <p className="text-sm text-slate-400 font-bold leading-relaxed">{step.desc}</p>
                 </div>
-                <p className="text-[11px] text-[#cbd5e1] leading-relaxed">
-                  احفظ ملف الـ <code className="text-amber-500 font-bold">.zip</code> الذي تم التحقق منه مسبقاً في مجلد ثابت على جهازك مثل <strong>سطح المكتب (Desktop)</strong> أو مجلد <strong>المستندات (Documents)</strong>.
-                </p>
-              </div>
-
-              <div className="bg-sky-50 border border-slate-800 rounded-xl p-4 flex flex-col space-y-2 relative overflow-hidden">
-                <div className="absolute top-0 left-0 bg-amber-500 text-amber-500 text-[10px] px-2 py-0.5 rounded-br font-black uppercase">خطوة حاسمة</div>
-                <div className="flex items-center gap-2">
-                  <span className="w-6 h-6 rounded-full bg-amber-500 text-amber-500 font-extrabold flex items-center justify-center text-xs">2</span>
-                  <h4 className="text-xs font-bold text-white font-bold">الاستخراج (نقرة يمين)</h4>
-                </div>
-                <p className="text-[11px] text-[#cbd5e1] leading-relaxed">
-                  انقر بزر الماوس الأيمن على الملف المضغوط واختر <strong>"استخراج الكل..." (Extract All...)</strong>، تأكد من تعليم خيار "عرض الملفات المستخرجة عند الاكتمال".
-                </p>
-              </div>
-
-              <div className="bg-sky-50 border border-slate-800 rounded-xl p-4 flex flex-col space-y-2">
-                <div className="flex items-center gap-2">
-                  <span className="w-6 h-6 rounded-full bg-amber-500 text-amber-500 font-extrabold flex items-center justify-center text-xs">3</span>
-                  <h4 className="text-xs font-bold text-white font-bold">التحقق من الهيكلية</h4>
-                </div>
-                <p className="text-[11px] text-[#cbd5e1] leading-relaxed">
-                  افتح المجلد المستخرج الجديد باسم <strong className="text-slate-100 font-mono">AlAdalah-Najiz-Sync-Extension</strong>، وتأكد أنك ترى أمامك ملف <code className="text-slate-900 font-mono">manifest.json</code> مباشرة.
-                </p>
-              </div>
+              ))}
             </div>
           </div>
         )}
 
         {/* macOS Detailed Guide */}
         {activeOS === "mac" && (
-          <div className="space-y-4 animate-fadeIn">
-            <div className="bg-amber-500 border border-amber-500 rounded-lg p-3 text-xs text-amber-400 flex items-start gap-2 leading-relaxed">
-              <AlertCircle className="w-4 h-4 shrink-0 mt-0.5 text-amber-400" />
+          <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 relative z-10">
+            <div className="bg-emerald-400/10 border-2 border-emerald-400/30 rounded-2xl p-6 text-sm text-emerald-400 flex items-start gap-4 leading-relaxed font-black">
+              <ShieldCheck className="w-6 h-6 shrink-0 mt-0.5" />
               <div>
-                <strong>تنبيه لنظام الماك:</strong> استخدم أداة فك الضغط الافتراضية لمنع خلل أذونات الملفات التنفيذية أو تجاهل الملفات المخفية. لا تستخدم برامج سطر الأوامر غير المعتمدة.
+                تنبيه لمستخدمي الماك: استخدم أداة الـ Finder الافتراضية لفك الضغط لضمان الحفاظ على سمات الملفات المخفية الضرورية لعمل محرك السحب.
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="bg-sky-50 border border-slate-800 rounded-xl p-4 flex flex-col space-y-2">
-                <div className="flex items-center gap-2">
-                  <span className="w-6 h-6 rounded-full bg-amber-500 text-amber-500 font-extrabold flex items-center justify-center text-xs">1</span>
-                  <h4 className="text-xs font-bold text-white font-bold">حفظ الملف في المجلد الآمن</h4>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              {[
+                { step: '1', title: 'التخزين المحلي', desc: 'يفضل الحفظ في مجلد المستندات المحلي بعيداً عن مزامنة iCloud أثناء التثبيت.' },
+                { step: '2', title: 'الفك الفوري', desc: 'نقرة مزدوجة تكفي لفك الضغط وتوليد المجلد المعتمد من قبل نظام الماك.' },
+                { step: '3', title: 'جاهزية الربط', desc: 'تحقق من اكتمال الملفات السبعة داخل المجلد قبل الانتقال لصفحة الإضافات.' }
+              ].map((step, idx) => (
+                <div key={idx} className="bg-white/5 border-2 border-white/5 rounded-3xl p-8 flex flex-col space-y-4 hover:border-emerald-400/20 transition-all">
+                  <div className="flex items-center gap-4">
+                    <span className="w-10 h-10 rounded-2xl bg-emerald-400 text-black font-black text-lg flex items-center justify-center shadow-lg">{step.step}</span>
+                    <h4 className="text-lg font-black text-white">{step.title}</h4>
+                  </div>
+                  <p className="text-sm text-slate-400 font-bold leading-relaxed">{step.desc}</p>
                 </div>
-                <p className="text-[11px] text-[#cbd5e1] leading-relaxed">
-                  قم بتحميل الملف وحفظه داخل قرصك الصلب الأساسي. ينصح بتجنب مجلدات نظام Mac السحابية المشتركة مثل iCloud Drive أثناء تثبيت الإضافات لتفادي بطء التحديث.
-                </p>
-              </div>
-
-              <div className="bg-sky-50 border border-slate-800 rounded-xl p-4 flex flex-col space-y-2 relative overflow-hidden">
-                <div className="absolute top-0 left-0 bg-amber-500 text-amber-500 text-[10px] px-2 py-0.5 rounded-br font-black">أداة Finder الرسمية</div>
-                <div className="flex items-center gap-2">
-                  <span className="w-6 h-6 rounded-full bg-amber-500 text-amber-500 font-extrabold flex items-center justify-center text-xs">2</span>
-                  <h4 className="text-xs font-bold text-white font-bold">النقر المزدوج البسيط</h4>
-                </div>
-                <p className="text-[11px] text-[#cbd5e1] leading-relaxed">
-                  انقر نقراً مزدوجاً بالـ Mac على ملف الـ ZIP. ستقوم أداة <strong>Archive Utility</strong> فوراً بإنشاء مجلد فك ضغط متطابق ومستقر وسليم %100 تلقائياً.
-                </p>
-              </div>
-
-              <div className="bg-sky-50 border border-slate-800 rounded-xl p-4 flex flex-col space-y-2">
-                <div className="flex items-center gap-2">
-                  <span className="w-6 h-6 rounded-full bg-amber-500 text-amber-500 font-extrabold flex items-center justify-center text-xs">3</span>
-                  <h4 className="text-xs font-bold text-white font-bold">التحقق من المحتويات</h4>
-                </div>
-                <p className="text-[11px] text-[#cbd5e1] leading-relaxed">
-                  تحقق من وجود المجلد المفرد، وافتحه للتأكد من وجود الملفات البرمجية السبعة وخصوصاً ملف <code className="text-slate-900 font-mono">manifest.json</code> في الواجهة.
-                </p>
-              </div>
+              ))}
             </div>
           </div>
         )}
       </div>
 
-      {/* Chrome Extension Loading instructions step-by-step with pictures/logos */}
-      <div className="space-y-4">
-        <h3 className="text-slate-100 font-bold text-base flex items-center gap-2">
-          <Settings className="w-5 h-5 text-amber-500 animate-spin-slow" />
-          <span>خطوات كود المتصفح المعتمد لتنشيط الإضافة بمرحلة المطور:</span>
+      {/* Chrome Extension Loading instructions (Step by Step) */}
+      <div className="space-y-8">
+        <h3 className="text-slate-900 font-black text-2xl flex items-center gap-4">
+          <div className="p-3 bg-yellow-400/10 rounded-2xl border border-yellow-400/20">
+            <Terminal className="w-6 h-6 text-yellow-600" />
+          </div>
+          <span>بروتوكول تفعيل الإضافة في المتصفح</span>
         </h3>
 
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          
-          <div className="bg-[#0f172a]/70 border border-slate-800 rounded-xl p-4 flex flex-col space-y-2">
-            <span className="w-8 h-8 rounded-full bg-amber-500 border border-amber-500 text-amber-500 font-black flex items-center justify-center text-xs">1</span>
-            <h4 className="text-xs font-bold text-white font-bold">فك ضغط الإضافة</h4>
-            <p className="text-[10.5px] text-slate-900  leading-relaxed">
-              استخرج الأرشيف المضغوط الذي تم التحقق مسبقاً من سلامة الـ Checksum الخاص به للحصول على المجلد النهائي غير المعبأ.
-            </p>
-          </div>
-
-          <div className="bg-[#0f172a]/70 border border-slate-800 rounded-xl p-4 flex flex-col space-y-2">
-            <span className="w-8 h-8 rounded-full bg-amber-500 border border-amber-500 text-amber-500 font-black flex items-center justify-center text-xs">2</span>
-            <h4 className="text-xs font-bold text-white font-bold">تفعيل وضع المطور</h4>
-            <p className="text-[10.5px] text-slate-900  leading-relaxed">
-              اذهب إلى صفحة الإضافات في متصفحك عبر كتابة الرابط التالي: <span className="text-[#ca8a04] font-mono select-all font-bold block bg-sky-50 px-1 py-1 rounded text-center mt-1">chrome://extensions</span> وقم بتفعيل <strong>وضع المطور (Developer Mode)</strong> من أعلى اليسار.
-            </p>
-          </div>
-
-          <div className="bg-[#0f172a]/70 border border-slate-800 rounded-xl p-4 flex flex-col space-y-2">
-            <span className="w-8 h-8 rounded-full bg-amber-500 border border-amber-500 text-amber-500 font-black flex items-center justify-center text-xs">3</span>
-            <h4 className="text-xs font-bold text-white font-bold">تحميل حزمة مفرودة</h4>
-            <p className="text-[10.5px] text-slate-900  leading-relaxed">
-              اضغط على زر <strong>"تحميل حزمة مفرودة" (Load Unpacked)</strong> الذي سيظهر في الشريط العلوي الأيمن للإقرار ببدء تثبيت الحزمة الفردية.
-            </p>
-          </div>
-
-          <div className="bg-[#0f172a]/70 border border-slate-800 rounded-xl p-4 flex flex-col space-y-2">
-            <span className="w-8 h-8 rounded-full bg-amber-500 border border-amber-500 text-amber-500 font-black flex items-center justify-center text-xs">4</span>
-            <h4 className="text-xs font-bold text-white font-bold">اختيار المجلد والبدء</h4>
-            <p className="text-[10.5px] text-slate-900  leading-relaxed">
-              اختر المجلد المستخرج <strong className="text-white font-bold font-mono">AlAdalah-Najiz-Sync-Extension</strong>. ستظهر أداة "العدالة" فوراً لترافقك في تصفح ومزامنة ناجز بذكاء الـ AI!
-            </p>
-          </div>
-
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+          {[
+            { step: '1', title: 'فك الحزمة', desc: 'استخراج الأرشيف للحصول على مجلد الإضافة المفتوح والكامل.', icon: FolderOpen },
+            { step: '2', title: 'وضع المطور', desc: 'تنشيط خيار Developer Mode في صفحة الإضافات الخاصة بكروم.', icon: Code },
+            { step: '3', title: 'تحميل المجلد', desc: 'اختيار أمر Load Unpacked وتحديد المجلد المستخرج من ذي قبل.', icon: Upload },
+            { step: '4', title: 'بدء الربط', desc: 'ظهور أيقونة العدالة الذهبية والبدء فوراً في سحب البيانات الضخمة.', icon: Zap }
+          ].map((item, idx) => (
+            <div key={idx} className="bg-[#0A0F1E] border-4 border-yellow-400/20 rounded-[3rem] p-10 flex flex-col space-y-6 relative group hover:border-yellow-400 transition-all shadow-2xl">
+              <div className="w-16 h-16 rounded-[1.5rem] bg-yellow-400 text-black font-black text-xl flex items-center justify-center shadow-2xl border-b-4 border-yellow-600">{item.step}</div>
+              <h4 className="text-2xl font-black text-white leading-tight">{item.title}</h4>
+              <p className="text-lg text-slate-300 font-bold leading-relaxed">{item.desc}</p>
+              <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-yellow-400/5 to-transparent pointer-events-none rounded-[3rem] opacity-0 group-hover:opacity-100 transition-opacity" />
+            </div>
+          ))}
         </div>
       </div>
 
-      {/* Pro Tips / Safe use */}
-      <div className="border border-slate-800 rounded-xl p-4.5 bg-[#0f172a]/80 space-y-3 text-xs">
-        <h4 className="text-amber-500 font-bold flex items-center gap-2 leading-none">
-          <HelpCircle className="w-4 h-4 shrink-0 text-amber-500" />
-          <span>الضمان الأمني واللوجستي المعتمد لبيانات مكاتب المحاماة:</span>
+      {/* Pro Tips / Safe use (Luxurious Imperial Dark) */}
+      <div className="border-8 border-yellow-400/30 rounded-[4rem] p-16 bg-[#0A0F1E] space-y-10 relative overflow-hidden shadow-[0_50px_100px_-20px_rgba(250,204,21,0.2)]">
+        <div className="absolute top-0 right-0 w-full h-full bg-[radial-gradient(circle_at_bottom_left,rgba(250,204,21,0.1),transparent)] pointer-events-none" />
+        <h4 className="text-yellow-400 font-black text-3xl md:text-4xl flex items-center gap-6 relative z-10">
+          <HelpCircle className="w-10 h-10 text-yellow-400" />
+          <span>بروتوكول الأمان والشفافية الملكي</span>
         </h4>
-        <ul className="list-disc list-inside space-y-1.5 text-slate-900 text-justify text-sm leading-relaxed pr-3 font-medium">
-          <li>إن أداة العدالة للربط التلقائي لا تشارك ولا تطلع ولا تطلب كلمات مرور نفاذ وطني أو كلمة مرور ناجز مطلقة، بل تعمل محلياً فقط على المتصفح الخاص بك لتنظيم قضاياك والربط بالعدالة بموجب تشفير تام وسرية محققة.</li>
-          <li>تقرأ الأداة قضايا الشاشة النشطة وترسلها بمطابقة أمنية من خلال السيرفر إلى جدول مكتبك فورياً عند الضغط على المزامنة، لحفظ سجل الأرشيف والتزامات الجلسة في ثوانٍ معدودة.</li>
+        <ul className="grid grid-cols-1 md:grid-cols-2 gap-12 relative z-10">
+          {[
+            "أداة العدالة للربط التلقائي لا تشارك ولا تطلع ولا تطلب كلمات مرور نفاذ وطني أو كلمة مرور ناجز مطلقة، بل تعمل محلياً تماماً على متصفحك الشخصي بتشفير سيادي لا يمكن اختراقه.",
+            "يقوم المحرك بقراءة بيانات الشاشة النشطة وترميزها ثم إرسالها بمطابقة أمنية لحظية إلى خادم مكتبك الخاص لضمان فرز القضايا والجلسات والعملاء في ثوانٍ معدودة وبدقة متناهية."
+          ].map((text, i) => (
+            <li key={i} className="flex gap-6 items-start">
+              <div className="w-4 h-4 rounded-full bg-yellow-400 shadow-[0_0_15px_rgba(250,204,21,0.8)] shrink-0 mt-3" />
+              <p className="text-xl text-white font-bold leading-relaxed opacity-90">{text}</p>
+            </li>
+          ))}
         </ul>
       </div>
 

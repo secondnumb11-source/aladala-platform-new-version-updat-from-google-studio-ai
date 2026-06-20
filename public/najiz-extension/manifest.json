@@ -1,14 +1,9 @@
 {
   "manifest_version": 3,
   "name": "منصة العدالة — مزامنة ناجز",
-  "version": "3.0",
-  "description": "سحب بيانات القضايا من ناجز ومزامنتها مع منصة العدالة",
-  "permissions": [
-    "activeTab",
-    "scripting",
-    "storage",
-    "tabs"
-  ],
+  "version": "4.0",
+  "description": "سحب القضايا والوكالات والتنفيذ والجلسات من ناجز ومزامنتها مع النظام",
+  "permissions": ["activeTab", "scripting", "storage", "tabs"],
   "host_permissions": [
     "https://www.najiz.sa/*",
     "https://najiz.sa/*",
@@ -29,7 +24,7 @@
   ],
   "action": {
     "default_popup": "popup.html",
-    "default_title": "العدالة — سحب ناجز"
+    "default_title": "العدالة — سحب ناجز v4.0"
   },
   "background": {
     "service_worker": "background.js"

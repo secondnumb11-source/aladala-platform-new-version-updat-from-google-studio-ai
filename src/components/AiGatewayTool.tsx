@@ -65,7 +65,7 @@ export default function AiGatewayTool() {
           </div>
           <p className="text-white font-bold max-w-2xl leading-relaxed text-sm font-medium">
             نشر وإدارة نماذج الذكاء الاصطناعي عبر ngrok. تحكم كامل في المسارات، موازنة الأحمال، 
-            والوصول الموحد لمزودي الخدمة مثل OpenAI و Anthropic و Google دون الحاجة لحسابات متعددة.
+            والوصول الموحد لمزودي الخدمة مثل Google Gemini و Anthropic و OpenAI دون الحاجة لحسابات متعددة.
           </p>
         </div>
 
@@ -189,7 +189,7 @@ export default function AiGatewayTool() {
                   <div className="p-4 bg-slate-900 rounded-xl font-mono text-[10px] text-emerald-400 space-y-2 overflow-x-auto">
                     <div>[2026-06-08 01:33:42] INF - Ingress established at endpoint: your-ai-gateway.ngrok.app</div>
                     <div className="text-slate-700">[2026-06-08 01:33:45] DBG - Received request POST /v1/chat/completions from 82.164.21.9</div>
-                    <div className="text-indigo-400">[2026-06-08 01:33:46] INF - Routing to provider 'OpenAI' (Region: us-east-1)</div>
+                    <div className="text-indigo-400">[2026-06-08 01:33:46] INF - Routing to provider 'Google Gemini' (Region: europe-west1)</div>
                     <div>[2026-06-08 01:33:47] INF - Successful response delivered (1240 tokens)</div>
                     <div className="text-slate-700">[2026-06-08 01:33:51] DBG - Metric update: Gateway throughput increased by 4%</div>
                   </div>
@@ -209,7 +209,7 @@ export default function AiGatewayTool() {
                        <div className="flex items-center justify-between p-3 bg-slate-50 rounded-xl border border-slate-100">
                           <div className="flex items-center gap-3">
                              <div className="w-8 h-8 rounded-lg bg-white border border-slate-200 flex items-center justify-center text-xs">1</div>
-                             <span className="text-xs font-bold text-slate-700">OpenAI (gpt-4o)</span>
+                             <span className="text-xs font-bold text-slate-700">Google Gemini (gemini-1.5-flash)</span>
                           </div>
                           <span className="text-[11px] bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full font-black uppercase">Primary</span>
                        </div>

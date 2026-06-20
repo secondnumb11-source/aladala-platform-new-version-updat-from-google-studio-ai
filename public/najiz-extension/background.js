@@ -1,4 +1,4 @@
-// background.js - منصة العدالة v3.0
+// background.js - منصة العدالة v4.0
 const APP_SERVER = 'https://aladala-platform-rnuz.onrender.com';
 
 chrome.runtime.onInstalled.addListener(() => {
