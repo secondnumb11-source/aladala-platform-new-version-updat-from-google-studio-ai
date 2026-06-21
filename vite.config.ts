@@ -49,7 +49,9 @@ export default defineConfig(() => {
       host: '0.0.0.0',
       port: 3000,
       strictPort: true,
-      hmr: false,
+      hmr: {
+        clientPort: 443
+      },
       cors: true,
     },
     test: {

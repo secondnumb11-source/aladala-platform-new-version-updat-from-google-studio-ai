@@ -978,37 +978,37 @@ export default function FinanceModule({
           <motion.div 
             initial={{ scale: 0.95, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
-            className={`relative border-2 ${luminousTheme === 'dark' ? 'bg-gradient-to-br from-[#040914] via-[#02040a] to-[#000000] border-yellow-500/50 shadow-[0_0_60px_rgba(234,179,8,0.25)]' : 'bg-gradient-to-br from-[#ffffff] via-[#fdfbf6] to-[#faf5e8] border-amber-500/40 shadow-[0_20px_50px_rgba(212,175,55,0.15)]'} w-full max-w-sm rounded-[3rem] p-8 space-y-6 text-right font-sans overflow-hidden`}
+            className={`relative border-2 ${luminousTheme === 'dark' ? 'bg-[#0f172a] border-slate-700 shadow-[0_20px_50px_rgba(0,0,0,0.5)]' : 'bg-white border-slate-200 shadow-[0_20px_50px_rgba(0,0,0,0.1)]'} w-full max-w-sm rounded-[3rem] p-8 space-y-6 text-right font-sans overflow-hidden`}
             dir="rtl"
           >
-            <div className={`absolute top-0 right-0 w-64 h-64 rounded-full blur-3xl -z-10 pointer-events-none ${luminousTheme === 'dark' ? 'bg-amber-500/10' : 'bg-amber-500/5'}`}></div>
+            <div className={`absolute top-0 right-0 w-64 h-64 rounded-full blur-3xl -z-10 pointer-events-none ${luminousTheme === 'dark' ? 'bg-blue-500/10' : 'bg-blue-50/50'}`}></div>
 
-            <div className={`flex justify-between items-center border-b pb-4 ${luminousTheme === 'dark' ? 'border-yellow-500/30' : 'border-amber-500/20'}`}>
-               <h3 className={`text-lg font-black flex items-center gap-3 ${luminousTheme === 'dark' ? 'text-yellow-400 drop-shadow-[0_0_10px_rgba(234,179,8,0.5)]' : 'text-amber-900'}`}>
-                  <Calculator className="w-5 h-5 text-amber-500 animate-pulse" />
+            <div className={`flex justify-between items-center border-b pb-4 ${luminousTheme === 'dark' ? 'border-slate-800' : 'border-slate-100'}`}>
+               <h3 className={`text-lg font-black flex items-center gap-3 ${luminousTheme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
+                  <Calculator className="w-5 h-5 text-blue-500 animate-pulse" />
                   <span>حاسبة الأتعاب المضيئة والمسعى</span>
                </h3>
                <button 
                 onClick={() => setIsCalculatorOpen(false)} 
-                className={`px-3 py-2 rounded-xl text-xs font-black transition-all cursor-pointer ${luminousTheme === 'dark' ? 'bg-slate-900 border border-yellow-500/30 text-yellow-500 hover:bg-slate-800' : 'bg-amber-100 border border-amber-200 text-amber-900 hover:bg-amber-200'}`}
+                className={`px-3 py-2 rounded-xl text-xs font-black transition-all cursor-pointer ${luminousTheme === 'dark' ? 'bg-slate-800 border-slate-700 text-slate-300 hover:bg-slate-700 hover:text-white' : 'bg-slate-50 border-slate-200 text-slate-500 hover:bg-slate-100 hover:text-slate-900'}`}
                >
                  ✕
                </button>
             </div>
 
             {/* Luminous Design Theme Switcher */}
-            <div className={`flex justify-center items-center gap-1.5 p-1 rounded-full border max-w-[240px] mx-auto relative z-20 ${luminousTheme === 'dark' ? 'bg-black/40 border-yellow-500/30' : 'bg-slate-100 border-amber-500/20'}`}>
+            <div className={`flex justify-center items-center gap-1.5 p-1 rounded-full border max-w-[240px] mx-auto relative z-20 ${luminousTheme === 'dark' ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-200'}`}>
               <button 
                 type="button"
                 onClick={() => setLuminousTheme('dark')}
-                className={`px-3 py-1.5 rounded-full text-[10px] font-black transition-all ${luminousTheme === 'dark' ? 'bg-[#d4af37] text-[#060b13] shadow-[0_0_15px_rgba(235,179,8,0.5)]' : 'text-slate-500 hover:text-slate-800'}`}
+                className={`px-3 py-1.5 rounded-full text-[10px] font-black transition-all ${luminousTheme === 'dark' ? 'bg-blue-600 text-white shadow-md' : 'text-slate-400 hover:text-slate-600'}`}
               >
                 داكن مضيء ✨
               </button>
               <button 
                 type="button"
                 onClick={() => setLuminousTheme('light')}
-                className={`px-3 py-1.5 rounded-full text-[10px] font-black transition-all ${luminousTheme === 'light' ? 'bg-amber-600 text-white shadow-[0_0_15px_rgba(217,119,6,0.4)]' : 'text-slate-400 hover:text-slate-300'}`}
+                className={`px-3 py-1.5 rounded-full text-[10px] font-black transition-all ${luminousTheme === 'light' ? 'bg-white text-blue-600 shadow-md ring-1 ring-slate-200' : 'text-slate-400 hover:text-slate-300'}`}
               >
                 فاتح مضيء ☀️
               </button>
@@ -1016,35 +1016,35 @@ export default function FinanceModule({
 
             <div className="space-y-5 relative z-10">
                {/* Internal data entry card */}
-               <div className={`p-5 rounded-2xl border ${luminousTheme === 'dark' ? 'bg-[#050c18]/90 border-yellow-500/20 shadow-[inset_0_1px_1px_rgba(255,255,255,0.05),0_0_15px_rgba(234,179,8,0.05)]' : 'bg-white border-amber-500/25 shadow-[0_10px_20px_rgba(212,175,55,0.05)]'} space-y-4`}>
+               <div className={`p-5 rounded-2xl border ${luminousTheme === 'dark' ? 'bg-[#050c18] border-blue-500/30 shadow-[0_4px_20px_rgba(0,0,0,0.5)]' : 'bg-white border-slate-200 shadow-[0_10px_30px_rgba(0,0,0,0.05)]'} space-y-4`}>
                  <div className="space-y-1.5">
-                    <label className={`text-xs font-black block ${luminousTheme === 'dark' ? 'text-yellow-400 drop-shadow-md' : 'text-slate-850'}`}>قيمة المطالبة (ر.س) <span className="text-rose-400 font-bold">*</span></label>
+                    <label className={`text-xs font-black block ${luminousTheme === 'dark' ? 'text-white' : 'text-slate-900'}`}>قيمة المطالبة (ر.س) <span className="text-rose-500 font-bold">*</span></label>
                     <input 
                       type="number" 
                       value={calcClaimAmount}
                       onChange={(e) => setCalcClaimAmount(e.target.value)}
                       placeholder="مبلغ المطالبة..."
-                      className={`w-full border-2 p-3 rounded-xl text-sm font-black outline-none transition-all duration-300 font-mono ${luminousTheme === 'dark' ? 'bg-slate-950 border-amber-500/30 text-yellow-300 placeholder-slate-700 hover:border-yellow-500/50 hover:shadow-[0_0_10px_rgba(234,179,8,0.15)] focus:border-yellow-400' : 'bg-slate-50 border-amber-500/20 text-slate-900 placeholder-slate-400 hover:border-amber-500/40 focus:border-amber-600 bg-white'}`}
+                      className={`w-full border-2 p-3 rounded-xl text-sm font-black outline-none transition-all duration-300 font-mono ${luminousTheme === 'dark' ? 'bg-slate-900 border-slate-700 text-white placeholder-slate-400 hover:border-blue-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20' : 'bg-slate-50 border-slate-200 text-slate-900 placeholder-slate-400 hover:border-slate-300 focus:border-blue-600 focus:ring-4 focus:ring-blue-100'}`}
                     />
                  </div>
                  <div className="space-y-1.5">
-                    <label className={`text-xs font-black block ${luminousTheme === 'dark' ? 'text-yellow-400 drop-shadow-md' : 'text-slate-850'}`}>نسبة الأتعاب التقديرية (%) <span className="text-rose-400 font-bold">*</span></label>
+                    <label className={`text-xs font-black block ${luminousTheme === 'dark' ? 'text-white' : 'text-slate-900'}`}>نسبة الأتعاب التقديرية (%) <span className="text-rose-500 font-bold">*</span></label>
                     <select 
                       value={calcRate}
                       onChange={(e) => setCalcRate(e.target.value)}
-                      className={`w-full border-2 p-3 rounded-xl text-sm font-black outline-none transition-all duration-300 cursor-pointer ${luminousTheme === 'dark' ? 'bg-slate-950 border-amber-500/30 text-white focus:border-yellow-400' : 'bg-white border-amber-500/20 text-slate-900 focus:border-amber-600'}`}
+                      className={`w-full border-2 p-3 rounded-xl text-sm font-black outline-none transition-all duration-300 cursor-pointer ${luminousTheme === 'dark' ? 'bg-slate-900 border-slate-700 text-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20' : 'bg-slate-50 border-slate-200 text-slate-900 focus:border-blue-600 focus:ring-4 focus:ring-blue-100'}`}
                     >
-                      <option value="5" className={luminousTheme === 'dark' ? 'bg-[#0b1221] text-white' : 'bg-white text-[#111]'}>5% (قضايا كبرى)</option>
-                      <option value="10" className={luminousTheme === 'dark' ? 'bg-[#0b1221] text-white' : 'bg-white text-[#111]'}>10% (اعتيادي)</option>
-                      <option value="15" className={luminousTheme === 'dark' ? 'bg-[#0b1221] text-white' : 'bg-white text-[#111]'}>15% (قضايا معقدة)</option>
-                      <option value="20" className={luminousTheme === 'dark' ? 'bg-[#0b1221] text-white' : 'bg-white text-[#111]'}>20% (تحصيل صلب)</option>
+                      <option value="5" className={luminousTheme === 'dark' ? 'bg-slate-900 text-white' : 'bg-white text-slate-900'}>5% (قضايا كبرى)</option>
+                      <option value="10" className={luminousTheme === 'dark' ? 'bg-slate-900 text-white' : 'bg-white text-slate-900'}>10% (اعتيادي)</option>
+                      <option value="15" className={luminousTheme === 'dark' ? 'bg-slate-900 text-white' : 'bg-white text-slate-900'}>15% (قضايا معقدة)</option>
+                      <option value="20" className={luminousTheme === 'dark' ? 'bg-slate-900 text-white' : 'bg-white text-slate-900'}>20% (تحصيل صلب)</option>
                     </select>
                  </div>
                </div>
 
                <button 
                 onClick={handleCalculateFees}
-                className={`w-full py-3 px-4 rounded-xl font-black text-xs transition-all active:scale-[0.98] cursor-pointer ${luminousTheme === 'dark' ? 'bg-yellow-400 text-slate-950 shadow-[0_0_20px_rgba(234,179,8,0.30)] hover:bg-yellow-500' : 'bg-amber-600 text-white shadow-[0_10px_20px_rgba(217,119,6,0.2)] hover:bg-amber-700'}`}
+                className={`w-full py-3 px-4 rounded-xl font-black text-xs transition-all active:scale-[0.98] cursor-pointer border ${luminousTheme === 'dark' ? 'bg-blue-600 border-blue-500 text-white shadow-lg hover:bg-blue-500' : 'bg-blue-600 border-blue-700 text-white shadow-md hover:bg-blue-700'}`}
                >
                  احتساب الأتعاب التقديرية
                </button>
@@ -1053,11 +1053,11 @@ export default function FinanceModule({
                  <motion.div 
                    initial={{ opacity: 0, y: 10 }}
                    animate={{ opacity: 1, y: 0 }}
-                   className={`border-2 p-5 rounded-2xl text-center shadow-lg ${luminousTheme === 'dark' ? 'bg-yellow-400/10 border-yellow-400/30 shadow-[0_0_20px_rgba(234,179,8,0.1)]' : 'bg-amber-50/80 border-amber-300'}`}
+                   className={`border-2 p-5 rounded-2xl text-center shadow-lg ${luminousTheme === 'dark' ? 'bg-blue-900/20 border-blue-800' : 'bg-blue-50 border-blue-200'}`}
                  >
-                    <span className={`text-[9px] font-black block mb-1 uppercase tracking-widest ${luminousTheme === 'dark' ? 'text-yellow-400' : 'text-amber-800'}`}>إجمالي الأتعاب المستحقة لمدونة العقد (تقديرياً)</span>
-                    <span className={`text-2xl font-black font-mono tabular-nums ${luminousTheme === 'dark' ? 'text-white' : 'text-slate-950'}`}>{calcResult.toLocaleString()} <span className="text-xs font-sans">ر.س</span></span>
-                    <p className={`text-[9px] font-bold mt-1.5 font-sans tracking-tight ${luminousTheme === 'dark' ? 'text-slate-400' : 'text-slate-500'}`}>لا تشمل الضريبة المضافة (15%) أو الرسوم القضائية.</p>
+                    <span className={`text-[9px] font-black block mb-1 uppercase tracking-widest ${luminousTheme === 'dark' ? 'text-blue-300' : 'text-blue-800'}`}>إجمالي الأتعاب المستحقة لمدونة العقد (تقديرياً)</span>
+                    <span className={`text-2xl font-black font-mono tabular-nums ${luminousTheme === 'dark' ? 'text-white' : 'text-slate-900'}`}>{calcResult.toLocaleString()} <span className="text-xs font-sans">ر.س</span></span>
+                    <p className={`text-[9px] font-bold mt-1.5 font-sans tracking-tight ${luminousTheme === 'dark' ? 'text-slate-300' : 'text-slate-600'}`}>لا تشمل الضريبة المضافة (15%) أو الرسوم القضائية.</p>
                  </motion.div>
                )}
             </div>
@@ -1084,9 +1084,9 @@ export default function FinanceModule({
       </div>
 
       {/* Report actions block summary container */}
-      <div className="bg-slate-900 border-2 border-amber-500/30 rounded-[2rem] p-6 shadow-xl flex flex-col sm:flex-row justify-between items-center gap-4 relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/10 blur-3xl rounded-full -translate-y-16 translate-x-16"></div>
-        <p className="text-xs text-yellow-400 font-black text-center sm:text-right relative z-10 drop-shadow-md">دورة مطابقة القيود المالية متزامنة مع حماية الحسابات البنكية ومعايير هيبة والفوترة الإلكترونية.</p>
+      <div className="bg-white border-2 border-slate-200 rounded-[2rem] p-6 shadow-xl flex flex-col sm:flex-row justify-between items-center gap-4 relative overflow-hidden ring-1 ring-slate-100/50">
+        <div className="absolute top-0 right-0 w-32 h-32 bg-amber-100/50 blur-3xl rounded-full -translate-y-16 translate-x-16"></div>
+        <p className="text-xs text-slate-800 font-black text-center sm:text-right relative z-10 drop-shadow-sm">دورة مطابقة القيود المالية متزامنة مع حماية الحسابات البنكية ومعايير هيبة والفوترة الإلكترونية.</p>
         <div className="w-full sm:w-auto relative z-10">
           <button 
             type="button"
@@ -1175,11 +1175,11 @@ export default function FinanceModule({
           { label: 'المصاريف والرسوم', value: totalExpenses, icon: <TrendingDown className="w-4 h-4" />, color: 'rose', sub: 'رسوم الأسانيد والحظر', bg: 'bg-rose-500' },
           { label: 'صافي الربح الفعلي', value: netProfit, icon: <Calculator className="w-4 h-4" />, color: 'gold', sub: 'السيولة بعد الاستقطاع', bg: 'bg-[#d4af37]' }
         ].map((kpi, idx) => {
-          const kpiColors: { [key: string]: { border: string; text: string; bar: string; iconBg: string } } = {
-            emerald: { border: 'border-emerald-500/40', text: 'text-amber-400 font-black drop-shadow-md', bar: 'bg-emerald-400', iconBg: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30' },
-            amber: { border: 'border-amber-400/40', text: 'text-amber-400 font-black drop-shadow-md', bar: 'bg-amber-400', iconBg: 'bg-amber-500/20 text-amber-300 border-amber-500/30' },
-            rose: { border: 'border-rose-500/40', text: 'text-amber-400 font-black drop-shadow-md', bar: 'bg-rose-400', iconBg: 'bg-rose-500/20 text-rose-300 border-rose-500/30' },
-            gold: { border: 'border-[#d4af37]/50', text: 'text-amber-400 font-black drop-shadow-md', bar: 'bg-[#d4af37]', iconBg: 'bg-[#d4af37]/20 text-[#d4af37] border-[#d4af37]/30' }
+          const kpiColors: { [key: string]: { border: string; text: string; bar: string; iconBg: string; title: string; subtitle: string } } = {
+            emerald: { border: 'border-emerald-200', text: 'text-emerald-900', bar: 'bg-emerald-400', iconBg: 'bg-emerald-50 text-emerald-600 border-emerald-100', title: 'text-slate-700', subtitle: 'text-slate-500' },
+            amber: { border: 'border-amber-200', text: 'text-amber-900', bar: 'bg-amber-400', iconBg: 'bg-amber-50 text-amber-600 border-amber-100', title: 'text-slate-700', subtitle: 'text-slate-500' },
+            rose: { border: 'border-rose-200', text: 'text-rose-900', bar: 'bg-rose-400', iconBg: 'bg-rose-50 text-rose-600 border-rose-100', title: 'text-slate-700', subtitle: 'text-slate-500' },
+            gold: { border: 'border-amber-200', text: 'text-slate-900', bar: 'bg-amber-500', iconBg: 'bg-amber-50 text-amber-700 border-amber-100', title: 'text-slate-700', subtitle: 'text-slate-500' }
           };
           const styleConfig = kpiColors[kpi.color] || kpiColors.gold;
 
@@ -1187,27 +1187,27 @@ export default function FinanceModule({
             <motion.div 
               key={idx} 
               whileHover={{ scale: 1.02, translateY: -2 }}
-              className={`bg-slate-900 border ${styleConfig.border} rounded-[2rem] p-6 shadow-xl hover:shadow-[0_0_15px_rgba(251,191,36,0.15)] relative overflow-hidden flex flex-col justify-between h-[160px] transition-all`}
+              className={`bg-white border ${styleConfig.border} rounded-[2rem] p-6 shadow-xl hover:shadow-2xl relative overflow-hidden flex flex-col justify-between h-[160px] transition-all`}
             >
-              <div className={`absolute top-0 right-0 w-2 h-full ${styleConfig.bar} shadow-[0_0_10px_currentColor]`} />
+              <div className={`absolute top-0 right-0 w-2 h-full ${styleConfig.bar} shadow-sm`} />
               
               <div className="flex items-center justify-between mb-4 pr-3 pointer-events-none">
-                <span className="text-[11px] font-black uppercase tracking-widest text-white drop-shadow-md">{kpi.label}</span>
-                <div className={`p-2 rounded-xl ${styleConfig.iconBg} border`}>
+                <span className={`text-[11px] font-black uppercase tracking-widest ${styleConfig.title} drop-shadow-sm`}>{kpi.label}</span>
+                <div className={`p-2 rounded-xl ${styleConfig.iconBg} border shadow-sm`}>
                   {kpi.icon}
                 </div>
               </div>
               
               <div className="flex items-baseline gap-2 pr-3 pointer-events-none">
-                <span className={`text-3xl font-black tabular-nums tracking-tight ${styleConfig.text}`}>
+                <span className={`text-3xl font-black tabular-nums tracking-tight ${styleConfig.text} drop-shadow-sm`}>
                   {kpi.value.toLocaleString()}
                 </span>
-                <span className="text-xs font-black text-slate-300 drop-shadow-sm">ر.س</span>
+                <span className="text-xs font-black text-slate-500">ر.س</span>
               </div>
               
-              <div className="mt-4 flex items-center gap-2 pt-3 border-t border-slate-800 pr-3 pointer-events-none">
-                <div className={`w-1.5 h-1.5 rounded-full ${styleConfig.bar} animate-pulse shadow-[0_0_8px_currentColor]`} />
-                <p className="text-[10px] font-black text-slate-400 font-sans">{kpi.sub}</p>
+              <div className="mt-4 flex items-center gap-2 pt-3 border-t border-slate-100 pr-3 pointer-events-none">
+                <div className={`w-1.5 h-1.5 rounded-full ${styleConfig.bar} shadow-sm`} />
+                <p className={`text-[10px] font-black ${styleConfig.subtitle} font-sans`}>{kpi.sub}</p>
               </div>
             </motion.div>
           );
@@ -1542,22 +1542,22 @@ export default function FinanceModule({
         </div>
       ) : activeFinanceTab === ('zatca' as any) ? (
         <div className="space-y-6 animate-fade-in scroller-hidden">
-          <div className="bg-gradient-to-l from-emerald-950 to-emerald-900 border border-emerald-500/30 rounded-[2.5rem] p-8 shadow-2xl relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-400/10 blur-[100px] rounded-full pointer-events-none"></div>
+          <div className="bg-white border text-slate-800 border-emerald-200 rounded-[2.5rem] p-8 shadow-[0_20px_50px_rgba(16,185,129,0.1)] relative overflow-hidden ring-1 ring-emerald-50">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-100 blur-[100px] rounded-full pointer-events-none"></div>
             <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
               <div className="flex items-center gap-4">
-                <div className="p-4 bg-emerald-500/20 text-emerald-400 rounded-3xl shadow-inner border border-emerald-400/20">
+                <div className="p-4 bg-emerald-50 text-emerald-600 rounded-3xl shadow-sm border border-emerald-100">
                   <Shield className="w-8 h-8 animate-pulse" />
                 </div>
                 <div>
-                  <h2 className="text-2xl font-black text-white tracking-tight">سجل تدقيق الفوترة الإلكترونية (ZATCA Phase 2 Log)</h2>
-                  <p className="text-xs text-emerald-200 mt-1 font-bold">متابعة لحظية لعمليات الربط والتكامل مع منصة (فاتورة) التابعة لهيئة الزكاة والضريبة والجمارك.</p>
+                  <h2 className="text-2xl font-black text-slate-900 tracking-tight">سجل تدقيق الفوترة الإلكترونية (ZATCA Phase 2 Log)</h2>
+                  <p className="text-xs text-slate-600 mt-1 font-bold">متابعة لحظية لعمليات الربط والتكامل مع منصة (فاتورة) التابعة لهيئة الزكاة والضريبة والجمارك.</p>
                 </div>
               </div>
               <div className="flex gap-3">
-                <div className="bg-emerald-500/10 border border-emerald-500/20 px-5 py-3 rounded-2xl flex items-center gap-3">
-                  <div className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping"></div>
-                  <span className="text-xs font-black text-emerald-400 tracking-wide uppercase">Connection: Live & Secure</span>
+                <div className="bg-emerald-50 border border-emerald-200 px-5 py-3 rounded-2xl flex items-center gap-3 shadow-sm">
+                  <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping"></div>
+                  <span className="text-xs font-black text-emerald-700 tracking-wide uppercase">Connection: Live & Secure</span>
                 </div>
               </div>
             </div>
@@ -1609,27 +1609,27 @@ export default function FinanceModule({
             </div>
 
             <div className="space-y-6">
-              <div className="card-professional bg-slate-900 border-slate-800 p-6 space-y-4">
-                <h3 className="text-white text-sm font-black flex items-center gap-2">
-                  <Activity className="w-4 h-4 text-emerald-400" />
+              <div className="card-professional bg-white border-slate-200 p-6 space-y-4 shadow-xl">
+                <h3 className="text-slate-900 text-sm font-black flex items-center gap-2">
+                  <Activity className="w-5 h-5 text-emerald-500" />
                   إحصائيات الامتثال الضريبي
                 </h3>
                 <div className="space-y-3">
                   <div className="flex justify-between items-center text-[11px] font-black">
-                    <span className="text-slate-200 font-bold">إجمالي الفواتير المرسلة:</span>
-                    <span className="text-white">{zatcaAuditLogs.length}</span>
+                    <span className="text-slate-600 font-bold">إجمالي الفواتير المرسلة:</span>
+                    <span className="text-slate-900">{zatcaAuditLogs.length}</span>
                   </div>
                   <div className="flex justify-between items-center text-[11px] font-black">
-                    <span className="text-slate-200 font-bold">نجاح الربط (UBL 2.1):</span>
-                    <span className="text-emerald-400">{zatcaAuditLogs.filter(l => l.type === 'success').length}</span>
+                    <span className="text-slate-600 font-bold">نجاح الربط (UBL 2.1):</span>
+                    <span className="text-emerald-600">{zatcaAuditLogs.filter(l => l.type === 'success').length}</span>
                   </div>
                   <div className="flex justify-between items-center text-[11px] font-black">
-                    <span className="text-slate-200 font-bold">الفواتير قيد الانتظار:</span>
-                    <span className="text-amber-400 font-mono">{invoices.filter(i => !i.isZatcaSubmitted).length}</span>
+                    <span className="text-slate-600 font-bold">الفواتير قيد الانتظار:</span>
+                    <span className="text-amber-500 font-mono">{invoices.filter(i => !i.isZatcaSubmitted).length}</span>
                   </div>
                 </div>
-                <div className="pt-4 border-t border-slate-800">
-                  <div className="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden">
+                <div className="pt-4 border-t border-slate-100">
+                  <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
                     <div 
                       className="bg-emerald-500 h-full transition-all duration-1000" 
                       style={{ width: `${zatcaAuditLogs.length > 0 ? (zatcaAuditLogs.filter(l => l.type === 'success').length / (zatcaAuditLogs.length || 1)) * 100 : 0}%` }}
@@ -1716,42 +1716,45 @@ export default function FinanceModule({
           </div>
 
           {isContractModalOpen && (
-            <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-              <div className="relative bg-gradient-to-br from-[#0c142b] to-[#040817] border-2 border-amber-500/30 rounded-[2.5rem] w-full max-w-xl p-8 shadow-[0_0_60px_rgba(234,179,8,0.25)] animate-in zoom-in-95 duration-300">
+            <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
+              <div className="relative bg-white border-2 border-slate-200 rounded-[2.5rem] w-full max-w-xl p-8 shadow-[0_20px_60px_rgba(0,0,0,0.15)] animate-in zoom-in-95 duration-300">
                 <div className="flex justify-between items-center mb-6">
-                  <h3 className="text-xl font-black text-yellow-400 drop-shadow-md">إصدار عقد قانوني جديد</h3>
-                  <button onClick={() => setIsContractModalOpen(false)} className="bg-slate-900 border border-slate-700 hover:bg-slate-800 text-yellow-400 w-8 h-8 rounded-full flex items-center justify-center font-black transition-all">×</button>
+                  <h3 className="text-xl font-black text-slate-900 drop-shadow-sm flex items-center gap-2">
+                    <FileText className="w-6 h-6 text-blue-600" />
+                    إصدار عقد قانوني جديد
+                  </h3>
+                  <button onClick={() => setIsContractModalOpen(false)} className="bg-slate-50 border border-slate-200 hover:bg-slate-100 text-slate-500 hover:text-slate-900 w-8 h-8 rounded-full flex items-center justify-center font-black transition-all">×</button>
                 </div>
                 <form onSubmit={handleCreateContract} className="space-y-6">
                   <div className="space-y-2">
-                    <label className="text-xs font-black text-yellow-400 drop-shadow-md">مسمى العقد / الاتفاقية</label>
+                    <label className="text-xs font-black text-slate-800">مسمى العقد / الاتفاقية</label>
                     <input 
                       type="text" 
                       required 
                       value={newContractTitle}
                       onChange={e => setNewContractTitle(e.target.value)}
-                      className="w-full bg-slate-900 border-2 border-slate-800 p-4 rounded-2xl text-sm font-bold text-white focus:ring-4 focus:ring-yellow-400/20 focus:border-yellow-400 outline-none transition-all placeholder-slate-500 hover:border-yellow-500/50"
+                      className="w-full bg-slate-50 border-2 border-slate-200 p-4 rounded-2xl text-sm font-bold text-slate-900 focus:ring-4 focus:ring-blue-100 focus:border-blue-500 outline-none transition-all placeholder-slate-400 hover:border-slate-300 hover:bg-white focus:bg-white"
                       placeholder="مثال: عقد أتعاب تمثيل قضائي"
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-xs font-black text-yellow-400 drop-shadow-md">العميل المرتبط</label>
+                    <label className="text-xs font-black text-slate-800">العميل المرتبط</label>
                     <select 
                       required 
                       value={newContractClient}
                       onChange={e => setNewContractClient(e.target.value)}
-                      className="w-full bg-slate-900 border-2 border-slate-800 p-4 rounded-2xl text-sm font-bold text-white focus:ring-4 focus:ring-yellow-400/20 focus:border-yellow-400 outline-none transition-all placeholder-slate-500 hover:border-yellow-500/50"
+                      className="w-full bg-slate-50 border-2 border-slate-200 p-4 rounded-2xl text-sm font-bold text-slate-900 focus:ring-4 focus:ring-blue-100 focus:border-blue-500 outline-none transition-all placeholder-slate-400 hover:border-slate-300 hover:bg-white focus:bg-white"
                     >
                       <option value="">اختر العميل...</option>
                       {clients.map(cl => <option key={cl.id} value={cl.name}>{cl.name}</option>)}
                     </select>
                   </div>
                   <div className="space-y-2">
-                    <label className="text-xs font-black text-yellow-400 drop-shadow-md">ارتباط بقضية (اختياري)</label>
+                    <label className="text-xs font-black text-slate-800">ارتباط بقضية (اختياري)</label>
                     <select 
                       value={newContractCaseId}
                       onChange={e => setNewContractCaseId(e.target.value)}
-                      className="w-full bg-slate-900 border-2 border-slate-800 p-4 rounded-2xl text-sm font-bold text-white focus:ring-4 focus:ring-yellow-400/20 focus:border-yellow-400 outline-none transition-all placeholder-slate-500 hover:border-yellow-500/50"
+                      className="w-full bg-slate-50 border-2 border-slate-200 p-4 rounded-2xl text-sm font-bold text-slate-900 focus:ring-4 focus:ring-blue-100 focus:border-blue-500 outline-none transition-all placeholder-slate-400 hover:border-slate-300 hover:bg-white focus:bg-white"
                     >
                       <option value="">لا يوجد ارتباط مباشر</option>
                       {cases.map(c => <option key={c.id} value={c.id}>قضية #{c.caseNumber} - {c.caseName}</option>)}
@@ -1759,7 +1762,7 @@ export default function FinanceModule({
                   </div>
                   <button 
                     type="submit"
-                    className="w-full bg-gold text-white font-black py-4 rounded-2xl text-sm shadow-lg shadow-gold/20[1.01] active:scale-95 transition-all"
+                    className="w-full bg-blue-600 text-white font-black py-4 rounded-2xl text-sm shadow-md hover:scale-[1.01] active:scale-95 transition-all"
                   >
                     حفظ وإصدار العقد الرقمي
                   </button>
@@ -2119,7 +2122,7 @@ export default function FinanceModule({
             </div>
 
             {/* Interactive Visual Gateway Panel */}
-            <div className="bg-sky-100 border border-slate-850 p-5 rounded-2xl space-y-4">
+            <div className="bg-slate-50 border border-slate-200 p-5 rounded-2xl space-y-6 shadow-sm">
               
               {/* Card option checkout form */}
               {(payMethod === 'mada' || payMethod === 'cc') && (
@@ -2152,40 +2155,40 @@ export default function FinanceModule({
                   {/* Form fields to manipulate visually */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs font-semibold">
                     <div>
-                      <label className="text-white block mb-1">اسم العميل المسجل بالبطاقة:</label>
+                      <label className="text-slate-700 block mb-1">اسم العميل المسجل بالبطاقة:</label>
                       <input 
                         type="text"
                         value={fakeCardHolder}
                         onChange={(e) => setFakeCardHolder(e.target.value)}
-                        className="w-full bg-sky-100 border border-slate-800 rounded-lg p-2.5 outline-none focus:border-gold font-sans text-xs text-white"
+                        className="w-full bg-white border border-slate-300 rounded-lg p-2.5 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 font-sans text-xs text-slate-900"
                       />
                     </div>
                     <div>
-                      <label className="text-white block mb-1">رقم مادة البطاقة المكون من 16 خانة:</label>
+                      <label className="text-slate-700 block mb-1">رقم مادة البطاقة المكون من 16 خانة:</label>
                       <input 
                         type="text"
                         value={fakeCardNum}
                         onChange={(e) => setFakeCardNum(e.target.value)}
-                        className="w-full bg-sky-100 border border-slate-800 rounded-lg p-2.5 outline-none focus:border-gold font-mono text-xs text-white"
+                        className="w-full bg-white border border-slate-300 rounded-lg p-2.5 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 font-mono text-xs text-slate-900"
                       />
                     </div>
                     <div>
-                      <label className="text-white block mb-1">تاريخ الانتهاء (الشهر / السنة):</label>
+                      <label className="text-slate-700 block mb-1">تاريخ الانتهاء (الشهر / السنة):</label>
                       <input 
                         type="text"
                         value={fakeCardExpiry}
                         onChange={(e) => setFakeCardExpiry(e.target.value)}
-                        className="w-full bg-sky-100 border border-slate-800 rounded-lg p-2.5 outline-none focus:border-gold font-mono text-xs text-white text-center"
+                        className="w-full bg-white border border-slate-300 rounded-lg p-2.5 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 font-mono text-xs text-slate-900 text-center"
                       />
                     </div>
                     <div>
-                      <label className="text-white block mb-1">الرمز السري الخلفي للتحقق (CVV):</label>
+                      <label className="text-slate-700 block mb-1">الرمز السري الخلفي للتحقق (CVV):</label>
                       <input 
                         type="password"
                         value={fakeCardCvv}
                         onChange={(e) => setFakeCardCvv(e.target.value)}
                         maxLength={3}
-                        className="w-full bg-sky-100 border border-slate-800 rounded-lg p-2.5 outline-none focus:border-gold font-mono text-xs text-white text-center"
+                        className="w-full bg-white border border-slate-300 rounded-lg p-2.5 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 font-mono text-xs text-slate-900 text-center"
                       />
                     </div>
                   </div>

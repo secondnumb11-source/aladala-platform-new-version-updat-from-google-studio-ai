@@ -1572,12 +1572,12 @@ export default function Settings({
 
 
           {/* API Keys management section */}
-          <div className="bg-[#0a1628] border border-slate-700 rounded-2xl p-6 settings-card high-contrast-card-wrapper text-high-contrast-light-bg" dir="rtl">
+          <div className="bg-[#0a1628] border border-slate-700 rounded-2xl p-6 settings-card high-contrast-card-wrapper text-high-contrast-light-bg shadow-[0_0_15px_rgba(0,0,0,0.5)]" dir="rtl">
             <div className="flex items-center gap-3 mb-6">
-              <Key className="w-6 h-6 text-amber-400" />
+              <Key className="w-6 h-6 text-yellow-400" />
               <div>
-                <h2 className="text-amber-100 font-black text-lg">مفاتيح API</h2>
-                <p className="text-slate-100 text-sm">
+                <h2 className="text-yellow-400 font-black text-lg drop-shadow-md">مفاتيح API</h2>
+                <p className="text-white font-bold text-sm drop-shadow-md">
                   استخدم هذا المفتاح لربط أدوات سحب البيانات مع النظام
                 </p>
               </div>
@@ -1590,17 +1590,17 @@ export default function Settings({
                 value={newKeyName}
                 onChange={e => setNewKeyName(e.target.value)}
                 placeholder="اسم المفتاح (مثال: أداة ناجز)"
-                className="flex-1 bg-[#050e21] border border-slate-700
-                  text-white rounded-xl px-4 py-2.5 text-sm
-                  focus:outline-none focus:border-amber-500
-                  placeholder-slate-600"
+                className="flex-1 bg-[#050e21] border border-slate-600
+                  text-white font-bold rounded-xl px-4 py-2.5 text-sm
+                  focus:outline-none focus:border-yellow-400 focus:ring-1 focus:ring-yellow-400
+                  placeholder-slate-400"
               />
               <button
                 onClick={handleGenerateKey}
                 disabled={isGenerating}
                 className="flex items-center gap-2 px-5 py-2.5
-                  bg-amber-600 hover:bg-amber-500 disabled:opacity-50
-                  text-white font-bold rounded-xl transition-colors"
+                  bg-amber-600 hover:bg-amber-500 disabled:opacity-50 shadow-md
+                  text-white font-black rounded-xl transition-colors drop-shadow-md"
               >
                 {isGenerating ? '...' : '+ توليد مفتاح'}
               </button>
@@ -1609,13 +1609,13 @@ export default function Settings({
             {/* Generated key display */}
             {generatedKey && (
               <div className="mb-6 p-4 bg-emerald-500/10 border border-emerald-500/30
-                rounded-xl">
-                <p className="text-emerald-200 font-bold text-sm mb-2">
+                rounded-xl shadow-sm">
+                <p className="text-emerald-300 font-black text-sm mb-2 drop-shadow-sm">
                   ✅ تم توليد المفتاح — انسخه الآن (لن يظهر مرة أخرى)
                 </p>
                 <div className="flex items-center gap-2">
                   <code className="flex-1 bg-[#050e21] text-yellow-300 text-xs
-                    p-3 rounded-lg font-mono break-all border border-slate-700">
+                    p-3 rounded-lg font-mono font-bold break-all border border-slate-700 shadow-inner">
                     {generatedKey}
                   </code>
                   <button
@@ -1624,23 +1624,23 @@ export default function Settings({
                       setCopySuccess(true);
                       setTimeout(() => setCopySuccess(false), 2000);
                     }}
-                    className="px-3 py-2 bg-slate-700 hover:bg-slate-600
-                      text-white text-xs rounded-lg transition-colors shrink-0"
+                    className="px-4 py-2 bg-slate-700 hover:bg-slate-600
+                      text-white font-black text-xs rounded-lg transition-colors shrink-0 shadow-sm"
                   >
                     {copySuccess ? '✅ تم' : 'نسخ'}
                   </button>
                 </div>
-                <div className="mt-3 p-3 bg-[#050e21] rounded-lg border border-slate-700">
-                  <p className="text-white text-xs font-bold mb-1">
+                <div className="mt-3 p-3 bg-[#050e21] rounded-lg border border-slate-700 shadow-inner">
+                  <p className="text-white text-xs font-black mb-1 drop-shadow-md">
                     🔗 طريقة الاستخدام مع أي أداة سحب:
                   </p>
-                  <code className="text-yellow-100 text-[10px] block">
+                  <code className="text-yellow-300 text-[10px] font-bold block mb-1">
                     URL: https://aladala-platform-rnuz.onrender.com/api/v1/sync
                   </code>
-                  <code className="text-yellow-100 text-[10px] block">
+                  <code className="text-yellow-300 text-[10px] font-bold block mb-1">
                     Header: x-api-key: {generatedKey}
                   </code>
-                  <code className="text-yellow-100 text-[10px] block">
+                  <code className="text-yellow-300 text-[10px] font-bold block">
                     Method: POST | Content-Type: application/json
                   </code>
                 </div>
@@ -1650,36 +1650,38 @@ export default function Settings({
             {/* List existing keys */}
             <div className="space-y-3">
               {apiKeys.length === 0 ? (
-                <p className="text-white text-sm text-center py-4">
+                <p className="text-white font-black text-sm text-center py-4 drop-shadow-md">
                   لا توجد مفاتيح — أنشئ مفتاحاً أعلاه
                 </p>
               ) : apiKeys.map(key => (
                 <div key={key.id}
                   className="flex items-center justify-between p-4
-                    bg-[#050e21] border border-slate-800 rounded-xl">
+                    bg-[#050e21] border border-slate-700 rounded-xl shadow-sm">
                   <div>
-                    <p className="text-amber-100 font-bold text-sm">{key.key_name}</p>
-                    <code className="text-slate-100 text-xs">
+                    <p className="text-yellow-400 font-black text-sm drop-shadow-md pb-0.5">{key.key_name}</p>
+                    <code className="text-white font-bold text-xs drop-shadow-sm pb-1 block">
                       {key.key_value.substring(0, 20)}...
                     </code>
-                    <p className="text-amber-200 text-[10px] mt-1">
+                    <p className="text-yellow-300 font-bold text-[10px] drop-shadow-sm">
                       {key.last_used_at
                         ? 'آخر استخدام: ' + new Date(key.last_used_at).toLocaleString('ar-SA')
                         : 'لم يُستخدم بعد'}
                     </p>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className={`text-[10px] px-2 py-1 rounded-lg font-bold
+                    <span className={`text-[10px] px-2 py-1 rounded-lg font-black shadow-sm
                       ${key.is_active
-                        ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30'
-                        : 'bg-red-500/10 text-red-400 border border-red-500/30'}`}>
+                        ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40'
+                        : 'bg-red-500/20 text-red-400 border border-red-500/40'}`}>
                       {key.is_active ? 'نشط' : 'معطّل'}
                     </span>
                     <button
                       onClick={() => handleDeleteKey(key.id)}
-                      className="p-2 bg-red-500/10 hover:bg-red-500/20
-                        text-red-400 rounded-lg transition-colors">
-                      <Trash2 className="w-3.5 h-3.5" />
+                      className="p-2 bg-red-500/20 hover:bg-red-500/40 text-red-100
+                        border border-red-500/30 rounded-lg transition-colors cursor-pointer shadow-sm"
+                      title="حذف المفتاح"
+                    >
+                      <Trash2 className="w-4 h-4 text-red-400" />
                     </button>
                   </div>
                 </div>

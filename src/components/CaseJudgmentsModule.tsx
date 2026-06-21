@@ -35,33 +35,33 @@ const DOC_TYPES = [
     value: "lawsuit_sheet",
     label: "صحيفة الدعوى",
     icon: FileText,
-    color: "text-blue-300",
-    bg: "bg-blue-500/20",
-    border: "border-blue-400/40",
+    color: "text-[#3b82f6] font-extrabold drop-shadow-[0_0_8px_rgba(59,130,246,0.6)]",
+    bg: "bg-blue-950/70 bg-gradient-to-br from-blue-950/80 to-blue-900/40",
+    border: "border-blue-500/80 shadow-[0_0_15px_rgba(59,130,246,0.3)]",
   },
   {
     value: "judgment",
     label: "حكم قضائي",
     icon: Gavel,
-    color: "text-amber-300",
-    bg: "bg-amber-500/20",
-    border: "border-amber-400/40",
+    color: "text-amber-400 font-extrabold drop-shadow-[0_0_8px_rgba(245,158,11,0.6)]",
+    bg: "bg-amber-950/70 bg-gradient-to-br from-amber-950/80 to-amber-900/40",
+    border: "border-amber-500/80 shadow-[0_0_15px_rgba(245,158,11,0.3)]",
   },
   {
     value: "session_record",
     label: "محضر ضبط الجلسة",
     icon: BookOpen,
-    color: "text-emerald-300",
-    bg: "bg-emerald-500/20",
-    border: "border-emerald-400/40",
+    color: "text-emerald-400 font-extrabold drop-shadow-[0_0_8px_rgba(16,185,129,0.6)]",
+    bg: "bg-emerald-950/70 bg-gradient-to-br from-emerald-950/80 to-emerald-900/40",
+    border: "border-emerald-500/80 shadow-[0_0_15px_rgba(16,185,129,0.3)]",
   },
   {
     value: "response_memo",
     label: "مذكرة جوابية",
     icon: MessageSquare,
-    color: "text-purple-300",
-    bg: "bg-purple-500/20",
-    border: "border-purple-400/40",
+    color: "text-purple-400 font-extrabold drop-shadow-[0_0_8px_rgba(168,85,247,0.6)]",
+    bg: "bg-purple-950/70 bg-gradient-to-br from-purple-950/80 to-purple-900/40",
+    border: "border-purple-500/80 shadow-[0_0_15px_rgba(168,85,247,0.3)]",
   },
 ] as const;
 
@@ -843,7 +843,7 @@ ${
   };
 
   const inputClass =
-    "w-full bg-[#050e21] border border-slate-600 text-white rounded-xl px-4 py-2.5 text-sm placeholder-slate-500 focus:outline-none focus:border-amber-500";
+    "w-full bg-[#050c18] border border-slate-600 hover:border-slate-500 text-white font-bold rounded-xl px-4 py-3 text-sm placeholder-slate-400 focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400/50 focus:shadow-[0_0_12px_rgba(245,158,11,0.25)] transition-all duration-200";
 
   return (
     <div className="min-h-screen bg-[#050e21] text-white p-6" dir="rtl">
@@ -876,10 +876,10 @@ ${
                 onClick={() =>
                   setFilterType((f) => (f === type.value ? "all" : type.value))
                 }
-                className={`rounded-2xl border p-4 text-right transition-all ${
+                className={`rounded-2xl border p-5 text-right transition-all duration-300 ${
                   filterType === type.value
-                    ? `${type.bg} ${type.border} scale-[1.02]`
-                    : "bg-[#0a1628] border-slate-700/50 hover:border-slate-600"
+                    ? `${type.bg} ${type.border} scale-[1.03]`
+                    : "bg-[#0a1628] border-slate-700/60 hover:border-slate-500 hover:shadow-[0_0_15px_rgba(255,255,255,0.05)] cursor-pointer"
                 }`}
               >
                 <div className="flex items-center gap-2 mb-2">
@@ -1176,70 +1176,72 @@ ${
                                 return (
                                   <div
                                     key={doc.id}
-                                    className={`relative group bg-[#050e21] border rounded-xl
-                                      p-4 transition-all hover:scale-[1.01]
-                                      ${typeConf.border} ${typeConf.bg}`}
+                                    className={`relative group border-2 rounded-2xl
+                                      p-5 transition-all duration-300 hover:scale-[1.02]
+                                      ${typeConf.border} ${typeConf.bg} shadow-md`}
                                   >
                                     {/* نوع المستند مع شارة حديثاً أو قديماً */}
                                     <div className="flex items-center justify-between gap-1.5 mb-3 select-none">
                                       <div
-                                        className="inline-flex items-center gap-1.5
-                                        text-[10px] font-black px-2 py-1 rounded-lg
-                                        bg-slate-800 text-white border border-slate-600"
+                                        className="inline-flex items-center gap-2
+                                        text-xs font-black px-3 py-1.5 rounded-xl
+                                        bg-[#050e21]/90 text-white border border-slate-700/80 shadow-[0_0_10px_rgba(255,255,255,0.05)]"
                                       >
-                                        <Icon className="w-3 h-3 text-yellow-400" />
-                                        {typeConf.label}
+                                        <Icon className="w-3.5 h-3.5 text-amber-400 drop-shadow-[0_0_4px_rgba(245,158,11,0.5)] shrink-0" />
+                                        <span className="tracking-wide">{typeConf.label}</span>
                                       </div>
 
                                       {isDocRecent ? (
-                                        <span className="text-[9px] px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 font-black flex items-center gap-1 font-sans animate-pulse">
+                                        <span className="text-[10px] px-2 py-1 rounded-xl bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 font-black flex items-center gap-1.5 font-sans animate-pulse">
                                           <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 block" />
                                           مرفوع حديثاً
                                         </span>
                                       ) : (
-                                        <span className="text-[9px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-400 border border-slate-700 font-extrabold flex items-center gap-1 font-sans">
-                                          <span className="w-1.5 h-1.5 rounded-full bg-slate-500 block" />
+                                        <span className="text-[10px] px-2 py-1 rounded-xl bg-[#091122] text-slate-200 border border-slate-700 font-black flex items-center gap-1.5 font-sans">
+                                          <span className="w-1.5 h-1.5 rounded-full bg-slate-400 block" />
                                           محفوظ مسبقاً
                                         </span>
                                       )}
                                     </div>
 
                                     {/* اسم المستند */}
-                                    <p className="text-white font-black text-sm mb-2 leading-tight">
+                                    <p className="text-white font-black text-sm mb-3 mt-1 leading-relaxed hover:text-amber-300 transition-colors duration-200">
                                       {doc.document_name}
                                     </p>
 
                                     {/* تفاصيل */}
-                                    <div className="space-y-1 mb-3">
+                                    <div className="space-y-2 mb-4 bg-black/35 p-3 rounded-xl border border-slate-800/85">
                                       {doc.judgment_date && (
-                                        <div className="flex items-center gap-1.5">
-                                          <Calendar className="w-3 h-3 text-yellow-400 shrink-0" />
-                                          <span className="text-yellow-400 font-extrabold text-xs">
-                                            الحكم: {doc.judgment_date}
+                                        <div className="flex items-center gap-2">
+                                          <Calendar className="w-3.5 h-3.5 text-amber-400 shrink-0 drop-shadow-[0_0_4px_rgba(245,158,11,0.5)]" />
+                                          <span className="text-amber-300 font-extrabold text-xs">
+                                            تاريخ الحكم: {doc.judgment_date}
                                           </span>
                                         </div>
                                       )}
                                       {doc.hearing_date && (
-                                        <div className="flex items-center gap-1.5">
-                                          <Calendar className="w-3 h-3 text-white shrink-0" />
-                                          <span className="text-white font-extrabold text-xs">
-                                            الجلسة: {doc.hearing_date}
+                                        <div className="flex items-center gap-2">
+                                          <Calendar className="w-3.5 h-3.5 text-blue-400 shrink-0 drop-shadow-[0_0_4px_rgba(59,130,246,0.5)]" />
+                                          <span className="text-blue-300 font-extrabold text-xs">
+                                            تاريخ الجلسة: {doc.hearing_date}
                                           </span>
                                         </div>
                                       )}
                                       {doc.judgment_type && (
-                                        <span
-                                          className="inline-block text-[10px] px-2 py-0.5
-                                          bg-slate-800 text-white border border-slate-600
-                                          rounded-lg font-black"
-                                        >
-                                          {doc.judgment_type}
-                                        </span>
+                                        <div className="flex items-center gap-2">
+                                          <span
+                                            className="inline-block text-[11px] px-2.5 py-1
+                                            bg-amber-600/20 text-amber-300 border border-amber-500/40
+                                            rounded-lg font-bold"
+                                          >
+                                            {doc.judgment_type}
+                                          </span>
+                                        </div>
                                       )}
                                       {doc.court_name && (
-                                        <div className="flex items-center gap-1.5">
-                                          <Building2 className="w-3 h-3 text-yellow-400 shrink-0" />
-                                          <span className="text-white font-bold text-xs truncate">
+                                        <div className="flex items-center gap-2">
+                                          <Building2 className="w-3.5 h-3.5 text-purple-400 shrink-0 drop-shadow-[0_0_4px_rgba(168,85,247,0.5)]" />
+                                          <span className="text-slate-100 font-extrabold text-xs truncate">
                                             {doc.court_name}
                                             {doc.circuit_number
                                               ? ` — دائرة ${doc.circuit_number}`
@@ -1252,17 +1254,23 @@ ${
                                     {/* حجم + تاريخ */}
                                     <div
                                       className="flex items-center justify-between
-                                      pt-2 border-t border-slate-700/50"
+                                      pt-2.5 border-t border-slate-700/50"
                                     >
-                                      <span className="text-yellow-400 font-black text-[10px]">
-                                        {formatFileSize(
-                                          doc.compressed_size || doc.file_size,
-                                        )}
+                                      <span className="text-slate-300 font-bold text-xs">
+                                        الحجم:{" "}
+                                        <span className="text-amber-400 font-black">
+                                          {formatFileSize(
+                                            doc.compressed_size || doc.file_size,
+                                          )}
+                                        </span>
                                       </span>
-                                      <span className="text-white font-bold text-[10px]">
-                                        {new Date(doc.created_at).toLocaleDateString(
-                                          "ar-SA",
-                                        )}
+                                      <span className="text-slate-300 font-bold text-xs">
+                                        التاريخ:{" "}
+                                        <span className="text-white font-black">
+                                          {new Date(doc.created_at).toLocaleDateString(
+                                            "ar-SA",
+                                          )}
+                                        </span>
                                       </span>
                                     </div>
 
@@ -1341,25 +1349,25 @@ ${
         </div>
       )}
 
-      {/* نافذة رفع المستند */}
+      {/* (1) نافذة رفع المستند */}
       {uploadModal && (
         <div
           className="fixed inset-0 z-[60] flex items-center justify-center
-          p-4 bg-black/75 backdrop-blur-sm"
+          p-4 bg-black/80 backdrop-blur-sm"
           dir="rtl"
         >
           <div
-            className="bg-[#0a1628] border border-slate-700 rounded-2xl
-            w-full max-w-xl max-h-[90vh] overflow-y-auto shadow-2xl"
+            className="bg-gradient-to-b from-[#0a1628] to-[#040c18] border-2 border-amber-500/50 rounded-2xl
+            w-full max-w-xl max-h-[90vh] overflow-y-auto shadow-[0_0_35px_rgba(245,158,11,0.25)] animate-in fade-in zoom-in-95 duration-200"
           >
             <div
-              className="sticky top-0 bg-[#0a1628] flex items-center
-              justify-between p-5 border-b border-slate-700 z-10"
+              className="sticky top-0 bg-[#0a1628]/95 backdrop-blur-md flex items-center
+              justify-between p-6 border-b border-slate-700/80 z-10"
             >
               <div>
-                <h2 className="text-white font-black text-lg">رفع مستند</h2>
-                <p className="text-amber-400 text-xs mt-0.5">
-                  {uploadModal.caseName}
+                <h2 className="text-white font-black text-lg">رفع مستند جديد</h2>
+                <p className="text-amber-400 font-bold text-xs mt-1">
+                  الموكل / القضية: {uploadModal.caseName}
                 </p>
               </div>
               <button
@@ -1367,29 +1375,29 @@ ${
                   setUploadModal(null);
                   resetUploadForm();
                 }}
-                className="p-2 text-slate-400 hover:text-white hover:bg-slate-700 rounded-xl"
+                className="p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-xl transition-all"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <div className="p-5 space-y-4">
+            <div className="p-6 space-y-5">
               {uploadError && (
                 <div
-                  className="flex items-center gap-2 p-3 bg-red-500/10
+                  className="flex items-center gap-3 p-4 bg-red-500/10
                   border border-red-500/30 rounded-xl"
                 >
-                  <AlertCircle className="w-4 h-4 text-red-400 shrink-0" />
-                  <p className="text-red-300 text-sm">{uploadError}</p>
+                  <AlertCircle className="w-5 h-5 text-red-400 shrink-0" />
+                  <p className="text-red-300 text-sm font-bold">{uploadError}</p>
                 </div>
               )}
 
               {/* نوع المستند */}
               <div>
-                <label className="block text-slate-200 text-xs font-bold mb-2">
-                  نوع المستند *
+                <label className="block text-slate-200 text-xs font-black tracking-wide mb-2.5">
+                  نوع المستند المراد رفعه *
                 </label>
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-2 gap-2.5">
                   {DOC_TYPES.map((type) => {
                     const Icon = type.icon;
                     return (
@@ -1397,15 +1405,15 @@ ${
                         key={type.value}
                         type="button"
                         onClick={() => setDocType(type.value)}
-                        className={`flex items-center gap-2 p-3 rounded-xl
-                          border-2 transition-all text-right ${
+                        className={`flex items-center gap-2.5 p-3.5 rounded-xl
+                          border-2 transition-all text-right cursor-pointer ${
                             docType === type.value
-                              ? `${type.bg} ${type.border} ${type.color}`
-                              : "bg-[#050e21] border-slate-700 text-slate-300"
+                              ? `${type.bg} ${type.border} ${type.color} ring-1 ring-amber-400/30`
+                              : "bg-[#050e21] border-slate-700/80 text-slate-200 hover:border-slate-500 hover:text-white hover:bg-slate-900"
                           }`}
                       >
-                        <Icon className="w-4 h-4 shrink-0" />
-                        <span className="text-xs font-bold">{type.label}</span>
+                        <Icon className="w-4.5 h-4.5 shrink-0" />
+                        <span className="text-xs font-black">{type.label}</span>
                       </button>
                     );
                   })}
@@ -1414,7 +1422,7 @@ ${
 
               {/* اسم المستند */}
               <div>
-                <label className="block text-slate-200 text-xs font-bold mb-2">
+                <label className="block text-slate-200 text-xs font-black tracking-wide mb-2.5">
                   اسم المستند *
                 </label>
                 <input
@@ -1431,7 +1439,7 @@ ${
                 {docType === "judgment" && (
                   <>
                     <div>
-                      <label className="block text-slate-400 text-xs font-bold mb-1.5">
+                      <label className="block text-slate-300 text-xs font-black mb-1.5">
                         تاريخ الحكم
                       </label>
                       <input
@@ -1442,7 +1450,7 @@ ${
                       />
                     </div>
                     <div>
-                      <label className="block text-slate-400 text-xs font-bold mb-1.5">
+                      <label className="block text-slate-300 text-xs font-black mb-1.5">
                         نوع الحكم
                       </label>
                       <select
@@ -1451,22 +1459,22 @@ ${
                         className={inputClass}
                       >
                         <option value="">اختر...</option>
-                        <option value="حكم ابتدائي">حكم ابتدائي</option>
-                        <option value="حكم استئنافي">حكم استئنافي</option>
-                        <option value="حكم نقض">حكم نقض / تمييز</option>
-                        <option value="حكم لصالح الموكل">
+                        <option value="حكم ابتدائي font-bold text-slate-950">حكم ابتدائي</option>
+                        <option value="حكم استئنافي font-bold text-slate-950">حكم استئنافي</option>
+                        <option value="حكم نقض font-bold text-slate-950 font-bold text-slate-950">حكم نقض / تمييز</option>
+                        <option value="حكم لصالح الموكل font-bold text-slate-950">
                           لصالح الموكل ✅
                         </option>
-                        <option value="حكم ضد الموكل">ضد الموكل ❌</option>
-                        <option value="حكم جزئي">حكم جزئي</option>
-                        <option value="مشطوب">مشطوب</option>
+                        <option value="حكم ضد الموكل font-bold text-slate-950">ضد الموكل ❌</option>
+                        <option value="حكم جزئي font-bold text-slate-950">حكم جزئي</option>
+                        <option value="مشطوب font-bold text-slate-950">مشطوب</option>
                       </select>
                     </div>
                   </>
                 )}
                 {docType === "session_record" && (
                   <div>
-                    <label className="block text-slate-400 text-xs font-bold mb-1.5">
+                    <label className="block text-slate-300 text-xs font-black mb-1.5">
                       تاريخ الجلسة
                     </label>
                     <input
@@ -1478,7 +1486,7 @@ ${
                   </div>
                 )}
                 <div>
-                  <label className="block text-slate-400 text-xs font-bold mb-1.5">
+                  <label className="block text-slate-300 text-xs font-black mb-1.5">
                     المحكمة
                   </label>
                   <input
@@ -1491,7 +1499,7 @@ ${
                 </div>
                 {docType === "judgment" && (
                   <div>
-                    <label className="block text-slate-400 text-xs font-bold mb-1.5">
+                    <label className="block text-slate-300 text-xs font-black mb-1.5">
                       رقم الدائرة
                     </label>
                     <input
@@ -1507,38 +1515,35 @@ ${
 
               {/* ملاحظات */}
               <div>
-                <label className="block text-slate-400 text-xs font-bold mb-1.5">
-                  ملاحظات
+                <label className="block text-slate-300 text-xs font-black mb-1.5">
+                  ملاحظات إضافية
                 </label>
                 <textarea
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
                   rows={2}
-                  placeholder="ملاحظات..."
+                  placeholder="اكتب أي ملاحظات..."
                   className={inputClass + " resize-none"}
                 />
               </div>
 
               {/* رفع الملفات */}
               <div>
-                <label className="block text-slate-300 text-xs font-bold mb-2">
-                  الملفات * (PDF، Word، صور)
+                <label className="block text-slate-200 text-xs font-black tracking-wide mb-2.5">
+                  ملف المستند المرفق * (PDF، Word، صور)
                 </label>
                 <div
                   onClick={() => fileInputRef.current?.click()}
-                  className="border-2 border-dashed border-slate-600
-                    hover:border-amber-500/60 rounded-xl p-6 text-center
-                    cursor-pointer transition-colors group"
+                  className="border-2 border-dashed border-amber-500/30 hover:border-amber-400 bg-amber-500/5 hover:bg-amber-500/10 rounded-2xl p-8 text-center transition-all duration-300 shadow-[inset_0_0_15px_rgba(245,158,11,0.05)] hover:shadow-[0_0_15px_rgba(245,158,11,0.15)] group cursor-pointer"
                 >
                   <Upload
-                    className="w-8 h-8 text-slate-600
-                    group-hover:text-amber-500 mx-auto mb-2 transition-colors"
+                    className="w-10 h-10 text-amber-400 group-hover:text-amber-300 mx-auto mb-3 transition-transform duration-300 group-hover:-translate-y-1 drop-shadow-[0_0_10px_rgba(245,158,11,0.4)]"
                   />
-                  <p className="text-slate-300 text-sm font-bold">
-                    اسحب الملفات أو اضغط للاختيار
+                  <p className="text-white font-black text-sm">
+                    اسحب الملفات هنا أو اضغط للاختيار من جهازك
                   </p>
-                  <p className="text-slate-600 text-xs mt-1">
-                    يمكن رفع أكثر من ملف — حد أقصى 20MB
+                  <p className="text-slate-300 font-extrabold text-xs mt-1.5">
+                    يدعم رفع أكثر من ملف (الحد الأقصى الإجمالي الموصى به 20MB)
                   </p>
                 </div>
                 <input
@@ -1557,19 +1562,18 @@ ${
                 />
 
                 {selectedFiles.length > 0 && (
-                  <div className="mt-2 space-y-1.5">
+                  <div className="mt-3 space-y-2">
                     {selectedFiles.map((f, i) => (
                       <div
                         key={i}
-                        className="flex items-center justify-between
-                        p-2.5 bg-[#050e21] border border-slate-700 rounded-lg"
+                        className="p-3 bg-[#0a1628]/95 border border-amber-500/30 rounded-xl flex items-center justify-between shadow-[0_0_10px_rgba(245,158,11,0.08)]"
                       >
                         <div className="flex items-center gap-2 min-w-0">
-                          <LucideFile className="w-3.5 h-3.5 text-amber-400 shrink-0" />
-                          <span className="text-white text-xs truncate">
+                          <LucideFile className="w-4 h-4 text-amber-400 shrink-0 drop-shadow-[0_0_4px_rgba(245,158,11,0.4)]" />
+                          <span className="text-white text-xs font-bold truncate">
                             {f.name}
                           </span>
-                          <span className="text-slate-500 text-[10px] shrink-0">
+                          <span className="text-[#3b82f6] font-black text-[10px] shrink-0">
                             {formatFileSize(f.size)}
                           </span>
                         </div>
@@ -1579,9 +1583,9 @@ ${
                               prev.filter((_, j) => j !== i),
                             )
                           }
-                          className="text-slate-600 hover:text-red-400 p-0.5 shrink-0"
+                          className="text-slate-400 hover:text-red-400 p-0.5 shrink-0 transition-colors"
                         >
-                          <X className="w-3.5 h-3.5" />
+                          <X className="w-4 h-4" />
                         </button>
                       </div>
                     ))}
@@ -1591,41 +1595,40 @@ ${
 
               {/* شريط التقدم */}
               {isUploading && (
-                <div>
-                  <div className="flex justify-between text-xs mb-1.5">
-                    <span className="text-amber-400 font-bold">
-                      جارٍ الرفع...
+                <div className="space-y-1 bg-black/20 p-3 rounded-xl border border-slate-800">
+                  <div className="flex justify-between items-center text-xs mb-1">
+                    <span className="text-amber-400 font-black animate-pulse">
+                      جاري رفع وتأمين المستندات...
                     </span>
-                    <span className="text-slate-400">{uploadProgress}%</span>
+                    <span className="text-white font-black">{uploadProgress}%</span>
                   </div>
-                  <div className="h-2 bg-slate-700 rounded-full overflow-hidden">
+                  <div className="h-2.5 bg-slate-800 rounded-full overflow-hidden">
                     <div
-                      className="h-full bg-gradient-to-r from-amber-600 to-amber-400
-                      rounded-full transition-all"
+                      className="h-full bg-gradient-to-r from-amber-500 to-yellow-400
+                      rounded-full transition-all duration-150"
                       style={{ width: `${uploadProgress}%` }}
                     />
                   </div>
                 </div>
               )}
 
-              {/* أزرار */}
-              <div className="flex gap-3 pt-2 border-t border-slate-700">
+              {/* أزرار الإجراءات */}
+              <div className="flex gap-3 pt-3 border-t border-slate-800">
                 <button
                   onClick={handleUpload}
                   disabled={isUploading}
-                  className="flex-1 flex items-center justify-center gap-2
-                    bg-amber-600 hover:bg-amber-500 disabled:opacity-50
-                    text-white font-black py-3 rounded-xl transition-colors"
+                  className="flex-1 flex items-center justify-center gap-2.5
+                    bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 text-slate-950 font-black py-3.5 px-6 rounded-xl transition-all duration-300 shadow-[0_0_15px_rgba(245,158,11,0.3)] hover:shadow-[0_0_25px_rgba(245,158,11,0.55)] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed hover:scale-[1.01]"
                 >
                   {isUploading ? (
                     <>
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                      جارٍ الرفع...
+                      <Loader2 className="w-4 h-4 animate-spin text-slate-950" />
+                      رفع {selectedFiles.length} ملفات...
                     </>
                   ) : (
                     <>
-                      <Upload className="w-4 h-4" />
-                      رفع المستندات
+                      <Upload className="w-4.5 h-4.5 text-slate-950" />
+                      رفع وتشفير المستندات
                     </>
                   )}
                 </button>
@@ -1634,8 +1637,8 @@ ${
                     setUploadModal(null);
                     resetUploadForm();
                   }}
-                  className="px-5 py-3 border border-slate-600 text-slate-400
-                    hover:text-white rounded-xl transition-colors"
+                  className="px-6 py-3.5 border border-slate-600 font-bold text-slate-300
+                    hover:text-white hover:border-white rounded-xl transition-all duration-200 cursor-pointer"
                 >
                   إلغاء
                 </button>

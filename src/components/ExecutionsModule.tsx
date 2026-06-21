@@ -239,12 +239,12 @@ export default function ExecutionsModule({
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="relative bg-gradient-to-br from-[#040914] via-[#02040a] to-[#000000] border-2 border-yellow-500/50 rounded-[2.5rem] w-full max-w-2xl p-8 shadow-[0_0_60px_rgba(234,179,8,0.25)] overflow-hidden max-h-[90vh] overflow-y-auto"
+              className="relative bg-gradient-to-br from-[#0c142b] to-[#040817] border-2 border-amber-500/30 rounded-[2.5rem] w-full max-w-2xl p-8 shadow-[0_0_60px_rgba(234,179,8,0.25)] overflow-hidden max-h-[90vh] overflow-y-auto"
             >
               <div className="absolute top-0 right-0 w-64 h-64 bg-amber-500/10 rounded-full blur-3xl -z-10 pointer-events-none"></div>
 
-              <div className="flex items-center justify-between mb-8 pb-4 border-b border-yellow-500/20 relative z-10">
-                <h2 className="text-2xl font-black text-yellow-400 drop-shadow-[0_0_12px_rgba(234,179,8,0.5)] tracking-tight">
+              <div className="flex items-center justify-between mb-8 pb-4 border-b border-amber-500/20 relative z-10">
+                <h2 className="text-2xl font-black text-amber-400 tracking-tight drop-shadow-md">
                   {isAdding
                     ? "قيد سجل تنفيذ جديد"
                     : `تعديل بيانات طلب التنفيذ: ${editingExec?.execution_number}`}
@@ -254,7 +254,7 @@ export default function ExecutionsModule({
                     setIsAdding(false);
                     setEditingExec(null);
                   }}
-                  className="bg-slate-900 hover:bg-slate-800 text-yellow-500 hover:text-yellow-400 border border-yellow-500/30 hover:border-yellow-400 w-8 h-8 rounded-full flex items-center justify-center text-xs font-black shadow-[0_0_15px_rgba(234,179,8,0)] hover:shadow-[0_0_15px_rgba(234,179,8,0.3)] transition-all duration-200 cursor-pointer"
+                  className="bg-slate-900 hover:bg-slate-800 text-amber-500 hover:text-amber-400 border border-amber-500/30 w-8 h-8 rounded-full flex items-center justify-center text-xs font-black shadow-[0_0_15px_rgba(234,179,8,0.3)] transition-all duration-200 cursor-pointer"
                 >
                   ✕
                 </button>
@@ -266,13 +266,13 @@ export default function ExecutionsModule({
               >
                 <div className="space-y-5">
                   <div>
-                    <label className="text-xs font-black text-yellow-400 mb-2 block uppercase tracking-wide drop-shadow-md">
+                    <label className="text-xs font-black text-amber-400 mb-2 block uppercase tracking-wide drop-shadow-sm">
                       رقم طلب التنفيذ{" "}
-                      <span className="text-rose-400 font-bold">*</span>
+                      <span className="text-rose-500 font-bold">*</span>
                     </label>
                     <input
                       required
-                      className="w-full bg-slate-900 border-2 border-amber-500/30 p-4 rounded-2xl text-yellow-300 font-mono font-black text-sm placeholder-slate-600 hover:border-yellow-500/50 hover:shadow-[0_0_15px_rgba(234,179,8,0.2)] focus:border-yellow-400 focus:ring-4 focus:ring-yellow-400/20 focus:shadow-[0_0_20px_rgba(234,179,8,0.3)] transition-all duration-300 outline-none"
+                      className="w-full bg-slate-900/80 border-2 border-slate-700 p-4 rounded-2xl text-amber-100 font-mono font-black text-sm placeholder-slate-500 hover:border-amber-500/50 focus:border-amber-400 focus:ring-4 focus:ring-amber-500/20 transition-all duration-300 outline-none shadow-inner"
                       value={
                         isAdding
                           ? newExec.execution_number
@@ -293,13 +293,13 @@ export default function ExecutionsModule({
                     />
                   </div>
                   <div>
-                    <label className="text-xs font-black text-yellow-400 mb-2 block uppercase tracking-wide drop-shadow-md">
+                    <label className="text-xs font-black text-amber-400 mb-2 block uppercase tracking-wide drop-shadow-sm">
                       اسم طالب التنفيذ (الموكل){" "}
-                      <span className="text-rose-400 font-bold">*</span>
+                      <span className="text-rose-500 font-bold">*</span>
                     </label>
                     <input
                       required
-                      className="w-full bg-slate-900 border-2 border-amber-500/30 p-4 rounded-2xl text-white font-black text-sm placeholder-slate-600 hover:border-yellow-500/50 hover:shadow-[0_0_15px_rgba(234,179,8,0.2)] focus:border-yellow-400 focus:ring-4 focus:ring-yellow-400/20 focus:shadow-[0_0_20px_rgba(234,179,8,0.3)] transition-all duration-300 outline-none"
+                      className="w-full bg-slate-900/80 border-2 border-slate-700 p-4 rounded-2xl text-amber-100 font-black text-sm placeholder-slate-500 hover:border-amber-500/50 focus:border-amber-400 focus:ring-4 focus:ring-amber-500/20 transition-all duration-300 outline-none shadow-inner"
                       value={
                         isAdding
                           ? newExec.requester_name
@@ -320,13 +320,13 @@ export default function ExecutionsModule({
                     />
                   </div>
                   <div>
-                    <label className="text-xs font-black text-yellow-400 mb-2 block uppercase tracking-wide drop-shadow-md">
+                    <label className="text-xs font-black text-amber-400 mb-2 block uppercase tracking-wide drop-shadow-sm">
                       اسم المنفذ ضده{" "}
-                      <span className="text-rose-400 font-bold">*</span>
+                      <span className="text-rose-500 font-bold">*</span>
                     </label>
                     <input
                       required
-                      className="w-full bg-slate-900 border-2 border-amber-500/30 p-4 rounded-2xl text-white font-black text-sm placeholder-slate-600 hover:border-yellow-500/50 hover:shadow-[0_0_15px_rgba(234,179,8,0.2)] focus:border-yellow-400 focus:ring-4 focus:ring-yellow-400/20 focus:shadow-[0_0_20px_rgba(234,179,8,0.3)] transition-all duration-300 outline-none"
+                      className="w-full bg-slate-900/80 border-2 border-slate-700 p-4 rounded-2xl text-amber-100 font-black text-sm placeholder-slate-500 hover:border-amber-500/50 focus:border-amber-400 focus:ring-4 focus:ring-amber-500/20 transition-all duration-300 outline-none shadow-inner"
                       value={
                         isAdding
                           ? newExec.opponent_name
@@ -350,14 +350,14 @@ export default function ExecutionsModule({
 
                 <div className="space-y-5">
                   <div>
-                    <label className="text-xs font-black text-yellow-400 mb-2 block uppercase tracking-wide drop-shadow-md">
+                    <label className="text-xs font-black text-amber-400 mb-2 block uppercase tracking-wide drop-shadow-sm">
                       مبلغ التنفيذ (ر.س){" "}
-                      <span className="text-rose-400 font-bold">*</span>
+                      <span className="text-rose-500 font-bold">*</span>
                     </label>
                     <input
                       type="number"
                       required
-                      className="w-full bg-slate-900 border-2 border-amber-500/30 p-4 rounded-2xl text-yellow-300 font-mono font-black text-sm placeholder-slate-600 hover:border-yellow-500/50 hover:shadow-[0_0_15px_rgba(234,179,8,0.2)] focus:border-yellow-400 focus:ring-4 focus:ring-yellow-400/20 focus:shadow-[0_0_20px_rgba(234,179,8,0.3)] transition-all duration-300 outline-none"
+                      className="w-full bg-slate-900/80 border-2 border-slate-700 p-4 rounded-2xl text-amber-100 font-mono font-black text-sm placeholder-slate-500 hover:border-amber-500/50 focus:border-amber-400 focus:ring-4 focus:ring-amber-500/20 transition-all duration-300 outline-none shadow-inner"
                       value={isAdding ? newExec.amount : editingExec?.amount}
                       onChange={(e) =>
                         isAdding
@@ -373,11 +373,11 @@ export default function ExecutionsModule({
                     />
                   </div>
                   <div>
-                    <label className="text-xs font-black text-yellow-400 mb-2 block uppercase tracking-wide drop-shadow-md">
+                    <label className="text-xs font-black text-amber-400 mb-2 block uppercase tracking-wide drop-shadow-sm">
                       المحكمة / الدائرة
                     </label>
                     <input
-                      className="w-full bg-slate-900 border-2 border-amber-500/30 p-4 rounded-2xl text-white font-black text-sm placeholder-slate-600 hover:border-yellow-500/50 hover:shadow-[0_0_15px_rgba(234,179,8,0.2)] focus:border-yellow-400 focus:ring-4 focus:ring-yellow-400/20 focus:shadow-[0_0_20px_rgba(234,179,8,0.3)] transition-all duration-300 outline-none"
+                      className="w-full bg-slate-900/80 border-2 border-slate-700 p-4 rounded-2xl text-amber-100 font-black text-sm placeholder-slate-500 hover:border-amber-500/50 focus:border-amber-400 focus:ring-4 focus:ring-amber-500/20 transition-all duration-300 outline-none shadow-inner"
                       value={
                         isAdding ? newExec.court_name : editingExec?.court_name
                       }
@@ -396,12 +396,12 @@ export default function ExecutionsModule({
                     />
                   </div>
                   <div>
-                    <label className="text-xs font-black text-yellow-400 mb-2 block uppercase tracking-wide drop-shadow-md">
+                    <label className="text-xs font-black text-amber-400 mb-2 block uppercase tracking-wide drop-shadow-sm">
                       تاريخ القيد
                     </label>
                     <input
                       type="date"
-                      className="w-full bg-slate-900 border-2 border-amber-500/30 p-4 rounded-2xl text-white font-black text-sm placeholder-slate-600 hover:border-yellow-500/50 hover:shadow-[0_0_15px_rgba(234,179,8,0.2)] focus:border-yellow-400 focus:ring-4 focus:ring-yellow-400/20 focus:shadow-[0_0_20px_rgba(234,179,8,0.3)] transition-all duration-300 outline-none [color-scheme:dark]"
+                      className="w-full bg-slate-900/80 border-2 border-slate-700 p-4 rounded-2xl text-amber-100 font-black text-sm placeholder-slate-500 hover:border-amber-500/50 focus:border-amber-400 focus:ring-4 focus:ring-amber-500/20 transition-all duration-300 outline-none shadow-inner [color-scheme:dark]"
                       value={
                         isAdding ? newExec.issue_date : editingExec?.issue_date
                       }
@@ -421,11 +421,11 @@ export default function ExecutionsModule({
                 </div>
 
                 <div className="col-span-full">
-                  <label className="text-xs font-black text-yellow-400 mb-2 block uppercase tracking-wide drop-shadow-md">
+                  <label className="text-xs font-black text-amber-400 mb-2 block uppercase tracking-wide drop-shadow-sm">
                     الحالة الحالية للطلب
                   </label>
                   <select
-                    className="w-full bg-slate-900 border-2 border-amber-500/30 p-4 rounded-2xl text-white font-black text-sm hover:border-yellow-500/50 hover:shadow-[0_0_15px_rgba(234,179,8,0.2)] focus:border-yellow-400 focus:ring-4 focus:ring-yellow-400/20 focus:shadow-[0_0_20px_rgba(234,179,8,0.3)] transition-all duration-300 outline-none cursor-pointer"
+                    className="w-full bg-slate-900/80 border-2 border-slate-700 p-4 rounded-2xl text-amber-100 font-black text-sm hover:border-amber-500/50 focus:border-amber-400 focus:ring-4 focus:ring-amber-500/20 transition-all duration-300 outline-none shadow-inner cursor-pointer"
                     value={isAdding ? newExec.status : editingExec?.status}
                     onChange={(e) =>
                       isAdding
@@ -438,16 +438,16 @@ export default function ExecutionsModule({
                   >
                     <option
                       value="قيد التنفيذ"
-                      className="bg-[#0b1221] text-white"
+                      className="bg-slate-900 text-amber-100"
                     >
                       ⏳ قيد التنفيذ
                     </option>
-                    <option value="مكتمل" className="bg-[#0b1221] text-white">
+                    <option value="مكتمل" className="bg-slate-900 text-amber-100">
                       ✅ منتهي ومسدد بنجاح
                     </option>
                     <option
                       value="طلب معلق"
-                      className="bg-[#0b1221] text-white"
+                      className="bg-slate-900 text-amber-100"
                     >
                       ⚠️ معلق بقرار قضائي
                     </option>
@@ -455,12 +455,12 @@ export default function ExecutionsModule({
                 </div>
 
                 <div className="col-span-full">
-                  <label className="text-xs font-black text-yellow-400 mb-2 block uppercase tracking-wide drop-shadow-md">
+                  <label className="text-xs font-black text-amber-400 mb-2 block uppercase tracking-wide drop-shadow-sm">
                     ملاحظات العمل الخاصة بالسجل
                   </label>
                   <textarea
                     rows={3}
-                    className="w-full bg-slate-900 border-2 border-amber-500/30 p-4 rounded-2xl text-white font-bold text-sm placeholder-slate-600 hover:border-yellow-500/50 hover:shadow-[0_0_15px_rgba(234,179,8,0.2)] focus:border-yellow-400 focus:ring-4 focus:ring-yellow-400/20 focus:shadow-[0_0_20px_rgba(234,179,8,0.3)] transition-all duration-300 outline-none resize-none"
+                    className="w-full bg-slate-900/80 border-2 border-slate-700 p-4 rounded-2xl text-amber-100 font-bold text-sm placeholder-slate-500 hover:border-amber-500/50 focus:border-amber-400 focus:ring-4 focus:ring-amber-500/20 transition-all duration-300 outline-none shadow-inner resize-none"
                     value={isAdding ? newExec.details : editingExec?.details}
                     onChange={(e) =>
                       isAdding
@@ -476,7 +476,7 @@ export default function ExecutionsModule({
                 <div className="col-span-full pt-4 flex gap-4">
                   <button
                     type="submit"
-                    className="flex-1 bg-yellow-400 hover:bg-yellow-500 text-slate-900 p-5 rounded-2xl font-extrabold text-sm shadow-[0_0_20px_rgba(234,179,8,0.3)] hover:shadow-[0_0_30px_rgba(234,179,8,0.5)] transition-all active:scale-[0.98] cursor-pointer border border-yellow-500"
+                    className="flex-1 bg-amber-600 hover:bg-amber-500 text-slate-950 p-5 rounded-2xl font-extrabold text-sm shadow-[0_0_20px_rgba(217,119,6,0.4)] transition-all active:scale-[0.98] cursor-pointer border border-amber-400/50"
                   >
                     {isAdding
                       ? "اعتماد قيد الطلب الجديد والمزامنة ✅"
@@ -493,7 +493,7 @@ export default function ExecutionsModule({
                           setEditingExec(null);
                         }
                       }}
-                      className="bg-red-500/10 text-red-400 border border-red-500/30 hover:bg-red-500 hover:text-white px-8 rounded-2xl transition-all font-black text-sm cursor-pointer"
+                      className="bg-slate-900 text-rose-500 border border-rose-500/30 hover:bg-rose-500 hover:text-white hover:border-rose-500 px-8 rounded-2xl transition-all font-black text-sm cursor-pointer shadow-[0_0_15px_rgba(244,63,94,0.1)] hover:shadow-[0_0_20px_rgba(244,63,94,0.3)]"
                     >
                       حذف السجل
                     </button>
@@ -577,32 +577,32 @@ export default function ExecutionsModule({
 
       {/* Table / Cards Section */}
       {viewMode === "table" ? (
-        <div className="rounded-[2.5rem] overflow-hidden shadow-2xl bg-gradient-to-b from-[#0c142b] to-[#040817] border-2 border-yellow-500/30 hover:border-yellow-500/40 transition-all duration-300 mb-6">
-          <div className="overflow-x-auto">
-            <table className="w-full text-right border-collapse">
+        <div className="rounded-[2.5rem] p-4 shadow-2xl bg-[#0c142b] border-2 border-yellow-500/30 hover:border-yellow-500/40 transition-all duration-300 mb-6">
+          <div className="overflow-x-auto text-white">
+            <table className="w-full text-right border-separate border-spacing-y-4">
               <thead>
-                <tr className="bg-[#0b1221] border-b-2 border-yellow-500/20">
-                  <th className="px-8 py-5 text-xs font-black tracking-wide text-yellow-400 whitespace-nowrap">
+                <tr className="mb-4">
+                  <th className="px-8 py-3 text-xs font-black tracking-wide text-slate-400 whitespace-nowrap">
                     رقم الطلب الرسمي
                   </th>
-                  <th className="px-6 py-5 text-xs font-black tracking-wide text-yellow-400 whitespace-nowrap">
+                  <th className="px-6 py-3 text-xs font-black tracking-wide text-slate-400 whitespace-nowrap">
                     طالب الحماية (الموكل)
                   </th>
-                  <th className="px-6 py-5 text-xs font-black tracking-wide text-yellow-400 whitespace-nowrap">
+                  <th className="px-6 py-3 text-xs font-black tracking-wide text-slate-400 whitespace-nowrap">
                     المنفذ ضده
                   </th>
-                  <th className="px-6 py-5 text-xs font-black tracking-wide text-yellow-400 whitespace-nowrap text-center">
+                  <th className="px-6 py-3 text-xs font-black tracking-wide text-slate-400 whitespace-nowrap text-center">
                     المبلغ المستحق
                   </th>
-                  <th className="px-6 py-5 text-xs font-black tracking-wide text-yellow-400 whitespace-nowrap text-center">
+                  <th className="px-6 py-3 text-xs font-black tracking-wide text-slate-400 whitespace-nowrap text-center">
                     الحالة الحالية
                   </th>
-                  <th className="px-8 py-5 text-xs font-black tracking-wide text-yellow-400 whitespace-nowrap text-left">
-                    خيارات التحكم المضيئة
+                  <th className="px-8 py-3 text-xs font-black tracking-wide text-slate-400 whitespace-nowrap text-left">
+                    خيارات التحكم
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800">
+              <tbody>
                 {filtered.length === 0 ? (
                   <tr>
                     <td
@@ -616,64 +616,64 @@ export default function ExecutionsModule({
                   filtered.map((ex) => (
                     <tr
                       key={ex.id}
-                      className="hover:bg-slate-800/40 bg-slate-950/20 border-b border-yellow-500/5 transition-all duration-200 group"
+                      className="hover:scale-[1.01] bg-gradient-to-r from-slate-900 to-[#0a1128] transition-all duration-300 group shadow-[0_0_15px_rgba(0,0,0,0.5)] relative"
                     >
-                      <td className="px-8 py-6 whitespace-nowrap font-mono font-black text-sm text-yellow-300 group-hover:text-yellow-400 transition-colors">
+                      <td className="px-8 py-6 whitespace-nowrap font-mono font-black text-sm text-amber-400 group-hover:text-amber-300 transition-colors rounded-r-3xl border-y border-r border-amber-500/20">
                         <div className="flex flex-col gap-1">
                           <span
-                            className="cursor-pointer hover:underline"
+                            className="cursor-pointer hover:underline text-lg drop-shadow-sm"
                             onClick={() => setViewingExec(ex)}
                           >
                             #{ex.execution_number}
                           </span>
                           {ex.is_najiz_sync && (
-                            <span className="text-[10px] bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded-md flex items-center gap-1 w-fit">
+                            <span className="text-[10px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded-md flex items-center gap-1 w-fit font-black shadow-sm">
                               <Activity className="w-2.5 h-2.5" /> مزامنة ناجز
                             </span>
                           )}
                         </div>
                       </td>
-                      <td className="px-6 py-6 whitespace-nowrap text-white font-black text-sm">
+                      <td className="px-6 py-6 whitespace-nowrap text-amber-50 font-extrabold text-base drop-shadow-[0_1px_1px_rgba(0,0,0,0.5)] border-y border-amber-500/20">
                         {ex.requester_name}
                       </td>
-                      <td className="px-6 py-6 whitespace-nowrap text-slate-300 font-bold text-sm">
+                      <td className="px-6 py-6 whitespace-nowrap text-amber-100/90 font-bold text-base border-y border-amber-500/20">
                         {ex.opponent_name}
                       </td>
-                      <td className="px-6 py-6 whitespace-nowrap text-center text-yellow-400 font-mono font-black text-sm">
+                      <td className="px-6 py-6 whitespace-nowrap text-center text-amber-400 font-mono font-black text-lg drop-shadow-[0_1px_1px_rgba(0,0,0,0.5)] border-y border-amber-500/20">
                         {(ex.amount || 0).toLocaleString()}{" "}
-                        <span className="text-[10px] text-yellow-550/80 font-sans">
+                        <span className="text-xs text-amber-400/60 font-sans font-bold">
                           ر.س
                         </span>
                       </td>
-                      <td className="px-6 py-6 whitespace-nowrap text-center">
+                      <td className="px-6 py-6 whitespace-nowrap text-center border-y border-amber-500/20">
                         <span
-                          className={`px-4 py-1.5 rounded-full text-[10px] font-black border uppercase tracking-wide ${
+                          className={`px-5 py-2 rounded-full text-[11px] font-black border uppercase tracking-widest ${
                             ex.status?.includes("مكتمل") ||
                             ex.status?.includes("منتهي")
-                              ? "bg-emerald-500/20 text-emerald-400 border-emerald-500/30 shadow-[0_0_10px_rgba(16,185,129,0.1)]"
+                              ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/30 shadow-sm"
                               : ex.status?.includes("قيد")
-                                ? "bg-amber-500/20 text-amber-300 border-amber-500/30 shadow-[0_0_10px_rgba(245,158,11,0.1)]"
-                                : "bg-blue-500/20 text-blue-300 border-blue-500/30 shadow-[0_0_10px_rgba(59,130,246,0.1)]"
+                                ? "bg-amber-500/10 text-amber-400 border-amber-500/30 shadow-sm"
+                                : "bg-blue-500/10 text-blue-400 border-blue-500/30 shadow-sm"
                           }`}
                         >
                           {ex.status}
                         </span>
                       </td>
-                      <td className="px-8 py-6 whitespace-nowrap text-left">
-                        <div className="flex items-center justify-end gap-2.5">
+                      <td className="px-8 py-6 whitespace-nowrap text-left rounded-l-3xl border-y border-l border-amber-500/20">
+                        <div className="flex items-center justify-end gap-3">
                           <button
                             onClick={() => setViewingExec(ex)}
-                            className="p-3 bg-slate-850 hover:bg-slate-800 text-slate-100 border border-slate-700 hover:border-yellow-400/50 rounded-xl transition-all cursor-pointer shadow-md hover:shadow-[0_0_15px_rgba(234,179,8,0.2)]"
-                            title="عرض تفاصيل السجل المضيئة"
+                            className="p-3 bg-slate-800 hover:bg-slate-700 text-amber-400 border border-slate-700 hover:border-amber-500 hover:text-amber-300 rounded-full transition-all cursor-pointer shadow-sm hover:shadow-md"
+                            title="عرض تفاصيل السجل"
                           >
-                            <ArrowUpRight className="w-4 h-4" />
+                            <ArrowUpRight className="w-5 h-5" />
                           </button>
                           <button
                             onClick={() => setEditingExec(ex)}
-                            className="p-3 bg-slate-850 hover:bg-slate-800 text-yellow-400 border border-slate-700 hover:border-yellow-400/50 rounded-xl transition-all cursor-pointer"
+                            className="p-3 bg-slate-800 hover:bg-slate-700 text-amber-400 border border-slate-700 hover:border-amber-500 hover:text-amber-300 rounded-full transition-all cursor-pointer shadow-sm hover:shadow-md"
                             title="تعديل بيانات السجل"
                           >
-                            <Edit2 className="w-4 h-4" />
+                            <Edit2 className="w-5 h-5" />
                           </button>
                         </div>
                       </td>
@@ -687,7 +687,7 @@ export default function ExecutionsModule({
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filtered.length === 0 ? (
-            <div className="col-span-full py-20 text-center text-yellow-500 italic font-black text-lg bg-[#0c142b]/60 border-2 border-yellow-500/30 rounded-[2.5rem]">
+            <div className="col-span-full py-20 text-center text-slate-500 italic font-black text-lg bg-white/60 border-2 border-slate-200 rounded-[2.5rem]">
               لا توجد سجلات مطابقة لخيارات الفلترة الحالية...
             </div>
           ) : (
@@ -696,34 +696,34 @@ export default function ExecutionsModule({
                 layout
                 key={ex.id}
                 onClick={() => setViewingExec(ex)}
-                className="p-6 rounded-[2rem] bg-gradient-to-br from-[#040914] via-[#02040a] to-[#000000] border-2 border-yellow-500/50 hover:border-yellow-400 shadow-[0_0_20px_rgba(234,179,8,0.15)] hover:shadow-[0_0_40px_rgba(234,179,8,0.4)] transition-all duration-300 group cursor-pointer relative overflow-hidden"
+                className="p-6 rounded-[2rem] bg-gradient-to-br from-[#0c142b] to-[#040817] border-2 border-amber-500/20 hover:border-amber-500/50 shadow-[0_4px_20px_rgba(0,0,0,0.5)] hover:shadow-[0_10px_30px_rgba(234,179,8,0.15)] transition-all duration-300 group cursor-pointer relative overflow-hidden"
               >
-                <div className="absolute top-0 right-0 w-24 h-24 bg-yellow-500/10 rounded-full blur-2xl -z-10"></div>
+                <div className="absolute top-0 right-0 w-24 h-24 bg-amber-500/10 rounded-full blur-2xl -z-10"></div>
 
                 <div className="flex justify-between items-start mb-6">
-                  <div className="p-3 bg-yellow-500/10 rounded-2xl border border-yellow-500/20 text-yellow-400 group-hover:scale-110 transition-transform duration-300 shadow-[0_0_10px_rgba(234,179,8,0.3)]">
+                  <div className="p-3 bg-slate-900 border border-amber-500/30 text-amber-500 rounded-2xl group-hover:scale-110 transition-transform duration-300 shadow-sm">
                     <Gavel className="w-6 h-6" />
                   </div>
                   <span
-                    className={`px-4 py-1.5 rounded-full text-[10px] font-black border uppercase tracking-wide ${
+                    className={`px-4 py-1.5 rounded-full text-[10px] font-black border uppercase tracking-widest shadow-sm ${
                       ex.status?.includes("مكتمل") ||
                       ex.status?.includes("منتهي")
-                        ? "bg-emerald-500/20 text-emerald-400 border-emerald-500/30 shadow-[0_0_10px_rgba(16,185,129,0.1)]"
+                        ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/30"
                         : ex.status?.includes("قيد")
-                          ? "bg-amber-500/20 text-amber-300 border-amber-500/30 shadow-[0_0_10px_rgba(245,158,11,0.1)]"
-                          : "bg-blue-500/20 text-blue-300 border-blue-500/30 shadow-[0_0_10px_rgba(59,130,246,0.1)]"
+                          ? "bg-amber-500/10 text-amber-400 border-amber-500/30"
+                          : "bg-blue-500/10 text-blue-400 border-blue-500/30"
                     }`}
                   >
                     {ex.status}
                   </span>
                 </div>
 
-                <h3 className="text-lg font-black mb-1 text-white group-hover:text-yellow-400 transition-colors drop-shadow-[0_0_4px_rgba(234,179,8,0.1)]">
+                <h3 className="text-lg font-black mb-1 text-amber-400 group-hover:text-amber-300 transition-colors drop-shadow-md">
                   طلب رقم: {ex.execution_number}
                 </h3>
                 {ex.is_najiz_sync && (
                   <div className="flex items-center gap-1.5 mb-3">
-                    <span className="text-[10px] bg-emerald-500/15 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded-md font-black flex items-center gap-1">
+                    <span className="text-[10px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded-md font-black flex items-center gap-1 shadow-sm">
                       <Activity className="w-3 h-3" /> مستورد ومزامن آلياً عبر
                       ناجز
                     </span>
@@ -731,51 +731,51 @@ export default function ExecutionsModule({
                 )}
 
                 <div className="space-y-4 mb-6 pt-2">
-                  <div className="flex items-center justify-between text-sm border-b border-white/10 pb-2">
+                  <div className="flex items-center justify-between text-sm border-b border-slate-700/50 pb-2">
                     <div className="flex items-center gap-2.5">
-                      <User className="w-4 h-4 text-yellow-500 drop-shadow-md" />
-                      <span className="text-slate-300 font-extrabold">
+                      <User className="w-4 h-4 text-slate-500" />
+                      <span className="text-amber-400/60 font-extrabold">
                         الموكل الطالب:
                       </span>
                     </div>
-                    <span className="font-black text-white">
+                    <span className="font-black text-amber-50 drop-shadow-sm">
                       {ex.requester_name}
                     </span>
                   </div>
-                  <div className="flex items-center justify-between text-sm border-b border-white/10 pb-2">
+                  <div className="flex items-center justify-between text-sm border-b border-slate-700/50 pb-2">
                     <div className="flex items-center gap-2.5">
-                      <User className="w-4 h-4 text-[#bf9443] drop-shadow-md" />
-                      <span className="text-slate-300 font-extrabold">
+                      <User className="w-4 h-4 text-slate-500" />
+                      <span className="text-amber-400/60 font-extrabold">
                         الطرف المدين:
                       </span>
                     </div>
-                    <span className="font-extrabold text-[#f1f5f9]">
+                    <span className="font-extrabold text-amber-100">
                       {ex.opponent_name}
                     </span>
                   </div>
-                  <div className="flex items-center justify-between text-sm border-b border-white/10 pb-2">
+                  <div className="flex items-center justify-between text-sm border-b border-slate-700/50 pb-2">
                     <div className="flex items-center gap-2.5">
-                      <CreditCard className="w-4 h-4 text-yellow-400 drop-shadow-md" />
-                      <span className="text-slate-300 font-extrabold">
+                      <CreditCard className="w-4 h-4 text-slate-500" />
+                      <span className="text-amber-400/60 font-extrabold">
                         قيمة السند:
                       </span>
                     </div>
-                    <span className="font-black text-base text-yellow-400 font-mono drop-shadow-[0_0_8px_rgba(234,179,8,0.5)]">
+                    <span className="font-black text-base text-amber-400 font-mono drop-shadow-sm">
                       {(ex.amount || 0).toLocaleString()}{" "}
-                      <span className="text-[10px] text-yellow-500 font-sans">
+                      <span className="text-[10px] text-amber-400/60 font-sans">
                         ر.س
                       </span>
                     </span>
                   </div>
                   {ex.court_name && (
-                    <div className="flex items-center justify-between text-sm opacity-90">
+                    <div className="flex items-center justify-between text-sm">
                       <div className="flex items-center gap-2.5">
-                        <FileText className="w-4 h-4 text-blue-400 drop-shadow-md" />
-                        <span className="text-slate-300 font-extrabold">
+                        <FileText className="w-4 h-4 text-slate-500" />
+                        <span className="text-amber-400/60 font-extrabold">
                           المحكمة:
                         </span>
                       </div>
-                      <span className="font-black text-slate-200 text-xs">
+                      <span className="font-black text-amber-100/90 text-xs">
                         {ex.court_name}
                       </span>
                     </div>
@@ -783,14 +783,14 @@ export default function ExecutionsModule({
                 </div>
 
                 <div
-                  className="flex gap-2.5 pt-4 border-t border-yellow-500/10"
+                  className="flex gap-2.5 pt-4 border-t border-slate-800"
                   onClick={(e) => e.stopPropagation()}
                 >
                   <button
                     onClick={() => setEditingExec(ex)}
-                    className="flex-1 flex items-center justify-center gap-2 p-3 bg-slate-850 hover:bg-slate-800 text-yellow-300 font-black text-xs transition-all border border-slate-700 hover:border-yellow-400/50 rounded-xl cursor-pointer"
+                    className="flex-1 flex items-center justify-center gap-2 p-3 bg-slate-900/60 hover:bg-slate-800 text-amber-400 font-black text-xs transition-all border border-amber-500/20 hover:border-amber-400 rounded-xl cursor-pointer shadow-sm"
                   >
-                    <Edit2 className="w-4 h-4 text-yellow-400" />
+                    <Edit2 className="w-4 h-4" />
                     تعديل البيانات
                   </button>
                   <button
@@ -801,7 +801,7 @@ export default function ExecutionsModule({
                         onDeleteExecution && onDeleteExecution(ex.id);
                       }
                     }}
-                    className="p-3 bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500 hover:text-white rounded-xl transition-all cursor-pointer"
+                    className="p-3 bg-slate-900/60 hover:bg-rose-500/10 text-rose-500 border border-slate-800 hover:border-rose-500/30 rounded-xl transition-all cursor-pointer shadow-sm"
                   >
                     <Trash2 className="w-4 h-4" />
                   </button>
@@ -827,27 +827,27 @@ export default function ExecutionsModule({
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="relative bg-gradient-to-br from-[#040914] via-[#02040a] to-[#000000] border-2 border-yellow-500/50 rounded-[2.5rem] w-full max-w-xl p-8 shadow-[0_0_60px_rgba(234,179,8,0.25)] overflow-hidden max-h-[90vh] overflow-y-auto"
+              className="relative bg-gradient-to-br from-[#0c142b] to-[#040817] border-2 border-amber-500/30 rounded-[2.5rem] w-full max-w-xl p-8 shadow-[0_0_60px_rgba(234,179,8,0.25)] overflow-hidden max-h-[90vh] overflow-y-auto"
             >
-              <div className="absolute top-0 right-0 w-64 h-64 bg-yellow-500/10 rounded-full blur-3xl -z-10 pointer-events-none"></div>
+              <div className="absolute top-0 right-0 w-64 h-64 bg-amber-500/10 rounded-full blur-3xl -z-10 pointer-events-none"></div>
 
-              <div className="flex items-center justify-between mb-6 pb-4 border-b border-yellow-500/20 relative z-10">
+              <div className="flex items-center justify-between mb-6 pb-4 border-b border-amber-500/20 relative z-10">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-yellow-500/10 rounded-xl border border-yellow-500/20 text-yellow-400 shadow-[0_0_10px_rgba(234,179,8,0.2)]">
+                  <div className="p-2 bg-slate-900 rounded-xl border border-amber-500/30 text-amber-500 shadow-[0_0_15px_rgba(234,179,8,0.2)]">
                     <Scale className="w-6 h-6" />
                   </div>
                   <div>
-                    <h2 className="text-xl font-black text-yellow-400 drop-shadow-[0_0_10px_rgba(234,179,8,0.5)] tracking-tight">
+                    <h2 className="text-xl font-black text-amber-400 tracking-tight drop-shadow-md">
                       تفاصيل سجل التنفيذ
                     </h2>
-                    <p className="text-xs text-slate-400 font-extrabold mt-1 font-mono">
+                    <p className="text-xs text-amber-200/80 font-extrabold mt-1 font-mono">
                       #{viewingExec.execution_number}
                     </p>
                   </div>
                 </div>
                 <button
                   onClick={() => setViewingExec(null)}
-                  className="bg-slate-900 hover:bg-slate-800 text-yellow-500 hover:text-yellow-400 border border-yellow-500/30 hover:border-yellow-400 w-8 h-8 rounded-full flex items-center justify-center text-xs font-black shadow-[0_0_15px_rgba(234,179,8,0)] hover:shadow-[0_0_15px_rgba(234,179,8,0.3)] transition-all duration-200 cursor-pointer"
+                  className="bg-slate-900 hover:bg-slate-800 text-amber-500 hover:text-amber-400 border border-amber-500/30 w-8 h-8 rounded-full flex items-center justify-center text-xs font-black shadow-[0_0_15px_rgba(234,179,8,0.3)] transition-all duration-200 cursor-pointer"
                 >
                   ✕
                 </button>
@@ -855,18 +855,18 @@ export default function ExecutionsModule({
 
               <div className="space-y-5 relative z-10">
                 {/* Status Badges Header */}
-                <div className="flex items-center justify-between bg-black/50 p-4 rounded-2xl border border-yellow-500/20">
-                  <span className="text-xs text-yellow-400 font-black drop-shadow-md">
+                <div className="flex items-center justify-between bg-slate-900/60 p-4 rounded-2xl border border-slate-700">
+                  <span className="text-xs text-amber-400 font-black">
                     حالة السند القانوني:
                   </span>
                   <span
-                    className={`px-4 py-1.5 rounded-full text-xs font-black border uppercase ${
+                    className={`px-4 py-1.5 rounded-full text-[11px] font-black border uppercase ${
                       viewingExec.status?.includes("مكتمل") ||
                       viewingExec.status?.includes("منتهي")
-                        ? "bg-emerald-500/20 text-emerald-400 border-emerald-500/40 shadow-[0_0_15px_rgba(16,185,129,0.2)]"
+                        ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/30 shadow-sm"
                         : viewingExec.status?.includes("قيد")
-                          ? "bg-amber-500/20 text-amber-300 border-amber-500/40 shadow-[0_0_15px_rgba(245,158,11,0.2)]"
-                          : "bg-blue-500/20 text-blue-300 border-blue-500/40 shadow-[0_0_15px_rgba(59,130,246,0.2)]"
+                          ? "bg-amber-500/10 text-amber-400 border-amber-500/30 shadow-sm"
+                          : "bg-blue-500/10 text-blue-400 border-blue-500/30 shadow-sm"
                     }`}
                   >
                     {viewingExec.status || "قيد المعالجة"}
@@ -874,48 +874,48 @@ export default function ExecutionsModule({
                 </div>
 
                 {/* Sub details card */}
-                <div className="bg-slate-900 border-2 border-amber-500/30 p-6 rounded-3xl space-y-4">
-                  <div className="flex justify-between items-center border-b border-white/10 pb-3">
-                    <span className="text-yellow-400 text-xs font-black drop-shadow-md">
+                <div className="bg-slate-900/40 border-2 border-slate-800/80 p-6 rounded-3xl space-y-4">
+                  <div className="flex justify-between items-center border-b border-slate-700/50 pb-3">
+                    <span className="text-amber-200/80 text-xs font-black">
                       طالب التنفيذ (الموكل):
                     </span>
-                    <span className="text-white text-sm font-black">
+                    <span className="text-amber-50 text-sm font-black">
                       {viewingExec.requester_name || "غير محدد"}
                     </span>
                   </div>
 
-                  <div className="flex justify-between items-center border-b border-white/10 pb-3">
-                    <span className="text-yellow-400 text-xs font-black drop-shadow-md">
+                  <div className="flex justify-between items-center border-b border-slate-700/50 pb-3">
+                    <span className="text-amber-200/80 text-xs font-black">
                       المنفذ ضده (المدين):
                     </span>
-                    <span className="text-[#f1f5f9] text-sm font-extrabold">
+                    <span className="text-amber-50 text-sm font-extrabold">
                       {viewingExec.opponent_name || "غير محدد"}
                     </span>
                   </div>
 
-                  <div className="flex justify-between items-center border-b border-white/10 pb-3">
-                    <span className="text-yellow-400 text-xs font-black drop-shadow-md">
+                  <div className="flex justify-between items-center border-b border-slate-700/50 pb-3">
+                    <span className="text-amber-200/80 text-xs font-black">
                       قيمة السند التنفيذي الحالية:
                     </span>
-                    <span className="text-yellow-400 font-mono text-base font-black drop-shadow-[0_0_8px_rgba(234,179,8,0.5)]">
+                    <span className="text-amber-400 font-mono text-base font-black drop-shadow-md">
                       {(viewingExec.amount || 0).toLocaleString()} ر.س
                     </span>
                   </div>
 
-                  <div className="flex justify-between items-center border-b border-white/10 pb-3">
-                    <span className="text-yellow-400 text-xs font-black drop-shadow-md">
+                  <div className="flex justify-between items-center border-b border-slate-700/50 pb-3">
+                    <span className="text-amber-200/80 text-xs font-black">
                       المحكمة القضائية / المختصة:
                     </span>
-                    <span className="text-slate-200 text-xs font-black">
+                    <span className="text-amber-100 text-xs font-black">
                       {viewingExec.court_name || "محكمة التنفيذ بالمنطقة"}
                     </span>
                   </div>
 
                   <div className="flex justify-between items-center whitespace-nowrap">
-                    <span className="text-yellow-400 text-xs font-black drop-shadow-md">
+                    <span className="text-amber-200/80 text-xs font-black">
                       تاريخ القيد ونفاذ الطلب:
                     </span>
-                    <span className="text-slate-200 font-mono text-xs font-extrabold">
+                    <span className="text-amber-100 font-mono text-xs font-extrabold">
                       {viewingExec.issue_date || "غير متوفر"}
                     </span>
                   </div>
@@ -923,12 +923,12 @@ export default function ExecutionsModule({
 
                 {/* Automation Details */}
                 {viewingExec.is_najiz_sync && (
-                  <div className="p-4 bg-emerald-950/30 border-2 border-emerald-500/30 rounded-2xl flex items-center gap-3">
-                    <div className="p-2 bg-emerald-500/10 rounded-xl border border-emerald-500/20 text-emerald-400">
+                  <div className="p-4 bg-emerald-500/10 border-2 border-emerald-500/20 rounded-2xl flex items-center gap-3">
+                    <div className="p-2 bg-emerald-500/20 rounded-xl border border-emerald-500/30 text-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.2)]">
                       <ShieldCheck className="w-5 h-5 animate-pulse" />
                     </div>
                     <div>
-                      <h4 className="text-xs font-black text-emerald-300">
+                      <h4 className="text-xs font-black text-emerald-400">
                         موثق ومزامن آلياً عبر بوابة ناجز
                       </h4>
                       <p className="text-[10px] text-emerald-400/80 font-bold mt-0.5">
@@ -945,10 +945,10 @@ export default function ExecutionsModule({
 
                 {/* Work description / notes */}
                 <div className="space-y-2">
-                  <span className="text-xs text-yellow-400 font-black block drop-shadow-md">
+                  <span className="text-xs text-amber-400 font-black block">
                     محاضر وسجل الملاحظات التنفيذية:
                   </span>
-                  <div className="bg-slate-900 border-2 border-amber-500/30 p-4 rounded-3xl min-h-[80px] text-xs font-bold text-white leading-relaxed max-h-[140px] overflow-y-auto">
+                  <div className="bg-slate-900/40 border-2 border-slate-800/80 p-4 rounded-3xl min-h-[80px] text-xs font-bold text-amber-50 leading-relaxed max-h-[140px] overflow-y-auto">
                     {viewingExec.details ||
                       "لا توجد ملاحظات إضافية مسجلة على هذا الطلب حتى الآن."}
                   </div>
@@ -961,13 +961,13 @@ export default function ExecutionsModule({
                       setViewingExec(null);
                       setEditingExec(backupExec);
                     }}
-                    className="flex-1 bg-yellow-400 hover:bg-yellow-500 text-slate-900 py-3.5 px-4 rounded-2xl font-extrabold text-sm transition-colors shadow-[0_0_20px_rgba(234,179,8,0.3)] hover:shadow-[0_0_30px_rgba(234,179,8,0.5)] cursor-pointer text-center active:scale-[0.98]"
+                    className="flex-1 bg-amber-600 hover:bg-amber-500 text-slate-950 py-3.5 px-4 rounded-2xl font-extrabold text-sm transition-colors shadow-[0_0_15px_rgba(217,119,6,0.4)] hover:shadow-[0_0_25px_rgba(217,119,6,0.6)] cursor-pointer text-center active:scale-[0.98] border border-amber-400/50"
                   >
                     تعديل بيانات السجل
                   </button>
                   <button
                     onClick={() => setViewingExec(null)}
-                    className="bg-slate-900/80 hover:bg-slate-800 text-white border-2 border-slate-700 hover:border-slate-500 px-6 py-3.5 rounded-2xl font-black text-sm transition-all cursor-pointer text-center shadow-md active:scale-[0.98]"
+                    className="bg-slate-900 hover:bg-slate-800 text-amber-400 border-2 border-slate-700 hover:border-slate-600 px-6 py-3.5 rounded-2xl font-black text-sm transition-all cursor-pointer text-center shadow-[0_0_10px_rgba(0,0,0,0.5)] active:scale-[0.98]"
                   >
                     إغلاق التفاصيل
                   </button>

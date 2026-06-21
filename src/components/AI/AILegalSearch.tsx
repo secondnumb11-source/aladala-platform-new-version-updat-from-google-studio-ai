@@ -626,7 +626,7 @@ export default function AILegalSearch() {
                 <div className="p-8 bg-slate-50 border-b border-slate-200 flex justify-between items-center">
                   <div className="flex items-center gap-3">
                     <Sparkles className="w-6 h-6 text-amber-400 font-black" />
-                    <h3 className="font-black text-white text-lg">الرأي الاستشاري والبحث الموثق والمواد المستدلة</h3>
+                    <h3 className="font-black text-slate-900 text-lg">الرأي الاستشاري والبحث الموثق والمواد المستدلة</h3>
                   </div>
                   <div className="flex gap-2">
                     <button 
@@ -635,9 +635,9 @@ export default function AILegalSearch() {
                         navigator.clipboard.writeText(answer);
                         triggerNotification('تم نسخ الرأي القانوني للحافظة بنجاح.');
                       }}
-                      className="p-3 border border-slate-200 bg-white rounded-xl transition-colors flex items-center gap-1.5 text-xs font-bold text-slate-300 cursor-pointer"
+                      className="p-3 border border-slate-200 bg-white rounded-xl transition-colors flex items-center gap-1.5 text-xs font-bold text-slate-700 hover:text-slate-900 cursor-pointer"
                     >
-                      <Copy className="w-4 h-4 text-slate-300" />
+                      <Copy className="w-4 h-4 text-slate-500" />
                       <span>نسخ النص</span>
                     </button>
                   </div>
@@ -1018,25 +1018,25 @@ export default function AILegalSearch() {
 
                 {/* Key materials table list with optimal relative luminance contrast */}
                 <div className="space-y-4 pt-2">
-                  <h4 className="text-xs font-black text-slate-900 flex items-center gap-2">
-                    <FileText className="w-4 h-4 text-emerald-700" />
+                  <h4 className="text-xs font-black text-white flex items-center gap-2">
+                    <FileText className="w-4 h-4 text-emerald-400" />
                     أبرز البنود المستخرجة من المرصد:
                   </h4>
                   <div className="grid grid-cols-1 gap-4">
                     {selectedSystem.keyArticles.map((art) => (
-                      <div key={art.number} className="p-6 bg-[#fcfcfc] border-2 border-slate-200 rounded-2xl transition-all duration-300 space-y-3 text-right">
+                      <div key={art.number} className="p-6 bg-slate-800/80 border-2 border-slate-700 rounded-2xl transition-all duration-300 space-y-3 text-right shadow-inner">
                         <div className="flex items-center justify-between">
-                          <span className="font-extrabold text-[11px] text-emerald-800 bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-full">
+                          <span className="font-extrabold text-[11px] text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1 rounded-full shadow-sm">
                             المادة {art.number}
                           </span>
-                          <span className="font-black text-slate-950 text-xs">{art.title}</span>
+                          <span className="font-black text-white text-xs">{art.title}</span>
                         </div>
-                        <p className="text-slate-800 text-xs font-bold leading-relaxed font-sans border-r-3 border-emerald-500 pr-3">
+                        <p className="text-slate-200 text-xs font-bold leading-relaxed font-sans border-r-3 border-emerald-500 pr-3">
                           {art.text}
                         </p>
-                        <div className="flex flex-wrap gap-1 bg-slate-50 p-2 rounded-xl">
+                        <div className="flex flex-wrap gap-1 bg-slate-900 p-2 rounded-xl border border-slate-700/50">
                           {art.keywords.map((kw, idx) => (
-                            <span key={idx} className="text-[11px] font-black bg-white text-slate-650 border border-slate-200 px-2.5 py-0.5 rounded">
+                            <span key={idx} className="text-[11px] font-black bg-slate-800 text-slate-300 border border-slate-600 px-2.5 py-0.5 rounded shadow-sm">
                               #{kw}
                             </span>
                           ))}
@@ -1100,7 +1100,7 @@ export default function AILegalSearch() {
                         </div>
                         <div className="flex justify-between items-center w-full mt-2 text-[10px] text-slate-700 font-bold border-t border-slate-100/50 pt-2">
                           <span>الفئة: {memo.category}</span>
-                          <span className="text-amber-400 font-black bg-amber-50 px-2 py-0.5 rounded font-black">{memo.systemId === 'labor_law' ? 'نظام العمل' : memo.systemId === 'civil_transactions' ? 'المدني' : 'نظام الإثبات'}</span>
+                          <span className="text-amber-700 font-black bg-amber-50 px-2 py-0.5 rounded border border-amber-200">{memo.systemId === 'labor_law' ? 'نظام العمل' : memo.systemId === 'civil_transactions' ? 'المدني' : 'نظام الإثبات'}</span>
                         </div>
                       </button>
 
@@ -1111,7 +1111,7 @@ export default function AILegalSearch() {
                           e.stopPropagation();
                           handleDeleteMemo(memo.id);
                         }}
-                        className="absolute top-2 left-2 text-white font-bold p-1.5 rounded-lg transition-colors cursor-pointer"
+                        className="absolute top-2 left-2 text-slate-400 hover:text-red-500 hover:bg-slate-100 font-bold p-1.5 rounded-lg transition-colors cursor-pointer"
                         title="حذف هذه المذكرة"
                       >
                         <Trash2 className="w-3.5 h-3.5" />

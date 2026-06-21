@@ -8,23 +8,41 @@ import '@/index.css';
 
 // كتم وقمع أخطاء الـ WebSocket و Unhandled rejections المزعجة المنبعثة من بيئة التطوير أو الـ iframe
 if (typeof window !== 'undefined') {
+  const originalConsoleError = console.error;
+  console.error = function (...args) {
+    const msg = args.join(' ');
+    if (msg.includes('WebSocket') || msg.includes('vite') || msg.includes('WebSocket closed without opened')) {
+      return;
+    }
+    originalConsoleError.apply(console, args);
+  };
+
   window.addEventListener('unhandledrejection', (event) => {
-    if (event.reason && (
-      String(event.reason.message || '').includes('WebSocket') || 
-      String(event.reason.message || '').includes('vite') ||
-      String(event.reason || '').includes('WebSocket') ||
-      String(event.reason.stack || '').includes('WebSocket')
-    )) {
+    const reasonStr = event.reason ? String(event.reason.message || event.reason || '') : '';
+    const stackStr = event.reason ? String(event.reason.stack || '') : '';
+    
+    if (
+      reasonStr.includes('WebSocket') || 
+      reasonStr.includes('vite') ||
+      stackStr.includes('WebSocket') ||
+      reasonStr.includes('failed to connect to websocket') ||
+      reasonStr.includes('WebSocket closed')
+    ) {
       event.preventDefault();
+      event.stopPropagation();
     }
   });
 
   window.addEventListener('error', (event) => {
+    const msgStr = String(event.message || '');
     if (
-      String(event.message || '').includes('WebSocket') || 
-      String(event.message || '').includes('vite')
+      msgStr.includes('WebSocket') || 
+      msgStr.includes('vite') ||
+      msgStr.includes('failed to connect to websocket') ||
+      msgStr.includes('WebSocket closed')
     ) {
       event.preventDefault();
+      event.stopPropagation();
     }
   });
 }
