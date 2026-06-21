@@ -1281,7 +1281,7 @@ export default function Settings({
 
         {activeSettingsTab === 'db-issues' ? (
           <div className="lg:col-span-12 space-y-6 text-right" dir="rtl">
-            <div className="bg-white border border-slate-800 rounded-3xl p-6 shadow-sm space-y-6">
+            <div className="bg-white border border-slate-800 rounded-3xl p-6 shadow-sm space-y-6 settings-card text-high-contrast-light-bg">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-4">
                 <div className="flex items-center gap-3">
                   <div className="p-2.5 bg-red-500/10 text-red-600 border border-red-500/20 rounded-xl">
@@ -1572,12 +1572,12 @@ export default function Settings({
 
 
           {/* API Keys management section */}
-          <div className="bg-[#0a1628] border border-slate-700 rounded-2xl p-6" dir="rtl">
+          <div className="bg-[#0a1628] border border-slate-700 rounded-2xl p-6 settings-card text-high-contrast-light-bg" dir="rtl">
             <div className="flex items-center gap-3 mb-6">
               <Key className="w-6 h-6 text-amber-400" />
               <div>
-                <h2 className="text-white font-black text-lg">مفاتيح API</h2>
-                <p className="text-slate-400 text-sm">
+                <h2 className="text-amber-100 font-black text-lg">مفاتيح API</h2>
+                <p className="text-slate-100 text-sm">
                   استخدم هذا المفتاح لربط أدوات سحب البيانات مع النظام
                 </p>
               </div>
@@ -1610,11 +1610,11 @@ export default function Settings({
             {generatedKey && (
               <div className="mb-6 p-4 bg-emerald-500/10 border border-emerald-500/30
                 rounded-xl">
-                <p className="text-emerald-400 font-bold text-sm mb-2">
+                <p className="text-emerald-200 font-bold text-sm mb-2">
                   ✅ تم توليد المفتاح — انسخه الآن (لن يظهر مرة أخرى)
                 </p>
                 <div className="flex items-center gap-2">
-                  <code className="flex-1 bg-[#050e21] text-amber-300 text-xs
+                  <code className="flex-1 bg-[#050e21] text-yellow-300 text-xs
                     p-3 rounded-lg font-mono break-all border border-slate-700">
                     {generatedKey}
                   </code>
@@ -1631,16 +1631,16 @@ export default function Settings({
                   </button>
                 </div>
                 <div className="mt-3 p-3 bg-[#050e21] rounded-lg border border-slate-700">
-                  <p className="text-slate-400 text-xs font-bold mb-1">
+                  <p className="text-white text-xs font-bold mb-1">
                     🔗 طريقة الاستخدام مع أي أداة سحب:
                   </p>
-                  <code className="text-slate-300 text-[10px] block">
+                  <code className="text-yellow-100 text-[10px] block">
                     URL: https://aladala-platform-rnuz.onrender.com/api/v1/sync
                   </code>
-                  <code className="text-slate-300 text-[10px] block">
+                  <code className="text-yellow-100 text-[10px] block">
                     Header: x-api-key: {generatedKey}
                   </code>
-                  <code className="text-slate-300 text-[10px] block">
+                  <code className="text-yellow-100 text-[10px] block">
                     Method: POST | Content-Type: application/json
                   </code>
                 </div>
@@ -1650,7 +1650,7 @@ export default function Settings({
             {/* List existing keys */}
             <div className="space-y-3">
               {apiKeys.length === 0 ? (
-                <p className="text-slate-600 text-sm text-center py-4">
+                <p className="text-white text-sm text-center py-4">
                   لا توجد مفاتيح — أنشئ مفتاحاً أعلاه
                 </p>
               ) : apiKeys.map(key => (
@@ -1658,11 +1658,11 @@ export default function Settings({
                   className="flex items-center justify-between p-4
                     bg-[#050e21] border border-slate-800 rounded-xl">
                   <div>
-                    <p className="text-white font-bold text-sm">{key.key_name}</p>
-                    <code className="text-slate-500 text-xs">
+                    <p className="text-amber-100 font-bold text-sm">{key.key_name}</p>
+                    <code className="text-slate-100 text-xs">
                       {key.key_value.substring(0, 20)}...
                     </code>
-                    <p className="text-slate-600 text-[10px] mt-1">
+                    <p className="text-amber-200 text-[10px] mt-1">
                       {key.last_used_at
                         ? 'آخر استخدام: ' + new Date(key.last_used_at).toLocaleString('ar-SA')
                         : 'لم يُستخدم بعد'}
@@ -1688,7 +1688,7 @@ export default function Settings({
           </div>
 
           {/* Digital Systems Library URL Config - Dedicated Card */}
-          <div className="bg-white border border-slate-200 rounded-3xl p-6 md:p-8 space-y-6 shadow-sm" id="legal-library-links-settings">
+          <div className="bg-white border border-slate-200 rounded-3xl p-6 md:p-8 space-y-6 shadow-sm settings-card text-high-contrast-light-bg" id="legal-library-links-settings">
             <div className="flex items-center gap-3 border-b border-slate-100 pb-5">
               <div className="p-3 bg-emerald-50 border border-emerald-100 text-emerald-600 rounded-2xl shadow-sm">
                 <BookOpen className="w-6 h-6" />
@@ -1786,7 +1786,7 @@ export default function Settings({
           </div>
 
           {/* Law Links Management (Supabase) */}
-          <div className="bg-white border border-slate-800 rounded-3xl p-6 shadow-sm space-y-6">
+          <div className="bg-white border border-slate-800 rounded-3xl p-6 shadow-sm space-y-6 settings-card text-high-contrast-light-bg">
             <div className="flex items-center gap-3 border-b border-slate-800 pb-4">
               <div className="p-2.5 bg-blue-50 text-blue-900 border border-blue-200 rounded-xl">
                 <FileSpreadsheet className="w-5 h-5" />

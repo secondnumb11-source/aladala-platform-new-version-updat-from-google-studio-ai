@@ -1611,11 +1611,22 @@ button.rounded-full {
 }
 
 /* =========================================================================
-   CASE MANAGEMENT MODULE (إدارة القضايا والدفوع) SPECIFIC CARD POLISHING
-   - Elegant dark blue to elegant dark gold gradient base background.
-   - Elegant gold to premium violet smooth transition (0.4s ease-in-out) on Hover.
-   - High-luminance shiny gold background override for inner status metrics.
+   USER SETTINGS CARD HIGH-CONTRAST CUSTOMIZATION (تخصيص تباين الكروت)
    ========================================================================= */
+.settings-card {
+  font-weight: 700 !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5) !important;
+}
+
+.settings-card, 
+.settings-card * {
+  color: #FFFFFF !important;
+}
+
+.settings-card .text-amber-100,
+.settings-card .text-amber-200 {
+  color: #FACC15 !important;
+}
 
 /* Independent precise styling & transition speed specifically for Cases cards */
 .card-professional-case {

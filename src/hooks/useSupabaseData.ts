@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { generateUUID } from '@/lib/uuid';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
+import { saveToSupabase } from '@/lib/dbSave';
 import { Case, Client, Task, Hearing, Document, PowerOfAttorney, Invoice, Employee, AuditTrail, Execution } from '@/types';
 import { validatePayload } from '@/lib/persistenceManager';
 import { toCamel, toSnake } from '@/utils/schemaMapping';
@@ -109,131 +110,186 @@ const DB_COLUMNS: Record<string, string[]> = {
   ],
 };
 
-const normalizeStatusField = (value: any): string => {
-  if (!value) return 'active';
-  const map: Record<string, string> = {
-    'نشط': 'active', 'نشيط': 'active',
-    'فعال': 'active', 'مفعّل': 'active',
-    'مفعل': 'active',
-    'غير نشط': 'inactive', 'معطّل': 'inactive',
-    'معطل': 'inactive', 'موقوف': 'inactive',
-  };
-  return map[String(value)] || String(value) || 'active';
-};
-
-/**
- * يحوّل البيانات إلى snake_case ثم يحذف كل حقل
- * غير موجود في جدول Supabase الفعلي.
- * هذا يمنع خطأ PGRST204 نهائياً.
- */
-const sanitizePayload = (tableName: string, data: any): Record<string, any> => {
-  if (!data) return {};
-
-  // أولاً: حوّل camelCase إلى snake_case
-  const snaked = toSnake(data) || {};
-
-  // تطبيع تلقائي لحقل status إذا كان موجوداً
-  if ('status' in snaked) {
-    snaked.status = normalizeStatusField(snaked.status);
-  }
-
-  // ثانياً: معالجة خاصة لحقول مختلفة الاسم بين الكود وقاعدة البيانات
-  if (tableName === 'clients') {
-    // national_id اختياري — لا ترفض إذا كان فارغاً
-    if (snaked.national_id !== undefined) {
-      snaked.id_number = snaked.national_id || null;
-    } else if (data.nationalId !== undefined) {
-      snaked.id_number = data.nationalId || null;
-    }
-    
-    // portal credentials — مهمة عند ضبط البوابة
-    if (snaked.portal_username !== undefined) {
-      snaked.portal_username = snaked.portal_username || null;
-    }
-    if (snaked.portal_password !== undefined) {
-      snaked.portal_password = snaked.portal_password || null;
-    }
-    if (snaked.active_portal !== undefined) {
-      snaked.active_portal = !!snaked.active_portal;
-    }
-  }
-
+function convertToSnakeCase(tableName: string, data: any): any {
+  const payload: any = {};
+  Object.keys(data).forEach(key => {
+    const snakeKey = key.replace(/([A-Z])/g, '_$1').toLowerCase();
+    payload[snakeKey] = data[key];
+  });
   if (tableName === 'cases') {
-    // courtName → court_name
-    if (snaked.court_name === undefined && data.courtName !== undefined) {
-      snaked.court_name = data.courtName;
-    }
-    if (snaked.court_name === undefined) {
-      snaked.court_name = null;
+    // دمج التاريخ والوقت بشكل آمن
+    if (data.nextSessionDate) {
+      try {
+        const dateStr = data.nextSessionDate; // "2026-06-15"
+        let timeStr = (data.nextSessionTime || '09:00')
+          // إزالة النص العربي
+          .replace('صباحاً', 'AM')
+          .replace('مساءً', 'PM')
+          .replace('ص', 'AM')
+          .replace('م', 'PM')
+          .trim();
+
+        // استخراج الوقت بالأرقام فقط
+        const timeMatch = timeStr.match(/(\d{1,2}):(\d{2})/);
+        let hours = timeMatch ? parseInt(timeMatch[1]) : 9;
+        const minutes = timeMatch ? parseInt(timeMatch[2]) : 0;
+
+        // تحويل AM/PM
+        if (timeStr.includes('PM') && hours < 12) hours += 12;
+        if (timeStr.includes('AM') && hours === 12) hours = 0;
+
+        const h = hours.toString().padStart(2, '0');
+        const m = minutes.toString().padStart(2, '0');
+
+        payload.next_session_at = new Date(
+          `${dateStr}T${h}:${m}:00`
+        ).toISOString();
+
+      } catch(e) {
+        // إذا فشل التحويل — احفظ التاريخ فقط
+        try {
+          payload.next_session_at = new Date(
+            data.nextSessionDate
+          ).toISOString();
+        } catch {
+          payload.next_session_at = null;
+        }
+      }
     }
 
-    // caseName → title
-    if (snaked.case_name && !snaked.title) {
-      snaked.title = snaked.case_name;
-    }
-    // اسم العميل المباشر
-    if (snaked.client_name && !snaked.client_id) {
-      // نترك client_id كـ null إذا لم يوجد
-      snaked.client_id = snaked.client_id || null;
-    }
-    // nextSessionDate → next_session_at
-    if (snaked.next_session_date && !snaked.next_session_at) {
-      snaked.next_session_at = new Date(snaked.next_session_date).toISOString();
-    }
-    // lastSessionDate → last_session_at
-    if (snaked.last_session_date && !snaked.last_session_at) {
-      snaked.last_session_at = new Date(snaked.last_session_date).toISOString();
-    }
-    // تحويل الـ attachments إلى عدد
-    if (Array.isArray(snaked.attachments)) {
-      snaked.attachments_count = snaked.attachments.length;
-      delete snaked.attachments;
-    }
-    // إضافة client_name كحقل مباشر
-    if (!snaked.client_name && snaked.client_name !== undefined) {
-      snaked.client_name = '';
-    }
-    // حوّل المصفوفات المعقدة إلى JSONB
-    if (Array.isArray(snaked.assigned_lawyers)) {
-      snaked.lawyers = JSON.stringify(snaked.assigned_lawyers);
-    }
-    // احفظ الحقول الإضافية في metadata بدلاً من رفضها
-    const extraFields: Record<string, any> = {};
-    const allowedCols = DB_COLUMNS['cases'] || [];
-    Object.keys(snaked).forEach(key => {
-      if (!allowedCols.includes(key)) {
-        extraFields[key] = snaked[key];
+    // client_id — تحقق قبل الإرسال (هذا يتطلب تعديل الدالة لتكون async أو إسناد المهمة لمكان آخر)
+    // نظراً لأن الدالة الحالية متزامنة (synchronous) ولا يمكن استخدام await، سنؤجل التحقق إلى onUpdateState
+    payload.client_id = data.clientId || null;
+
+    // الحقول الأساسية
+    payload.case_number = data.caseNumber || '';
+    payload.title = data.caseName || data.title || '';
+    payload.client_name = data.clientName || '';
+    payload.opponent_name = data.opponentName || '';
+    payload.court_name = data.courtName || '';
+    payload.category = data.category || 'civil';
+    payload.stage = data.stage || 'litigation';
+    payload.status = data.status || 'new';
+    payload.priority = data.priority || 'medium';
+    payload.summary = data.summary || null;
+    payload.details = data.details || null;
+    payload.circuit_number = data.circuitNumber || null;
+    payload.power_of_attorney_number = data.poaNumber || null;
+    payload.najiz_case_number = data.najizCaseNumber || null;
+    payload.is_najiz_sync = data.isNajizSync || false;
+    payload.is_confidential = data.isConfidential || false;
+    payload.archived = data.archived || false;
+
+    // احذف الحقول الزائدة
+    const validCaseFields = [
+      'id','case_number','title','client_name','client_id',
+      'opponent_name','opponent_national_id','court_name',
+      'category','stage','status','priority','summary',
+      'details','circuit_number','power_of_attorney_number',
+      'next_session_at','last_session_at','is_najiz_sync',
+      'najiz_case_number','is_confidential','archived',
+      'agreed_fees','collected_fees','judge_name',
+      'case_classification','created_at','updated_at',
+      'last_activity_at','metadata'
+    ];
+
+    Object.keys(payload).forEach(key => {
+      if (!validCaseFields.includes(key)) {
+        delete payload[key];
       }
     });
-    if (Object.keys(extraFields).length > 0) {
-      snaked.metadata = JSON.stringify({
-        ...(snaked.metadata ? JSON.parse(typeof snaked.metadata === 'string' ? snaked.metadata : JSON.stringify(snaked.metadata)) : {}),
-        ...extraFields
-      });
+  }
+  if (tableName === 'clients') {
+    if (data.nationalId !== undefined) payload.national_id = data.nationalId;
+    if (data.idNumber !== undefined) payload.id_number = data.idNumber;
+    if (data.isCompany !== undefined) payload.is_company = data.isCompany;
+    if (data.portalUsername !== undefined) payload.portal_username = data.portalUsername;
+    if (data.portalPassword !== undefined) payload.portal_password = data.portalPassword;
+    if (data.activePortal !== undefined) payload.active_portal = data.activePortal;
+    if (data.permittedCases !== undefined) payload.permitted_cases = data.permittedCases;
+    if (!payload.status) payload.status = 'active';
+  }
+  if (tableName === 'employees') {
+    if (data.jobTitle !== undefined) payload.job_title = data.jobTitle;
+    if (data.nationalId !== undefined) payload.national_id = data.nationalId;
+    if (data.joinDate !== undefined) payload.join_date = data.joinDate;
+    if (data.employeeCode !== undefined) payload.employee_code = data.employeeCode;
+    if (data.activePortal !== undefined) payload.active_portal = data.activePortal;
+    if (!payload.status) payload.status = 'active';
+  }
+  if (tableName === 'tasks') {
+    if (data.dueDate !== undefined) {
+      try { payload.due_date = data.dueDate ? new Date(data.dueDate).toISOString() : null; } catch { payload.due_date = null; }
     }
+    if (data.employeeId !== undefined) payload.employee_id = data.employeeId;
+    if (data.assignedTo !== undefined) payload.assigned_to = data.assignedTo;
+    if (data.caseId !== undefined) payload.case_id = data.caseId;
+    if (data.caseNumber !== undefined) payload.case_number = data.caseNumber;
   }
-
-  // ثالثاً: احتفظ فقط بالأعمدة المسموح بها
-  const allowedColumns = DB_COLUMNS[tableName];
-  if (!allowedColumns) {
-    // جدول غير معروف — أرسل كما هو مع تحذير
-    console.warn(`[sanitizePayload] Unknown table: ${tableName}. Sending raw data.`);
-    return snaked;
+  if (tableName === 'hearings') {
+    if (data.caseId !== undefined) payload.case_id = data.caseId;
+    if (data.caseNumber !== undefined) payload.case_number = data.caseNumber;
+    if (data.courtName !== undefined) payload.court_name = data.courtName;
+    if (data.isNajizSync !== undefined) payload.is_najiz_sync = data.isNajizSync;
   }
+  Object.keys(payload).forEach(key => { if (payload[key] === undefined) delete payload[key]; });
+  return payload;
+}
+function saveToLocalStorage(tableName: string, data: any) {
+  try {
+    const key = `${tableName}_local`;
+    const existing = JSON.parse(localStorage.getItem(key) || '[]');
+    const idx = existing.findIndex((r: any) => r.id === data.id);
+    if (idx >= 0) existing[idx] = { ...existing[idx], ...data };
+    else existing.push(data);
+    localStorage.setItem(key, JSON.stringify(existing.slice(0, 500)));
+  } catch(e) {}
+}
 
-  const sanitized: Record<string, any> = {};
-  for (const col of allowedColumns) {
-    if (snaked[col] !== undefined) {
-      sanitized[col] = snaked[col];
-    }
-  }
+const mapCaseFromDB = (db: any) => ({
+  id: db.id, caseNumber: db.case_number || '', caseName: db.title || db.client_name || `قضية ${db.case_number}`, title: db.title || '',
+  clientName: db.client_name || '', clientId: db.client_id || null, opponentName: db.opponent_name || '', courtName: db.court_name || '',
+  category: db.category || 'civil', stage: db.stage || 'litigation', status: db.status || 'new', priority: db.priority || 'medium',
+  summary: db.summary || '', details: db.details || '', circuitNumber: db.circuit_number || '', poaNumber: db.power_of_attorney_number || '',
+  nextSessionDate: db.next_session_at ? new Date(db.next_session_at).toLocaleDateString('ar-SA') : '', nextSessionAt: db.next_session_at || null,
+  agreedFees: db.agreed_fees || 0, collectedFees: db.collected_fees || 0, isNajizSync: db.is_najiz_sync || false, isConfidential: db.is_confidential || false,
+  archived: db.archived || false, createdAt: db.created_at || new Date().toISOString()
+});
+const mapClientFromDB = (db: any) => ({
+  id: db.id, name: db.name || '', phone: db.phone || '', email: db.email || '', nationalId: db.national_id || db.id_number || '',
+  address: db.address || '', isCompany: db.is_company || false, status: db.status || 'active', portalUsername: db.portal_username || '',
+  portalPassword: db.portal_password || '', activePortal: db.active_portal || false, permittedCases: db.permitted_cases || [], createdAt: db.created_at || new Date().toISOString()
+});
+const mapEmployeeFromDB = (db: any) => ({
+  id: db.id, name: db.name || '', role: db.role || '', jobTitle: db.job_title || db.role || '', email: db.email || '',
+  phone: db.phone || '', status: db.status || 'active', salary: db.salary || 0, nationalId: db.national_id || '', username: db.username || '',
+  password: db.password || '', employeeCode: db.employee_code || '', permissions: db.permissions || [], activePortal: db.active_portal || false,
+  portalConfigured: db.portal_configured || false, createdAt: db.created_at || new Date().toISOString()
+});
+const mapTaskFromDB = (db: any) => ({
+  id: db.id, title: db.title || '', description: db.description || '', status: db.status || 'todo',
+  priority: db.priority || 'medium', dueDate: db.due_date || '', employeeId: db.employee_id || null, assignedTo: db.assigned_to || '',
+  caseId: db.case_id || null, caseNumber: db.case_number || '', createdAt: db.created_at || new Date().toISOString()
+});
+const mapHearingFromDB = (db: any) => ({
+  id: db.id, caseId: db.case_id || null, caseNumber: db.case_number || '', caseName: db.case_name || '',
+  date: db.date || '', time: db.time || '09:00', courtName: db.court_name || '', hall: db.hall || '', status: db.status || 'upcoming',
+  isNajizSync: db.is_najiz_sync || false, createdAt: db.created_at || new Date().toISOString()
+});
+const mapPOAFromDB = (db: any) => ({
+  id: db.id, poaNumber: db.poa_number || '', type: db.type || 'general', status: db.status || 'active',
+  issueDate: db.issue_date || '', expiryDate: db.expiry_date || '', principalName: db.principal_name || '', isNajizSync: db.is_najiz_sync || false, createdAt: db.created_at || new Date().toISOString()
+});
+const mapExecutionFromDB = (db: any) => ({
+  id: db.id, executionNumber: db.execution_number || '', status: db.status || 'pending', amount: db.amount || 0,
+  courtName: db.court_name || '', requesterName: db.requester_name || '', isNajizSync: db.is_najiz_sync || false, createdAt: db.created_at || new Date().toISOString()
+});
+const mapInvoiceFromDB = (db: any) => ({
+  id: db.id, invoiceNumber: db.invoice_number || '', clientId: db.client_id || null, clientName: db.client_name || '',
+  caseId: db.case_id || null, caseNumber: db.case_number || '', amount: db.amount || 0, totalAmount: db.total_amount || 0,
+  status: db.status || 'pending', issueDate: db.issue_date || '', createdAt: db.created_at || new Date().toISOString()
+});
 
-  if ('status' in sanitized) {
-    sanitized.status = normalizeStatusField(sanitized.status);
-  }
-
-  return sanitized;
-};
 
 export const mapDatabaseCaseToFrontend = (dbCase: any, clientsList: Client[]): Case => {
   const camel = toCamel(dbCase);
@@ -316,6 +372,37 @@ export function useSupabaseData() {
   const [expenses, setExpenses] = useState<any[]>([]);
   const [messages, setMessages] = useState<any[]>([]);
   const [contracts, setContracts] = useState<any[]>([]);
+  
+  const getStateSetter = (tableName: string): any => {
+    const tableMap: Record<string, Function> = {
+      'cases': setCases,                
+      'clients': setClients,
+      'employees': setEmployees,
+      'tasks': setTasks,
+      'hearings': setHearings,
+      'invoices': setInvoices,
+      'powers_of_attorney': setPowersOfAttorney,
+      'executions': setExecutions,
+      'documents': setDocuments
+    };
+    return tableMap[tableName];
+  };
+
+  const sanitizePayload = (tableName: string, data: any): any => {
+    const allowed = DB_COLUMNS[tableName] || [];
+    const payload: any = {};
+    
+    // استخدم convertToSnakeCase المتاحة في نفس الملف
+    const snakeData = convertToSnakeCase(tableName, data);
+    
+    Object.keys(snakeData).forEach(key => {
+      if (allowed.includes(key)) {
+        payload[key] = snakeData[key];
+      }
+    });                
+    
+    return payload;
+  };
   
   const [loading, setLoading] = useState(true);
   const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -465,19 +552,35 @@ export function useSupabaseData() {
   }, [fetchData]);
 
   useEffect(() => {
-    fetchData();
-    const cleanup = setupRealtime();
-    
-    // Fallback polling interval every 45s to make sure data is perfectly synchronized regardless of WebSocket network restrictions
-    const pollingInterval = setInterval(() => {
-      fetchData();
-    }, 45000);
-
-    return () => {
-      cleanup();
-      clearInterval(pollingInterval);
+    const initData = async () => {
+      setLoading(true);
+      try {
+        const [casesRes, clientsRes, employeesRes, tasksRes, hearingsRes, poaRes, executionsRes, invoicesRes] = await Promise.all([
+          supabase.from('cases').select('*').eq('archived', false).order('created_at', { ascending: false }),
+          supabase.from('clients').select('*').order('name'),
+          supabase.from('employees').select('*').order('name'),
+          supabase.from('tasks').select('*').order('created_at', { ascending: false }),
+          supabase.from('hearings').select('*').order('date'),
+          supabase.from('powers_of_attorney').select('*').order('created_at', { ascending: false }),
+          supabase.from('executions').select('*').order('created_at', { ascending: false }),
+          supabase.from('invoices').select('*').order('created_at', { ascending: false })
+        ]);
+        
+        if (casesRes.data) setCases(casesRes.data.map(mapCaseFromDB));
+        if (clientsRes.data) setClients(toCamel(clientsRes.data) as Client[]);
+        if (employeesRes.data) setEmployees(toCamel(employeesRes.data) as Employee[]);
+        if (tasksRes.data) setTasks(toCamel(tasksRes.data) as Task[]);
+        if (hearingsRes.data) setHearings(toCamel(hearingsRes.data) as Hearing[]);
+        if (poaRes.data) setPowersOfAttorney(toCamel(poaRes.data) as PowerOfAttorney[]);
+        if (executionsRes.data) setExecutions(toCamel(executionsRes.data) as Execution[]);
+        if (invoicesRes.data) setInvoices(toCamel(invoicesRes.data) as Invoice[]);
+        
+      } catch(err: any) {
+        console.error('[Init Error]', err.message);
+      } finally { setLoading(false); }
     };
-  }, [fetchData, setupRealtime]);
+    initData();
+  }, []);
 
   const syncFailedLogs = useCallback(async () => {
     const logs = JSON.parse(localStorage.getItem('failed_persistence_logs') || '[]');
@@ -609,34 +712,37 @@ export function useSupabaseData() {
     return tableMap[table] || table;
   };
 
-  const getStateSetter = (table: string) => {
-    switch(table) {
-      case 'cases': return setCases;
-      case 'clients': return setClients;
-      case 'tasks': return setTasks;
-      case 'hearings': return setHearings;
-      case 'documents': return setDocuments;
-      case 'powers_of_attorney':
-      case 'powersOfAttorney': return setPowersOfAttorney;
-      case 'invoices': return setInvoices;
-      case 'employees': return setEmployees;
-      case 'audit_trails':
-      case 'auditTrails': return setAuditTrails;
-      case 'attachments': return setAttachments;
-      case 'client_portal':
-      case 'clientPortal': return setClientPortal;
-      case 'employee_portal':
-      case 'employeePortal': return setEmployeePortal;
-      case 'attendance': return setAttendance;
-      case 'leave_requests':
-      case 'leaveRequests': return setLeaveRequests;
-      case 'payments': return setPayments;
-      case 'notifications': return setNotifications;
-      case 'system_errors':
-      case 'systemErrors': return setSystemErrors;
-      default: return null;
+  const onUpdateState = useCallback(async (section: string, newData: any) => {
+    const updateLocalState = (prev: any[]) => {
+      const idx = prev.findIndex(item => item.id === newData.id);
+      if (idx >= 0) {
+        const updated = [...prev];
+        updated[idx] = { ...updated[idx], ...newData };
+        return updated;
+      }
+      return [newData, ...prev];
+    };
+    switch(section) {
+      case 'cases': setCases(updateLocalState); break;
+      case 'clients': setClients(updateLocalState); break;
+      case 'employees': setEmployees(updateLocalState); break;
+      case 'tasks': setTasks(updateLocalState); break;
+      case 'hearings': setHearings(updateLocalState); break;
+      case 'invoices': setInvoices(updateLocalState); break;
+      case 'powers_of_attorney': setPowersOfAttorney(updateLocalState); break;
+      case 'executions': setExecutions(updateLocalState); break;
+      case 'documents': setDocuments(updateLocalState); break;
+      default: break;
     }
-  };
+    const tableMap: Record<string, string> = { cases: 'cases', clients: 'clients', employees: 'employees', tasks: 'tasks', hearings: 'hearings', invoices: 'invoices', powers_of_attorney: 'powers_of_attorney', executions: 'executions', documents: 'documents' };
+    const tableName = tableMap[section];
+    if (tableName && newData?.id) {
+      const result = await saveToSupabase(tableName, newData);
+      if (!result.success) {
+        console.warn(`[State] حفظ محلي فقط: ${tableName}`, result.error);
+      }
+    }
+  }, []);
 
   // ======================================================
   // LOCAL PERSISTENCE HELPERS
@@ -827,6 +933,7 @@ export function useSupabaseData() {
     deleteRecord,
     retryQueueSync,
     refresh: fetchData,
+    onUpdateState,
     setHearings,
     setDocuments,
     setInvoices,

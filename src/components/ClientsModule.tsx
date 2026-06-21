@@ -95,149 +95,70 @@ export default function ClientsModule({
   };
 
   const handleSaveClient = async (clientData: any) => {
-    if (!clientData.name?.trim()) {
-      alert('اسم العميل مطلوب');
-      return false;
+
+    // === حفظ مباشر في Supabase ===
+    const payload = {
+      id: clientData.id,
+      name: clientData.name?.trim() || '',
+      phone: clientData.phone?.trim() || null,
+      email: clientData.email?.trim() || null,
+      national_id: clientData.nationalId?.trim() ||
+                   clientData.national_id?.trim() || null,
+      address: clientData.address?.trim() || null,
+      is_company: clientData.isCompany ||
+                  clientData.is_company || false,
+      status: 'active',
+      portal_username: clientData.portalUsername ||
+                       clientData.portal_username || null,
+      portal_password: clientData.portalPassword ||
+                       clientData.portal_password || null,
+      active_portal: clientData.activePortal ||
+                     clientData.active_portal || false,
+      created_at: clientData.createdAt ||
+                  new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+
+    // احذف القيم undefined
+    Object.keys(payload).forEach(k => {
+      if ((payload as any)[k] === undefined) {
+        delete (payload as any)[k];
+      }
+    });
+
+    console.log('[Save Client] Saving to Supabase:', payload.id);
+
+    const { data: saved, error } = await supabase
+      .from('clients')
+      .upsert(payload, { onConflict: 'id' })
+      .select()
+      .single();
+
+    if (error) {
+      console.error('[Save Client Error]', error.message, error.code);
+      alert('فشل حفظ بيانات العميل: ' + error.message);
+      return;
     }
 
+    console.log('[Save Client] ✅ Saved:', saved?.id);
+
+    // حفظ في localStorage كـ backup
     try {
-      // توليد بيانات الدخول تلقائياً
-      const portalUsername = clientData.portalUsername ||
-        clientData.portal_username ||
-        `client-${Date.now().toString().slice(-6)}`;
-
-      const portalPassword = clientData.portalPassword ||
-        clientData.portal_password ||
-        `ADAL-${Math.floor(1000 + Math.random() * 9000)}`;
-
-      // بناء payload بدون حقول مطلوبة غير موجودة
-      const payload: Record<string, any> = {
-        id: clientData.id,
-        name: clientData.name.trim(),
-        status: 'active',
-        is_company: clientData.isCompany ||
-          clientData.is_company || false,
-        portal_username: portalUsername,
-        portal_password: portalPassword,
-        active_portal: clientData.activePortal ||
-          clientData.active_portal || true,
-        permitted_cases: clientData.permittedCases ||
-          clientData.permitted_cases || [],
-        updated_at: new Date().toISOString()
-      };
-
-      // الحقول الاختيارية
-      if (clientData.phone?.trim()) {
-        payload.phone = clientData.phone.trim();
-      }
-      if (clientData.email?.trim()) {
-        payload.email = clientData.email.trim();
-      }
-      if (clientData.nationalId?.trim() ||
-          clientData.national_id?.trim()) {
-        payload.national_id =
-          clientData.nationalId?.trim() ||
-          clientData.national_id?.trim();
-        payload.id_number = payload.national_id;
-      }
-      if (clientData.address?.trim()) {
-        payload.address = clientData.address.trim();
-      }
-      if (clientData.najizId?.trim() ||
-          clientData.najiz_id?.trim()) {
-        payload.najiz_id =
-          clientData.najizId?.trim() ||
-          clientData.najiz_id?.trim();
-      }
-
-      // تحقق من وجود العميل
-      const { data: existing } = await supabase
-        .from('clients')
-        .select('id')
-        .eq('id', clientData.id)
-        .maybeSingle();
-
-      let dbError = null;
-
-      if (existing) {
-        const { error } = await supabase
-          .from('clients')
-          .update(payload)
-          .eq('id', clientData.id);
-        dbError = error;
-      } else {
-        const { error } = await supabase
-          .from('clients')
-          .insert({
-            ...payload,
-            created_at: new Date().toISOString()
-          });
-        dbError = error;
-      }
-
-      if (dbError) {
-        console.error('[Save Client Error]', dbError);
-        if (dbError.code === '42501') {
-          alert('خطأ في صلاحيات قاعدة البيانات (RLS)');
-        } else if (dbError.code === '23505') {
-          alert('يوجد عميل آخر بنفس البيانات');
-        } else {
-          alert('فشل حفظ العميل: ' + dbError.message);
-        }
-        return false;
-      }
-
-      // تحديث localStorage backup
-      try {
-        const backup = JSON.parse(
-          localStorage.getItem('clients_backup') || '[]'
-        );
-        const fullClient = {
-          ...clientData,
-          portalUsername,
-          portalPassword,
-          activePortal: true,
-          status: 'active'
-        };
-        const idx = backup.findIndex(
-          (c: any) => c.id === clientData.id
-        );
-        if (idx >= 0) backup[idx] = fullClient;
-        else backup.push(fullClient);
-        localStorage.setItem(
-          'clients_backup',
-          JSON.stringify(backup)
-        );
-      } catch(e) {}
-
-      // تحديث State
-      const updatedClient = {
-        ...clientData,
-        portalUsername,
-        portal_username: portalUsername,
-        portalPassword,
-        portal_password: portalPassword,
-        activePortal: true,
-        active_portal: true,
-        status: 'active'
-      };
-
-      onUpdateState('clients', updatedClient);
-
-      alert(
-        '✅ تم حفظ بيانات العميل بنجاح\n\n' +
-        '👤 اسم المستخدم: ' + portalUsername + '\n' +
-        '🔑 كلمة المرور: ' + portalPassword + '\n\n' +
-        '✅ يمكن للعميل الدخول من بوابة العملاء'
+      const backup = JSON.parse(
+        localStorage.getItem('clients_local') || '[]'
       );
+      const idx = backup.findIndex((c: any) => c.id === payload.id);
+      if (idx >= 0) backup[idx] = { ...backup[idx], ...payload };
+      else backup.unshift(payload);
+      localStorage.setItem(
+        'clients_local', JSON.stringify(backup.slice(0, 200))
+      );
+    } catch(e) {}
 
-      return true;
+    // تحديث State
+    onUpdateState('clients', { ...clientData, ...payload });
 
-    } catch (err: any) {
-      console.error('[Save Client Exception]', err);
-      alert('خطأ غير متوقع: ' + err.message);
-      return false;
-    }
+    alert('✅ تم حفظ بيانات العميل بنجاح');
   };
 
   const handleUpdateClientSubmit = async (e: React.FormEvent) => {
