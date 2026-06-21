@@ -750,86 +750,56 @@ export default function TasksModule({
     return matchPriority && matchAssignee && matchCase;
   });
 
-  const handleCreateTask = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!taskTitle) return;
-
-    if (!taskDueDate) {
-      triggerToast(
-        "تنبيه: حقل مطلوب", 
-        "يرجى اختيار تاريخ استحقاق للمهمة لضمان دقة مواعيد المهل القضائية وعدم فوات المواعيد النظامية.", 
-        "warning"
-      );
-      return;
-    }
-
+  const handleSaveTask = async (taskData: any) => {
     const selectedEmp = realEmployees.find(
       e => e.id === selectedEmployeeId
     );
-    const selectedCase = realCases.find(c => c.id === selectedCaseId);
-
+    const selectedCase = realCases.find(
+      c => c.id === selectedCaseId
+    );
+  
     const payload = {
-      id: generateUUID(),
-      title: taskTitle.trim() || 'مهمة جديدة',
-      description: taskDesc.trim() || null,
-      status: 'todo',
-      priority: taskPriority || 'medium',
-      due_date: `${taskDueDate}T${taskDueTime}`,
+      id: taskData.id || generateUUID(),
+      title: taskData.title?.trim(),
+      description: taskData.description?.trim() || null,
+      status: taskData.status || 'todo',
+      priority: taskData.priority || 'medium',
+      due_date: taskData.dueDate || null,
+      employee_id: selectedEmp?.id || null,
+      assigned_to: selectedEmp?.name || null,
       case_id: selectedCase?.id || null,
-      case_number: selectedCase?.case_number || taskCase || null,
-      employee_id: employeeRestrictedId || selectedEmp?.id || selectedEmployeeId || null,
-      assigned_to: employeeRestrictedName || selectedEmp?.name || selectedEmployeeName || null,
+      case_number: selectedCase?.case_number || null,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
     };
-
-    const { error } = await supabase
+  
+    const { data, error } = await supabase
       .from('tasks')
-      .upsert(payload, { onConflict: 'id' });
-
+      .upsert(payload, { onConflict: 'id' })
+      .select()
+      .single();
+  
     if (error) {
-      console.error('[Save Task Error]', error);
-      if (error.code === '42501') {
-        alert('خطأ في صلاحيات قاعدة البيانات. يرجى التواصل مع الدعم.');
-      } else {
-        alert('فشل حفظ المهمة: ' + error.message);
-      }
-      return;
+      alert('فشل حفظ المهمة: ' + error.message);
+      return false;
     }
-
-    const newTask: Task = {
+  
+    // تحديث State فوراً
+    onUpdateState('tasks', {
       id: payload.id,
       title: payload.title,
-      description: payload.description || '',
-      status: 'todo',
-      priority: taskPriority,
-      assignedTo: payload.assigned_to || '',
-      employeeId: payload.employee_id,
+      description: payload.description,
+      status: payload.status,
+      priority: payload.priority,
       dueDate: payload.due_date,
-      caseNumber: payload.case_number || undefined
-    };
-
-    onUpdateState('tasks', newTask);
-
-    alert('✅ تم حفظ المهمة وإسنادها لـ ' + (selectedEmp?.name || 'غير محدد'));
-
-    // Simulate scheduling a notification if the reminder is enabled
-    if (taskReminderEnabled && taskReminderTime) {
-      triggerToast(
-        "تم تجدول التذكير بنجاح",
-        `تم إضافة مجدول المتصفح في الخلفية لتنبيه المستشار "${selectedEmp?.name || 'غير محدد'}" في ${taskDueDate} وقت ${taskReminderTime}`,
-        "info"
-      );
-    }
-    
-    setIsAdding(false);
-
-    // reset
-    setTaskTitle('');
-    setTaskDesc('');
-    setTaskDueDate(new Date().toISOString().split('T')[0]);
-    setTaskReminderEnabled(false);
-    setTaskReminderTime('');
+      assignedTo: payload.assigned_to,
+      employeeId: payload.employee_id,
+      caseId: payload.case_id,
+      caseNumber: payload.case_number,
+      createdAt: payload.created_at
+    });
+  
+    return true;
   };
 
   const getEmployeeName = (task: any) => {
@@ -1609,18 +1579,18 @@ export default function TasksModule({
                 <div>
                   <label className="text-sm text-[#fbbf24]  block mb-1 font-black">المحامي أو الزميل المكلف:</label>
                   <select 
-                    value={selectedEmployeeId}
+                    value={selectedEmployeeId || ''}
                     onChange={(e) => {
                       const emp = realEmployees.find(em => em.id === e.target.value);
                       setSelectedEmployeeId(e.target.value);
                       setSelectedEmployeeName(emp?.name || '');
                     }}
-                    className="w-full bg-slate-900 border border-slate-700 rounded-xl py-2 px-2 text-xs text-white  font-bold cursor-pointer"
+                    className="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-4 py-2.5 text-sm font-bold cursor-pointer"
                   >
-                    <option value="">اختر موظفاً...</option>
+                    <option value="">— اختر موظفاً —</option>
                     {realEmployees.map(emp => (
                       <option key={emp.id} value={emp.id}>
-                        {emp.name} — {emp.job_title || emp.role}
+                        {emp.name} | {emp.job_title || emp.role}
                       </option>
                     ))}
                   </select>

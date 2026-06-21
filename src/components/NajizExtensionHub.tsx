@@ -1733,139 +1733,12 @@ https://aladala-platform-rnuz.onrender.com
         </div>
       </section>
 
-      {/* Live Dashboard Control Panel (Dark Luxury Cards) */}
-      <div id="sync-dashboard" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {[
-          { id: 'cases', label: 'مزامنة القضايا', icon: Database, color: 'blue' },
-          { id: 'hearings', label: 'مزامنة الجلسات', icon: Calendar, color: 'amber' },
-          { id: 'agencies', label: 'مزامنة الوكالات', icon: Users, color: 'indigo' },
-          { id: 'executions', label: 'مزامنة طلبات التنفيذ', icon: FileText, color: 'emerald' }
-        ].map((btn) => {
-          const status = syncStatus[btn.id] || 'idle';
-          return (
-            <motion.button
-              key={btn.id}
-              whileHover={{ scale: 1.03, translateY: -4 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={() => {
-                if (status === 'idle') {
-                  const showToast = (window as any).showToast || console.log;
-                  showToast(`جاري الاتصال بـ ناجز لسحب ${btn.label}...`, 'info');
-                  setSyncStatus(prev => ({ ...prev, [btn.id]: 'syncing' }));
-                  setTimeout(() => {
-                    setSyncStatus(prev => ({ ...prev, [btn.id]: 'success' }));
-                    showToast(`تم تحديث ${btn.label} بنجاح`, 'success');
-                    setTimeout(() => setSyncStatus(prev => ({ ...prev, [btn.id]: 'idle' })), 3000);
-                  }, 2000);
-                }
-              }}
-              className={`relative overflow-hidden p-8 rounded-[3rem] border-2 transition-all flex flex-col gap-5 text-right shadow-2xl
-                ${status === 'syncing' ? 'border-yellow-400 bg-[#0A0F1E] animate-pulse' : 
-                  status === 'success' ? 'border-emerald-400 bg-[#0A1A2F]' : 
-                  'border-white/10 bg-[#0F172A] hover:border-yellow-400 shadow-xl shadow-slate-200'}`}
-            >
-              <div className="flex items-center justify-between">
-                <div className={`p-4 rounded-2xl ${
-                  status === 'syncing' ? 'bg-yellow-400/20 text-yellow-400' :
-                  status === 'success' ? 'bg-emerald-400/20 text-emerald-400' :
-                  'bg-yellow-400/10 text-yellow-400'}`}>
-                  <btn.icon className="w-8 h-8" />
-                </div>
-                <div className={`flex items-center gap-2 text-[12px] font-black px-4 py-2 rounded-full ${
-                  status === 'syncing' ? 'bg-yellow-400/20 !text-yellow-400' :
-                  status === 'success' ? 'bg-emerald-400/20 !text-emerald-400' :
-                  'bg-white/5 !text-yellow-400'}`}>
-                  <div className={`w-2.5 h-2.5 rounded-full ${
-                    status === 'syncing' ? 'bg-yellow-400 animate-ping' :
-                    status === 'success' ? 'bg-emerald-400' :
-                    'bg-yellow-400'}`} />
-                  {status === 'syncing' ? 'جاري السحب الفوري...' : status === 'success' ? 'اكتمل الربط' : 'جاهز للمزامنة'}
-                </div>
-              </div>
-              <div>
-                <h4 className="font-extrabold text-xl !text-white tracking-wide">{btn.label}</h4>
-                <p className="text-[12px] font-black !text-yellow-400 mt-1">
-                  {syncHistory[btn.id]?.lastSync ? `آخر مزامنة: ${new Date(syncHistory[btn.id].lastSync!).toLocaleDateString('ar-SA')}` : 'انتظار المزامنة الأولى'}
-                </p>
-              </div>
-              
-              <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-white/10 via-transparent to-transparent pointer-events-none opacity-30" />
-            </motion.button>
-          );
-        })}
-      </div>
 
-      {/* Sync History Table */}
-      <motion.div 
-        id="sync-history"
-        initial={{ opacity: 0, y: 30 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="bg-[#0F172A] border-4 border-yellow-400/20 rounded-[3.5rem] overflow-hidden shadow-2xl shadow-slate-300"
-      >
-        <div className="p-10 border-b border-white/5 bg-white/5 flex items-center justify-between">
-          <div className="flex items-center gap-5">
-            <div className="p-4 bg-yellow-400/10 text-yellow-400 rounded-3xl border border-yellow-400/20">
-              <Database className="w-8 h-8" />
-            </div>
-            <div>
-              <h3 className="text-2xl font-black !text-white tracking-tight">سجل شفافية المزامنة الملكي</h3>
-              <p className="text-sm !text-yellow-400 font-extrabold tracking-wide">متابعة دقيقة وفورية لكل قطرة بيانات متدفقة من بوابة ناجز</p>
-            </div>
-          </div>
-        </div>
-        <div className="overflow-x-auto">
-          <table className="w-full text-right">
-            <thead>
-              <tr className="bg-white/5 text-[12px] font-black !text-yellow-400 uppercase tracking-[0.15em] border-b border-white/5">
-                <th className="px-10 py-6">القسم والمجال</th>
-                <th className="px-10 py-6 text-center">توقيت السحب الأخير</th>
-                <th className="px-10 py-6 text-center">سجلات مضافة</th>
-                <th className="px-10 py-6 text-center">سجلات محدثة</th>
-                <th className="px-10 py-6 text-center">الحالة التشغيلية</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-white/5">
-              {[
-                { id: 'cases', label: 'إدارة القضايا والدعاوى', icon: Briefcase },
-                { id: 'hearings', label: 'الجلسات والمواعيد القضائية', icon: Calendar },
-                { id: 'agencies', label: 'الوكالات والتوكيلات الشرعية', icon: Users },
-                { id: 'executions', label: 'طلبات التنفيذ والسداد', icon: Zap },
-                { id: 'clients', label: 'ملفات المستفيدين والموكلين', icon: Bot }
-              ].map((item) => (
-                <tr key={item.id} className="hover:bg-white/5 transition-all group">
-                  <td className="px-10 py-6">
-                    <div className="flex items-center gap-4">
-                      <div className="p-2.5 bg-yellow-400/10 text-yellow-400 rounded-xl group-hover:scale-110 transition-transform">
-                        <item.icon className="w-5 h-5" />
-                      </div>
-                      <span className="font-extrabold !text-white text-base">{item.label}</span>
-                    </div>
-                  </td>
-                  <td className="px-10 py-6 text-center font-bold !text-slate-100 text-sm">
-                    {syncHistory[item.id]?.lastSync ? new Date(syncHistory[item.id].lastSync!).toLocaleString('ar-SA') : 'في انتظار أول ربط'}
-                  </td>
-                  <td className="px-10 py-6 text-center font-black !text-emerald-400 text-lg">
-                    {syncHistory[item.id]?.newCount || 0}
-                  </td>
-                  <td className="px-10 py-6 text-center font-black !text-yellow-400 text-lg">
-                    {syncHistory[item.id]?.updatedCount || 0}
-                  </td>
-                  <td className="px-10 py-6 text-center">
-                    <span className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-[11px] font-black tracking-wide ${
-                      syncHistory[item.id]?.lastSync ? 'bg-emerald-400/10 !text-emerald-400 border border-emerald-400/30' : 'bg-white/10 !text-slate-200 border border-white/20'
-                    }`}>
-                      <div className={`w-2 h-2 rounded-full ${syncHistory[item.id]?.lastSync ? 'bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.5)]' : 'bg-slate-400'}`} />
-                      {syncHistory[item.id]?.lastSync ? 'متصل ومحمي' : 'غير نشط'}
-                    </span>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </motion.div>
+
+      {/* Sync History Table REMOVED */}
       
       {/* Sync Report Modal */}
+
       <AnimatePresence>
         {syncReport?.show && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
@@ -2163,41 +2036,6 @@ https://aladala-platform-rnuz.onrender.com
 
             {activeTab === 'instructions' && (
               <div className="space-y-10 animate-in fade-in duration-500 relative z-10 text-white">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                   
-                   <div className="flex gap-5 bg-[#1e293b] p-6 rounded-3xl border border-[#D4AF37]/20 hover:border-[#D4AF37] transition-colors shadow-lg">
-                      <div className="w-12 h-12 rounded-xl bg-[#D4AF37] flex items-center justify-center shrink-0 font-black text-[#010610] text-xl shadow-lg">1</div>
-                      <div className="space-y-2">
-                        <h4 className="font-black text-[#FACC15] text-lg">تحميل الأداة وفك المجلد</h4>
-                        <p className="text-sm text-white font-bold leading-relaxed">قم بضغط زر التحميل بالأعلى لحفظ ملف <code className="bg-[#060b13]/60 px-2 py-0.5 rounded text-[#FACC15] border border-[#D4AF37]/30 font-mono">ZIP</code> المستعد، ثم قم باستخراجه في مجلد فارغ بقرصك الصلب.</p>
-                      </div>
-                   </div>
-
-                   <div className="flex gap-5 bg-[#1e293b] p-6 rounded-3xl border border-[#D4AF37]/20 hover:border-[#D4AF37] transition-colors shadow-lg">
-                      <div className="w-12 h-12 rounded-xl bg-[#D4AF37] flex items-center justify-center shrink-0 font-black text-[#010610] text-xl shadow-lg">2</div>
-                      <div className="space-y-2">
-                        <h4 className="font-black text-[#FACC15] text-lg">تحميل إضافات المطور (Chrome)</h4>
-                        <p className="text-sm text-white font-bold leading-relaxed">اذهب إلى <code className="bg-[#060b13]/60 px-2.5 py-0.5 rounded text-[#FACC15] border border-[#D4AF37]/30 font-mono">chrome://extensions</code>، فّعل (وضع المطور) بأعلى الشاشة، ثم اختر مجلد الإضافة لدمج الأداة.</p>
-                      </div>
-                   </div>
-
-                   <div className="flex gap-5 bg-[#1e293b] p-6 rounded-3xl border border-[#D4AF37]/20 hover:border-[#D4AF37] transition-colors shadow-lg">
-                      <div className="w-12 h-12 rounded-xl bg-[#D4AF37] flex items-center justify-center shrink-0 font-black text-[#010610] text-xl shadow-lg">3</div>
-                      <div className="space-y-2">
-                        <h4 className="font-black text-[#FACC15] text-lg">الحقن التلقائي لبوابة ناجز</h4>
-                        <p className="text-sm text-white font-bold leading-relaxed">بمجرد تسجيل دخولك الاعتيادي بالبوابة الرسمية، تظهر الخيارات الذهبية للمنصة بأسفل الشاشة بسلاسة تامة.</p>
-                      </div>
-                   </div>
-
-                   <div className="flex gap-5 bg-[#1e293b] p-6 rounded-3xl border border-[#D4AF37]/20 hover:border-[#D4AF37] transition-colors shadow-lg">
-                      <div className="w-12 h-12 rounded-xl bg-[#D4AF37] flex items-center justify-center shrink-0 font-black text-[#010610] text-xl shadow-lg">4</div>
-                      <div className="space-y-2">
-                        <h4 className="font-black text-[#FACC15] text-lg">برمجة الفرز وتفادي العشوائية</h4>
-                        <p className="text-sm text-white font-bold leading-relaxed">قوائم السحب المتعددة (Multi-select) تضمن للمحامي تعطيل وإبعاد أي تفاصيل أو سجلات وملفات لا يرغب بنقلها.</p>
-                      </div>
-                   </div>
-
-                </div>
               </div>
             )}
 

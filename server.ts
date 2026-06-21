@@ -518,6 +518,272 @@ const PORT = 3000;
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
+// ===== توليد وإدارة API Keys =====
+import crypto from 'crypto';
+
+// جدول API Keys في Supabase (أنشئه في SQL)
+// CREATE TABLE public.api_keys (
+//   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+//   key_value TEXT UNIQUE NOT NULL,
+//   key_name TEXT NOT NULL,
+//   is_active BOOLEAN DEFAULT TRUE,
+//   last_used_at TIMESTAMPTZ,
+//   created_at TIMESTAMPTZ DEFAULT NOW()
+// );
+
+// توليد API Key جديد
+app.post('/api/keys/generate', async (req, res) => {
+  const { keyName } = req.body;
+
+  try {
+    // توليد مفتاح فريد
+    const rawKey = crypto.randomBytes(32).toString('hex');
+    const apiKey = `adl_${rawKey}`;
+
+    const { data, error } = await adminSupabase
+      .from('api_keys')
+      .insert({
+        id: crypto.randomUUID(),
+        key_value: apiKey,
+        key_name: keyName || 'مفتاح ناجز',
+        is_active: true,
+        created_at: new Date().toISOString()
+      })
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    return res.json({
+      success: true,
+      apiKey,
+      keyId: data.id,
+      message: 'تم توليد المفتاح بنجاح'
+    });
+  } catch(err: any) {
+    return res.status(500).json({
+      success: false, error: err.message
+    });
+  }
+});
+
+// استرجاع API Keys
+app.get('/api/keys', async (req, res) => {
+  try {
+    const { data } = await adminSupabase
+      .from('api_keys')
+      .select('id, key_name, key_value, is_active, created_at, last_used_at')
+      .order('created_at', { ascending: false });
+
+    return res.json({ success: true, keys: data || [] });
+  } catch(err: any) {
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// حذف API Key
+app.delete('/api/keys/:id', async (req, res) => {
+  try {
+    await adminSupabase
+      .from('api_keys')
+      .delete()
+      .eq('id', req.params.id);
+    return res.json({ success: true });
+  } catch(err: any) {
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// Middleware للتحقق من API Key
+const validateApiKey = async (req: any, res: any, next: any) => {
+  const apiKey =
+    req.headers['x-api-key'] ||
+    req.headers['authorization']?.replace('Bearer ', '') ||
+    req.query.api_key;
+
+  if (!apiKey) {
+    return res.status(401).json({
+      success: false,
+      error: 'API Key مطلوب في header: x-api-key'
+    });
+  }
+
+  const { data, error } = await adminSupabase
+    .from('api_keys')
+    .select('*')
+    .eq('key_value', apiKey)
+    .eq('is_active', true)
+    .maybeSingle();
+
+  if (error || !data) {
+    return res.status(401).json({
+      success: false,
+      error: 'API Key غير صحيح أو غير مفعّل'
+    });
+  }
+
+  // تحديث last_used_at
+  await adminSupabase
+    .from('api_keys')
+    .update({ last_used_at: new Date().toISOString() })
+    .eq('id', data.id);
+
+  (req as any).apiKeyData = data;
+  next();
+};
+
+// مسار استقبال بيانات ناجز عبر API Key
+app.post('/api/v1/sync', validateApiKey, async (req, res) => {
+  const { data, type, source } = req.body;
+
+  if (!data || !type) {
+    return res.status(400).json({
+      success: false,
+      error: 'data و type مطلوبان'
+    });
+  }
+
+  // معالجة البيانات حسب النوع
+  const results: any = {};
+
+  try {
+    if (type === 'cases' || data.cases?.length > 0) {
+      results.cases = { added: 0, updated: 0 };
+      for (const c of (data.cases || [])) {
+        if (!c.caseNumber) continue;
+        const { data: ex } = await adminSupabase
+          .from('cases')
+          .select('id')
+          .eq('case_number', c.caseNumber)
+          .maybeSingle();
+
+        if (ex) {
+          await adminSupabase.from('cases').update({
+            status: c.status || 'قيد النظر',
+            court_name: c.court || undefined,
+            is_najiz_sync: true,
+            last_sync_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          }).eq('id', ex.id);
+          results.cases.updated++;
+        } else {
+          await adminSupabase.from('cases').insert({
+            id: crypto.randomUUID(),
+            case_number: c.caseNumber,
+            najiz_case_number: c.caseNumber,
+            title: c.caseName || `قضية ${c.caseNumber}`,
+            client_name: c.clientName || '',
+            status: c.status || 'قيد النظر',
+            category: c.category || 'civil',
+            stage: 'litigation',
+            court_name: c.court || '',
+            is_najiz_sync: true,
+            archived: false,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          });
+          results.cases.added++;
+        }
+      }
+    }
+
+    if (type === 'hearings' || data.hearings?.length > 0) {
+      results.hearings = { added: 0 };
+      for (const h of (data.hearings || [])) {
+        if (!h.date) continue;
+        await adminSupabase.from('hearings').upsert({
+          id: crypto.randomUUID(),
+          case_number: h.caseNumber || '',
+          date: h.date,
+          time: h.time || '09:00',
+          court_name: h.court || '',
+          status: 'upcoming',
+          is_najiz_sync: true,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        }, { onConflict: 'case_number,date', ignoreDuplicates: true });
+        results.hearings.added++;
+      }
+    }
+
+    if (type === 'poa' || data.powers_of_attorney?.length > 0) {
+      results.poa = { added: 0 };
+      for (const p of (data.powers_of_attorney || [])) {
+        if (!p.poaNumber) continue;
+        await adminSupabase.from('powers_of_attorney').upsert({
+          id: crypto.randomUUID(),
+          poa_number: p.poaNumber,
+          type: p.type || 'general',
+          status: p.status || 'active',
+          issue_date: p.issueDate || null,
+          expiry_date: p.expiryDate || null,
+          is_najiz_sync: true,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        }, { onConflict: 'poa_number', ignoreDuplicates: true });
+        results.poa.added++;
+      }
+    }
+
+    if (type === 'executions' || data.executions?.length > 0) {
+      results.executions = { added: 0 };
+      for (const e of (data.executions || [])) {
+        if (!e.executionNumber) continue;
+        await adminSupabase.from('executions').upsert({
+          id: crypto.randomUUID(),
+          execution_number: e.executionNumber,
+          status: e.status || 'pending',
+          amount: parseFloat(e.amount) || 0,
+          court_name: e.court || '',
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        }, { onConflict: 'execution_number', ignoreDuplicates: true });
+        results.executions.added++;
+      }
+    }
+
+    return res.json({
+      success: true,
+      message: 'تمت المزامنة بنجاح',
+      results,
+      timestamp: new Date().toISOString()
+    });
+
+  } catch(err: any) {
+    return res.status(500).json({
+      success: false,
+      error: err.message
+    });
+  }
+});
+
+// وثائق API
+app.get('/api/v1/docs', (req, res) => {
+  res.json({
+    version: '1.0',
+    baseUrl: 'https://aladala-platform-rnuz.onrender.com',
+    authentication: 'Header: x-api-key: adl_YOUR_KEY',
+    endpoints: {
+      sync: {
+        method: 'POST',
+        url: '/api/v1/sync',
+        description: 'مزامنة بيانات ناجز مع النظام',
+        body: {
+          type: 'cases | hearings | poa | executions | all',
+          data: {
+            cases: [{ caseNumber: '2024/1234', caseName: '...', status: '...' }],
+            hearings: [{ caseNumber: '...', date: 'YYYY-MM-DD', time: 'HH:mm' }],
+            powers_of_attorney: [{ poaNumber: '123456', type: 'general' }],
+            executions: [{ executionNumber: '...', status: '...' }]
+          }
+        }
+      }
+    }
+  });
+});
+
+
+
 // Dedicated route for custom Node.js HTML response (Requested by user)
 app.get('/test-node-html', (req, res) => {
   res.writeHead(200, { 'Content-Type': 'text/html' });

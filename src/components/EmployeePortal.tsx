@@ -216,6 +216,8 @@ export default function EmployeePortal({
     } catch(e){}
     return null;
   });
+  const [needsConfig, setNeedsConfig] = useState(false);
+  const [pendingEmployee, setPendingEmployee] = useState<Employee | null>(null);
 
   // Fetch employees list for admin
   useEffect(() => {
@@ -799,6 +801,18 @@ export default function EmployeePortal({
     } catch (e) {}
   };
 
+  const checkPortalConfigured = async (employeeId: string) => {
+    const { data } = await supabase
+      .from('portal_configurations')
+      .select('*')
+      .eq('entity_type', 'employee')
+      .eq('entity_id', employeeId)
+      .eq('is_active', true)
+      .maybeSingle();
+
+    return data !== null;
+  };
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     if(isLoading) return;
@@ -816,30 +830,39 @@ export default function EmployeePortal({
 
       const empData = result.data;
       
-      // حفظ التوكن في sessionStorage
-      sessionStorage.setItem('employee-portal-token', 'bypass-token-' + empData.id);
+      // تحقق من وجود الإعدادات
+      const isConfigured = await checkPortalConfigured(empData.id);
 
-      const currentLoginCount = (empData as any).loginCount || 0;
-      // تحديث عدد تسجيلات الدخول بمرونة
-      try {
-        await supabase.from('employees').update({
-          loginCount: currentLoginCount + 1,
-          lastLoginAt: new Date().toISOString()
-        }).eq('id', empData.id);
-      } catch (dbErr) {}
+      if (isConfigured) {
+          // حفظ التوكن في sessionStorage
+          sessionStorage.setItem('employee-portal-token', 'bypass-token-' + empData.id);
 
-      (empData as any).loginCount = currentLoginCount + 1;
+          const currentLoginCount = (empData as any).loginCount || 0;
+          // تحديث عدد تسجيلات الدخول بمرونة
+          try {
+            await supabase.from('employees').update({
+              loginCount: currentLoginCount + 1,
+              lastLoginAt: new Date().toISOString()
+            }).eq('id', empData.id);
+          } catch (dbErr) {}
 
-      setLoggedInEmployee(empData);
-      setSimulatedNajizKey(empData.najizApiKey || '');
-      sessionStorage.setItem('active-logged-in-employee-v2', JSON.stringify(empData));
-      
-      if (empData.sidebarConfig && empData.sidebarConfig.length > 0) {
-        setActivePortalTab(empData.sidebarConfig[0]);
+          (empData as any).loginCount = currentLoginCount + 1;
+
+          setLoggedInEmployee(empData);
+          setSimulatedNajizKey(empData.najizApiKey || '');
+          sessionStorage.setItem('active-logged-in-employee-v2', JSON.stringify(empData));
+          
+          if (empData.sidebarConfig && empData.sidebarConfig.length > 0) {
+            setActivePortalTab(empData.sidebarConfig[0]);
+          } else {
+            setActivePortalTab('dashboard');
+          }
+          await writeAuditLog('تسجيل دخول', 'دخل الموظف إلى البوابة الفرعية المخصصة بمصادقة آمنة', empData);
       } else {
-        setActivePortalTab('dashboard');
+          // أول مرة فقط — اطلب التهيئة
+          setNeedsConfig(true);
+          setPendingEmployee(empData);
       }
-      await writeAuditLog('تسجيل دخول', 'دخل الموظف إلى البوابة الفرعية المخصصة بمصادقة آمنة', empData);
     } catch (err: any) {
       console.error('[EmployeePortal Login Exception]', err);
       setLoginError('فشل الاتصال الآمن بالخادم الموحد للعدالة. يرجى إعادة المحاولة.');
@@ -1505,6 +1528,25 @@ export default function EmployeePortal({
       loadMyTasks(loggedInEmployee.id, loggedInEmployee.name);
     }
   }, [loggedInEmployee?.id, loadMyTasks]);
+
+  const updateTaskFromPortal = async (
+    taskId: string,
+    newStatus: string
+  ) => {
+    const { error } = await supabase
+      .from('tasks')
+      .update({
+        status: newStatus,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', taskId);
+
+    if (!error) {
+      setMyTasks(prev => prev.map(t =>
+        t.id === taskId ? { ...t, status: newStatus } : t
+      ));
+    }
+  };
 
   // Realtime Subscription — تحديث فوري
   useEffect(() => {

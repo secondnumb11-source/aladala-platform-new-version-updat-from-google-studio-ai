@@ -187,6 +187,52 @@ export default function Settings({
   const [configSaving, setConfigSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
 
+  // API Keys state
+  const [apiKeys, setApiKeys] = useState<any[]>([]);
+  const [newKeyName, setNewKeyName] = useState('');
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [generatedKey, setGeneratedKey] = useState('');
+  const [copySuccess, setCopySuccess] = useState(false);
+
+  const loadApiKeys = async () => {
+    try {
+      const res = await fetch('/api/keys');
+      const data = await res.json();
+      if (data.success) setApiKeys(data.keys || []);
+    } catch(e) {}
+  };
+
+  useEffect(() => { loadApiKeys(); }, []);
+
+  const handleGenerateKey = async () => {
+    if (!newKeyName.trim()) {
+      alert('أدخل اسم المفتاح');
+      return;
+    }
+    setIsGenerating(true);
+    try {
+      const res = await fetch('/api/keys/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ keyName: newKeyName.trim() })
+      });
+      const data = await res.json();
+      if (data.success) {
+        setGeneratedKey(data.apiKey);
+        setNewKeyName('');
+        await loadApiKeys();
+      }
+    } catch(e) {} finally { setIsGenerating(false); }
+  };
+
+  const handleDeleteKey = async (id: string) => {
+    if (!confirm('حذف هذا المفتاح؟')) return;
+    try {
+      await fetch(`/api/keys/${id}`, { method: 'DELETE' });
+      setApiKeys(prev => prev.filter(k => k.id !== id));
+    } catch(e) {}
+  };
+
   // Editable roles
   const [editableRoles, setEditableRoles] = useState(customRoles || {
     admin: 'شريك أول / مدير المكتب 👑',
@@ -1521,6 +1567,123 @@ export default function Settings({
                   حفظ الملف المهني للمكتب
                 </button>
               </form>
+            </div>
+          </div>
+
+
+          {/* API Keys management section */}
+          <div className="bg-[#0a1628] border border-slate-700 rounded-2xl p-6" dir="rtl">
+            <div className="flex items-center gap-3 mb-6">
+              <Key className="w-6 h-6 text-amber-400" />
+              <div>
+                <h2 className="text-white font-black text-lg">مفاتيح API</h2>
+                <p className="text-slate-400 text-sm">
+                  استخدم هذا المفتاح لربط أدوات سحب البيانات مع النظام
+                </p>
+              </div>
+            </div>
+
+            {/* Generate new key */}
+            <div className="flex gap-3 mb-6">
+              <input
+                type="text"
+                value={newKeyName}
+                onChange={e => setNewKeyName(e.target.value)}
+                placeholder="اسم المفتاح (مثال: أداة ناجز)"
+                className="flex-1 bg-[#050e21] border border-slate-700
+                  text-white rounded-xl px-4 py-2.5 text-sm
+                  focus:outline-none focus:border-amber-500
+                  placeholder-slate-600"
+              />
+              <button
+                onClick={handleGenerateKey}
+                disabled={isGenerating}
+                className="flex items-center gap-2 px-5 py-2.5
+                  bg-amber-600 hover:bg-amber-500 disabled:opacity-50
+                  text-white font-bold rounded-xl transition-colors"
+              >
+                {isGenerating ? '...' : '+ توليد مفتاح'}
+              </button>
+            </div>
+
+            {/* Generated key display */}
+            {generatedKey && (
+              <div className="mb-6 p-4 bg-emerald-500/10 border border-emerald-500/30
+                rounded-xl">
+                <p className="text-emerald-400 font-bold text-sm mb-2">
+                  ✅ تم توليد المفتاح — انسخه الآن (لن يظهر مرة أخرى)
+                </p>
+                <div className="flex items-center gap-2">
+                  <code className="flex-1 bg-[#050e21] text-amber-300 text-xs
+                    p-3 rounded-lg font-mono break-all border border-slate-700">
+                    {generatedKey}
+                  </code>
+                  <button
+                    onClick={async () => {
+                      await navigator.clipboard.writeText(generatedKey);
+                      setCopySuccess(true);
+                      setTimeout(() => setCopySuccess(false), 2000);
+                    }}
+                    className="px-3 py-2 bg-slate-700 hover:bg-slate-600
+                      text-white text-xs rounded-lg transition-colors shrink-0"
+                  >
+                    {copySuccess ? '✅ تم' : 'نسخ'}
+                  </button>
+                </div>
+                <div className="mt-3 p-3 bg-[#050e21] rounded-lg border border-slate-700">
+                  <p className="text-slate-400 text-xs font-bold mb-1">
+                    🔗 طريقة الاستخدام مع أي أداة سحب:
+                  </p>
+                  <code className="text-slate-300 text-[10px] block">
+                    URL: https://aladala-platform-rnuz.onrender.com/api/v1/sync
+                  </code>
+                  <code className="text-slate-300 text-[10px] block">
+                    Header: x-api-key: {generatedKey}
+                  </code>
+                  <code className="text-slate-300 text-[10px] block">
+                    Method: POST | Content-Type: application/json
+                  </code>
+                </div>
+              </div>
+            )}
+
+            {/* List existing keys */}
+            <div className="space-y-3">
+              {apiKeys.length === 0 ? (
+                <p className="text-slate-600 text-sm text-center py-4">
+                  لا توجد مفاتيح — أنشئ مفتاحاً أعلاه
+                </p>
+              ) : apiKeys.map(key => (
+                <div key={key.id}
+                  className="flex items-center justify-between p-4
+                    bg-[#050e21] border border-slate-800 rounded-xl">
+                  <div>
+                    <p className="text-white font-bold text-sm">{key.key_name}</p>
+                    <code className="text-slate-500 text-xs">
+                      {key.key_value.substring(0, 20)}...
+                    </code>
+                    <p className="text-slate-600 text-[10px] mt-1">
+                      {key.last_used_at
+                        ? 'آخر استخدام: ' + new Date(key.last_used_at).toLocaleString('ar-SA')
+                        : 'لم يُستخدم بعد'}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className={`text-[10px] px-2 py-1 rounded-lg font-bold
+                      ${key.is_active
+                        ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30'
+                        : 'bg-red-500/10 text-red-400 border border-red-500/30'}`}>
+                      {key.is_active ? 'نشط' : 'معطّل'}
+                    </span>
+                    <button
+                      onClick={() => handleDeleteKey(key.id)}
+                      className="p-2 bg-red-500/10 hover:bg-red-500/20
+                        text-red-400 rounded-lg transition-colors">
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
 

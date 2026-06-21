@@ -421,7 +421,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         <h2 className="text-5xl md:text-7xl font-black text-slate-900 tracking-tight leading-tight">
           الربط المباشر مع <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-600 to-yellow-400">نظام ناجز</span>
         </h2>
-        <p className="text-xl text-slate-600 font-bold max-w-3xl mx-auto leading-relaxed">
+        <p className="text-xl text-slate-200 font-bold max-w-3xl mx-auto leading-relaxed">
           انقل مكتبك إلى آفاق جديدة عبر الربط اللحظي مع بوابة ناجز، مصمم لتجربة مستخدم فاخرة وسهولة مطلقة في الأداء.
         </p>
       </div>
@@ -438,9 +438,9 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
             <div className="p-4 bg-yellow-400 text-black rounded-2xl shadow-[0_0_20px_rgba(250,204,21,0.4)]">
               <Key className="w-8 h-8" />
             </div>
-            <span className="text-4xl md:text-5xl font-mono font-black text-white selection:bg-yellow-400 selection:text-black tracking-[0.25em] drop-shadow-lg">{apiKey}</span>
+            <span className="text-4xl md:text-5xl font-mono font-black text-yellow-300 selection:bg-yellow-400 selection:text-black tracking-[0.25em] drop-shadow-lg">{apiKey}</span>
           </div>
-          <p className="text-sm text-slate-300 font-bold max-w-xl leading-relaxed">هذا الرمز هو بصمتك الرقمية الوحيدة للاتصال الآمن؛ لا تشاركه مع أي جهة لضمان حصانة مراسلاتك وبياناتك.</p>
+          <p className="text-sm text-yellow-100 font-bold max-w-xl leading-relaxed">هذا الرمز هو بصمتك الرقمية الوحيدة للاتصال الآمن؛ لا تشاركه مع أي جهة لضمان حصانة مراسلاتك وبياناتك.</p>
         </div>
         <button
           onClick={handleCopyKey}
@@ -462,8 +462,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
               <div className="w-14 h-14 rounded-2xl bg-yellow-400 text-black flex items-center justify-center font-black text-3xl shadow-xl shadow-yellow-400/20">1</div>
               <span>التحميل المباشر المتكامل</span>
             </div>
-            <h4 className="text-3xl font-black text-white leading-tight">حزمة الربط الذهبية <span className="text-yellow-400">(.ZIP)</span></h4>
-            <p className="text-lg text-white font-bold leading-relaxed text-justify opacity-90">
+            <h4 className="text-3xl font-black text-white leading-tight">حزمة الربط الذهبية <span className="text-yellow-300">(.ZIP)</span></h4>
+            <p className="text-lg text-white font-bold leading-relaxed text-justify">
               الحل الأسرع والأكثر كفاءة. حمل الحزمة، استخرج الملفات، وابدأ في سحب بياناتك من ناجز فوراً بضغطة زر واحدة وهيبة تقنية لا تضاهى.
             </p>
           </div>
@@ -504,11 +504,11 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                 {fileSize !== null && zipFilesCount !== null && (
                   <div className="grid grid-cols-2 gap-4">
                     <div className="bg-black/20 p-3 rounded-xl border border-white/5">
-                      <span className="text-[10px] text-slate-500 block mb-1">حجم الحزمة</span>
+                      <span className="text-[10px] text-slate-300 block mb-1">حجم الحزمة</span>
                       <span className="font-black text-white text-sm">{(fileSize / 1024).toFixed(2)} KB</span>
                     </div>
                     <div className="bg-black/20 p-3 rounded-xl border border-white/5">
-                      <span className="text-[10px] text-slate-500 block mb-1">سلامة الملفات</span>
+                      <span className="text-[10px] text-slate-300 block mb-1">سلامة الملفات</span>
                       <span className="font-black text-emerald-400 text-sm">{zipFilesCount} / 7 ملفات</span>
                     </div>
                   </div>
@@ -516,7 +516,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
                 {checksum && (
                   <div className="space-y-2">
-                    <span className="text-[10px] text-slate-500 font-bold">بصمة التحقق SHA-256 المستخرجة:</span>
+                    <span className="text-[10px] text-slate-300 font-bold">بصمة التحقق SHA-256 المستخرجة:</span>
                     <div className="bg-black/30 p-3 rounded-xl text-yellow-400 font-mono text-[10px] break-all border border-yellow-400/10 leading-normal select-all">
                       {checksum}
                     </div>
@@ -535,8 +535,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
               <div className="w-14 h-14 rounded-2xl bg-emerald-400 text-black flex items-center justify-center font-black text-3xl shadow-xl shadow-emerald-400/20">2</div>
               <span>خيار التثبيت المتقدم</span>
             </div>
-            <h4 className="text-3xl font-black text-white leading-tight">التركيب <span className="text-emerald-400">اليدوي</span> للملفات</h4>
-            <p className="text-lg text-white font-bold leading-relaxed text-justify opacity-90">
+            <h4 className="text-3xl font-black text-white leading-tight">التركيب <span className="text-emerald-300">اليدوي</span> للملفات</h4>
+            <p className="text-lg text-white font-bold leading-relaxed text-justify">
               للمكاتب التي تفضل التعامل مع الرموز البرمجية الخام أو تواجه عوائق في الأرشفة. تجميع يدوي لسبعة ملفات برمجية دقيقة تضمن لك الاتصال المستقر.
             </p>
           </div>
@@ -571,7 +571,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
               </div>
               <span>مستعرض حزم الرموز المفرودة (Manual Forge)</span>
             </h3>
-            <p className="text-xl text-white font-bold leading-relaxed max-w-4xl opacity-90">
+            <p className="text-xl text-white font-bold leading-relaxed max-w-4xl">
               تجميع بروتوكول الربط يدوياً في حال وجود قيود أمنية مؤسسية. قم بتحميل الملفات السبعة فرادى للاستخدام المحلي الفوري.
             </p>
           </div>
@@ -592,8 +592,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                     : "bg-white/5 border-transparent text-slate-400 hover:bg-white/10 hover:border-white/10"
                 }`}
               >
-                <span className={`font-black text-lg tracking-wide ${selectedFile === file.name ? 'text-yellow-400' : 'text-slate-300'}`}>{file.name}</span>
-                <span className="text-xs text-white/60 font-bold line-clamp-1">{file.desc}</span>
+                <span className={`font-black text-lg tracking-wide ${selectedFile === file.name ? 'text-yellow-400' : 'text-white'}`}>{file.name}</span>
+                <span className="text-xs text-yellow-100 font-bold line-clamp-1">{file.desc}</span>
               </button>
             ))}
           </div>
@@ -610,7 +610,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                   </div>
                   <span className="text-2xl font-mono font-black text-white glow-yellow">{selectedFile}</span>
                 </div>
-                <span className="text-sm text-yellow-400 font-black block pr-12">
+                <span className="text-sm text-yellow-100 font-black block pr-12">
                   {extensionFiles.find(e => e.name === selectedFile)?.desc}
                 </span>
               </div>
@@ -644,8 +644,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                     ⚖️
                   </div>
                   <div className="text-center space-y-2">
-                    <span className="text-yellow-400 font-black text-sm block tracking-widest uppercase">أيقونة العدالة الملكية</span>
-                    <p className="text-xs text-slate-500 font-bold max-w-sm">
+                    <span className="text-yellow-100 font-black text-sm block tracking-widest uppercase">أيقونة العدالة الملكية</span>
+                    <p className="text-xs text-yellow-50 font-bold max-w-sm">
                       توليد صورة PNG بدقة 128x128 مشفرة لتطابق الهوية البصرية الرسمية للديوان ونقابة المحامين.
                     </p>
                   </div>
@@ -668,150 +668,11 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         </div>
       </div>
 
-      {/* OS Extraction & Setup Illustrated Guide (Imperial Dark) */}
-      <div className="bg-[#0A0F1E] border-8 border-yellow-400/20 rounded-[4.5rem] p-12 lg:p-20 space-y-12 shadow-2xl relative overflow-hidden">
-        <div className="absolute -top-32 -left-32 w-96 h-96 bg-yellow-400/10 blur-[150px] rounded-full pointer-events-none" />
-        
-        <div className="text-center space-y-6 relative z-10">
-          <h3 className="text-4xl font-black text-white flex items-center justify-center gap-6">
-            <div className="p-4 bg-yellow-400 text-black rounded-3xl shadow-[0_10px_30px_rgba(250,204,21,0.3)]">
-              <Settings className="w-10 h-10 animate-spin-slow" />
-            </div>
-            <span>دليل التهيئة والتشغيل الملكي</span>
-          </h3>
-          <p className="text-xl text-white font-bold max-w-4xl mx-auto leading-relaxed opacity-90">
-            اختر نظام تشغيلك لتطبيق بروتوكولات الربط الفوري، وتجاوز عوائق الأذونات التقليدية بذكاء وثقة تامة.
-          </p>
-        </div>
 
-        {/* Dynamic OS Selector Tabs */}
-        <div className="flex justify-center gap-8 border-b-2 border-white/10 pb-12 relative z-10">
-          <button
-            onClick={() => setActiveOS("windows")}
-            className={`px-12 py-6 rounded-3xl text-xl font-black transition-all flex items-center gap-4 cursor-pointer border-b-8 ${
-              activeOS === "windows"
-                ? "bg-yellow-400 text-black shadow-[0_20px_50px_rgba(250,204,21,0.4)] border-yellow-600"
-                : "bg-white/5 border-transparent text-slate-400 hover:bg-white/10"
-            }`}
-          >
-            <Laptop className="w-7 h-7" />
-            <span>نظام التشغيل ويندوز (Windows)</span>
-          </button>
-          <button
-            onClick={() => setActiveOS("mac")}
-            className={`px-12 py-6 rounded-3xl text-xl font-black transition-all flex items-center gap-4 cursor-pointer border-b-8 ${
-              activeOS === "mac"
-                ? "bg-emerald-400 text-black shadow-[0_20px_50px_rgba(52,211,153,0.4)] border-emerald-700"
-                : "bg-white/5 border-transparent text-slate-400 hover:bg-white/10"
-            }`}
-          >
-            <Cpu className="w-7 h-7" />
-            <span>نظام التشغيل ماك (macOS)</span>
-          </button>
-        </div>
 
-        {/* Windows Detailed Guide */}
-        {activeOS === "windows" && (
-          <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 relative z-10">
-            <div className="bg-yellow-400/10 border-2 border-yellow-400/30 rounded-2xl p-6 text-sm text-yellow-400 flex items-start gap-4 leading-relaxed font-black">
-              <AlertCircle className="w-6 h-6 shrink-0 mt-0.5" />
-              <div>
-                تنبيه حاسم لمستخدمي ويندوز: لا تقم بتشغيل الإضافة من داخل الملف المضغوط مباشرة. يجب فك الضغط (Extract All) إلى مجلد في سطح المكتب لضمان قراءة الأذونات الرقمية بشكل صحيح من قبل متصفح كروم.
-              </div>
-            </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              {[
-                { step: '1', title: 'التحميل الآمن', desc: 'احفظ الملف المضغوط في مكان ثابت مثل سطح المكتب لسهولة الوصول والإدارة.' },
-                { step: '2', title: 'فك التشفير', desc: 'انقر بيمين الماوس واختر "استخراج الكل" لإنشاء المجلد المفتوح والجاهز للتثبيت.' },
-                { step: '3', title: 'اعتماد الهوية', desc: 'افتح المجلد وتأكد من رؤية ملف التعريف manifest.json في المقدمة.' }
-              ].map((step, idx) => (
-                <div key={idx} className="bg-white/5 border-2 border-white/5 rounded-3xl p-8 flex flex-col space-y-4 hover:border-yellow-400/20 transition-all">
-                  <div className="flex items-center gap-4">
-                    <span className="w-10 h-10 rounded-2xl bg-yellow-400 text-black font-black text-lg flex items-center justify-center shadow-lg">{step.step}</span>
-                    <h4 className="text-lg font-black text-white">{step.title}</h4>
-                  </div>
-                  <p className="text-sm text-slate-400 font-bold leading-relaxed">{step.desc}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
 
-        {/* macOS Detailed Guide */}
-        {activeOS === "mac" && (
-          <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 relative z-10">
-            <div className="bg-emerald-400/10 border-2 border-emerald-400/30 rounded-2xl p-6 text-sm text-emerald-400 flex items-start gap-4 leading-relaxed font-black">
-              <ShieldCheck className="w-6 h-6 shrink-0 mt-0.5" />
-              <div>
-                تنبيه لمستخدمي الماك: استخدم أداة الـ Finder الافتراضية لفك الضغط لضمان الحفاظ على سمات الملفات المخفية الضرورية لعمل محرك السحب.
-              </div>
-            </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              {[
-                { step: '1', title: 'التخزين المحلي', desc: 'يفضل الحفظ في مجلد المستندات المحلي بعيداً عن مزامنة iCloud أثناء التثبيت.' },
-                { step: '2', title: 'الفك الفوري', desc: 'نقرة مزدوجة تكفي لفك الضغط وتوليد المجلد المعتمد من قبل نظام الماك.' },
-                { step: '3', title: 'جاهزية الربط', desc: 'تحقق من اكتمال الملفات السبعة داخل المجلد قبل الانتقال لصفحة الإضافات.' }
-              ].map((step, idx) => (
-                <div key={idx} className="bg-white/5 border-2 border-white/5 rounded-3xl p-8 flex flex-col space-y-4 hover:border-emerald-400/20 transition-all">
-                  <div className="flex items-center gap-4">
-                    <span className="w-10 h-10 rounded-2xl bg-emerald-400 text-black font-black text-lg flex items-center justify-center shadow-lg">{step.step}</span>
-                    <h4 className="text-lg font-black text-white">{step.title}</h4>
-                  </div>
-                  <p className="text-sm text-slate-400 font-bold leading-relaxed">{step.desc}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* Chrome Extension Loading instructions (Step by Step) */}
-      <div className="space-y-8">
-        <h3 className="text-slate-900 font-black text-2xl flex items-center gap-4">
-          <div className="p-3 bg-yellow-400/10 rounded-2xl border border-yellow-400/20">
-            <Terminal className="w-6 h-6 text-yellow-600" />
-          </div>
-          <span>بروتوكول تفعيل الإضافة في المتصفح</span>
-        </h3>
-
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-          {[
-            { step: '1', title: 'فك الحزمة', desc: 'استخراج الأرشيف للحصول على مجلد الإضافة المفتوح والكامل.', icon: FolderOpen },
-            { step: '2', title: 'وضع المطور', desc: 'تنشيط خيار Developer Mode في صفحة الإضافات الخاصة بكروم.', icon: Code },
-            { step: '3', title: 'تحميل المجلد', desc: 'اختيار أمر Load Unpacked وتحديد المجلد المستخرج من ذي قبل.', icon: Upload },
-            { step: '4', title: 'بدء الربط', desc: 'ظهور أيقونة العدالة الذهبية والبدء فوراً في سحب البيانات الضخمة.', icon: Zap }
-          ].map((item, idx) => (
-            <div key={idx} className="bg-[#0A0F1E] border-4 border-yellow-400/20 rounded-[3rem] p-10 flex flex-col space-y-6 relative group hover:border-yellow-400 transition-all shadow-2xl">
-              <div className="w-16 h-16 rounded-[1.5rem] bg-yellow-400 text-black font-black text-xl flex items-center justify-center shadow-2xl border-b-4 border-yellow-600">{item.step}</div>
-              <h4 className="text-2xl font-black text-white leading-tight">{item.title}</h4>
-              <p className="text-lg text-slate-300 font-bold leading-relaxed">{item.desc}</p>
-              <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-yellow-400/5 to-transparent pointer-events-none rounded-[3rem] opacity-0 group-hover:opacity-100 transition-opacity" />
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Pro Tips / Safe use (Luxurious Imperial Dark) */}
-      <div className="border-8 border-yellow-400/30 rounded-[4rem] p-16 bg-[#0A0F1E] space-y-10 relative overflow-hidden shadow-[0_50px_100px_-20px_rgba(250,204,21,0.2)]">
-        <div className="absolute top-0 right-0 w-full h-full bg-[radial-gradient(circle_at_bottom_left,rgba(250,204,21,0.1),transparent)] pointer-events-none" />
-        <h4 className="text-yellow-400 font-black text-3xl md:text-4xl flex items-center gap-6 relative z-10">
-          <HelpCircle className="w-10 h-10 text-yellow-400" />
-          <span>بروتوكول الأمان والشفافية الملكي</span>
-        </h4>
-        <ul className="grid grid-cols-1 md:grid-cols-2 gap-12 relative z-10">
-          {[
-            "أداة العدالة للربط التلقائي لا تشارك ولا تطلع ولا تطلب كلمات مرور نفاذ وطني أو كلمة مرور ناجز مطلقة، بل تعمل محلياً تماماً على متصفحك الشخصي بتشفير سيادي لا يمكن اختراقه.",
-            "يقوم المحرك بقراءة بيانات الشاشة النشطة وترميزها ثم إرسالها بمطابقة أمنية لحظية إلى خادم مكتبك الخاص لضمان فرز القضايا والجلسات والعملاء في ثوانٍ معدودة وبدقة متناهية."
-          ].map((text, i) => (
-            <li key={i} className="flex gap-6 items-start">
-              <div className="w-4 h-4 rounded-full bg-yellow-400 shadow-[0_0_15px_rgba(250,204,21,0.8)] shrink-0 mt-3" />
-              <p className="text-xl text-white font-bold leading-relaxed opacity-90">{text}</p>
-            </li>
-          ))}
-        </ul>
-      </div>
 
     </div>
   );

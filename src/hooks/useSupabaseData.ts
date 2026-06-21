@@ -11,9 +11,6 @@ import { handleRlsPolicyFriction } from '@/lib/debug-supabase';
 // مطابقة تماماً لـ supabase_schema_final.sql
 // ======================================================
 const DB_COLUMNS: Record<string, string[]> = {
-  expenses: [
-    'id', 'description', 'amount', 'category', 'date', 'case_number', 'created_at'
-  ],
   messages: [
     'id', 'sender', 'sender_name', 'text', 'timestamp', 'case_number', 'created_at'
   ],
@@ -421,55 +418,6 @@ export function useSupabaseData() {
     }
   }, []);
 
-  const refreshAllData = useCallback(async () => {
-    try {
-      const [
-        casesRes, hearingsRes, poaRes,
-        executionsRes, clientsRes, tasksRes,
-        invoicesRes
-      ] = await Promise.all([
-        supabase.from('cases')
-          .select('*')
-          .order('created_at', { ascending: false }),
-        supabase.from('hearings')
-          .select('*')
-          .order('date', { ascending: true }),
-        supabase.from('powers_of_attorney')
-          .select('*')
-          .order('created_at', { ascending: false }),
-        supabase.from('executions')
-          .select('*')
-          .order('created_at', { ascending: false }),
-        supabase.from('clients')
-          .select('*')
-          .order('name'),
-        supabase.from('tasks')
-          .select('*')
-          .order('created_at', { ascending: false }),
-        supabase.from('invoices')
-          .select('*')
-          .order('created_at', { ascending: false })
-      ]);
-
-      if (casesRes.data) {
-        // we can map cases or reuse toCamel, let's just reuse toCamel since mapCase is not defined in this file
-        const mappedClients: Client[] = clientsRes.data ? (toCamel(clientsRes.data) as Client[]) : clients;
-        const mappedCases = (casesRes.data || []).map((c: any) => mapDatabaseCaseToFrontend(c, mappedClients));
-        setCases(mappedCases);
-      }
-      if (hearingsRes.data) setHearings(toCamel(hearingsRes.data) as Hearing[]);
-      if (poaRes.data) setPowersOfAttorney(toCamel(poaRes.data) as PowerOfAttorney[]);
-      if (executionsRes.data) setExecutions(toCamel(executionsRes.data) as Execution[]);
-      if (clientsRes.data) setClients(toCamel(clientsRes.data) as Client[]);
-      if (tasksRes.data) setTasks(toCamel(tasksRes.data) as Task[]);
-      if (invoicesRes.data) setInvoices(toCamel(invoicesRes.data) as Invoice[]);
-
-      console.log('[Refresh] ✅ جميع البيانات مُحدَّثة');
-    } catch(err: any) {
-      console.error('[Refresh Error]', err.message);
-    }
-  }, [clients]);
-
   const setupRealtime = useCallback(() => {
     // Add protection to skip if default key or missing
     if (!isSupabaseConfigured) {
@@ -690,128 +638,30 @@ export function useSupabaseData() {
     }
   };
 
-  const createRecord = useCallback(async (table: string, data: any) => {
+  // ======================================================
+  // LOCAL PERSISTENCE HELPERS
+  // ======================================================
+  const saveLocalBackup = (tableName: string, data: any) => {
     try {
-      const isValidationEligible = ['cases', 'clients', 'tasks'].includes(table);
-      if (isValidationEligible) {
-        // إذا لم يوجد عميل، استمر بدون توقف
-        if (table === 'cases' && !data.clientId && !data.client_id && !data.clientName && !data.client_name) {
-          console.warn('[Validation] No client info provided - continuing anyway');
-        }
+      const key = `${tableName}_backup`;
+      const existing = JSON.parse(localStorage.getItem(key) || '[]');
+      const idx = existing.findIndex((r: any) => r.id === data.id);
+      if (idx >= 0) existing[idx] = { ...existing[idx], ...data };
+      else existing.push(data);
+      localStorage.setItem(key, JSON.stringify(existing));
+    } catch(e) {}
+  };
 
-        const validation = validatePayload(table as any, data);
-        if (!validation.isValid) {
-          const errMsg = validation.message || 'خطأ في التحقق من صحة البيانات';
-          console.error(`[Local Schema Validation] Table: ${table}, Field: ${validation.field}, Msg: ${errMsg}`);
-          
-          const detailedMsg = `⚠️ تنبيه التحقق من صحة البيانات (المدخلات):\n\n- الجدول: ${table === 'cases' ? 'القضايا' : table === 'clients' ? 'الموكلين' : 'المهام'}\n- الحقل: ${validation.field}\n- السبب: ${errMsg}\n\nيرجى تصحيح الحقل المحدد والمحاولة مرة أخرى.`;
-          
-          // Trigger UI focus and toast for the invalid field
-          window.dispatchEvent(
-            new CustomEvent('adalah_error_logged', {
-              detail: {
-                message: detailedMsg,
-                timestamp: new Date().toISOString(),
-                entityType: table,
-                field: validation.field,
-              }
-            })
-          );
-        }
-      }
-
-      const mappedTable = getSupabaseTableName(table);
-      const cleanData = sanitizePayload(mappedTable, data);
-
-      console.log(`[Supabase] Sanitized payload for ${mappedTable}:`, cleanData);
-      console.log(`[DEBUG ${table} INSERT payload]`, JSON.stringify(cleanData, null, 2));
-
-      // Wrap supabase promise to explicitly catch rejection
-      let response;
-      try {
-        response = await supabase
-          .from(mappedTable)
-          .insert([cleanData])
-          .select()
-          .single();
-      } catch (rej: any) {
-        console.error(`[Supabase Insert Promise Rejection] Table: ${mappedTable}`, rej);
-        response = { data: null, error: { code: rej?.code || 'PROMISE_REJECTION', message: rej?.message || String(rej), details: rej?.details || rej?.stack || '' } };
-      }
-
-      const { data: insertedData, error } = response as { data: any, error: any };
-      
-      if (error) {
-        // Handle PGRST204 (No Content) or 23505 (Unique Violated/Already Exists)
-        if (error.code === 'PGRST204' || error.code === '23505') {
-          console.warn(`[${table}] Error ${error.code}: returning input data as fallback`);
-          
-          let camelData = toCamel(cleanData) || data;
-          const setter = getStateSetter(table);
-          if (setter && camelData) {
-            if (table === 'cases') {
-              const frontendCase = mapDatabaseCaseToFrontend(cleanData, clients);
-              setter((prev: any[]) => {
-                if (prev.some(x => x.id === frontendCase.id || x.caseNumber === frontendCase.caseNumber)) {
-                  return prev;
-                }
-                return [frontendCase, ...(prev || [])];
-              });
-            } else {
-              setter((prev: any[]) => {
-                if (prev.some(x => x.id === camelData.id)) {
-                  return prev;
-                }
-                return [camelData, ...(prev || [])];
-              });
-            }
-          }
-          return { success: true, data: camelData };
-        }
-
-        console.error(`[Supabase Insert Error] Table: ${mappedTable}`, error);
-        handleRlsPolicyFriction(mappedTable, error);
-        const isNetworkError = !navigator.onLine || error.message?.includes('fetch') || error.message?.includes('network');
-        if (isNetworkError) {
-            handleOfflineFallback(table, 'CREATE', data, error.message);
-        }
-        return { 
-          success: false, 
-          code: error.code || 'DATABASE_ERROR',
-          message: error.message || 'Unknown database error occurred',
-          details: error.details || (isNetworkError ? 'Network connectivity offline fallback triggered' : 'Database operation failed under RLS or schema constraint')
-        };
-      }
-      
-      let camelData = toCamel(insertedData) || toCamel(cleanData) || data;
-      if (Array.isArray(camelData)) {
-        camelData = camelData[0];
-      }
-      
-      console.log(`[Supabase] Successfully inserted into ${mappedTable}`);
-      
-      const setter = getStateSetter(table);
-      if (setter && camelData) {
-        if (table === 'cases') {
-          const frontendCase = mapDatabaseCaseToFrontend(insertedData || cleanData, clients);
-          setter((prev: any[]) => [frontendCase, ...(prev || [])]);
-        } else {
-          setter((prev: any[]) => [camelData, ...(prev || [])]);
-        }
-      }
-      
-      return { success: true, data: camelData };
-    } catch (err: any) {
-      console.error(`[Supabase Outer Create Exception] Table: ${table}`, err);
-      return { 
-        success: false, 
-        code: err?.code || 'UNHANDLED_EXCEPTION', 
-        message: err?.message || String(err), 
-        details: err?.stack || err?.details || String(err) 
-      };
-    }
-  }, [fetchData, clients]);
-
+  const updateLocalBackup = (tableName: string, id: string, data: any) => {
+    try {
+      const key = `${tableName}_backup`;
+      const existing = JSON.parse(localStorage.getItem(key) || '[]');
+      const idx = existing.findIndex((r: any) => r.id === id);
+      if (idx >= 0) existing[idx] = { ...existing[idx], ...data };
+      localStorage.setItem(key, JSON.stringify(existing));
+    } catch(e) {}
+  };
+    
   const upsertRecord = useCallback(async (table: string, data: any, onConflict: string) => {
     try {
       const mappedTable = getSupabaseTableName(table);
@@ -838,100 +688,89 @@ export function useSupabaseData() {
     }
   }, [fetchData]);
 
-  const updateRecord = useCallback(async (table: string, id: string | number, data: any) => {
+  const createRecord = useCallback(async (table: string, data: any) => {
     try {
-      const isValidationEligible = ['cases', 'clients', 'tasks'].includes(table);
-      if (isValidationEligible) {
-        const validation = validatePayload(table as any, data, true);
-        if (!validation.isValid) {
-          const errMsg = validation.message || 'خطأ في التحقق من صحة البيانات';
-          console.error(`[Local Schema Validation] Table: ${table}, Field: ${validation.field}, Msg: ${errMsg}`);
-          
-          const detailedMsg = `⚠️ تنبيه التحقق من صحة البيانات (المدخلات):\n\n- الجدول: ${table === 'cases' ? 'القضايا' : table === 'clients' ? 'الموكلين' : 'المهام'}\n- الحقل: ${validation.field}\n- السبب: ${errMsg}\n\nيرجى تصحيح الحقل المحدد والمحاولة مرة أخرى.`;
-          
-          // Trigger UI focus and toast for the invalid field
-          window.dispatchEvent(
-            new CustomEvent('adalah_error_logged', {
-              detail: {
-                message: detailedMsg,
-                timestamp: new Date().toISOString(),
-                entityType: table,
-                field: validation.field,
-              }
-            })
-          );
-        }
-      }
-
       const mappedTable = getSupabaseTableName(table);
       const cleanData = sanitizePayload(mappedTable, data);
-      const { id: _removeId, created_at: _removeCa, ...updatePayload } = cleanData;
-
-      console.log(`[Supabase] Sanitized update payload for ${mappedTable}:`, updatePayload);
       
-      // Wrap supabase promise to explicitly catch rejection
-      let response;
-      try {
-        response = await supabase
-          .from(mappedTable)
-          .update(updatePayload)
-          .eq('id', id)
-          .select()
-          .single();
-      } catch (rej: any) {
-        console.error(`[Supabase Update Promise Rejection] Table: ${mappedTable}, id=${id}`, rej);
-        response = { data: null, error: { code: rej?.code || 'PROMISE_REJECTION', message: rej?.message || String(rej), details: rej?.details || rej?.stack || '' } };
-      }
+      // Ensure ID and timestamps
+      const payload = { ...cleanData };
+      if (!payload.id) payload.id = crypto.randomUUID();
+      if (!payload.created_at) payload.created_at = new Date().toISOString();
+      payload.updated_at = new Date().toISOString();
 
-      const { data: updatedData, error } = response as { data: any, error: any };
-      
+      console.log(`[Supabase] Creating ${mappedTable}:`, payload);
+
+      const { data: result, error } = await supabase
+        .from(mappedTable)
+        .insert([payload])
+        .select()
+        .single();
+
       if (error) {
-        if (error.code === 'PGRST204') {
-          console.warn(`[${table}] PGRST204: returning input data as fallback for UPDATE`);
-          return { success: true, data: data };
-        }
-        console.error(`[Supabase Update Error] Table: ${mappedTable}, id=${id}`, error);
-        handleRlsPolicyFriction(mappedTable, error);
-        const isNetworkError = !navigator.onLine || error.message?.includes('fetch') || error.message?.includes('network');
-        if (isNetworkError) {
-            handleOfflineFallback(table, 'UPDATE', { id, ...data }, error.message);
-        }
-        return { 
-          success: false, 
-          code: error.code || 'DATABASE_ERROR',
-          message: error.message || 'Unknown database error occurred',
-          details: error.details || (isNetworkError ? 'Network connectivity offline fallback triggered' : 'Database operation failed under RLS or schema constraint')
-        };
-      }
-      
-      let camelData = toCamel(updatedData) || toCamel(cleanData) || data;
-      if (Array.isArray(camelData)) {
-        camelData = camelData[0];
+        console.error(`[createRecord] Error in ${mappedTable}:`, error.message);
+        saveLocalBackup(mappedTable, payload);
+        return { success: false, error: error.message, data: payload };
       }
 
-      console.log(`[Supabase] Successfully updated ${mappedTable} id=${id}`);
+      saveLocalBackup(mappedTable, result || payload);
       
+      // Update State
+      const camelData = toCamel(result || payload);
       const setter = getStateSetter(table);
-      if (setter && camelData) {
-        if (table === 'cases') {
-          const frontendCase = mapDatabaseCaseToFrontend(updatedData || cleanData, clients);
-          setter((prev: any[]) => (prev || []).map(c => c.id === id ? { ...c, ...frontendCase } : c));
-        } else {
-          setter((prev: any[]) => (prev || []).map(c => c.id === id ? { ...c, ...camelData } : c));
-        }
+      if (setter) {
+        setter((prev: any[]) => [camelData, ...(prev || [])]);
+      }
+      
+      return { success: true, data: camelData };
+    } catch (err: any) {
+      console.error(`[Supabase Outer Create Exception] Table: ${table}`, err);
+      return { success: false, message: err.message };
+    }
+  }, [clients]);
+
+  const updateRecord = useCallback(async (table: string, id: string | number, data: any) => {
+    try {
+      const mappedTable = getSupabaseTableName(table);
+      const cleanData = sanitizePayload(mappedTable, data);
+      const updatePayload = {
+        ...cleanData,
+        updated_at: new Date().toISOString()
+      };
+      // remove id and created_at from update
+      delete updatePayload.id;
+      delete updatePayload.created_at;
+
+      console.log(`[Supabase] Updating ${mappedTable} id=${id}:`, updatePayload);
+      
+      const { data: result, error } = await supabase
+        .from(mappedTable)
+        .update(updatePayload)
+        .eq('id', id)
+        .select()
+        .single();
+        
+      if (error) {
+        console.error(`[updateRecord] Error in ${mappedTable}:`, error.message);
+        updateLocalBackup(mappedTable, String(id), { ...cleanData, id });
+        return { success: false, error: error.message };
+      }
+
+      updateLocalBackup(mappedTable, String(id), result || { ...cleanData, id });
+      
+      // Update State
+      const camelData = toCamel(result || { ...cleanData, id });
+      const setter = getStateSetter(table);
+      if (setter) {
+        setter((prev: any[]) => (prev || []).map(r => r.id === id ? { ...r, ...camelData } : r));
       }
       
       return { success: true, data: camelData };
     } catch (err: any) {
       console.error(`[Supabase Outer Update Exception] Table: ${table}, id=${id}`, err);
-      return { 
-        success: false, 
-        code: err?.code || 'UNHANDLED_EXCEPTION', 
-        message: err?.message || String(err), 
-        details: err?.stack || err?.details || String(err) 
-      };
+      return { success: false, message: err.message };
     }
-  }, [fetchData, clients]);
+  }, [clients]);
 
   const deleteRecord = async (table: string, id: string | number) => {
     try {
@@ -987,7 +826,7 @@ export function useSupabaseData() {
     updateRecord,
     deleteRecord,
     retryQueueSync,
-    refresh: refreshAllData,
+    refresh: fetchData,
     setHearings,
     setDocuments,
     setInvoices,
