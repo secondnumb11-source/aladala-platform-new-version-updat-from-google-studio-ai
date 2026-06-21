@@ -211,8 +211,12 @@ export default function WhatsappTemplates() {
     fetchData();
   }, []);
 
-  const clients = realClients.map(c => c.name);
-  const cases = dbCases.map(c => `${c.caseNumber} - ${c.caseName}`);
+  const clients = (realClients || []).map(c => c?.name || '').filter(Boolean);
+  const cases = (dbCases || []).map(c => {
+    const caseNo = c?.caseNumber || c?.court_case_number || c?.id || '';
+    const name = c?.caseName || c?.title || 'قضية عامة';
+    return `${caseNo} - ${name}`;
+  }).filter(Boolean);
 
   const triggerToast = (msg: string) => {
     setToastMessage(msg);
@@ -229,7 +233,7 @@ export default function WhatsappTemplates() {
       let tText = tmpl.messageText;
       if (selectedClient?.name) tText = tText.replace(/\{ClientName\}/g, selectedClient.name);
       if (selectedCase) {
-        const caseNo = selectedCase.split(' ')[0];
+        const caseNo = (selectedCase || '').split(' ')[0] || '';
         tText = tText.replace(/\{CaseNumber\}/g, caseNo);
       } else {
         tText = tText.replace(/\{CaseNumber\}/g, '[رقم القضية]');
@@ -239,7 +243,7 @@ export default function WhatsappTemplates() {
   };
 
   const handleClientChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const client = realClients.find(c => c.id === e.target.value);
+    const client = (realClients || []).find(c => c.id === e.target.value);
     setSelectedClient(client || null);
     if (client?.phone) setRecipientPhone(client.phone);
     if (client?.email) setRecipientEmail(client.email);
@@ -254,7 +258,9 @@ export default function WhatsappTemplates() {
         tText = tText.replace(/\{ClientName\}/g, '[اسم الموكل]');
       }
       if (selectedCase) {
-        tText = tText.replace(/\{CaseNumber\}/g, selectedCase.split(' ')[0]);
+        tText = tText.replace(/\{CaseNumber\}/g, (selectedCase || '').split(' ')[0] || '');
+      } else {
+        tText = tText.replace(/\{CaseNumber\}/g, '[رقم القضية]');
       }
       setEditorText(tText);
     }
@@ -271,7 +277,7 @@ export default function WhatsappTemplates() {
         tText = tText.replace(/\{ClientName\}/g, selectedClient.name);
       }
       if (newCase) {
-        tText = tText.replace(/\{CaseNumber\}/g, newCase.split(' ')[0]);
+        tText = tText.replace(/\{CaseNumber\}/g, (newCase || '').split(' ')[0] || '');
       } else {
         tText = tText.replace(/\{CaseNumber\}/g, '[رقم القضية]');
       }
@@ -296,7 +302,7 @@ export default function WhatsappTemplates() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          clientName: selectedClient.name,
+          clientName: selectedClient?.name || 'غير محدد',
           caseNumber: caseInfo?.caseNumber || 'غير محدد',
           caseStatus: caseInfo?.status || 'غير محدد',
           caseDetails: caseInfo?.details || '',
@@ -436,7 +442,7 @@ export default function WhatsappTemplates() {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            clientId: selectedClient.id,
+            clientId: selectedClient?.id,
             phone: recipientPhone,
             message: editorText,
             scheduledFor: `${scheduleDate}T${scheduleTime || '09:00'}:00`
@@ -448,7 +454,7 @@ export default function WhatsappTemplates() {
 
         const newUpcoming = {
           id: Date.now(),
-          client: selectedClient.name,
+          client: selectedClient?.name || 'غير محدد',
           case: selectedCase || 'ملف استشاري عام للمكتب',
           date: scheduleDate,
           time: scheduleTime || '09:00 ص',
@@ -469,7 +475,7 @@ export default function WhatsappTemplates() {
       // Direct send -> Try to use server method or fallback to window.open
       const success = await sendRealNotification(selectedClient, editorText, 'direct');
       
-      if (!success && selectedClient.phone) {
+      if (!success && selectedClient?.phone) {
         // Fallback to whatsapp web if API fails
         const cleanPhone = selectedClient.phone.replace(/\D/g, '');
         window.open(`https://wa.me/${cleanPhone}?text=${encodeURIComponent(editorText)}`, '_blank');
@@ -668,14 +674,14 @@ export default function WhatsappTemplates() {
                     </div>
                     {selectedClient && (
                       <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs space-y-1 mt-2">
-                        <p className={`${getDynamicTextColor('bg-slate-50')} font-bold`}>📋 {selectedClient.name}</p>
-                        {selectedClient.phone && (
+                        <p className={`${getDynamicTextColor('bg-slate-50')} font-bold`}>📋 {selectedClient?.name || 'غير محدد'}</p>
+                        {selectedClient?.phone && (
                           <p className="text-slate-500">📱 {selectedClient.phone}</p>
                         )}
-                        {selectedClient.email && (
+                        {selectedClient?.email && (
                           <p className="text-slate-500">📧 {selectedClient.email}</p>
                         )}
-                        {selectedClient.active_portal && (
+                        {selectedClient?.active_portal && (
                           <p className="text-emerald-600 font-bold mt-1">✅ لديه بوابة دخول مفعّلة</p>
                         )}
                       </div>
@@ -825,15 +831,15 @@ export default function WhatsappTemplates() {
                 <div className="space-y-3 max-h-[460px] overflow-y-auto pr-1">
                   <div className="p-3 bg-emerald-50 border border-emerald-100 rounded-xl mb-2">
                     <span className="text-[11px] font-black text-emerald-950 block">العميل المحدد حالياً:</span>
-                    <span className={`text-xs font-extrabold ${TEXT_COLORS.onLight}`}>{selectedClient}</span>
+                    <span className={`text-xs font-extrabold ${TEXT_COLORS.onLight}`}>{selectedClient?.name || 'غير محدد'}</span>
                   </div>
                   
-                  {clientHistory.filter(h => h.client === selectedClient).length === 0 ? (
+                  {clientHistory.filter(h => h.client === selectedClient?.name).length === 0 ? (
                     <div className="text-center py-6 text-slate-500 text-xs font-bold bg-slate-50 rounded-xl">
-                      لا يوجد مراسلات مسجلة لـ {selectedClient.split(' ')[0]} حتى الآن.
+                      لا يوجد مراسلات مسجلة لـ {(selectedClient?.name || '').split(' ')[0] || 'هذا العميل'} حتى الآن.
                     </div>
                   ) : (
-                    clientHistory.filter(h => h.client === selectedClient).map((history) => (
+                    clientHistory.filter(h => h.client === selectedClient?.name).map((history) => (
                       <div key={history.id} className="bg-slate-50 p-4 rounded-xl border border-slate-200 hover:border-slate-300 transition-all">
                          <div className="flex justify-between items-center mb-2">
                            <span className={`text-[10px] bg-slate-200 ${getDynamicTextColor('bg-slate-50')} font-extrabold px-2 py-0.5 rounded`}>

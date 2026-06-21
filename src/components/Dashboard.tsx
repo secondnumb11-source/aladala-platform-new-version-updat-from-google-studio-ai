@@ -51,6 +51,8 @@ import {
   Zap,
   Loader2,
   RefreshCw,
+  Trash2,
+  Edit2,
   Edit3,
   AlertTriangle,
   GripVertical,
@@ -78,7 +80,6 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Case, Client, Invoice, Task, Hearing } from '@/types';
-import HearingCustomTimer from './HearingCustomTimer';
 import { InteractiveCard } from './InteractiveCard';
 import TaskSuggestions from './TaskSuggestions';
 import SystemErrorRecovery from './SystemErrorRecovery';
@@ -355,6 +356,48 @@ const Dashboard = function Dashboard({
   const [showSessionStatsModal, setShowSessionStatsModal] = useState(false);
   const [userName, setUserName] = useState(() => localStorage.getItem('adalah-dashboard-username') || 'المستخدم');
   const [isEditingUserName, setIsEditingUserName] = useState(false);
+
+  // Hearing inline/dashboard edit states
+  const [editingHearingForDashboard, setEditingHearingForDashboard] = useState<Hearing | null>(null);
+  const [dashboardEditTitle, setDashboardEditTitle] = useState("");
+  const [dashboardEditDate, setDashboardEditDate] = useState("");
+  const [dashboardEditTime, setDashboardEditTime] = useState("");
+  const [dashboardEditCourt, setDashboardEditCourt] = useState("");
+  const [dashboardEditLawyer, setDashboardEditLawyer] = useState("");
+  const [dashboardEditNotes, setDashboardEditNotes] = useState("");
+
+  const startEditDashboardHearing = (h: Hearing) => {
+    setEditingHearingForDashboard(h);
+    setDashboardEditTitle(h.caseName || "");
+    setDashboardEditDate(h.date || "");
+    setDashboardEditTime(h.time || "");
+    setDashboardEditCourt(h.courtName || "");
+    setDashboardEditLawyer(h.judgeName || "");
+    setDashboardEditNotes(h.notes || "");
+  };
+
+  const handleSaveDashboardEditedHearing = async () => {
+    if (!editingHearingForDashboard || !onUpdateState) return;
+    const updated: Hearing = {
+      ...editingHearingForDashboard,
+      caseName: dashboardEditTitle,
+      date: dashboardEditDate,
+      time: dashboardEditTime,
+      courtName: dashboardEditCourt,
+      judgeName: dashboardEditLawyer,
+      notes: dashboardEditNotes
+    };
+    await onUpdateState('hearings', updated);
+    setEditingHearingForDashboard(null);
+    alert('تم تعديل موعد الجلسة القضائية وسينعكس التغيير فوراً.');
+  };
+
+  const handleDeleteDashboardHearing = async (hearingId: string) => {
+    if (!onUpdateState) return;
+    if (window.confirm('🚨 هل أنت متأكد تماماً من رغبتك في حذف هذا الموعد نهائياً من قاعدة البيانات واللوحات الجانبية؟')) {
+      await onUpdateState('deleteHearing', hearingId);
+    }
+  };
 
   useEffect(() => {
     const handleUsernameChange = () => {
@@ -1420,6 +1463,119 @@ const Dashboard = function Dashboard({
         )}
       </AnimatePresence>
 
+      {/* Edit Hearing Dialog inside Dashboard */}
+      <AnimatePresence>
+        {editingHearingForDashboard && (
+          <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setEditingHearingForDashboard(null)}
+              className="absolute inset-0 bg-slate-950/80 backdrop-blur-md"
+            />
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="relative w-full max-w-lg bg-gradient-to-br from-[#0C1220] via-[#0f172a] to-[#1e293b] border border-yellow-500/30 rounded-3xl p-6 shadow-2xl space-y-4 text-right z-10"
+              dir="rtl"
+            >
+              <div className="flex justify-between items-center border-b border-white/10 pb-4">
+                <div className="flex items-center gap-2">
+                  <span className="p-2 bg-yellow-500/10 text-yellow-500 rounded-lg font-bold">📅</span>
+                  <h3 className="text-base font-black text-yellow-400">تعديل موعد الجلسة من لوحة البيانات</h3>
+                </div>
+                <button 
+                  onClick={() => setEditingHearingForDashboard(null)}
+                  className="text-slate-400 hover:text-white font-bold p-1 hover:bg-white/10 rounded-lg transition-all cursor-pointer"
+                >
+                  ✕
+                </button>
+              </div>
+              
+              <div className="space-y-3 font-sans">
+                <div>
+                  <label className="text-xs font-black text-slate-300 block mb-1">موضوع الجلسة / اسم القضية</label>
+                  <input 
+                    type="text" 
+                    value={dashboardEditTitle}
+                    onChange={(e) => setDashboardEditTitle(e.target.value)}
+                    className="w-full bg-slate-900 border border-white/20 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-yellow-500 transition-all font-sans" 
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-xs font-black text-slate-300 block mb-1">التاريخ الجديد</label>
+                    <input 
+                      type="date" 
+                      value={dashboardEditDate}
+                      onChange={(e) => setDashboardEditDate(e.target.value)}
+                      className="w-full bg-slate-900 border border-white/20 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-yellow-500 transition-all font-mono" 
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs font-black text-slate-300 block mb-1">التوقيت الجديد</label>
+                    <input 
+                      type="text" 
+                      value={dashboardEditTime}
+                      onChange={(e) => setDashboardEditTime(e.target.value)}
+                      className="w-full bg-slate-900 border border-white/20 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-yellow-500 transition-all" 
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="text-xs font-black text-slate-300 block mb-1">المحكمة المختصة</label>
+                  <input 
+                    type="text" 
+                    value={dashboardEditCourt}
+                    onChange={(e) => setDashboardEditCourt(e.target.value)}
+                    className="w-full bg-slate-900 border border-white/20 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-yellow-500 transition-all font-sans" 
+                  />
+                </div>
+
+                <div>
+                  <label className="text-xs font-black text-slate-300 block mb-1">القاضي / المحامي المسؤول</label>
+                  <input 
+                    type="text" 
+                    value={dashboardEditLawyer}
+                    onChange={(e) => setDashboardEditLawyer(e.target.value)}
+                    className="w-full bg-slate-900 border border-white/20 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-yellow-500 transition-all font-sans" 
+                  />
+                </div>
+
+                <div>
+                  <label className="text-xs font-black text-slate-300 block mb-1">ملاحظات الجلسة</label>
+                  <textarea 
+                    value={dashboardEditNotes}
+                    onChange={(e) => setDashboardEditNotes(e.target.value)}
+                    rows={2}
+                    className="w-full bg-slate-900 border border-white/20 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-yellow-500 transition-all resize-none font-sans" 
+                  />
+                </div>
+              </div>
+
+              <div className="flex gap-2 justify-end pt-3 border-t border-white/10 select-none font-sans">
+                <button 
+                  onClick={() => setEditingHearingForDashboard(null)}
+                  className="bg-slate-800 hover:bg-slate-700 text-white font-bold px-4 py-2 rounded-xl text-xs transition-all cursor-pointer"
+                >
+                  إلغاء
+                </button>
+                <button 
+                  onClick={handleSaveDashboardEditedHearing}
+                  className="bg-yellow-500 hover:bg-yellow-600 text-slate-950 font-black px-4 py-2 rounded-xl text-xs transition-all cursor-pointer"
+                >
+                  حفظ التغييرات
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
       {/* Widget Library Modal */}
       <AnimatePresence>
         {isLibraryOpen && (
@@ -2222,6 +2378,22 @@ const Dashboard = function Dashboard({
                               </div>
                               <div className="text-[9.5px] font-extrabold text-indigo-700 font-mono bg-indigo-50/30 px-1.5 py-0.5 rounded shrink-0">
                                 {h.time}
+                              </div>
+                              <div className="flex items-center gap-1 shrink-0 no-print">
+                                <button
+                                  onClick={() => startEditDashboardHearing(h)}
+                                  className="p-1.5 bg-amber-500 hover:bg-amber-400 text-slate-950 rounded-lg transition-all cursor-pointer flex items-center justify-center border border-amber-600/20 shadow-sm"
+                                  title="تعديل الموعد لآخر"
+                                >
+                                  <Edit2 className="w-3.5 h-3.5 text-slate-950 font-black" />
+                                </button>
+                                <button
+                                  onClick={() => handleDeleteDashboardHearing(h.id)}
+                                  className="p-1.5 bg-rose-600 hover:bg-rose-500 text-white rounded-lg transition-all cursor-pointer flex items-center justify-center border border-rose-700/20 shadow-sm"
+                                  title="حذف الموعد نهائياً"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                </button>
                               </div>
                            </div>
                          );

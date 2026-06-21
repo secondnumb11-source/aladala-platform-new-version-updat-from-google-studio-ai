@@ -134,13 +134,13 @@ export default function AIAnalysisTool() {
                 analysisType === 'contract' ? "الصق نص العقد هنا لفحصه..." :
                 "أدخل نص الحكم القضائي لاستخراج الزبدة..."
               }
-              className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl py-4 px-5 text-sm font-bold text-slate-900 outline-none focus:border-amber-500 transition-all font-sans"
+              className="w-full bg-white border-2 border-slate-300 rounded-2xl py-4 px-5 text-sm font-bold text-slate-950 placeholder:text-slate-500 outline-none focus:border-amber-500 transition-all font-sans"
             />
 
             <button 
               onClick={handleAnalyze}
               disabled={isLoading || (!content.trim() && !selectedCase)}
-              className="w-full bg-slate-900 text-white py-4 rounded-2xl text-xs font-black shadow-xl transition-all flex items-center justify-center gap-3 disabled:opacity-50"
+              className="w-full bg-[#0A0F1E] text-amber-300 py-4 rounded-2xl text-xs font-black shadow-xl transition-all flex items-center justify-center gap-3 border-2 border-amber-500 hover:bg-[#1e293b] disabled:opacity-50"
             >
               {isLoading ? (
                 <>
@@ -171,7 +171,7 @@ export default function AIAnalysisTool() {
               {result ? (
                 <div className="space-y-6">
                   {/* We could parse the AI output here to show in a more structured way, but for now markdown-style text is fine */}
-                  <div className="text-slate-800 text-sm font-bold leading-loose whitespace-pre-line text-justify font-sans bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
+                  <div className="text-slate-950 text-sm font-bold leading-loose whitespace-pre-line text-justify font-sans bg-white p-6 rounded-2xl border border-slate-300 shadow-sm">
                     {result}
                   </div>
 

@@ -221,23 +221,55 @@ function AppContent() {
     setTasks
   } = useSupabaseData();
 
+  // Temporary deletion trigger
+  useEffect(() => {
+    const cleanup = () => {
+      // Use navigator.sendBeacon to ensure request completes even on tab close
+      const blob = new Blob([], { type: 'application/json' });
+      navigator.sendBeacon('/api/cases/rls-test-cleanup', blob);
+      localStorage.setItem('has_cleaned_rls_test_cases', 'true');
+    };
+    
+    window.addEventListener('beforeunload', cleanup);
+    
+    if (localStorage.getItem('has_cleaned_rls_test_cases') !== 'true') {
+        fetch('/api/cases/rls-test', { method: 'DELETE' })
+            .then(res => res.json())
+            .then(data => {
+                console.log('Cleanup result:', data);
+                if (data.success) {
+                    localStorage.setItem('has_cleaned_rls_test_cases', 'true');
+                }
+            });
+    }
+
+    return () => window.removeEventListener('beforeunload', cleanup);
+  }, []);
+
   // الاستماع لأحداث المزامنة
   useEffect(() => {
-  const handleNajizSync = async (event: Event) => {
-    const customEvent = event as CustomEvent;
-    console.log('[App] Najiz sync detected, refreshing...');
-    await refresh();
-    // إظهار إشعار نجاح
-    window.dispatchEvent(new CustomEvent('show_success_toast', {
-      detail: {
-        message: `تمت مزامنة بيانات ناجز بنجاح`
-      }
-    }));
-  };
+    const handleNajizSync = async (event: Event) => {
+      const e = event as CustomEvent;
+      console.log('[Najiz Sync] استلام حدث المزامنة:', e.detail);
+      
+      await refresh();
 
-  window.addEventListener('najiz_sync_complete', handleNajizSync);
-  return () => window.removeEventListener('najiz_sync_complete', handleNajizSync);
-}, [refresh]);
+      const detail = e.detail || {};
+      const total = (detail.cases || 0) + (detail.hearings || 0) +
+                    (detail.poa || 0) + (detail.executions || 0) + (detail.total || 0);
+      
+      window.dispatchEvent(new CustomEvent('show_success_toast', {
+        detail: {
+          message: total > 0 
+            ? `✅ تمت مزامنة ${total} سجل من ناجز بنجاح`
+            : `تمت مزامنة بيانات ناجز بنجاح`
+        }
+      }));
+    };
+
+    window.addEventListener('najiz_sync_complete', handleNajizSync);
+    return () => window.removeEventListener('najiz_sync_complete', handleNajizSync);
+  }, [refresh]);
 
 // دوال تحويل البيانات من DB للـ Frontend
 const mapCaseFromDB = (db: any) => ({
@@ -310,8 +342,9 @@ const mapExecutionFromDB = (db: any) => ({
 
 useEffect(() => {
   // Realtime — القضايا
+  const randMap = Math.random().toString(36).substring(7);
   const casesChannel = supabase
-    .channel('realtime_cases')
+    .channel(`realtime_cases_${randMap}`)
     .on('postgres_changes', {
       event: 'INSERT',
       schema: 'public',
@@ -337,7 +370,7 @@ useEffect(() => {
 
   // Realtime — الجلسات
   const hearingsChannel = supabase
-    .channel('realtime_hearings')
+    .channel(`realtime_hearings_${randMap}`)
     .on('postgres_changes', {
       event: 'INSERT',
       schema: 'public',
@@ -354,7 +387,7 @@ useEffect(() => {
 
   // Realtime — الوكالات
   const poaChannel = supabase
-    .channel('realtime_poa')
+    .channel(`realtime_poa_${randMap}`)
     .on('postgres_changes', {
       event: 'INSERT',
       schema: 'public',
@@ -371,7 +404,7 @@ useEffect(() => {
 
   // Realtime — التنفيذ
   const execChannel = supabase
-    .channel('realtime_executions')
+    .channel(`realtime_executions_${randMap}`)
     .on('postgres_changes', {
       event: 'INSERT',
       schema: 'public',
@@ -395,6 +428,36 @@ useEffect(() => {
 }, []);
 
   const [showHearingsModal, setShowHearingsModal] = useState(false);
+  const [editingHearing, setEditingHearing] = useState<Hearing | null>(null);
+  
+  const handleDeleteHearing = async (id: string) => {
+    if (confirm('هل أنت متأكد أنك تريد حذف هذا الموعد؟')) {
+      try {
+        await deleteRecord('hearings', id);
+        setHearings(prev => prev.filter(h => h.id !== id));
+        alert('تم حذف الموعد بنجاح');
+      } catch (error) {
+        alert('حدث خطأ أثناء حذف الموعد');
+      }
+    }
+  };
+
+  const handleEditHearing = (hearing: Hearing) => {
+    setEditingHearing(hearing);
+    setShowHearingsModal(false);
+  };
+  
+  const saveHearingChanges = async () => {
+    if (!editingHearing) return;
+    try {
+      await updateRecord('hearings', editingHearing.id, { date: editingHearing.date, time: editingHearing.time });
+      setHearings(prev => prev.map(h => h.id === editingHearing.id ? editingHearing : h));
+      setEditingHearing(null);
+      alert('تم تعديل الموعد بنجاح');
+    } catch (error) {
+      alert('حدث خطأ أثناء تعديل الموعد');
+    }
+  };
   
   // Helper for safe hearing date parsing
   const parseHearingDate = (date: string, time?: string) => {
@@ -1356,6 +1419,18 @@ useEffect(() => {
   }, []);
 
   const handleUpdateGlobalState = async (type: string, data: any) => {
+    if (type === 'deleteHearing') {
+      try {
+        await deleteRecord('hearings', data);
+        setHearings(prev => prev.filter(h => h.id !== data));
+        alert('تم حذف الجلسة المحددة بنجاح من النظام.');
+        return { success: true };
+      } catch (err) {
+        alert('حدث خطأ أثناء حذف الجلسة.');
+        return { success: false };
+      }
+    }
+
     // Intercept Supabase managed entities
     const managedTables = [
       'cases', 'clients', 'tasks', 'hearings', 'employees',
@@ -1641,7 +1716,34 @@ useEffect(() => {
         <HearingsModal 
           hearings={upcomingHearings} 
           onClose={() => setShowHearingsModal(false)}
+          onDelete={handleDeleteHearing}
+          onEdit={handleEditHearing}
         />
+      )}
+      {editingHearing && (
+        <div className="fixed inset-0 bg-black/50 z-[100] flex items-center justify-center p-4">
+          <div className="bg-[#1e293b] p-6 rounded-3xl w-full max-w-sm text-white border border-[#D4AF37]/50">
+            <h2 className="text-xl font-bold mb-4 text-[#FACC15]">تعديل موعد الجلسة</h2>
+            <label className="text-xs text-slate-400 block mb-1">التاريخ</label>
+            <input 
+              type="date" 
+              value={editingHearing.date} 
+              onChange={e => setEditingHearing({...editingHearing, date: e.target.value})}
+              className="w-full bg-[#060b13] p-3 rounded-xl mb-4 border border-slate-700 focus:border-[#FACC15] outline-none"
+            />
+            <label className="text-xs text-slate-400 block mb-1">الوقت</label>
+            <input 
+              type="time" 
+              value={editingHearing.time} 
+              onChange={e => setEditingHearing({...editingHearing, time: e.target.value})}
+              className="w-full bg-[#060b13] p-3 rounded-xl mb-4 border border-slate-700 focus:border-[#FACC15] outline-none"
+            />
+            <div className="flex gap-2">
+              <button className="flex-1 bg-[#FACC15] text-[#060b13] font-bold py-3 rounded-xl hover:bg-yellow-400 transition-colors" onClick={saveHearingChanges}>حفظ</button>
+              <button className="flex-1 bg-slate-700 text-white py-3 rounded-xl hover:bg-slate-600 transition-colors" onClick={() => setEditingHearing(null)}>إلغاء</button>
+            </div>
+          </div>
+        </div>
       )}
       <GlobalCustomizationEngine />
       <CommandPalette 

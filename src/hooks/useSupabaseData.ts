@@ -110,12 +110,17 @@ const DB_COLUMNS: Record<string, string[]> = {
   ],
 };
 
-function convertToSnakeCase(tableName: string, data: any): any {
+// دالة تحويل camelCase إلى snake_case حسب الجدول
+async function convertToSnakeCase(tableName: string, data: any): Promise<any> {
   const payload: any = {};
+
+  // نسخ جميع الحقول
   Object.keys(data).forEach(key => {
     const snakeKey = key.replace(/([A-Z])/g, '_$1').toLowerCase();
     payload[snakeKey] = data[key];
   });
+
+  // تعيينات خاصة حسب الجدول
   if (tableName === 'cases') {
     // دمج التاريخ والوقت بشكل آمن
     if (data.nextSessionDate) {
@@ -157,9 +162,18 @@ function convertToSnakeCase(tableName: string, data: any): any {
       }
     }
 
-    // client_id — تحقق قبل الإرسال (هذا يتطلب تعديل الدالة لتكون async أو إسناد المهمة لمكان آخر)
-    // نظراً لأن الدالة الحالية متزامنة (synchronous) ولا يمكن استخدام await، سنؤجل التحقق إلى onUpdateState
-    payload.client_id = data.clientId || null;
+    // client_id — تحقق قبل الإرسال
+    if (data.clientId) {
+      const { data: clientExists } = await supabase
+        .from('clients')
+        .select('id')
+        .eq('id', data.clientId)
+        .maybeSingle();
+
+      payload.client_id = clientExists ? data.clientId : null;
+    } else {
+      payload.client_id = null;
+    }
 
     // الحقول الأساسية
     payload.case_number = data.caseNumber || '';
@@ -199,6 +213,7 @@ function convertToSnakeCase(tableName: string, data: any): any {
       }
     });
   }
+
   if (tableName === 'clients') {
     if (data.nationalId !== undefined) payload.national_id = data.nationalId;
     if (data.idNumber !== undefined) payload.id_number = data.idNumber;
@@ -209,6 +224,7 @@ function convertToSnakeCase(tableName: string, data: any): any {
     if (data.permittedCases !== undefined) payload.permitted_cases = data.permittedCases;
     if (!payload.status) payload.status = 'active';
   }
+
   if (tableName === 'employees') {
     if (data.jobTitle !== undefined) payload.job_title = data.jobTitle;
     if (data.nationalId !== undefined) payload.national_id = data.nationalId;
@@ -217,24 +233,37 @@ function convertToSnakeCase(tableName: string, data: any): any {
     if (data.activePortal !== undefined) payload.active_portal = data.activePortal;
     if (!payload.status) payload.status = 'active';
   }
+
   if (tableName === 'tasks') {
     if (data.dueDate !== undefined) {
-      try { payload.due_date = data.dueDate ? new Date(data.dueDate).toISOString() : null; } catch { payload.due_date = null; }
+      try {
+        payload.due_date = data.dueDate
+          ? new Date(data.dueDate).toISOString()
+          : null;
+      } catch { payload.due_date = null; }
     }
     if (data.employeeId !== undefined) payload.employee_id = data.employeeId;
     if (data.assignedTo !== undefined) payload.assigned_to = data.assignedTo;
     if (data.caseId !== undefined) payload.case_id = data.caseId;
     if (data.caseNumber !== undefined) payload.case_number = data.caseNumber;
   }
+
   if (tableName === 'hearings') {
     if (data.caseId !== undefined) payload.case_id = data.caseId;
     if (data.caseNumber !== undefined) payload.case_number = data.caseNumber;
     if (data.courtName !== undefined) payload.court_name = data.courtName;
     if (data.isNajizSync !== undefined) payload.is_najiz_sync = data.isNajizSync;
   }
-  Object.keys(payload).forEach(key => { if (payload[key] === undefined) delete payload[key]; });
+
+  // احذف undefined values
+  Object.keys(payload).forEach(key => {
+    if (payload[key] === undefined) delete payload[key];
+  });
+
   return payload;
 }
+
+// حفظ في localStorage
 function saveToLocalStorage(tableName: string, data: any) {
   try {
     const key = `${tableName}_local`;
@@ -246,48 +275,157 @@ function saveToLocalStorage(tableName: string, data: any) {
   } catch(e) {}
 }
 
+// تحميل من localStorage عند فشل Supabase
+const loadFromLocalStorage = (setters: any) => {
+  try {
+    const tables = ['cases','clients','employees','tasks',
+                    'hearings','powers_of_attorney','executions'];
+    tables.forEach(table => {
+      const data = JSON.parse(
+        localStorage.getItem(`${table}_local`) || '[]'
+      );
+      if (data.length > 0) {
+        switch(table) {
+          case 'cases': setters.setCases(data); break;
+          case 'clients': setters.setClients(data); break;
+          case 'employees': setters.setEmployees(data); break;
+          case 'tasks': setters.setTasks(data); break;
+          case 'hearings': setters.setHearings(data); break;
+          default: break;
+        }
+      }
+    });
+  } catch(e) {}
+};
+
+// دوال تحويل DB → Frontend
 const mapCaseFromDB = (db: any) => ({
-  id: db.id, caseNumber: db.case_number || '', caseName: db.title || db.client_name || `قضية ${db.case_number}`, title: db.title || '',
-  clientName: db.client_name || '', clientId: db.client_id || null, opponentName: db.opponent_name || '', courtName: db.court_name || '',
-  category: db.category || 'civil', stage: db.stage || 'litigation', status: db.status || 'new', priority: db.priority || 'medium',
-  summary: db.summary || '', details: db.details || '', circuitNumber: db.circuit_number || '', poaNumber: db.power_of_attorney_number || '',
-  nextSessionDate: db.next_session_at ? new Date(db.next_session_at).toLocaleDateString('ar-SA') : '', nextSessionAt: db.next_session_at || null,
-  agreedFees: db.agreed_fees || 0, collectedFees: db.collected_fees || 0, isNajizSync: db.is_najiz_sync || false, isConfidential: db.is_confidential || false,
-  archived: db.archived || false, createdAt: db.created_at || new Date().toISOString()
+  id: db.id,
+  caseNumber: db.case_number || '',
+  caseName: db.title || db.client_name || `قضية ${db.case_number}`,
+  title: db.title || '',
+  clientName: db.client_name || '',
+  clientId: db.client_id || null,
+  opponentName: db.opponent_name || '',
+  courtName: db.court_name || '',
+  category: db.category || 'civil',
+  stage: db.stage || 'litigation',
+  status: db.status || 'new',
+  priority: db.priority || 'medium',
+  summary: db.summary || '',
+  details: db.details || '',
+  circuitNumber: db.circuit_number || '',
+  poaNumber: db.power_of_attorney_number || '',
+  nextSessionDate: db.next_session_at
+    ? new Date(db.next_session_at).toLocaleDateString('ar-SA')
+    : '',
+  nextSessionAt: db.next_session_at || null,
+  agreedFees: db.agreed_fees || 0,
+  collectedFees: db.collected_fees || 0,
+  isNajizSync: db.is_najiz_sync || false,
+  isConfidential: db.is_confidential || false,
+  archived: db.archived || false,
+  createdAt: db.created_at || new Date().toISOString()
 });
+
 const mapClientFromDB = (db: any) => ({
-  id: db.id, name: db.name || '', phone: db.phone || '', email: db.email || '', nationalId: db.national_id || db.id_number || '',
-  address: db.address || '', isCompany: db.is_company || false, status: db.status || 'active', portalUsername: db.portal_username || '',
-  portalPassword: db.portal_password || '', activePortal: db.active_portal || false, permittedCases: db.permitted_cases || [], createdAt: db.created_at || new Date().toISOString()
+  id: db.id,
+  name: db.name || '',
+  phone: db.phone || '',
+  email: db.email || '',
+  nationalId: db.national_id || db.id_number || '',
+  address: db.address || '',
+  isCompany: db.is_company || false,
+  status: db.status || 'active',
+  portalUsername: db.portal_username || '',
+  portalPassword: db.portal_password || '',
+  activePortal: db.active_portal || false,
+  permittedCases: db.permitted_cases || [],
+  createdAt: db.created_at || new Date().toISOString()
 });
+
 const mapEmployeeFromDB = (db: any) => ({
-  id: db.id, name: db.name || '', role: db.role || '', jobTitle: db.job_title || db.role || '', email: db.email || '',
-  phone: db.phone || '', status: db.status || 'active', salary: db.salary || 0, nationalId: db.national_id || '', username: db.username || '',
-  password: db.password || '', employeeCode: db.employee_code || '', permissions: db.permissions || [], activePortal: db.active_portal || false,
-  portalConfigured: db.portal_configured || false, createdAt: db.created_at || new Date().toISOString()
+  id: db.id,
+  name: db.name || '',
+  role: db.role || '',
+  jobTitle: db.job_title || db.role || '',
+  email: db.email || '',
+  phone: db.phone || '',
+  status: db.status || 'active',
+  salary: db.salary || 0,
+  nationalId: db.national_id || '',
+  username: db.username || '',
+  password: db.password || '',
+  employeeCode: db.employee_code || '',
+  permissions: db.permissions || [],
+  activePortal: db.active_portal || false,
+  portalConfigured: db.portal_configured || false,
+  createdAt: db.created_at || new Date().toISOString()
 });
+
 const mapTaskFromDB = (db: any) => ({
-  id: db.id, title: db.title || '', description: db.description || '', status: db.status || 'todo',
-  priority: db.priority || 'medium', dueDate: db.due_date || '', employeeId: db.employee_id || null, assignedTo: db.assigned_to || '',
-  caseId: db.case_id || null, caseNumber: db.case_number || '', createdAt: db.created_at || new Date().toISOString()
+  id: db.id,
+  title: db.title || '',
+  description: db.description || '',
+  status: db.status || 'todo',
+  priority: db.priority || 'medium',
+  dueDate: db.due_date || '',
+  employeeId: db.employee_id || null,
+  assignedTo: db.assigned_to || '',
+  caseId: db.case_id || null,
+  caseNumber: db.case_number || '',
+  createdAt: db.created_at || new Date().toISOString()
 });
+
 const mapHearingFromDB = (db: any) => ({
-  id: db.id, caseId: db.case_id || null, caseNumber: db.case_number || '', caseName: db.case_name || '',
-  date: db.date || '', time: db.time || '09:00', courtName: db.court_name || '', hall: db.hall || '', status: db.status || 'upcoming',
-  isNajizSync: db.is_najiz_sync || false, createdAt: db.created_at || new Date().toISOString()
+  id: db.id,
+  caseId: db.case_id || null,
+  caseNumber: db.case_number || '',
+  caseName: db.case_name || '',
+  date: db.date || '',
+  time: db.time || '09:00',
+  courtName: db.court_name || '',
+  hall: db.hall || '',
+  status: db.status || 'upcoming',
+  isNajizSync: db.is_najiz_sync || false,
+  createdAt: db.created_at || new Date().toISOString()
 });
+
 const mapPOAFromDB = (db: any) => ({
-  id: db.id, poaNumber: db.poa_number || '', type: db.type || 'general', status: db.status || 'active',
-  issueDate: db.issue_date || '', expiryDate: db.expiry_date || '', principalName: db.principal_name || '', isNajizSync: db.is_najiz_sync || false, createdAt: db.created_at || new Date().toISOString()
+  id: db.id,
+  poaNumber: db.poa_number || '',
+  type: db.type || 'general',
+  status: db.status || 'active',
+  issueDate: db.issue_date || '',
+  expiryDate: db.expiry_date || '',
+  principalName: db.principal_name || '',
+  isNajizSync: db.is_najiz_sync || false,
+  createdAt: db.created_at || new Date().toISOString()
 });
+
 const mapExecutionFromDB = (db: any) => ({
-  id: db.id, executionNumber: db.execution_number || '', status: db.status || 'pending', amount: db.amount || 0,
-  courtName: db.court_name || '', requesterName: db.requester_name || '', isNajizSync: db.is_najiz_sync || false, createdAt: db.created_at || new Date().toISOString()
+  id: db.id,
+  executionNumber: db.execution_number || '',
+  status: db.status || 'pending',
+  amount: db.amount || 0,
+  courtName: db.court_name || '',
+  requesterName: db.requester_name || '',
+  isNajizSync: db.is_najiz_sync || false,
+  createdAt: db.created_at || new Date().toISOString()
 });
+
 const mapInvoiceFromDB = (db: any) => ({
-  id: db.id, invoiceNumber: db.invoice_number || '', clientId: db.client_id || null, clientName: db.client_name || '',
-  caseId: db.case_id || null, caseNumber: db.case_number || '', amount: db.amount || 0, totalAmount: db.total_amount || 0,
-  status: db.status || 'pending', issueDate: db.issue_date || '', createdAt: db.created_at || new Date().toISOString()
+  id: db.id,
+  invoiceNumber: db.invoice_number || '',
+  clientId: db.client_id || null,
+  clientName: db.client_name || '',
+  caseId: db.case_id || null,
+  caseNumber: db.case_number || '',
+  amount: db.amount || 0,
+  totalAmount: db.total_amount || 0,
+  status: db.status || 'pending',
+  issueDate: db.issue_date || '',
+  createdAt: db.created_at || new Date().toISOString()
 });
 
 
@@ -388,12 +526,12 @@ export function useSupabaseData() {
     return tableMap[tableName];
   };
 
-  const sanitizePayload = (tableName: string, data: any): any => {
+  const sanitizePayload = async (tableName: string, data: any): Promise<any> => {
     const allowed = DB_COLUMNS[tableName] || [];
     const payload: any = {};
     
     // استخدم convertToSnakeCase المتاحة في نفس الملف
-    const snakeData = convertToSnakeCase(tableName, data);
+    const snakeData = await convertToSnakeCase(tableName, data);
     
     Object.keys(snakeData).forEach(key => {
       if (allowed.includes(key)) {
@@ -471,21 +609,26 @@ export function useSupabaseData() {
 
       let mappedClients: Client[] = [];
       if (clientsRes.data) {
-        mappedClients = toCamel(clientsRes.data) as Client[];
+        mappedClients = toCamel(clientsRes.data) as unknown as Client[];
         setClients(mappedClients);
+        clientsRes.data.forEach(c => saveLocalBackup('clients', c));
       }
       if (casesRes.data) {
         const mappedCases = (casesRes.data || []).map((c: any) => mapDatabaseCaseToFrontend(c, mappedClients));
         setCases(mappedCases);
+        casesRes.data.forEach(c => saveLocalBackup('cases', c));
       }
-      if (tasksRes.data) setTasks(toCamel(tasksRes.data) as Task[]);
-      if (hearingsRes.data) setHearings(toCamel(hearingsRes.data) as Hearing[]);
-      if (docsRes.data) setDocuments(toCamel(docsRes.data) as Document[]);
-      if (poasRes.data) setPowersOfAttorney(toCamel(poasRes.data) as PowerOfAttorney[]);
-      if (invoicesRes.data) setInvoices(toCamel(invoicesRes.data) as Invoice[]);
-      if (employeesRes.data) setEmployees(toCamel(employeesRes.data) as Employee[]);
-      if (executionsRes && 'data' in executionsRes && executionsRes.data) setExecutions(toCamel(executionsRes.data) as Execution[]);
-      if (auditRes.data && 'data' in auditRes) setAuditTrails(toCamel(auditRes.data) as AuditTrail[]);
+      if (tasksRes.data) {
+        setTasks(toCamel(tasksRes.data) as unknown as Task[]);
+        tasksRes.data.forEach(t => saveLocalBackup('tasks', t));
+      }
+      if (hearingsRes.data) setHearings(toCamel(hearingsRes.data) as unknown as Hearing[]);
+      if (docsRes.data) setDocuments(toCamel(docsRes.data) as unknown as Document[]);
+      if (poasRes.data) setPowersOfAttorney(toCamel(poasRes.data) as unknown as PowerOfAttorney[]);
+      if (invoicesRes.data) setInvoices(toCamel(invoicesRes.data) as unknown as Invoice[]);
+      if (employeesRes.data) setEmployees(toCamel(employeesRes.data) as unknown as Employee[]);
+      if (executionsRes && 'data' in executionsRes && executionsRes.data) setExecutions(toCamel(executionsRes.data) as unknown as Execution[]);
+      if (auditRes.data && 'data' in auditRes) setAuditTrails(toCamel(auditRes.data) as unknown as AuditTrail[]);
       if (attachmentsRes && 'data' in attachmentsRes && attachmentsRes.data) setAttachments(toCamel(attachmentsRes.data));
       if (clientPortalRes && 'data' in clientPortalRes && clientPortalRes.data) setClientPortal(toCamel(clientPortalRes.data));
       if (employeePortalRes && 'data' in employeePortalRes && employeePortalRes.data) setEmployeePortal(toCamel(employeePortalRes.data));
@@ -502,6 +645,52 @@ export function useSupabaseData() {
       console.error('Error fetching Supabase data:', error);
     } finally {
       setLoading(false);
+    }
+  }, []);
+
+  const refreshAllData = useCallback(async () => {
+    try {
+      const [
+        casesRes, hearingsRes, poaRes,
+        executionsRes, clientsRes, tasksRes,
+        invoicesRes
+      ] = await Promise.all([
+        supabase.from('cases')
+          .select('*')
+          .eq('archived', false)
+          .order('created_at', { ascending: false }),
+        supabase.from('hearings')
+          .select('*')
+          .order('date', { ascending: true }),
+        supabase.from('powers_of_attorney')
+          .select('*')
+          .order('created_at', { ascending: false }),
+        supabase.from('executions')
+          .select('*')
+          .order('created_at', { ascending: false }),
+        supabase.from('clients')
+          .select('*')
+          .eq('status', 'active')
+          .order('name'),
+        supabase.from('tasks')
+          .select('*')
+          .order('created_at', { ascending: false }),
+        supabase.from('invoices')
+          .select('*')
+          .order('created_at', { ascending: false })
+      ]);
+
+      if (casesRes.data) setCases(casesRes.data.map(mapCaseFromDB) as unknown as Case[]);
+      if (hearingsRes.data) setHearings(hearingsRes.data.map(mapHearingFromDB) as unknown as Hearing[]);
+      if (poaRes.data) setPowersOfAttorney(poaRes.data.map(mapPOAFromDB) as unknown as PowerOfAttorney[]);
+      if (executionsRes.data) setExecutions(executionsRes.data.map(mapExecutionFromDB) as unknown as Execution[]);
+      if (clientsRes.data) setClients(clientsRes.data.map(mapClientFromDB) as unknown as Client[]);
+      if (tasksRes.data) setTasks(tasksRes.data.map(mapTaskFromDB) as unknown as Task[]);
+      if (invoicesRes.data) setInvoices(invoicesRes.data.map(mapInvoiceFromDB) as unknown as Invoice[]);
+
+      console.log('[Refresh] ✅ جميع البيانات مُحدَّثة');
+    } catch(err: any) {
+      console.error('[Refresh Error]', err.message);
     }
   }, []);
 
@@ -552,35 +741,124 @@ export function useSupabaseData() {
   }, [fetchData]);
 
   useEffect(() => {
+    const loadClients = async () => {
+      const { data, error } = await supabase
+        .from('clients')
+        .select('*')
+        .order('name');
+
+      if (error) {
+        console.error('[Load Clients]', error.message);
+        // Fallback من localStorage
+        const local = JSON.parse(
+          localStorage.getItem('clients_local') || '[]'
+        );
+        if (local.length > 0) {
+          setClients(local.map((c: any) => ({
+            id: c.id,
+            name: c.name || '',
+            phone: c.phone || '',
+            email: c.email || '',
+            nationalId: c.national_id || '',
+            address: c.address || '',
+            isCompany: c.is_company || false,
+            status: c.status || 'active',
+            portalUsername: c.portal_username || '',
+            portalPassword: c.portal_password || '',
+            activePortal: c.active_portal || false,
+            createdAt: c.created_at || new Date().toISOString()
+          })) as unknown as Client[]);
+        }
+        return;
+      }
+
+      if (data) {
+        setClients(data.map((c: any) => ({
+          id: c.id,
+          name: c.name || '',
+          phone: c.phone || '',
+          email: c.email || '',
+          nationalId: c.national_id || '',
+          address: c.address || '',
+          isCompany: c.is_company || false,
+          status: c.status || 'active',
+          portalUsername: c.portal_username || '',
+          portalPassword: c.portal_password || '',
+          activePortal: c.active_portal || false,
+          createdAt: c.created_at || new Date().toISOString()
+        })) as unknown as Client[]);
+        console.log('[Load Clients] ✅', data.length, 'عميل');
+      }
+    };
+
     const initData = async () => {
       setLoading(true);
       try {
-        const [casesRes, clientsRes, employeesRes, tasksRes, hearingsRes, poaRes, executionsRes, invoicesRes] = await Promise.all([
-          supabase.from('cases').select('*').eq('archived', false).order('created_at', { ascending: false }),
-          supabase.from('clients').select('*').order('name'),
-          supabase.from('employees').select('*').order('name'),
-          supabase.from('tasks').select('*').order('created_at', { ascending: false }),
-          supabase.from('hearings').select('*').order('date'),
-          supabase.from('powers_of_attorney').select('*').order('created_at', { ascending: false }),
-          supabase.from('executions').select('*').order('created_at', { ascending: false }),
-          supabase.from('invoices').select('*').order('created_at', { ascending: false })
+        console.log('[Init] جارٍ تحميل البيانات من Supabase...');
+
+        const [
+          casesRes, clientsRes, employeesRes,
+          tasksRes, hearingsRes, poaRes, executionsRes,
+          invoicesRes
+        ] = await Promise.all([
+          supabase.from('cases')
+            .select('*')
+            .eq('archived', false)
+            .order('created_at', { ascending: false }),
+          supabase.from('clients')
+            .select('*')
+            .order('name'),
+          supabase.from('employees')
+            .select('*')
+            .order('name'),
+          supabase.from('tasks')
+            .select('*')
+            .order('created_at', { ascending: false }),
+          supabase.from('hearings')
+            .select('*')
+            .order('date'),
+          supabase.from('powers_of_attorney')
+            .select('*')
+            .order('created_at', { ascending: false }),
+          supabase.from('executions')
+            .select('*')
+            .order('created_at', { ascending: false }),
+          supabase.from('invoices')
+            .select('*')
+            .order('created_at', { ascending: false })
         ]);
-        
-        if (casesRes.data) setCases(casesRes.data.map(mapCaseFromDB));
-        if (clientsRes.data) setClients(toCamel(clientsRes.data) as Client[]);
-        if (employeesRes.data) setEmployees(toCamel(employeesRes.data) as Employee[]);
-        if (tasksRes.data) setTasks(toCamel(tasksRes.data) as Task[]);
-        if (hearingsRes.data) setHearings(toCamel(hearingsRes.data) as Hearing[]);
-        if (poaRes.data) setPowersOfAttorney(toCamel(poaRes.data) as PowerOfAttorney[]);
-        if (executionsRes.data) setExecutions(toCamel(executionsRes.data) as Execution[]);
-        if (invoicesRes.data) setInvoices(toCamel(invoicesRes.data) as Invoice[]);
-        
+
+        if (casesRes.data) {
+          const mapped = casesRes.data.map(mapCaseFromDB);
+          setCases(mapped as unknown as Case[]);
+          console.log('[Init] القضايا:', mapped.length);
+        }
+        if (clientsRes.data) {
+          setClients(clientsRes.data.map(mapClientFromDB) as unknown as Client[]);
+          console.log('[Init] العملاء:', clientsRes.data.length);
+        }
+        if (employeesRes.data) {
+          setEmployees(employeesRes.data.map(mapEmployeeFromDB) as unknown as Employee[]);
+        }
+        if (tasksRes.data) setTasks(tasksRes.data.map(mapTaskFromDB) as unknown as Task[]);
+        if (hearingsRes.data) setHearings(hearingsRes.data.map(mapHearingFromDB) as unknown as Hearing[]);
+        if (poaRes.data) setPowersOfAttorney(poaRes.data.map(mapPOAFromDB) as unknown as PowerOfAttorney[]);
+        if (executionsRes.data) setExecutions(executionsRes.data.map(mapExecutionFromDB) as unknown as Execution[]);
+        if (invoicesRes.data) setInvoices(invoicesRes.data.map(mapInvoiceFromDB) as unknown as Invoice[]);
+
       } catch(err: any) {
         console.error('[Init Error]', err.message);
-      } finally { setLoading(false); }
+
+        // Fallback من localStorage
+        loadFromLocalStorage({ setCases, setClients, setEmployees, setTasks, setHearings, setPowersOfAttorney, setExecutions, setInvoices });
+      } finally {
+        setLoading(false);
+      }
     };
+
+    loadClients();
     initData();
-  }, []);
+  }, [refreshAllData]);
 
   const syncFailedLogs = useCallback(async () => {
     const logs = JSON.parse(localStorage.getItem('failed_persistence_logs') || '[]');
@@ -612,7 +890,7 @@ export function useSupabaseData() {
         }
 
         // ✅ الإصلاح الجوهري: نقّ البيانات قبل الإرسال
-        const cleanPayload = sanitizePayload(mappedTable, data);
+        const cleanPayload = await sanitizePayload(mappedTable, data);
 
         let errorObj = null;
         if (data?.id) {
@@ -712,16 +990,21 @@ export function useSupabaseData() {
     return tableMap[table] || table;
   };
 
-  const onUpdateState = useCallback(async (section: string, newData: any) => {
+  const onUpdateState = useCallback(async (
+    section: string,
+    newData: any
+  ) => {
+    // 1. تحديث State فوراً
     const updateLocalState = (prev: any[]) => {
       const idx = prev.findIndex(item => item.id === newData.id);
       if (idx >= 0) {
-        const updated = [...prev];
-        updated[idx] = { ...updated[idx], ...newData };
-        return updated;
+        const arr = [...prev];
+        arr[idx] = { ...arr[idx], ...newData };
+        return arr;
       }
       return [newData, ...prev];
     };
+
     switch(section) {
       case 'cases': setCases(updateLocalState); break;
       case 'clients': setClients(updateLocalState); break;
@@ -734,7 +1017,16 @@ export function useSupabaseData() {
       case 'documents': setDocuments(updateLocalState); break;
       default: break;
     }
-    const tableMap: Record<string, string> = { cases: 'cases', clients: 'clients', employees: 'employees', tasks: 'tasks', hearings: 'hearings', invoices: 'invoices', powers_of_attorney: 'powers_of_attorney', executions: 'executions', documents: 'documents' };
+
+    // 2. حفظ في Supabase
+    const tableMap: Record<string,string> = {
+      cases: 'cases', clients: 'clients',
+      employees: 'employees', tasks: 'tasks',
+      hearings: 'hearings', invoices: 'invoices',
+      powers_of_attorney: 'powers_of_attorney',
+      executions: 'executions', documents: 'documents'
+    };
+
     const tableName = tableMap[section];
     if (tableName && newData?.id) {
       const result = await saveToSupabase(tableName, newData);
@@ -771,7 +1063,7 @@ export function useSupabaseData() {
   const upsertRecord = useCallback(async (table: string, data: any, onConflict: string) => {
     try {
       const mappedTable = getSupabaseTableName(table);
-      const cleanData = sanitizePayload(mappedTable, data);
+      const cleanData = await sanitizePayload(mappedTable, data);
       
       console.log(`[Supabase] Upserting into ${mappedTable} on conflict ${onConflict}:`, cleanData);
       
@@ -797,7 +1089,7 @@ export function useSupabaseData() {
   const createRecord = useCallback(async (table: string, data: any) => {
     try {
       const mappedTable = getSupabaseTableName(table);
-      const cleanData = sanitizePayload(mappedTable, data);
+      const cleanData = await sanitizePayload(mappedTable, data);
       
       // Ensure ID and timestamps
       const payload = { ...cleanData };
@@ -838,7 +1130,7 @@ export function useSupabaseData() {
   const updateRecord = useCallback(async (table: string, id: string | number, data: any) => {
     try {
       const mappedTable = getSupabaseTableName(table);
-      const cleanData = sanitizePayload(mappedTable, data);
+      const cleanData = await sanitizePayload(mappedTable, data);
       const updatePayload = {
         ...cleanData,
         updated_at: new Date().toISOString()
@@ -932,7 +1224,7 @@ export function useSupabaseData() {
     updateRecord,
     deleteRecord,
     retryQueueSync,
-    refresh: fetchData,
+    refresh: refreshAllData,
     onUpdateState,
     setHearings,
     setDocuments,

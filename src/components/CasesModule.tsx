@@ -510,6 +510,15 @@ export default React.memo(function CasesModule({
     };
     
     loadCasesFromDB();
+    
+    const handleSyncComplete = () => {
+      console.log('[CasesModule] Najiz sync detected, reloading cases...');
+      loadCasesFromDB();
+    };
+    window.addEventListener('najiz_sync_complete', handleSyncComplete);
+    return () => {
+      window.removeEventListener('najiz_sync_complete', handleSyncComplete);
+    };
   }, [cases.length]); // إعادة التحميل عند تغير الطول لضمان المزامنة
 
   const getInteractiveCaseStyles = (category: string, status: string) => {
@@ -1731,6 +1740,16 @@ export default React.memo(function CasesModule({
     const clientNameSafe = c.clientName || '';
     const courtNameSafe = c.courtName || '';
 
+    // Skip/exclude temporary RLS security check cases from appearing in the UI
+    if (
+      caseNameSafe.includes('فحص أمان RLS') ||
+      caseNameSafe.includes('RLS_Test') ||
+      caseNumberSafe.includes('Boot-RLS-Test-') ||
+      caseNameSafe.includes('RLS مؤقت')
+    ) {
+      return false;
+    }
+
     const matchesSearch = caseNameSafe.includes(searchTerm) || 
                           caseNumberSafe.includes(searchTerm) || 
                           clientNameSafe.includes(searchTerm) ||
@@ -2009,7 +2028,7 @@ export default React.memo(function CasesModule({
       );
 
       return (
-        <div className="space-y-10 text-right animate-fade-in" dir="rtl">
+        <div className="space-y-10 text-right animate-fade-in high-contrast-card-wrapper" dir="rtl">
           
           {/* Summary Dashboard Panels (Recharts Donuts & Bars) */}
           {!selectedCase && !isFocusMode && (

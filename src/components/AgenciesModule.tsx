@@ -80,8 +80,16 @@ export default function AgenciesModule({ clients, onUpdateState }: AgenciesModul
           console.warn('[Supabase Realtime] Subscribe error for powers_of_attorney changes:', error);
         }
       });
+
+    const handleSyncComplete = () => {
+      console.log('[AgenciesModule] Najiz sync completed, refreshing agencies...');
+      fetchAgencies();
+    };
+    window.addEventListener('najiz_sync_complete', handleSyncComplete);
+
     return () => {
       supabase.removeChannel(sub);
+      window.removeEventListener('najiz_sync_complete', handleSyncComplete);
     };
   }, []);
 

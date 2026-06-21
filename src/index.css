@@ -274,8 +274,44 @@ html:not(.dark) table td,
 html:not(.dark) table td *,
 html:not(.dark) table th,
 html:not(.dark) table th * {
-  color: #020617 !important; /* Slate-950 */
+  color: #020617; /* Slate-950 (remove !important to allow custom overrides!) */
 }
+
+/* Specific custom high contrast gold classes to override default tables */
+.execution-gold-text,
+.execution-gold-text * {
+  color: #854d0e !important; /* Deep dark gold / bronze style for supreme light mode readability (WCAG AAA) */
+  font-weight: 900 !important;
+}
+
+html.dark .execution-gold-text,
+html.dark .execution-gold-text * {
+  color: #fbbf24 !important; /* Glowing premium dark gold style for dark mode */
+}
+
+.execution-gold-badge {
+  background-color: #fef3c7 !important; /* Warm goldish cream background */
+  color: #713f12 !important; /* Crisp deep gold text */
+  border: 1px solid #dfcf9d !important;
+  font-weight: 900 !important;
+}
+
+html.dark .execution-gold-badge {
+  background-color: rgba(212, 175, 55, 0.15) !important;
+  color: #fbbf24 !important;
+  border: 1px solid rgba(212, 175, 55, 0.3) !important;
+}
+
+.execution-card-custom {
+  background-color: #ffffff !important;
+  border: 2px solid #dfcf9d !important;
+}
+
+html.dark .execution-card-custom {
+  background-color: #0f172a !important;
+  border: 2px solid #5a4b1c !important;
+}
+
 
 /* Specific styling for grey backgrounds to enforce Slate-950 contrast */
 tr[class*="bg-slate-50"] td,
@@ -1244,6 +1280,11 @@ html.dark [class*="bg-slate-50"] svg {
   font-weight: 600 !important;
 }
 
+.high-contrast-card-wrapper {
+  color: #FFFFFF !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
 /* Ensure no horizontal shifting or scrolling */
 .sidebar-scrollbar {
   overflow-x: hidden !important;
@@ -1902,23 +1943,25 @@ button.rounded-full {
     padding: 12px;
   }
 
+  /* Replaced with robust priority-loaded styles at EOF for maximum layout override */
+
   select.bg-white,
   select.bg-slate-50,
   select.bg-slate-100,
-  .bg-white select,
-  .bg-slate-50 select,
-  .bg-slate-100 select {
+  .bg-white select:not(.ai-select-high-contrast),
+  .bg-slate-50 select:not(.ai-select-high-contrast),
+  .bg-slate-100 select:not(.ai-select-high-contrast) {
     color: #1e3a8a !important; /* Deep Dark Blue */
     border-color: #e2e8f0 !important;
     background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231e3a8a' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
   }
 
-  select.bg-white option,
-  select.bg-slate-50 option,
-  select.bg-slate-100 option,
-  .bg-white select option,
-  .bg-slate-50 select option,
-  .bg-slate-100 select option {
+  select.bg-white:not(.ai-select-high-contrast) option,
+  select.bg-slate-50:not(.ai-select-high-contrast) option,
+  select.bg-slate-100:not(.ai-select-high-contrast) option,
+  .bg-white select:not(.ai-select-high-contrast) option,
+  .bg-slate-50 select:not(.ai-select-high-contrast) option,
+  .bg-slate-100 select:not(.ai-select-high-contrast) option {
     color: #1e3a8a !important;
     background-color: #ffffff !important;
     font-weight: bold;
@@ -2638,19 +2681,19 @@ body.focus-mode-active main {
   text-shadow: 0 0 2px rgba(0, 0, 0, 0.8);
 }
 
-select {
+select:not(.ai-select-high-contrast) {
   color: var(--color-text-on-light) !important;
   font-weight: 900 !important;
 }
 
-option {
+option:not(.ai-select-high-contrast-option) {
   background-color: #ffffff;
   color: var(--color-text-on-light) !important;
   font-weight: 900 !important;
 }
 
-.bg-white select,
-.bg-slate-50 select {
+.bg-white select:not(.ai-select-high-contrast),
+.bg-slate-50 select:not(.ai-select-high-contrast) {
   color: var(--color-text-on-light) !important;
 }
 
@@ -3012,7 +3055,42 @@ thead th {
   color: #ffffff !important;
 }
 
-/* Ensure deep dark blue theme overrides do not force dark grey text on manual lists */
+.high-contrast-card-wrapper {
+  color: #FFFFFF !important;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+}
+.high-contrast-card-wrapper h1,
+.high-contrast-card-wrapper h2,
+.high-contrast-card-wrapper h3,
+.high-contrast-card-wrapper h4,
+.high-contrast-card-wrapper label,
+.high-contrast-card-wrapper p,
+.high-contrast-card-wrapper span,
+.high-contrast-card-wrapper strong,
+.high-contrast-card-wrapper li {
+  color: #FFFFFF !important;
+  text-shadow: 0 1px 2.5px rgba(0,0,0,0.85) !important;
+  opacity: 1 !important;
+}
+.high-contrast-card-wrapper .text-primary,
+.high-contrast-card-wrapper .text-blue-500,
+.high-contrast-card-wrapper .text-indigo-400,
+.high-contrast-card-wrapper .text-amber-500,
+.high-contrast-card-wrapper .text-yellow-400 {
+  color: #FACC15 !important;
+  text-shadow: 0 1px 2.5px rgba(0,0,0,0.85) !important;
+  opacity: 1 !important;
+}
+.high-contrast-text-white {
+  color: #FFFFFF !important;
+  text-shadow: 0 1.5px 3px rgba(0,0,0,0.6) !important;
+  opacity: 1 !important;
+}
+.high-contrast-text-yellow {
+  color: #FFEA36 !important;
+  text-shadow: 0 1.5px 3px rgba(0,0,0,0.6) !important;
+  opacity: 1 !important;
+}
 .najiz-imperial-hub [key] button,
 .najiz-imperial-hub button[key] {
   color: #ffffff !important;
@@ -3022,5 +3100,129 @@ thead th {
 .najiz-imperial-hub .text-slate-300 {
   color: #f1f5f9 !important; /* Forces maximum contrast slate/white for soft items inside dark backgrounds */
 }
+
+/* EXTENSION: UNBEATABLE HIGH-PRIORITY ULTRA-CONTRAST CHROME FOR SELECT DROPDOWNS */
+select.ai-select-high-contrast,
+.bg-slate-100 select.ai-select-high-contrast,
+.bg-white select.ai-select-high-contrast,
+.bg-slate-900 select.ai-select-high-contrast,
+.bg-slate-950 select.ai-select-high-contrast,
+[class*="bg-"] select.ai-select-high-contrast,
+select.ai-select-high-contrast:focus {
+  color: #fcef25 !important; /* Extremely Bright Neon Yellow */
+  background-color: #0c142b !important; /* Deep jet-dark navy for absolute dark contrast */
+  border: 3px solid #fcef25 !important; /* Clear, sharp neon yellow border */
+  border-radius: 1rem !important;
+  font-weight: 999 !important;
+  font-size: 0.95rem !important;
+  line-height: normal !important;
+  text-shadow: 0 0 2px rgba(252, 239, 37, 0.75) !important;
+  box-shadow: 0 0 12px rgba(252, 239, 37, 0.3) !important;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23fcef25' stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e") !important;
+  background-position: left 1rem center !important;
+  background-repeat: no-repeat !important;
+  padding: 12px 16px !important;
+  padding-left: 2.75rem !important;
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+}
+
+select.ai-select-high-contrast option,
+option.ai-select-high-contrast-option,
+.bg-slate-100 select.ai-select-high-contrast option,
+.bg-white select.ai-select-high-contrast option,
+.bg-slate-900 select.ai-select-high-contrast option,
+.bg-slate-950 select.ai-select-high-contrast option,
+[class*="bg-"] select.ai-select-high-contrast option {
+  background-color: #0c142b !important;
+  color: #ffffff !important; /* Bright crisp white dropdown option text for immaculate readability */
+  font-weight: 900 !important;
+  font-size: 0.875rem !important;
+  padding: 14px !important;
+}
+
+/* ==========================================================================
+   HIGH CONTRAST ULTRA-GLOW STYLING FOR SOVEREIGN LEGISLATION FOLDER CARDS
+   Forces immaculate neon yellow / pristine white on deep dark background colors
+   ========================================================================== */
+.law-folder-card {
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5) !important;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+/* Bright yellow folder titles */
+.law-folder-card .law-card-title,
+.bg-white .law-folder-card .law-card-title,
+.bg-slate-50 .law-folder-card .law-card-title {
+  color: #fcef25 !important; /* Extreme bright glowing neon yellow */
+  font-weight: 950 !important;
+  font-size: 0.875rem !important;
+  line-height: 1.35rem !important;
+  text-shadow: 0 1.5px 3px rgba(0, 0, 0, 0.95), 0 0 4px rgba(252, 239, 37, 0.35) !important;
+  letter-spacing: -0.01em !important;
+}
+
+/* Sub-titles (English enName) at 100% opacity bright white */
+.law-folder-card .law-card-subtitle,
+.bg-white .law-folder-card .law-card-subtitle,
+.bg-slate-50 .law-folder-card .law-card-subtitle {
+  color: #ffffff !important; /* Pure radiant bright white */
+  font-weight: 900 !important;
+  font-size: 0.725rem !important;
+  opacity: 1 !important;
+  margin-top: 0.25rem !important;
+  text-shadow: 0 1.5px 3px rgba(0, 0, 0, 0.9) !important;
+  letter-spacing: 0.02em !important;
+}
+
+/* Folder description text at 100% opacity bright white */
+.law-folder-card .law-card-desc,
+.bg-white .law-folder-card .law-card-desc,
+.bg-slate-50 .law-folder-card .law-card-desc {
+  color: #ffffff !important; /* Pure radiant bright white */
+  font-weight: 800 !important;
+  font-size: 0.725rem !important;
+  line-height: 1.25rem !important;
+  opacity: 1 !important;
+  text-shadow: 0 1.5px 3px rgba(0, 0, 0, 0.9) !important;
+}
+
+/* Folder badge (# articles count) in glowing yellow outline and bright yellow text */
+.law-folder-card .law-card-badge,
+.bg-white .law-folder-card .law-card-badge,
+.bg-slate-50 .law-folder-card .law-card-badge {
+  background-color: rgba(252, 239, 37, 0.15) !important;
+  color: #fcef25 !important; /* Glowing neon yellow label */
+  border: 1.5px solid #fcef25 !important;
+  font-weight: 950 !important;
+  font-size: 0.725rem !important;
+  letter-spacing: 0.05em !important;
+  box-shadow: 0 0 6px rgba(252, 239, 37, 0.25) !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8) !important;
+}
+
+/* Category name */
+.law-folder-card .law-card-meta,
+.bg-white .law-folder-card .law-card-meta,
+.bg-slate-50 .law-folder-card .law-card-meta {
+  color: #fcef25 !important; /* Extremely high contrast glowing yellow */
+  font-weight: 950 !important;
+  font-size: 0.75rem !important;
+  opacity: 1 !important;
+  text-shadow: 0 1.5px 3px rgba(0, 0, 0, 0.9) !important;
+}
+
+/* Hijri Date stamp */
+.law-folder-card .law-card-date,
+.bg-white .law-folder-card .law-card-date,
+.bg-slate-50 .law-folder-card .law-card-date {
+  color: #ffffff !important; /* Pure radiant white */
+  font-weight: 950 !important;
+  font-size: 0.75rem !important;
+  opacity: 1 !important;
+  text-shadow: 0 1.5px 3px rgba(0, 0, 0, 0.9) !important;
+}
+
 
 

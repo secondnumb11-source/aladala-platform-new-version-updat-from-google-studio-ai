@@ -137,7 +137,7 @@ export default function AIModule({ onUpdateState, cases = [], invoices = [], ini
   };
 
   return (
-    <div className="space-y-8 animate-fade-in" dir="rtl">
+    <div className="space-y-8 animate-fade-in high-contrast-card-wrapper" dir="rtl">
       
       {/* Top Banner and Navigation */}
       <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 bg-white border border-slate-200 p-8 rounded-[2.5rem] shadow-xl">

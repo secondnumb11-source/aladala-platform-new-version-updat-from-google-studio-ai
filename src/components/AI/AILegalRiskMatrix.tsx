@@ -102,7 +102,7 @@ export default function AILegalRiskMatrix({ cases }: AILegalRiskMatrixProps) {
           </div>
           
           <select 
-            className="w-full md:w-80 bg-slate-800/80 border border-slate-700 text-white rounded-2xl p-4 text-sm font-black focus:outline-none focus:border-amber-500 transition-all font-sans"
+            className="w-full md:w-80 ai-select-high-contrast rounded-2xl p-4 text-sm font-black focus:outline-none focus:border-amber-400 transition-all font-sans"
             value={selectedCase?.id}
             onChange={(e) => setSelectedCase(cases.find(c => c.id === e.target.value) || cases[0])}
           >

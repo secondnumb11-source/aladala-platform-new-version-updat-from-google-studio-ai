@@ -118,6 +118,7 @@ export default function DbDevOpsModule() {
 
   // Interactive docker-compose parameters
   const [dbUser, setDbUser] = useState('aladalah_admin');
+  
   const [dbPassword, setDbPassword] = useState('AlAdalahSecurePass2026!');
   const [dbName, setDbName] = useState('aladalah_prod');
   const [dbPort, setDbPort] = useState('5432');

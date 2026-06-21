@@ -54,11 +54,11 @@ export default function AIDraftingTool({ onDraftGenerated }: AIDraftingToolProps
     const darkKeywords = ['bg-slate-900', 'bg-indigo-950', 'bg-emerald-950', 'bg-slate-800'];
     const isDark = darkKeywords.some(keyword => bgClass.includes(keyword));
     return {
-      headingClass: isDark ? 'text-white font-sans font-black' : 'text-slate-900 font-sans font-black',
-      textClass: isDark ? 'text-white font-bold font-sans font-medium' : 'text-slate-200 font-bold font-sans font-medium',
-      metricClass: isDark ? 'text-amber-400 font-mono font-black' : 'text-amber-400 font-black font-mono font-black',
-      badgeClass: isDark ? 'bg-white/10 text-white font-black' : 'bg-slate-100 text-slate-800 font-black',
-      borderClass: isDark ? 'border-slate-800' : 'border-slate-200'
+      headingClass: isDark ? 'text-amber-300 font-sans font-black tracking-wide' : 'text-slate-950 font-sans font-black tracking-wide', // Yellow/Dark contrast
+      textClass: isDark ? 'text-white font-bold font-sans font-medium' : 'text-slate-900 font-bold font-sans font-medium', // High contrast
+      metricClass: isDark ? 'text-amber-400 font-mono font-black' : 'text-amber-600 font-black font-mono font-black',
+      badgeClass: isDark ? 'bg-amber-400/20 text-amber-200 font-black' : 'bg-slate-800 text-amber-300 font-black',
+      borderClass: isDark ? 'border-amber-500/30' : 'border-slate-300'
     };
   };
 
@@ -153,17 +153,17 @@ export default function AIDraftingTool({ onDraftGenerated }: AIDraftingToolProps
                     <span className={`text-[11px] px-2.5 py-0.5 rounded-full font-sans ${colors.badgeClass}`}>
                       {item.badge}
                     </span>
-                    <span className="text-[11px] text-slate-200 font-bold font-bold flex items-center gap-1">
-                      <Sun className="w-3 h-3 text-amber-500 animate-spin" />
+                    <span className="text-[11px] text-yellow-400 font-black flex items-center gap-1 drop-shadow-[0_0_8px_rgba(234,179,8,0.5)]">
+                      <Sun className="w-3 h-3 text-white animate-spin drop-shadow-md" />
                       تبديل السطوع
                     </span>
                   </div>
-                  <h4 className={`${colors.headingClass} text-sm mb-1.5`}>{item.title}</h4>
-                  <p className={`${colors.textClass} text-[11px] leading-relaxed`}>{item.description}</p>
+                  <h4 className={`${colors.headingClass} text-sm mb-1.5 drop-shadow-[0_0_8px_rgba(255,255,255,0.2)]`}>{item.title}</h4>
+                  <p className={`${colors.textClass} text-[11px] leading-relaxed drop-shadow-sm`}>{item.description}</p>
                 </div>
                 <div className="flex justify-between items-center mt-3 pt-3 border-t border-slate-50/10">
-                  <span className="text-[11px] font-bold text-slate-200 font-bold">تحليل فوري دقيق</span>
-                  <span className={`${colors.headingClass} text-[10px] uppercase font-black`}>متكامل 100%</span>
+                  <span className="text-[11px] font-black text-white drop-shadow-md">تحليل فوري دقيق</span>
+                  <span className={`${colors.headingClass} text-[10px] uppercase font-black drop-shadow-md`}>متكامل 100%</span>
                 </div>
               </motion.div>
             );
@@ -183,8 +183,9 @@ export default function AIDraftingTool({ onDraftGenerated }: AIDraftingToolProps
             <p className="text-slate-200 font-bold text-xs mt-2 font-bold relative z-10">توليد مسودات قانونية ممتثلة للأنظمة السعودية في ثوانٍ.</p>
           </div>
 
-          <div className="bg-white border border-slate-200 p-6 rounded-3xl shadow-lg space-y-5">
-            <div>
+          <div className="bg-slate-900 border-2 border-amber-500/30 p-6 rounded-[2rem] shadow-xl space-y-5 relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-full h-full bg-gradient-to-bl from-amber-500/5 to-transparent pointer-events-none"></div>
+            <div className="relative z-10">
               <div className="mb-4">
                 <CaseClientSelector
                   selectedCaseId={selectedCase?.id}
@@ -207,7 +208,7 @@ export default function AIDraftingTool({ onDraftGenerated }: AIDraftingToolProps
                 />
               </div>
 
-              <label className="text-[10px] font-black text-slate-200 font-bold uppercase tracking-widest mb-3 block">نوع المستند المطلوب صياغته</label>
+              <label className="text-[10px] font-black text-yellow-400 drop-shadow-md uppercase tracking-widest mb-3 block">نوع المستند المطلوب صياغته</label>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
                 {[
                   { id: 'pleading', label: 'صحيفة دعوى', icon: <FileText className="w-4 h-4" /> },
@@ -221,8 +222,8 @@ export default function AIDraftingTool({ onDraftGenerated }: AIDraftingToolProps
                     onClick={() => setDraftType(type.id as any)}
                     className={`flex items-center gap-2 p-3 rounded-xl text-[10px] font-black transition-all border ${
                       draftType === type.id 
-                        ? 'bg-slate-900 text-white border-amber-500 shadow-lg' 
-                        : 'bg-slate-50 text-slate-200 font-bold border-slate-100'
+                        ? 'bg-amber-400 text-slate-950 border-amber-500 shadow-[0_0_15px_rgba(251,191,36,0.4)]' 
+                        : 'bg-slate-800 text-white font-bold border-slate-700 hover:border-amber-500/50 hover:bg-slate-800/80'
                     }`}
                   >
                     {type.icon}
@@ -232,14 +233,14 @@ export default function AIDraftingTool({ onDraftGenerated }: AIDraftingToolProps
               </div>
             </div>
 
-            <div>
-              <label className="text-[10px] font-black text-slate-200 font-bold uppercase tracking-widest mb-3 block">الوقائع والبيانات الجوهرية (اختياري / مكمل)</label>
+            <div className="relative z-10">
+              <label className="text-[10px] font-black text-yellow-400 drop-shadow-md uppercase tracking-widest mb-3 block">الوقائع والبيانات الجوهرية (اختياري / مكمل)</label>
               <textarea 
                 rows={8}
                 value={facts}
                 onChange={(e) => setFacts(e.target.value)}
                 placeholder="أدخل تفاصيل إضافية عن القضية أو السياق..."
-                className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl py-4 px-5 text-sm font-bold text-slate-900 outline-none focus:border-amber-500 focus:ring-4 focus:ring-amber-500/10 transition-all font-sans leading-relaxed"
+                className="w-full bg-slate-800 border-2 border-slate-700 rounded-2xl py-4 px-5 text-sm font-bold text-white drop-shadow-sm outline-none focus:border-amber-400 focus:ring-4 focus:ring-amber-500/20 transition-all font-sans leading-relaxed placeholder-slate-500"
               />
             </div>
 

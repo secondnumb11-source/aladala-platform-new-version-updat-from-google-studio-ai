@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { supabase } from '@/lib/supabase';
 import { 
   Calendar as CalendarIcon, 
   MapPin, 
@@ -11,12 +12,14 @@ import {
   Info,
   Layers,
   Sparkles,
-  ExternalLink
+  ExternalLink,
+  Edit2,
+  Trash2
 } from 'lucide-react';
 import { motion } from 'motion/react';
 import { Case, Hearing, Task, Invoice } from '@/types';
-import HearingCustomTimer from './HearingCustomTimer';
 import { generateUUID } from '@/lib/uuid';
+import HearingsModule from './HearingsModule';
 
 interface CalendarModuleProps {
   cases: Case[];
@@ -28,17 +31,67 @@ interface CalendarModuleProps {
 
 export default function CalendarModule({ 
   cases = [], 
-  hearings = [], 
+  hearings: propHearings = [], 
   tasks = [], 
   invoices = [], 
   onUpdateState 
 }: CalendarModuleProps) {
   const [selectedDate, setSelectedDate] = useState<string>("2026-06-12");
+  const [activeView, setActiveView] = useState<'calendar' | 'hearings'>('calendar');
   const [syncGoogle, setSyncGoogle] = useState(false);
   const [syncOutlook, setSyncOutlook] = useState(false);
   const [syncLogs, setSyncLogs] = useState<string[]>([]);
   const [isSyncing, setIsSyncing] = useState(false);
   const [activeCourtPin, setActiveCourtPin] = useState<string | null>("riyadh");
+
+  const [localHearings, setLocalHearings] = useState<Hearing[]>(propHearings);
+
+  React.useEffect(() => {
+    setLocalHearings(propHearings);
+  }, [propHearings]);
+
+  const loadHearings = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('hearings')
+        .select('*')
+        .order('date', { ascending: true });
+
+      if (!error && data) {
+        setLocalHearings(data.map((db: any) => ({
+          id: db.id,
+          caseId: db.case_id || null,
+          caseNumber: db.case_number || '',
+          caseName: db.case_name || '',
+          date: db.date || '',
+          time: db.time || '09:00',
+          courtName: db.court_name || '',
+          hallName: db.hall_number || db.hall || '',
+          status: db.status || 'upcoming',
+          isNajizSync: db.is_najiz_sync || false,
+          createdAt: db.created_at
+        })));
+      }
+    } catch (e) {
+      console.error('[CalendarModule Load Exception]', e);
+    }
+  };
+
+  React.useEffect(() => {
+    loadHearings();
+
+    const handleSyncComplete = () => {
+      console.log('[CalendarModule] Najiz sync completed, refreshing hearings...');
+      loadHearings();
+    };
+
+    window.addEventListener('najiz_sync_complete', handleSyncComplete);
+    return () => {
+      window.removeEventListener('najiz_sync_complete', handleSyncComplete);
+    };
+  }, []);
+
+  const hearings = localHearings;
 
   // New commitment input states with instant analysis
   const [newTitle, setNewTitle] = useState("");
@@ -49,6 +102,48 @@ export default function CalendarModule({
   const [newClient, setNewClient] = useState("");
   const [newLawyer, setNewLawyer] = useState("");
   const [addingSuccess, setAddingSuccess] = useState(false);
+
+  // Edit hearing modal states
+  const [editingHearing, setEditingHearing] = useState<Hearing | null>(null);
+  const [editTitle, setEditTitle] = useState("");
+  const [editDate, setEditDate] = useState("");
+  const [editTime, setEditTime] = useState("");
+  const [editCourt, setEditCourt] = useState("");
+  const [editLawyer, setEditLawyer] = useState("");
+  const [editNotes, setEditNotes] = useState("");
+
+  const startEditHearing = (h: Hearing) => {
+    setEditingHearing(h);
+    setEditTitle(h.caseName || "");
+    setEditDate(h.date || "");
+    setEditTime(h.time || "");
+    setEditCourt(h.courtName || "");
+    setEditLawyer(h.judgeName || "");
+    setEditNotes(h.notes || "");
+  };
+
+  const handleSaveEditedHearing = () => {
+    if (!editingHearing || !onUpdateState) return;
+    const updated: Hearing = {
+      ...editingHearing,
+      caseName: editTitle,
+      date: editDate,
+      time: editTime,
+      courtName: editCourt,
+      judgeName: editLawyer,
+      notes: editNotes
+    };
+    onUpdateState('hearings', updated);
+    setEditingHearing(null);
+    alert('تم تعديل بيانات الموعد بنجاح.');
+  };
+
+  const handleDeleteHearingClick = (hearingId: string) => {
+    if (!onUpdateState) return;
+    if (window.confirm('🚨 هل أنت متأكد تماماً من رغبتك في حذف هذا الموعد من الأجندة وقاعدة البيانات؟ لا مفر من هذا الإجراء بعد تأكيده.')) {
+      onUpdateState('deleteHearing', hearingId);
+    }
+  };
 
   // Real-time conflict inspector for proposed input before submission
   const parseDateSafe = (dateStr: string, timeStr?: string) => {
@@ -498,7 +593,32 @@ export default function CalendarModule({
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      {/* View Switcher Tabs */}
+      <div className="flex bg-[#07132c] p-1 border border-yellow-500/20 rounded-2xl w-full max-w-md mr-auto relative z-10 shrink-0">
+        <button 
+          type="button"
+          onClick={() => setActiveView('calendar')}
+          className={`flex-1 py-2.5 text-xs font-black rounded-xl transition-all cursor-pointer text-center ${activeView === 'calendar' ? 'bg-[#9A7D2C] text-white shadow-[0_0_15px_rgba(154,125,44,0.4)]' : 'text-slate-400 hover:text-white'}`}
+        >
+          📅 الأجندة والخريطة التفاعلية
+        </button>
+        <button 
+          type="button"
+          onClick={() => setActiveView('hearings')}
+          className={`flex-1 py-2.5 text-xs font-black rounded-xl transition-all cursor-pointer text-center ${activeView === 'hearings' ? 'bg-[#9A7D2C] text-white shadow-[0_0_15px_rgba(154,125,44,0.4)]' : 'text-slate-400 hover:text-white'}`}
+        >
+          ⚖️ تعديل وإدارة الجلسات التفصيلية
+        </button>
+      </div>
+
+      {activeView === 'hearings' ? (
+        <HearingsModule onUpdateState={(type) => {
+          if (type === 'hearings_reload') {
+            loadHearings();
+          }
+        }} />
+      ) : (
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         
         {/* RIGHT COLUMN: Calendar Grid Selector (8/12) */}
         <div className="lg:col-span-8 space-y-6">
@@ -621,24 +741,41 @@ export default function CalendarModule({
                           {hearing.notes && <div className="font-black font-sans italic p-2 rounded mt-1.5 border border-[#dc2626]/30 bg-black/40" style={{ color: '#FFFFFF', textShadow: 'none' }}>{hearing.notes}</div>}
                         </div>
                       </div>
-                      <div className="text-left font-mono text-xs">
-                        <div className="flex items-center justify-end gap-1 font-black" style={{ color: '#FFFFFF', textShadow: 'none' }}>
-                          <Clock className="w-3.5 h-3.5" style={{ color: '#FACC15' }} />
-                          <span>{hearing.time}</span>
+                      <div className="text-left font-mono text-xs flex flex-col items-end justify-between">
+                        <div>
+                          <div className="flex items-center justify-end gap-1 font-black" style={{ color: '#FFFFFF', textShadow: 'none' }}>
+                            <Clock className="w-3.5 h-3.5" style={{ color: '#FACC15' }} />
+                            <span>{hearing.time}</span>
+                          </div>
+                          <div className="text-xs font-black mt-1" style={{ color: '#FACC15', textShadow: 'none' }}>القضية: #{hearing.caseNumber}</div>
                         </div>
-                        <div className="text-xs font-black mt-1" style={{ color: '#FACC15', textShadow: 'none' }}>القضية: #{hearing.caseNumber}</div>
                       </div>
                     </div>
 
-                    {/* Integrated dynamic stopwatch billing workflow */}
-                    {onUpdateState && (
-                      <HearingCustomTimer 
-                        hearing={hearing}
-                        cases={cases}
-                        invoices={invoices}
-                        onUpdateState={onUpdateState}
-                      />
-                    )}
+                    {/* Highly Visible Custom Action Buttons inside the Card */}
+                    <div className="border-t border-[#dc2626]/20 pt-3 mt-2 flex flex-wrap items-center justify-between gap-3 select-none no-print">
+                      <span className="text-[11px] text-red-200/80 font-sans font-bold">إدارة ميعاد وحالة هذه الجلسة القضائية:</span>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => startEditHearing(hearing)}
+                          className="px-3.5 py-1.5 bg-amber-500 hover:bg-amber-450 text-slate-950 rounded-xl font-black text-xs transition-all flex items-center gap-1.5 shadow-md shadow-amber-500/10 cursor-pointer border border-amber-400/40"
+                          title="تعديل ترويسة وموعد الجلسة"
+                        >
+                          <Edit2 className="w-3.5 h-3.5 text-slate-950 font-black" />
+                          <span>تعديل الموعد</span>
+                        </button>
+                        <button
+                          onClick={() => handleDeleteHearingClick(hearing.id)}
+                          className="px-3.5 py-1.5 bg-rose-600 hover:bg-rose-500 text-white rounded-xl font-black text-xs transition-all flex items-center gap-1.5 shadow-md shadow-rose-600/10 cursor-pointer border border-rose-500/30 font-sans"
+                          title="حذف الجلسة نهائياً من الأجندة"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                          <span>حذف الجلسة</span>
+                        </button>
+                      </div>
+                    </div>
+
+
                   </div>
                 ))}
 
@@ -836,85 +973,7 @@ export default function CalendarModule({
             )}
           </div>
 
-          {/* Sync authorization options */}
-          <div className="bg-gradient-to-br from-[#1E3A8A] via-[#0c1020] to-[#9A7D2C] border-2 border-[#9A7D2C] rounded-3xl p-6 space-y-4 text-white shadow-xl transition-all duration-500 relative overflow-hidden group">
-            <div className="absolute inset-0 bg-yellow-500/10 opacity-0 transition-opacity pointer-events-none"></div>
-            <div className="flex items-center gap-2 relative z-10">
-              <Sparkles className="w-5 h-5 text-yellow-300" />
-              <h2 className="text-xs font-black text-[#FFFFFF]">مزامنة التقويم السحابي للأعمال</h2>
-            </div>
-            
-            <p className="text-xs text-[#FFFFFF] leading-relaxed font-bold relative z-10">
-              قم بربط أجندتك الأسبوعية ببرامج الإنتاجية لمزامنة مهامك وجلسات التقاضي تلقائياً مع خوادم مايكروسوفت وجوجل.
-            </p>
 
-            <div className="space-y-3.5 pt-1 relative z-10">
-              {/* Google Calendar toggle */}
-              <div className="flex items-center justify-between p-3 bg-[#0c1830]/50 rounded-xl border border-yellow-500/20 transition-colors">
-                <div className="flex items-center gap-2 text-right">
-                  <span className="text-sm">🌐</span>
-                  <div>
-                    <span className="text-xs font-bold text-[#FFFFFF] block">Google Calendar</span>
-                    <span className="text-[11px] text-[#FFFFFF]/70 block">مزامنة تلقائية للجلسات والمهام</span>
-                  </div>
-                </div>
-                <label className="relative inline-flex items-center cursor-pointer">
-                  <input 
-                    type="checkbox" 
-                    checked={syncGoogle} 
-                    onChange={(e) => {
-                      setSyncGoogle(e.target.checked);
-                      if (e.target.checked) setSyncLogs(prev => ["تفعيل خيار Google Calendar - جاهز للإقران", ...prev]);
-                    }}
-                    className="sr-only peer" 
-                  />
-                  <div className="w-9 h-5 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:-translate-x-full after:content-[''] after:absolute after:top-[2px] after:right-[2px] after:bg-slate-300 after:border-slate-800 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-yellow-500 shadow-[0_0_5px_rgba(250,204,21,0.5)]"></div>
-                </label>
-              </div>
-
-              {/* Microsoft Outlook Calendar toggle */}
-              <div className="flex items-center justify-between p-3 bg-[#0c1830]/50 rounded-xl border border-yellow-500/20 transition-colors">
-                <div className="flex items-center gap-2 text-right">
-                  <span className="text-sm">📧</span>
-                  <div>
-                    <span className="text-xs font-bold text-[#FFFFFF] block">Outlook Calendar</span>
-                    <span className="text-[11px] text-[#FFFFFF]/70 block">التنسيقات المبرمة مع مكاتب مايكروسوفت</span>
-                  </div>
-                </div>
-                <label className="relative inline-flex items-center cursor-pointer">
-                  <input 
-                    type="checkbox" 
-                    checked={syncOutlook} 
-                    onChange={(e) => {
-                      setSyncOutlook(e.target.checked);
-                      if (e.target.checked) setSyncLogs(prev => ["تفعيل خيار Outlook Calendar - جاهز للإقران", ...prev]);
-                    }}
-                    className="sr-only peer" 
-                  />
-                  <div className="w-9 h-5 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:-translate-x-full after:content-[''] after:absolute after:top-[2px] after:right-[2px] after:bg-slate-300 after:border-slate-800 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-yellow-500"></div>
-                </label>
-              </div>
-            </div>
-
-            <button
-              onClick={handleSyncNow}
-              disabled={isSyncing}
-              className="w-full bg-[#0c1a35] text-white border border-yellow-500 py-2 px-4 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2"
-            >
-              <RefreshCw className={`w-4 h-4 ${isSyncing ? 'animate-spin' : ''}`} />
-              <span>{isSyncing ? 'جاري الاتصال والرفع...' : 'البدء بالمزامنة السحابية الفورية ☁️'}</span>
-            </button>
-
-            {/* Sync activity logs */}
-            {syncLogs.length > 0 && (
-              <div className="bg-[#040d1f] border border-slate-850 p-3 rounded-xl text-xs space-y-1 font-mono text-white max-h-[120px] overflow-y-auto">
-                <span className="text-xs text-white font-bold block border-b border-slate-800 pb-1">سجل المزامنة السحابية:</span>
-                {syncLogs.map((log, idx) => (
-                  <div key={idx} className="truncate select-none leading-relaxed text-right">{log}</div>
-                ))}
-              </div>
-            )}
-          </div>
 
           {/* Interactive Quick Add Commitment & Real-time Conflict Analyzer Form */}
           <div className="bg-slate-50 border-2 border-slate-200 rounded-2xl p-6 space-y-6 text-slate-900 shadow-2xl relative overflow-hidden">
@@ -1078,6 +1137,102 @@ export default function CalendarModule({
         </div>
 
       </div>
+      )}
+
+      {/* Edit Hearing Dialog */}
+      {editingHearing && (
+        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-[300] flex items-center justify-center p-4">
+          <div className="bg-gradient-to-br from-[#0C1220] via-[#0f172a] to-[#1e293b] border-2 border-yellow-500/40 rounded-3xl p-6 max-w-lg w-full shadow-2xl space-y-4 text-right animate-in fade-in zoom-in-95 duration-200">
+            <div className="flex justify-between items-center border-b border-white/10 pb-3">
+              <h3 className="text-base font-black text-yellow-400">تعديل موعد الجلسة</h3>
+              <button 
+                onClick={() => setEditingHearing(null)}
+                className="text-slate-400 hover:text-white font-bold p-1 hover:bg-white/10 rounded-lg transition-all cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+            
+            <div className="space-y-3 font-sans">
+              <div>
+                <label className="text-xs font-black text-slate-300 block mb-1">موضوع الجلسة / اسم القضية</label>
+                <input 
+                  type="text" 
+                  value={editTitle}
+                  onChange={(e) => setEditTitle(e.target.value)}
+                  className="w-full bg-slate-900 border border-white/20 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-yellow-500 transition-all" 
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs font-black text-slate-300 block mb-1">التاريخ</label>
+                  <input 
+                    type="date" 
+                    value={editDate}
+                    onChange={(e) => setEditDate(e.target.value)}
+                    className="w-full bg-slate-900 border border-white/20 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-yellow-500 transition-all" 
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-black text-slate-300 block mb-1">التوقيت</label>
+                  <input 
+                    type="text" 
+                    value={editTime}
+                    onChange={(e) => setEditTime(e.target.value)}
+                    className="w-full bg-slate-900 border border-white/20 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-yellow-500 transition-all" 
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="text-xs font-black text-slate-300 block mb-1">المحكمة المختصة</label>
+                <input 
+                  type="text" 
+                  value={editCourt}
+                  onChange={(e) => setEditCourt(e.target.value)}
+                  className="w-full bg-slate-900 border border-white/20 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-yellow-500 transition-all" 
+                />
+              </div>
+
+              <div>
+                <label className="text-xs font-black text-slate-300 block mb-1">القاضي / المحامي المسؤول</label>
+                <input 
+                  type="text" 
+                  value={editLawyer}
+                  onChange={(e) => setEditLawyer(e.target.value)}
+                  className="w-full bg-slate-900 border border-white/20 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-yellow-500 transition-all" 
+                />
+              </div>
+
+              <div>
+                <label className="text-xs font-black text-slate-300 block mb-1">ملاحظات الجلسة</label>
+                <textarea 
+                  value={editNotes}
+                  onChange={(e) => setEditNotes(e.target.value)}
+                  rows={3}
+                  className="w-full bg-slate-900 border border-white/20 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-yellow-500 transition-all resize-none font-sans" 
+                />
+              </div>
+            </div>
+
+            <div className="flex gap-2 justify-end pt-2 border-t border-white/10 select-none">
+              <button 
+                onClick={() => setEditingHearing(null)}
+                className="bg-slate-800 hover:bg-slate-700 text-white font-bold px-4 py-2 rounded-xl text-xs transition-all cursor-pointer"
+              >
+                إلغاء
+              </button>
+              <button 
+                onClick={handleSaveEditedHearing}
+                className="bg-yellow-500 hover:bg-yellow-600 text-slate-950 font-black px-4 py-2 rounded-xl text-xs transition-all cursor-pointer"
+              >
+                حفظ التغييرات
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   );

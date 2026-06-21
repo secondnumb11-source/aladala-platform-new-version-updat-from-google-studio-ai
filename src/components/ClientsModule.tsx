@@ -94,7 +94,7 @@ export default function ClientsModule({
     return map[status] || status || 'active';
   };
 
-  const handleSaveClient = async (clientData: any) => {
+  const handleSaveClient = async (clientData: any): Promise<boolean> => {
 
     // === حفظ مباشر في Supabase ===
     const payload = {
@@ -137,7 +137,7 @@ export default function ClientsModule({
     if (error) {
       console.error('[Save Client Error]', error.message, error.code);
       alert('فشل حفظ بيانات العميل: ' + error.message);
-      return;
+      return false;
     }
 
     console.log('[Save Client] ✅ Saved:', saved?.id);
@@ -159,6 +159,7 @@ export default function ClientsModule({
     onUpdateState('clients', { ...clientData, ...payload });
 
     alert('✅ تم حفظ بيانات العميل بنجاح');
+    return true;
   };
 
   const handleUpdateClientSubmit = async (e: React.FormEvent) => {

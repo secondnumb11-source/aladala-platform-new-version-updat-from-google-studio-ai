@@ -53,14 +53,14 @@ export default function AIFinanceTool({ invoices: propInvoices }: { invoices?: I
       
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         <div className="lg:col-span-8 space-y-6">
-          <div className="bg-slate-950 border border-slate-800 p-8 rounded-[2.5rem] shadow-2xl transition-all hover:shadow-blue-500/10">
+          <div className="bg-slate-950 border border-slate-700 p-8 rounded-[2.5rem] shadow-2xl transition-all hover:shadow-yellow-500/10">
             <div className="flex items-center gap-4 mb-6">
-              <div className="p-3 bg-slate-900 border border-slate-800 text-blue-400 rounded-2xl shadow-sm">
+              <div className="p-3 bg-slate-900 border border-yellow-500/30 text-yellow-500 rounded-2xl shadow-sm">
                 <Bot className="w-6 h-6" />
               </div>
               <div>
                 <h2 className="text-xl font-black text-white">المحاسب القانوني الآلي (AI Auditor)</h2>
-                <p className="text-xs text-white font-bold mt-1 opacity-80">تحليل مالي فوري، مطابقة ضريبية، واستخراج إيرادات المكتب آلياً.</p>
+                <p className="text-xs text-yellow-200 font-bold mt-1 opacity-100">تحليل مالي فوري، مطابقة ضريبية، واستخراج إيرادات المكتب آلياً.</p>
               </div>
             </div>
 
@@ -69,23 +69,23 @@ export default function AIFinanceTool({ invoices: propInvoices }: { invoices?: I
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="اسأل المحاسب: كم إجمالي الإيرادات لشهر مايو؟ هل تم تسديد جميع فواتير التوكيل..."
-                className="w-full bg-slate-900 border border-slate-800 rounded-2xl px-5 py-4 text-sm font-bold leading-relaxed text-white h-32 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 custom-scrollbar resize-none font-sans shadow-inner placeholder:text-slate-200 font-bold"
+                className="w-full bg-slate-900 border border-slate-600 rounded-2xl px-5 py-4 text-sm font-bold leading-relaxed text-white h-32 focus:outline-none focus:border-yellow-500 focus:ring-2 focus:ring-yellow-500/20 custom-scrollbar resize-none font-sans shadow-inner placeholder:text-slate-400 font-bold"
               ></textarea>
               
               {isProcessing ? (
-                <div className="bg-slate-900 text-white p-6 rounded-2xl flex flex-col items-center justify-center space-y-4 shadow-xl relative overflow-hidden">
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent w-full h-full animate-[shimmer_2s_infinite]"></div>
-                  <div className="w-8 h-8 rounded-full border-t-2 border-r-2 border-blue-400 animate-spin relative z-10"></div>
-                  <p className="text-xs font-black relative z-10 text-white font-bold">جاري مسح قواعد البيانات وحساب القوائم المالية...</p>
+                <div className="bg-slate-900 text-yellow-300 p-6 rounded-2xl flex flex-col items-center justify-center space-y-4 shadow-xl relative overflow-hidden">
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-yellow-500/10 to-transparent w-full h-full animate-[shimmer_2s_infinite]"></div>
+                  <div className="w-8 h-8 rounded-full border-t-2 border-r-2 border-yellow-400 animate-spin relative z-10"></div>
+                  <p className="text-xs font-black relative z-10 text-yellow-300 font-bold">جاري مسح قواعد البيانات وحساب القوائم المالية...</p>
                 </div>
               ) : analysisResult ? (
-                <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl shadow-sm relative overflow-hidden flex flex-col gap-3">
-                  <div className="absolute right-0 top-0 w-1.5 h-full bg-blue-500"></div>
-                  <h3 className="font-black text-white flex items-center gap-2 pr-2">
-                    <Bot className="w-4 h-4 text-blue-500" />
+                <div className="bg-slate-900 border border-yellow-500/30 p-6 rounded-2xl shadow-sm relative overflow-hidden flex flex-col gap-3">
+                  <div className="absolute right-0 top-0 w-1.5 h-full bg-yellow-500"></div>
+                  <h3 className="font-black text-yellow-300 flex items-center gap-2 pr-2">
+                    <Bot className="w-4 h-4 text-yellow-500" />
                     <span>التحليل المالي الذكي:</span>
                   </h3>
-                  <p className="whitespace-pre-line text-sm text-white font-bold font-bold leading-relaxed pr-2">
+                  <p className="whitespace-pre-line text-sm text-yellow-100 font-bold leading-relaxed pr-2">
                     {analysisResult}
                   </p>
                 </div>
@@ -93,7 +93,7 @@ export default function AIFinanceTool({ invoices: propInvoices }: { invoices?: I
                 <button 
                   onClick={handleAskAccountant}
                   disabled={!query}
-                  className="w-full bg-slate-900 hover:bg-slate-800 text-white py-4 rounded-2xl font-black text-sm flex items-center justify-center gap-2 shadow-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full bg-slate-800 hover:bg-slate-700 text-yellow-300 py-4 rounded-2xl font-black text-sm flex items-center justify-center gap-2 shadow-md transition-colors border border-yellow-500/50 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <Calculator className="w-4 h-4" />
                   <span>استخرج الرأي المحاسبي</span>

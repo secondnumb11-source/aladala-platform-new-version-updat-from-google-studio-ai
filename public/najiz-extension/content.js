@@ -587,6 +587,19 @@
 
       const result = await response.json();
       console.log('[العدالة] ✅ Sync:', result);
+
+      if (result.success && result.totalSynced > 0) {
+        window.dispatchEvent(new CustomEvent('najiz_sync_complete', {
+          detail: {
+            cases: result.savedCounts ? result.savedCounts.cases : 0,
+            hearings: result.savedCounts ? result.savedCounts.hearings : 0,
+            poa: result.savedCounts ? result.savedCounts.poa : 0,
+            executions: result.savedCounts ? result.savedCounts.executions : 0,
+            total: result.totalSynced
+          }
+        }));
+      }
+
       return result;
 
     } catch (err) {

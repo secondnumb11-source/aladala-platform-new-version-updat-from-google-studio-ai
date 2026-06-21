@@ -1184,7 +1184,21 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         })
       });
       if (!response.ok) throw new Error('HTTP ' + response.status);
-      return await response.json();
+      var result = await response.json();
+
+      if (result.success && result.totalSynced > 0) {
+        window.dispatchEvent(new CustomEvent('najiz_sync_complete', {
+          detail: {
+            cases: result.savedCounts ? result.savedCounts.cases : 0,
+            hearings: result.savedCounts ? result.savedCounts.hearings : 0,
+            poa: result.savedCounts ? result.savedCounts.poa : 0,
+            executions: result.savedCounts ? result.savedCounts.executions : 0,
+            total: result.totalSynced
+          }
+        }));
+      }
+
+      return result;
     } catch(err) {
       return { success: false, error: err.message };
     }
@@ -1627,11 +1641,6 @@ https://aladala-platform-rnuz.onrender.com
       title: 'سجل الشفافية 📊',
     },
     {
-        target: '#features-section',
-        content: 'تعرف على الخطوات العملية لتثبيت الامتداد وتفعيله على متصفحك.',
-        title: 'دليل التثبيت 📦',
-    },
-    {
       target: '#config-card',
       content: 'من هنا حدد أنواع البيانات التي ترغب في استقبالها آلياً.',
       title: 'تخصيص البيانات 🎯',
@@ -1847,129 +1856,8 @@ https://aladala-platform-rnuz.onrender.com
           </div>
         )}
       </AnimatePresence>
-      <ExtensionDownloadSection 
-        apiKey={customApiKey || "ADALAH-DEMO-KEY"} 
-        lawyerName={currentUser?.name || "المحامي"} 
-      />
 
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-        
-        {/* Left Side: Settings Panel, Configuration Status, Multi-select Target Types */}
-        <div id="features-section" className="lg:col-span-1 space-y-6">
-          
-          {/* Active Connection Status Badge (Imperial Dark) */}
-          <div className="bg-[#0A0F1E] border-4 border-yellow-400/20 rounded-[3rem] p-8 shadow-2xl text-white relative overflow-hidden group">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-yellow-400/5 blur-3xl rounded-full" />
-            <h3 className="font-black text-yellow-400 text-xl mb-6 flex items-center gap-3 relative z-10">
-              <ShieldCheck className="w-8 h-8 text-yellow-400" />
-              الحالة الحالية والتفويض
-            </h3>
-            
-            <div className="space-y-6 relative z-10">
-              <div className="p-6 bg-emerald-500/10 border-2 border-emerald-500/30 rounded-[1.5rem] shadow-inner">
-                <div className="flex justify-between items-center mb-2">
-                  <span className="text-xs font-black text-white uppercase tracking-widest leading-none">نمط عمل الربط:</span>
-                  <span className="text-[10px] bg-emerald-500 text-white px-3 py-1 rounded-full font-black shadow-lg">نشط الآن</span>
-                </div>
-                <p className="text-lg font-black text-emerald-400">
-                  {syncMode === 'personal' ? 'المزامنة الذاتية الملكية' : 'المزامنة المقيدة (API Key)'}
-                </p>
-                {syncMode === 'apikey' && !customApiKey && (
-                  <p className="text-[11px] text-yellow-400 mt-2 font-black">⚠️ لم يتم إدخال مفتاح API - سيتم استخدام الوضع الافتراضي</p>
-                )}
-              </div>
 
-              <div className="p-6 bg-white/5 border-2 border-yellow-400/20 rounded-[1.5rem] text-sm font-bold leading-relaxed text-yellow-100 shadow-md">
-                بمجرد تمديد الإضافة محلياً، تقوم بفحص المحتوى المالي والعمالي والجلسات في خادم ديوان المظالم أو ناجز ونقلها فوراً وفق الصلاحية المحددة.
-              </div>
-
-              {/* Web Worker Background Processing Switch */}
-              <div className="p-6 bg-white/5 border-2 border-white/10 rounded-[2rem] space-y-4 shadow-xl">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm font-black text-white uppercase tracking-wider">المزامنة الخلفية (AI Worker):</span>
-                  <button 
-                    onClick={() => setBgProcessingEnabled(!bgProcessingEnabled)}
-                    className={`w-14 h-7 flex items-center rounded-full p-1 transition-all cursor-pointer ${bgProcessingEnabled ? 'bg-yellow-400 shadow-[0_0_20px_rgba(250,204,21,0.4)]' : 'bg-slate-700'}`}
-                  >
-                    <div className={`bg-white w-5 h-5 rounded-full shadow-lg transform transition-all duration-300 ${bgProcessingEnabled ? 'translate-x-7' : 'translate-x-0'}`} />
-                  </button>
-                </div>
-                <p className="text-[11px] text-white font-black leading-relaxed opacity-80">
-                  تفعيل المعالجة وتحليل مصفوفات النصوص الضخمة عبر خيوط متوازية لمنع تجمد الشاشة تماماً وضمان تدفق العمل.
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* Enhanced Infographics & Security Benefits Section (Imperial Dark) */}
-          <div className="bg-[#0A0F1E] border-4 border-yellow-400/20 rounded-[3rem] p-10 shadow-2xl text-white space-y-10 relative overflow-hidden">
-            <div className="absolute bottom-0 left-0 w-32 h-32 bg-yellow-400/5 blur-3xl rounded-full" />
-            <div className="flex items-center gap-5 border-b-2 border-white/10 pb-6 relative z-10">
-              <div className="p-4 bg-yellow-400 text-black rounded-2xl shadow-xl">
-                <ShieldCheck className="w-8 h-8" />
-              </div>
-              <h3 className="font-black text-white text-2xl">دليل الربط الآمن والتثبيت</h3>
-            </div>
-            
-            <div className="space-y-6 relative z-10">
-              {[
-                { 
-                  title: "1. تفعيل وضع المطور", 
-                  desc: "افتح chrome://extensions وفعّل خيار 'Developer Mode' للسماح بتحميل الحزم المحلية المفتوحة.",
-                  icon: Code,
-                  color: "text-blue-400"
-                },
-                { 
-                  title: "2. فك حزمة الامتداد", 
-                  desc: "يجب استخراج ملف .ZIP المحمل في مجلد مستقل لضمان عمل كافة الملفات البرمجية والأذونات.",
-                  icon: Download,
-                  color: "text-yellow-400"
-                },
-                { 
-                  title: "3. مزايا المزامنة التلقائية", 
-                  desc: "الوضع الافتراضي المشفر يحمي خصوصيتك عبر تشفير البيانات محلياً قبل الترحيل الملكي.",
-                  icon: Zap,
-                  color: "text-emerald-400"
-                }
-              ].map((step, i) => (
-                <div key={i} className="flex gap-4 p-5 bg-white/5 rounded-[1.5rem] border-2 border-white/5 hover:border-yellow-400/30 transition-all group">
-                  <div className={`p-3 rounded-xl bg-slate-800 ${step.color} h-fit shadow-lg group-hover:scale-110 transition-transform`}>
-                    <step.icon className="w-6 h-6" />
-                  </div>
-                  <div>
-                    <h4 className="text-lg font-black text-white leading-tight mb-1">{step.title}</h4>
-                    <p className="text-xs text-slate-300 font-bold leading-relaxed">{step.desc}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <div className="p-5 bg-yellow-400/5 rounded-2xl border-2 border-yellow-400/30 relative z-10">
-              <div className="flex items-center gap-3 mb-3 text-yellow-400">
-                <Key className="w-5 h-5" />
-                <span className="text-xs font-black uppercase tracking-widest leading-none">بروتوكول تطبيق المفاتيح</span>
-              </div>
-              <div className="space-y-2 bg-black/40 p-4 rounded-xl border border-white/5 font-mono text-[10px] text-white/90">
-                <div className="flex justify-between items-center bg-white/5 p-2 rounded-lg">
-                  <span className="opacity-60 text-yellow-400 font-black">System URL:</span>
-                  <span className="text-emerald-400 font-bold select-all truncate max-w-[140px] tracking-wider">{window.location.origin}</span>
-                </div>
-                <div className="flex justify-between items-center bg-white/5 p-2 rounded-lg">
-                  <span className="opacity-60 text-yellow-400 font-black">API Status:</span>
-                  <span className={syncMode === 'personal' ? 'text-amber-400 font-black' : 'text-blue-400 font-black'}>
-                    {syncMode === 'personal' ? 'Personal Cloud' : 'Enterprise API v4'}
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-        </div>
-
-        {/* Right Side: Tab Options and Interactive Simulator Console */}
-        <div className="lg:col-span-3 space-y-10">
-        </div>
-      </div>
 
       {/* Royal GOLD & DEEP BLUE Settings Modal Overlay */}
       <AnimatePresence>

@@ -750,21 +750,22 @@ export default function TasksModule({
     return matchPriority && matchAssignee && matchCase;
   });
 
-  const handleSaveTask = async (taskData: any) => {
+  const handleSaveTaskForm = async (e: React.FormEvent) => {
+    e.preventDefault();
     const selectedEmp = realEmployees.find(
-      e => e.id === selectedEmployeeId
+      (e) => e.id === selectedEmployeeId
     );
     const selectedCase = realCases.find(
-      c => c.id === selectedCaseId
+      (c) => c.id === selectedCaseId
     );
   
     const payload = {
-      id: taskData.id || generateUUID(),
-      title: taskData.title?.trim(),
-      description: taskData.description?.trim() || null,
-      status: taskData.status || 'todo',
-      priority: taskData.priority || 'medium',
-      due_date: taskData.dueDate || null,
+      id: generateUUID(),
+      title: taskTitle?.trim(),
+      description: taskDesc?.trim() || null,
+      status: 'todo',
+      priority: taskPriority || 'medium',
+      due_date: taskDueDate ? `${taskDueDate}T${taskDueTime}` : null,
       employee_id: selectedEmp?.id || null,
       assigned_to: selectedEmp?.name || null,
       case_id: selectedCase?.id || null,
@@ -799,6 +800,9 @@ export default function TasksModule({
       createdAt: payload.created_at
     });
   
+    setTaskTitle('');
+    setTaskDesc('');
+    setIsAdding(false);
     return true;
   };
 
@@ -1562,7 +1566,7 @@ export default function TasksModule({
               </button>
             </div>
 
-            <form onSubmit={handleCreateTask} className="space-y-4">
+            <form onSubmit={handleSaveTaskForm} className="space-y-4">
               <div>
                 <label className="text-sm text-[#fbbf24]  block mb-1 font-black">مسمى وعنوان المهمة الاستشارية:</label>
                 <input 

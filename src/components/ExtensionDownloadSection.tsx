@@ -440,7 +440,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
             </div>
             <span className="text-4xl md:text-5xl font-mono font-black text-yellow-300 selection:bg-yellow-400 selection:text-black tracking-[0.25em] drop-shadow-lg">{apiKey}</span>
           </div>
-          <p className="text-sm text-yellow-100 font-bold max-w-xl leading-relaxed">هذا الرمز هو بصمتك الرقمية الوحيدة للاتصال الآمن؛ لا تشاركه مع أي جهة لضمان حصانة مراسلاتك وبياناتك.</p>
+          <p className="text-sm text-yellow-50 font-bold max-w-xl leading-relaxed">هذا الرمز هو بصمتك الرقمية الوحيدة للاتصال الآمن؛ لا تشاركه مع أي جهة لضمان حصانة مراسلاتك وبياناتك.</p>
         </div>
         <button
           onClick={handleCopyKey}
@@ -451,19 +451,19 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         </button>
       </div>
 
-      {/* Main Download Options - Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+      {/* Main Download Options - Center aligned */}
+      <div className="max-w-xl mx-auto w-full">
         
         {/* Step 1: Download Option A (Imperial Dark) */}
         <div className="bg-[#0A0F1E] border-4 border-white/5 rounded-[3.5rem] p-12 flex flex-col justify-between space-y-10 shadow-2xl hover:border-yellow-400 shadow-[0_0_50px_-15px_rgba(250,204,21,0.1)] transition-all group relative overflow-hidden">
           <div className="absolute -bottom-16 -left-16 w-48 h-48 bg-yellow-400/10 blur-3xl rounded-full pointer-events-none" />
           <div className="space-y-6 relative z-10">
-            <div className="flex items-center gap-5 text-yellow-400 font-black text-2xl">
+            <div className="flex items-center gap-5 font-black text-2xl">
               <div className="w-14 h-14 rounded-2xl bg-yellow-400 text-black flex items-center justify-center font-black text-3xl shadow-xl shadow-yellow-400/20">1</div>
-              <span>التحميل المباشر المتكامل</span>
+              <span className="high-contrast-text-yellow">التحميل المباشر المتكامل</span>
             </div>
-            <h4 className="text-3xl font-black text-white leading-tight">حزمة الربط الذهبية <span className="text-yellow-300">(.ZIP)</span></h4>
-            <p className="text-lg text-white font-bold leading-relaxed text-justify">
+            <h4 className="text-3xl font-black leading-tight high-contrast-text-white">حزمة الربط الذهبية <span className="high-contrast-text-yellow">(.ZIP)</span></h4>
+            <p className="text-lg font-bold leading-relaxed text-justify high-contrast-text-white">
               الحل الأسرع والأكثر كفاءة. حمل الحزمة، استخرج الملفات، وابدأ في سحب بياناتك من ناجز فوراً بضغطة زر واحدة وهيبة تقنية لا تضاهى.
             </p>
           </div>
@@ -524,30 +524,6 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                 )}
               </div>
             )}
-          </div>
-        </div>
-
-        {/* Step 2: Download Option B (Imperial Dark) */}
-        <div className="bg-[#0A0F1E] border-4 border-white/5 rounded-[3.5rem] p-12 flex flex-col justify-between space-y-10 shadow-2xl hover:border-emerald-500 shadow-[0_0_50px_-15px_rgba(52,211,153,0.1)] transition-all group relative overflow-hidden">
-          <div className="absolute -bottom-16 -right-16 w-48 h-48 bg-emerald-400/10 blur-3xl rounded-full pointer-events-none" />
-          <div className="space-y-6 relative z-10">
-            <div className="flex items-center gap-5 text-emerald-400 font-black text-2xl">
-              <div className="w-14 h-14 rounded-2xl bg-emerald-400 text-black flex items-center justify-center font-black text-3xl shadow-xl shadow-emerald-400/20">2</div>
-              <span>خيار التثبيت المتقدم</span>
-            </div>
-            <h4 className="text-3xl font-black text-white leading-tight">التركيب <span className="text-emerald-300">اليدوي</span> للملفات</h4>
-            <p className="text-lg text-white font-bold leading-relaxed text-justify">
-              للمكاتب التي تفضل التعامل مع الرموز البرمجية الخام أو تواجه عوائق في الأرشفة. تجميع يدوي لسبعة ملفات برمجية دقيقة تضمن لك الاتصال المستقر.
-            </p>
-          </div>
-
-          <div className="pt-4 relative z-10">
-            <a
-              href="#unpacked-browser"
-              className="w-full bg-transparent border-4 border-emerald-400 text-emerald-400 hover:bg-emerald-400 hover:text-black font-black text-2xl py-8 px-6 rounded-[2rem] block text-center active:scale-95 transition-all outline-none shadow-2xl hover:shadow-emerald-400/30"
-            >
-              ⚖️ تجميع الرموز السبعة يدوياً
-            </a>
           </div>
         </div>
 

@@ -115,7 +115,7 @@ export default function AIDeadlinesTool() {
           const c = judgmentCases.find(j => j.case_number === e.target.value);
           setSelectedCase(c || null);
         }}
-        className="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-amber-500"
+        className="w-full ai-select-high-contrast px-4 py-3 rounded-2xl focus:outline-none focus:border-amber-400"
       >
         <option value="">— اختر قضية من النظام —</option>
         {judgmentCases.map((c, i) => (

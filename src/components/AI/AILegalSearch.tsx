@@ -586,9 +586,10 @@ export default function AILegalSearch() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 animate-fade-in">
           {/* Main Search Panel */}
           <div className="lg:col-span-8 space-y-6">
-            <div className="bg-white border-2 border-slate-200/80 p-6 rounded-[2.5rem] shadow-xl">
-              <label className="text-white font-extrabold text-sm mb-3 block">اسأل محاميك الرقمي بخصوص أي مسألة تشريعية سعودية:</label>
-              <div className="relative group">
+            <div className="bg-slate-900 border-2 border-amber-500/30 p-6 rounded-[2.5rem] shadow-xl relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/10 blur-3xl rounded-full -translate-y-16 translate-x-16"></div>
+              <label className="text-white font-black text-sm mb-3 block relative z-10 drop-shadow-md">اسأل محاميك الرقمي بخصوص أي مسألة تشريعية سعودية:</label>
+              <div className="relative group z-10">
                 <Search className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-200 font-bold w-6 h-6 group-focus-within:text-amber-400 font-black transition-colors" />
                 <input 
                   type="text" 
@@ -610,9 +611,9 @@ export default function AILegalSearch() {
             </div>
 
             {isLoading && (
-              <div className="py-20 flex flex-col items-center justify-center space-y-4 bg-white rounded-3xl border border-slate-250 border-dashed animate-pulse">
-                <div className="w-12 h-12 border-4 border-slate-100 border-t-amber-500 rounded-full animate-spin"></div>
-                <p className="text-white font-black text-sm">جاري مراجعة متون الأنظمة واللوائح والقرارات الملكية لوزارة العدل...</p>
+              <div className="py-20 flex flex-col items-center justify-center space-y-4 bg-slate-900 rounded-3xl border border-amber-500/30 border-dashed animate-pulse shadow-lg">
+                <div className="w-12 h-12 border-4 border-slate-800 border-t-amber-400 rounded-full animate-spin shadow-[0_0_15px_rgba(251,191,36,0.5)]"></div>
+                <p className="text-white font-black text-sm drop-shadow-md text-yellow-50">جاري مراجعة متون الأنظمة واللوائح والقرارات الملكية لوزارة العدل...</p>
               </div>
             )}
 
@@ -652,24 +653,25 @@ export default function AILegalSearch() {
 
           {/* Sidebar Recommendations */}
           <div className="lg:col-span-4 space-y-6">
-            <div className="bg-white border-2 border-slate-200/80 p-6 rounded-[2rem] shadow-lg">
-              <h4 className="font-black text-white mb-5 flex items-center gap-2 text-sm border-b border-slate-100 pb-3">
-                <Bookmark className="w-4 h-4 text-amber-500" />
+            <div className="bg-slate-900 border-2 border-amber-500/30 p-6 rounded-[2rem] shadow-xl relative overflow-hidden">
+              <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-amber-500/5 to-transparent pointer-events-none"></div>
+              <h4 className="font-black text-yellow-400 mb-5 flex items-center gap-2 text-sm border-b border-amber-500/20 pb-3 relative z-10 drop-shadow-[0_0_8px_rgba(250,204,21,0.4)]">
+                <Bookmark className="w-4 h-4 text-amber-400 drop-shadow-sm" />
                 المصادر المرجعية والمحاكم المزامنة
               </h4>
-              <div className="space-y-4">
+              <div className="space-y-4 relative z-10">
                 {sources.length > 0 ? sources.map((s, i) => (
-                  <a key={i} href={s.link} target="_blank" rel="noreferrer" className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl transition-all group border border-slate-200">
+                  <a key={i} href={s.link} target="_blank" rel="noreferrer" className="flex items-center justify-between p-4 bg-slate-800 rounded-2xl transition-all group border border-slate-700/80 hover:border-amber-400">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center border border-slate-300 text-amber-650 shadow-sm font-extrabold">
+                      <div className="w-10 h-10 bg-slate-700 rounded-xl flex items-center justify-center border border-slate-600 text-amber-400 shadow-sm font-extrabold text-lg drop-shadow-md">
                         ⚖️
                       </div>
                       <div className="text-right">
-                        <p className="text-xs font-black text-white">{s.title}</p>
+                        <p className="text-xs font-black text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.3)]">{s.title}</p>
                         <p className="text-[10px] text-slate-300 font-bold">{s.category}</p>
                       </div>
                     </div>
-                    <ExternalLink className="w-4 h-4 text-slate-200 font-bold transition-colors" />
+                    <ExternalLink className="w-4 h-4 text-slate-300 font-bold transition-colors group-hover:text-amber-400" />
                   </a>
                 )) : (
                   <div className="text-center py-8 opacity-60">
@@ -760,107 +762,107 @@ export default function AILegalSearch() {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-              {SAUDI_SYSTEMS_DATA.map((sys) => {
-                // Assign background theme representing the physical folders
-                const folderBgClasses: Record<string, string> = {
-                  civil_transactions: 'bg-[#0c2461]', // Deep Royal Blue
-                  companies_law: 'bg-[#916a04]',      // Rich Amber-Gold
-                  labor_law: 'bg-[#1e4620]',          // Forest Green
-                  evidence_law: 'bg-[#4a154b]',       // Royal Purple
-                  enforcement_law: 'bg-[#800020]',    // Deep Burgundy Red
-                  bankruptcy_law: 'bg-[#edf2f7]',     // Light Slate (Displays light-theme dynamic contrast live in action!)
-                };
-
-                const bgClass = folderBgClasses[sys.id] || 'bg-slate-900';
-                const isSelected = selectedSystem.id === sys.id;
-                
-                // Real-time relative brightness & contrast categorization
-                const isDark = !['bg-[#edf2f7]', 'bg-white', 'bg-slate-100', 'bg-amber-100'].includes(bgClass);
-                
-                // Dynamic Typography Contrast Theme variables to ensure extreme readability
-                const textTitleColor = isDark ? 'text-white' : 'text-slate-950';
-                const textDescColor = isDark ? 'text-white font-bold/90' : 'text-slate-300';
-                const metaColor = isDark ? 'text-amber-300' : 'text-emerald-750';
-                const folderBadgeClass = isDark ? 'bg-white/10 text-white border-white/20' : 'bg-slate-200/80 text-slate-950 border-slate-350';
-                
-                return (
-                  <motion.div
-                    key={sys.id}
-                    whileHover={{ scale: 1.04, y: -4 }}
-                    whileTap={{ scale: 0.98 }}
-                    onClick={() => {
-                      setSelectedSystem(sys);
-                      setObsAiResult(null);
-
-                      const linkMapping: Record<string, string> = {
-                        civil_transactions: localStorage.getItem('law_link_civil_transactions') || 'https://laws.boe.gov.sa/BoeLaws/Laws/LawDetails/655fdb42-8c96-422b-b8c4-b04f0095c94c/1',
-                        companies_law: localStorage.getItem('law_link_companies_new') || 'https://laws.boe.gov.sa/BoeLaws/Laws/LawDetails/a8376aea-1bc3-49d4-9027-aed900b555af/1',
-                        labor_law: localStorage.getItem('law_link_labor_law') || 'https://laws.boe.gov.sa/boelaws/laws/lawdetails/08381293-6388-48e2-8ad2-a9a700f2aa94/1',
-                        evidence_law: localStorage.getItem('law_link_evidence_law') || 'https://laws.boe.gov.sa/BoeLaws/Laws/LawDetails/2716057c-c097-4bad-8e1e-ae1400c678d5/1',
-                        enforcement_law: localStorage.getItem('law_link_enforcement_law') || 'https://laws.boe.gov.sa/BoeLaws/Laws/LawDetails/c81ba2f1-1bf1-443b-9b1c-a9a700f27110/1',
-                        bankruptcy_law: localStorage.getItem('law_link_bankruptcy_law') || 'https://laws.boe.gov.sa/BoeLaws/Laws/LawDetails/68204119-84f1-4789-8fad-a9ec014c3788/1',
-                      };
-                      const externalLink = linkMapping[sys.id];
-                      
-                      if (externalLink) {
-                        window.open(externalLink, '_blank', 'noopener,noreferrer');
-                      } else {
-                        alert('لم يتم العثور على رابط مخصص لهذا النظام. يرجى التوجه لصفحة الإعدادات وإضافته أولاً.');
-                      }
-                    }}
-                    className="cursor-pointer group flex flex-col relative text-right"
-                  >
-                    {/* Folder Tab Shape Accent */}
-                    <div 
-                      className={`w-20 h-5 rounded-t-lg -mb-[1px] mr-4 relative border-t border-x transition-all duration-300 ${
-                        isSelected 
-                          ? isDark ? 'bg-[#0a1e4d] border-amber-400' : 'bg-[#d2d9e0] border-slate-400' 
-                          : isDark ? `${bgClass} border-slate-700/60` : `${bgClass} border-slate-300`
-                      }`}
-                    >
-                      <div className="absolute inset-0 bg-black/5 rounded-t-lg"></div>
-                    </div>
-
-                    {/* Main Folder Body Frame */}
-                    <div 
-                      className={`rounded-2xl rounded-tr-none p-5 h-full flex flex-col justify-between min-h-[190px] border-2 transition-all duration-300 shadow-md ${bgClass} ${
-                        isSelected 
-                          ? 'border-amber-400 ring-4 ring-amber-400/20' 
-                          : isDark ? 'border-transparent' : 'border-slate-300'
-                      }`}
-                    >
-                      <div className="space-y-2.5">
-                        <div className="flex justify-between items-start">
-                          <BookOpen className={`w-5 h-5 ${isDark ? 'text-amber-400 animate-pulse' : 'text-emerald-700'}`} />
-                          <span className={`text-[8.5px] px-2.5 py-0.5 rounded-full border font-black ${folderBadgeClass}`}>
-                            {sys.articleCount} مادة
-                          </span>
-                        </div>
-                        
-                        <div>
-                          <h4 className={`text-xs font-black tracking-tight leading-snug ${textTitleColor}`}>
-                            {sys.name}
-                          </h4>
-                          <h5 className={`text-[11px] font-bold mt-0.5 opacity-80 ${isDark ? 'text-white font-bold' : 'text-slate-700'}`}>
-                            {sys.enName}
-                          </h5>
-                        </div>
-                      </div>
-
-                      <div className="pt-3 border-t border-current/10 mt-2 space-y-1">
-                        <p className={`text-[9.5px] font-bold leading-relaxed line-clamp-2 ${textDescColor}`}>
-                          {sys.description}
-                        </p>
-                        <div className="flex justify-between items-center text-[8.5px] mt-1.5 font-sans font-extrabold">
-                          <span className={`${metaColor}`}>{sys.category}</span>
-                          <span className={isDark ? 'text-white font-bold' : 'text-slate-200 font-bold'}>{sys.hijriDate.split(' ')[0]}</span>
-                        </div>
-                      </div>
-                    </div>
-                  </motion.div>
-                );
-              })}
-            </div>
+               {SAUDI_SYSTEMS_DATA.map((sys) => {
+                 // Assign background theme representing the physical folders
+                 const folderBgClasses: Record<string, string> = {
+                   civil_transactions: 'bg-[#0c2461]', // Deep Royal Blue
+                   companies_law: 'bg-[#916a04]',      // Rich Amber-Gold
+                   labor_law: 'bg-[#1e4620]',          // Forest Green
+                   evidence_law: 'bg-[#4a154b]',       // Royal Purple
+                   enforcement_law: 'bg-[#800020]',    // Deep Burgundy Red
+                   bankruptcy_law: 'bg-[#1e293b]',     // Deep Slate Steel
+                 };
+ 
+                 const bgClass = folderBgClasses[sys.id] || 'bg-slate-900';
+                 const isSelected = selectedSystem.id === sys.id;
+                 
+                 // Real-time relative brightness & contrast categorization
+                 const isDark = true; // All cards are dark for ultra contrast neon colors!
+                 
+                 // Dynamic Typography Contrast Theme variables to ensure extreme readability
+                 const textTitleColor = 'law-card-title';
+                 const textDescColor = 'law-card-desc';
+                 const metaColor = 'law-card-meta';
+                 const folderBadgeClass = 'law-card-badge';
+                 
+                 return (
+                   <motion.div
+                     key={sys.id}
+                     whileHover={{ scale: 1.04, y: -4 }}
+                     whileTap={{ scale: 0.98 }}
+                     onClick={() => {
+                       setSelectedSystem(sys);
+                       setObsAiResult(null);
+ 
+                       const linkMapping: Record<string, string> = {
+                         civil_transactions: localStorage.getItem('law_link_civil_transactions') || 'https://laws.boe.gov.sa/BoeLaws/Laws/LawDetails/655fdb42-8c96-422b-b8c4-b04f0095c94c/1',
+                         companies_law: localStorage.getItem('law_link_companies_new') || 'https://laws.boe.gov.sa/BoeLaws/Laws/LawDetails/a8376aea-1bc3-49d4-9027-aed900b555af/1',
+                         labor_law: localStorage.getItem('law_link_labor_law') || 'https://laws.boe.gov.sa/boelaws/laws/lawdetails/08381293-6388-48e2-8ad2-a9a700f2aa94/1',
+                         evidence_law: localStorage.getItem('law_link_evidence_law') || 'https://laws.boe.gov.sa/BoeLaws/Laws/LawDetails/2716057c-c097-4bad-8e1e-ae1400c678d5/1',
+                         enforcement_law: localStorage.getItem('law_link_enforcement_law') || 'https://laws.boe.gov.sa/BoeLaws/Laws/LawDetails/c81ba2f1-1bf1-443b-9b1c-a9a700f27110/1',
+                         bankruptcy_law: localStorage.getItem('law_link_bankruptcy_law') || 'https://laws.boe.gov.sa/BoeLaws/Laws/LawDetails/68204119-84f1-4789-8fad-a9ec014c3788/1',
+                       };
+                       const externalLink = linkMapping[sys.id];
+                       
+                       if (externalLink) {
+                         window.open(externalLink, '_blank', 'noopener,noreferrer');
+                       } else {
+                         alert('لم يتم العثور على رابط مخصص لهذا النظام. يرجى التوجه لصفحة الإعدادات وإضافته أولاً.');
+                       }
+                     }}
+                     className="cursor-pointer group flex flex-col relative text-right law-folder-card-wrapper"
+                   >
+                     {/* Folder Tab Shape Accent */}
+                     <div 
+                       className={`w-20 h-5 rounded-t-lg -mb-[1px] mr-4 relative border-t border-x transition-all duration-300 ${
+                         isSelected 
+                           ? 'bg-[#0a1e4d] border-amber-400' 
+                           : `${bgClass} border-slate-700/60`
+                       }`}
+                     >
+                       <div className="absolute inset-0 bg-black/5 rounded-t-lg"></div>
+                     </div>
+ 
+                     {/* Main Folder Body Frame */}
+                     <div 
+                       className={`rounded-2xl rounded-tr-none p-5 h-full flex flex-col justify-between min-h-[190px] border-2 transition-all duration-300 shadow-md law-folder-card ${bgClass} ${
+                         isSelected 
+                           ? 'border-amber-400 ring-4 ring-amber-400/20' 
+                           : 'border-transparent'
+                       }`}
+                     >
+                       <div className="space-y-2.5">
+                         <div className="flex justify-between items-start">
+                           <BookOpen className="w-5 h-5 text-amber-400 animate-pulse" />
+                           <span className={`text-[8.5px] px-2.5 py-0.5 rounded-full border font-black ${folderBadgeClass}`}>
+                             {sys.articleCount} مادة
+                           </span>
+                         </div>
+                         
+                         <div>
+                           <h4 className={`text-xs font-black tracking-tight leading-snug ${textTitleColor}`}>
+                             {sys.name}
+                           </h4>
+                           <h5 className="text-[11px] font-bold mt-0.5 opacity-80 law-card-subtitle">
+                             {sys.enName}
+                           </h5>
+                         </div>
+                       </div>
+ 
+                       <div className="pt-3 border-t border-current/10 mt-2 space-y-1">
+                         <p className={`text-[9.5px] font-bold leading-relaxed line-clamp-2 ${textDescColor}`}>
+                           {sys.description}
+                         </p>
+                         <div className="flex justify-between items-center text-[8.5px] mt-1.5 font-sans font-extrabold">
+                           <span className={`${metaColor}`}>{sys.category}</span>
+                           <span className="law-card-date">{sys.hijriDate.split(' ')[0]}</span>
+                         </div>
+                       </div>
+                     </div>
+                   </motion.div>
+                 );
+               })}
+             </div>
 
             {/* Contrast Mode Notice Ribbon */}
             <div className="bg-emerald-500/[0.04] rounded-2xl p-4.5 border-2 border-emerald-600/30 flex items-center justify-between text-slate-900 text-xs font-bold leading-relaxed shadow-sm">
@@ -876,23 +878,24 @@ export default function AILegalSearch() {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
             {/* Right Side: Law Selector & Search */}
             <div className="lg:col-span-4 space-y-6">
-              <div className="bg-white border-2 border-slate-200/80 rounded-[2rem] p-6 shadow-xl space-y-5">
-                <h3 className="text-sm font-black text-slate-950 flex items-center gap-2 border-b border-slate-100 pb-3">
-                  <BookOpen className="w-4 h-4 text-emerald-700" />
+              <div className="bg-slate-900 border-2 border-amber-500/30 rounded-[2rem] p-6 shadow-xl space-y-5 relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/10 blur-3xl rounded-full -translate-y-16 translate-x-16"></div>
+                <h3 className="text-sm font-black text-white flex items-center gap-2 border-b border-amber-500/20 pb-3 drop-shadow-md relative z-10">
+                  <BookOpen className="w-4 h-4 text-amber-400 drop-shadow-sm" />
                   البحث المصنف بالمرصد والأنظمة
                 </h3>
-                <div className="relative">
-                  <Search className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-200 font-bold w-4 h-4" />
+                <div className="relative z-10">
+                  <Search className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold w-4 h-4" />
                   <input
                     type="text"
                     placeholder="ابحث بالاسم أو الفئة..."
-                    className="w-full bg-slate-50 border-2 border-slate-200 rounded-xl pr-11 pl-4 py-3.5 text-xs font-black text-slate-950 focus:outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-600/10 transition-all"
+                    className="w-full bg-slate-800 border-2 border-slate-700 rounded-xl pr-11 pl-4 py-3.5 text-xs font-black text-white focus:outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20 transition-all placeholder-slate-500"
                     value={librarySearchTerm}
                     onChange={(e) => setLibrarySearchTerm(e.target.value)}
                   />
                 </div>
 
-                <div className="space-y-2 max-h-[360px] overflow-y-auto pr-1">
+                <div className="space-y-2 max-h-[360px] overflow-y-auto pr-1 relative z-10">
                   {filteredSystems.map((sys) => {
                     const isSelected = selectedSystem.id === sys.id;
                     return (
@@ -905,21 +908,21 @@ export default function AILegalSearch() {
                         }}
                         className={`w-full text-right p-4 rounded-2xl border transition-all flex flex-col gap-1.5 cursor-pointer ${
                           isSelected 
-                            ? 'bg-emerald-500/[0.04] border-emerald-600 shadow-md' 
-                            : 'bg-white border-slate-200'
+                            ? 'bg-amber-500/10 border-amber-500 shadow-[0_0_15px_rgba(251,191,36,0.15)] ring-1 ring-amber-500/50' 
+                            : 'bg-slate-800 border-slate-700 hover:border-amber-500/50'
                         }`}
                       >
                         <div className="flex justify-between items-center w-full">
-                          <span className={`text-xs font-black ${isSelected ? 'text-emerald-800' : 'text-slate-950'}`}>
+                          <span className={`text-xs font-black drop-shadow-md ${isSelected ? 'text-yellow-400' : 'text-white'}`}>
                             {sys.name}
                           </span>
-                          <span className="text-[11px] bg-slate-100 border border-slate-200 text-slate-950 px-2.5 py-0.5 rounded-full font-black">
+                          <span className={`text-[11px] px-2.5 py-0.5 rounded-full font-black ${isSelected ? 'bg-amber-500 text-slate-900 border border-amber-400' : 'bg-slate-900 border border-slate-700 text-white'}`}>
                             {sys.articleCount} مادة
                           </span>
                         </div>
-                        <div className="flex justify-between items-center w-full mt-0.5 text-[10px] text-slate-700 font-bold">
+                        <div className={`flex justify-between items-center w-full mt-0.5 text-[10px] font-bold ${isSelected ? 'text-amber-200' : 'text-slate-400'}`}>
                           <span>الصدور: {sys.hijriDate}</span>
-                          <span className="text-emerald-600 font-black text-[11px]">{sys.category}</span>
+                          <span className={`font-black text-[11px] ${isSelected ? 'text-yellow-400 drop-shadow-md' : 'text-slate-300'}`}>{sys.category}</span>
                         </div>
                       </button>
                     );
@@ -954,20 +957,21 @@ export default function AILegalSearch() {
             <div className="lg:col-span-8 space-y-6">
               
               {/* Selected System Card */}
-              <div className="bg-white border-2 border-slate-200/80 rounded-[2.5rem] p-8 shadow-xl space-y-6">
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-slate-100 pb-5">
+              <div className="bg-slate-900 border-2 border-amber-500/30 rounded-[2.5rem] p-8 shadow-xl space-y-6 relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-64 h-64 bg-amber-500/10 blur-3xl rounded-full -translate-y-32 translate-x-32 pointer-events-none"></div>
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-amber-500/20 pb-5 relative z-10">
                   <div>
-                    <h2 className="text-xl font-black text-slate-900">{selectedSystem.name}</h2>
-                    <p className="text-xs font-bold text-slate-200 font-bold mt-1">{selectedSystem.enName} • صدر في {selectedSystem.hijriDate}</p>
+                    <h2 className="text-2xl font-black text-white drop-shadow-[0_0_12px_rgba(255,255,255,0.4)]">{selectedSystem.name}</h2>
+                    <p className="text-xs font-bold text-slate-300 font-bold mt-1 drop-shadow-md">{selectedSystem.enName} • صدر في {selectedSystem.hijriDate}</p>
                   </div>
-                  <span className="text-xs bg-amber-50 text-amber-400 font-black border border-amber-200 px-4 py-1.5 rounded-full font-black">
+                  <span className="text-xs bg-amber-500/20 text-yellow-400 drop-shadow-md font-black border border-amber-500/30 px-4 py-1.5 rounded-full font-black">
                     {selectedSystem.category}
                   </span>
                 </div>
 
-                <div className="space-y-2">
-                  <h4 className="font-black text-slate-900 text-xs uppercase tracking-wide">نبذة عن غايات النظام ولائحته:</h4>
-                  <p className="text-slate-200 font-bold text-xs font-bold leading-relaxed bg-slate-50 p-5 rounded-2xl border border-slate-100">
+                <div className="space-y-2 relative z-10">
+                  <h4 className="font-black text-white text-xs uppercase tracking-wide drop-shadow-sm">نبذة عن غايات النظام ولائحته:</h4>
+                  <p className="text-slate-100 font-bold text-xs font-bold leading-relaxed bg-slate-800/80 drop-shadow-md p-5 rounded-2xl border border-slate-700/80">
                     {selectedSystem.description}
                   </p>
                 </div>

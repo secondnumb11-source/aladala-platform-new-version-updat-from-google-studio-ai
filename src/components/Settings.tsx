@@ -1281,7 +1281,7 @@ export default function Settings({
 
         {activeSettingsTab === 'db-issues' ? (
           <div className="lg:col-span-12 space-y-6 text-right" dir="rtl">
-            <div className="bg-white border border-slate-800 rounded-3xl p-6 shadow-sm space-y-6 settings-card text-high-contrast-light-bg">
+            <div className="bg-white border border-slate-800 rounded-3xl p-6 shadow-sm space-y-6 settings-card high-contrast-card-wrapper text-high-contrast-light-bg">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-4">
                 <div className="flex items-center gap-3">
                   <div className="p-2.5 bg-red-500/10 text-red-600 border border-red-500/20 rounded-xl">
@@ -1572,7 +1572,7 @@ export default function Settings({
 
 
           {/* API Keys management section */}
-          <div className="bg-[#0a1628] border border-slate-700 rounded-2xl p-6 settings-card text-high-contrast-light-bg" dir="rtl">
+          <div className="bg-[#0a1628] border border-slate-700 rounded-2xl p-6 settings-card high-contrast-card-wrapper text-high-contrast-light-bg" dir="rtl">
             <div className="flex items-center gap-3 mb-6">
               <Key className="w-6 h-6 text-amber-400" />
               <div>
@@ -1688,7 +1688,7 @@ export default function Settings({
           </div>
 
           {/* Digital Systems Library URL Config - Dedicated Card */}
-          <div className="bg-white border border-slate-200 rounded-3xl p-6 md:p-8 space-y-6 shadow-sm settings-card text-high-contrast-light-bg" id="legal-library-links-settings">
+          <div className="bg-white border border-slate-200 rounded-3xl p-6 md:p-8 space-y-6 shadow-sm settings-card high-contrast-card-wrapper text-high-contrast-light-bg" id="legal-library-links-settings">
             <div className="flex items-center gap-3 border-b border-slate-100 pb-5">
               <div className="p-3 bg-emerald-50 border border-emerald-100 text-emerald-600 rounded-2xl shadow-sm">
                 <BookOpen className="w-6 h-6" />
@@ -1786,7 +1786,7 @@ export default function Settings({
           </div>
 
           {/* Law Links Management (Supabase) */}
-          <div className="bg-white border border-slate-800 rounded-3xl p-6 shadow-sm space-y-6 settings-card text-high-contrast-light-bg">
+          <div className="bg-white border border-slate-800 rounded-3xl p-6 shadow-sm space-y-6 settings-card high-contrast-card-wrapper text-high-contrast-light-bg">
             <div className="flex items-center gap-3 border-b border-slate-800 pb-4">
               <div className="p-2.5 bg-blue-50 text-blue-900 border border-blue-200 rounded-xl">
                 <FileSpreadsheet className="w-5 h-5" />

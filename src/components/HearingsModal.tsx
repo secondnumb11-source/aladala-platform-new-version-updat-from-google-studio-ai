@@ -2,17 +2,20 @@
 import React, { useState } from 'react';
 import { 
   X, Calendar, Clock, Download, 
-  Building2, AlertCircle 
+  Building2, AlertCircle, Trash2, Edit3 
 } from 'lucide-react';
 import { Hearing } from '@/types';
 import { getDynamicTextColor, getContrastText } from '@/utils/contrastUtils';
+import { HighContrastWrapper } from '@/components/shared/HighContrastWrapper';
 
 interface HearingsModalProps {
   hearings: Hearing[];
   onClose: () => void;
+  onDelete?: (id: string) => void;
+  onEdit?: (hearing: Hearing) => void;
 }
 
-export const HearingsModal: React.FC<HearingsModalProps> = ({ hearings = [], onClose }) => {
+export const HearingsModal: React.FC<HearingsModalProps> = ({ hearings = [], onClose, onDelete, onEdit }) => {
   // Guard against non-array hearings and filter out nulls
   const safeHearings = React.useMemo(() => {
     try {
@@ -136,41 +139,50 @@ export const HearingsModal: React.FC<HearingsModalProps> = ({ hearings = [], onC
             </div>
           ) : (
             safeHearings.map(hearing => (
-              <div 
-                key={hearing.id} 
-                className="bg-white/5 p-6 rounded-[1.5rem] border border-white/5 hover:border-amber-500/40 transition-all group relative overflow-hidden"
-              >
-                <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/5 blur-3xl -z-10" />
-                
-                <div className="flex justify-between items-start mb-4">
-                  <h3 className="font-black text-white text-lg line-clamp-1 flex-1 ml-4 leading-tight">
-                    {hearing.caseName || 'جلسة قضائية غير محددة'}
-                  </h3>
-                  <div className="flex items-center gap-2 bg-amber-500/20 text-amber-500 px-3 py-1 rounded-xl text-[11px] font-black border border-amber-500/20">
-                    <Clock size={14} />
-                    {hearing.time || '09:00 ص'}
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 gap-3 mb-6">
-                  <div className={`flex items-center gap-3 text-xs ${getDynamicTextColor(modalBg)} font-bold opacity-80`}>
-                    <div className="p-1.5 bg-slate-800 rounded-lg"><Building2 size={14} className="text-slate-500" /></div>
-                    <span className="truncate">{hearing.courtName || 'المحكمة المختصة'}</span>
-                  </div>
-                  <div className={`flex items-center gap-3 text-xs ${getDynamicTextColor(modalBg)} font-bold opacity-80`}>
-                    <div className="p-1.5 bg-slate-800 rounded-lg"><Calendar size={14} className="text-slate-500" /></div>
-                    <span className="font-mono tracking-tight">{formatSafeDate(hearing.date)}</span>
-                  </div>
-                </div>
-
-                <button
-                  onClick={() => addToCalendar(hearing)}
-                  className="w-full flex items-center justify-center gap-3 py-4 bg-amber-500 hover:bg-amber-400 text-black font-black text-sm rounded-2xl shadow-xl shadow-amber-500/20 transition-all active:scale-95 group"
+              <HighContrastWrapper key={hearing.id}>
+                <div 
+                  className="bg-white/5 p-6 rounded-[1.5rem] border border-white/5 hover:border-amber-500/40 transition-all group relative overflow-hidden"
                 >
-                  <Download size={18} className="group-hover:bounce" />
-                  <span>تثبيت في تقويم الجهاز</span>
-                </button>
-              </div>
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/5 blur-3xl -z-10" />
+                  
+                  <div className="flex justify-between items-start mb-4">
+                    <h3 className="font-black text-white text-lg line-clamp-1 flex-1 ml-4 leading-tight">
+                      {hearing.caseName || 'جلسة قضائية غير محددة'}
+                    </h3>
+                    <div className="flex items-center gap-2">
+                       <button onClick={() => onEdit?.(hearing)} className="p-2 hover:bg-white/10 rounded-xl text-slate-400 hover:text-white transition-colors">
+                          <Edit3 size={16} />
+                       </button>
+                       <button onClick={() => onDelete?.(hearing.id)} className="p-2 hover:bg-red-500/20 rounded-xl text-slate-400 hover:text-red-400 transition-colors">
+                          <Trash2 size={16} />
+                       </button>
+                       <div className="flex items-center gap-2 bg-amber-500/20 text-amber-500 px-3 py-1 rounded-xl text-[11px] font-black border border-amber-500/20">
+                        <Clock size={14} />
+                        {hearing.time || '09:00 ص'}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 gap-3 mb-6">
+                    <div className="flex items-center gap-3 text-xs font-bold opacity-80">
+                      <div className="p-1.5 bg-slate-800 rounded-lg"><Building2 size={14} className="text-slate-500" /></div>
+                      <span className="truncate">{hearing.courtName || 'المحكمة المختصة'}</span>
+                    </div>
+                    <div className="flex items-center gap-3 text-xs font-bold opacity-80">
+                      <div className="p-1.5 bg-slate-800 rounded-lg"><Calendar size={14} className="text-slate-500" /></div>
+                      <span className="font-mono tracking-tight">{formatSafeDate(hearing.date)}</span>
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={() => addToCalendar(hearing)}
+                    className="w-full flex items-center justify-center gap-3 py-4 bg-amber-500 hover:bg-amber-400 text-black font-black text-sm rounded-2xl shadow-xl shadow-amber-500/20 transition-all active:scale-95 group"
+                  >
+                    <Download size={18} className="group-hover:bounce" />
+                    <span>تثبيت في تقويم الجهاز</span>
+                  </button>
+                </div>
+              </HighContrastWrapper>
             ))
           )}
         </div>
