@@ -77,7 +77,7 @@ const callGemini = async (
     });
 
     const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash-preview-05-20',
+      model: 'gemini-3.5-flash',
       contents: `System: ${systemPrompt}\n\nUser: ${userMessage}`,
       config: {
         maxOutputTokens: maxTokens,
@@ -1727,7 +1727,7 @@ ${rawText.substring(0, 15000)}
     if (ai.type === 'gemini') {
       const gemini = ai.client as GoogleGenAI;
       const response = await gemini.models.generateContent({
-        model: 'gemini-2.5-flash-preview-05-20',
+        model: 'gemini-3.5-flash',
         contents: prompt,
         config: {
           responseMimeType: "application/json"
@@ -1738,7 +1738,7 @@ ${rawText.substring(0, 15000)}
       // For any other provider, force Gemini fallback
       const gemini = ai.client as GoogleGenAI;
       const response = await gemini.models.generateContent({
-        model: 'gemini-2.5-flash-preview-05-20',
+        model: 'gemini-3.5-flash',
         contents: prompt,
         config: {
           responseMimeType: "application/json"
@@ -2210,7 +2210,7 @@ app.post('/api/whatsapp/send', async (req, res) => {
   }
 });
 
-// POST: AI Legal Memo draftsman utilizing Google Gemini API (gemini-2.5-flash-preview-05-20)
+// POST: AI Legal Memo draftsman utilizing Google Gemini API (gemini-3.5-flash)
 app.post('/api/documents/draft-memo', async (req, res) => {
   const { caseType, caseDetails, claimant, defendant, courtName, caseNumber } = req.body;
   
@@ -2241,9 +2241,9 @@ app.post('/api/documents/draft-memo', async (req, res) => {
     const ai = getAIClient();
     if (ai && ai.type === 'gemini') {
       const gemini = ai.client as GoogleGenAI;
-      console.log('[Gemini API] Requesting draft-memo drafting using gemini-2.5-flash-preview-05-20...');
+      console.log('[Gemini API] Requesting draft-memo drafting using gemini-3.5-flash...');
       const response = await gemini.models.generateContent({
-        model: 'gemini-2.5-flash-preview-05-20',
+        model: 'gemini-3.5-flash',
         contents: prompt
       });
       const text = response.text;
@@ -2779,11 +2779,10 @@ app.get('/api/ai/models', async (req, res) => {
     res.json({
       success: true,
       recommended: [
-        'gemini-2.5-flash-preview-05-20',
-        'gemini-1.5-flash-latest',
-        'gemini-pro'
+        'gemini-3.5-flash',
+        'gemini-flash-latest'
       ],
-      note: 'استخدم أحد هذه النماذج في server.ts'
+      note: 'استخدم احد هذه النماذج في server.ts'
     });
   } catch(err: any) {
     res.status(500).json({ error: err.message });

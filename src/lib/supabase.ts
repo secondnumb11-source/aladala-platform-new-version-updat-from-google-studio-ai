@@ -58,58 +58,40 @@ export const supabase = createClient(supabaseUrl || 'https://placeholder.supabas
  * it gracefully falls back to generating an Object URL so the application does
  * not block the user with an error, while still saving the database record.
  */
-export async function uploadFileToStorage(
-  bucketName: string,
+export const uploadFileToStorage = async (
+  bucket: string,
   path: string,
-  file: File
-): Promise<{ url: string; path: string; isFallback: boolean }> {
+  file: File | Blob
+): Promise<{ url: string; path: string }> => {
+
   try {
-    let { data, error } = await supabase.storage.from(bucketName).upload(path, file);
-
-    // If it fails because bucket is not found, try programmatically creating the bucket
-    if (error && (error.message?.includes('Bucket not found') || error.message?.includes('bucket_not_found') || (error as any).status === 404)) {
-      console.log(`[Storage] Bucket '${bucketName}' not found. Attempting to programmatically create it...`);
-      try {
-        const { error: createBucketError } = await supabase.storage.createBucket(bucketName, {
-          public: true,
-          fileSizeLimit: 52428800, // 50MB
-        });
-        
-        if (!createBucketError) {
-          console.log(`[Storage] Successfully created bucket '${bucketName}'. Retrying upload...`);
-          const retryResult = await supabase.storage.from(bucketName).upload(path, file);
-          data = retryResult.data;
-          error = retryResult.error;
-        } else {
-          console.warn(`[Storage] Failed to create bucket programmatically:`, createBucketError);
-        }
-      } catch (bucketCreateEx) {
-        console.warn(`[Storage] Exception while trying to create bucket:`, bucketCreateEx);
-      }
-    }
-
-    if (!error && data) {
-      const { data: publicUrlData } = supabase.storage.from(bucketName).getPublicUrl(path);
-      return {
-        url: publicUrlData?.publicUrl || '',
-        path: path,
-        isFallback: false,
-      };
-    }
+    // رفع الملف على Supabase Storage
+    const { data, error } = await supabase.storage
+      .from(bucket)
+      .upload(path, file, {
+        cacheControl: '3600',
+        upsert: true,
+        contentType: file.type || 'application/octet-stream'
+      });
 
     if (error) {
-      throw error;
+      console.error('[Storage Upload Error]', error);
+      throw new Error('فشل رفع الملف: ' + error.message);
     }
-  } catch (err: any) {
-    console.warn(`[Storage Fallback] Supabase upload failed (${err?.message || err}). Falling back to local URL...`);
-  }
 
-  // Fallback to local Object URL so the user is never blocked by storage bucket issues
-  const localUrl = URL.createObjectURL(file);
-  return {
-    url: localUrl,
-    path: `fallback_local/${Date.now()}_${file.name}`,
-    isFallback: true,
-  };
-}
+    // الحصول على الرابط العام
+    const { data: urlData } = supabase.storage
+      .from(bucket)
+      .getPublicUrl(data.path);
+
+    return {
+      url: urlData.publicUrl,
+      path: data.path
+    };
+
+  } catch (err: any) {
+    console.error('[uploadFileToStorage]', err.message);
+    throw err;
+  }
+};
 

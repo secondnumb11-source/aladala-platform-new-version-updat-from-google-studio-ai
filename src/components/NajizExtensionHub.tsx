@@ -760,6 +760,7 @@ export default function NajizExtensionHub({ currentUser, onUpdateState }: NajizE
           stats: { newCount: newCount, duplicateCount: duplicateCount, total: payload.data.length },
           details: results
         });
+        window.dispatchEvent(new CustomEvent('najiz_sync_complete'));
         showToast('اكتملت مزامنة البيانات بنجاح', 'success');
       }
     };
@@ -806,7 +807,7 @@ export default function NajizExtensionHub({ currentUser, onUpdateState }: NajizE
       setDownloading(true);
       const JSZipModule = await import('jszip');
       const JSZip = JSZipModule.default || JSZipModule;
-      const zip = new JSZip();
+      const zip = new (JSZip as any)();
       const folder = zip.folder('najiz-extension');
       if (!folder) throw new Error('Failed to create folder');
 
@@ -1643,7 +1644,7 @@ https://aladala-platform-rnuz.onrender.com
   ];
 
   return (
-    <div className="p-8 max-w-7xl mx-auto space-y-12 animate-in fade-in duration-700 min-h-screen bg-[#FDFDFD]" dir="rtl">
+    <div className="najiz-imperial-hub p-8 max-w-7xl mx-auto space-y-12 animate-in fade-in duration-700 min-h-screen bg-[#FDFDFD]" dir="rtl">
       
       <JoyrideAny
         steps={joyrideSteps}
@@ -1720,11 +1721,11 @@ https://aladala-platform-rnuz.onrender.com
             ].map((s) => (
               <div key={s.step} className="bg-[#0A0F1E] border-4 border-yellow-400/20 rounded-[2.5rem] p-10 flex flex-col space-y-4 hover:border-yellow-400/40 transition-all relative group overflow-hidden shadow-xl">
                  <div className="absolute top-0 right-0 w-24 h-24 bg-yellow-400/[0.03] blur-3xl rounded-full" />
-                 <div className="flex items-center gap-5 relative z-10 font-black">
-                   <div className="w-12 h-12 rounded-2xl bg-yellow-400 text-black flex items-center justify-center text-xl shadow-lg shadow-yellow-400/20">{s.step}</div>
-                   <h4 className="text-white text-xl">{s.title}</h4>
+                 <div className="flex items-center gap-5 relative z-10 font-bold">
+                   <div className="w-12 h-12 rounded-2xl bg-yellow-400 text-black flex items-center justify-center text-xl font-black shadow-lg shadow-yellow-400/20">{s.step}</div>
+                   <h4 className="!text-yellow-400 font-extrabold text-xl">{s.title}</h4>
                  </div>
-                 <p className="text-slate-400 font-bold leading-relaxed relative z-10 pr-2">{s.desc}</p>
+                 <p className="!text-white font-semibold leading-relaxed relative z-10 pr-2">{s.desc}</p>
                  <div className="absolute bottom-0 left-0 w-full h-1 bg-yellow-400/20 opacity-0 group-hover:opacity-100 transition-opacity" />
               </div>
             ))}
@@ -1771,9 +1772,9 @@ https://aladala-platform-rnuz.onrender.com
                   <btn.icon className="w-8 h-8" />
                 </div>
                 <div className={`flex items-center gap-2 text-[12px] font-black px-4 py-2 rounded-full ${
-                  status === 'syncing' ? 'bg-yellow-400/20 text-yellow-400' :
-                  status === 'success' ? 'bg-emerald-400/20 text-emerald-400' :
-                  'bg-white/5 text-yellow-400'}`}>
+                  status === 'syncing' ? 'bg-yellow-400/20 !text-yellow-400' :
+                  status === 'success' ? 'bg-emerald-400/20 !text-emerald-400' :
+                  'bg-white/5 !text-yellow-400'}`}>
                   <div className={`w-2.5 h-2.5 rounded-full ${
                     status === 'syncing' ? 'bg-yellow-400 animate-ping' :
                     status === 'success' ? 'bg-emerald-400' :
@@ -1782,8 +1783,8 @@ https://aladala-platform-rnuz.onrender.com
                 </div>
               </div>
               <div>
-                <h4 className="font-extrabold text-xl text-white tracking-wide">{btn.label}</h4>
-                <p className="text-[12px] font-black text-yellow-400/90 mt-1">
+                <h4 className="font-extrabold text-xl !text-white tracking-wide">{btn.label}</h4>
+                <p className="text-[12px] font-black !text-yellow-400 mt-1">
                   {syncHistory[btn.id]?.lastSync ? `آخر مزامنة: ${new Date(syncHistory[btn.id].lastSync!).toLocaleDateString('ar-SA')}` : 'انتظار المزامنة الأولى'}
                 </p>
               </div>
@@ -1807,15 +1808,15 @@ https://aladala-platform-rnuz.onrender.com
               <Database className="w-8 h-8" />
             </div>
             <div>
-              <h3 className="text-2xl font-black text-white tracking-tight">سجل شفافية المزامنة الملكي</h3>
-              <p className="text-sm text-yellow-400 font-black tracking-wide">متابعة دقيقة وفورية لكل قطرة بيانات متدفقة من بوابة ناجز</p>
+              <h3 className="text-2xl font-black !text-white tracking-tight">سجل شفافية المزامنة الملكي</h3>
+              <p className="text-sm !text-yellow-400 font-extrabold tracking-wide">متابعة دقيقة وفورية لكل قطرة بيانات متدفقة من بوابة ناجز</p>
             </div>
           </div>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-right">
             <thead>
-              <tr className="bg-white/5 text-[12px] font-black text-slate-300 uppercase tracking-[0.15em] border-b border-white/5">
+              <tr className="bg-white/5 text-[12px] font-black !text-yellow-400 uppercase tracking-[0.15em] border-b border-white/5">
                 <th className="px-10 py-6">القسم والمجال</th>
                 <th className="px-10 py-6 text-center">توقيت السحب الأخير</th>
                 <th className="px-10 py-6 text-center">سجلات مضافة</th>
@@ -1837,23 +1838,23 @@ https://aladala-platform-rnuz.onrender.com
                       <div className="p-2.5 bg-yellow-400/10 text-yellow-400 rounded-xl group-hover:scale-110 transition-transform">
                         <item.icon className="w-5 h-5" />
                       </div>
-                      <span className="font-extrabold text-white text-base">{item.label}</span>
+                      <span className="font-extrabold !text-white text-base">{item.label}</span>
                     </div>
                   </td>
-                  <td className="px-10 py-6 text-center font-bold text-slate-300 text-sm">
+                  <td className="px-10 py-6 text-center font-bold !text-slate-100 text-sm">
                     {syncHistory[item.id]?.lastSync ? new Date(syncHistory[item.id].lastSync!).toLocaleString('ar-SA') : 'في انتظار أول ربط'}
                   </td>
-                  <td className="px-10 py-6 text-center font-black text-emerald-400 text-lg">
+                  <td className="px-10 py-6 text-center font-black !text-emerald-400 text-lg">
                     {syncHistory[item.id]?.newCount || 0}
                   </td>
-                  <td className="px-10 py-6 text-center font-black text-yellow-400 text-lg">
+                  <td className="px-10 py-6 text-center font-black !text-yellow-400 text-lg">
                     {syncHistory[item.id]?.updatedCount || 0}
                   </td>
                   <td className="px-10 py-6 text-center">
                     <span className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-[11px] font-black tracking-wide ${
-                      syncHistory[item.id]?.lastSync ? 'bg-emerald-400/10 text-emerald-400 border border-emerald-400/30' : 'bg-white/5 text-slate-500 border border-white/5'
+                      syncHistory[item.id]?.lastSync ? 'bg-emerald-400/10 !text-emerald-400 border border-emerald-400/30' : 'bg-white/10 !text-slate-200 border border-white/20'
                     }`}>
-                      <div className={`w-2 h-2 rounded-full ${syncHistory[item.id]?.lastSync ? 'bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.5)]' : 'bg-slate-700'}`} />
+                      <div className={`w-2 h-2 rounded-full ${syncHistory[item.id]?.lastSync ? 'bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.5)]' : 'bg-slate-400'}`} />
                       {syncHistory[item.id]?.lastSync ? 'متصل ومحمي' : 'غير نشط'}
                     </span>
                   </td>

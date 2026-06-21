@@ -209,7 +209,7 @@ export default function AiGatewayTool() {
                        <div className="flex items-center justify-between p-3 bg-slate-50 rounded-xl border border-slate-100">
                           <div className="flex items-center gap-3">
                              <div className="w-8 h-8 rounded-lg bg-white border border-slate-200 flex items-center justify-center text-xs">1</div>
-                             <span className="text-xs font-bold text-slate-300">Google Gemini (gemini-2.5-flash-preview-05-20)</span>
+                             <span className="text-xs font-bold text-slate-300">Google Gemini (gemini-3.5-flash)</span>
                           </div>
                           <span className="text-[11px] bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full font-black uppercase">Primary</span>
                        </div>

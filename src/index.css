@@ -2678,8 +2678,8 @@ vite-error-overlay {
 /* Intelligent WCAG Variables using color-mix for automatic contrast adjustment */
 :root {
   --theme-text-primary: color-mix(in srgb, #ffffff 85%, var(--bg-main, #000));
-  --theme-text-secondary: color-mix(in srgb, #facc15 9var (--bg-main, #000));
-  --theme-text-muted: color-mix(in srgb, #9ca3af 7var (--bg-main, #000));
+  --theme-text-secondary: color-mix(in srgb, #facc15 90%, var (--bg-main, #000));
+  --theme-text-muted: color-mix(in srgb, #9ca3af 70%, var (--bg-main, #000));
 }
 html:not(.dark) {
   --theme-text-primary: color-mix(in srgb, #0b1329 95%, #fff);
@@ -2775,23 +2775,23 @@ body.high-contrast-mode .text-\[\#FACC15\] {
    ============================================= */
 
 /* الخلفيات الداكنة المخصصة */
-[class*=g-[#050e21]],
-[class*=g-[#0a1628]],
-[class*=g-[#0c1a35]],
-[class*=g-[#020813]],
-[class*=g-[#071224]],
-[class*=g-[#060f22]] {
+[class*="bg-[#050e21]"],
+[class*="bg-[#0a1628]"],
+[class*="bg-[#0c1a35]"],
+[class*="bg-[#020813]"],
+[class*="bg-[#071224]"],
+[class*="bg-[#060f22]"] {
   color: #f1f5f9;
 }
 
 /* Tailwind classes الداكنة */
-.bg-slate-900 > *:not([class*=g-]):not(button):not(a),
-.bg-slate-800 > *:not([class*=g-]):not(button):not(a),
-.bg-slate-700 > *:not([class*=g-]):not(button):not(a),
-.bg-gray-900 > *:not([class*=g-]):not(button):not(a),
-.bg-gray-800 > *:not([class*=g-]):not(button):not(a),
-.bg-zinc-900 > *:not([class*=g-]):not(button):not(a),
-.bg-neutral-900 > *:not([class*=g-]):not(button):not(a) {
+.bg-slate-900 > *:not([class*=bg-]):not(button):not(a),
+.bg-slate-800 > *:not([class*=bg-]):not(button):not(a),
+.bg-slate-700 > *:not([class*=bg-]):not(button):not(a),
+.bg-gray-900 > *:not([class*=bg-]):not(button):not(a),
+.bg-gray-800 > *:not([class*=bg-]):not(button):not(a),
+.bg-zinc-900 > *:not([class*=bg-]):not(button):not(a),
+.bg-neutral-900 > *:not([class*=bg-]):not(button):not(a) {
   color: #f1f5f9;
 }
 
@@ -2814,28 +2814,28 @@ body.high-contrast-mode .text-\[\#FACC15\] {
 }
 
 /* إصلاح النصوص على الخلفيات الداكنة المخصصة */
-[class*=g-[#050e21]] .text-slate-700,
-[class*=g-[#050e21]] .text-slate-800,
-[class*=g-[#050e21]] .text-slate-900,
-[class*=g-[#050e21]] .text-gray-600,
-[class*=g-[#050e21]] .text-gray-700,
-[class*=g-[#050e21]] .text-gray-800,
-[class*=g-[#050e21]] .text-gray-900,
-[class*=g-[#050e21]] .text-black,
-[class*=g-[#0a1628]] .text-slate-700,
-[class*=g-[#0a1628]] .text-slate-800,
-[class*=g-[#0a1628]] .text-slate-900,
-[class*=g-[#0a1628]] .text-gray-700,
-[class*=g-[#0a1628]] .text-gray-800,
-[class*=g-[#0a1628]] .text-gray-900,
-[class*=g-[#0a1628]] .text-black {
+[class*="bg-[#050e21]"] .text-slate-700,
+[class*="bg-[#050e21]"] .text-slate-800,
+[class*="bg-[#050e21]"] .text-slate-900,
+[class*="bg-[#050e21]"] .text-gray-600,
+[class*="bg-[#050e21]"] .text-gray-700,
+[class*="bg-[#050e21]"] .text-gray-800,
+[class*="bg-[#050e21]"] .text-gray-900,
+[class*="bg-[#050e21]"] .text-black,
+[class*="bg-[#0a1628]"] .text-slate-700,
+[class*="bg-[#0a1628]"] .text-slate-800,
+[class*="bg-[#0a1628]"] .text-slate-900,
+[class*="bg-[#0a1628]"] .text-gray-700,
+[class*="bg-[#0a1628]"] .text-gray-800,
+[class*="bg-[#0a1628]"] .text-gray-900,
+[class*="bg-[#0a1628]"] .text-black {
   color: #cbd5e1 !important;
 }
 
 /* الحقول وعناصر الإدخال */
-input:not([class*=g-white]):not([class*=g-slate-50]):not([class*=g-gray-50]),
-select:not([class*=g-white]):not([class*=g-slate-50]),
-textarea:not([class*=g-white]):not([class*=g-slate-50]) {
+input:not([class*=bg-white]):not([class*=bg-slate-50]):not([class*=bg-gray-50]),
+select:not([class*=bg-white]):not([class*=bg-slate-50]),
+textarea:not([class*=bg-white]):not([class*=bg-slate-50]) {
   color: #ffffff !important;
 }
 
@@ -2848,8 +2848,8 @@ textarea::placeholder {
 /* labels داخل الكروت الداكنة */
 .bg-slate-900 label,
 .bg-slate-800 label,
-[class*=g-[#050e21]] label,
-[class*=g-[#0a1628]] label {
+[class*="bg-[#050e21]"] label,
+[class*="bg-[#0a1628]"] label {
   color: #94a3b8 !important;
 }
 
@@ -2862,15 +2862,15 @@ thead th {
 /* صفوف الجداول على خلفيات داكنة */
 .bg-slate-900 td,
 .bg-slate-800 td,
-[class*=g-[#050e21]] td,
-[class*=g-[#0a1628]] td {
+[class*="bg-[#050e21]"] td,
+[class*="bg-[#0a1628]"] td {
   color: #e2e8f0 !important;
 }
 
 /* إصلاح الوضع الفاتح — high-contrast-mode */
 .high-contrast-mode .bg-slate-900,
-.high-contrast-mode [class*=g-[#050e21]],
-.high-contrast-mode [class*=g-[#0a1628]] {
+.high-contrast-mode [class*="bg-[#050e21]"],
+.high-contrast-mode [class*="bg-[#0a1628]"] {
   /* في الوضع الفاتح — الكروت الداكنة تحتاج نص أبيض */
 }
 
@@ -2883,4 +2883,133 @@ thead th {
 .high-contrast-mode .bg-slate-900 label {
   color: #ffffff !important;
 }
+
+/* ====================================================
+   إصلاح ألوان نصوص وقارئ كروت قسم الربط مع ناجز لتكون ساطعة وذات تباين فائق
+   ==================================================== */
+.najiz-imperial-hub [class*="bg-["],
+.najiz-imperial-hub [class*="bg-[#0A0F1E]"],
+.najiz-imperial-hub [class*="bg-[#0a0f1e]"],
+.najiz-imperial-hub [class*="bg-[#1e293b]"],
+.najiz-imperial-hub [class*="bg-[#050B18]"],
+.najiz-imperial-hub .bg-white\/5,
+.najiz-imperial-hub .bg-white\/10,
+.najiz-imperial-hub .bg-yellow-400\/15,
+.najiz-imperial-hub .bg-yellow-400\/10,
+.najiz-imperial-hub .bg-yellow-400\/5,
+.najiz-imperial-hub .bg-emerald-400\/10 {
+  color: #ffffff !important;
+}
+
+/* Force headings inside these dark sections */
+.najiz-imperial-hub [class*="bg-[#0A0F1E]"] h1,
+.najiz-imperial-hub [class*="bg-[#0A0F1E]"] h2,
+.najiz-imperial-hub [class*="bg-[#0A0F1E]"] h3,
+.najiz-imperial-hub [class*="bg-[#0A0F1E]"] h4,
+.najiz-imperial-hub [class*="bg-[#0A0F1E]"] h5,
+.najiz-imperial-hub [class*="bg-[#0a0f1e]"] h4,
+.najiz-imperial-hub [class*="bg-[#1e293b]"] h3,
+.najiz-imperial-hub [class*="bg-[#1e293b]"] h4,
+.najiz-imperial-hub [class*="bg-[#1e293b]"] h5,
+.najiz-imperial-hub [class*="bg-[#050B18]"] h4,
+.najiz-imperial-hub [class*="bg-white/5"] h4,
+.najiz-imperial-hub .bg-white\/5 h4,
+.najiz-imperial-hub .bg-white\/10 h4 {
+  color: #ffffff !important;
+  font-weight: 900 !important;
+}
+
+/* Force yellow text elements and highlighted names */
+.najiz-imperial-hub .text-yellow-400,
+.najiz-imperial-hub .text-yellow-500,
+.najiz-imperial-hub .text-\[\#FACC15\],
+.najiz-imperial-hub [class*="bg-[#0A0F1E]"] .text-yellow-400,
+.najiz-imperial-hub [class*="bg-[#0A0F1E]"] .text-\[\#FACC15\],
+.najiz-imperial-hub [class*="bg-[#1e293b]"] .text-yellow-400,
+.najiz-imperial-hub [class*="bg-[#1e293b]"] .text-\[\#FACC15\] {
+  color: #facc15 !important;
+  font-weight: 950 !important;
+}
+
+/* Force emerald green text status */
+.najiz-imperial-hub .text-emerald-400,
+.najiz-imperial-hub .text-emerald-500 {
+  color: #34d399 !important;
+  font-weight: 900 !important;
+}
+
+/* Force all paragraph descriptions to be super bright white with high contrast */
+.najiz-imperial-hub [class*="bg-[#0A0F1E]"] p,
+.najiz-imperial-hub [class*="bg-[#0a0f1e]"] p,
+.najiz-imperial-hub [class*="bg-[#1e293b]"] p,
+.najiz-imperial-hub [class*="bg-[#050B18]"] p,
+.najiz-imperial-hub .bg-white\/5 p,
+.najiz-imperial-hub .bg-white\/10 p,
+.najiz-imperial-hub [class*="bg-white/5"] p,
+.najiz-imperial-hub [class*="bg shadow-"] p,
+.najiz-imperial-hub [class*="bg-white/5"] pre,
+.najiz-imperial-hub [class*="bg-[#050B18]"] pre,
+.najiz-imperial-hub pre code {
+  color: #ffffff !important;
+  font-weight: 900 !important;
+  opacity: 1 !important;
+}
+
+/* Force spans, li, strong, code inside dark sub-elements of Najiz */
+.najiz-imperial-hub [class*="bg-[#0A0F1E]"] span,
+.najiz-imperial-hub [class*="bg-[#0a0f1e]"] span,
+.najiz-imperial-hub [class*="bg-[#1e293b]"] span,
+.najiz-imperial-hub .bg-white\/5 span,
+.najiz-imperial-hub .bg-white\/10 span,
+.najiz-imperial-hub [class*="bg-white/5"] span,
+.najiz-imperial-hub [class*="bg-[#0a0f1e]"] li,
+.najiz-imperial-hub [class*="bg-[#0A0F1E]"] li,
+.najiz-imperial-hub [class*="bg-[#0a0f1e]"] code,
+.najiz-imperial-hub [class*="bg-[#0A0F1E]"] code,
+.najiz-imperial-hub [class*="bg-[#1e293b]"] code {
+  color: #ffffff !important;
+  font-weight: 900 !important;
+  opacity: 1 !important;
+}
+
+/* Active and inactive button descriptions in the manual list column (Options 1 to 7) */
+.najiz-imperial-hub button [class*="text-slate-"],
+.najiz-imperial-hub button .text-white\/60,
+.najiz-imperial-hub [class*="bg-white/5"] button span,
+.najiz-imperial-hub [class*="bg-white/5"] span {
+  color: #ffffff !important;
+  font-weight: 900 !important;
+}
+
+/* Checkbox and toggle names (تحديد بيانات السحب) to be very clear and bright white/yellow */
+.najiz-imperial-hub button span {
+  color: #ffffff !important;
+  font-weight: 950 !important;
+}
+
+/* Selected button names to be bright yellow */
+.najiz-imperial-hub button.bg-yellow-400\/15 span,
+.najiz-imperial-hub button.bg-yellow-400\/15 .text-yellow-400,
+.najiz-imperial-hub button[class*="bg-yellow-400/15"] span,
+.najiz-imperial-hub button[class*="bg-yellow-400/15"] .text-yellow-400 {
+  color: #facc15 !important;
+  font-weight: 950 !important;
+}
+
+/* Sub-description in manual code preview footer to be bright */
+.najiz-imperial-hub [class*="bg-white/5"] span {
+  color: #ffffff !important;
+}
+
+/* Ensure deep dark blue theme overrides do not force dark grey text on manual lists */
+.najiz-imperial-hub [key] button,
+.najiz-imperial-hub button[key] {
+  color: #ffffff !important;
+}
+
+.najiz-imperial-hub .text-slate-400,
+.najiz-imperial-hub .text-slate-300 {
+  color: #f1f5f9 !important; /* Forces maximum contrast slate/white for soft items inside dark backgrounds */
+}
+
 

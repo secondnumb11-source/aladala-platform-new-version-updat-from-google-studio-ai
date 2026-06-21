@@ -4,7 +4,7 @@ import {
   Search, Plus, Gavel, BookOpen, MessageSquare,
   Calendar, Building2, ChevronDown, ChevronRight,
   Loader2, Trash2, CheckCircle2, AlertCircle,
-  File, FolderOpen, Sparkles, Clock, Filter
+  File as LucideFile, FolderOpen, Sparkles, Clock, Filter
 } from 'lucide-react';
 import { supabase, uploadFileToStorage } from '@/lib/supabase';
 import { generateUUID } from '@/lib/uuid';
@@ -118,62 +118,194 @@ export default function CaseJudgmentsModule({ cases, selectedRole }: CaseJudgmen
   };
 
   const handleUpload = async () => {
-    if (!uploadModal || !docName.trim() || selectedFiles.length === 0) {
-      setUploadError('يرجى ملء الاسم واختيار ملف');
+    if (!uploadModal) {
+      setUploadError('يرجى اختيار القضية');
       return;
     }
+    if (!docName.trim()) {
+      setUploadError('يرجى إدخال اسم المستند');
+      return;
+    }
+    if (selectedFiles.length === 0) {
+      setUploadError('يرجى اختيار ملف واحد على الأقل');
+      return;
+    }
+
     setIsUploading(true);
-    setUploadProgress(0);
+    setUploadProgress(10);
     setUploadError('');
+
     const saved: any[] = [];
+
     try {
+      // جلب بيانات القضية المحددة
+      const selectedCaseData = cases.find(c => c.id === uploadModal.caseId);
+      const caseNumber = selectedCaseData?.caseNumber ||
+                         selectedCaseData?.case_number || '';
+      const caseName = selectedCaseData?.caseName ||
+                       selectedCaseData?.title ||
+                       selectedCaseData?.clientName ||
+                       uploadModal.caseName || '';
+
       for (let i = 0; i < selectedFiles.length; i++) {
         const file = selectedFiles[i];
-        setUploadProgress(Math.round((i / selectedFiles.length) * 80));
-        const compressed = await compressFile(file);
-        const cFile = new File([compressed as BlobPart], file.name, { type: compressed.type || file.type } as FilePropertyBag);
-        let fileUrl = null, filePath = null;
-        try {
-          const path = `case-documents/${uploadModal.caseId}/${docType}/${Date.now()}_${file.name}`;
-          const r = await uploadFileToStorage('case-documents', path, cFile);
-          fileUrl = r.url; filePath = r.path;
-        } catch { fileUrl = URL.createObjectURL(file); filePath = `local/${file.name}`; }
+        setUploadProgress(Math.round(10 + (i / selectedFiles.length) * 70));
 
-        const record: any = {
-          id: generateUUID(),
+        let fileUrl: string | null = null;
+        let filePath: string | null = null;
+        let compressedSize = file.size;
+
+        // ضغط الصور فقط
+        let uploadFile: File | Blob = file;
+        if (file.type.startsWith('image/')) {
+          try {
+            const compressed = await new Promise<Blob>((resolve) => {
+              const canvas = document.createElement('canvas');
+              const img = new Image();
+              const objUrl = URL.createObjectURL(file);
+              img.onload = () => {
+                const max = 1920;
+                let { width: w, height: h } = img;
+                if (w > max || h > max) {
+                  const ratio = Math.min(max / w, max / h);
+                  w = Math.round(w * ratio);
+                  h = Math.round(h * ratio);
+                }
+                canvas.width = w;
+                canvas.height = h;
+                const ctx = canvas.getContext('2d');
+                if (ctx) ctx.drawImage(img, 0, 0, w, h);
+                canvas.toBlob(
+                  (blob) => resolve(blob || file),
+                  'image/jpeg', 0.8
+                );
+                URL.revokeObjectURL(objUrl);
+              };
+              img.onerror = () => resolve(file);
+              img.src = objUrl;
+            });
+            uploadFile = compressed;
+            compressedSize = compressed.size;
+          } catch {
+            uploadFile = file;
+          }
+        }
+
+        // رفع على Supabase Storage
+        try {
+          const timestamp = Date.now();
+          const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+          const storagePath = `case-documents/${uploadModal.caseId}/${docType}/${timestamp}_${safeName}`;
+
+          const { data: uploadData, error: uploadError } = await supabase.storage
+            .from('case-documents')
+            .upload(storagePath, uploadFile, {
+              cacheControl: '3600',
+              upsert: true,
+              contentType: file.type || 'application/octet-stream'
+            });
+
+          if (uploadError) {
+            console.error('[Storage Error]', uploadError);
+            // Fallback: استخدم Object URL مؤقت
+            fileUrl = URL.createObjectURL(file);
+            filePath = `local/${timestamp}_${safeName}`;
+          } else {
+            const { data: urlData } = supabase.storage
+              .from('case-documents')
+              .getPublicUrl(uploadData.path);
+            fileUrl = urlData.publicUrl;
+            filePath = uploadData.path;
+          }
+        } catch (storageErr: any) {
+          console.warn('[Storage fallback]', storageErr.message);
+          fileUrl = URL.createObjectURL(file);
+          filePath = `local/${Date.now()}_${file.name}`;
+        }
+
+        // حفظ في قاعدة البيانات
+        const docId = crypto.randomUUID
+          ? crypto.randomUUID()
+          : Math.random().toString(36).substring(2) + Date.now();
+
+        const docSuffix = selectedFiles.length > 1 ? ` (${i + 1})` : '';
+
+        const record = {
+          id: docId,
           case_id: uploadModal.caseId,
-          case_number: cases.find(c => c.id === uploadModal.caseId)?.caseNumber ||
-                       cases.find(c => c.id === uploadModal.caseId)?.case_number || '',
-          case_name: uploadModal.caseName,
+          case_number: caseNumber,
+          case_name: caseName,
           document_type: docType,
-          document_name: docName.trim() + (selectedFiles.length > 1 ? ` (${i+1})` : ''),
-          file_url: fileUrl, file_path: filePath,
-          file_size: file.size, compressed_size: compressed.size,
-          file_type: file.type,
+          document_name: docName.trim() + docSuffix,
+          file_url: fileUrl,
+          file_path: filePath,
+          file_size: file.size,
+          compressed_size: compressedSize,
+          file_type: file.type || 'application/octet-stream',
           hearing_date: hearingDate || null,
           judgment_date: judgmentDate || null,
           judgment_type: judgmentType || null,
-          court_name: courtName || null,
+          court_name: courtName || selectedCaseData?.courtName ||
+                     selectedCaseData?.court_name || null,
           circuit_number: circuitNumber || null,
           judge_name: judgeName || null,
           notes: notes || null,
-          is_compressed: compressed.size < file.size,
+          is_compressed: compressedSize < file.size,
+          uploaded_by: 'المستخدم',
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
         };
 
-        const { data, error } = await supabase
-          .from('case_documents').insert(record).select().single();
-        if (!error) saved.push(data || record);
+        const { data: dbData, error: dbError } = await supabase
+          .from('case_documents')
+          .insert(record)
+          .select()
+          .single();
+
+        if (dbError) {
+          console.error('[DB Error]', dbError);
+          // حاول بدون .single()
+          const { error: dbError2 } = await supabase
+            .from('case_documents')
+            .insert(record);
+
+          if (dbError2) {
+            setUploadError(
+              `فشل حفظ المستند "${file.name}": ${dbError2.message}`
+            );
+            continue;
+          }
+          saved.push(record);
+        } else {
+          saved.push(dbData || record);
+        }
       }
+
       setUploadProgress(100);
-      setDocuments(prev => [...saved, ...prev]);
-      setUploadModal(null);
-      resetUploadForm();
-      alert(`✅ تم رفع ${saved.length} مستند بنجاح`);
-    } catch(err: any) {
-      setUploadError('خطأ: ' + err.message);
-    } finally { setIsUploading(false); setUploadProgress(0); }
+
+      if (saved.length > 0) {
+        // تحديث State بالمستندات الجديدة
+        setDocuments(prev => [...saved, ...prev]);
+
+        // إغلاق النافذة وإعادة تعيين النموذج
+        setUploadModal(null);
+        resetUploadForm();
+
+        alert(
+          `✅ تم رفع وحفظ ${saved.length} مستند بنجاح\n` +
+          `القضية: ${caseName} (#${caseNumber})`
+        );
+      } else {
+        setUploadError('فشل حفظ جميع المستندات. يرجى المحاولة مرة أخرى');
+      }
+
+    } catch (err: any) {
+      console.error('[Upload Exception]', err);
+      setUploadError('خطأ غير متوقع: ' + err.message);
+    } finally {
+      setIsUploading(false);
+      setUploadProgress(0);
+    }
   };
 
   const resetUploadForm = () => {
@@ -217,7 +349,7 @@ export default function CaseJudgmentsModule({ cases, selectedRole }: CaseJudgmen
             <h1 className="text-2xl font-black text-white">
               الأحكام وضبط الجلسات والمذكرات
             </h1>
-            <p className="text-slate-400 text-sm mt-0.5">
+            <p className="text-white font-extrabold text-sm mt-0.5">
               إدارة المستندات القضائية لكل قضية مسجلة
             </p>
           </div>
@@ -282,10 +414,10 @@ export default function CaseJudgmentsModule({ cases, selectedRole }: CaseJudgmen
         </div>
       ) : filteredCases.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20
-          border-2 border-dashed border-slate-700 rounded-3xl">
-          <FolderOpen className="w-16 h-16 text-slate-300 mb-4" />
-          <p className="text-slate-400 font-bold">لا توجد قضايا مسجلة</p>
-          <p className="text-slate-400 text-sm mt-1">
+          border border-dashed border-slate-700 bg-slate-900/50 rounded-3xl">
+          <FolderOpen className="w-16 h-16 text-yellow-400 mb-4 animate-bounce" />
+          <p className="text-white font-black text-base">لا توجد قضايا مسجلة</p>
+          <p className="text-yellow-400 text-sm font-bold mt-1">
             أضف قضايا من قسم إدارة القضايا أولاً
           </p>
         </div>
@@ -317,21 +449,21 @@ export default function CaseJudgmentsModule({ cases, selectedRole }: CaseJudgmen
                     </div>
                     <div className="min-w-0">
                       <div className="flex items-center gap-3 mb-1">
-                        <span className="text-amber-400 font-mono text-xs font-bold">
+                        <span className="text-yellow-400 font-mono text-xs font-black">
                           #{caseNum}
                         </span>
                         {c.status && (
                           <span className="text-[10px] px-2 py-0.5 rounded-lg
-                            bg-slate-700 text-slate-300 border border-slate-600">
+                            bg-slate-800 text-white border border-slate-600 font-bold">
                             {c.status}
                           </span>
                         )}
                       </div>
-                      <h3 className="text-white font-bold text-sm truncate">
+                      <h3 className="text-white font-black text-sm truncate">
                         {caseName}
                       </h3>
                       {c.courtName || c.court_name ? (
-                        <p className="text-slate-300 text-xs mt-0.5">
+                        <p className="text-yellow-400 text-xs font-bold mt-0.5">
                           {c.courtName || c.court_name}
                         </p>
                       ) : null}
@@ -350,14 +482,14 @@ export default function CaseJudgmentsModule({ cases, selectedRole }: CaseJudgmen
                         return (
                           <span key={type.value}
                             className={`text-[10px] px-2 py-0.5 rounded-lg
-                              font-bold ${type.bg} ${type.color}
-                              border ${type.border}`}>
+                              font-black bg-slate-800 text-white
+                              border border-slate-600`}>
                             {cnt}
                           </span>
                         );
                       })}
                       {caseDocs.length === 0 && (
-                        <span className="text-slate-300 text-xs">
+                        <span className="text-yellow-400 text-xs font-bold">
                           لا توجد مستندات
                         </span>
                       )}
@@ -391,9 +523,9 @@ export default function CaseJudgmentsModule({ cases, selectedRole }: CaseJudgmen
                   <div className="border-t border-slate-700/50 p-5">
                     {caseDocs.length === 0 ? (
                       <div className="flex flex-col items-center justify-center
-                        py-8 border border-dashed border-slate-700 rounded-xl">
-                        <FileText className="w-10 h-10 text-slate-700 mb-3" />
-                        <p className="text-slate-500 text-sm font-bold">
+                        py-8 border border-dashed border-slate-700 rounded-xl bg-slate-900/50">
+                        <FileText className="w-10 h-10 text-yellow-400 mb-3 animate-pulse" />
+                        <p className="text-white text-sm font-black">
                           لا توجد مستندات مرفوعة لهذه القضية
                         </p>
                         <button
@@ -401,7 +533,7 @@ export default function CaseJudgmentsModule({ cases, selectedRole }: CaseJudgmen
                             setUploadModal({ caseId, caseName });
                             resetUploadForm();
                           }}
-                          className="mt-3 text-amber-400 text-xs hover:text-amber-300"
+                          className="mt-3 text-yellow-400 text-xs font-black hover:text-yellow-300"
                         >
                           + ارفع أول مستند
                         </button>
@@ -418,15 +550,15 @@ export default function CaseJudgmentsModule({ cases, selectedRole }: CaseJudgmen
                                 ${typeConf.border} ${typeConf.bg}`}>
 
                               {/* نوع المستند */}
-                              <div className={`inline-flex items-center gap-1.5
-                                text-[10px] font-bold px-2 py-1 rounded-lg mb-3
-                                ${typeConf.bg} border ${typeConf.border} ${typeConf.color}`}>
-                                <Icon className="w-3 h-3" />
+                              <div className="inline-flex items-center gap-1.5
+                                text-[10px] font-black px-2 py-1 rounded-lg mb-3
+                                bg-slate-800 text-white border border-slate-600">
+                                <Icon className="w-3 h-3 text-yellow-400" />
                                 {typeConf.label}
                               </div>
 
                               {/* اسم المستند */}
-                              <p className="text-white font-bold text-sm mb-2 leading-tight">
+                              <p className="text-white font-black text-sm mb-2 leading-tight">
                                 {doc.document_name}
                               </p>
 
@@ -434,31 +566,31 @@ export default function CaseJudgmentsModule({ cases, selectedRole }: CaseJudgmen
                               <div className="space-y-1 mb-3">
                                 {doc.judgment_date && (
                                   <div className="flex items-center gap-1.5">
-                                    <Calendar className="w-3 h-3 text-amber-500 shrink-0" />
-                                    <span className="text-amber-300 text-xs">
+                                    <Calendar className="w-3 h-3 text-yellow-400 shrink-0" />
+                                    <span className="text-yellow-400 font-extrabold text-xs">
                                       الحكم: {doc.judgment_date}
                                     </span>
                                   </div>
                                 )}
                                 {doc.hearing_date && (
                                   <div className="flex items-center gap-1.5">
-                                    <Calendar className="w-3 h-3 text-emerald-500 shrink-0" />
-                                    <span className="text-emerald-300 text-xs">
+                                    <Calendar className="w-3 h-3 text-white shrink-0" />
+                                    <span className="text-white font-extrabold text-xs">
                                       الجلسة: {doc.hearing_date}
                                     </span>
                                   </div>
                                 )}
                                 {doc.judgment_type && (
                                   <span className="inline-block text-[10px] px-2 py-0.5
-                                    bg-amber-500/10 text-amber-300 border border-amber-500/20
-                                    rounded-lg font-bold">
+                                    bg-slate-800 text-white border border-slate-600
+                                    rounded-lg font-black">
                                     {doc.judgment_type}
                                   </span>
                                 )}
                                 {doc.court_name && (
                                   <div className="flex items-center gap-1.5">
-                                    <Building2 className="w-3 h-3 text-slate-500 shrink-0" />
-                                    <span className="text-slate-400 text-xs truncate">
+                                    <Building2 className="w-3 h-3 text-yellow-400 shrink-0" />
+                                    <span className="text-white font-bold text-xs truncate">
                                       {doc.court_name}
                                       {doc.circuit_number ? ` — دائرة ${doc.circuit_number}` : ''}
                                     </span>
@@ -469,10 +601,10 @@ export default function CaseJudgmentsModule({ cases, selectedRole }: CaseJudgmen
                               {/* حجم + تاريخ */}
                               <div className="flex items-center justify-between
                                 pt-2 border-t border-slate-700/50">
-                                <span className="text-slate-500 text-[10px]">
+                                <span className="text-yellow-400 font-black text-[10px]">
                                   {formatFileSize(doc.compressed_size || doc.file_size)}
                                 </span>
-                                <span className="text-slate-400 text-[10px]">
+                                <span className="text-white font-bold text-[10px]">
                                   {new Date(doc.created_at).toLocaleDateString('ar-SA')}
                                 </span>
                               </div>
@@ -697,7 +829,7 @@ export default function CaseJudgmentsModule({ cases, selectedRole }: CaseJudgmen
                       <div key={i} className="flex items-center justify-between
                         p-2.5 bg-[#050e21] border border-slate-700 rounded-lg">
                         <div className="flex items-center gap-2 min-w-0">
-                          <File className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                          <LucideFile className="w-3.5 h-3.5 text-amber-400 shrink-0" />
                           <span className="text-white text-xs truncate">{f.name}</span>
                           <span className="text-slate-500 text-[10px] shrink-0">
                             {formatFileSize(f.size)}
@@ -796,7 +928,7 @@ export default function CaseJudgmentsModule({ cases, selectedRole }: CaseJudgmen
                   className="max-w-full max-h-full object-contain rounded-xl shadow-2xl" />
               ) : (
                 <div className="text-center">
-                  <File className="w-20 h-20 text-slate-600 mx-auto mb-4" />
+                  <LucideFile className="w-20 h-20 text-slate-600 mx-auto mb-4" />
                   <p className="text-white font-bold mb-4">{viewerDoc.document_name}</p>
                   <button onClick={() => {
                     const a = document.createElement('a');

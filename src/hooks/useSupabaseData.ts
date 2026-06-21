@@ -421,6 +421,55 @@ export function useSupabaseData() {
     }
   }, []);
 
+  const refreshAllData = useCallback(async () => {
+    try {
+      const [
+        casesRes, hearingsRes, poaRes,
+        executionsRes, clientsRes, tasksRes,
+        invoicesRes
+      ] = await Promise.all([
+        supabase.from('cases')
+          .select('*')
+          .order('created_at', { ascending: false }),
+        supabase.from('hearings')
+          .select('*')
+          .order('date', { ascending: true }),
+        supabase.from('powers_of_attorney')
+          .select('*')
+          .order('created_at', { ascending: false }),
+        supabase.from('executions')
+          .select('*')
+          .order('created_at', { ascending: false }),
+        supabase.from('clients')
+          .select('*')
+          .order('name'),
+        supabase.from('tasks')
+          .select('*')
+          .order('created_at', { ascending: false }),
+        supabase.from('invoices')
+          .select('*')
+          .order('created_at', { ascending: false })
+      ]);
+
+      if (casesRes.data) {
+        // we can map cases or reuse toCamel, let's just reuse toCamel since mapCase is not defined in this file
+        const mappedClients: Client[] = clientsRes.data ? (toCamel(clientsRes.data) as Client[]) : clients;
+        const mappedCases = (casesRes.data || []).map((c: any) => mapDatabaseCaseToFrontend(c, mappedClients));
+        setCases(mappedCases);
+      }
+      if (hearingsRes.data) setHearings(toCamel(hearingsRes.data) as Hearing[]);
+      if (poaRes.data) setPowersOfAttorney(toCamel(poaRes.data) as PowerOfAttorney[]);
+      if (executionsRes.data) setExecutions(toCamel(executionsRes.data) as Execution[]);
+      if (clientsRes.data) setClients(toCamel(clientsRes.data) as Client[]);
+      if (tasksRes.data) setTasks(toCamel(tasksRes.data) as Task[]);
+      if (invoicesRes.data) setInvoices(toCamel(invoicesRes.data) as Invoice[]);
+
+      console.log('[Refresh] ✅ جميع البيانات مُحدَّثة');
+    } catch(err: any) {
+      console.error('[Refresh Error]', err.message);
+    }
+  }, [clients]);
+
   const setupRealtime = useCallback(() => {
     // Add protection to skip if default key or missing
     if (!isSupabaseConfigured) {
@@ -938,10 +987,15 @@ export function useSupabaseData() {
     updateRecord,
     deleteRecord,
     retryQueueSync,
-    refresh: fetchData,
+    refresh: refreshAllData,
     setHearings,
     setDocuments,
     setInvoices,
-    setEmployees
+    setEmployees,
+    setCases,
+    setPowersOfAttorney,
+    setExecutions,
+    setClients,
+    setTasks
   };
 }

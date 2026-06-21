@@ -35,6 +35,8 @@ import {
   Invoice, 
   Task, 
   Hearing, 
+  PowerOfAttorney,
+  Execution,
   Document as LegalDoc, 
   Message,
   Expense
@@ -211,7 +213,12 @@ function AppContent() {
     setHearings,
     setDocuments,
     setInvoices,
-    setEmployees
+    setEmployees,
+    setCases,
+    setPowersOfAttorney,
+    setExecutions,
+    setClients,
+    setTasks
   } = useSupabaseData();
 
   // الاستماع لأحداث المزامنة
@@ -231,6 +238,161 @@ function AppContent() {
   window.addEventListener('najiz_sync_complete', handleNajizSync);
   return () => window.removeEventListener('najiz_sync_complete', handleNajizSync);
 }, [refresh]);
+
+// دوال تحويل البيانات من DB للـ Frontend
+const mapCaseFromDB = (db: any) => ({
+  id: db.id,
+  caseNumber: db.case_number || '',
+  najizCaseNumber: db.najiz_case_number || '',
+  caseName: db.title || db.client_name || `قضية ${db.case_number}`,
+  clientName: db.client_name || '',
+  clientId: db.client_id || null,
+  opponentName: db.opponent_name || '',
+  courtName: db.court_name || '',
+  category: db.category || 'civil',
+  stage: db.stage || 'litigation',
+  status: db.status || 'قيد النظر',
+  priority: db.priority || 'medium',
+  summary: db.summary || '',
+  nextSessionDate: db.next_session_at
+    ? new Date(db.next_session_at).toLocaleDateString('ar-SA')
+    : '',
+  nextSessionAt: db.next_session_at || null,
+  isNajizSync: db.is_najiz_sync || false,
+  lastSyncAt: db.last_sync_at || null,
+  archived: db.archived || false,
+  createdAt: db.created_at || new Date().toISOString(),
+  lastSessionDate: '',                // Added
+  nextSessionTime: '',                // Added
+  details: '',                        // Added
+  attachments_count: 0                // Added
+}) as Case;
+
+const mapHearingFromDB = (db: any) => ({
+  id: db.id,
+  caseId: db.case_id,
+  caseNumber: db.case_number,
+  caseName: db.case_name,
+  date: db.date,
+  time: db.time,
+  courtName: db.court_name,
+  status: db.status,
+  judgeName: db.judge_name,
+  notes: db.notes,
+  hallNumber: db.hall_number || db.hallNumber,
+  decision: db.decision,
+  createdAt: db.created_at
+}) as Hearing;
+
+const mapPOAFromDB = (db: any) => ({
+  id: db.id,
+  poaNumber: db.raw_poa_number || db.poa_number || '',
+  issueDate: db.issue_date,
+  expiryDate: db.expiry_date,
+  lawyerName: db.agent_name || db.lawyer_name || '',
+  clientName: db.client_name || '',
+  status: db.status,
+  clientId: db.client_id,
+  scope: db.scope,
+  createdAt: db.created_at
+}) as PowerOfAttorney;
+
+const mapExecutionFromDB = (db: any) => ({
+  id: db.id,
+  execution_number: db.execution_number || db.case_number || '', // Matches interface
+  requester_name: db.requester_name || db.client_name || '',
+  opponent_name: db.opponent_name || '',
+  amount: db.amount || 0,
+  status: db.status,
+  court_name: db.court_name || '',
+  created_at: db.created_at
+}) as Execution;
+
+useEffect(() => {
+  // Realtime — القضايا
+  const casesChannel = supabase
+    .channel('realtime_cases')
+    .on('postgres_changes', {
+      event: 'INSERT',
+      schema: 'public',
+      table: 'cases'
+    }, async (payload) => {
+      console.log('[Realtime] قضية جديدة:', payload.new);
+      const newCase = mapCaseFromDB(payload.new);
+      setCases(prev => {
+        if (prev.find(c => c.id === newCase.id)) return prev;
+        return [newCase, ...prev];
+      });
+    })
+    .on('postgres_changes', {
+      event: 'UPDATE',
+      schema: 'public',
+      table: 'cases'
+    }, (payload) => {
+      setCases(prev => prev.map(c =>
+        c.id === payload.new.id ? mapCaseFromDB(payload.new) : c
+      ));
+    })
+    .subscribe();
+
+  // Realtime — الجلسات
+  const hearingsChannel = supabase
+    .channel('realtime_hearings')
+    .on('postgres_changes', {
+      event: 'INSERT',
+      schema: 'public',
+      table: 'hearings'
+    }, (payload) => {
+      console.log('[Realtime] جلسة جديدة:', payload.new);
+      const newHearing = mapHearingFromDB(payload.new);
+      setHearings(prev => {
+        if (prev.find(h => h.id === newHearing.id)) return prev;
+        return [newHearing, ...prev];
+      });
+    })
+    .subscribe();
+
+  // Realtime — الوكالات
+  const poaChannel = supabase
+    .channel('realtime_poa')
+    .on('postgres_changes', {
+      event: 'INSERT',
+      schema: 'public',
+      table: 'powers_of_attorney'
+    }, (payload) => {
+      console.log('[Realtime] وكالة جديدة:', payload.new);
+      const newPOA = mapPOAFromDB(payload.new);
+      setPowersOfAttorney(prev => {
+        if (prev.find(p => p.id === newPOA.id)) return prev;
+        return [newPOA, ...prev];
+      });
+    })
+    .subscribe();
+
+  // Realtime — التنفيذ
+  const execChannel = supabase
+    .channel('realtime_executions')
+    .on('postgres_changes', {
+      event: 'INSERT',
+      schema: 'public',
+      table: 'executions'
+    }, (payload) => {
+      console.log('[Realtime] تنفيذ جديد:', payload.new);
+      const newExec = mapExecutionFromDB(payload.new);
+      setExecutions(prev => {
+        if (prev.find(e => e.id === newExec.id)) return prev;
+        return [newExec, ...prev];
+      });
+    })
+    .subscribe();
+
+  return () => {
+    supabase.removeChannel(casesChannel);
+    supabase.removeChannel(hearingsChannel);
+    supabase.removeChannel(poaChannel);
+    supabase.removeChannel(execChannel);
+  };
+}, []);
 
   const [showHearingsModal, setShowHearingsModal] = useState(false);
   

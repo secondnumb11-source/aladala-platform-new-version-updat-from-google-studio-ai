@@ -1075,7 +1075,7 @@ export default function DocumentsModule({
     try {
       const fileName = `${generateUUID()}.${ext}`;
       const uploadPath = `documents/${fileName}`;
-      const { url, isFallback } = await uploadFileToStorage(
+      const { url } = await uploadFileToStorage(
         'documents',
         uploadPath,
         file
@@ -1136,7 +1136,7 @@ export default function DocumentsModule({
         id: generateUUID(),
         name: file.name, // Use actual file.name or smartFileName
         fileUrl: downloadURL,
-        storagePath: isFallback ? '' : uploadPath,
+        storagePath: uploadPath,
         category: category as any,
         uploadedAt: new Date().toISOString().split('T')[0],
         size: sizeStr,
