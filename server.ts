@@ -707,10 +707,13 @@ app.post('/api/v1/sync', async (req: any, res: any) => {
     }
 
     // تحديث last_used_at
-    await adminSupabase.from('api_keys')
-      .update({ last_used_at: new Date().toISOString() })
-      .eq('id', keyData.id)
-      .catch(() => {});
+    try {
+      await adminSupabase.from('api_keys')
+        .update({ last_used_at: new Date().toISOString() })
+        .eq('id', keyData.id);
+    } catch (e) {
+      // تجاهل أخطاء التحديث الفرعية
+    }
 
   } catch(authErr: any) {
     // إذا فشل التحقق — أكمل بدونه لتجنب 500

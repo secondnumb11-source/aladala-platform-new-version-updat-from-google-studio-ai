@@ -577,27 +577,27 @@ export default function ExecutionsModule({
 
       {/* Table / Cards Section */}
       {viewMode === "table" ? (
-        <div className="rounded-[2.5rem] p-4 shadow-2xl bg-[#0c142b] border-2 border-yellow-500/30 hover:border-yellow-500/40 transition-all duration-300 mb-6">
-          <div className="overflow-x-auto text-white">
+        <div className="rounded-[2.5rem] p-4 shadow-2xl bg-[#0c142b] border border-slate-800 transition-all duration-300 mb-6">
+          <div className="overflow-x-auto">
             <table className="w-full text-right border-separate border-spacing-y-4">
               <thead>
                 <tr className="mb-4">
-                  <th className="px-8 py-3 text-xs font-black tracking-wide text-slate-400 whitespace-nowrap">
+                  <th className="px-8 py-3 text-xs font-black tracking-wide text-amber-200/90 whitespace-nowrap">
                     رقم الطلب الرسمي
                   </th>
-                  <th className="px-6 py-3 text-xs font-black tracking-wide text-slate-400 whitespace-nowrap">
+                  <th className="px-6 py-3 text-xs font-black tracking-wide text-amber-200/90 whitespace-nowrap">
                     طالب الحماية (الموكل)
                   </th>
-                  <th className="px-6 py-3 text-xs font-black tracking-wide text-slate-400 whitespace-nowrap">
+                  <th className="px-6 py-3 text-xs font-black tracking-wide text-amber-200/90 whitespace-nowrap">
                     المنفذ ضده
                   </th>
-                  <th className="px-6 py-3 text-xs font-black tracking-wide text-slate-400 whitespace-nowrap text-center">
+                  <th className="px-6 py-3 text-xs font-black tracking-wide text-amber-200/90 whitespace-nowrap text-center">
                     المبلغ المستحق
                   </th>
-                  <th className="px-6 py-3 text-xs font-black tracking-wide text-slate-400 whitespace-nowrap text-center">
+                  <th className="px-6 py-3 text-xs font-black tracking-wide text-amber-200/90 whitespace-nowrap text-center">
                     الحالة الحالية
                   </th>
-                  <th className="px-8 py-3 text-xs font-black tracking-wide text-slate-400 whitespace-nowrap text-left">
+                  <th className="px-8 py-3 text-xs font-black tracking-wide text-amber-200/90 whitespace-nowrap text-left">
                     خيارات التحكم
                   </th>
                 </tr>
@@ -607,7 +607,7 @@ export default function ExecutionsModule({
                   <tr>
                     <td
                       colSpan={6}
-                      className="px-8 py-20 text-center text-yellow-500/70 italic font-black text-lg"
+                      className="px-8 py-20 text-center text-amber-500/70 italic font-black text-lg bg-white/5 rounded-3xl"
                     >
                       لا توجد نتائج مطابقة لفلترة البحث الحالية...
                     </td>
@@ -616,9 +616,9 @@ export default function ExecutionsModule({
                   filtered.map((ex) => (
                     <tr
                       key={ex.id}
-                      className="hover:scale-[1.01] bg-gradient-to-r from-slate-900 to-[#0a1128] transition-all duration-300 group shadow-[0_0_15px_rgba(0,0,0,0.5)] relative"
+                      className="hover:scale-[1.01] bg-white transition-all duration-300 group shadow-[0_5px_20px_rgba(0,0,0,0.4)] relative"
                     >
-                      <td className="px-8 py-6 whitespace-nowrap font-mono font-black text-sm text-amber-400 group-hover:text-amber-300 transition-colors rounded-r-3xl border-y border-r border-amber-500/20">
+                      <td className="px-8 py-6 whitespace-nowrap font-mono font-black text-sm text-[#0f172a] rounded-r-[2rem] border-y border-r border-slate-200 group-hover:text-amber-600 transition-colors">
                         <div className="flex flex-col gap-1">
                           <span
                             className="cursor-pointer hover:underline text-lg drop-shadow-sm"
@@ -627,50 +627,50 @@ export default function ExecutionsModule({
                             #{ex.execution_number}
                           </span>
                           {ex.is_najiz_sync && (
-                            <span className="text-[10px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded-md flex items-center gap-1 w-fit font-black shadow-sm">
+                            <span className="text-[10px] bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded-md flex items-center gap-1 w-fit font-black shadow-sm">
                               <Activity className="w-2.5 h-2.5" /> مزامنة ناجز
                             </span>
                           )}
                         </div>
                       </td>
-                      <td className="px-6 py-6 whitespace-nowrap text-amber-50 font-extrabold text-base drop-shadow-[0_1px_1px_rgba(0,0,0,0.5)] border-y border-amber-500/20">
+                      <td className="px-6 py-6 whitespace-nowrap text-[#0f172a] font-extrabold text-base border-y border-slate-200">
                         {ex.requester_name}
                       </td>
-                      <td className="px-6 py-6 whitespace-nowrap text-amber-100/90 font-bold text-base border-y border-amber-500/20">
+                      <td className="px-6 py-6 whitespace-nowrap text-[#334155] font-bold text-base border-y border-slate-200">
                         {ex.opponent_name}
                       </td>
-                      <td className="px-6 py-6 whitespace-nowrap text-center text-amber-400 font-mono font-black text-lg drop-shadow-[0_1px_1px_rgba(0,0,0,0.5)] border-y border-amber-500/20">
+                      <td className="px-6 py-6 whitespace-nowrap text-center text-amber-600 font-mono font-black text-lg border-y border-slate-200">
                         {(ex.amount || 0).toLocaleString()}{" "}
-                        <span className="text-xs text-amber-400/60 font-sans font-bold">
+                        <span className="text-xs text-amber-500 font-sans font-bold">
                           ر.س
                         </span>
                       </td>
-                      <td className="px-6 py-6 whitespace-nowrap text-center border-y border-amber-500/20">
+                      <td className="px-6 py-6 whitespace-nowrap text-center border-y border-slate-200">
                         <span
                           className={`px-5 py-2 rounded-full text-[11px] font-black border uppercase tracking-widest ${
                             ex.status?.includes("مكتمل") ||
                             ex.status?.includes("منتهي")
-                              ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/30 shadow-sm"
+                              ? "bg-emerald-50 text-emerald-700 border-emerald-200 shadow-sm"
                               : ex.status?.includes("قيد")
-                                ? "bg-amber-500/10 text-amber-400 border-amber-500/30 shadow-sm"
-                                : "bg-blue-500/10 text-blue-400 border-blue-500/30 shadow-sm"
+                                ? "bg-amber-50 text-amber-700 border-amber-200 shadow-sm"
+                                : "bg-blue-50 text-blue-700 border-blue-200 shadow-sm"
                           }`}
                         >
                           {ex.status}
                         </span>
                       </td>
-                      <td className="px-8 py-6 whitespace-nowrap text-left rounded-l-3xl border-y border-l border-amber-500/20">
+                      <td className="px-8 py-6 whitespace-nowrap text-left rounded-l-[2rem] border-y border-l border-slate-200">
                         <div className="flex items-center justify-end gap-3">
                           <button
                             onClick={() => setViewingExec(ex)}
-                            className="p-3 bg-slate-800 hover:bg-slate-700 text-amber-400 border border-slate-700 hover:border-amber-500 hover:text-amber-300 rounded-full transition-all cursor-pointer shadow-sm hover:shadow-md"
+                            className="p-3 bg-[#0f172a] hover:bg-[#1e293b] text-white border border-[#0f172a] rounded-full transition-all cursor-pointer shadow-md hover:shadow-lg hover:-translate-y-0.5"
                             title="عرض تفاصيل السجل"
                           >
                             <ArrowUpRight className="w-5 h-5" />
                           </button>
                           <button
                             onClick={() => setEditingExec(ex)}
-                            className="p-3 bg-slate-800 hover:bg-slate-700 text-amber-400 border border-slate-700 hover:border-amber-500 hover:text-amber-300 rounded-full transition-all cursor-pointer shadow-sm hover:shadow-md"
+                            className="p-3 bg-[#0f172a] hover:bg-[#1e293b] text-white border border-[#0f172a] rounded-full transition-all cursor-pointer shadow-md hover:shadow-lg hover:-translate-y-0.5"
                             title="تعديل بيانات السجل"
                           >
                             <Edit2 className="w-5 h-5" />
@@ -687,7 +687,7 @@ export default function ExecutionsModule({
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filtered.length === 0 ? (
-            <div className="col-span-full py-20 text-center text-slate-500 italic font-black text-lg bg-white/60 border-2 border-slate-200 rounded-[2.5rem]">
+            <div className="col-span-full py-20 text-center text-amber-500/70 italic font-black text-lg bg-white/5 rounded-3xl">
               لا توجد سجلات مطابقة لخيارات الفلترة الحالية...
             </div>
           ) : (
@@ -696,73 +696,72 @@ export default function ExecutionsModule({
                 layout
                 key={ex.id}
                 onClick={() => setViewingExec(ex)}
-                className="p-6 rounded-[2rem] bg-gradient-to-br from-[#0c142b] to-[#040817] border-2 border-amber-500/20 hover:border-amber-500/50 shadow-[0_4px_20px_rgba(0,0,0,0.5)] hover:shadow-[0_10px_30px_rgba(234,179,8,0.15)] transition-all duration-300 group cursor-pointer relative overflow-hidden"
+                className="p-6 rounded-[2rem] bg-white border border-slate-200 hover:border-slate-300 shadow-[0_5px_20px_rgba(0,0,0,0.05)] hover:shadow-[0_10px_30px_rgba(0,0,0,0.1)] transition-all duration-300 group cursor-pointer relative overflow-hidden"
               >
-                <div className="absolute top-0 right-0 w-24 h-24 bg-amber-500/10 rounded-full blur-2xl -z-10"></div>
+                <div className="absolute top-0 right-0 w-24 h-24 bg-slate-50 rounded-full blur-2xl -z-10"></div>
 
                 <div className="flex justify-between items-start mb-6">
-                  <div className="p-3 bg-slate-900 border border-amber-500/30 text-amber-500 rounded-2xl group-hover:scale-110 transition-transform duration-300 shadow-sm">
+                  <div className="p-3 bg-[#0f172a] text-white rounded-2xl group-hover:scale-110 transition-transform duration-300 shadow-md">
                     <Gavel className="w-6 h-6" />
                   </div>
                   <span
                     className={`px-4 py-1.5 rounded-full text-[10px] font-black border uppercase tracking-widest shadow-sm ${
                       ex.status?.includes("مكتمل") ||
                       ex.status?.includes("منتهي")
-                        ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/30"
+                        ? "bg-emerald-50 text-emerald-700 border-emerald-200"
                         : ex.status?.includes("قيد")
-                          ? "bg-amber-500/10 text-amber-400 border-amber-500/30"
-                          : "bg-blue-500/10 text-blue-400 border-blue-500/30"
+                          ? "bg-amber-50 text-amber-700 border-amber-200"
+                          : "bg-blue-50 text-blue-700 border-blue-200"
                     }`}
                   >
                     {ex.status}
                   </span>
                 </div>
 
-                <h3 className="text-lg font-black mb-1 text-amber-400 group-hover:text-amber-300 transition-colors drop-shadow-md">
+                <h3 className="text-lg font-black mb-1 text-[#0f172a] group-hover:text-amber-600 transition-colors drop-shadow-sm">
                   طلب رقم: {ex.execution_number}
                 </h3>
                 {ex.is_najiz_sync && (
                   <div className="flex items-center gap-1.5 mb-3">
-                    <span className="text-[10px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded-md font-black flex items-center gap-1 shadow-sm">
-                      <Activity className="w-3 h-3" /> مستورد ومزامن آلياً عبر
-                      ناجز
+                    <span className="text-[10px] bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded-md font-black flex items-center gap-1 shadow-sm">
+                      <Activity className="w-3 h-3" /> مستورد ومزامن آلياً عبر ناجز
                     </span>
                   </div>
                 )}
 
                 <div className="space-y-4 mb-6 pt-2">
-                  <div className="flex items-center justify-between text-sm border-b border-slate-700/50 pb-2">
+                  <div className="flex items-center justify-between text-sm border-b border-slate-100 pb-2">
                     <div className="flex items-center gap-2.5">
-                      <User className="w-4 h-4 text-slate-500" />
-                      <span className="text-amber-400/60 font-extrabold">
+                      <User className="w-4 h-4 text-slate-400" />
+                      <span className="text-slate-500 font-extrabold">
                         الموكل الطالب:
                       </span>
                     </div>
-                    <span className="font-black text-amber-50 drop-shadow-sm">
+                    <span className="font-black text-[#0f172a] drop-shadow-sm">
                       {ex.requester_name}
                     </span>
                   </div>
-                  <div className="flex items-center justify-between text-sm border-b border-slate-700/50 pb-2">
+                  <div className="flex items-center justify-between text-sm border-b border-slate-100 pb-2">
                     <div className="flex items-center gap-2.5">
-                      <User className="w-4 h-4 text-slate-500" />
-                      <span className="text-amber-400/60 font-extrabold">
+                      <User className="w-4 h-4 text-slate-400" />
+                      <span className="text-slate-500 font-extrabold">
                         الطرف المدين:
                       </span>
                     </div>
-                    <span className="font-extrabold text-amber-100">
+                    <span className="font-extrabold text-[#334155]">
                       {ex.opponent_name}
                     </span>
                   </div>
-                  <div className="flex items-center justify-between text-sm border-b border-slate-700/50 pb-2">
+                  <div className="flex items-center justify-between text-sm border-b border-slate-100 pb-2">
                     <div className="flex items-center gap-2.5">
-                      <CreditCard className="w-4 h-4 text-slate-500" />
-                      <span className="text-amber-400/60 font-extrabold">
+                      <CreditCard className="w-4 h-4 text-slate-400" />
+                      <span className="text-slate-500 font-extrabold">
                         قيمة السند:
                       </span>
                     </div>
-                    <span className="font-black text-base text-amber-400 font-mono drop-shadow-sm">
+                    <span className="font-black text-base text-amber-600 font-mono drop-shadow-sm">
                       {(ex.amount || 0).toLocaleString()}{" "}
-                      <span className="text-[10px] text-amber-400/60 font-sans">
+                      <span className="text-[10px] text-amber-500 font-sans">
                         ر.س
                       </span>
                     </span>
@@ -770,12 +769,12 @@ export default function ExecutionsModule({
                   {ex.court_name && (
                     <div className="flex items-center justify-between text-sm">
                       <div className="flex items-center gap-2.5">
-                        <FileText className="w-4 h-4 text-slate-500" />
-                        <span className="text-amber-400/60 font-extrabold">
+                        <FileText className="w-4 h-4 text-slate-400" />
+                        <span className="text-slate-500 font-extrabold">
                           المحكمة:
                         </span>
                       </div>
-                      <span className="font-black text-amber-100/90 text-xs">
+                      <span className="font-black text-[#334155] text-xs">
                         {ex.court_name}
                       </span>
                     </div>
@@ -783,12 +782,12 @@ export default function ExecutionsModule({
                 </div>
 
                 <div
-                  className="flex gap-2.5 pt-4 border-t border-slate-800"
+                  className="flex gap-2.5 pt-4 border-t border-slate-100"
                   onClick={(e) => e.stopPropagation()}
                 >
                   <button
                     onClick={() => setEditingExec(ex)}
-                    className="flex-1 flex items-center justify-center gap-2 p-3 bg-slate-900/60 hover:bg-slate-800 text-amber-400 font-black text-xs transition-all border border-amber-500/20 hover:border-amber-400 rounded-xl cursor-pointer shadow-sm"
+                    className="flex-1 flex items-center justify-center gap-2 p-3 bg-white hover:bg-slate-50 text-[#0f172a] font-black text-xs transition-all border border-slate-200 hover:border-[#0f172a] rounded-xl cursor-pointer shadow-sm hover:shadow-md"
                   >
                     <Edit2 className="w-4 h-4" />
                     تعديل البيانات
@@ -801,7 +800,7 @@ export default function ExecutionsModule({
                         onDeleteExecution && onDeleteExecution(ex.id);
                       }
                     }}
-                    className="p-3 bg-slate-900/60 hover:bg-rose-500/10 text-rose-500 border border-slate-800 hover:border-rose-500/30 rounded-xl transition-all cursor-pointer shadow-sm"
+                    className="p-3 bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 hover:border-rose-300 rounded-xl transition-all cursor-pointer shadow-sm hover:shadow-md"
                   >
                     <Trash2 className="w-4 h-4" />
                   </button>

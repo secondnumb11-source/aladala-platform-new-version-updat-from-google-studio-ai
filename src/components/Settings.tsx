@@ -1574,10 +1574,10 @@ export default function Settings({
           {/* API Keys management section */}
           <div className="bg-[#0a1628] border border-slate-700 rounded-2xl p-6 settings-card high-contrast-card-wrapper text-high-contrast-light-bg shadow-[0_0_15px_rgba(0,0,0,0.5)]" dir="rtl">
             <div className="flex items-center gap-3 mb-6">
-              <Key className="w-6 h-6 text-yellow-400" />
+              <Key className="w-6 h-6 text-yellow-400 drop-shadow-md" style={{ color: '#facc15' }} />
               <div>
-                <h2 className="text-yellow-400 font-black text-lg drop-shadow-md">مفاتيح API</h2>
-                <p className="text-white font-bold text-sm drop-shadow-md">
+                <h2 className="text-yellow-400 font-black text-lg" style={{ color: '#facc15', textShadow: '0 2px 5px rgba(0,0,0,0.8)' }}>مفاتيح API</h2>
+                <p className="text-white font-bold text-sm" style={{ color: '#ffffff', textShadow: '0 2px 5px rgba(0,0,0,0.8)' }}>
                   استخدم هذا المفتاح لربط أدوات سحب البيانات مع النظام
                 </p>
               </div>
@@ -1650,7 +1650,7 @@ export default function Settings({
             {/* List existing keys */}
             <div className="space-y-3">
               {apiKeys.length === 0 ? (
-                <p className="text-white font-black text-sm text-center py-4 drop-shadow-md">
+                <p className="text-white font-black text-sm text-center py-4" style={{ color: '#ffffff', textShadow: '0 2px 5px rgba(0,0,0,0.8)' }}>
                   لا توجد مفاتيح — أنشئ مفتاحاً أعلاه
                 </p>
               ) : apiKeys.map(key => (
@@ -1658,21 +1658,22 @@ export default function Settings({
                   className="flex items-center justify-between p-4
                     bg-[#050e21] border border-slate-700 rounded-xl shadow-sm">
                   <div>
-                    <p className="text-yellow-400 font-black text-sm drop-shadow-md pb-0.5">{key.key_name}</p>
-                    <code className="text-white font-bold text-xs drop-shadow-sm pb-1 block">
+                    <p className="font-black text-base pb-0.5" style={{ color: '#facc15', textShadow: '0 2px 5px rgba(0,0,0,0.8)' }}>{key.key_name}</p>
+                    <code className="font-bold text-sm pb-1 block" style={{ color: '#ffffff', textShadow: '0 2px 5px rgba(0,0,0,0.8)' }}>
                       {key.key_value.substring(0, 20)}...
                     </code>
-                    <p className="text-yellow-300 font-bold text-[10px] drop-shadow-sm">
+                    <p className="font-black text-[11px]" style={{ color: '#ffffff', textShadow: '0 2px 5px rgba(0,0,0,0.8)' }}>
                       {key.last_used_at
                         ? 'آخر استخدام: ' + new Date(key.last_used_at).toLocaleString('ar-SA')
                         : 'لم يُستخدم بعد'}
                     </p>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className={`text-[10px] px-2 py-1 rounded-lg font-black shadow-sm
+                    <span className={`text-[11px] px-3 py-1 rounded-lg font-black shadow-sm
                       ${key.is_active
                         ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40'
-                        : 'bg-red-500/20 text-red-400 border border-red-500/40'}`}>
+                        : 'bg-red-500/20 text-red-400 border border-red-500/40'}`}
+                        style={{ color: key.is_active ? '#34d399' : '#f87171', textShadow: '0 1px 2px rgba(0,0,0,0.8)' }}>
                       {key.is_active ? 'نشط' : 'معطّل'}
                     </span>
                     <button
@@ -1681,7 +1682,7 @@ export default function Settings({
                         border border-red-500/30 rounded-lg transition-colors cursor-pointer shadow-sm"
                       title="حذف المفتاح"
                     >
-                      <Trash2 className="w-4 h-4 text-red-400" />
+                      <Trash2 className="w-4 h-4 text-red-500" style={{ color: '#ef4444' }} />
                     </button>
                   </div>
                 </div>
