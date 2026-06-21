@@ -90,7 +90,7 @@ export const AgenciesAlertWidget = ({ agencies }: { agencies: any[] }) => {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-1.5">
                   <Clock size={12} className={isUrgent ? 'text-rose-500' : 'text-slate-200 font-bold'} />
-                  <span className={`text-[10px] font-bold ${isUrgent ? 'text-rose-600 animate-pulse' : 'text-slate-700'}`}>
+                  <span className={`text-[10px] font-bold ${isUrgent ? 'text-rose-600 animate-pulse' : 'text-slate-300'}`}>
                     {isUrgent ? `متبقي ${daysLeft} يوم!` : `متبقي ${daysLeft} يوم`}
                   </span>
                 </div>
@@ -129,7 +129,7 @@ export const OverdueTasksWidget = ({ tasks }: { tasks: any[] }) => {
                 <AlertTriangle size={20} />
               </div>
               <div className="flex-1 min-w-0">
-                <h4 className="text-xs font-black text-slate-800 line-clamp-1">{task.title}</h4>
+                <h4 className="text-xs font-black text-slate-200 line-clamp-1">{task.title}</h4>
                 <p className="text-[10px] font-black text-rose-600 mt-1">تأخرت منذ {Math.abs(Math.ceil((new Date(task.dueDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)))} يوم</p>
               </div>
             </div>
@@ -225,7 +225,7 @@ export const DeadlinesWidget = ({ cases }: { cases: any[] }) => {
           <Clock className="w-5 h-5" />
           حاسبة المهل النظامية (AI)
         </h3>
-        <span className="text-[10px] font-black text-slate-900 bg-amber-400 px-3 py-1.5 rounded-xl shadow-lg animate-pulse">مزامنة فورية</span>
+        <span className="text-[10px] font-black text-white bg-amber-400 px-3 py-1.5 rounded-xl shadow-lg animate-pulse">مزامنة فورية</span>
       </div>
       
       <div className="space-y-4 flex-1 relative z-10">

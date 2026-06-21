@@ -141,7 +141,7 @@ export default function ExecutionsModule({
             <input 
               type="text"
               placeholder="البحث برقم الطلب أو اسم الطرف..."
-              className="bg-slate-950/50 border-2 border-slate-800 rounded-2xl py-3 pr-12 pl-6 text-white text-sm font-black w-full md:w-80 focus:outline-none focus:border-amber-500 transition-all placeholder:text-slate-600 shadow-inner"
+              className="bg-slate-950/50 border-2 border-slate-800 rounded-2xl py-3 pr-12 pl-6 text-white text-sm font-black w-full md:w-80 focus:outline-none focus:border-amber-500 transition-all placeholder:text-slate-400 shadow-inner"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />

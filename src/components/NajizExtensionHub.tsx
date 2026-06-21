@@ -802,430 +802,332 @@ export default function NajizExtensionHub({ currentUser, onUpdateState }: NajizE
   };
 
   const generateExtensionZip = async () => {
-    setDownloading(true);
     try {
-      const JSZip = (await import('jszip')).default;
+      setDownloading(true);
+      const JSZipModule = await import('jszip');
+      const JSZip = JSZipModule.default || JSZipModule;
       const zip = new JSZip();
-      const ext = zip.folder('najiz-extension');
-      if (!ext) throw new Error("Could not create folder");
-
-      const APP_SERVER = 'https://aladala-platform-rnuz.onrender.com';
+      const folder = zip.folder('najiz-extension');
+      if (!folder) throw new Error('Failed to create folder');
 
       // ===== manifest.json =====
-      ext.file('manifest.json', JSON.stringify({
-        "manifest_version": 3,
-        "name": "منصة العدالة — مزامنة ناجز",
-        "version": "4.0",
-        "description": "سحب القضايا والوكالات والتنفيذ والجلسات من ناجز ومزامنتها مع النظام",
-        "permissions": ["activeTab", "scripting", "storage", "tabs"],
-        "host_permissions": [
+      folder.file('manifest.json', JSON.stringify({
+        manifest_version: 3,
+        name: "منصة العدالة — مزامنة ناجز",
+        version: "7.0",
+        description: "سحب بيانات القضايا والجلسات والوكالات والتنفيذ من ناجز ومزامنتها مع منصة العدالة",
+        permissions: ["activeTab", "scripting", "storage", "tabs"],
+        host_permissions: [
           "https://www.najiz.sa/*",
           "https://najiz.sa/*",
           "https://*.najiz.sa/*",
           "https://aladala-platform-rnuz.onrender.com/*"
         ],
-        "content_scripts": [
-          {
-            "matches": [
-              "https://www.najiz.sa/*",
-              "https://najiz.sa/*",
-              "https://*.najiz.sa/*"
-            ],
-            "js": ["content.js"],
-            "run_at": "document_idle",
-            "all_frames": false
-          }
-        ],
-        "action": {
-          "default_popup": "popup.html",
-          "default_title": "العدالة — سحب ناجز v4.0"
+        content_scripts: [{
+          matches: [
+            "https://www.najiz.sa/*",
+            "https://najiz.sa/*",
+            "https://*.najiz.sa/*"
+          ],
+          js: ["content.js"],
+          run_at: "document_idle",
+          all_frames: false
+        }],
+        action: {
+          default_popup: "popup.html",
+          default_title: "العدالة — سحب ناجز v7.0"
         },
-        "background": {
-          "service_worker": "background.js"
+        background: {
+          service_worker: "background.js"
         }
       }, null, 2));
 
       // ===== background.js =====
-      ext.file('background.js', `// background.js - منصة العدالة v4.0
+      folder.file('background.js', `
 const APP_SERVER = 'https://aladala-platform-rnuz.onrender.com';
 
 chrome.runtime.onInstalled.addListener(() => {
   chrome.storage.local.set({ serverUrl: APP_SERVER });
-  console.log('[العدالة] تم تثبيت الإضافة بنجاح');
+  console.log('[العدالة v7.0] تم التثبيت بنجاح');
 });
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.action === 'contentScriptReady') {
-    console.log('[العدالة] Script جاهز:', message.url);
+    console.log('[العدالة] Script جاهز:', message.url, '| نوع الصفحة:', message.pageType);
   }
   if (message.action === 'setServerUrl') {
     chrome.storage.local.set({ serverUrl: message.url });
   }
   sendResponse({ received: true });
   return true;
-});`);
+});
+`.trim());
 
       // ===== content.js =====
-      ext.file('content.js', `(function () {
+      folder.file('content.js', `
+(function () {
   'use strict';
 
   const SERVER = 'https://aladala-platform-rnuz.onrender.com';
 
-  // تحديد نوع الصفحة الحالية
   function getPageType() {
     const url = window.location.href;
     if (url.includes('/lawsuit')) return 'cases';
-    if (url.includes('/wekalat') || url.includes('/procurations')) return 'poa';
     if (url.includes('/iexecution')) return 'executions';
+    if (url.includes('/wekalat') || url.includes('/procuration')) return 'poa';
     if (url.includes('/appointment-requests')) return 'hearings';
     return 'unknown';
   }
 
-  // انتظار تحميل البيانات الديناميكية
-  function waitForPageData(timeout = 15000) {
-    return new Promise((resolve) => {
-      let elapsed = 0;
-      const check = setInterval(() => {
+  function waitForVisibleContent(timeoutMs) {
+    timeoutMs = timeoutMs || 15000;
+    return new Promise(function(resolve) {
+      var elapsed = 0;
+      var interval = setInterval(function() {
         elapsed += 500;
-        const text = document.body?.innerText || '';
-        const tables = document.querySelectorAll('table tr').length;
-        const cards = document.querySelectorAll(
-          '[class*="card"],[class*="Card"],[class*="item"],[class*="Item"]'
-        ).length;
-        const hasData = tables > 2 || cards > 2 ||
-          /\\d{4}\\/\\d+/.test(text) || /\\d{9,}/.test(text);
-        if (hasData || elapsed >= timeout) {
-          clearInterval(check);
-          resolve(hasData);
+        var body = document.body ? document.body.innerText : '';
+        var hasTable = document.querySelectorAll('table tr').length > 1;
+        var hasCards = document.querySelectorAll('[class*="card" i],[class*="item" i],[class*="row" i]').length > 2;
+        var hasNumbers = /\\d{4}\\/\\d+|\\d{9,}/.test(body);
+        var hasContent = /[\\u0600-\\u06FF]{5,}/.test(body) && body.length > 500;
+        if (hasTable || hasCards || hasNumbers || hasContent) {
+          clearInterval(interval);
+          resolve(true);
+          return;
+        }
+        if (elapsed >= timeoutMs) {
+          clearInterval(interval);
+          resolve(false);
         }
       }, 500);
     });
   }
 
-  // ===== استخراج بيانات القضايا =====
-  function extractCases() {
-    const cases = [];
-    const seen = new Set();
+  function getVisibleText() {
+    var texts = [];
+    function isVisible(el) {
+      if (!el) return false;
+      var style = window.getComputedStyle(el);
+      return style.display !== 'none' &&
+             style.visibility !== 'hidden' &&
+             style.opacity !== '0' &&
+             el.offsetParent !== null;
+    }
+    var walker = document.createTreeWalker(
+      document.body,
+      NodeFilter.SHOW_TEXT,
+      { acceptNode: function(node) {
+        if (node.nodeValue && node.nodeValue.trim() && isVisible(node.parentElement)) {
+          return NodeFilter.FILTER_ACCEPT;
+        }
+        return NodeFilter.FILTER_SKIP;
+      }}
+    );
+    var node;
+    while ((node = walker.nextNode())) {
+      var text = node.nodeValue.trim();
+      if (text && text.length > 1) texts.push(text);
+    }
+    return texts.join('\\n');
+  }
 
-    // من الجداول
-    document.querySelectorAll('table').forEach(table => {
-      const rows = table.querySelectorAll('tbody tr, tr:not(:first-child)');
-      rows.forEach(row => {
-        const cells = Array.from(row.querySelectorAll('td'))
-          .map(td => td.innerText?.trim() || '');
+  function mapCategory(text) {
+    if (!text) return 'civil';
+    var t = text.toString();
+    if (t.includes('تجاري')) return 'commercial';
+    if (t.includes('عمالي') || t.includes('عمل')) return 'labor';
+    if (t.includes('جزائي') || t.includes('جنائي')) return 'criminal';
+    if (t.includes('أحوال') || t.includes('أسرة')) return 'personal_status';
+    if (t.includes('إداري') || t.includes('مظالم')) return 'administrative';
+    return 'civil';
+  }
+
+  function extractCasesFromScreen() {
+    var cases = [];
+    var seen = new Set();
+
+    document.querySelectorAll('table').forEach(function(table) {
+      if (!table.offsetParent) return;
+      var headers = Array.from(table.querySelectorAll('thead th,thead td,tr:first-child th'))
+        .map(function(h) { return h.innerText ? h.innerText.trim() : ''; });
+      var rows = table.querySelectorAll('tbody tr,tr:not(:first-child)');
+      rows.forEach(function(row) {
+        if (!row.offsetParent) return;
+        var cells = Array.from(row.querySelectorAll('td'))
+          .map(function(td) { return td.innerText ? td.innerText.trim() : ''; });
         if (cells.length < 2) return;
-        const rowText = cells.join(' ');
-        const caseNum = rowText.match(/\\d{4}\\/\\d{1,2}\\/\\d+|\\d{4}\\/\\d{4,}|\\d{10,}/)?.[0];
-        if (!caseNum || seen.has(caseNum)) return;
-        seen.add(caseNum);
-
-        const dateMatch = rowText.match(
-          /\\d{1,2}[\\/\\-]\\d{1,2}[\\/\\-]\\d{4}|\\d{4}[\\/\\-]\\d{1,2}[\\/\\-]\\d{1,2}/
-        );
-
-        cases.push({
-          caseNumber: caseNum,
-          najizCaseNumber: caseNum,
-          caseName: cells.find(c =>
-            c.length > 5 && !/^\\d+[\\/\\-]?\\d*$/.test(c) &&
-            !c.includes('محكمة')
-          ) || 'قضية من ناجز',
-          status: cells.find(c =>
-            ['قيد','منتهي','نشط','مقيد','محكوم','مؤجل',
-             'مشطوب','موقوف','صدر','جديد'].some(k => c.includes(k))
-          ) || 'قيد النظر',
-          court: cells.find(c => c.includes('محكمة')) || '',
-          category: cells.find(c =>
-            ['تجاري','عمالي','مدني','جزائي','أحوال','إداري',
-             'تنفيذ'].some(k => c.includes(k))
-          ) || 'مدني',
-          nextSessionDate: dateMatch?.[0] || '',
+        var rowText = cells.join(' | ');
+        var numMatch = rowText.match(/\\d{4}\\/\\d{1,2}\\/\\d+|\\d{4}\\/\\d{4,}|\\b\\d{9,10}\\b/);
+        if (!numMatch || seen.has(numMatch[0])) return;
+        seen.add(numMatch[0]);
+        var dateMatch = rowText.match(/\\d{1,2}[\\/\\-]\\d{1,2}[\\/\\-]\\d{4}/);
+        var caseObj = {
+          caseNumber: numMatch[0],
+          najizCaseNumber: numMatch[0],
+          caseName: cells.find(function(c) {
+            return c.length > 5 && !/^\\d+[\\/\\-]?\\d*$/.test(c) && !c.includes('محكمة');
+          }) || 'قضية من ناجز',
+          status: cells.find(function(c) {
+            return ['قيد','منتهي','نشط','مقيد','محكوم','مؤجل','مشطوب','موقوف'].some(function(k) { return c.includes(k); });
+          }) || 'قيد النظر',
+          court: cells.find(function(c) { return c.includes('محكمة'); }) || '',
+          category: mapCategory(rowText),
+          nextHearing: dateMatch ? dateMatch[0] : '',
           stage: 'litigation',
           isNajizSync: true,
-          source: 'najiz_extension'
-        });
+          source: 'screen_table'
+        };
+        cases.push(caseObj);
       });
     });
 
-    // من البطاقات
-    const cardSelectors = [
-      '[class*="CaseCard"]','[class*="case-card"]',
-      '[class*="CaseItem"]','[class*="caseItem"]',
-      '[class*="RequestCard"]','[class*="ListItem"]',
-      '[class*="MuiCard"]','[class*="MuiPaper"]',
-      '[data-testid*="case"]','.case','.lawsuit-item'
+    var cardSelectors = [
+      '[class*="card" i]','[class*="Card"]',
+      '[class*="item" i]','[class*="Item"]',
+      '[class*="case" i]','[class*="lawsuit" i]',
+      '[role="row"]','[role="listitem"]'
     ];
-
-    cardSelectors.forEach(sel => {
+    cardSelectors.forEach(function(selector) {
       try {
-        document.querySelectorAll(sel).forEach(card => {
-          const text = (card as HTMLElement).innerText?.trim() || '';
-          if (!text || text.length < 10) return;
-          const caseNum = text.match(/\\d{4}\\/\\d+|\\d{10,}|\\d{9}/)?.[0];
-          if (!caseNum || seen.has(caseNum)) return;
-          seen.add(caseNum);
-
-          const lines = text.split('\\n').map(l => l.trim()).filter(Boolean);
-          const dateMatch = text.match(
-            /\\d{1,2}[\\/\\-]\\d{1,2}[\\/\\-]\\d{4}|\\d{4}[\\/\\-]\\d{1,2}[\\/\\-]\\d{1,2}/
-          );
-
+        document.querySelectorAll(selector).forEach(function(el) {
+          if (!el.offsetParent) return;
+          var text = el.innerText ? el.innerText.trim() : '';
+          if (text.length < 10 || text.length > 3000) return;
+          var numMatch = text.match(/\\d{4}\\/\\d+|\\d{10,}|\\d{9}/);
+          if (!numMatch || seen.has(numMatch[0])) return;
+          seen.add(numMatch[0]);
+          var lines = text.split('\\n').map(function(l) { return l.trim(); }).filter(Boolean);
+          var dateMatch = text.match(/\\d{1,2}[\\/\\-]\\d{1,2}[\\/\\-]\\d{4}/);
           cases.push({
-            caseNumber: caseNum,
-            najizCaseNumber: caseNum,
-            caseName: lines.find(l =>
-              l.length > 5 && !/^\\d+[\\/\\-]?\\d*$/.test(l)
-            ) || 'قضية من ناجز',
-            status: lines.find(l =>
-              ['قيد','منتهي','نشط','مقيد','محكوم',
-               'مؤجل','مشطوب'].some(k => l.includes(k))
-            ) || 'قيد النظر',
-            nextSessionDate: dateMatch?.[0] || '',
+            caseNumber: numMatch[0],
+            najizCaseNumber: numMatch[0],
+            caseName: lines.find(function(l) {
+              return l.length > 5 && !/^\\d+[\\/\\-]?\\d*$/.test(l) && l !== numMatch[0];
+            }) || 'قضية من ناجز',
+            status: lines.find(function(l) {
+              return ['قيد','منتهي','نشط','مقيد','محكوم','مؤجل','مشطوب'].some(function(k) { return l.includes(k); });
+            }) || 'قيد النظر',
+            court: lines.find(function(l) { return l.includes('محكمة'); }) || '',
+            category: mapCategory(text),
+            nextHearing: dateMatch ? dateMatch[0] : '',
             isNajizSync: true,
-            source: 'najiz_extension'
+            source: 'screen_card'
           });
         });
       } catch(e) {}
     });
 
-    // fallback من النص
     if (cases.length === 0) {
-      const text = document.body?.innerText || '';
-      const nums = [...new Set(
-        text.match(/\\d{4}\\/\\d{1,2}\\/\\d+|\\d{4}\\/\\d{4,}/g) || []
-      )];
-      nums.forEach(num => {
+      var visibleText = getVisibleText();
+      var allNums = Array.from(new Set(visibleText.match(/\\d{4}\\/\\d{1,2}\\/\\d+|\\d{4}\\/\\d{4,}/g) || []));
+      allNums.forEach(function(num) {
         if (!seen.has(num)) {
           seen.add(num);
+          var idx = visibleText.indexOf(num);
+          var context = visibleText.substring(Math.max(0,idx-300), Math.min(visibleText.length,idx+400));
           cases.push({
-            caseNumber: num,
-            najizCaseNumber: num,
+            caseNumber: num, najizCaseNumber: num,
             caseName: 'قضية من ناجز',
-            status: 'قيد النظر',
-            isNajizSync: true,
-            source: 'najiz_text'
+            status: context.includes('منتهي') ? 'منتهي' : 'قيد النظر',
+            court: (context.match(/محكمة[^\\n،,]{2,30}/) || [''])[0],
+            category: mapCategory(context),
+            nextHearing: (context.match(/\\d{1,2}[\\/\\-]\\d{1,2}[\\/\\-]\\d{4}/) || [''])[0],
+            isNajizSync: true, source: 'screen_text_fallback'
           });
         }
       });
     }
-
     return cases;
   }
 
-  // ===== استخراج بيانات الوكالات =====
-  function extractPOA() {
-    const poas = [];
-    const seen = new Set();
-
-    document.querySelectorAll('table').forEach(table => {
-      table.querySelectorAll('tbody tr, tr:not(:first-child)').forEach(row => {
-        const cells = Array.from(row.querySelectorAll('td'))
-          .map(td => td.innerText?.trim() || '');
-        if (cells.length < 2) return;
-        const rowText = cells.join(' ');
-        const poaNum = rowText.match(/\\d{6,}/)?.[0];
-        if (!poaNum || seen.has(poaNum)) return;
-        seen.add(poaNum);
-
-        const dateMatch = rowText.match(
-          /\\d{1,2}[\\/\\-]\\d{1,2}[\\/\\-]\\d{4}|\\d{4}[\\/\\-]\\d{1,2}[\\/\\-]\\d{1,2}/g
-        );
-
-        poas.push({
-          poaNumber: poaNum,
-          type: cells.find(c =>
-            ['عامة','خاصة','قضائية','خاص','عام'].some(k => c.includes(k))
-          ) || 'عامة',
-          status: cells.find(c =>
-            ['سارية','منتهية','موقوفة','فعال','غير فعال']
-              .some(k => c.includes(k))
-          ) || 'سارية',
-          issueDate: dateMatch?.[0] || '',
-          expiryDate: dateMatch?.[1] || dateMatch?.[0] || '',
-          principalName: cells.find(c =>
-            c.length > 3 && !/^\\d+$/.test(c) &&
-            !['سارية','منتهية','عامة','خاصة'].includes(c)
-          ) || '',
-          isNajizSync: true,
-          source: 'najiz_extension'
-        });
-      });
-    });
-
-    // من البطاقات
-    document.querySelectorAll(
-      '[class*="Card"],[class*="card"],[class*="Item"],[class*="item"]'
-    ).forEach(card => {
-      const text = (card as HTMLElement).innerText?.trim() || '';
-      if (!text.includes('وكالة') && !text.includes('وكيل')) return;
-      const poaNum = text.match(/\\d{6,}/)?.[0];
-      if (!poaNum || seen.has(poaNum)) return;
-      seen.add(poaNum);
-
-      const dateMatch = text.match(
-        /\\d{1,2}[\\/\\-]\\d{1,2}[\\/\\-]\\d{4}|\\d{4}[\\/\\-]\\d{1,2}[\\/\\-]\\d{1,2}/g
-      );
-
-      poas.push({
-        poaNumber: poaNum,
-        type: 'عامة',
-        status: text.includes('منتهية') ? 'منتهية' : 'سارية',
-        expiryDate: dateMatch?.[0] || '',
-        isNajizSync: true,
-        source: 'najiz_extension'
-      });
-    });
-
-    return poas;
-  }
-
-  // ===== استخراج طلبات التنفيذ =====
-  function extractExecutions() {
-    const executions = [];
-    const seen = new Set();
-
-    document.querySelectorAll('table').forEach(table => {
-      table.querySelectorAll('tbody tr, tr:not(:first-child)').forEach(row => {
-        const cells = Array.from(row.querySelectorAll('td'))
-          .map(td => td.innerText?.trim() || '');
-        if (cells.length < 2) return;
-        const rowText = cells.join(' ');
-        const execNum = rowText.match(/\\d{4}\\/\\d+|\\d{9,}/)?.[0];
-        if (!execNum || seen.has(execNum)) return;
-        seen.add(execNum);
-
-        const dateMatch = rowText.match(
-          /\\d{1,2}[\\/\\-]\\d{1,2}[\\/\\-]\\d{4}/
-        );
-
-        executions.push({
-          executionNumber: execNum,
-          status: cells.find(c =>
-            ['منتهي','قيد','جديد','مكتمل','معلق','نشط']
-              .some(k => c.includes(k))
-          ) || 'قيد التنفيذ',
-          amount: cells.find(c => /[\\d,]+(\\.\\d+)?\\s*(ريال|ر\\.س|SAR)/.test(c)) || '',
-          court: cells.find(c => c.includes('محكمة')) || '',
-          requesterName: cells.find(c =>
-            c.length > 3 && !/^\\d+$/.test(c) &&
-            !c.includes('محكمة') && !c.includes('ريال')
-          ) || '',
-          issueDate: dateMatch?.[0] || '',
-          isNajizSync: true,
-          source: 'najiz_extension'
-        });
-      });
-    });
-
-    // من البطاقات
-    document.querySelectorAll(
-      '[class*="Card"],[class*="card"],[class*="Item"]'
-    ).forEach(card => {
-      const text = (card as HTMLElement).innerText?.trim() || '';
-      if (!text.includes('تنفيذ')) return;
-      const execNum = text.match(/\\d{4}\\/\\d+|\\d{9,}/)?.[0];
-      if (!execNum || seen.has(execNum)) return;
-      seen.add(execNum);
-
-      executions.push({
-        executionNumber: execNum,
-        status: text.includes('منتهي') ? 'منتهي' : 'قيد التنفيذ',
-        isNajizSync: true,
-        source: 'najiz_extension'
-      });
-    });
-
-    return executions;
-  }
-
-  // ===== استخراج مواعيد الجلسات =====
-  function extractHearings() {
-    const hearings = [];
-    const seen = new Set();
-
-    document.querySelectorAll('table').forEach(table => {
-      table.querySelectorAll('tbody tr, tr:not(:first-child)').forEach(row => {
-        const cells = Array.from(row.querySelectorAll('td'))
-          .map(td => td.innerText?.trim() || '');
-        if (cells.length < 2) return;
-        const rowText = cells.join(' ');
-
-        const dateMatch = rowText.match(
-          /\\d{1,2}[\\/\\-]\\d{1,2}[\\/\\-]\\d{4}|\\d{4}[\\/\\-]\\d{1,2}[\\/\\-]\\d{1,2}/
-        );
-        const timeMatch = rowText.match(/\\d{1,2}:\\d{2}/);
-        const caseNum = rowText.match(/\\d{4}\\/\\d+|\\d{9,}/)?.[0];
-
-        const key = \`\$\{caseNum\}-\$\{dateMatch?.[0]\}\`;
-        if (!dateMatch || seen.has(key)) return;
-        seen.add(key);
-
+  function extractHearingsFromScreen() {
+    var hearings = [];
+    var seen = new Set();
+    document.querySelectorAll('table').forEach(function(table) {
+      if (!table.offsetParent) return;
+      table.querySelectorAll('tbody tr,tr:not(:first-child)').forEach(function(row) {
+        var cells = Array.from(row.querySelectorAll('td')).map(function(td) { return td.innerText ? td.innerText.trim() : ''; });
+        var rText = cells.join(' ');
+        var rDate = rText.match(/\\d{1,2}[\\/\\-]\\d{1,2}[\\/\\-]\\d{4}/);
+        var rTime = rText.match(/\\d{1,2}:\\d{2}/);
+        var rCase = (rText.match(/\\d{4}\\/\\d+|\\d{9,}/) || [''])[0];
+        var rKey = rCase + '-' + (rDate ? rDate[0] : '');
+        if (!rDate || seen.has(rKey)) return;
+        seen.add(rKey);
         hearings.push({
-          caseNumber: caseNum || '',
-          date: dateMatch[0],
-          time: timeMatch?.[0] || '09:00',
-          court: cells.find(c => c.includes('محكمة')) || '',
-          hall: cells.find(c =>
-            c.includes('قاعة') || c.includes('دائرة')
-          ) || '',
-          status: cells.find(c =>
-            ['قادمة','منتهية','مؤجلة','ملغاة','جديد']
-              .some(k => c.includes(k))
-          ) || 'قادمة',
-          type: cells.find(c =>
-            ['ترافع','نطق','تدقيق','إيداع'].some(k => c.includes(k))
-          ) || '',
-          isNajizSync: true,
-          source: 'najiz_extension'
+          caseNumber: rCase,
+          date: rDate[0],
+          time: rTime ? rTime[0] : '09:00',
+          court: cells.find(function(c) { return c.includes('محكمة'); }) || '',
+          hall: cells.find(function(c) { return c.includes('قاعة') || c.includes('دائرة'); }) || '',
+          status: cells.find(function(c) { return ['قادمة','منتهية','مؤجلة','ملغاة'].some(function(k) { return c.includes(k); }); }) || 'قادمة',
+          isNajizSync: true, source: 'screen_table'
         });
       });
     });
-
-    // من البطاقات
-    document.querySelectorAll(
-      '[class*="Appointment"],[class*="appointment"],' +
-      '[class*="Hearing"],[class*="hearing"],' +
-      '[class*="Session"],[class*="session"],' +
-      '[class*="Card"],[class*="card"]'
-    ).forEach(card => {
-      const text = (card as HTMLElement).innerText?.trim() || '';
-      if (text.length < 10) return;
-      const dateMatch = text.match(
-        /\\d{1,2}[\\/\\-]\\d{1,2}[\\/\\-]\\d{4}|\\d{4}[\\/\\-]\\d{1,2}[\\/\\-]\\d{1,2}/
-      );
-      const timeMatch = text.match(/\\d{1,2}:\\d{2}/);
-      const caseNum = text.match(/\\d{4}\\/\\d+|\\d{9,}/)?.[0];
-
-      if (!dateMatch) return;
-      const key = \`\$\{caseNum\}-\$\{dateMatch[0]\}\`;
-      if (seen.has(key)) return;
-      seen.add(key);
-
-      hearings.push({
-        caseNumber: caseNum || '',
-        date: dateMatch[0],
-        time: timeMatch?.[0] || '09:00',
-        court: text.match(/محكمة[^\\n،,]*/)?.[0] || '',
-        status: text.includes('مؤجل') ? 'مؤجلة' :
-                text.includes('منتهي') ? 'منتهية' : 'قادمة',
-        isNajizSync: true,
-        source: 'najiz_extension'
-      });
-    });
-
     return hearings;
   }
 
-  // ===== الدالة الرئيسية =====
-  async function extractByPageType() {
-    await waitForPageData(12000);
-    await new Promise(r => setTimeout(r, 2000));
+  function extractPOAFromScreen() {
+    var poas = [];
+    var seen = new Set();
+    document.querySelectorAll('table').forEach(function(table) {
+      if (!table.offsetParent) return;
+      table.querySelectorAll('tbody tr,tr:not(:first-child)').forEach(function(row) {
+        var cells = Array.from(row.querySelectorAll('td')).map(function(td) { return td.innerText ? td.innerText.trim() : ''; });
+        var rowText = cells.join(' ');
+        var num = (rowText.match(/\\d{6,}/) || [''])[0];
+        if (!num || seen.has(num)) return;
+        seen.add(num);
+        var dates = rowText.match(/\\d{1,2}[\\/\\-]\\d{1,2}[\\/\\-]\\d{4}/g);
+        poas.push({
+          poaNumber: num,
+          type: cells.find(function(c) { return ['عامة','خاصة','قضائية'].some(function(k) { return c.includes(k); }); }) || 'عامة',
+          status: cells.find(function(c) { return ['سارية','منتهية','موقوفة'].some(function(k) { return c.includes(k); }); }) || 'سارية',
+          issueDate: dates ? dates[0] : '',
+          expiryDate: dates && dates[1] ? dates[1] : (dates ? dates[0] : ''),
+          isNajizSync: true, source: 'screen_table'
+        });
+      });
+    });
+    return poas;
+  }
 
-    const pageType = getPageType();
-    const url = window.location.href;
-    const result = {
-      pageType,
-      pageUrl: url,
+  function extractExecutionsFromScreen() {
+    var executions = [];
+    var seen = new Set();
+    document.querySelectorAll('table').forEach(function(table) {
+      if (!table.offsetParent) return;
+      table.querySelectorAll('tbody tr,tr:not(:first-child)').forEach(function(row) {
+        var cells = Array.from(row.querySelectorAll('td')).map(function(td) { return td.innerText ? td.innerText.trim() : ''; });
+        var rowText = cells.join(' ');
+        var num = (rowText.match(/\\d{4}\\/\\d+|\\d{9,}/) || [''])[0];
+        if (!num || seen.has(num)) return;
+        seen.add(num);
+        var dateMatch = rowText.match(/\\d{1,2}[\\/\\-]\\d{1,2}[\\/\\-]\\d{4}/);
+        var amountMatch = rowText.match(/([\\d,]+(?:\\.\\d+)?)\\s*(?:ريال|ر\\.س)/);
+        executions.push({
+          executionNumber: num,
+          status: cells.find(function(c) { return ['منتهي','قيد','جديد','معلق'].some(function(k) { return c.includes(k); }); }) || 'قيد التنفيذ',
+          amount: amountMatch ? amountMatch[1].replace(/,/g,'') : '0',
+          court: cells.find(function(c) { return c.includes('محكمة'); }) || '',
+          issueDate: dateMatch ? dateMatch[0] : '',
+          isNajizSync: true, source: 'screen_table'
+        });
+      });
+    });
+    return executions;
+  }
+
+  async function extractFromCurrentPage() {
+    var pageType = getPageType();
+    await waitForVisibleContent(15000);
+    await new Promise(function(r) { setTimeout(r, 2000); });
+
+    var result = {
+      pageType: pageType,
+      pageUrl: window.location.href,
+      pageTitle: document.title,
       cases: [],
       hearings: [],
       powers_of_attorney: [],
@@ -1233,331 +1135,475 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       scrapedAt: new Date().toISOString()
     };
 
-    switch (pageType) {
+    switch(pageType) {
       case 'cases':
-        result.cases = extractCases();
-        break;
-      case 'poa':
-        result.powers_of_attorney = extractPOA();
-        break;
-      case 'executions':
-        result.executions = extractExecutions();
+        result.cases = extractCasesFromScreen();
+        var h = extractHearingsFromScreen();
+        if (h.length > 0) result.hearings = h;
         break;
       case 'hearings':
-        result.hearings = extractHearings();
+        result.hearings = extractHearingsFromScreen();
+        break;
+      case 'poa':
+        result.powers_of_attorney = extractPOAFromScreen();
+        break;
+      case 'executions':
+        result.executions = extractExecutionsFromScreen();
         break;
       default:
-        // سحب شامل إذا لم تُعرف الصفحة
-        result.cases = extractCases();
-        result.hearings = extractHearings();
-        result.powers_of_attorney = extractPOA();
-        result.executions = extractExecutions();
+        result.cases = extractCasesFromScreen();
+        result.hearings = extractHearingsFromScreen();
+        result.powers_of_attorney = extractPOAFromScreen();
+        result.executions = extractExecutionsFromScreen();
     }
 
+    var totalFound = result.cases.length + result.hearings.length +
+                     result.powers_of_attorney.length + result.executions.length;
     result.summary = {
-      pageType,
+      pageType: pageType,
       totalCases: result.cases.length,
       totalHearings: result.hearings.length,
       totalPOAs: result.powers_of_attorney.length,
       totalExecutions: result.executions.length,
-      hasData: (
-        result.cases.length +
-        result.hearings.length +
-        result.powers_of_attorney.length +
-        result.executions.length
-      ) > 0
+      totalFound: totalFound,
+      hasData: totalFound > 0
     };
-
     return result;
   }
 
-  // ===== الاستماع للأوامر =====
-  chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  async function syncToServer(data) {
+    try {
+      var response = await fetch(SERVER + '/api/najiz-sync', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          scrapedData: data, pageType: data.pageType,
+          source: 'najiz_screen_reader_v7',
+          timestamp: new Date().toISOString()
+        })
+      });
+      if (!response.ok) throw new Error('HTTP ' + response.status);
+      return await response.json();
+    } catch(err) {
+      return { success: false, error: err.message };
+    }
+  }
 
-    if (['extractData','scrape','getData','sync'].includes(request.action)) {
-      (async () => {
+  chrome.runtime.onMessage.addListener(function(req, sender, sendResponse) {
+    if (['extractData','scrape','getData','sync'].includes(req.action)) {
+      (async function() {
         try {
-          const data = await extractByPageType();
-
-          if (data.summary.hasData) {
-            // إرسال للخادم لمزامنة الأقسام الصحيحة
-            try {
-              await fetch(\`\$\{SERVER\}/api/najiz-sync\`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                  scrapedData: data,
-                  pageType: data.pageType,
-                  source: 'chrome_extension',
-                  timestamp: new Date().toISOString()
-                })
-              });
-            } catch(syncErr) {
-              console.warn('[العدالة] Sync failed:', syncErr.message);
-            }
-
-            sendResponse({ success: true, data });
-          } else {
-            sendResponse({
-              success: false,
-              data,
-              message: getPageGuide(data.pageType)
-            });
+          var pageType = getPageType();
+          if (pageType === 'unknown') {
+            sendResponse({ success: false, message: 'اذهب لإحدى صفحات ناجز المدعومة' });
+            return;
           }
+          var data = await extractFromCurrentPage();
+          if (!data.summary.hasData) {
+            await new Promise(function(r) { setTimeout(r, 5000); });
+            data = await extractFromCurrentPage();
+            if (!data.summary.hasData) {
+              sendResponse({ success: false, data: data, message: 'لم تُوجد بيانات — انتظر تحميل الصفحة وأعد' });
+              return;
+            }
+          }
+          var syncResult = await syncToServer(data);
+          sendResponse({ success: true, data: data, syncResult: syncResult,
+            message: 'تم سحب ' + data.summary.totalFound + ' سجل' });
         } catch(err) {
           sendResponse({ success: false, error: err.message });
         }
       })();
       return true;
     }
-
-    if (request.action === 'ping') {
-      const pt = getPageType();
+    if (req.action === 'ping') {
       sendResponse({
-        success: true,
-        url: window.location.href,
-        pageType: pt,
-        isNajiz: window.location.href.includes('najiz.sa'),
-        isTargetPage: pt !== 'unknown'
+        success: true, url: window.location.href,
+        pageType: getPageType(),
+        isNajiz: window.location.href.includes('najiz.sa')
       });
-      return true;
-    }
-
-    if (request.action === 'getPageType') {
-      sendResponse({ pageType: getPageType() });
       return true;
     }
   });
 
-  function getPageGuide(pageType) {
-    const guides = {
-      cases: 'انتظر تحميل القضايا ثم اضغط سحب مرة أخرى',
-      poa: 'انتظر تحميل الوكالات ثم اضغط سحب مرة أخرى',
-      executions: 'انتظر تحميل طلبات التنفيذ ثم اضغط سحب',
-      hearings: 'انتظر تحميل المواعيد ثم اضغط سحب مرة أخرى',
-      unknown: 'اذهب لإحدى الصفحات المحددة في ناجز ثم اضغط سحب'
+  // المربع العائم
+  function createWidget() {
+    if (document.getElementById('adala-v7')) return;
+    if (!window.location.href.includes('najiz.sa')) return;
+
+    var pageType = getPageType();
+    var pageLabels = {
+      cases: { label: 'القضايا', section: 'إدارة القضايا', color: '#f59e0b' },
+      hearings: { label: 'الجلسات', section: 'مواعيد الجلسات', color: '#3b82f6' },
+      poa: { label: 'الوكالات', section: 'قسم الوكالات', color: '#8b5cf6' },
+      executions: { label: 'التنفيذ', section: 'طلبات التنفيذ', color: '#10b981' },
+      unknown: { label: 'غير محدد', section: '—', color: '#64748b' }
     };
-    return guides[pageType] || guides.unknown;
+    var info = pageLabels[pageType] || pageLabels.unknown;
+
+    var widget = document.createElement('div');
+    widget.id = 'adala-v7';
+    widget.style.cssText = 'position:fixed;bottom:20px;left:20px;z-index:2147483647;font-family:Arial,sans-serif;direction:rtl;';
+
+    var PAGES = [
+      { label: '📁 قضاياي', path: '/applications/lawsuit' },
+      { label: '📅 جلساتي', path: '/applications/appointment-requests/' },
+      { label: '📜 وكالاتي', path: '/applications/wekalat/procurations-query' },
+      { label: '⚡ تنفيذي', path: '/applications/iexecution' }
+    ];
+
+    widget.innerHTML =
+      '<style>' +
+      '#av7-fab{width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#f59e0b,#d97706);border:2px solid rgba(255,255,255,0.3);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:22px;box-shadow:0 4px 20px rgba(245,158,11,0.5);transition:all 0.3s;}' +
+      '#av7-fab:hover{transform:scale(1.08);}' +
+      '#av7-panel{display:none;position:absolute;bottom:68px;left:0;width:280px;background:#050e21;border:1px solid #1e3a5f;border-radius:16px;overflow:hidden;box-shadow:0 8px 32px rgba(0,0,0,0.7);}' +
+      '#av7-panel.open{display:block;}' +
+      '.av7h{background:#0a1628;padding:12px 14px;border-bottom:1px solid #1e3a5f;}' +
+      '.av7t{color:#f59e0b;font-weight:bold;font-size:14px;}' +
+      '.av7s{color:#475569;font-size:10px;margin-top:2px;}' +
+      '.av7pg{padding:10px 14px;border-bottom:1px solid #1e3a5f;background:#0f172a;}' +
+      '.av7pt{font-size:12px;font-weight:bold;color:' + info.color + ';}' +
+      '.av7ps{color:#94a3b8;font-size:10px;margin-top:2px;}' +
+      '#av7-status{padding:8px 14px;font-size:11px;color:#94a3b8;text-align:center;border-bottom:1px solid #1e3a5f;min-height:32px;display:flex;align-items:center;justify-content:center;}' +
+      '#av7-btn{display:block;width:calc(100% - 24px);margin:10px 12px;padding:11px;background:#f59e0b;color:#000;border:none;border-radius:10px;cursor:pointer;font-size:13px;font-weight:bold;}' +
+      '#av7-btn:hover:not(:disabled){opacity:0.9;}' +
+      '#av7-btn:disabled{opacity:0.5;cursor:not-allowed;}' +
+      '#av7-prog{display:none;padding:4px 14px;text-align:center;font-size:10px;color:#f59e0b;}' +
+      '#av7-res{margin:0 12px 10px;padding:8px 10px;background:#0a1628;border-radius:8px;border:1px solid #1e3a5f;font-size:11px;color:#94a3b8;line-height:1.7;display:none;}' +
+      '.av7-lnk{display:block;padding:5px 14px;font-size:10px;color:#475569;text-decoration:none;border-bottom:1px solid #0f172a;}' +
+      '.av7-lnk:hover{color:#94a3b8;background:#0a1628;}' +
+      '.av7-lnk.act{color:#f59e0b;background:#1e3a5f;}' +
+      '</style>' +
+      '<div id="av7-panel">' +
+        '<div class="av7h"><div class="av7t">⚖️ منصة العدالة</div><div class="av7s">سحب البيانات المرئية v7.0</div></div>' +
+        '<div class="av7pg">' +
+          '<div style="color:#64748b;font-size:10px;margin-bottom:4px">📍 الصفحة الحالية:</div>' +
+          '<div class="av7pt">' + (pageType === 'unknown' ? '⚠️ غير مدعومة' : '✅ ' + info.label) + '</div>' +
+          '<div class="av7ps">' + (pageType !== 'unknown' ? '← ستُضاف في: ' + info.section : 'اختر صفحة من القائمة') + '</div>' +
+        '</div>' +
+        '<div id="av7-status">' + (pageType === 'unknown' ? 'اختر صفحة مدعومة' : 'جاهز — اضغط سحب') + '</div>' +
+        '<button id="av7-btn" ' + (pageType === 'unknown' ? 'disabled' : '') + '>📥 سحب البيانات من الشاشة</button>' +
+        '<div id="av7-prog"></div>' +
+        '<div id="av7-res"></div>' +
+        PAGES.map(function(p) {
+          var isAct = window.location.pathname.includes(p.path.replace(/\\/$/, ''));
+          return '<a href="https://najiz.sa' + p.path + '" target="_blank" class="av7-lnk' + (isAct ? ' act' : '') + '">' + p.label + '</a>';
+        }).join('') +
+      '</div>' +
+      '<div id="av7-fab">⚖️</div>';
+
+    document.body.appendChild(widget);
+
+    var fab = document.getElementById('av7-fab');
+    var panel = document.getElementById('av7-panel');
+    var statusEl = document.getElementById('av7-status');
+    var progressEl = document.getElementById('av7-prog');
+    var resultEl = document.getElementById('av7-res');
+    var syncBtn = document.getElementById('av7-btn');
+    var isOpen = false;
+
+    function setStatus(msg, color) {
+      statusEl.textContent = msg;
+      statusEl.style.color = color || '#94a3b8';
+    }
+
+    fab.onclick = function() {
+      isOpen = !isOpen;
+      panel.classList.toggle('open', isOpen);
+      fab.textContent = isOpen ? '✕' : '⚖️';
+    };
+
+    document.addEventListener('click', function(e) {
+      if (isOpen && !widget.contains(e.target)) {
+        isOpen = false;
+        panel.classList.remove('open');
+        fab.textContent = '⚖️';
+      }
+    });
+
+    syncBtn.onclick = async function() {
+      syncBtn.disabled = true;
+      progressEl.style.display = 'block';
+      progressEl.textContent = '⏳ جارٍ قراءة البيانات المرئية...';
+      resultEl.style.display = 'none';
+      setStatus('⏳ جارٍ القراءة...', '#f59e0b');
+
+      try {
+        var data = await extractFromCurrentPage();
+        if (!data.summary.hasData) {
+          progressEl.textContent = '⏳ إعادة المحاولة بعد 5 ثوانٍ...';
+          await new Promise(function(r) { setTimeout(r, 5000); });
+          data = await extractFromCurrentPage();
+          if (!data.summary.hasData) {
+            progressEl.style.display = 'none';
+            setStatus('⚠️ لم تُوجد بيانات', '#f59e0b');
+            resultEl.innerHTML = '<div style="color:#f59e0b;font-weight:bold">⚠️ لم تُوجد بيانات مرئية</div><div style="color:#64748b;font-size:10px;margin-top:4px">تأكد أن البيانات تظهر على الشاشة كاملاً ثم أعد</div>';
+            resultEl.style.display = 'block';
+            syncBtn.disabled = false;
+            return;
+          }
+        }
+        progressEl.textContent = '📡 جارٍ المزامنة مع النظام...';
+        var syncResult = await syncToServer(data);
+        var synced = (syncResult && syncResult.totalSynced) || 0;
+        var total = data.summary.totalFound;
+        progressEl.style.display = 'none';
+        setStatus(synced > 0 ? '✅ تمت المزامنة: ' + synced + ' سجل' : '✅ ' + total + ' سجل (موجود مسبقاً)', synced > 0 ? '#22c55e' : '#f59e0b');
+        fab.textContent = '✅';
+        fab.style.background = 'linear-gradient(135deg,#22c55e,#16a34a)';
+        setTimeout(function() {
+          fab.textContent = '⚖️';
+          fab.style.background = 'linear-gradient(135deg,#f59e0b,#d97706)';
+        }, 5000);
+        var html = '';
+        if (data.summary.totalCases > 0) html += '<div style="color:#fff">📁 القضايا: <strong>' + data.summary.totalCases + '</strong> ← إدارة القضايا</div>';
+        if (data.summary.totalHearings > 0) html += '<div style="color:#fff">📅 الجلسات: <strong>' + data.summary.totalHearings + '</strong> ← مواعيد الجلسات</div>';
+        if (data.summary.totalPOAs > 0) html += '<div style="color:#fff">📜 الوكالات: <strong>' + data.summary.totalPOAs + '</strong> ← قسم الوكالات</div>';
+        if (data.summary.totalExecutions > 0) html += '<div style="color:#fff">⚡ التنفيذ: <strong>' + data.summary.totalExecutions + '</strong> ← طلبات التنفيذ</div>';
+        html += synced > 0
+          ? '<div style="color:#22c55e;margin-top:6px;font-weight:bold">✅ ' + synced + ' سجل جديد أُضيف</div>'
+          : '<div style="color:#f59e0b;margin-top:6px">البيانات موجودة مسبقاً</div>';
+        resultEl.innerHTML = html;
+        resultEl.style.display = 'block';
+      } catch(err) {
+        progressEl.style.display = 'none';
+        setStatus('❌ ' + err.message, '#ef4444');
+      } finally {
+        syncBtn.disabled = false;
+      }
+    };
   }
 
-  console.log('[العدالة] ✅ جاهز | نوع الصفحة:', getPageType());
+  if (document.readyState === 'complete') setTimeout(createWidget, 2000);
+  else window.addEventListener('load', function() { setTimeout(createWidget, 2000); });
 
-  try {
-    chrome.runtime.sendMessage({
-      action: 'contentScriptReady',
-      url: window.location.href,
-      pageType: getPageType(),
-      isNajiz: window.location.href.includes('najiz.sa')
-    });
-  } catch(e) {}
+  var lastUrl = location.href;
+  new MutationObserver(function() {
+    if (location.href !== lastUrl) {
+      lastUrl = location.href;
+      var old = document.getElementById('adala-v7');
+      if (old) old.remove();
+      setTimeout(createWidget, 2500);
+    }
+  }).observe(document.body, { childList: true, subtree: true });
 
-})();`);
+  console.log('[العدالة v7.0] ✅ جاهز | الصفحة:', getPageType());
+})();
+`.trim());
 
       // ===== popup.html =====
-      ext.file('popup.html', `<!DOCTYPE html>
+      folder.file('popup.html', `<!DOCTYPE html>
 <html dir="rtl" lang="ar">
 <head>
 <meta charset="UTF-8">
-<title>العدالة - ناجز</title>
+<title>العدالة — ناجز v7.0</title>
 <style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
-    width: 340px;
-    min-height: 200px;
-    padding: 14px;
-    background: #050e21;
-    color: white;
-    font-family: Arial, sans-serif;
-  }
-  .header {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 12px;
-    border-bottom: 1px solid #1e3a5f;
-    padding-bottom: 10px;
-  }
-  .title { font-size: 15px; font-weight: bold; color: #f59e0b; }
-  .subtitle { font-size: 10px; color: #475569; margin-top: 2px; }
-  #status {
-    font-size: 12px;
-    margin-bottom: 10px;
-    padding: 8px;
-    background: #0a1628;
-    border-radius: 8px;
-    text-align: center;
-    color: #94a3b8;
-  }
-  #pageGuide {
-    font-size: 11px;
-    color: #475569;
-    margin-bottom: 8px;
-    padding: 6px 8px;
-    background: #0a1628;
-    border-radius: 6px;
-    border-right: 3px solid #f59e0b;
-  }
-  .section-title {
-    font-size: 10px;
-    color: #475569;
-    margin: 8px 0 4px;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-  }
-  #pageButtons { margin-bottom: 10px; }
-  #extractBtn {
-    width: 100%;
-    padding: 11px;
-    background: #f59e0b;
-    color: #000;
-    font-weight: bold;
-    font-size: 13px;
-    border: none;
-    border-radius: 10px;
-    cursor: pointer;
-    transition: opacity 0.2s;
-  }
-  #extractBtn:disabled { opacity: 0.5; cursor: not-allowed; }
-  #extractBtn:hover:not(:disabled) { background: #d97706; }
-  #progress {
-    display: none;
-    text-align: center;
-    font-size: 11px;
-    color: #f59e0b;
-    margin-top: 6px;
-    animation: pulse 1.5s infinite;
-  }
-  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
-  #results { margin-top: 8px; }
+*{box-sizing:border-box;margin:0;padding:0}
+body{width:300px;min-height:200px;padding:14px;background:#050e21;color:white;font-family:Arial,sans-serif}
+.hdr{display:flex;align-items:center;gap:10px;margin-bottom:12px;border-bottom:1px solid #1e3a5f;padding-bottom:10px}
+.ttl{font-size:15px;font-weight:bold;color:#f59e0b}
+.sub{font-size:10px;color:#475569;margin-top:2px}
+#status{font-size:12px;margin-bottom:10px;padding:8px;background:#0a1628;border-radius:8px;text-align:center;color:#94a3b8}
+#pageGuide{font-size:11px;color:#475569;margin-bottom:8px;padding:6px 8px;background:#0a1628;border-radius:6px;border-right:3px solid #f59e0b;display:none}
+.sec-ttl{font-size:10px;color:#475569;margin:8px 0 4px;text-transform:uppercase;letter-spacing:1px}
+#pageButtons{margin-bottom:10px}
+.pBtn{display:flex;align-items:center;justify-content:space-between;padding:6px 10px;background:#0a1628;border:1px solid #1e3a5f;border-radius:8px;color:#94a3b8;text-decoration:none;font-size:11px;margin-bottom:4px;transition:all 0.2s}
+.pBtn:hover{border-color:#f59e0b;color:#f59e0b}
+.pBtn.act{background:#1e3a5f;border-color:#f59e0b;color:#f59e0b}
+#extractBtn{width:100%;padding:11px;background:#f59e0b;color:#000;font-weight:bold;font-size:13px;border:none;border-radius:10px;cursor:pointer;transition:opacity 0.2s;margin-bottom:8px}
+#extractBtn:disabled{opacity:0.5;cursor:not-allowed}
+#extractBtn:hover:not(:disabled){opacity:0.9}
+#progress{display:none;text-align:center;font-size:11px;color:#f59e0b;margin-bottom:6px}
+#results{margin-top:6px}
+.res-box{background:#0a1628;border:1px solid #1e3a5f;border-radius:8px;padding:10px;font-size:11px;line-height:1.7}
 </style>
 </head>
 <body>
-  <div class="header">
-    <div>
-      <div class="title">⚖️ منصة العدالة</div>
-      <div class="subtitle">مزامنة ناجز v4.0 — بدون API Key</div>
-    </div>
+<div class="hdr">
+  <div>
+    <div class="ttl">⚖️ منصة العدالة</div>
+    <div class="sub">سحب بيانات ناجز v7.0</div>
   </div>
-
-  <div id="status">جارٍ التحقق من الصفحة...</div>
-  <div id="pageGuide" style="display:none"></div>
-
-  <div class="section-title">📌 صفحات المزامنة</div>
-  <div id="pageButtons"></div>
-
-  <button id="extractBtn">📥 سحب ومزامنة البيانات</button>
-  <div id="progress">🔄 جارٍ المعالجة...</div>
-  <div id="results"></div>
-
-  <script src="popup.js"></script>
+</div>
+<div id="status">جارٍ التحقق...</div>
+<div id="pageGuide"></div>
+<div class="sec-ttl">📌 صفحات المزامنة</div>
+<div id="pageButtons"></div>
+<button id="extractBtn">📥 سحب البيانات من الشاشة</button>
+<div id="progress">🔄 جارٍ المعالجة...</div>
+<div id="results"></div>
+<script src="popup.js"></script>
 </body>
-</html>`);
+</html>`.trim());
 
       // ===== popup.js =====
-      ext.file('popup.js', `document.addEventListener('DOMContentLoaded', async () => {
-  const statusEl = document.getElementById('status');
-  const extractBtn = document.getElementById('extractBtn');
-  const resultsEl = document.getElementById('results');
-  const progressEl = document.getElementById('progress');
-  const pageGuideEl = document.getElementById('pageGuide');
-  const pageBtnsEl = document.getElementById('pageButtons');
+      folder.file('popup.js', `
+document.addEventListener('DOMContentLoaded', async function() {
+  var statusEl = document.getElementById('status');
+  var extractBtn = document.getElementById('extractBtn');
+  var resultsEl = document.getElementById('results');
+  var progressEl = document.getElementById('progress');
+  var pageGuideEl = document.getElementById('pageGuide');
+  var pageBtnsEl = document.getElementById('pageButtons');
 
-  const PAGES = [
-    { label: '📁 القضايا', url: 'https://najiz.sa/applications/lawsuit', section: 'إدارة القضايا' },
-    { label: '📜 الوكالات', url: 'https://najiz.sa/applications/wekalat/procurations-query', section: 'الوكالات' },
-    { label: '⚡ التنفيذ', url: 'https://najiz.sa/applications/iexecution', section: 'طلبات التنفيذ' },
-    { label: '📅 الجلسات', url: 'https://najiz.sa/applications/appointment-requests/', section: 'مواعيد الجلسات' }
+  var PAGES = [
+    { label: '📁 قضاياي', url: 'https://najiz.sa/applications/lawsuit', path: '/applications/lawsuit', section: 'إدارة القضايا' },
+    { label: '📅 جلساتي', url: 'https://najiz.sa/applications/appointment-requests/', path: '/applications/appointment-requests', section: 'مواعيد الجلسات' },
+    { label: '📜 وكالاتي', url: 'https://najiz.sa/applications/wekalat/procurations-query', path: '/wekalat', section: 'قسم الوكالات' },
+    { label: '⚡ تنفيذي', url: 'https://najiz.sa/applications/iexecution', path: '/iexecution', section: 'طلبات التنفيذ' }
   ];
 
-  const setStatus = (msg, type = 'info') => {
+  function setStatus(msg, type) {
     if (!statusEl) return;
     statusEl.textContent = msg;
     statusEl.style.color = type === 'error' ? '#ef4444' : type === 'success' ? '#22c55e' : type === 'warning' ? '#f59e0b' : '#94a3b8';
-  };
+  }
 
-  const setProgress = (show, msg = '') => {
-    if (progressEl) {
-      progressEl.style.display = show ? 'block' : 'none';
-      if (msg) progressEl.textContent = msg;
-    }
-  };
-
-  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-  const currentUrl = tab?.url || '';
-  const isNajiz = currentUrl.includes('najiz.sa');
-
-  let currentPage = isNajiz ? PAGES.find(p => currentUrl.includes(p.url.replace('https://najiz.sa', ''))) : null;
+  var tabs = await chrome.tabs.query({ active: true, currentWindow: true });
+  var tab = tabs[0];
+  var currentUrl = tab ? (tab.url || '') : '';
+  var isNajiz = currentUrl.includes('najiz.sa');
+  var currentPage = isNajiz ? PAGES.find(function(p) { return currentUrl.includes(p.path); }) : null;
 
   if (!isNajiz) {
     setStatus('❌ افتح موقع ناجز أولاً', 'error');
     if (extractBtn) extractBtn.disabled = true;
-    if (pageBtnsEl) {
-      pageBtnsEl.innerHTML = '<p style="color:#f59e0b;font-size:11px;margin:0 0 6px;font-weight:bold">🔗 انتقل مباشرة إلى:</p>' + 
-        PAGES.map(p => \`<a href="\$\{p.url\}" target="_blank" style="display:block;background:#0a1628;border:1px solid #1e3a5f;border-radius:8px;padding:6px 10px;color:#94a3b8;text-decoration:none;font-size:11px;margin-bottom:4px;">\$\{p.label\} ← \$\{p.section\}</a>\`).join('');
-    }
-    return;
-  }
-
-  if (currentPage) {
-    setStatus(\`✅ صفحة \$\{currentPage.section\} — جاهز للسحب\`, 'success');
+  } else if (currentPage) {
+    setStatus('✅ ' + currentPage.section + ' — جاهز للسحب', 'success');
     if (pageGuideEl) {
       pageGuideEl.style.display = 'block';
-      pageGuideEl.innerHTML = \`<span style="color:#22c55e">●</span> سيتم إضافة البيانات إلى قسم <strong style="color:#f59e0b">\$\{currentPage.section\}</strong>\`;
+      pageGuideEl.innerHTML = '<span style="color:#22c55e">●</span> ستُضاف البيانات إلى قسم <strong style="color:#f59e0b">' + currentPage.section + '</strong>';
     }
   } else {
-    setStatus('⚠️ اذهب لإحدى الصفحات أدناه للسحب', 'warning');
+    setStatus('⚠️ اذهب لإحدى صفحات ناجز أدناه', 'warning');
+    if (extractBtn) extractBtn.disabled = true;
   }
 
   if (pageBtnsEl) {
-    pageBtnsEl.innerHTML = PAGES.map(p => {
-      const isActive = currentUrl.includes(p.url.replace('https://najiz.sa', ''));
-      return \`<a href="\$\{p.url\}" target="_blank" style="display:block;background:\$\{isActive ? '#1e3a5f' : '#0a1628'\};border:1px solid \$\{isActive ? '#f59e0b' : '#1e3a5f'\};border-radius:8px;padding:6px 10px;color:#fff;text-decoration:none;font-size:11px;margin-bottom:4px;">\$\{isActive ? '● ' : ''\}\$\{p.label\}<span style="color:#475569;float:left;font-size:10px">→ \$\{p.section\}</span></a>\`;
+    pageBtnsEl.innerHTML = PAGES.map(function(p) {
+      var isAct = currentUrl.includes(p.path);
+      return '<a href="' + p.url + '" target="_blank" class="pBtn' + (isAct ? ' act' : '') + '">' +
+        '<span>' + p.label + '</span>' +
+        '<span style="font-size:9px;color:#1e3a5f">← ' + p.section + '</span>' +
+      '</a>';
     }).join('');
   }
 
-  extractBtn?.addEventListener('click', async () => {
-    if (!currentPage) { setStatus('⚠️ اذهب لإحدى صفحات ناجز أولاً', 'warning'); return; }
-    setStatus(\`⏳ جارٍ سحب \$\{currentPage.section\}...\`, 'info');
-    setProgress(true, '🔄 ينتظر تحميل البيانات...');
-    extractBtn.disabled = true;
+  if (extractBtn) {
+    extractBtn.addEventListener('click', async function() {
+      if (!currentPage) return;
+      setStatus('⏳ جارٍ قراءة البيانات...', 'info');
+      progressEl.style.display = 'block';
+      progressEl.textContent = '🔄 ينتظر تحميل الصفحة...';
+      extractBtn.disabled = true;
 
-    try {
       try {
-        await chrome.scripting.executeScript({ target: { tabId: tab.id }, files: ['content.js'] });
-        await new Promise(r => setTimeout(r, 1500));
-      } catch(e) {}
+        try {
+          await chrome.scripting.executeScript({ target: { tabId: tab.id }, files: ['content.js'] });
+          await new Promise(function(r) { setTimeout(r, 1500); });
+        } catch(e) {}
 
-      const response = await Promise.race([
-        chrome.tabs.sendMessage(tab.id, { action: 'extractData' }),
-        new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 25000))
-      ]);
-
-      setProgress(false);
-      if (response?.success && response.data) {
-        const s = response.data.summary;
-        setStatus(\`✅ تم سحب ومزامنة البيانات من \$\{currentPage.section\}\`, 'success');
-        if (resultsEl) {
-          resultsEl.innerHTML = \`<div style="direction:rtl;font-size:12px;padding:10px;background:#0a1628;border-radius:8px;margin-top:8px;"><p style="color:#f59e0b;font-weight:bold;margin:0 0 8px">📊 نتائج سحب \$\{currentPage.section\}</p>\$\{s.totalCases > 0 ? \`<p style="color:#fff;margin:3px 0">📁 القضايا: <strong>\$\{s.totalCases\}</strong></p>\` : ''\}\$\{s.totalHearings > 0 ? \`<p style="color:#fff;margin:3px 0">📅 الجلسات: <strong>\$\{s.totalHearings\}</strong></p>\` : ''\}\$\{s.totalPOAs > 0 ? \`<p style="color:#fff;margin:3px 0">📜 الوكالات: <strong>\$\{s.totalPOAs\}</strong></p>\` : ''\}\$\{s.totalExecutions > 0 ? \`<p style="color:#fff;margin:3px 0">⚡ التنفيذ: <strong>\$\{s.totalExecutions\}</strong></p>\` : ''\}<p style="color:#22c55e;margin:8px 0 0;font-weight:bold">✅ تمت المزامنة مع النظام</p></div>\`;
+        var response = null;
+        for (var attempt = 1; attempt <= 3; attempt++) {
+          progressEl.textContent = '🔄 محاولة ' + attempt + '/3...';
+          try {
+            response = await Promise.race([
+              chrome.tabs.sendMessage(tab.id, { action: 'extractData' }),
+              new Promise(function(_, rej) { setTimeout(function() { rej(new Error('timeout')); }, 25000); })
+            ]);
+            if (response && response.success && response.data && response.data.summary && response.data.summary.hasData) break;
+            if (attempt < 3) {
+              progressEl.textContent = '⏳ إعادة المحاولة بعد 3 ثوانٍ...';
+              await new Promise(function(r) { setTimeout(r, 3000); });
+            }
+          } catch(err) {
+            if (attempt === 3) throw err;
+            await new Promise(function(r) { setTimeout(r, 2000); });
+          }
         }
-      } else {
-        setStatus(response?.message || \`⚠️ لم تُوجد بيانات — انتظر تحميل \$\{currentPage.section\} كاملاً\`, 'warning');
-      }
-    } catch(err) {
-      setProgress(false);
-      setStatus(err.message === 'timeout' ? '⚠️ انتهت المهلة — أعد المحاولة' : '❌ خطأ: ' + err.message, 'error');
-    } finally {
-      extractBtn.disabled = false;
-    }
-  });
-});`);
 
-      const content = await zip.generateAsync({ type: 'blob' });
-      const { saveAs } = (await import('file-saver')).default;
-      saveAs(content, 'adalah-najiz-extension-v4.zip');
-      (window as any).showToast?.('تم تجهيز وتحميل حزمة الإضافة v4.0 بنجاح', 'success');
-    } catch (error: any) {
-      console.error("Error generating extension ZIP:", error);
-      (window as any).showToast?.('حدث خطأ أثناء تجهيز الحزمة: ' + error.message, 'error');
+        progressEl.style.display = 'none';
+
+        if (response && response.success && response.data && response.data.summary && response.data.summary.hasData) {
+          var d = response.data;
+          var s = d.summary;
+          var synced = (response.syncResult && response.syncResult.totalSynced) || 0;
+          setStatus('✅ تم سحب ' + s.totalFound + ' سجل', 'success');
+          if (resultsEl) {
+            var html = '<div class="res-box">';
+            html += '<div style="color:#f59e0b;font-weight:bold;margin-bottom:8px">📊 نتائج السحب</div>';
+            if (s.totalCases > 0) html += '<div style="color:#fff">📁 القضايا: <strong>' + s.totalCases + '</strong> ← إدارة القضايا</div>';
+            if (s.totalHearings > 0) html += '<div style="color:#fff">📅 الجلسات: <strong>' + s.totalHearings + '</strong> ← مواعيد الجلسات</div>';
+            if (s.totalPOAs > 0) html += '<div style="color:#fff">📜 الوكالات: <strong>' + s.totalPOAs + '</strong> ← قسم الوكالات</div>';
+            if (s.totalExecutions > 0) html += '<div style="color:#fff">⚡ التنفيذ: <strong>' + s.totalExecutions + '</strong> ← طلبات التنفيذ</div>';
+            html += synced > 0
+              ? '<div style="color:#22c55e;margin-top:8px;font-weight:bold">✅ ' + synced + ' سجل جديد في النظام</div>'
+              : '<div style="color:#f59e0b;margin-top:8px">البيانات موجودة مسبقاً في النظام</div>';
+            html += '</div>';
+            resultsEl.innerHTML = html;
+          }
+        } else {
+          setStatus('⚠️ ' + ((response && response.message) || 'انتظر تحميل الصفحة وأعد'), 'warning');
+        }
+      } catch(err) {
+        progressEl.style.display = 'none';
+        setStatus('❌ ' + (err.message === 'timeout' ? 'انتهت المهلة' : err.message), 'error');
+      } finally {
+        extractBtn.disabled = false;
+      }
+    });
+  }
+});
+`.trim());
+
+      // ===== README.md =====
+      folder.file('README.md', `# منصة العدالة — أداة مزامنة ناجز v7.0
+
+## التثبيت
+1. افتح Chrome → chrome://extensions
+2. فعّل Developer mode
+3. اضغط Load unpacked
+4. اختر مجلد najiz-extension
+
+## الصفحات المدعومة
+| الصفحة | القسم في النظام |
+|--------|----------------|
+| najiz.sa/applications/lawsuit | إدارة القضايا |
+| najiz.sa/applications/appointment-requests/ | مواعيد الجلسات |
+| najiz.sa/applications/wekalat/procurations-query | قسم الوكالات |
+| najiz.sa/applications/iexecution | طلبات التنفيذ |
+
+## الاستخدام
+1. سجّل دخولك على najiz.sa
+2. اذهب لإحدى الصفحات أعلاه
+3. انتظر تحميل البيانات كاملاً
+4. اضغط أيقونة ⚖️ أو افتح الإضافة
+5. اضغط "سحب البيانات من الشاشة"
+
+## الخادم
+https://aladala-platform-rnuz.onrender.com
+`);
+
+      // توليد ZIP
+      const content = await zip.generateAsync({
+        type: 'blob',
+        compression: 'DEFLATE',
+        compressionOptions: { level: 9 }
+      });
+
+      const url = URL.createObjectURL(content);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'najiz-extension-v7.zip';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      
+      (window as any).showToast?.('تم تجهيز وتحميل حزمة الإضافة v7.0 بنجاح', 'success');
+    } catch(err: any) {
+      console.error('Failed to generate extension:', err);
+      (window as any).showToast?.('فشل توليد الملف: ' + err.message, 'error');
     } finally {
       setDownloading(false);
     }

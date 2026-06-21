@@ -148,7 +148,7 @@ export default function AIDeadlinesTool() {
                     className={`flex items-center gap-4 p-5 rounded-2xl border-2 transition-all text-right ${
                       type === t.id 
                         ? 'bg-slate-900 text-white border-amber-500 shadow-xl' 
-                        : 'bg-slate-50 text-slate-900 border-slate-100'
+                        : 'bg-slate-50 text-white border-slate-100'
                     }`}
                   >
                     <div className={`p-3 rounded-xl ${type === t.id ? 'bg-amber-500 text-slate-950' : 'bg-white text-slate-500 border border-slate-200'}`}>
@@ -177,7 +177,7 @@ export default function AIDeadlinesTool() {
                      setJudgmentDate(e.target.value);
                      setJudgmentSource('manual');
                   }}
-                  className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl py-4 pr-14 pl-5 text-sm font-bold text-slate-900 focus:outline-none focus:border-amber-500 transition-all font-sans"
+                  className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl py-4 pr-14 pl-5 text-sm font-bold text-white focus:outline-none focus:border-amber-500 transition-all font-sans"
                 />
               </div>
             </div>

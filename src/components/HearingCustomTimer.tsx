@@ -194,7 +194,7 @@ export default function HearingCustomTimer({
                 onChange={(e) => setHourlyRate(Math.max(0, parseInt(e.target.value) || 0))}
                 className="w-full bg-slate-900 border border-slate-800 text-xs text-slate-100 py-1.5 pl-3 pr-8 rounded-lg outline-none font-mono font-bold focus:border-primary"
               />
-              <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[10px] text-slate-700">ر.س/ساعة</span>
+              <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[10px] text-slate-300">ر.س/ساعة</span>
             </div>
           </div>
 
@@ -223,7 +223,7 @@ export default function HearingCustomTimer({
           disabled={seconds <= 0}
           className={`w-full py-2 px-3 rounded-xl font-black text-xs transition-all flex items-center justify-center gap-1.5 border shadow ${
             seconds <= 0
-              ? 'bg-slate-800 text-slate-700 border-slate-800 cursor-not-allowed'
+              ? 'bg-slate-800 text-slate-300 border-slate-800 cursor-not-allowed'
               : 'bg-[#ca8a04] text-slate-950 border-[#ca8a04] cursor-pointer'
           }`}
         >

@@ -131,7 +131,7 @@ function ClientCasesDropdown({
                 placeholder="ابحث برقم القضية أو الاسم..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="w-full bg-transparent border-none text-xs text-slate-900 outline-none font-bold"
+                className="w-full bg-transparent border-none text-xs text-white outline-none font-bold"
                 onClick={(e) => e.stopPropagation()}
               />
             </div>
@@ -148,7 +148,7 @@ function ClientCasesDropdown({
                       className="p-3 hover:bg-slate-50 flex items-center justify-between cursor-pointer transition-all"
                     >
                       <div className="flex flex-col gap-0.5 text-right">
-                        <span className="text-xs font-black text-slate-900">{cs.caseName}</span>
+                        <span className="text-xs font-black text-white">{cs.caseName}</span>
                         <span className="text-[10px] text-slate-200 font-bold font-mono">{cs.caseNumber} • {cs.courtName || 'المحكمة'}</span>
                       </div>
                       <input 
@@ -744,10 +744,10 @@ export default function ClientPortal({
         <div className="w-20 h-20 bg-rose-50 text-rose-600 rounded-full flex items-center justify-center">
           <ShieldAlert className="w-10 h-10" />
         </div>
-        <h2 className="text-xl font-display font-black text-slate-900">
+        <h2 className="text-xl font-display font-black text-white">
           {isUnauthorizedClient ? "خطأ في المصادقة والوصول الشرعي" : "لايوجد بيانات عملاء"}
         </h2>
-        <p className="text-slate-900 font-bold max-w-md mx-auto">
+        <p className="text-white font-bold max-w-md mx-auto">
           {isUnauthorizedClient ? "لم يتم العثور على ملف العميل المرتبط بحسابك. يرجى التواصل مع الدعم الفني لموكل لتصحيح بيانات الارتباط." : "يرجى إضافة عملاء أولاً لتمكين عرض بوابة العملاء بشكل صحيح."}
         </p>
       </div>
@@ -767,7 +767,7 @@ export default function ClientPortal({
                   </div>
                   <div>
                     <span className="text-[10px] text-amber-400 font-black bg-amber-550/10 px-2 py-0.5 rounded font-bold">بوابة النفاذ والأمن الموحد للعملاء 🔐</span>
-                    <h2 className="text-base font-black text-slate-900 mt-1">تهيئة صلاحيات وربط قضايا العملاء وبث بيانات الدخول الآمنة</h2>
+                    <h2 className="text-base font-black text-white mt-1">تهيئة صلاحيات وربط قضايا العملاء وبث بيانات الدخول الآمنة</h2>
                   </div>
                 </div>
 
@@ -1289,7 +1289,7 @@ export default function ClientPortal({
                       <div className="grid grid-cols-2 gap-3 text-xs">
                         <div>
                           <span className="text-slate-500 block text-[10px]">المدعي (الموكل):</span>
-                          <span className="font-extrabold text-slate-900">{cs.clientName || 'غير مقيد'}</span>
+                          <span className="font-extrabold text-white">{cs.clientName || 'غير مقيد'}</span>
                         </div>
                         <div>
                           <span className="text-slate-500 block text-[10px]">المدعى عليه (الخصم):</span>
@@ -1298,7 +1298,7 @@ export default function ClientPortal({
                         {cs.opponentNationalId && (
                           <div className="col-span-2">
                             <span className="text-slate-500 block text-[10px]">هوية/سجل الخصم:</span>
-                            <span className="font-extrabold text-slate-900 font-mono">{cs.opponentNationalId}</span>
+                            <span className="font-extrabold text-white font-mono">{cs.opponentNationalId}</span>
                           </div>
                         )}
                         {cs.powerOfAttorneyNumber && (
@@ -1317,16 +1317,16 @@ export default function ClientPortal({
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
                         <div>
                           <span className="text-slate-500 block text-[10px]">رقم الدائرة القضائية:</span>
-                          <span className="font-extrabold text-slate-900">{cs.circuitNumber || 'الدائرة الأولى'}</span>
+                          <span className="font-extrabold text-white">{cs.circuitNumber || 'الدائرة الأولى'}</span>
                         </div>
                         <div>
                           <span className="text-slate-500 block text-[10px]">ناظر القضية (القاضي):</span>
-                          <span className="font-extrabold text-slate-900">{cs.judgeName || cs.judge_name || 'فضيلة الشيخ' || 'قيد التعيين'}</span>
+                          <span className="font-extrabold text-white">{cs.judgeName || cs.judge_name || 'فضيلة الشيخ' || 'قيد التعيين'}</span>
                         </div>
                         {cs.court_case_number && (
                           <div>
                             <span className="text-slate-500 block text-[10px]">رقم القضية بالمحكمة:</span>
-                            <span className="font-mono font-extrabold text-slate-900">{cs.court_case_number}</span>
+                            <span className="font-mono font-extrabold text-white">{cs.court_case_number}</span>
                           </div>
                         )}
                         {cs.najiz_case_id && (
@@ -1344,7 +1344,7 @@ export default function ClientPortal({
                         <span className="text-slate-500 block text-[9px] font-bold">تاريخ القيد الأولي:</span>
                         <div className="flex items-center gap-1.5 mt-1">
                           <Calendar className="w-3.5 h-3.5 text-slate-400" />
-                          <span className="font-mono font-black text-slate-900">{cs.startDate || cs.createdAt?.substring(0,10) || 'قيد الرفع الإلكتروني'}</span>
+                          <span className="font-mono font-black text-white">{cs.startDate || cs.createdAt?.substring(0,10) || 'قيد الرفع الإلكتروني'}</span>
                         </div>
                       </div>
 
@@ -1352,7 +1352,7 @@ export default function ClientPortal({
                         <span className="text-slate-500 block text-[9px] font-bold">تاريخ الجلسة السابقة:</span>
                         <div className="flex items-center gap-1.5 mt-1">
                           <Eye className="w-3.5 h-3.5 text-slate-450" />
-                          <span className="font-mono font-black text-slate-900">{cs.lastSessionDate || 'جلسة أولى تحضيرية'}</span>
+                          <span className="font-mono font-black text-white">{cs.lastSessionDate || 'جلسة أولى تحضيرية'}</span>
                         </div>
                       </div>
 
@@ -1377,7 +1377,7 @@ export default function ClientPortal({
                           {cs.judgment_date && (
                             <div>
                               <span className="text-slate-500 block text-[10px]">تاريخ صدور الحكم:</span>
-                              <span className="font-mono font-bold text-slate-900">{cs.judgment_date}</span>
+                              <span className="font-mono font-bold text-white">{cs.judgment_date}</span>
                             </div>
                           )}
                           {cs.appeal_deadline && (
@@ -1395,7 +1395,7 @@ export default function ClientPortal({
                           {cs.judgment_summary && (
                             <div className="col-span-1 sm:col-span-2 md:col-span-3 bg-white p-3 rounded-lg border border-slate-200 mt-1">
                               <span className="text-slate-500 block text-[10px] font-bold mb-1">منطوق وخلاصة الحكم الصادر:</span>
-                              <p className="text-[11px] text-slate-800 leading-normal font-sans">{cs.judgment_summary}</p>
+                              <p className="text-[11px] text-slate-200 leading-normal font-sans">{cs.judgment_summary}</p>
                             </div>
                           )}
                         </div>
@@ -1406,7 +1406,7 @@ export default function ClientPortal({
                     {cs.details && (
                       <div className="col-span-1 md:col-span-2 bg-indigo-50/20 border border-slate-200 p-4 rounded-xl">
                         <span className="text-xs font-black text-indigo-900 block mb-2">📄 عريضة وجدول طلبات الدعوى التفصيلية</span>
-                        <div className="text-xs text-slate-800 leading-relaxed max-h-48 overflow-y-auto whitespace-pre-line bg-white/70 p-3 rounded-lg border border-slate-100 font-sans" style={{ scrollbarWidth: 'thin' }}>
+                        <div className="text-xs text-slate-200 leading-relaxed max-h-48 overflow-y-auto whitespace-pre-line bg-white/70 p-3 rounded-lg border border-slate-100 font-sans" style={{ scrollbarWidth: 'thin' }}>
                           {cs.details}
                         </div>
                       </div>
@@ -1416,7 +1416,7 @@ export default function ClientPortal({
 
                   {/* Visual tracker dots for client */}
                   <div className="border-t border-slate-300 pt-5">
-                    <span className="text-xs text-slate-900 block mb-4 font-bold uppercase tracking-wider">الجدول الزمني للإجراءات الشرعية الحالية</span>
+                    <span className="text-xs text-white block mb-4 font-bold uppercase tracking-wider">الجدول الزمني للإجراءات الشرعية الحالية</span>
                     <div className="grid grid-cols-4 gap-3">
                       {[
                         { label: 'اللائحة', active: true },

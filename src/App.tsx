@@ -1617,7 +1617,7 @@ function AppContent() {
                     className={`flex items-center gap-1.5 px-2 py-1.5 rounded-md text-[10px] font-black transition-all cursor-pointer ${
                       getGlobalDisplayMode() === 'dark'
                         ? 'bg-slate-900 text-white border border-slate-800'
-                        : 'text-slate-700'
+                        : 'text-slate-300'
                     }`}
                   >
                     <span>🌙</span>

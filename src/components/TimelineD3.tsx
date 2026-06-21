@@ -35,14 +35,37 @@ export default function TimelineD3({ hearings, tasks, cases = [] }: TimelineD3Pr
   const allEvents = React.useMemo(() => {
     const list: any[] = [];
     
+    // Helper function to detect fake/mock data
+    const isMockData = (item: any) => {
+      const textToSearch = [
+        item.title || '',
+        item.caseName || '',
+        item.caseNumber || '',
+        item.description || '',
+        item.courtName || '',
+        item.notes || ''
+      ].join(' ').toLowerCase();
+
+      return !item.caseNumber ||
+             textToSearch.includes('test') || 
+             textToSearch.includes('dummy') || 
+             textToSearch.includes('تجربة') || 
+             textToSearch.includes('تجريبي') ||
+             textToSearch.includes('وهمي') || 
+             textToSearch.includes('1234') ||
+             textToSearch.includes('0000');
+    };
+
     // Convert hearings to timeline events
     hearings.forEach(h => {
+      if (isMockData(h)) return;
+
       list.push({
         id: `hearing-${h.id}`,
         date: new Date(h.date),
         rawDate: h.date,
         time: h.time || 'غير محدد',
-        title: h.caseName || 'جلسة قضائية ببلدية الاستئناف',
+        title: h.caseName || 'جلسة قضائية بمحكمة الاستئناف',
         type: 'hearing',
         caseNumber: h.caseNumber,
         courtName: h.courtName || 'المحكمة العامة',
@@ -55,14 +78,7 @@ export default function TimelineD3({ hearings, tasks, cases = [] }: TimelineD3Pr
     // Convert cases to timeline events
     if (cases && Array.isArray(cases)) {
       cases.forEach(c => {
-        // Filter out cases that might be considered "fake" or "test" data
-        const isFake = !c.caseNumber || 
-                       c.caseNumber.toLowerCase().includes('test') || 
-                       c.caseNumber.toLowerCase().includes('dummy') || 
-                       c.caseNumber.includes('تجربة') || 
-                       c.caseNumber.includes('وهمي');
-        
-        if (isFake) return;
+        if (isMockData(c)) return;
 
         // 1. Creation date milestone
         if (c.createdAt) {
@@ -81,8 +97,6 @@ export default function TimelineD3({ hearings, tasks, cases = [] }: TimelineD3Pr
           });
         }
         
-        // Note: NEXT SESSION milestone is removed to avoid duplicates with real Hearing records
-        
         // 2. Appeal Deadline milestone
         if (c.appeal_deadline) {
           list.push({
@@ -99,11 +113,31 @@ export default function TimelineD3({ hearings, tasks, cases = [] }: TimelineD3Pr
             notes: `حسب المدد المنصوص عليها نظاماً`
           });
         }
+        
+        // 3. Next Session milestone
+        if (c.nextSessionDate) {
+          const sessionDateTimeStr = `${c.nextSessionDate}T${c.nextSessionTime || '09:00'}`;
+          list.push({
+            id: `case-session-${c.id}`,
+            date: new Date(sessionDateTimeStr),
+            rawDate: sessionDateTimeStr,
+            time: c.nextSessionTime || '09:00 ص',
+            title: `جلسة قضائية قادمة: ${c.caseName || c.title || 'قضية'}`,
+            type: 'hearing',
+            caseNumber: c.caseNumber,
+            courtName: c.courtName || 'المحكمة المختصة',
+            hallNumber: `جلسة قضائية للقضية رقم ${c.caseNumber}`,
+            status: 'upcoming',
+            notes: c.summary || ''
+          });
+        }
       });
     }
 
     // Convert tasks to timeline events
     tasks.forEach(t => {
+      if (isMockData(t)) return;
+
       if (t.dueDate) {
         list.push({
           id: `task-${t.id}`,
@@ -286,44 +320,38 @@ export default function TimelineD3({ hearings, tasks, cases = [] }: TimelineD3Pr
 
   return (
     <div 
-      className="bg-white border-2 border-[#D4AF37] rounded-3xl p-4 lg:p-4.5 shadow-lg space-y-3.5 relative overflow-hidden font-sans" 
+      className="bg-white border border-slate-200 rounded-3xl p-5 shadow-sm space-y-5 relative overflow-hidden font-sans" 
       ref={containerRef}
       dir="rtl"
     >
-      {/* Decorative Golden Branding Bar */}
-      <div className="absolute top-0 right-0 left-0 h-1.5 bg-gradient-to-r from-[#D4AF37] via-amber-500 to-[#D4AF37]"></div>
-
       {/* Main Header of Timeline Card */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-2 border-b border-slate-200 pb-3">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 pb-2 border-b border-slate-100">
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 bg-gradient-to-tr from-[#0B2545] to-[#1E3A8A] text-white rounded-xl flex items-center justify-center shadow-md shadow-[#0B2545]/10 shrink-0">
-            <Scale className="w-5 h-5 text-[#FFD700]" />
+          <div className="w-10 h-10 bg-slate-900 text-white rounded-xl flex items-center justify-center shadow-sm shrink-0">
+            <Scale className="w-5 h-5 text-amber-500" />
           </div>
           <div>
-            <h3 className="font-black text-sm lg:text-base text-[#0B2545] tracking-tight flex items-center gap-2 flex-wrap">
-               التسلسل الزمني الإستراتيجي للمقاضاة
-              <span className="text-[10px] bg-emerald-100 border border-emerald-300 text-emerald-950 px-2 py-0.5 rounded-full font-black">
-                مباشر ✓
-              </span>
+            <h3 className="font-black text-base lg:text-lg text-slate-900 tracking-tight flex items-center gap-2 flex-wrap">
+               التسلسل الزمني للمقاضاة
             </h3>
-            <p className="font-extrabold text-[10.5px] text-slate-800 mt-0.5">
-               رصد مرتب للمواعيد والجلسات المحكمة ومتابعة المهام القانونية.
+            <p className="font-bold text-xs text-slate-500 mt-1">
+               متابعة الجلسات والمواعيد والمهام المرتبطة بالقضايا المسجلة.
             </p>
           </div>
         </div>
 
         {/* Filter Controls & Micro HUD */}
-        <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
+        <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
           {/* Quick Stats Summary */}
-          <div className="hidden sm:flex items-center gap-2 bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-xl text-[10.5px] font-bold text-slate-800">
-            <div className="flex items-center gap-1">
+          <div className="hidden sm:flex items-center gap-3 bg-slate-50 border border-slate-100 px-3 py-1.5 rounded-xl text-xs font-bold text-slate-600">
+            <div className="flex items-center gap-1.5">
               <span className="w-2 h-2 rounded-full bg-amber-500"></span>
-              <span>جلسات ({hearings.length})</span>
+              <span>جلسات ({filteredEvents.filter(e => e.type === 'hearing').length})</span>
             </div>
             <div className="w-px h-3 bg-slate-200"></div>
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-1.5">
               <span className="w-2 h-2 rounded-full bg-blue-500"></span>
-              <span>مهام ({tasks.filter(t => t.dueDate).length})</span>
+              <span>مهام ومهل ({filteredEvents.filter(e => e.type === 'task' || e.type === 'deadline').length})</span>
             </div>
           </div>
 
@@ -331,7 +359,7 @@ export default function TimelineD3({ hearings, tasks, cases = [] }: TimelineD3Pr
           <div className="flex bg-slate-100 p-0.5 rounded-lg border border-slate-200">
             <button
               onClick={() => { setFilterType('all'); setSelectedEventId(null); }}
-              className={`px-2 py-1 text-[11px] font-black rounded-md transition-all ${filterType === 'all' ? 'bg-[#0B2545] text-white shadow-sm' : 'text-slate-800 hover:text-slate-900'}`}
+              className={`px-2 py-1 text-[11px] font-black rounded-md transition-all ${filterType === 'all' ? 'bg-[#0B2545] text-white shadow-sm' : 'text-slate-200 hover:text-white'}`}
             >
               الكل
             </button>
@@ -408,72 +436,72 @@ export default function TimelineD3({ hearings, tasks, cases = [] }: TimelineD3Pr
                     key={ev.id}
                     id={`timeline-card-${ev.id}`}
                     onClick={() => setSelectedEventId(ev.id)}
-                    className={`flex-shrink-0 w-[205px] rounded-xl p-3.5 border-2 transition-all duration-300 transform cursor-pointer relative z-10 select-none ${
+                    className={`flex-shrink-0 w-[205px] rounded-2xl p-4 border transition-all duration-300 transform cursor-pointer relative z-10 select-none ${
                       isSelected 
-                        ? 'bg-[#0B2545] border-[#D4AF37] text-white shadow-xl scale-[1.03] -translate-y-0.5' 
-                        : 'bg-white hover:bg-slate-50 border-slate-300 hover:border-slate-400 text-[#0B2545] shadow-sm hover:scale-[1.01]'
+                        ? 'bg-slate-900 border-slate-900 text-white shadow-xl scale-[1.02] -translate-y-1' 
+                        : 'bg-white hover:bg-slate-50 border-slate-200 text-slate-200 shadow-sm hover:shadow-md hover:border-slate-300'
                     }`}
                     style={{ scrollSnapAlign: 'start' }}
                   >
                     {/* Header: Date Badge & Type */}
-                    <div className="flex justify-between items-start mb-2">
+                    <div className="flex justify-between items-start mb-3">
                       {/* Event Type Indicator Icon */}
-                      <span className={`px-2 py-0.5 rounded text-[9.5px] font-black uppercase font-sans ${
+                      <span className={`px-2.5 py-1 rounded text-[10px] font-black uppercase tracking-wider ${
                         isSelected 
-                          ? isHearing ? 'bg-amber-500/25 timeline-bright-yellow border border-amber-500/30' : 'bg-blue-500/30 timeline-bright-white border border-blue-500/30'
-                          : isHearing ? 'bg-amber-100 text-amber-900 font-extrabold border border-amber-305' : 'bg-blue-100 text-blue-900 font-extrabold border border-blue-305'
+                          ? isHearing ? 'bg-amber-500/20 text-amber-300' : 'bg-blue-500/20 text-blue-300'
+                          : isHearing ? 'bg-amber-100 text-amber-700' : 'bg-blue-100 text-blue-700'
                       }`}>
                         {isHearing ? 'جلسة' : 'مهمة'}
                       </span>
 
                       {/* Timeline Dot visual connection flag */}
-                      <div className="flex items-center gap-1">
-                        <span className={`text-[10px] font-bold font-mono ${isSelected ? 'timeline-bright-white' : 'text-slate-800'}`}>#{index + 1}</span>
-                        <div className={`w-2.5 h-2.5 rounded-full border-2 ${
-                          isSelected ? 'bg-[#FFD700] border-white' : isHearing ? 'bg-amber-500 border-white' : 'bg-blue-600 border-white'
+                      <div className="flex items-center gap-1.5">
+                        <span className={`text-[10px] font-bold font-mono ${isSelected ? 'text-slate-400' : 'text-slate-400'}`}>#{index + 1}</span>
+                        <div className={`w-2.5 h-2.5 rounded-full ${
+                          isSelected ? 'bg-amber-500' : isHearing ? 'bg-amber-500' : 'bg-blue-600'
                         }`}></div>
                       </div>
                     </div>
 
                     {/* Milestone Huge Date Visual */}
-                    <div className="flex items-baseline gap-1.5 mb-1.5">
-                      <span className={`text-3xl font-extrabold tracking-tight tabular-nums ${isSelected ? 'timeline-bright-white' : 'text-[#0B2545]'}`}>
+                    <div className="flex items-baseline gap-2 mb-3">
+                      <span className={`text-3xl font-black tracking-tight tabular-nums ${isSelected ? 'text-white' : 'text-slate-900'}`}>
                         {eventDay}
                       </span>
                       <div className="flex flex-col">
-                        <span className={`text-[11px] font-black leading-none ${isSelected ? 'timeline-bright-yellow' : 'text-[#826217] font-black'}`}>
+                        <span className={`text-xs font-black leading-none ${isSelected ? 'text-amber-400' : 'text-amber-600'}`}>
                           {eventMonthYear}
                         </span>
-                        <span className={`text-[9px] font-extrabold mt-0.5 leading-none ${isSelected ? 'timeline-text-slate-200' : 'text-slate-800'}`}>{dayOfWeek}</span>
+                        <span className={`text-[10px] font-bold mt-1 leading-none ${isSelected ? 'text-slate-300' : 'text-slate-500'}`}>{dayOfWeek}</span>
                       </div>
                     </div>
 
                     {/* Main Event Title and Body text */}
-                    <div className="space-y-1">
-                      <h4 className={`text-[12.5px] font-black leading-snug line-clamp-2 ${isSelected ? 'timeline-bright-white' : 'text-[#0B2545]'}`}>
+                    <div className="space-y-1.5 min-h-[40px]">
+                      <h4 className={`text-xs font-black leading-snug line-clamp-2 ${isSelected ? 'text-white' : 'text-slate-900'}`}>
                         {ev.title}
                       </h4>
-                      <p className={`text-[9.5px] font-black font-mono tracking-tight flex items-center gap-1 ${
-                        isSelected ? 'timeline-text-slate-200' : 'text-slate-900'
+                      <p className={`text-[10px] font-bold font-mono tracking-tight flex items-center gap-1 ${
+                        isSelected ? 'text-slate-300' : 'text-slate-500'
                       }`}>
                         <span>قضية: {ev.caseNumber}</span>
                       </p>
                     </div>
 
                     {/* Micro location/Time footer */}
-                    <div className="flex justify-between items-center mt-3 pt-2 border-t border-dashed border-slate-100/10" style={{ borderTopColor: isSelected ? 'rgba(255,255,255,0.1)' : 'rgba(15,23,42,0.15)' }}>
-                      <div className="flex items-center gap-1 text-[9.5px] font-extrabold">
-                        <Clock className={`w-3 h-3 ${isSelected ? 'text-amber-400' : 'text-[#0B2545]'}`} />
-                        <span className={`font-black ${isSelected ? 'timeline-bright-white' : 'text-slate-950'}`}>{ev.time}</span>
+                    <div className="flex justify-between items-center mt-4 pt-3 border-t border-dashed" style={{ borderColor: isSelected ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)' }}>
+                      <div className="flex items-center gap-1.5 text-[10px] font-bold">
+                        <Clock className={`w-3.5 h-3.5 ${isSelected ? 'text-slate-400' : 'text-slate-400'}`} />
+                        <span className={`${isSelected ? 'text-slate-300' : 'text-slate-600'}`}>{ev.time}</span>
                       </div>
                       
                       {isHearing ? (
-                        <span className={`text-[9px] font-black ${isSelected ? 'timeline-text-emerald-400' : 'text-emerald-950'}`}>
+                        <span className={`text-[10px] font-black ${isSelected ? 'text-emerald-400' : 'text-emerald-600'}`}>
                           {ev.courtName.substring(0, 14)}...
                         </span>
                       ) : (
-                        <span className={`text-[9px] font-black uppercase ${
-                          ev.priority === 'high' ? 'text-rose-700 bg-rose-100 px-1 py-0.5 rounded border border-rose-300' : (isSelected ? 'timeline-bright-white' : 'text-slate-850')
+                        <span className={`text-[10px] font-black uppercase ${
+                          ev.priority === 'high' ? 'text-rose-600 bg-rose-50 px-1.5 py-0.5 rounded' : (isSelected ? 'text-slate-300' : 'text-slate-500')
                         }`}>
                           {ev.courtName}
                         </span>
@@ -485,90 +513,77 @@ export default function TimelineD3({ hearings, tasks, cases = [] }: TimelineD3Pr
             </div>
           </div>
 
-          {/* Connected Dynamic Detail Box of the Selected Event */}
-          <AnimatePresence mode="wait">
-            {selectedEvent && (
-              <motion.div
-                key={selectedEvent.id}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                className="bg-slate-50 border border-slate-200 rounded-2xl p-4 grid grid-cols-1 md:grid-cols-3 gap-4 relative"
-              >
-                <div className="md:col-span-2 space-y-2.5">
-                  <div className="flex items-center gap-2">
-                    <span className={`w-2.5 h-2.5 rounded-full ${
-                      selectedEvent.type === 'case-creation' ? 'bg-violet-500' :
-                      selectedEvent.type === 'deadline' ? 'bg-red-500' :
-                      selectedEvent.type === 'hearing' ? 'bg-amber-500' : 'bg-blue-600'
-                    }`}></span>
-                    <h4 className="text-sm font-extrabold text-[#0B2545]">{selectedEvent.title}</h4>
-                  </div>
-
-                  <p className="text-[11px] text-slate-700 font-bold leading-relaxed text-right">
-                    {selectedEvent.type === 'case-creation' 
-                      ? `تم تأسيس ملف القضية بنجاح على منصة نظام العدالة والمحاماة، وبدء مزامنة جدول المواعيد والمذكرات تلقائياً عبر الربط مع منصتي ناجز وبوابة ديوان المظالم.`
-                      : selectedEvent.type === 'deadline'
-                      ? `تحذير مهلة نظامية حاسمة: ينتهي الموعد النهائي المحدد لاستئناف الدعوى وتقديم الدفوع الاعتراضية بحكم القانون في الموعد المذكور أدناه. يرجى المسارعة بإنهاء المتطلبات لضمان عدم ضياع الحق القضائي.`
-                      : selectedEvent.type === 'hearing' 
-                      ? selectedEvent.notes || `هذه الجلسة القضائية مجدولة للنظر والمرافعة في القضية المقيدة برقم ${selectedEvent.caseNumber}. يرجى مراجعة ملف القضية وتجهيز العريضة ومذكرة الدفاع مسبقاً.`
-                      : selectedEvent.hallNumber || `هذه المهمة القضائية مكلفة للعمل والمراجعة المباشرة لإكمال مستندات القضية ومرافعة الإجراءات في موعد لا يتجاوز التاريخ المحدد.`
-                    }
-                  </p>
-
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3 pt-1">
-                    <div className="bg-white p-2.5 rounded-xl border border-slate-200 text-right">
-                      <span className="text-[9.5px] text-slate-400 font-bold uppercase block">رقم الدعوى المعنية</span>
-                      <span className="text-xs font-black text-[#0B2545] font-mono">{selectedEvent.caseNumber}</span>
-                    </div>
-                    <div className="bg-white p-2.5 rounded-xl border border-slate-200 text-right">
-                      <span className="text-[9.5px] text-slate-400 font-bold uppercase block">تاريخ وتوقيت الاستحقاق</span>
-                      <span className="text-xs font-black text-[#826217]">
-                        {selectedEvent.date.toLocaleDateString('ar-SA')} | {selectedEvent.time}
-                      </span>
-                    </div>
-                    <div className="bg-white p-2.5 rounded-xl border border-slate-200 text-right col-span-2 md:col-span-1">
-                      <span className="text-[9.5px] text-slate-400 font-bold uppercase block">مكان النظر / المرجع الاستراتيجي</span>
-                      <span className="text-xs font-black text-[#0B2545]">{selectedEvent.courtName}</span>
-                    </div>
-                  </div>
+        {/* Connected Dynamic Detail Box of the Selected Event */}
+        <AnimatePresence mode="wait">
+          {selectedEvent && (
+            <motion.div
+              key={selectedEvent.id}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="bg-slate-50 border border-slate-200 rounded-2xl p-5 md:p-6 grid grid-cols-1 md:grid-cols-3 gap-6 relative"
+            >
+              <div className="md:col-span-2 space-y-4">
+                <div className="flex items-center gap-3">
+                  <span className={`w-3 h-3 rounded-full flex-shrink-0 ${
+                    selectedEvent.type === 'case-creation' ? 'bg-violet-500' :
+                    selectedEvent.type === 'deadline' ? 'bg-red-500' :
+                    selectedEvent.type === 'hearing' ? 'bg-amber-500' : 'bg-blue-600'
+                  }`}></span>
+                  <h4 className="text-base font-black text-slate-900 leading-tight">{selectedEvent.title}</h4>
                 </div>
 
-                {/* Right side graphical focus HUD */}
-                <div className="bg-gradient-to-tr from-[#0B2545] to-slate-900 text-white rounded-xl p-3.5 flex flex-col justify-between relative overflow-hidden">
-                  <div className="absolute top-0 left-0 w-32 h-32 bg-[#D4AF37]/5 rounded-full blur-3xl"></div>
-                  
-                  <div className="space-y-0.5 z-10">
-                    <span className="text-[9.5px] font-black uppercase tracking-widest block timeline-bright-yellow">حالة الإجراء الاستراتيجي</span>
-                    <h3 className="text-sm font-black timeline-bright-white">
-                      {selectedEvent.type === 'case-creation' ? 'تأسيس ملف الدعوى' : 
-                       selectedEvent.type === 'deadline' ? 'مهلة استئناف نظامية' :
-                       selectedEvent.type === 'hearing' ? 'جلسة مقاضاة مرئية' : 'مستند قضائي هام'}
-                    </h3>
-                  </div>
+                <p className="text-sm text-slate-600 font-medium leading-relaxed max-w-2xl bg-white p-4 rounded-xl border border-slate-100 shadow-sm">
+                  {selectedEvent.notes || selectedEvent.hallNumber || 'لا توجد تفاصيل وملاحظات مدونة لهذا الإجراء حتى الآن.'}
+                </p>
 
-                  <div className="flex items-center justify-between mt-4 z-10">
-                    <div className="space-y-0.5">
-                      <span className="text-[9px] block timeline-text-slate-200">تصنيف الإشعار</span>
-                      <span className="text-[10px] font-bold timeline-bright-yellow">
-                        {selectedEvent.type === 'case-creation' ? 'إجراء تأسيس آلي' :
-                         selectedEvent.type === 'deadline' ? 'تحذير مهلة حاسمة 🚨' :
-                         selectedEvent.type === 'hearing' ? 'إشعار مباشر من ناجز' : 'إجراء داخلي مكلف'}
-                      </span>
-                    </div>
-                    
-                    <span className={`px-2 py-1 rounded-lg text-[10.5px] font-black ${
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4 pt-2">
+                  <div className="bg-white p-3.5 rounded-xl border border-slate-100 shadow-sm">
+                    <span className="text-[10px] text-slate-500 font-bold block mb-1">رقم الدعوى المعنية</span>
+                    <span className="text-sm font-black text-slate-900 font-mono tracking-tight">{selectedEvent.caseNumber}</span>
+                  </div>
+                  <div className="bg-white p-3.5 rounded-xl border border-slate-100 shadow-sm">
+                    <span className="text-[10px] text-slate-500 font-bold block mb-1">وقت الاستحقاق</span>
+                    <span className="text-sm font-black text-amber-600">
+                      {selectedEvent.date.toLocaleDateString('ar-SA')} | {selectedEvent.time}
+                    </span>
+                  </div>
+                  <div className="bg-white p-3.5 rounded-xl border border-slate-100 shadow-sm col-span-2 md:col-span-1">
+                    <span className="text-[10px] text-slate-500 font-bold block mb-1">المكان / المرجع</span>
+                    <span className="text-sm font-black text-slate-900">{selectedEvent.courtName}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Right side graphical focus HUD */}
+              <div className="bg-slate-900 text-white rounded-xl p-5 flex flex-col justify-between relative overflow-hidden shadow-lg border border-slate-800">
+                <div className="absolute -top-10 -left-10 w-40 h-40 bg-amber-500/10 rounded-full blur-3xl pointer-events-none"></div>
+                
+                <div className="space-y-1 z-10">
+                  <span className="text-[10px] font-bold text-slate-400 block mb-2">تصنيف الإجراء</span>
+                  <h3 className="text-lg font-black text-white">
+                    {selectedEvent.type === 'case-creation' ? 'تأسيس ملف الدعوى' : 
+                     selectedEvent.type === 'deadline' ? 'مهلة استئناف نظامية' :
+                     selectedEvent.type === 'hearing' ? 'جلسة مقاضاة مرئية' : 'مستند قضائي هام'}
+                  </h3>
+                </div>
+
+                <div className="flex items-end justify-between mt-6 z-10 w-full">
+                  <div className="bg-slate-800/80 px-4 py-2.5 rounded-xl border border-slate-700/50 flex-1 ml-3">
+                    <span className="text-[10px] block text-slate-400 font-bold mb-1">الحالة</span>
+                    <span className={`text-xs font-black ${
                       selectedEvent.status === 'completed' || selectedEvent.status === 'done'
-                        ? 'bg-emerald-500/25 timeline-text-emerald-400 border border-emerald-500/30'
-                        : 'bg-amber-500/20 timeline-text-amber-300 border border-amber-500/30'
+                        ? 'text-emerald-400'
+                        : 'text-amber-400'
                     }`}>
                       {selectedEvent.status === 'completed' || selectedEvent.status === 'done' ? 'مكتمل ✓' : 'قيد الانتظار'}
                     </span>
                   </div>
                 </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
           {/* D3 Interactive Graph Section for advanced charting view */}
           <div className="space-y-2 border-t border-slate-100 pt-6">

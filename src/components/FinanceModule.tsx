@@ -832,7 +832,7 @@ export default function FinanceModule({
                    <card.icon className={`w-6 h-6 ${card.color}`} />
                    <span className="text-[10px] font-black text-slate-200 font-bold uppercase tracking-widest">{card.label}</span>
                 </div>
-                <div className="text-2xl font-black text-slate-900 leading-none">
+                <div className="text-2xl font-black text-white leading-none">
                    {(card.val).toLocaleString()} <span className="text-xs">ر.س</span>
                 </div>
              </div>
@@ -979,30 +979,30 @@ export default function FinanceModule({
             className="bg-white border border-slate-200 w-full max-w-md rounded-[3rem] p-10 shadow-2xl space-y-8"
           >
             <div className="flex justify-between items-center border-b border-slate-100 pb-6">
-               <h3 className="text-xl font-black text-slate-900 flex items-center gap-3">
+               <h3 className="text-xl font-black text-white flex items-center gap-3">
                   <Calculator className="w-6 h-6 text-blue-600" />
                   حاسبة الأتعاب والمسعى
                </h3>
-               <button onClick={() => setIsCalculatorOpen(false)} className="text-slate-200 font-bold hover:text-slate-900 transition-colors bg-slate-50 p-2 rounded-xl">✕</button>
+               <button onClick={() => setIsCalculatorOpen(false)} className="text-slate-200 font-bold hover:text-white transition-colors bg-slate-50 p-2 rounded-xl">✕</button>
             </div>
 
             <div className="space-y-6">
                <div className="space-y-2">
-                  <label className="text-xs font-black text-slate-700 block">قيمة المطالبة (ر.س)</label>
+                  <label className="text-xs font-black text-slate-300 block">قيمة المطالبة (ر.س)</label>
                   <input 
                     type="number" 
                     value={calcClaimAmount}
                     onChange={(e) => setCalcClaimAmount(e.target.value)}
                     placeholder="أدخل مبلغ المطالبة..."
-                    className="w-full bg-slate-50 border border-slate-200 p-4 rounded-2xl text-sm font-black text-slate-900 focus:bg-white focus:border-blue-500 outline-none transition-all"
+                    className="w-full bg-slate-50 border border-slate-200 p-4 rounded-2xl text-sm font-black text-white focus:bg-white focus:border-blue-500 outline-none transition-all"
                   />
                </div>
                <div className="space-y-2">
-                  <label className="text-xs font-black text-slate-700 block">نسبة الأتعاب (%)</label>
+                  <label className="text-xs font-black text-slate-300 block">نسبة الأتعاب (%)</label>
                   <select 
                     value={calcRate}
                     onChange={(e) => setCalcRate(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-200 p-4 rounded-2xl text-sm font-black text-slate-900 focus:bg-white focus:border-blue-500 outline-none transition-all"
+                    className="w-full bg-slate-50 border border-slate-200 p-4 rounded-2xl text-sm font-black text-white focus:bg-white focus:border-blue-500 outline-none transition-all"
                   >
                     <option value="5">5% (قضايا كبرى)</option>
                     <option value="10">10% (اعتيادي)</option>
@@ -1025,7 +1025,7 @@ export default function FinanceModule({
                    className="bg-blue-50 border border-blue-100 p-6 rounded-[2rem] text-center"
                  >
                     <span className="text-[10px] text-blue-600 font-black block mb-1 uppercase tracking-widest">إجمالي الأتعاب المستحقة (تقديرياً)</span>
-                    <span className="text-3xl font-black text-slate-900">{calcResult.toLocaleString()} <span className="text-sm">ر.س</span></span>
+                    <span className="text-3xl font-black text-white">{calcResult.toLocaleString()} <span className="text-sm">ر.س</span></span>
                     <p className="text-[10px] text-slate-200 font-bold font-bold mt-2 font-sans tracking-tight">لا تشمل الضريبة المضافة (15%) أو الرسوم القضائية.</p>
                  </motion.div>
                )}
@@ -1040,13 +1040,13 @@ export default function FinanceModule({
         <>
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 border-b border-slate-200 pb-8 mt-4">
         <div>
-          <h1 className="text-3xl font-display font-black text-slate-900 tracking-tight flex items-center gap-3">
+          <h1 className="text-3xl font-display font-black text-white tracking-tight flex items-center gap-3">
             <div className="p-2 bg-primary text-white rounded-xl shadow-lg">
               <DollarSign className="w-6 h-6" />
             </div>
             <span>الحاسبة القضائية AI</span>
           </h1>
-          <p className="text-sm text-slate-900 font-bold mt-2 max-w-2xl leading-relaxed">
+          <p className="text-sm text-white font-bold mt-2 max-w-2xl leading-relaxed">
             متابعة شاملة للمقبوضات، المصروفات القضائية، واحتساب ضريبة القيمة المضافة 15% وفق معايير زاتكا (ZATCA) والمبادئ المحاسبية المعتمدة.
           </p>
         </div>
@@ -1054,7 +1054,7 @@ export default function FinanceModule({
 
       {/* Report actions block summary container */}
       <div className="bg-slate-50 border-2 border-slate-200/80 rounded-[2rem] p-6 shadow-md flex flex-col sm:flex-row justify-between items-center gap-4">
-        <p className="text-xs text-slate-700 font-bold text-center sm:text-right">دورة مطابقة القيود المالية متزامنة مع حماية الحسابات البنكية ومعايير هيبة والفوترة الإلكترونية.</p>
+        <p className="text-xs text-slate-300 font-bold text-center sm:text-right">دورة مطابقة القيود المالية متزامنة مع حماية الحسابات البنكية ومعايير هيبة والفوترة الإلكترونية.</p>
         <div className="w-full sm:w-auto">
           <button 
             type="button"
@@ -1556,9 +1556,9 @@ export default function FinanceModule({
                             {log.status === 'SUCCESS' ? '✓ تم القبول والاعتماد' : '⚠️ خطأ في التكامل'}
                           </span>
                         </td>
-                        <td className="p-4 text-[10px] text-slate-700 font-mono">{log.timestamp}</td>
+                        <td className="p-4 text-[10px] text-slate-300 font-mono">{log.timestamp}</td>
                         <td className="p-4">
-                          <p className="text-[10px] text-slate-700 font-bold leading-relaxed max-w-xs">{log.details}</p>
+                          <p className="text-[10px] text-slate-300 font-bold leading-relaxed max-w-xs">{log.details}</p>
                         </td>
                       </tr>
                     )) : (
@@ -1775,7 +1775,7 @@ export default function FinanceModule({
                   })()).map((inv, idx) => (
                     <tr key={idx} className="group">
                       <td>
-                         <span className="text-sm font-black font-mono bg-slate-900/10 text-slate-900 px-2 py-1 rounded-md">#{inv.id.substring(4)}</span>
+                         <span className="text-sm font-black font-mono bg-slate-900/10 text-white px-2 py-1 rounded-md">#{inv.id.substring(4)}</span>
                       </td>
                       <td>
                         <div className="font-black text-slate-950 text-sm">{inv.clientName}</div>
@@ -1826,7 +1826,7 @@ export default function FinanceModule({
           {/* Right Side: Expenses tracker log */}
           <div className="card-professional p-0 overflow-hidden shadow-xl shadow-slate-100 flex flex-col h-full">
              <div className="p-6 border-b border-slate-800 bg-slate-50">
-              <h3 className="font-display font-semibold text-slate-900  flex items-center gap-2">
+              <h3 className="font-display font-semibold text-white  flex items-center gap-2">
                 <TrendingDown className="text-rose-500 w-5 h-5" />
                 <span>المصروفات القضائية</span>
               </h3>
@@ -1834,7 +1834,7 @@ export default function FinanceModule({
             
             <div className="flex-1 overflow-y-auto p-4 space-y-3 custom-scrollbar min-h-[400px]">
               {expenses.length === 0 ? (
-                <div className="flex flex-col items-center justify-center h-full py-12 text-slate-900">
+                <div className="flex flex-col items-center justify-center h-full py-12 text-white">
                   <Calculator className="w-12 h-12 mb-3 opacity-20" />
                   <p className="text-xs font-bold uppercase tracking-widest">لم يتم تقييد مصروفات</p>
                 </div>
@@ -1842,16 +1842,16 @@ export default function FinanceModule({
                 expenses.map((exp, idx) => (
                   <div key={idx} className="p-5 bg-white border border-slate-800 rounded-2xl[1.025] transition-all duration-300 group shadow-sm">
                     <div className="flex justify-between items-start mb-3">
-                      <h4 className="font-bold text-sm text-slate-900  leading-tight transition-colors">{exp.description}</h4>
+                      <h4 className="font-bold text-sm text-white  leading-tight transition-colors">{exp.description}</h4>
                       <span className="text-sm font-bold text-rose-600 tabular-nums">-{exp.amount.toLocaleString()} ر.س</span>
                     </div>
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <Clock className="w-3 h-3 text-slate-900 " />
-                        <span className="text-xs font-bold text-slate-900  font-sans">{exp.date}</span>
+                        <Clock className="w-3 h-3 text-white " />
+                        <span className="text-xs font-bold text-white  font-sans">{exp.date}</span>
                       </div>
                       {exp.caseNumber && (
-                        <span className="text-xs font-bold text-slate-900  bg-slate-50 px-2 py-1 rounded border border-slate-800">#{exp.caseNumber}</span>
+                        <span className="text-xs font-bold text-white  bg-slate-50 px-2 py-1 rounded border border-slate-800">#{exp.caseNumber}</span>
                       )}
                     </div>
                   </div>
@@ -1870,13 +1870,13 @@ export default function FinanceModule({
       ) : activeFinanceTab === 'time_logs' ? (
         <div className="card-professional p-0 overflow-hidden shadow-xl shadow-slate-100 animate-fade-in">
           <div className="p-6 border-b border-slate-800 flex items-center justify-between bg-slate-50">
-            <h3 className="font-display font-black text-slate-900 flex items-center gap-2">
+            <h3 className="font-display font-black text-white flex items-center gap-2">
               <Clock className="text-gold w-5 h-5" />
               <span>تقارير تشغيل مؤقت العمل (Time Logs)</span>
             </h3>
             <div className="flex items-center gap-3">
-               <span className="text-xs font-black text-slate-700 uppercase tracking-widest">إجمالي السجلات: {allTimeLogs.length}</span>
-               <button className="p-2 text-slate-900 rounded-lg transition-all">
+               <span className="text-xs font-black text-slate-300 uppercase tracking-widest">إجمالي السجلات: {allTimeLogs.length}</span>
+               <button className="p-2 text-white rounded-lg transition-all">
                   <Printer className="w-4 h-4" />
                 </button>
             </div>
@@ -1885,11 +1885,11 @@ export default function FinanceModule({
             <table className="w-full text-right">
               <thead>
                 <tr className="bg-white border-b border-slate-100">
-                  <th className="py-4 px-6 text-xs font-black text-slate-900 uppercase tracking-wider">التاريخ</th>
-                  <th className="py-4 px-6 text-xs font-black text-slate-900 uppercase tracking-wider">اسم القضية</th>
-                  <th className="py-4 px-6 text-xs font-black text-slate-900 uppercase tracking-wider text-center">المدة المستغرقة</th>
-                  <th className="py-4 px-6 text-xs font-black text-slate-900 uppercase tracking-wider text-center">الأتعاب المقدرة (VAT)</th>
-                  <th className="py-4 px-6 text-xs font-black text-slate-900 uppercase tracking-wider text-left">الحالة</th>
+                  <th className="py-4 px-6 text-xs font-black text-white uppercase tracking-wider">التاريخ</th>
+                  <th className="py-4 px-6 text-xs font-black text-white uppercase tracking-wider">اسم القضية</th>
+                  <th className="py-4 px-6 text-xs font-black text-white uppercase tracking-wider text-center">المدة المستغرقة</th>
+                  <th className="py-4 px-6 text-xs font-black text-white uppercase tracking-wider text-center">الأتعاب المقدرة (VAT)</th>
+                  <th className="py-4 px-6 text-xs font-black text-white uppercase tracking-wider text-left">الحالة</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-50">
@@ -1903,7 +1903,7 @@ export default function FinanceModule({
                   allTimeLogs.map((log, idx) => (
                     <tr key={idx} className="hover:bg-slate-50 transition-colors group">
                       <td className="py-5 px-6 font-mono text-xs">{log.date}</td>
-                      <td className="py-5 px-6 font-black text-sm text-slate-900">{log.caseName}</td>
+                      <td className="py-5 px-6 font-black text-sm text-white">{log.caseName}</td>
                       <td className="py-5 px-6 text-center font-bold text-xs text-slate-200 font-bold">{formatDuration(log.duration)}</td>
                       <td className="py-5 px-6 text-center font-black text-sm text-emerald-600">{log.fees.toLocaleString()} ر.س</td>
                       <td className="py-5 px-6 text-left">
@@ -1928,7 +1928,7 @@ export default function FinanceModule({
                 <CreditCard className="text-gold w-5.5 h-5.5" />
                 <span>محاكي بوابات المدفوعات والربط المحاسبي المتكامل</span>
               </h3>
-              <p className="text-xs text-slate-900  mt-1 font-sans">
+              <p className="text-xs text-white  mt-1 font-sans">
                 بروزة واختبار بوابات تحصيل أتعاب العملاء عبر منصات الدفع السعودية، مع تتبع اللحظات الفنية والأثر المباشر.
               </p>
             </div>
@@ -1936,7 +1936,7 @@ export default function FinanceModule({
             {/* Select Pending Invoice */}
             <div className="space-y-4">
               <div className="space-y-2">
-                <label className="text-xs text-slate-900  font-bold tracking-wider block">1. اختر مطالبة أو فاتورة معلقة للسداد والربط الضريبي:</label>
+                <label className="text-xs text-white  font-bold tracking-wider block">1. اختر مطالبة أو فاتورة معلقة للسداد والربط الضريبي:</label>
                 <select
                   value={selectedSimInvoiceId}
                   onChange={(e) => {
@@ -2075,12 +2075,12 @@ export default function FinanceModule({
                     className={`p-3.5 rounded-2xl border text-center transition-all cursor-pointer space-y-1 flex flex-col items-center justify-center ${
                       payMethod === vendor.id 
                         ? 'border-gold bg-gold/10 text-gold shadow-md' 
-                        : 'border-slate-800 bg-sky-100 text-slate-900'
+                        : 'border-slate-800 bg-sky-100 text-white'
                     }`}
                   >
                     <span className="text-xl">{vendor.icon}</span>
                     <span className="text-[10px] font-black block tracking-tight">{vendor.name}</span>
-                    <span className="text-[8.5px] text-slate-900 block">{vendor.desc}</span>
+                    <span className="text-[8.5px] text-white block">{vendor.desc}</span>
                   </button>
                 ))}
               </div>
@@ -2101,17 +2101,17 @@ export default function FinanceModule({
                     </div>
 
                     <div className="space-y-1">
-                      <span className="text-[11px] text-slate-900 font-bold block">رقم البطاقة الأمنية</span>
+                      <span className="text-[11px] text-white font-bold block">رقم البطاقة الأمنية</span>
                       <strong className="text-sm md:text-base font-mono tracking-widest block text-left">{fakeCardNum}</strong>
                     </div>
 
                     <div className="flex justify-between items-end text-right">
                       <div>
-                        <span className="text-[10px] text-slate-900 block font-bold">صاحب البطاقة</span>
+                        <span className="text-[10px] text-white block font-bold">صاحب البطاقة</span>
                         <strong className="text-xs font-mono block truncate max-w-[170px]">{fakeCardHolder}</strong>
                       </div>
                       <div className="text-left">
-                        <span className="text-[10px] text-slate-900 block font-bold">الانتهاء</span>
+                        <span className="text-[10px] text-white block font-bold">الانتهاء</span>
                         <strong className="text-xs font-mono block">{fakeCardExpiry}</strong>
                       </div>
                     </div>
@@ -2120,7 +2120,7 @@ export default function FinanceModule({
                   {/* Form fields to manipulate visually */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs font-semibold">
                     <div>
-                      <label className="text-slate-900 block mb-1">اسم العميل المسجل بالبطاقة:</label>
+                      <label className="text-white block mb-1">اسم العميل المسجل بالبطاقة:</label>
                       <input 
                         type="text"
                         value={fakeCardHolder}
@@ -2129,7 +2129,7 @@ export default function FinanceModule({
                       />
                     </div>
                     <div>
-                      <label className="text-slate-900 block mb-1">رقم مادة البطاقة المكون من 16 خانة:</label>
+                      <label className="text-white block mb-1">رقم مادة البطاقة المكون من 16 خانة:</label>
                       <input 
                         type="text"
                         value={fakeCardNum}
@@ -2138,7 +2138,7 @@ export default function FinanceModule({
                       />
                     </div>
                     <div>
-                      <label className="text-slate-900 block mb-1">تاريخ الانتهاء (الشهر / السنة):</label>
+                      <label className="text-white block mb-1">تاريخ الانتهاء (الشهر / السنة):</label>
                       <input 
                         type="text"
                         value={fakeCardExpiry}
@@ -2147,7 +2147,7 @@ export default function FinanceModule({
                       />
                     </div>
                     <div>
-                      <label className="text-slate-900 block mb-1">الرمز السري الخلفي للتحقق (CVV):</label>
+                      <label className="text-white block mb-1">الرمز السري الخلفي للتحقق (CVV):</label>
                       <input 
                         type="password"
                         value={fakeCardCvv}
@@ -2169,11 +2169,11 @@ export default function FinanceModule({
                   </div>
                   <div className="space-y-1">
                     <strong className="text-sm font-bold text-white font-bold block">الدفع السريع بمحفظة Apple Pay المقترنة بالعدالة</strong>
-                    <p className="text-xs text-slate-900 max-w-[340px] leading-relaxed mx-auto">
+                    <p className="text-xs text-white max-w-[340px] leading-relaxed mx-auto">
                       سيتم تشفير بصمة الإصبع أو الوجه وسحب المبلغ آلياً عبر محفظتك الذكية المسجلة على الخادم.
                     </p>
                   </div>
-                  <div className="bg-sky-100 px-4 py-2 rounded-xl text-xs font-mono text-slate-900 tracking-tight">
+                  <div className="bg-sky-100 px-4 py-2 rounded-xl text-xs font-mono text-white tracking-tight">
                     معرف البطاقة المتصلة: **** **** **** 9283
                   </div>
                 </div>
@@ -2184,15 +2184,15 @@ export default function FinanceModule({
                 <div className="space-y-4 text-xs font-semibold font-sans">
                   <div className="p-4 bg-amber-500 border border-amber-500 rounded-xl space-y-2">
                     <div className="flex justify-between">
-                      <span className="text-slate-900">الرمز المفوتر لمكتب العدالة:</span>
+                      <span className="text-white">الرمز المفوتر لمكتب العدالة:</span>
                       <strong className="text-white font-bold font-mono">827 (العدالة للمحاماة)</strong>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-slate-900">رقم المشترك / الفاتورة المرجعية بموقع سداد:</span>
+                      <span className="text-white">رقم المشترك / الفاتورة المرجعية بموقع سداد:</span>
                       <strong className="text-gold font-mono text-sm leading-none">{sadadBillCode}</strong>
                     </div>
                   </div>
-                  <p className="text-[11px] text-slate-900 leading-normal text-justify">
+                  <p className="text-[11px] text-white leading-normal text-justify">
                     يرجى توجيه العميل بالدخول على حسابه البنكي المعتمد بالمملكة، واختيار (محرك سداد للمدفوعات)، والبحث عن المفوتر رقم ٨٢٧، ثم سداد الرقم المرجعي الموضح أعلاه للتسوية.
                   </p>
                 </div>
@@ -2203,19 +2203,19 @@ export default function FinanceModule({
                 <div className="space-y-4 text-xs font-semibold font-sans">
                   <div className="p-4 bg-blue-500 border border-blue-500 rounded-xl space-y-2 leading-relaxed text-right">
                     <div className="flex justify-between">
-                      <span className="text-slate-900">اسم المستفيد الأول:</span>
+                      <span className="text-white">اسم المستفيد الأول:</span>
                       <strong className="text-white font-bold">العدالة للمحاماة والاستشارات القانونية</strong>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-slate-900">رقم الآيبان (IBAN) - مصرف الراجحي:</span>
+                      <span className="text-white">رقم الآيبان (IBAN) - مصرف الراجحي:</span>
                       <strong className="text-slate-100 font-mono tracking-tight">SA 93 8000 0000 1029 3847 5600</strong>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-slate-900">رمز التعريف المرجعي للتحصيل الآلي:</span>
+                      <span className="text-white">رمز التعريف المرجعي للتحصيل الآلي:</span>
                       <strong className="text-amber-500 font-mono">TRF-JUSTICE-4820</strong>
                     </div>
                   </div>
-                  <p className="text-[11px] text-slate-900 leading-normal">
+                  <p className="text-[11px] text-white leading-normal">
                     بعد اتمام العميل للحوالة المصرفية البنكية، ستقوم خوارزمية التطابق بمسح إيصالات بنوك المملكة فورياً لتحديث الدفتر المالي.
                   </p>
                 </div>
@@ -2242,7 +2242,7 @@ export default function FinanceModule({
             {/* Terminal Live logs console */}
             {simulationLogs.length > 0 && (
               <div className="bg-sky-100 border border-slate-850 p-4 rounded-xl font-mono text-xs text-emerald-400 space-y-2 leading-relaxed text-left" dir="ltr">
-                <div className="flex items-center justify-between border-b border-slate-900 pb-1.5 text-slate-900">
+                <div className="flex items-center justify-between border-b border-slate-900 pb-1.5 text-white">
                   <span className="text-[10px] font-sans">معالج دفع سداد ومدى - بث حي لوحدة التحقق</span>
                   <span className="flex items-center gap-1">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
@@ -2341,12 +2341,12 @@ export default function FinanceModule({
             
             <div className="p-6 border-b border-slate-800 flex items-center justify-between bg-white">
               <div>
-                <h2 className="font-display font-semibold text-lg text-slate-900 ">توليد مطالبة مالية</h2>
-                <p className="text-sm text-slate-900  font-medium mt-0.5">أدخل تفاصيل الأتعاب المهنية والخدمات المؤداة.</p>
+                <h2 className="font-display font-semibold text-lg text-white ">توليد مطالبة مالية</h2>
+                <p className="text-sm text-white  font-medium mt-0.5">أدخل تفاصيل الأتعاب المهنية والخدمات المؤداة.</p>
               </div>
               <button 
                 onClick={() => setIsInvoiceOpen(false)}
-                className="p-2 text-slate-900 rounded-xl transition-all"
+                className="p-2 text-white rounded-xl transition-all"
               >
                 إغلاق
               </button>
@@ -2354,12 +2354,12 @@ export default function FinanceModule({
 
             <form onSubmit={handleCreateInvoice} className="p-8 space-y-6">
               <div className="space-y-2">
-                <label className="text-xs text-slate-900  font-bold uppercase tracking-wider">اختيار العميل</label>
+                <label className="text-xs text-white  font-bold uppercase tracking-wider">اختيار العميل</label>
                 <select
                   value={invClientName}
                   onChange={(e) => setInvClientName(e.target.value)}
                   required
-                  className="w-full bg-slate-50 border border-slate-800 rounded-xl py-3.5 px-4 text-xs font-bold text-slate-900  outline-none focus:border-indigo-500 transition-all"
+                  className="w-full bg-slate-50 border border-slate-800 rounded-xl py-3.5 px-4 text-xs font-bold text-white  outline-none focus:border-indigo-500 transition-all"
                 >
                   <option value="">البحث في قاعدة العملاء...</option>
                   {clients.map((cl, idx) => (
@@ -2369,19 +2369,19 @@ export default function FinanceModule({
               </div>
 
               <div className="space-y-2">
-                <label className="text-xs text-slate-900  font-bold uppercase tracking-wider">الخدمة القانونية</label>
+                <label className="text-xs text-white  font-bold uppercase tracking-wider">الخدمة القانونية</label>
                 <input 
                   type="text"
                   placeholder="مثال: أتعاب إعداد صحيفة الدعوى والاستشارات..."
                   value={invDesc}
                   onChange={(e) => setInvDesc(e.target.value)}
                   required
-                  className="w-full bg-slate-50 border border-slate-800 rounded-xl py-3.5 px-4 text-xs font-bold text-slate-900  outline-none focus:border-indigo-500 transition-all font-sans"
+                  className="w-full bg-slate-50 border border-slate-800 rounded-xl py-3.5 px-4 text-xs font-bold text-white  outline-none focus:border-indigo-500 transition-all font-sans"
                 />
               </div>
 
               <div className="space-y-2">
-                <label className="text-xs text-slate-900  font-bold uppercase tracking-wider">الأتعاب المهنية (قبل الضريبة)</label>
+                <label className="text-xs text-white  font-bold uppercase tracking-wider">الأتعاب المهنية (قبل الضريبة)</label>
                 <div className="relative">
                   <input 
                     type="number"
@@ -2389,16 +2389,16 @@ export default function FinanceModule({
                     value={invSubtotal}
                     onChange={(e) => setInvSubtotal(e.target.value)}
                     required
-                    className="w-full bg-slate-50 border border-slate-800 rounded-xl py-4 pr-16 pl-4 text-sm font-bold text-slate-900  font-sans outline-none focus:border-indigo-500"
+                    className="w-full bg-slate-50 border border-slate-800 rounded-xl py-4 pr-16 pl-4 text-sm font-bold text-white  font-sans outline-none focus:border-indigo-500"
                   />
-                  <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-black text-slate-900 ">ر.س</span>
+                  <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-black text-white ">ر.س</span>
                 </div>
               </div>
 
               {/* Realtime 15% VAT preview during drafting */}
               {invSubtotal && (
                 <div className="p-6 bg-gold/5 rounded-2xl border border-gold/10 space-y-3">
-                  <div className="flex justify-between text-xs font-bold text-slate-900 ">
+                  <div className="flex justify-between text-xs font-bold text-white ">
                     <span>صافي الأتعاب:</span>
                     <span className="tabular-nums">{parseFloat(invSubtotal).toLocaleString()} ر.س</span>
                   </div>
@@ -2407,7 +2407,7 @@ export default function FinanceModule({
                     <span className="tabular-nums">+{calculateVat(parseFloat(invSubtotal)).toLocaleString()} ر.س</span>
                   </div>
                   <div className="flex justify-between border-t border-gold/20 pt-3 mt-1">
-                    <span className="text-xs font-black text-slate-900 ">المجموع النهائي:</span>
+                    <span className="text-xs font-black text-white ">المجموع النهائي:</span>
                     <span className="text-base font-display font-semibold text-gold tabular-nums">
                       {calculateTotal(parseFloat(invSubtotal)).toLocaleString()} ر.س
                     </span>
@@ -2436,18 +2436,18 @@ export default function FinanceModule({
             {/* Modal Header */}
             <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50">
               <div>
-                <h2 className="font-display font-black text-lg text-slate-900 flex items-center gap-2">
+                <h2 className="font-display font-black text-lg text-white flex items-center gap-2">
                   <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
                   <span>منظومة إصدار سندات القبض الإلكترونية</span>
                 </h2>
-                <p className="text-xs text-slate-700 font-bold mt-0.5">رصد المبالغ المستلمة وإصدار الإيصالات المشفرة لعملاء المكتب</p>
+                <p className="text-xs text-slate-300 font-bold mt-0.5">رصد المبالغ المستلمة وإصدار الإيصالات المشفرة لعملاء المكتب</p>
               </div>
               <button 
                 onClick={() => {
                   setIsReceiptOpen(false);
                   setReceiptVoucherPrint(null);
                 }}
-                className="bg-slate-200/60 text-slate-800 px-4 py-2 rounded-xl text-xs font-black transition-all cursor-pointer"
+                className="bg-slate-200/60 text-slate-200 px-4 py-2 rounded-xl text-xs font-black transition-all cursor-pointer"
               >
                 إغلاق
               </button>

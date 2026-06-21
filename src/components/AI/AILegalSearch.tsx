@@ -587,7 +587,7 @@ export default function AILegalSearch() {
           {/* Main Search Panel */}
           <div className="lg:col-span-8 space-y-6">
             <div className="bg-white border-2 border-slate-200/80 p-6 rounded-[2.5rem] shadow-xl">
-              <label className="text-slate-900 font-extrabold text-sm mb-3 block">اسأل محاميك الرقمي بخصوص أي مسألة تشريعية سعودية:</label>
+              <label className="text-white font-extrabold text-sm mb-3 block">اسأل محاميك الرقمي بخصوص أي مسألة تشريعية سعودية:</label>
               <div className="relative group">
                 <Search className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-200 font-bold w-6 h-6 group-focus-within:text-amber-400 font-black transition-colors" />
                 <input 
@@ -612,7 +612,7 @@ export default function AILegalSearch() {
             {isLoading && (
               <div className="py-20 flex flex-col items-center justify-center space-y-4 bg-white rounded-3xl border border-slate-250 border-dashed animate-pulse">
                 <div className="w-12 h-12 border-4 border-slate-100 border-t-amber-500 rounded-full animate-spin"></div>
-                <p className="text-slate-900 font-black text-sm">جاري مراجعة متون الأنظمة واللوائح والقرارات الملكية لوزارة العدل...</p>
+                <p className="text-white font-black text-sm">جاري مراجعة متون الأنظمة واللوائح والقرارات الملكية لوزارة العدل...</p>
               </div>
             )}
 
@@ -625,7 +625,7 @@ export default function AILegalSearch() {
                 <div className="p-8 bg-slate-50 border-b border-slate-200 flex justify-between items-center">
                   <div className="flex items-center gap-3">
                     <Sparkles className="w-6 h-6 text-amber-400 font-black" />
-                    <h3 className="font-black text-slate-900 text-lg">الرأي الاستشاري والبحث الموثق والمواد المستدلة</h3>
+                    <h3 className="font-black text-white text-lg">الرأي الاستشاري والبحث الموثق والمواد المستدلة</h3>
                   </div>
                   <div className="flex gap-2">
                     <button 
@@ -634,9 +634,9 @@ export default function AILegalSearch() {
                         navigator.clipboard.writeText(answer);
                         triggerNotification('تم نسخ الرأي القانوني للحافظة بنجاح.');
                       }}
-                      className="p-3 border border-slate-200 bg-white rounded-xl transition-colors flex items-center gap-1.5 text-xs font-bold text-slate-700 cursor-pointer"
+                      className="p-3 border border-slate-200 bg-white rounded-xl transition-colors flex items-center gap-1.5 text-xs font-bold text-slate-300 cursor-pointer"
                     >
-                      <Copy className="w-4 h-4 text-slate-700" />
+                      <Copy className="w-4 h-4 text-slate-300" />
                       <span>نسخ النص</span>
                     </button>
                   </div>
@@ -653,7 +653,7 @@ export default function AILegalSearch() {
           {/* Sidebar Recommendations */}
           <div className="lg:col-span-4 space-y-6">
             <div className="bg-white border-2 border-slate-200/80 p-6 rounded-[2rem] shadow-lg">
-              <h4 className="font-black text-slate-900 mb-5 flex items-center gap-2 text-sm border-b border-slate-100 pb-3">
+              <h4 className="font-black text-white mb-5 flex items-center gap-2 text-sm border-b border-slate-100 pb-3">
                 <Bookmark className="w-4 h-4 text-amber-500" />
                 المصادر المرجعية والمحاكم المزامنة
               </h4>
@@ -665,15 +665,15 @@ export default function AILegalSearch() {
                         ⚖️
                       </div>
                       <div className="text-right">
-                        <p className="text-xs font-black text-slate-900">{s.title}</p>
-                        <p className="text-[10px] text-slate-700 font-bold">{s.category}</p>
+                        <p className="text-xs font-black text-white">{s.title}</p>
+                        <p className="text-[10px] text-slate-300 font-bold">{s.category}</p>
                       </div>
                     </div>
                     <ExternalLink className="w-4 h-4 text-slate-200 font-bold transition-colors" />
                   </a>
                 )) : (
                   <div className="text-center py-8 opacity-60">
-                    <p className="text-xs text-slate-700 font-bold">تظهر الروابط وتوجيهات المحاكم فور بدء وعرض طلبك الذكي بالبحث في الأعلى.</p>
+                    <p className="text-xs text-slate-300 font-bold">تظهر الروابط وتوجيهات المحاكم فور بدء وعرض طلبك الذكي بالبحث في الأعلى.</p>
                   </div>
                 )}
               </div>
@@ -732,7 +732,7 @@ export default function AILegalSearch() {
                 </button>
                 <button 
                   onClick={() => setActiveView('search')}
-                  className="flex items-center gap-2 bg-white text-slate-900 px-6 py-3 rounded-2xl text-xs font-black hover:bg-amber-400 transition-all shadow-xl active:scale-95 border-2 border-amber-400/50"
+                  className="flex items-center gap-2 bg-white text-white px-6 py-3 rounded-2xl text-xs font-black hover:bg-amber-400 transition-all shadow-xl active:scale-95 border-2 border-amber-400/50"
                 >
                   <Sparkles className="w-4 h-4 text-amber-400 font-black" />
                   أداة تحليل البحث في القضايا والمواقف القانونية ⚖️
@@ -750,7 +750,7 @@ export default function AILegalSearch() {
           {/* Moustashar Integrated Folders Grid - Interactive Sovereign Directories */}
           <div className="space-y-4">
             <div className="flex justify-between items-center">
-              <h3 className="text-sm font-black text-slate-900 flex items-center gap-2">
+              <h3 className="text-sm font-black text-white flex items-center gap-2">
                 <Library className="w-5 h-5 text-emerald-700" />
                 المجلدات التفاعلية لمرصد الأنظمة (التحكم بالتباين الديناميكي لسهولة القراءة ⚡)
               </h3>
@@ -779,7 +779,7 @@ export default function AILegalSearch() {
                 
                 // Dynamic Typography Contrast Theme variables to ensure extreme readability
                 const textTitleColor = isDark ? 'text-white' : 'text-slate-950';
-                const textDescColor = isDark ? 'text-white font-bold/90' : 'text-slate-700';
+                const textDescColor = isDark ? 'text-white font-bold/90' : 'text-slate-300';
                 const metaColor = isDark ? 'text-amber-300' : 'text-emerald-750';
                 const folderBadgeClass = isDark ? 'bg-white/10 text-white border-white/20' : 'bg-slate-200/80 text-slate-950 border-slate-350';
                 

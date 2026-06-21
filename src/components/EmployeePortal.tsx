@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import TaskCountdown from './TaskCountdown';
 import { 
   Users, Lock, Shield, CheckSquare, Briefcase, PlusCircle, 
@@ -7,7 +7,7 @@ import {
   Send, MessageSquare, Download, Share2, Filter, Zap, ExternalLink, Sparkles, UserCheck,
   ChevronRight, LogOut, Loader2, Save, Trash2, Eye, EyeOff, Link, UserPlus, HelpCircle,
   Bell, ChevronLeft, Activity, Award, QrCode, MapPin, Coffee, Sun, Moon, LogIn, BarChart2,
-  Phone, Mail, Plane, AlertTriangle, ChevronUp, ChevronDown
+  Phone, Mail, Plane, AlertTriangle, ChevronUp, ChevronDown, CheckCircle2
 } from 'lucide-react';
 import { 
   BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer, 
@@ -20,6 +20,7 @@ import { generateUUID } from '@/lib/uuid';
 import { auditLogger, AuditAction } from '@/lib/AuditLogger';
 import { verifyEmployeeCredentials } from '@/lib/auth-utils';
 import { Case, Client, Task, Employee, LeaveRequest, AttendanceRecord } from '@/types';
+import TasksModule from './TasksModule';
 
 // Custom Searchable Dropdown Multi-Select
 interface DropdownSelectProps {
@@ -534,6 +535,25 @@ export default function EmployeePortal({
       supabase.removeChannel(attChannel);
       supabase.removeChannel(leaveChannel);
     };
+  }, [loggedInEmployee]);
+
+  // Real-time tasks synchronization
+  useEffect(() => {
+    if (!loggedInEmployee?.id) return;
+
+    const channel = supabase
+      .channel('portal-tasks-realtime')
+      .on('postgres_changes', { 
+        event: '*', 
+        schema: 'public', 
+        table: 'tasks',
+        filter: `employee_id=eq.${loggedInEmployee.id}`
+      }, (payload) => {
+        loadMyTasks(loggedInEmployee.id, loggedInEmployee.name);
+      })
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
   }, [loggedInEmployee]);
 
   // Comprehensive Vacation Balance Calculation
@@ -1210,7 +1230,7 @@ export default function EmployeePortal({
                           items={[
                             { id: 'dashboard', name: 'لوحة القيادة الرئيسية والملخص' },
                             { id: 'cases', name: 'بوابة القضايا وعقود الترافع' },
-                            { id: 'tasks', name: 'بوابة تتبع وتنفيذ المهام العدلية' },
+                            { id: 'tasks', name: 'المهام وتوزيع الأعمال' },
                             { id: 'documents', name: 'أرشيف وحقيبة المستندات والملفات' },
                             { id: 'ai', name: 'مساعد ومستشار الذكاء الاصطناعي (AI)' },
                             { id: 'ai-search', name: 'مرصد الأنظمة والبحث الذكي' },
@@ -1460,13 +1480,80 @@ export default function EmployeePortal({
     loggedInEmployee?.assignedCases?.includes(c.id) || 
     loggedInEmployee?.assignedCases?.includes(c.caseNumber)
   );
-  
-  const myTasks = tasks.filter(t => 
-    t.assignedTo === loggedInEmployee?.name ||
-    t.assignedTo === loggedInEmployee?.username ||
-    t.assignedTo === loggedInEmployee?.id ||
-    (t.assignedTo && loggedInEmployee?.name && t.assignedTo.includes(loggedInEmployee.name))
-  );
+
+  // ===== جلب مهام الموظف ومزامنتها =====
+  const [myTasks, setMyTasks] = useState<any[]>([]);
+  const [tasksLoading, setTasksLoading] = useState(false);
+  const [updatingTask, setUpdatingTask] = useState<string | null>(null);
+
+  const loadMyTasks = useCallback(async (employeeId: string, employeeName: string) => {
+    setTasksLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('tasks')
+        .select('*')
+        .or(`employee_id.eq.${employeeId},assigned_to.eq.${employeeName}`)
+        .order('created_at', { ascending: false });
+
+      if (!error) setMyTasks(data || []);
+    } catch(e) {} finally { setTasksLoading(false); }
+  }, []);
+
+  // تحميل المهام عند الدخول
+  useEffect(() => {
+    if (loggedInEmployee?.id) {
+      loadMyTasks(loggedInEmployee.id, loggedInEmployee.name);
+    }
+  }, [loggedInEmployee?.id, loadMyTasks]);
+
+  // Realtime Subscription — تحديث فوري
+  useEffect(() => {
+    if (!loggedInEmployee?.id) return;
+
+    const channel = supabase
+      .channel(`employee_tasks_${loggedInEmployee.id}`)
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'tasks',
+        filter: `employee_id=eq.${loggedInEmployee.id}`
+      }, (payload) => {
+        if (payload.eventType === 'INSERT') {
+          setMyTasks(prev => [payload.new as any, ...prev]);
+        } else if (payload.eventType === 'UPDATE') {
+          setMyTasks(prev => prev.map(t =>
+            t.id === payload.new.id ? payload.new as any : t
+          ));
+        } else if (payload.eventType === 'DELETE') {
+          setMyTasks(prev => prev.filter(t => t.id !== payload.old.id));
+        }
+      })
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
+  }, [loggedInEmployee?.id]);
+
+  // تحديث حالة المهمة من بوابة الموظف
+  const updateTaskStatus = async (taskId: string, newStatus: string) => {
+    setUpdatingTask(taskId);
+    try {
+      const { error } = await supabase
+        .from('tasks')
+        .update({
+          status: newStatus,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', taskId);
+
+      if (error) throw error;
+
+      setMyTasks(prev => prev.map(t =>
+        t.id === taskId ? { ...t, status: newStatus } : t
+      ));
+    } catch(err: any) {
+      alert('فشل التحديث: ' + err.message);
+    } finally { setUpdatingTask(null); }
+  };
   
   const myClients = clients.filter(cl => 
     loggedInEmployee?.assignedClients?.includes(cl.id)
@@ -1615,7 +1702,7 @@ export default function EmployeePortal({
             {[
               { id: 'dashboard', name: 'لوحة التحكم والمتابعة', icon: Layout },
               { id: 'cases', name: 'ملفات القضايا المسندة', icon: Briefcase },
-              { id: 'tasks', name: 'التكاليف والمهام', icon: CheckSquare },
+              { id: 'tasks', name: 'المهام وتوزيع الأعمال', icon: CheckSquare },
               { id: 'clients', name: 'الموكلين والجهات', icon: Users },
               { id: 'ai', name: 'المساعد القانوني AI', icon: Sparkles },
               { id: 'ai-search', name: 'البحث والاستعلام الذكي', icon: Search },
@@ -1676,16 +1763,16 @@ export default function EmployeePortal({
           <header className="p-6 md:p-8 border-b border-slate-200 flex flex-col md:flex-row md:items-center justify-between gap-6 bg-white relative overflow-hidden">
             <div className="z-10 flex items-center gap-5">
               <div className="hidden md:flex flex-col gap-1 pr-6 border-r border-slate-200 py-1 text-right" dir="rtl">
-                 <h1 className="text-2xl font-black text-slate-900 tracking-tight">أهلاً بك، الأستاذ {loggedInEmployee.name.split(' ')[0]} 👋</h1>
-                 <p className="text-slate-700 font-bold text-xs mt-0.5">مركز العمل القضائي المتكامل • بيئة سحابية آمنة</p>
+                 <h1 className="text-2xl font-black text-white tracking-tight">أهلاً بك، الأستاذ {loggedInEmployee.name.split(' ')[0]} 👋</h1>
+                 <p className="text-slate-300 font-bold text-xs mt-0.5">مركز العمل القضائي المتكامل • بيئة سحابية آمنة</p>
               </div>
             </div>
 
             <div className="z-10 flex items-center gap-3 md:gap-4">
               <div className="bg-[#F8FAFC] px-5 py-3 rounded-[1rem] border border-slate-100 flex items-center gap-4 shadow-sm">
                  <div className="text-right">
-                   <p className="text-[10px] font-black text-slate-700 uppercase tracking-widest leading-none">رصيد الإجازات</p>
-                   <p className="text-lg font-black text-slate-900 mt-1 leading-none">{vacationBalance.remaining} يوماً</p>
+                   <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest leading-none">رصيد الإجازات</p>
+                   <p className="text-lg font-black text-white mt-1 leading-none">{vacationBalance.remaining} يوماً</p>
                  </div>
                  <div className="w-10 h-10 bg-white rounded-[0.75rem] shadow-sm border border-slate-100 flex items-center justify-center text-[#0f172a]">
                    <Calendar className="w-5 h-5" />
@@ -1704,7 +1791,7 @@ export default function EmployeePortal({
                  <button 
                    onClick={() => handleCheckIn('location')}
                    disabled={isCheckingIn}
-                   className="bg-white hover:bg-slate-50 text-slate-700 font-black px-5 py-2.5 rounded-xl text-xs flex items-center gap-2 transition-all active:scale-95 disabled:opacity-50 border border-slate-200 shadow-sm"
+                   className="bg-white hover:bg-slate-50 text-slate-300 font-black px-5 py-2.5 rounded-xl text-xs flex items-center gap-2 transition-all active:scale-95 disabled:opacity-50 border border-slate-200 shadow-sm"
                  >
                    <MapPin className="w-4 h-4 text-emerald-600" />
                    <span>إثبات (موقع)</span>
@@ -2804,14 +2891,14 @@ export default function EmployeePortal({
                           <span className={`text-[11px] px-3 py-1 rounded-full font-black ${
                             c.status === 'active' || c.status === 'pending_session'
                               ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' 
-                              : 'bg-slate-50 text-slate-700 border border-slate-200'
+                              : 'bg-slate-50 text-slate-300 border border-slate-200'
                           }`}>
                             {c.status === 'active' ? 'قيد الترافع النشط' : c.status === 'pending_session' ? 'جلسة مقبلة جارية' : 'مغلق'}
                           </span>
                         </div>
                         
-                        <h4 className="font-black text-lg text-slate-900 mb-4 leading-tight">{c.caseName}</h4>
-                        <div className="space-y-3 text-[11px] text-slate-700 font-bold mb-6 pr-1">
+                        <h4 className="font-black text-lg text-white mb-4 leading-tight">{c.caseName}</h4>
+                        <div className="space-y-3 text-[11px] text-slate-300 font-bold mb-6 pr-1">
                           <p className="flex items-center gap-2.5"><Users className="w-4 h-4 text-blue-600" /> الموكل/العميل: {c.clientName}</p>
                           <p className="flex items-center gap-2.5"><Globe className="w-4 h-4 text-emerald-600" /> المحكمة: {c.courtName || 'المحكمة العامة'}</p>
                           {c.nextSessionDate && (
@@ -2823,7 +2910,7 @@ export default function EmployeePortal({
                       <div className="pt-5 border-t border-slate-100">
                         <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
                           <p className="text-[10px] text-slate-200 font-bold font-black mb-1">ملخص الخصم:</p>
-                          <p className="text-xs font-black text-slate-900">{c.opponentName || 'غير مسجل'}</p>
+                          <p className="text-xs font-black text-white">{c.opponentName || 'غير مسجل'}</p>
                         </div>
                       </div>
                     </motion.div>
@@ -2835,57 +2922,126 @@ export default function EmployeePortal({
 
         {/* ASSIGNED TASKS FULL PANEL TAB */}
         {activePortalTab === 'tasks' && (
-          <div className="space-y-8">
-            <h3 className="text-2xl font-black text-slate-900 flex items-center gap-3">
-              <div className="p-3 bg-amber-50 rounded-2xl text-amber-400 font-black border border-amber-100">
-                <CheckSquare className="w-6 h-6" />
+          <div className="space-y-8 animate-fade-in">
+            <div className="mt-6" dir="rtl">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-white font-black text-lg flex items-center gap-2">
+                  <CheckCircle2 className="w-5 h-5 text-amber-400" />
+                  مهامي المُسندة
+                </h2>
+                <button
+                  onClick={() => {
+                    if (loggedInEmployee?.id) {
+                      loadMyTasks(loggedInEmployee.id, loggedInEmployee.name);
+                    }
+                  }}
+                  className="text-xs text-slate-400 hover:text-amber-400 transition-colors"
+                >
+                  🔄 تحديث
+                </button>
               </div>
-              تتبع وتنفيذ المهام العدلية المسندة
-            </h3>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              {myTasks.length === 0 ? (
-                <div className="col-span-full py-20 bg-white rounded-[2.5rem] text-center border border-slate-200 text-slate-200 font-bold font-bold text-xs shadow-sm">
-                  ليس لديك مهام جارية حالياً.
+              {tasksLoading ? (
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 className="w-6 h-6 text-amber-500 animate-spin" />
+                </div>
+              ) : myTasks.length === 0 ? (
+                <div className="text-center py-8 border border-dashed border-slate-700 rounded-2xl">
+                  <CheckCircle2 className="w-10 h-10 text-slate-300 mx-auto mb-2" />
+                  <p className="text-slate-500 text-sm">لا توجد مهام مُسندة إليك حالياً</p>
                 </div>
               ) : (
-                myTasks.map(t => (
-                  <div key={t.id} className="bg-white border border-slate-200 p-8 rounded-[2.5rem] shadow-sm space-y-6 hover:border-amber-400 transition-all duration-300 relative">
-                    <div className="flex items-center justify-between">
-                      <p className="text-base font-black text-slate-900">{t.title}</p>
-                      
-                      <span className={`text-[10px] px-3 py-1 rounded-full font-black ${
-                        t.priority === 'high' 
-                          ? 'bg-rose-50 text-rose-600 border border-rose-100' 
-                          : 'bg-slate-50 text-slate-700 border border-slate-200'
-                      }`}>
-                        {t.priority === 'high' ? 'عالية ومستعجلة' : 'اعتيادية'}
-                      </span>
-                    </div>
+                <div className="space-y-3">
+                  {myTasks.map(task => {
+                    const priorityColors = {
+                      high: 'text-red-300 bg-red-500/10 border-red-500/30',
+                      medium: 'text-amber-300 bg-amber-500/10 border-amber-500/30',
+                      low: 'text-emerald-300 bg-emerald-500/10 border-emerald-500/30'
+                    };
+                    const statusColors = {
+                      todo: 'text-slate-300 bg-slate-700/50',
+                      in_progress: 'text-blue-300 bg-blue-500/10',
+                      done: 'text-emerald-300 bg-emerald-500/10',
+                      cancelled: 'text-red-300 bg-red-500/10'
+                    };
+                    const statusLabels = {
+                      todo: 'قيد الانتظار',
+                      in_progress: 'جارٍ التنفيذ',
+                      done: 'مكتملة ✅',
+                      cancelled: 'ملغاة'
+                    };
 
-                    <p className="text-xs text-slate-700 font-bold leading-relaxed">{t.description || 'لم تدرج تفاصيل إضافية مسبقاً.'}</p>
+                    return (
+                      <div key={task.id}
+                        className="bg-[#0a1628] border border-slate-700/50
+                          hover:border-amber-500/20 rounded-2xl p-4 transition-all">
 
-                    <div className="bg-slate-50 p-6 rounded-2xl border border-slate-100 space-y-4">
-                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                        <TaskCountdown dueDate={t.dueDate} />
-                        
-                        <div className="flex items-center gap-3">
-                          <span className="text-[10px] text-slate-200 font-bold font-black">الحالة:</span>
-                          <select 
-                            value={t.status}
-                            onChange={(e) => handleToggleTaskStatus(t.id, e.target.value)}
-                            className="bg-white border border-slate-200 rounded-xl px-4 py-2 text-xs text-slate-900 font-black outline-none focus:border-blue-600"
-                          >
-                            <option value="todo">تحت الانتظار</option>
-                            <option value="in_progress">قيد الترافع/العمل</option>
-                            <option value="review">بانتظار مراجعة المدير</option>
-                            <option value="completed">مكتملة ومقفلة</option>
-                          </select>
+                        {/* رأس المهمة */}
+                        <div className="flex items-start justify-between gap-3 mb-3">
+                          <div className="flex-1 min-w-0">
+                            <h3 className="text-white font-bold text-sm leading-tight">
+                              {task.title}
+                            </h3>
+                            {task.case_number && (
+                              <p className="text-amber-400 text-xs font-mono mt-1">
+                                #{task.case_number}
+                              </p>
+                            )}
+                            {task.description && (
+                              <p className="text-slate-400 text-xs mt-1 line-clamp-2">
+                                {task.description}
+                              </p>
+                            )}
+                          </div>
+
+                          <div className="flex flex-col items-end gap-1.5 shrink-0">
+                            {/* الأولوية */}
+                            <span className={`text-[10px] px-2 py-0.5 rounded-lg font-bold
+                              border ${priorityColors[task.priority as keyof typeof priorityColors] || priorityColors.medium}`}>
+                              {task.priority === 'high' ? 'عاجلة' :
+                               task.priority === 'medium' ? 'متوسطة' : 'عادية'}
+                            </span>
+
+                            {/* الموعد */}
+                            {task.due_date && (
+                              <span className={`text-[10px] flex items-center gap-1 ${
+                                new Date(task.due_date) < new Date() && task.status !== 'done'
+                                  ? 'text-red-400' : 'text-slate-500'
+                              }`}>
+                                <Clock className="w-2.5 h-2.5" />
+                                {new Date(task.due_date).toLocaleDateString('ar-SA')}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* تغيير الحالة */}
+                        <div className="flex items-center gap-2">
+                          <span className="text-slate-500 text-xs shrink-0">الحالة:</span>
+                          <div className="flex gap-1.5 flex-wrap">
+                            {(['todo', 'in_progress', 'done'] as const).map(status => (
+                              <button
+                                key={status}
+                                onClick={() => updateTaskStatus(task.id, status)}
+                                disabled={updatingTask === task.id || task.status === status}
+                                className={`text-[10px] px-2.5 py-1 rounded-lg font-bold
+                                  transition-all disabled:cursor-not-allowed ${
+                                  task.status === status
+                                    ? statusColors[status]
+                                    : 'text-slate-500 bg-slate-800 hover:bg-slate-700'
+                                } ${updatingTask === task.id ? 'opacity-50' : ''}`}
+                              >
+                                {updatingTask === task.id && task.status !== status
+                                  ? '...'
+                                  : statusLabels[status]}
+                              </button>
+                            ))}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  </div>
-                ))
+                    );
+                  })}
+                </div>
               )}
             </div>
           </div>

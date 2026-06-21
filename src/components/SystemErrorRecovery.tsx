@@ -78,7 +78,7 @@ export const SystemErrorRecovery: React.FC<SystemErrorRecoveryProps> = ({
           disabled={isRetrying || retryCount >= maxRetries}
           className={`flex items-center gap-2 px-8 py-4 rounded-2xl font-black text-xs transition-all shadow-xl ${
             retryCount >= maxRetries
-              ? 'bg-slate-800 text-slate-700 cursor-not-allowed opacity-50'
+              ? 'bg-slate-800 text-slate-300 cursor-not-allowed opacity-50'
               : 'bg-amber-500 text-slate-950 active:scale-95'
           }`}
         >

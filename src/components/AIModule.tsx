@@ -175,7 +175,7 @@ export default function AIModule({ onUpdateState, cases = [], invoices = [], ini
               className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-[10px] font-black transition-all ${
                 activeTab === tab.id 
                   ? 'bg-slate-900 text-white shadow-lg' 
-                  : 'text-slate-700'
+                  : 'text-slate-300'
               } `}
             >
               {tab.icon}
@@ -200,7 +200,7 @@ export default function AIModule({ onUpdateState, cases = [], invoices = [], ini
               <div className="p-6 bg-slate-50 border-b border-slate-200 flex justify-between items-center">
                 <div className="flex items-center gap-3">
                   <div className="w-3 h-3 bg-emerald-500 rounded-full animate-pulse"></div>
-                  <h4 className="text-sm font-black text-slate-900">غرفة المشورة القانونية المباشرة</h4>
+                  <h4 className="text-sm font-black text-white">غرفة المشورة القانونية المباشرة</h4>
                 </div>
                 <div className="text-[10px] font-black text-slate-200 font-bold uppercase tracking-widest">Powered by Gemini 3.5</div>
               </div>
@@ -214,7 +214,7 @@ export default function AIModule({ onUpdateState, cases = [], invoices = [], ini
                     <div className={`px-6 py-4 rounded-3xl text-sm font-bold leading-relaxed shadow-sm ${
                       msg.sender === 'user' 
                         ? 'bg-slate-900 text-white rounded-tr-none' 
-                        : 'bg-white border border-slate-100 text-slate-800 rounded-tl-none'
+                        : 'bg-white border border-slate-100 text-slate-200 rounded-tl-none'
                     } `}>
                       {msg.text}
                     </div>

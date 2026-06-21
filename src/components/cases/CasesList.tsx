@@ -53,7 +53,7 @@ export default function CasesList({
   if (filteredCases.length === 0) {
     return (
       <div className={`p-20 text-center rounded-[3rem] border border-dashed flex flex-col items-center justify-center space-y-6 ${
-        isHighContrast ? 'bg-slate-100 border-slate-900 text-slate-900' : 'bg-[#0c1a35] border-slate-800'
+        isHighContrast ? 'bg-slate-100 border-slate-900 text-white' : 'bg-[#0c1a35] border-slate-800'
       }`} dir="rtl">
         <span className="text-5xl opacity-40">📂</span>
         <p className="text-white font-black font-bold text-xs uppercase tracking-widest">لا توجد ملفات قضايا تتطابق مع المرشحات الحالية</p>

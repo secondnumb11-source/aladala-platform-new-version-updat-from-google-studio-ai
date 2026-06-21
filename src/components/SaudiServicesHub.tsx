@@ -435,7 +435,7 @@ export default function SaudiServicesHub({
                   </div>
 
                   {/* Portal description */}
-                  <p className="text-[11.5px] text-slate-900 font-black leading-relaxed text-justify min-h-[50px]">
+                  <p className="text-[11.5px] text-white font-black leading-relaxed text-justify min-h-[50px]">
                     {portal.desc}
                   </p>
                 </div>
@@ -452,7 +452,7 @@ export default function SaudiServicesHub({
                         ربط API متصل بنشاط
                       </div>
                     ) : (
-                      <div className="flex items-center gap-1.5 text-[11px] font-sans font-black text-slate-800 bg-slate-500/10 px-2.5 py-1 rounded-xl border border-slate-500/20 shadow-sm">
+                      <div className="flex items-center gap-1.5 text-[11px] font-sans font-black text-slate-200 bg-slate-500/10 px-2.5 py-1 rounded-xl border border-slate-500/20 shadow-sm">
                         <span className="w-1.5 h-1.5 rounded-full bg-slate-600"></span>
                         سجل محلي (غير مرتبط بناجز)
                       </div>
@@ -492,7 +492,7 @@ export default function SaudiServicesHub({
         <div className="space-y-6 animate-fade-in text-right" dir="rtl">
           <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm space-y-4">
             <div>
-              <h3 className="text-sm font-black text-slate-900 border-r-4 border-amber-500 pr-3">البحث الشامل والموحد في قواعد البيانات</h3>
+              <h3 className="text-sm font-black text-white border-r-4 border-amber-500 pr-3">البحث الشامل والموحد في قواعد البيانات</h3>
               <p className="text-xs text-slate-500 mt-2 font-medium">ابحث بالاسم، أو رقم الهوية، أو السجل التجاري، أو تصنيف القضية، وسيتم البحث في جداول العملاء والقضايا معاً.</p>
             </div>
             
@@ -500,7 +500,7 @@ export default function SaudiServicesHub({
               <input 
                 type="text" 
                 placeholder="أدخل مفتاح البحث هنا..." 
-                className="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 pr-4 text-xs font-bold text-slate-900 focus:outline-none focus:border-amber-500"
+                className="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 pr-4 text-xs font-bold text-white focus:outline-none focus:border-amber-500"
                 onKeyDown={(e) => {
                    if(e.key === 'Enter') searchInternalDatabase(e.currentTarget.value);
                 }}
@@ -530,11 +530,11 @@ export default function SaudiServicesHub({
                <div className="space-y-6 mt-6 border-t border-slate-100 pt-6">
                  {internalResults.clients.length > 0 && (
                    <div className="space-y-3">
-                     <h4 className="flex items-center gap-2 text-xs font-black text-slate-800"><Users className="w-4 h-4 text-indigo-500"/> العملاء والشركات المطابقة ({internalResults.clients.length})</h4>
+                     <h4 className="flex items-center gap-2 text-xs font-black text-slate-200"><Users className="w-4 h-4 text-indigo-500"/> العملاء والشركات المطابقة ({internalResults.clients.length})</h4>
                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                        {internalResults.clients.map((c, i) => (
                          <div key={i} className="p-3 border border-slate-200 rounded-xl bg-slate-50 hover:bg-white transition-colors">
-                           <p className="font-bold text-slate-900 text-xs mb-1">{c.name}</p>
+                           <p className="font-bold text-white text-xs mb-1">{c.name}</p>
                            {c.identity_number && <span className="text-[10px] text-slate-500 block font-mono">الهوية/السجل: {c.identity_number}</span>}
                          </div>
                        ))}
@@ -544,14 +544,14 @@ export default function SaudiServicesHub({
                  
                  {internalResults.cases.length > 0 && (
                    <div className="space-y-3">
-                     <h4 className="flex items-center gap-2 text-xs font-black text-slate-800"><Briefcase className="w-4 h-4 text-emerald-500"/> القضايا والملفات القانونية ({internalResults.cases.length})</h4>
+                     <h4 className="flex items-center gap-2 text-xs font-black text-slate-200"><Briefcase className="w-4 h-4 text-emerald-500"/> القضايا والملفات القانونية ({internalResults.cases.length})</h4>
                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                        {internalResults.cases.map((c, i) => (
                          <div key={i} className="p-3 border border-slate-200 rounded-xl bg-slate-50 hover:bg-white transition-colors">
-                           <p className="font-bold text-slate-900 text-xs mb-1 truncate">{c.title || c.case_number}</p>
+                           <p className="font-bold text-white text-xs mb-1 truncate">{c.title || c.case_number}</p>
                            <div className="flex gap-2">
                              <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-100 text-emerald-700">{c.status}</span>
-                             <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-slate-200 text-slate-700">{c.category}</span>
+                             <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-slate-200 text-slate-300">{c.category}</span>
                            </div>
                          </div>
                        ))}
@@ -647,7 +647,7 @@ export default function SaudiServicesHub({
                     {srv.icon}
                   </div>
                   <div className="flex-1 space-y-3 w-full">
-                    <h3 className="text-sm font-black text-slate-900">{srv.name}</h3>
+                    <h3 className="text-sm font-black text-white">{srv.name}</h3>
                     <p className="text-xs text-slate-500 font-medium">{srv.description}</p>
                     <div className="flex gap-2 mt-4 w-full">
                       <input 
@@ -691,7 +691,7 @@ export default function SaudiServicesHub({
               className={`px-4.5 py-2.5 rounded-xl text-[11px] font-black transition-all flex items-center gap-2 shrink-0 cursor-pointer ${
                 isDarkCards 
                   ? 'bg-slate-900 text-yellow-300 border border-slate-700 shadow-lg' 
-                  : 'bg-white text-slate-800 border border-slate-200 shadow-sm'
+                  : 'bg-white text-slate-200 border border-slate-200 shadow-sm'
               }`}
             >
               {isDarkCards ? <Sun className="w-3.5 h-3.5 text-yellow-400" /> : <Moon className="w-3.5 h-3.5 text-indigo-500" />}

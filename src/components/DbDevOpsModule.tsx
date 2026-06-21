@@ -449,7 +449,7 @@ ON CONFLICT DO NOTHING;`;
                 {containerStates.postgres === 'running' ? 'نشط 🟢' : 'متوقف 🔴'}
               </span>
             </div>
-            <div className="text-[11px] text-slate-700 font-sans">Active Sandbox: Al-Adalah Relational Model</div>
+            <div className="text-[11px] text-slate-300 font-sans">Active Sandbox: Al-Adalah Relational Model</div>
           </div>
         </div>
       </div>

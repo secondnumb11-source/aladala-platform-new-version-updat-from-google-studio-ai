@@ -4,570 +4,648 @@
   const SERVER = 'https://aladala-platform-rnuz.onrender.com';
 
   // =============================================
-  // الخطوة 1: اعتراض Fetch و XHR
+  // تحديد الصفحة الحالية
   // =============================================
-  const interceptedData = {
-    cases: [],
-    hearings: [],
-    poa: [],
-    executions: [],
-    raw: []
-  };
-
-  // اعتراض fetch
-  const originalFetch = window.fetch;
-  window.fetch = async function(...args) {
-    const response = await originalFetch.apply(this, args);
-    const url = typeof args[0] === 'string' ? args[0] : args[0]?.url || '';
-
-    if (url.includes('najiz') || url.includes('moj.gov') ||
-        url.includes('api') || url.includes('lawsuit') ||
-        url.includes('appointment') || url.includes('procuration') ||
-        url.includes('execution')) {
-
-      try {
-        const cloned = response.clone();
-        const text = await cloned.text();
-
-        if (text && text.length > 50) {
-          try {
-            const json = JSON.parse(text);
-            processApiResponse(url, json);
-          } catch {
-            processTextResponse(url, text);
-          }
-        }
-      } catch(e) {}
-    }
-
-    return response;
-  };
-
-  // اعتراض XMLHttpRequest
-  const OriginalXHR = window.XMLHttpRequest;
-  function InterceptedXHR() {
-    const xhr = new OriginalXHR();
-    let xhrUrl = '';
-
-    const originalOpen = xhr.open.bind(xhr);
-    xhr.open = function(method, url, ...rest) {
-      xhrUrl = url;
-      return originalOpen(method, url, ...rest);
-    };
-
-    xhr.addEventListener('load', function() {
-      if (!xhrUrl) return;
-      try {
-        const text = xhr.responseText;
-        if (!text || text.length < 50) return;
-        try {
-          const json = JSON.parse(text);
-          processApiResponse(xhrUrl, json);
-        } catch {
-          processTextResponse(xhrUrl, text);
-        }
-      } catch(e) {}
-    });
-
-    return xhr;
-  }
-  InterceptedXHR.prototype = OriginalXHR.prototype;
-  window.XMLHttpRequest = InterceptedXHR;
-
-  // =============================================
-  // الخطوة 2: معالجة بيانات API
-  // =============================================
-  function processApiResponse(url, json) {
-    if (!json) return;
-
-    interceptedData.raw.push({ url, data: json, ts: Date.now() });
-
-    const urlLower = url.toLowerCase();
-
-    // البحث في كل المستويات من JSON
-    const allItems = flattenJson(json);
-
-    allItems.forEach(item => {
-      if (!item || typeof item !== 'object') return;
-
-      // اكتشاف القضايا
-      if (isCase(item, urlLower)) {
-        const caseNum = extractCaseNumber(item);
-        if (caseNum && !interceptedData.cases.find(c => c.caseNumber === caseNum)) {
-          interceptedData.cases.push(mapCase(item, caseNum));
-        }
-      }
-
-      // اكتشاف الجلسات
-      if (isHearing(item, urlLower)) {
-        const hearing = mapHearing(item);
-        if (hearing.date && !interceptedData.hearings.find(
-          h => h.date === hearing.date && h.caseNumber === hearing.caseNumber
-        )) {
-          interceptedData.hearings.push(hearing);
-        }
-      }
-
-      // اكتشاف الوكالات
-      if (isPOA(item, urlLower)) {
-        const poa = mapPOA(item);
-        if (poa.poaNumber && !interceptedData.poa.find(
-          p => p.poaNumber === poa.poaNumber
-        )) {
-          interceptedData.poa.push(poa);
-        }
-      }
-
-      // اكتشاف التنفيذ
-      if (isExecution(item, urlLower)) {
-        const exec = mapExecution(item);
-        if (exec.executionNumber && !interceptedData.executions.find(
-          e => e.executionNumber === exec.executionNumber
-        )) {
-          interceptedData.executions.push(exec);
-        }
-      }
-    });
-
-    notifyDataUpdated();
-  }
-
-  function processTextResponse(url, text) {
-    // استخراج أرقام القضايا من النص الخام
-    const caseNums = [...new Set(
-      text.match(/\d{4}\/\d{1,2}\/\d+|\d{4}\/\d{4,}/g) || []
-    )];
-    caseNums.forEach(num => {
-      if (!interceptedData.cases.find(c => c.caseNumber === num)) {
-        interceptedData.cases.push({
-          caseNumber: num,
-          najizCaseNumber: num,
-          caseName: 'قضية من ناجز',
-          status: 'قيد النظر',
-          category: 'civil',
-          isNajizSync: true,
-          source: 'network_text'
-        });
-      }
-    });
-  }
-
-  // =============================================
-  // الخطوة 3: تسطيح JSON للبحث
-  // =============================================
-  function flattenJson(obj, depth = 0) {
-    if (depth > 8) return [];
-    const items = [];
-    if (Array.isArray(obj)) {
-      obj.forEach(item => {
-        items.push(item);
-        items.push(...flattenJson(item, depth + 1));
-      });
-    } else if (obj && typeof obj === 'object') {
-      items.push(obj);
-      Object.values(obj).forEach(val => {
-        if (val && typeof val === 'object') {
-          items.push(...flattenJson(val, depth + 1));
-        }
-      });
-    }
-    return items;
-  }
-
-  // =============================================
-  // الخطوة 4: دوال التعرف على نوع البيانات
-  // =============================================
-  function isCase(item, url) {
-    if (!item || typeof item !== 'object') return false;
-    const keys = Object.keys(item).map(k => k.toLowerCase());
-    const text = JSON.stringify(item).toLowerCase();
-    return (
-      url.includes('lawsuit') || url.includes('case') ||
-      keys.some(k => ['casenumber','case_number','casenum','رقم','lawsuit','دعوى','قضية'].some(p => k.includes(p))) ||
-      text.includes('casenumber') || text.includes('case_number') ||
-      text.includes('رقم الدعوى') || text.includes('رقم القضية') ||
-      (text.includes('محكمة') && text.match(/\d{4}\/\d+/))
-    );
-  }
-
-  function isHearing(item, url) {
-    if (!item || typeof item !== 'object') return false;
-    const text = JSON.stringify(item).toLowerCase();
-    return (
-      url.includes('appointment') || url.includes('hearing') ||
-      url.includes('session') || url.includes('جلسة') ||
-      text.includes('hearing') || text.includes('جلسة') ||
-      text.includes('appointmentdate') || text.includes('sessiondate') ||
-      text.includes('hearingdate') || text.includes('موعد')
-    );
-  }
-
-  function isPOA(item, url) {
-    if (!item || typeof item !== 'object') return false;
-    const text = JSON.stringify(item).toLowerCase();
-    return (
-      url.includes('wekalat') || url.includes('procuration') ||
-      url.includes('attorney') ||
-      text.includes('wekalat') || text.includes('وكالة') ||
-      text.includes('poanumber') || text.includes('procuration') ||
-      text.includes('wakala')
-    );
-  }
-
-  function isExecution(item, url) {
-    if (!item || typeof item !== 'object') return false;
-    const text = JSON.stringify(item).toLowerCase();
-    return (
-      url.includes('execution') || url.includes('iexecution') ||
-      text.includes('execution') || text.includes('تنفيذ') ||
-      text.includes('executionnumber')
-    );
-  }
-
-  // =============================================
-  // الخطوة 5: تحويل البيانات للتنسيق الموحد
-  // =============================================
-  function extractCaseNumber(item) {
-    const fields = [
-      'caseNumber','case_number','caseNum','case_num',
-      'caseNo','case_no','lawsuitNumber','lawsuit_number',
-      'caseId','case_id','requestNumber','request_number',
-      'CaseNumber','CaseNo','LawsuitNo','رقم الدعوى',
-      'رقم القضية','caseIdentifier','caseReference'
-    ];
-    for (const f of fields) {
-      if (item[f]) return String(item[f]).trim();
-    }
-    // بحث بالأنماط
-    const str = JSON.stringify(item);
-    const match = str.match(/"(?:caseNumber|case_number|caseNo|CaseNo|LawsuitNo)":"?([^",}]+)"?/i);
-    return match?.[1]?.trim() || null;
-  }
-
-  function mapCase(item, caseNum) {
-    const str = JSON.stringify(item);
-    return {
-      caseNumber: caseNum,
-      najizCaseNumber: caseNum,
-      caseName: item.caseName || item.case_name || item.caseTitle ||
-                item.title || item.name || item.lawsuitName ||
-                item.CaseName || item.CaseTitle || 'قضية من ناجز',
-      status: item.status || item.caseStatus || item.case_status ||
-              item.statusName || item.Status || 'قيد النظر',
-      court: item.court || item.courtName || item.court_name ||
-             item.CourtName || item.tribunal || '',
-      category: mapCategory(
-        item.category || item.caseType || item.case_type ||
-        item.type || item.caseCategory || ''
-      ),
-      stage: item.stage || item.caseStage || item.phase || 'litigation',
-      opponentName: item.opponent || item.opponentName ||
-                   item.opponent_name || item.defendantName || '',
-      nextHearing: item.nextSession || item.next_session ||
-                  item.nextHearing || item.next_hearing ||
-                  item.appointmentDate || item.nextAppointment || '',
-      judgeNumber: item.judgeNumber || item.circuitNumber ||
-                  item.circuit_number || '',
-      isNajizSync: true,
-      source: 'network_interception',
-      rawData: item
-    };
-  }
-
-  function mapHearing(item) {
-    return {
-      caseNumber: item.caseNumber || item.case_number ||
-                 item.caseNo || item.CaseNo || '',
-      date: item.hearingDate || item.hearing_date ||
-            item.appointmentDate || item.appointment_date ||
-            item.sessionDate || item.date || item.Date || '',
-      time: item.hearingTime || item.time || item.sessionTime || '09:00',
-      court: item.courtName || item.court_name || item.court || '',
-      hall: item.hall || item.circuitNumber || item.deptNumber || '',
-      status: item.status || item.hearingStatus || 'قادمة',
-      type: item.type || item.hearingType || item.sessionType || '',
-      isNajizSync: true,
-      source: 'network_interception'
-    };
-  }
-
-  function mapPOA(item) {
-    return {
-      poaNumber: item.poaNumber || item.poa_number ||
-                item.wekalatNumber || item.wakalaNumber ||
-                item.number || item.id || '',
-      type: item.type || item.poaType || 'general',
-      status: item.status || 'active',
-      issueDate: item.issueDate || item.issue_date ||
-                item.startDate || item.createdAt || '',
-      expiryDate: item.expiryDate || item.expiry_date ||
-                 item.endDate || item.expiryDateHijri || '',
-      principalName: item.grantor || item.principal ||
-                    item.principalName || item.موكل || '',
-      isNajizSync: true,
-      source: 'network_interception'
-    };
-  }
-
-  function mapExecution(item) {
-    return {
-      executionNumber: item.executionNumber || item.execution_number ||
-                      item.requestNumber || item.id || '',
-      status: item.status || 'pending',
-      amount: item.amount || item.claimAmount || 0,
-      court: item.courtName || item.court || '',
-      isNajizSync: true,
-      source: 'network_interception'
-    };
-  }
-
-  function mapCategory(cat) {
-    if (!cat) return 'civil';
-    const c = String(cat).toLowerCase();
-    if (c.includes('تجاري') || c.includes('commercial')) return 'commercial';
-    if (c.includes('عمالي') || c.includes('labor')) return 'labor';
-    if (c.includes('جزائي') || c.includes('criminal')) return 'criminal';
-    if (c.includes('أحوال') || c.includes('personal')) return 'personal_status';
-    if (c.includes('إداري') || c.includes('admin')) return 'administrative';
-    return 'civil';
-  }
-
-  // =============================================
-  // الخطوة 6: إشعار الـ Extension بالبيانات
-  // =============================================
-  function notifyDataUpdated() {
-    window.dispatchEvent(new CustomEvent('adala_data_update', {
-      detail: {
-        cases: interceptedData.cases.length,
-        hearings: interceptedData.hearings.length,
-        poa: interceptedData.poa.length,
-        executions: interceptedData.executions.length
-      }
-    }));
-  }
-
-  // =============================================
-  // الخطوة 7: استخراج DOM كـ Fallback
-  // =============================================
-  function extractFromDOM() {
-    const domData = {
-      cases: [],
-      hearings: [],
-      poa: [],
-      executions: []
-    };
-
-    const seen = new Set();
-    const text = document.body?.innerText || '';
-
-    // أرقام القضايا من الصفحة
-    const patterns = [
-      /\d{4}\/\d{1,2}\/\d+/g,
-      /\d{4}\/\d{4,}/g,
-      /(?<!\d)\d{10}(?!\d)/g
-    ];
-
-    patterns.forEach(pattern => {
-      const matches = text.match(pattern) || [];
-      matches.forEach(num => {
-        if (seen.has(num)) return;
-        seen.add(num);
-        domData.cases.push({
-          caseNumber: num,
-          najizCaseNumber: num,
-          caseName: 'قضية من ناجز',
-          status: 'قيد النظر',
-          category: 'civil',
-          isNajizSync: true,
-          source: 'dom_fallback'
-        });
-      });
-    });
-
-    // الجداول
-    document.querySelectorAll('table tbody tr').forEach(row => {
-      const cells = Array.from(row.querySelectorAll('td'))
-        .map(td => td.innerText?.trim() || '');
-      if (cells.length < 2) return;
-      const rowText = cells.join(' ');
-      const numMatch = rowText.match(/\d{4}\/\d+|\d{10,}/)?.[0];
-      if (!numMatch || seen.has(numMatch)) return;
-      seen.add(numMatch);
-      const dateMatch = rowText.match(/\d{1,2}[\/\-]\d{1,2}[\/\-]\d{4}/);
-      domData.cases.push({
-        caseNumber: numMatch,
-        najizCaseNumber: numMatch,
-        caseName: cells.find(c => c.length > 5 && !/^\d+/.test(c)) || 'قضية من ناجز',
-        status: cells.find(c => ['قيد','منتهي','نشط','مؤجل'].some(k => c.includes(k))) || 'قيد النظر',
-        nextHearing: dateMatch?.[0] || '',
-        isNajizSync: true,
-        source: 'dom_table'
-      });
-    });
-
-    // البطاقات الديناميكية
-    document.querySelectorAll('*').forEach(el => {
-      const t = el.childNodes.length === 0 ||
-        Array.from(el.childNodes).every(n => n.nodeType === 3)
-          ? el.innerText?.trim() || ''
-          : '';
-      if (!t) return;
-      const m = t.match(/^\d{4}\/\d+$|^\d{10}$/);
-      if (m && !seen.has(m[0])) {
-        seen.add(m[0]);
-        const parent = el.closest('[class]');
-        const context = parent?.innerText?.substring(0, 300) || t;
-        domData.cases.push({
-          caseNumber: m[0],
-          najizCaseNumber: m[0],
-          caseName: 'قضية من ناجز',
-          status: 'قيد النظر',
-          isNajizSync: true,
-          source: 'dom_element'
-        });
-      }
-    });
-
-    return domData;
-  }
-
-  // =============================================
-  // الخطوة 8: الدالة الرئيسية للسحب
-  // =============================================
-  async function extractAll() {
-    // انتظر 3 ثوانٍ للـ network requests
-    await new Promise(r => setTimeout(r, 3000));
-
-    // دمج بيانات الشبكة مع DOM
-    const domData = extractFromDOM();
-
-    const merged = {
-      cases: mergeArrays(interceptedData.cases, domData.cases, 'caseNumber'),
-      hearings: mergeArrays(interceptedData.hearings, domData.hearings, 'date'),
-      powers_of_attorney: interceptedData.poa,
-      executions: interceptedData.executions,
-      pageUrl: window.location.href,
-      pageTitle: document.title,
-      scrapedAt: new Date().toISOString(),
-      method: interceptedData.cases.length > 0 ? 'network_interception' : 'dom_fallback'
-    };
-
-    const totalFound =
-      merged.cases.length +
-      merged.hearings.length +
-      merged.powers_of_attorney.length +
-      merged.executions.length;
-
-    merged.summary = {
-      totalCases: merged.cases.length,
-      totalHearings: merged.hearings.length,
-      totalPOAs: merged.powers_of_attorney.length,
-      totalExecutions: merged.executions.length,
-      totalFound,
-      hasData: totalFound > 0,
-      method: merged.method,
-      networkIntercepted: interceptedData.cases.length,
-      domFallback: domData.cases.length
-    };
-
-    return merged;
-  }
-
-  function mergeArrays(arr1, arr2, key) {
-    const merged = [...arr1];
-    const existing = new Set(arr1.map(i => i[key]));
-    arr2.forEach(item => {
-      if (item[key] && !existing.has(item[key])) {
-        merged.push(item);
-        existing.add(item[key]);
-      }
-    });
-    return merged;
-  }
-
-  // =============================================
-  // الخطوة 9: مزامنة مع الخادم
-  // =============================================
-  async function syncToServer(data) {
-    try {
-      const response = await fetch(`${SERVER}/api/najiz-sync`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          scrapedData: {
-            ...data,
-            cases: data.cases.map(c => ({ ...c, rawData: undefined }))
-          },
-          pageType: detectPageType(),
-          source: 'najiz_extension_v6_network_interception',
-          timestamp: new Date().toISOString()
-        })
-      });
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      return await response.json();
-    } catch(err) {
-      console.error('[العدالة] Sync error:', err.message);
-      return { success: false, error: err.message };
-    }
-  }
-
-  function detectPageType() {
-    const url = window.location.href.toLowerCase();
-    if (url.includes('/lawsuit') || url.includes('/cases')) return 'cases';
-    if (url.includes('/appointment') || url.includes('/hearing')) return 'hearings';
+  function getPageType() {
+    const url = window.location.href;
+    if (url.includes('/lawsuit')) return 'cases';
+    if (url.includes('/iexecution')) return 'executions';
     if (url.includes('/wekalat') || url.includes('/procuration')) return 'poa';
-    if (url.includes('/execution')) return 'executions';
+    if (url.includes('/appointment-requests')) return 'hearings';
     return 'unknown';
   }
 
   // =============================================
-  // الخطوة 10: استقبال أوامر الـ Extension
+  // انتظار ظهور البيانات على الشاشة
+  // =============================================
+  function waitForVisibleContent(timeoutMs = 15000) {
+    return new Promise((resolve) => {
+      let elapsed = 0;
+      const interval = setInterval(() => {
+        elapsed += 500;
+
+        const body = document.body?.innerText || '';
+
+        // علامات وجود بيانات مرئية
+        const hasTable = document.querySelectorAll('table tr').length > 1;
+        const hasCards = document.querySelectorAll(
+          '[class*="card" i], [class*="item" i], [class*="row" i], [class*="list" i]'
+        ).length > 2;
+        const hasNumbers = /\\d{4}\\/\\d+|\\d{9,}/.test(body);
+        const hasArabicContent = /[\\u0600-\\u06FF]{5,}/.test(body) && body.length > 500;
+
+        if (hasTable || hasCards || hasNumbers || hasArabicContent) {
+          clearInterval(interval);
+          resolve(true);
+          return;
+        }
+
+        if (elapsed >= timeoutMs) {
+          clearInterval(interval);
+          resolve(false);
+        }
+      }, 500);
+    });
+  }
+
+  // =============================================
+  // قراءة كل النص المرئي على الشاشة
+  // =============================================
+  function getVisibleText() {
+    // احصل على النص من العناصر المرئية فعلاً
+    const visibleElements = [];
+
+    function isVisible(el) {
+      if (!el) return false;
+      const style = window.getComputedStyle(el);
+      return style.display !== 'none' &&
+             style.visibility !== 'hidden' &&
+             style.opacity !== '0' &&
+             el.offsetParent !== null;
+    }
+
+    // اجمع كل النصوص من العناصر المرئية
+    const walker = document.createTreeWalker(
+      document.body,
+      NodeFilter.SHOW_TEXT,
+      {
+        acceptNode(node) {
+          if (node.nodeValue?.trim() &&
+              isVisible(node.parentElement)) {
+            return NodeFilter.FILTER_ACCEPT;
+          }
+          return NodeFilter.FILTER_SKIP;
+        }
+      }
+    );
+
+    let node;
+    while ((node = walker.nextNode())) {
+      const text = node.nodeValue?.trim();
+      if (text && text.length > 1) {
+        visibleElements.push(text);
+      }
+    }
+
+    return visibleElements.join('\\n');
+  }
+
+  // =============================================
+  // استخراج القضايا من الصفحة المرئية
+  // =============================================
+  function extractCasesFromScreen() {
+    const cases = [];
+    const seen = new Set();
+
+    // أولاً: من الجداول المرئية
+    document.querySelectorAll('table').forEach(table => {
+      if (!table.offsetParent) return; // تجاهل غير المرئي
+
+      // استخراج رؤوس الجدول
+      const headers = Array.from(
+        table.querySelectorAll('thead th, thead td, tr:first-child th, tr:first-child td')
+      ).map(h => h.innerText?.trim() || '');
+
+      // استخراج الصفوف
+      const rows = table.querySelectorAll('tbody tr, tr:not(:first-child)');
+      rows.forEach(row => {
+        if (!row.offsetParent) return;
+        const cells = Array.from(row.querySelectorAll('td'))
+          .map(td => td.innerText?.trim() || '');
+        if (cells.length < 2) return;
+
+        const rowText = cells.join(' | ');
+
+        // البحث عن رقم القضية
+        const caseNumMatch = rowText.match(
+          /\\d{4}\\/\\d{1,2}\\/\\d+|\\d{4}\\/\\d{4,}|\\b\\d{9,10}\\b/
+        );
+        if (!caseNumMatch || seen.has(caseNumMatch[0])) return;
+        seen.add(caseNumMatch[0]);
+
+        // البحث عن التاريخ
+        const dateMatch = rowText.match(
+          /\\d{1,2}[\\/\\-]\\d{1,2}[\\/\\-]\\d{4}|\\d{4}[\\/\\-]\\d{1,2}[\\/\\-]\\d{1,2}/
+        );
+
+        // بناء كائن القضية
+        const caseObj = {
+          caseNumber: caseNumMatch[0],
+          najizCaseNumber: caseNumMatch[0],
+          caseName: '',
+          status: '',
+          court: '',
+          category: '',
+          nextHearing: dateMatch?.[0] || '',
+          stage: 'litigation',
+          isNajizSync: true,
+          source: 'screen_table',
+          rawCells: cells
+        };
+
+        // ربط الخلايا بالرؤوس
+        headers.forEach((header, i) => {
+          const cell = cells[i] || '';
+          const h = header.toLowerCase();
+
+          if (h.includes('رقم') || h.includes('number')) {
+            if (!caseObj.caseNumber) caseObj.caseNumber = cell;
+          }
+          if (h.includes('اسم') || h.includes('عنوان') || h.includes('موضوع')) {
+            caseObj.caseName = cell;
+          }
+          if (h.includes('حالة') || h.includes('الحالة') || h.includes('status')) {
+            caseObj.status = cell;
+          }
+          if (h.includes('محكمة') || h.includes('court')) {
+            caseObj.court = cell;
+          }
+          if (h.includes('تصنيف') || h.includes('نوع') || h.includes('type')) {
+            caseObj.category = mapCategory(cell);
+          }
+          if (h.includes('جلسة') || h.includes('موعد') || h.includes('تاريخ')) {
+            if (cell.match(/\\d{1,2}[\\/\\-]\\d/)) caseObj.nextHearing = cell;
+          }
+        });
+
+        // استكمال البيانات من النص
+        if (!caseObj.status) {
+          caseObj.status = cells.find(c =>
+            ['قيد','منتهي','نشط','مقيد','محكوم','مؤجل',
+             'مشطوب','موقوف','صدر','جديد','مباشرة']
+              .some(k => c.includes(k))
+          ) || 'قيد النظر';
+        }
+
+        if (!caseObj.court) {
+          caseObj.court = cells.find(c => c.includes('محكمة')) || '';
+        }
+
+        if (!caseObj.caseName) {
+          caseObj.caseName = cells.find(c =>
+            c.length > 5 &&
+            !/^\\d+[\\/\\-]?\\d*$/.test(c) &&
+            !c.includes('محكمة') &&
+            !c.includes('ريال') &&
+            !/^\\d{4}\\//.test(c)
+          ) || 'قضية من ناجز';
+        }
+
+        if (!caseObj.category) {
+          caseObj.category = mapCategory(rowText);
+        }
+
+        cases.push(caseObj);
+      });
+    });
+
+    // ثانياً: من البطاقات والقوائم المرئية
+    const cardSelectors = [
+      '[class*="card" i]', '[class*="Card"]',
+      '[class*="item" i]', '[class*="Item"]',
+      '[class*="row" i]', '[class*="Row"]',
+      '[class*="case" i]', '[class*="lawsuit" i]',
+      '[class*="request" i]', '[class*="list-item" i]',
+      'li[class]', '[role="row"]', '[role="listitem"]'
+    ];
+
+    cardSelectors.forEach(selector => {
+      try {
+        document.querySelectorAll(selector).forEach(el => {
+          if (!el.offsetParent) return; // غير مرئي
+          const text = el.innerText?.trim() || '';
+          if (text.length < 10 || text.length > 3000) return;
+
+          const numMatch = text.match(
+            /\\d{4}\\/\\d{1,2}\\/\\d+|\\d{4}\\/\\d{4,}|\\b\\d{9,10}\\b/
+          );
+          if (!numMatch || seen.has(numMatch[0])) return;
+          seen.add(numMatch[0]);
+
+          const lines = text.split('\\n').map(l => l.trim()).filter(Boolean);
+          const dateMatch = text.match(
+            /\\d{1,2}[\\/\\-]\\d{1,2}[\\/\\-]\\d{4}|\\d{4}[\\/\\-]\\d{1,2}[\\/\\-]\\d{1,2}/
+          );
+
+          cases.push({
+            caseNumber: numMatch[0],
+            najizCaseNumber: numMatch[0],
+            caseName: lines.find(l =>
+              l.length > 5 &&
+              !/^\\d+[\\/\\-]?\\d*$/.test(l) &&
+              !l.includes('محكمة') &&
+              l !== numMatch[0]
+            ) || 'قضية من ناجز',
+            status: lines.find(l =>
+              ['قيد','منتهي','نشط','مقيد','محكوم',
+               'مؤجل','مشطوب','موقوف'].some(k => l.includes(k))
+            ) || 'قيد النظر',
+            court: lines.find(l => l.includes('محكمة')) || '',
+            category: mapCategory(text),
+            nextHearing: dateMatch?.[0] || '',
+            stage: 'litigation',
+            isNajizSync: true,
+            source: 'screen_card',
+            rawText: text.substring(0, 500)
+          });
+        });
+      } catch(e) {}
+    });
+
+    // ثالثاً: Fallback من النص الكامل المرئي
+    if (cases.length === 0) {
+      const visibleText = getVisibleText();
+      const allNums = [...new Set(
+        visibleText.match(/\\d{4}\\/\\d{1,2}\\/\\d+|\\d{4}\\/\\d{4,}/g) || []
+      )];
+
+      allNums.forEach(num => {
+        if (!seen.has(num)) {
+          seen.add(num);
+          // البحث عن سياق الرقم
+          const idx = visibleText.indexOf(num);
+          const context = visibleText.substring(
+            Math.max(0, idx - 300),
+            Math.min(visibleText.length, idx + 400)
+          );
+          cases.push({
+            caseNumber: num,
+            najizCaseNumber: num,
+            caseName: 'قضية من ناجز',
+            status: context.includes('منتهي') ? 'منتهي' : 'قيد النظر',
+            court: (context.match(/محكمة[^\\n،,]{2,30}/)?.[0] || ''),
+            category: mapCategory(context),
+            nextHearing: context.match(/\\d{1,2}[\\/\\-]\\d{1,2}[\\/\\-]\\d{4}/)?.[0] || '',
+            isNajizSync: true,
+            source: 'screen_text_fallback'
+          });
+        }
+      });
+    }
+
+    return cases;
+  }
+
+  // =============================================
+  // استخراج مواعيد الجلسات
+  // =============================================
+  function extractHearingsFromScreen() {
+    const hearings = [];
+    const seen = new Set();
+
+    document.querySelectorAll('table, [class*="card" i], [class*="item" i], [role="row"]')
+      .forEach(el => {
+        if (!el.offsetParent) return;
+        const text = el.innerText?.trim() || '';
+        if (text.length < 10) return;
+
+        const dateMatch = text.match(
+          /\\d{1,2}[\\/\\-]\\d{1,2}[\\/\\-]\\d{4}|\\d{4}[\\/\\-]\\d{1,2}[\\/\\-]\\d{1,2}/
+        );
+        const timeMatch = text.match(/\\d{1,2}:\\d{2}/);
+        const caseNum = text.match(/\\d{4}\\/\\d+|\\d{9,}/)?.[0];
+
+        if (!dateMatch) return;
+        const key = \`\${caseNum}-\${dateMatch[0]}\`;
+        if (seen.has(key)) return;
+        seen.add(key);
+
+        // استخراج من جدول
+        if (el.tagName === 'TABLE') {
+          const rows = el.querySelectorAll('tbody tr, tr:not(:first-child)');
+          rows.forEach(row => {
+            const cells = Array.from(row.querySelectorAll('td'))
+              .map(td => td.innerText?.trim() || '');
+            const rText = cells.join(' ');
+            const rDate = rText.match(/\\d{1,2}[\\/\\-]\\d{1,2}[\\/\\-]\\d{4}/);
+            const rTime = rText.match(/\\d{1,2}:\\d{2}/);
+            const rCase = rText.match(/\\d{4}\\/\\d+|\\d{9,}/)?.[0];
+            const rKey = \`\${rCase}-\${rDate?.[0]}\`;
+            if (rDate && !seen.has(rKey)) {
+              seen.add(rKey);
+              hearings.push({
+                caseNumber: rCase || '',
+                date: rDate[0],
+                time: rTime?.[0] || '09:00',
+                court: cells.find(c => c.includes('محكمة')) || '',
+                hall: cells.find(c =>
+                  c.includes('قاعة') || c.includes('دائرة')
+                ) || '',
+                status: cells.find(c =>
+                  ['قادمة','منتهية','مؤجلة','ملغاة'].some(k => c.includes(k))
+                ) || 'قادمة',
+                isNajizSync: true,
+                source: 'screen_table'
+              });
+            }
+          });
+          return;
+        }
+
+        hearings.push({
+          caseNumber: caseNum || '',
+          date: dateMatch[0],
+          time: timeMatch?.[0] || '09:00',
+          court: text.match(/محكمة[^\\n،,]{2,30}/)?.[0] || '',
+          hall: text.match(/(?:قاعة|دائرة)[^\\n،,]{1,20}/)?.[0] || '',
+          status: text.includes('مؤجل') ? 'مؤجلة' :
+                  text.includes('منتهي') ? 'منتهية' : 'قادمة',
+          isNajizSync: true,
+          source: 'screen_card'
+        });
+      });
+
+    return hearings;
+  }
+
+  // =============================================
+  // استخراج الوكالات
+  // =============================================
+  function extractPOAFromScreen() {
+    const poas = [];
+    const seen = new Set();
+    const visibleText = getVisibleText();
+
+    // من الجداول
+    document.querySelectorAll('table').forEach(table => {
+      if (!table.offsetParent) return;
+      table.querySelectorAll('tbody tr, tr:not(:first-child)').forEach(row => {
+        const cells = Array.from(row.querySelectorAll('td'))
+          .map(td => td.innerText?.trim() || '');
+        if (cells.length < 2) return;
+        const rowText = cells.join(' ');
+        const num = rowText.match(/\\d{6,}/)?.[0];
+        if (!num || seen.has(num)) return;
+        seen.add(num);
+
+        const dates = rowText.match(/\\d{1,2}[\\/\\-]\\d{1,2}[\\/\\-]\\d{4}/g);
+        poas.push({
+          poaNumber: num,
+          type: cells.find(c =>
+            ['عامة','خاصة','قضائية','عام','خاص'].some(k => c.includes(k))
+          ) || 'عامة',
+          status: cells.find(c =>
+            ['سارية','منتهية','موقوفة','فعال'].some(k => c.includes(k))
+          ) || 'سارية',
+          issueDate: dates?.[0] || '',
+          expiryDate: dates?.[1] || dates?.[0] || '',
+          principalName: cells.find(c =>
+            c.length > 3 &&
+            !/^\\d+$/.test(c) &&
+            !['سارية','منتهية','عامة','خاصة'].some(k => c === k)
+          ) || '',
+          isNajizSync: true,
+          source: 'screen_table'
+        });
+      });
+    });
+
+    // Fallback من النص
+    if (poas.length === 0) {
+      const nums = [...new Set(visibleText.match(/\\b\\d{7,12}\\b/g) || [])];
+      nums.slice(0, 20).forEach(num => {
+        if (!seen.has(num)) {
+          seen.add(num);
+          poas.push({
+            poaNumber: num,
+            type: 'عامة',
+            status: 'سارية',
+            isNajizSync: true,
+            source: 'screen_text'
+          });
+        }
+      });
+    }
+
+    return poas;
+  }
+
+  // =============================================
+  // استخراج طلبات التنفيذ
+  // =============================================
+  function extractExecutionsFromScreen() {
+    const executions = [];
+    const seen = new Set();
+
+    document.querySelectorAll('table').forEach(table => {
+      if (!table.offsetParent) return;
+      table.querySelectorAll('tbody tr, tr:not(:first-child)').forEach(row => {
+        const cells = Array.from(row.querySelectorAll('td'))
+          .map(td => td.innerText?.trim() || '');
+        if (cells.length < 2) return;
+        const rowText = cells.join(' ');
+        const num = rowText.match(/\\d{4}\\/\\d+|\\d{9,}/)?.[0];
+        if (!num || seen.has(num)) return;
+        seen.add(num);
+
+        const dateMatch = rowText.match(/\\d{1,2}[\\/\\-]\\d{1,2}[\\/\\-]\\d{4}/);
+        const amountMatch = rowText.match(/([\\d,]+(?:\\.\\d+)?)\\s*(?:ريال|ر\\.س|SAR)/);
+
+        executions.push({
+          executionNumber: num,
+          status: cells.find(c =>
+            ['منتهي','قيد','جديد','مكتمل','معلق','نشط']
+              .some(k => c.includes(k))
+          ) || 'قيد التنفيذ',
+          amount: amountMatch?.[1]?.replace(/,/g, '') || '0',
+          court: cells.find(c => c.includes('محكمة')) || '',
+          requesterName: cells.find(c =>
+            c.length > 3 &&
+            !/^\\d+$/.test(c) &&
+            !c.includes('محكمة') &&
+            !c.includes('ريال')
+          ) || '',
+          issueDate: dateMatch?.[0] || '',
+          isNajizSync: true,
+          source: 'screen_table'
+        });
+      });
+    });
+
+    // من البطاقات
+    document.querySelectorAll('[class*="card" i], [class*="item" i], [role="listitem"]')
+      .forEach(el => {
+        if (!el.offsetParent) return;
+        const text = el.innerText?.trim() || '';
+        if (!text.includes('تنفيذ') && !text.includes('execution')) return;
+        const num = text.match(/\\d{4}\\/\\d+|\\d{9,}/)?.[0];
+        if (!num || seen.has(num)) return;
+        seen.add(num);
+        executions.push({
+          executionNumber: num,
+          status: text.includes('منتهي') ? 'منتهي' : 'قيد التنفيذ',
+          amount: text.match(/([\\d,]+)\\s*ريال/)?.[1] || '0',
+          isNajizSync: true,
+          source: 'screen_card'
+        });
+      });
+
+    return executions;
+  }
+
+  // =============================================
+  // دوال مساعدة
+  // =============================================
+  function mapCategory(text) {
+    if (!text) return 'civil';
+    const t = text.toString();
+    if (t.includes('تجاري')) return 'commercial';
+    if (t.includes('عمالي') || t.includes('عمل')) return 'labor';
+    if (t.includes('جزائي') || t.includes('جنائي')) return 'criminal';
+    if (t.includes('أحوال') || t.includes('أسرة')) return 'personal_status';
+    if (t.includes('إداري') || t.includes('مظالم')) return 'administrative';
+    if (t.includes('تنفيذ')) return 'execution';
+    return 'civil';
+  }
+
+  // =============================================
+  // الدالة الرئيسية للسحب
+  // =============================================
+  async function extractFromCurrentPage() {
+    const pageType = getPageType();
+
+    // انتظر ظهور البيانات
+    await waitForVisibleContent(15000);
+
+    // انتظر إضافي
+    await new Promise(r => setTimeout(r, 2000));
+
+    const result = {
+      pageType,
+      pageUrl: window.location.href,
+      pageTitle: document.title,
+      cases: [],
+      hearings: [],
+      powers_of_attorney: [],
+      executions: [],
+      scrapedAt: new Date().toISOString()
+    };
+
+    switch (pageType) {
+      case 'cases':
+        result.cases = extractCasesFromScreen();
+        // صفحة القضايا قد تحتوي على جلسات أيضاً
+        const hearings = extractHearingsFromScreen();
+        if (hearings.length > 0) result.hearings = hearings;
+        break;
+      case 'hearings':
+        result.hearings = extractHearingsFromScreen();
+        break;
+      case 'poa':
+        result.powers_of_attorney = extractPOAFromScreen();
+        break;
+      case 'executions':
+        result.executions = extractExecutionsFromScreen();
+        break;
+      default:
+        // سحب شامل
+        result.cases = extractCasesFromScreen();
+        result.hearings = extractHearingsFromScreen();
+        result.powers_of_attorney = extractPOAFromScreen();
+        result.executions = extractExecutionsFromScreen();
+    }
+
+    const totalFound =
+      result.cases.length +
+      result.hearings.length +
+      result.powers_of_attorney.length +
+      result.executions.length;
+
+    result.summary = {
+      pageType,
+      totalCases: result.cases.length,
+      totalHearings: result.hearings.length,
+      totalPOAs: result.powers_of_attorney.length,
+      totalExecutions: result.executions.length,
+      totalFound,
+      hasData: totalFound > 0
+    };
+
+    return result;
+  }
+
+  // =============================================
+  // إرسال للخادم
+  // =============================================
+  async function syncToServer(data) {
+    try {
+      const response = await fetch(\`\${SERVER}/api/najiz-sync\`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          scrapedData: data,
+          pageType: data.pageType,
+          source: 'najiz_screen_reader_v7',
+          timestamp: new Date().toISOString()
+        })
+      });
+
+      if (!response.ok) {
+        const err = await response.text();
+        throw new Error(\`HTTP \${response.status}: \${err}\`);
+      }
+
+      const result = await response.json();
+      console.log('[العدالة] ✅ Sync:', result);
+      return result;
+
+    } catch (err) {
+      console.error('[العدالة] Sync Error:', err.message);
+      return { success: false, error: err.message };
+    }
+  }
+
+  // =============================================
+  // Listener للأوامر
   // =============================================
   chrome.runtime.onMessage.addListener((req, sender, sendResponse) => {
+
     if (['extractData','scrape','getData','sync'].includes(req.action)) {
       (async () => {
         try {
-          const data = await extractAll();
+          const pageType = getPageType();
 
-          if (data.summary.hasData) {
-            const syncResult = await syncToServer(data);
+          if (pageType === 'unknown') {
             sendResponse({
-              success: true,
-              data,
-              syncResult,
-              message: `تم سحب ${data.summary.totalFound} سجل عبر ${data.summary.method}`
+              success: false,
+              message: 'هذه الصفحة غير مدعومة. اذهب لإحدى الصفحات المحددة في ناجز'
             });
-          } else {
-            // محاولة إضافية — انتظر 5 ثوانٍ
+            return;
+          }
+
+          const data = await extractFromCurrentPage();
+
+          if (!data.summary.hasData) {
+            // إعادة المحاولة بعد 5 ثوانٍ
             await new Promise(r => setTimeout(r, 5000));
-            const retryData = await extractAll();
-            if (retryData.summary.hasData) {
-              const syncResult = await syncToServer(retryData);
-              sendResponse({ success: true, data: retryData, syncResult });
-            } else {
+            const retryData = await extractFromCurrentPage();
+
+            if (!retryData.summary.hasData) {
               sendResponse({
                 success: false,
                 data: retryData,
-                message: 'لم تُوجد بيانات — تأكد أن الصفحة محملة بالكامل'
+                message: 'لم تُوجد بيانات مرئية. تأكد أن الصفحة محملة بالكامل ثم أعد المحاولة'
               });
+              return;
             }
+
+            const syncResult = await syncToServer(retryData);
+            sendResponse({ success: true, data: retryData, syncResult });
+            return;
           }
-        } catch(err) {
+
+          const syncResult = await syncToServer(data);
+          sendResponse({
+            success: true,
+            data,
+            syncResult,
+            message: \`تم سحب \${data.summary.totalFound} سجل من الشاشة\`
+          });
+
+        } catch (err) {
           sendResponse({ success: false, error: err.message });
         }
       })();
-      return true;
-    }
-
-    if (req.action === 'getInterceptedData') {
-      sendResponse({
-        success: true,
-        data: interceptedData,
-        total: interceptedData.cases.length +
-               interceptedData.hearings.length +
-               interceptedData.poa.length +
-               interceptedData.executions.length
-      });
       return true;
     }
 
@@ -575,228 +653,205 @@
       sendResponse({
         success: true,
         url: window.location.href,
-        pageType: detectPageType(),
-        intercepted: {
-          cases: interceptedData.cases.length,
-          hearings: interceptedData.hearings.length,
-          poa: interceptedData.poa.length,
-          executions: interceptedData.executions.length
-        }
+        pageType: getPageType(),
+        isNajiz: window.location.href.includes('najiz.sa'),
+        title: document.title
+      });
+      return true;
+    }
+
+    if (req.action === 'getPageInfo') {
+      const pt = getPageType();
+      const body = document.body?.innerText || '';
+      sendResponse({
+        pageType: pt,
+        isSupported: pt !== 'unknown',
+        hasNumbers: /\\d{4}\\/\\d+|\\d{9,}/.test(body),
+        tableCount: document.querySelectorAll('table').length,
+        visibleRows: document.querySelectorAll('table tr:not(:first-child)').length,
+        cardCount: document.querySelectorAll('[class*="card" i], [class*="item" i]').length,
+        bodyLength: body.length,
+        title: document.title
       });
       return true;
     }
   });
 
   // =============================================
-  // الخطوة 11: واجهة المربع العائم
+  // المربع العائم على الشاشة
   // =============================================
   function createWidget() {
-    if (document.getElementById('adala-widget-v6')) return;
+    if (document.getElementById('adala-v7')) return;
+    if (!window.location.href.includes('najiz.sa')) return;
 
-    const style = document.createElement('style');
-    style.textContent = `
-      #adala-widget-v6 {
-        position: fixed; bottom: 20px; left: 20px;
-        z-index: 2147483647; font-family: Arial, sans-serif;
-        direction: rtl;
-      }
-      #adala-fab {
-        width: 56px; height: 56px; border-radius: 50%;
-        background: linear-gradient(135deg, #f59e0b, #d97706);
-        border: 3px solid rgba(255,255,255,0.2);
-        cursor: pointer; display: flex; align-items: center;
-        justify-content: center; font-size: 24px;
-        box-shadow: 0 4px 24px rgba(245,158,11,0.5);
-        transition: all 0.3s; position: relative;
-      }
-      #adala-fab:hover { transform: scale(1.1); }
-      #adala-counter {
-        position: absolute; top: -4px; right: -4px;
-        background: #22c55e; color: white; font-size: 10px;
-        font-weight: bold; border-radius: 50%;
-        width: 18px; height: 18px; display: none;
-        align-items: center; justify-content: center;
-        border: 2px solid white;
-      }
-      #adala-panel {
-        display: none; position: absolute; bottom: 68px;
-        left: 0; width: 300px; background: #050e21;
-        border: 1px solid #1e3a5f; border-radius: 16px;
-        overflow: hidden; box-shadow: 0 8px 32px rgba(0,0,0,0.7);
-      }
-      #adala-panel.open { display: block; }
-      .adala-header {
-        background: linear-gradient(135deg, #0a1628, #1e3a5f);
-        padding: 12px 16px; border-bottom: 1px solid #1e3a5f;
-      }
-      .adala-title { color: #f59e0b; font-weight: bold; font-size: 14px; }
-      .adala-sub { color: #64748b; font-size: 10px; margin-top: 2px; }
-      .adala-status {
-        padding: 8px 16px; background: #0a1628;
-        border-bottom: 1px solid #1e3a5f;
-        font-size: 11px; color: #94a3b8; text-align: center;
-        min-height: 34px; display: flex; align-items: center;
-        justify-content: center;
-      }
-      .adala-live {
-        padding: 8px 16px; background: #0f172a;
-        border-bottom: 1px solid #1e3a5f; font-size: 11px;
-      }
-      .adala-live-title { color: #64748b; margin-bottom: 4px; font-size: 10px; }
-      .adala-live-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
-      .adala-live-item {
-        background: #1e3a5f; border-radius: 6px; padding: 4px 8px;
-        color: white; font-size: 11px; text-align: center;
-      }
-      .adala-live-num { color: #f59e0b; font-weight: bold; font-size: 16px; }
-      .adala-btns { padding: 12px; display: flex; flex-direction: column; gap: 6px; }
-      .adala-btn {
-        width: 100%; padding: 10px 14px; border: none;
-        border-radius: 10px; cursor: pointer; font-size: 12px;
-        font-weight: bold; text-align: right; transition: all 0.2s;
-        display: flex; align-items: center; gap: 8px;
-      }
-      .adala-btn-primary {
-        background: linear-gradient(135deg, #f59e0b, #d97706);
-        color: #000;
-      }
-      .adala-btn-primary:hover { opacity: 0.9; transform: translateX(-2px); }
-      .adala-btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
-      .adala-links { padding: 0 12px 12px; display: flex; flex-direction: column; gap: 4px; }
-      .adala-link {
-        display: flex; align-items: center; gap-6px; padding: 6px 10px;
-        background: #0a1628; border: 1px solid #1e3a5f;
-        border-radius: 8px; color: #94a3b8; font-size: 11px;
-        text-decoration: none; transition: all 0.2s;
-      }
-      .adala-link:hover { border-color: #f59e0b; color: #f59e0b; }
-      .adala-link.active { border-color: #f59e0b; color: #f59e0b; background: #1e3a5f; }
-      .adala-progress {
-        display: none; padding: 6px 16px; font-size: 11px;
-        color: #f59e0b; text-align: center; border-top: 1px solid #1e3a5f;
-        animation: pulse 1.5s infinite;
-      }
-      .adala-progress.show { display: block; }
-      @keyframes pulse { 0%,100%{opacity:1}50%{opacity:0.4} }
-      .adala-footer {
-        padding: 6px 16px; border-top: 1px solid #0f172a;
-        background: #0a1628; font-size: 9px; color: #1e3a5f;
-        text-align: center;
-      }
-    `;
-    document.head.appendChild(style);
+    const pageType = getPageType();
+    const pageInfo = {
+      cases: { label: 'القضايا', section: 'إدارة القضايا', color: '#f59e0b' },
+      hearings: { label: 'الجلسات', section: 'مواعيد الجلسات', color: '#3b82f6' },
+      poa: { label: 'الوكالات', section: 'قسم الوكالات', color: '#8b5cf6' },
+      executions: { label: 'التنفيذ', section: 'طلبات التنفيذ', color: '#10b981' },
+      unknown: { label: 'غير محدد', section: '—', color: '#64748b' }
+    }[pageType] || { label: 'غير محدد', section: '—', color: '#64748b' };
 
     const widget = document.createElement('div');
-    widget.id = 'adala-widget-v6';
+    widget.id = 'adala-v7';
+    widget.style.cssText = \`
+      position: fixed; bottom: 20px; left: 20px; z-index: 2147483647;
+      font-family: Arial, sans-serif; direction: rtl;
+    \`;
 
-    const PAGES = [
-      { label: '📁 قضاياي', path: '/applications/lawsuit', type: 'cases' },
-      { label: '📅 جلساتي', path: '/applications/appointment-requests/', type: 'hearings' },
-      { label: '📜 وكالاتي', path: '/applications/wekalat/procurations-query', type: 'poa' },
-      { label: '⚡ تنفيذي', path: '/applications/iexecution', type: 'executions' }
-    ];
+    widget.innerHTML = \`
+      <style>
+        #adala-v7-fab {
+          width: 56px; height: 56px; border-radius: 50%;
+          background: linear-gradient(135deg, #f59e0b, #d97706);
+          border: 2px solid rgba(255,255,255,0.3);
+          cursor: pointer; display: flex; align-items: center;
+          justify-content: center; font-size: 22px;
+          box-shadow: 0 4px 20px rgba(245,158,11,0.5);
+          transition: all 0.3s; user-select: none;
+        }
+        #adala-v7-fab:hover { transform: scale(1.08); }
+        #adala-v7-panel {
+          display: none; position: absolute; bottom: 68px; left: 0;
+          width: 290px; background: #050e21;
+          border: 1px solid #1e3a5f; border-radius: 16px;
+          overflow: hidden; box-shadow: 0 8px 32px rgba(0,0,0,0.7);
+        }
+        #adala-v7-panel.open { display: block; }
+        .av7-header {
+          background: #0a1628; padding: 12px 14px;
+          border-bottom: 1px solid #1e3a5f;
+        }
+        .av7-title { color: #f59e0b; font-weight: bold; font-size: 14px; }
+        .av7-sub { color: #475569; font-size: 10px; margin-top: 2px; }
+        .av7-page {
+          padding: 10px 14px; border-bottom: 1px solid #1e3a5f;
+          background: #0f172a;
+        }
+        .av7-page-label { color: #64748b; font-size: 10px; margin-bottom: 4px; }
+        .av7-page-type {
+          font-size: 12px; font-weight: bold; color: \${pageInfo.color};
+        }
+        .av7-page-section { color: #94a3b8; font-size: 10px; margin-top: 2px; }
+        .av7-status {
+          padding: 8px 14px; font-size: 11px; color: #94a3b8;
+          text-align: center; border-bottom: 1px solid #1e3a5f;
+          min-height: 32px; display: flex; align-items: center;
+          justify-content: center;
+        }
+        .av7-btn {
+          display: block; width: calc(100% - 24px); margin: 10px 12px;
+          padding: 11px; background: #f59e0b; color: #000;
+          border: none; border-radius: 10px; cursor: pointer;
+          font-size: 13px; font-weight: bold; transition: opacity 0.2s;
+        }
+        .av7-btn:hover:not(:disabled) { opacity: 0.9; }
+        .av7-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .av7-progress {
+          display: none; padding: 4px 14px; text-align: center;
+          font-size: 10px; color: #f59e0b;
+          animation: pulse 1.5s infinite;
+        }
+        .av7-progress.show { display: block; }
+        .av7-links { padding: 6px 12px 10px; }
+        .av7-link {
+          display: flex; align-items: center; justify-content: space-between;
+          padding: 5px 8px; border-radius: 7px; font-size: 10px;
+          color: #64748b; text-decoration: none; margin-bottom: 2px;
+          border: 1px solid transparent; transition: all 0.2s;
+        }
+        .av7-link:hover { background: #0a1628; color: #94a3b8; }
+        .av7-link.active {
+          background: #1e3a5f; color: #f59e0b;
+          border-color: #f59e0b44;
+        }
+        .av7-result {
+          margin: 0 12px 10px; padding: 8px 10px;
+          background: #0a1628; border-radius: 8px;
+          border: 1px solid #1e3a5f; font-size: 11px;
+          color: #94a3b8; line-height: 1.7; display: none;
+        }
+        .av7-result.show { display: block; }
+        @keyframes pulse { 0%,100%{opacity:1}50%{opacity:0.4} }
+      </style>
 
-    const currentPath = window.location.pathname;
-
-    widget.innerHTML = `
-      <div id="adala-panel">
-        <div class="adala-header">
-          <div class="adala-title">⚖️ منصة العدالة</div>
-          <div class="adala-sub">مزامنة ناجز v6.0 — Network Interception</div>
+      <div id="adala-v7-panel">
+        <div class="av7-header">
+          <div class="av7-title">⚖️ منصة العدالة</div>
+          <div class="av7-sub">سحب البيانات المرئية v7.0</div>
         </div>
 
-        <div class="adala-status" id="adala-status">
-          جارٍ مراقبة طلبات الشبكة...
-        </div>
-
-        <div class="adala-live">
-          <div class="adala-live-title">📡 بيانات معترضة من الشبكة:</div>
-          <div class="adala-live-grid">
-            <div class="adala-live-item">
-              <div class="adala-live-num" id="live-cases">0</div>
-              <div>قضية</div>
-            </div>
-            <div class="adala-live-item">
-              <div class="adala-live-num" id="live-hearings">0</div>
-              <div>جلسة</div>
-            </div>
-            <div class="adala-live-item">
-              <div class="adala-live-num" id="live-poa">0</div>
-              <div>وكالة</div>
-            </div>
-            <div class="adala-live-item">
-              <div class="adala-live-num" id="live-exec">0</div>
-              <div>تنفيذ</div>
-            </div>
+        <div class="av7-page">
+          <div class="av7-page-label">📍 الصفحة الحالية:</div>
+          <div class="av7-page-type">
+            \${pageType === 'unknown' ? '⚠️ صفحة غير مدعومة' : '✅ ' + pageInfo.label}
           </div>
+          \${pageType !== 'unknown'
+            ? \`<div class="av7-page-section">→ ستُضاف في: \${pageInfo.section}</div>\`
+            : '<div class="av7-page-section">اذهب لإحدى الصفحات أدناه</div>'
+          }
         </div>
 
-        <div class="adala-btns">
-          <button class="adala-btn adala-btn-primary" id="adala-sync-btn">
-            📥 مزامنة البيانات مع النظام
-          </button>
+        <div class="av7-status" id="av7-status">
+          \${pageType === 'unknown'
+            ? 'اختر صفحة من القائمة أدناه'
+            : 'جاهز — اضغط سحب البيانات'}
         </div>
 
-        <div class="adala-progress" id="adala-progress">
-          🔄 جارٍ المعالجة...
+        <button class="av7-btn" id="av7-sync"
+          \${pageType === 'unknown' ? 'disabled' : ''}>
+          📥 سحب البيانات من الشاشة
+        </button>
+
+        <div class="av7-progress" id="av7-progress">
+          🔄 جارٍ قراءة البيانات المرئية...
         </div>
 
-        <div class="adala-links">
-          ${PAGES.map(p => `
-            <a href="https://najiz.sa${p.path}" target="_blank"
-              class="adala-link ${currentPath.includes(p.path.slice(0,-1)) ? 'active' : ''}">
-              ${p.label}
+        <div class="av7-result" id="av7-result"></div>
+
+        <div class="av7-links">
+          \${[
+            { label: '📁 قضاياي', path: '/applications/lawsuit', type: 'cases' },
+            { label: '📅 جلساتي', path: '/applications/appointment-requests/', type: 'hearings' },
+            { label: '📜 وكالاتي', path: '/applications/wekalat/procurations-query', type: 'poa' },
+            { label: '⚡ تنفيذي', path: '/applications/iexecution', type: 'executions' }
+          ].map(p => \`
+            <a href="https://najiz.sa\${p.path}" target="_blank"
+              class="av7-link \${window.location.pathname.includes(p.path.replace(/\\/$/, '')) ? 'active' : ''}">
+              <span>\${p.label}</span>
+              <span style="color:#1e3a5f">←</span>
             </a>
-          `).join('')}
-        </div>
-
-        <div class="adala-footer">
-          منصة العدالة لإدارة مكاتب المحاماة
+          \`).join('')}
         </div>
       </div>
 
-      <div id="adala-fab" title="منصة العدالة — مزامنة ناجز">
-        ⚖️
-        <div id="adala-counter"></div>
-      </div>
-    `;
+      <div id="adala-v7-fab">⚖️</div>
+    \`;
 
     document.body.appendChild(widget);
 
-    const fab = document.getElementById('adala-fab');
-    const panel = document.getElementById('adala-panel');
-    const status = document.getElementById('adala-status');
-    const progress = document.getElementById('adala-progress');
-    const syncBtn = document.getElementById('adala-sync-btn');
-    const counter = document.getElementById('adala-counter');
+    const fab = document.getElementById('adala-v7-fab');
+    const panel = document.getElementById('adala-v7-panel');
+    const statusEl = document.getElementById('av7-status');
+    const progressEl = document.getElementById('av7-progress');
+    const resultEl = document.getElementById('av7-result');
+    const syncBtn = document.getElementById('av7-sync');
 
     let isOpen = false;
 
-    // تحديث العداد
-    window.addEventListener('adala_data_update', (e) => {
-      const d = e.detail;
-      const total = d.cases + d.hearings + d.poa + d.executions;
-      document.getElementById('live-cases').textContent = d.cases;
-      document.getElementById('live-hearings').textContent = d.hearings;
-      document.getElementById('live-poa').textContent = d.poa;
-      document.getElementById('live-exec').textContent = d.executions;
-      if (total > 0 && counter) {
-        counter.textContent = total;
-        counter.style.display = 'flex';
-        status.textContent = `✅ تم اعتراض ${total} سجل — جاهز للمزامنة`;
-        status.style.color = '#22c55e';
-      }
-    });
+    const setStatus = (msg, color = '#94a3b8') => {
+      statusEl.textContent = msg;
+      statusEl.style.color = color;
+    };
 
-    // فتح/إغلاق
     fab.onclick = () => {
       isOpen = !isOpen;
       panel.classList.toggle('open', isOpen);
       fab.textContent = isOpen ? '✕' : '⚖️';
-      if (counter) counter.style.display = counter.textContent ? 'flex' : 'none';
     };
 
-    document.addEventListener('click', (e) => {
+    document.addEventListener('click', e => {
       if (isOpen && !widget.contains(e.target)) {
         isOpen = false;
         panel.classList.remove('open');
@@ -804,66 +859,107 @@
       }
     });
 
-    // زر المزامنة
     syncBtn.onclick = async () => {
       syncBtn.disabled = true;
-      progress.className = 'adala-progress show';
-      progress.textContent = '⏳ جارٍ السحب والمزامنة...';
+      progressEl.className = 'av7-progress show';
+      progressEl.textContent = '⏳ انتظر تحميل البيانات...';
+      resultEl.className = 'av7-result';
+      setStatus('⏳ جارٍ القراءة...', '#f59e0b');
 
       try {
-        const data = await extractAll();
+        progressEl.textContent = '🔍 يقرأ البيانات المرئية على الشاشة...';
+        const data = await extractFromCurrentPage();
 
-        if (data.summary.hasData) {
-          progress.textContent = '📡 جارٍ الإرسال للخادم...';
-          const syncResult = await syncToServer(data);
+        if (!data.summary.hasData) {
+          // انتظر وأعد
+          progressEl.textContent = '⏳ انتظر 5 ثوانٍ وإعادة المحاولة...';
+          await new Promise(r => setTimeout(r, 5000));
+          const retry = await extractFromCurrentPage();
 
-          const synced = syncResult?.totalSynced || 0;
-          const total = data.summary.totalFound;
+          if (!retry.summary.hasData) {
+            progressEl.className = 'av7-progress';
+            setStatus('⚠️ لم تُوجد بيانات', '#f59e0b');
+            resultEl.innerHTML = \`
+              <div style="color:#f59e0b;font-weight:bold;margin-bottom:6px">
+                ⚠️ لم تُوجد بيانات مرئية
+              </div>
+              <div style="color:#64748b;font-size:10px">
+                تأكد أن البيانات تظهر على الشاشة كاملاً ثم اضغط سحب مرة أخرى
+              </div>
+            \`;
+            resultEl.className = 'av7-result show';
+            syncBtn.disabled = false;
+            return;
+          }
 
-          status.textContent = synced > 0
-            ? `✅ تمت المزامنة: ${synced} سجل جديد في النظام`
-            : `⚠️ ${total} سجل موجود مسبقاً`;
-          status.style.color = synced > 0 ? '#22c55e' : '#f59e0b';
-
-          fab.textContent = '✅';
-          fab.style.background = 'linear-gradient(135deg, #22c55e, #16a34a)';
-          setTimeout(() => {
-            fab.textContent = '⚖️';
-            fab.style.background = 'linear-gradient(135deg, #f59e0b, #d97706)';
-          }, 5000);
-        } else {
-          status.textContent = '⚠️ لم تُوجد بيانات — افتح صفحة قضاياي أولاً';
-          status.style.color = '#f59e0b';
+          Object.assign(data, retry);
         }
-      } catch(err) {
-        status.textContent = '❌ خطأ: ' + err.message;
-        status.style.color = '#ef4444';
+
+        progressEl.textContent = '📡 جارٍ المزامنة مع النظام...';
+        const syncResult = await syncToServer(data);
+        const synced = syncResult?.totalSynced || 0;
+        const total = data.summary.totalFound;
+
+        progressEl.className = 'av7-progress';
+
+        setStatus(
+          synced > 0
+            ? \`✅ تمت المزامنة: \${synced} سجل جديد\`
+            : \`✅ \${total} سجل (موجود مسبقاً)\`,
+          synced > 0 ? '#22c55e' : '#f59e0b'
+        );
+
+        fab.textContent = '✅';
+        fab.style.background = 'linear-gradient(135deg, #22c55e, #16a34a)';
+        setTimeout(() => {
+          fab.textContent = '⚖️';
+          fab.style.background = 'linear-gradient(135deg, #f59e0b, #d97706)';
+        }, 5000);
+
+        resultEl.innerHTML = \`
+          <div style="color:#22c55e;font-weight:bold;margin-bottom:8px">
+            ✅ تمت المزامنة
+          </div>
+          \${data.summary.totalCases > 0
+            ? \`<div style="color:#fff;margin:2px 0">📁 القضايا: <strong>\${data.summary.totalCases}</strong> → إدارة القضايا</div>\` : ''}
+          \${data.summary.totalHearings > 0
+            ? \`<div style="color:#fff;margin:2px 0">📅 الجلسات: <strong>\${data.summary.totalHearings}</strong> → مواعيد الجلسات</div>\` : ''}
+          \${data.summary.totalPOAs > 0
+            ? \`<div style="color:#fff;margin:2px 0">📜 الوكالات: <strong>\${data.summary.totalPOAs}</strong> → قسم الوكالات</div>\` : ''}
+          \${data.summary.totalExecutions > 0
+            ? \`<div style="color:#fff;margin:2px 0">⚡ التنفيذ: <strong>\${data.summary.totalExecutions}</strong> → طلبات التنفيذ</div>\` : ''}
+          \${synced > 0
+            ? \`<div style="color:#22c55e;margin-top:6px;font-weight:bold">✅ \${synced} سجل جديد أُضيف للنظام</div>\`
+            : \`<div style="color:#f59e0b;margin-top:6px">البيانات كانت موجودة مسبقاً</div>\`}
+        \`;
+        resultEl.className = 'av7-result show';
+
+      } catch (err) {
+        progressEl.className = 'av7-progress';
+        setStatus('❌ ' + err.message, '#ef4444');
       } finally {
         syncBtn.disabled = false;
-        progress.className = 'adala-progress';
       }
     };
   }
 
   // التهيئة
-  const init = () => {
-    if (!window.location.href.includes('najiz.sa')) return;
-    setTimeout(createWidget, 1500);
-  };
+  if (document.readyState === 'complete') {
+    setTimeout(createWidget, 2000);
+  } else {
+    window.addEventListener('load', () => setTimeout(createWidget, 2000));
+  }
 
-  if (document.readyState === 'complete') init();
-  else window.addEventListener('load', init);
-
-  // مراقبة SPA navigation
+  // مراقبة SPA
   let lastUrl = location.href;
   new MutationObserver(() => {
     if (location.href !== lastUrl) {
       lastUrl = location.href;
-      document.getElementById('adala-widget-v6')?.remove();
-      setTimeout(createWidget, 2000);
+      document.getElementById('adala-v7')?.remove();
+      setTimeout(createWidget, 2500);
     }
   }).observe(document.body, { childList: true, subtree: true });
 
-  console.log('[العدالة v6.0] Network Interception Active ✅');
+  console.log('[العدالة v7.0] Screen Reader Active ✅ | Page:', getPageType());
 
 })();

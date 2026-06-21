@@ -39,62 +39,128 @@ createRoot(document.getElementById('root')!).render(
   </StrictMode>,
 );
 
-// تطبيق إصلاح التباين تلقائياً
-const fixAllContrast = () => {
-  const elements = document.querySelectorAll(
-    '[class*="bg-"]:not([class*="hover\\:bg-"])'
-  );
+// فحص وإصلاح التباين تلقائياً
+function fixDarkCardTextContrast() {
+  // الألوان الداكنة التي تحتاج نصوصاً فاتحة
+  const darkBgPatterns = [
+    '#050e21', '#0a1628', '#0c1a35', '#020813',
+    '#071224', '#060f22', '#111827', '#1f2937',
+    '#0f172a', '#1e293b'
+  ];
 
-  elements.forEach(el => {
-    const htmlEl = el as HTMLElement;
-    const classes = htmlEl.className || '';
-    const computed = window.getComputedStyle(htmlEl);
-    const bgColor = computed.backgroundColor;
+  // تحقق من luminance اللون
+  function getLuminance(r: number, g: number, b: number) {
+    return (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+  }
 
-    if (!bgColor || bgColor === 'transparent' ||
-        bgColor === 'rgba(0, 0, 0, 0)') return;
+  function parseColor(colorStr: string) {
+    if (!colorStr || colorStr === 'transparent' ||
+        colorStr === 'rgba(0, 0, 0, 0)') return null;
 
-    const rgb = bgColor.match(/\d+/g);
-    if (!rgb || rgb.length < 3) return;
+    const rgb = colorStr.match(/\d+/g);
+    if (!rgb || rgb.length < 3) return null;
 
-    const [r, g, b] = rgb.map(Number);
-    const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+    return {
+      r: parseInt(rgb[0]),
+      g: parseInt(rgb[1]),
+      b: parseInt(rgb[2])
+    };
+  }
 
-    // الحصول على جميع النصوص المباشرة
-    const textChildren = Array.from(
-      htmlEl.querySelectorAll(
-        'p, span, h1, h2, h3, h4, h5, label, td, th, li'
-      )
+  function isDarkBackground(element: Element) {
+    const style = window.getComputedStyle(element);
+    const bgColor = style.backgroundColor;
+    const color = parseColor(bgColor);
+    if (!color) return false;
+    return getLuminance(color.r, color.g, color.b) < 0.35;
+  }
+
+  function isTextElementDark(element: Element) {
+    const style = window.getComputedStyle(element);
+    const textColor = style.color;
+    const color = parseColor(textColor);
+    if (!color) return false;
+    return getLuminance(color.r, color.g, color.b) < 0.3;
+  }
+
+  function fixElement(el: Element) {
+    if (!isDarkBackground(el)) return;
+
+    // إصلاح النصوص المباشرة
+    const textElements = el.querySelectorAll(
+      'p, span, h1, h2, h3, h4, h5, h6, ' +
+      'label, td, th, li, div > text, small, ' +
+      '[class*="text-slate-7"], [class*="text-slate-8"], ' +
+      '[class*="text-slate-9"], [class*="text-gray-7"], ' +
+      '[class*="text-gray-8"], [class*="text-gray-9"], ' +
+      '[class*="text-black"]'
     );
 
-    textChildren.forEach(child => {
-      const childEl = child as HTMLElement;
-      const childClasses = childEl.className || '';
+    textElements.forEach(textEl => {
+      const htmlTextEl = textEl as HTMLElement;
+      // تجاهل العناصر ذات الخلفية الخاصة
+      const textBg = window.getComputedStyle(htmlTextEl).backgroundColor;
+      const textBgColor = parseColor(textBg);
+      if (textBgColor && getLuminance(
+        textBgColor.r, textBgColor.g, textBgColor.b
+      ) > 0.35) return;
 
-      // تجاهل العناصر التي لها لون محدد
-      if (childClasses.includes('text-')) return;
+      // تجاهل النصوص المضيئة بالفعل
+      if (!isTextElementDark(htmlTextEl)) return;
 
-      const childBg = window.getComputedStyle(childEl).backgroundColor;
-      if (childBg && childBg !== 'transparent' &&
-          childBg !== 'rgba(0, 0, 0, 0)') return;
+      // تجاهل الأزرار والروابط
+      if (htmlTextEl.tagName === 'BUTTON' ||
+          htmlTextEl.tagName === 'A' ||
+          htmlTextEl.closest('button') ||
+          htmlTextEl.closest('a')) return;
 
-      if (luminance < 0.4) {
-        childEl.style.color = '#e2e8f0';
-      } else if (luminance > 0.75) {
-        childEl.style.color = '#1e293b';
-      }
+      // تجاهل النصوص التي لها كلاس text- صريح
+      const classes = htmlTextEl.className || '';
+      const hasExplicitColor =
+        classes.includes('text-amber') ||
+        classes.includes('text-emerald') ||
+        classes.includes('text-blue') ||
+        classes.includes('text-red') ||
+        classes.includes('text-green') ||
+        classes.includes('text-purple') ||
+        classes.includes('text-indigo') ||
+        classes.includes('text-teal') ||
+        classes.includes('text-white') ||
+        classes.includes('text-slate-3') ||
+        classes.includes('text-slate-4') ||
+        classes.includes('text-slate-5') ||
+        classes.includes('text-slate-6');
+
+      if (hasExplicitColor) return;
+
+      // إصلاح اللون
+      htmlTextEl.style.color = '#e2e8f0';
     });
+  }
+
+  // تطبيق على جميع العناصر
+  document.querySelectorAll('*').forEach(el => {
+    try { fixElement(el); } catch(e) {}
   });
-};
+}
 
-// تشغيل عند كل تحديث
-const observer = new MutationObserver(() => {
-  setTimeout(fixAllContrast, 100);
+// تشغيل عند التحميل
+if (document.readyState === 'complete') {
+  setTimeout(fixDarkCardTextContrast, 500);
+} else {
+  window.addEventListener('load', () => {
+    setTimeout(fixDarkCardTextContrast, 500);
+  });
+}
+
+// تشغيل عند التغييرات
+const contrastObserver = new MutationObserver(() => {
+  clearTimeout((window as any)._contrastTimer);
+  (window as any)._contrastTimer = setTimeout(fixDarkCardTextContrast, 300);
 });
 
-observer.observe(document.body, {
+contrastObserver.observe(document.body, {
   childList: true,
-  subtree: true
+  subtree: true,
+  attributes: false
 });
-
-setTimeout(fixAllContrast, 500);

@@ -116,7 +116,7 @@ export default function AIAnalysisTool() {
                   className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-[10px] font-black transition-all ${
                     analysisType === t.id 
                       ? 'bg-slate-900 text-white shadow-md' 
-                      : 'text-slate-700'
+                      : 'text-slate-300'
                   }`}
                 >
                   {t.icon}

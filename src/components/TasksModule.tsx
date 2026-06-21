@@ -58,6 +58,8 @@ interface TasksModuleProps {
   cases: Case[];
   selectedRole: string;
   onUpdateState: (type: string, data: any) => void;
+  employeeRestrictedId?: string;
+  employeeRestrictedName?: string;
 }
 
 function CountdownTimer({ dueDate }: { dueDate?: string }) {
@@ -112,7 +114,9 @@ export default function TasksModule({
   tasks,
   cases,
   selectedRole,
-  onUpdateState
+  onUpdateState,
+  employeeRestrictedId,
+  employeeRestrictedName
 }: TasksModuleProps) {
   
   const [isAdding, setIsAdding] = useState(false);
@@ -550,6 +554,52 @@ export default function TasksModule({
     }
   }, [tasks]);
 
+  // دالة تحويل بيانات DB للـ Frontend
+  const mapDbTask = (dbTask: any) => ({
+    id: dbTask.id,
+    title: dbTask.title,
+    description: dbTask.description,
+    status: dbTask.status,
+    priority: dbTask.priority,
+    dueDate: dbTask.due_date,
+    employeeId: dbTask.employee_id,
+    assignedTo: dbTask.assigned_to,
+    caseId: dbTask.case_id,
+    caseNumber: dbTask.case_number,
+    createdAt: dbTask.created_at
+  });
+
+  // Realtime — مزامنة فورية مع بوابة الموظف
+  useEffect(() => {
+    const channel = supabase
+      .channel('all_tasks_changes')
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'tasks'
+      }, async (payload) => {
+        if (payload.eventType === 'UPDATE') {
+          setInternalTasks(prev => prev.map(t =>
+            t.id === payload.new.id
+              ? {
+                  ...t,
+                  status: payload.new.status,
+                  updated_at: payload.new.updated_at
+                }
+              : t
+          ));
+        } else if (payload.eventType === 'INSERT') {
+          const newTask = payload.new;
+          setInternalTasks(prev => [mapDbTask(newTask) as Task, ...prev]);
+        } else if (payload.eventType === 'DELETE') {
+          setInternalTasks(prev => prev.filter(t => t.id !== payload.old.id));
+        }
+      })
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
+  }, []);
+
   const [taskSizes, setTaskSizes] = useState<Record<string, 'small' | 'medium' | 'full'>>(() => {
     try {
       const saved = localStorage.getItem('tasks_sizes_config');
@@ -687,6 +737,13 @@ export default function TasksModule({
 
   // Real-time filtering engine
   const filteredTasks = internalTasks.filter(t => {
+    // If restricted to a specific employee, force filter (used inside Employee Portal)
+    if (employeeRestrictedName || employeeRestrictedId) {
+      const matchName = employeeRestrictedName && t.assignedTo && t.assignedTo.includes(employeeRestrictedName);
+      const matchId = employeeRestrictedId && t.employeeId === employeeRestrictedId;
+      if (!matchName && !matchId) return false;
+    }
+
     const matchPriority = filterPriority === 'all' || t.priority === filterPriority;
     const matchAssignee = filterAssignee === 'all' || t.assignedTo === filterAssignee;
     const matchCase = !filterCaseNumber || (t.caseNumber && t.caseNumber.includes(filterCaseNumber));
@@ -720,8 +777,8 @@ export default function TasksModule({
       due_date: `${taskDueDate}T${taskDueTime}`,
       case_id: selectedCase?.id || null,
       case_number: selectedCase?.case_number || taskCase || null,
-      employee_id: selectedEmp?.id || selectedEmployeeId || null,
-      assigned_to: selectedEmp?.name || selectedEmployeeName || null,
+      employee_id: employeeRestrictedId || selectedEmp?.id || selectedEmployeeId || null,
+      assigned_to: employeeRestrictedName || selectedEmp?.name || selectedEmployeeName || null,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
     };
@@ -815,7 +872,7 @@ export default function TasksModule({
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h1 className="text-2xl font-black text-amber-500 drop-shadow-[0_0_10px_rgba(245,158,11,0.5)] tracking-tight">المهام وتوزيع الأعمال</h1>
-          <p className="text-xs text-slate-700 mt-1 font-bold">
+          <p className="text-xs text-slate-300 mt-1 font-bold">
             متابعة إعداد مذكرات الرد، تجهيز الأسانيد، واجتماعات العملاء عبر منصة مسار التفاعلية للعملاء والمرافعين.
           </p>
         </div>
@@ -859,7 +916,7 @@ export default function TasksModule({
                     <button onclick="window.print();" style="background:#b8860b; color:white; border:none; padding:10px 20px; border-radius:8px; cursor:pointer; font-weight:bold;">طباعة التقرير الورقي 🖨️</button>
                   </div>
                   <div class="header">
-                    <h1 className="text-xl font-black text-slate-900">منصة العدالة</h1>
+                    <h1 className="text-xl font-black text-white">منصة العدالة</h1>
                     <p>سجل الواجبات والمهام التكليفية والقضائية لساحة العمل</p>
                   </div>
                   <div class="meta">
@@ -906,7 +963,7 @@ export default function TasksModule({
 
           <button 
             onClick={requestNotificationPermission}
-            className="bg-slate-100 text-slate-700 font-black py-2.5 px-5 rounded-2xl text-xs flex items-center gap-2 shadow-sm border border-slate-200 transition-all cursor-pointer"
+            className="bg-slate-100 text-slate-300 font-black py-2.5 px-5 rounded-2xl text-xs flex items-center gap-2 shadow-sm border border-slate-200 transition-all cursor-pointer"
             title="تفعيل إشعارات المتصفح"
           >
             <Bell className="w-4 h-4" />
@@ -930,7 +987,7 @@ export default function TasksModule({
               </div>
               <div className="text-right">
                 <h3 className="font-display font-black text-base text-slate-950">مقترح ترتيب وتصنيف خطورة المهام بالـ AI 🧠🤖</h3>
-                <p className="text-xs text-slate-700 mt-1">يقوم النظام بتحليل تواريخ المهل القضائية ومطابقة العائد الترافعي لتصنيف الأولويات بدقة نظامية.</p>
+                <p className="text-xs text-slate-300 mt-1">يقوم النظام بتحليل تواريخ المهل القضائية ومطابقة العائد الترافعي لتصنيف الأولويات بدقة نظامية.</p>
               </div>
             </div>
             
@@ -946,8 +1003,8 @@ export default function TasksModule({
             <div className="py-12 flex flex-col items-center justify-center text-center space-y-4">
               <div className="w-10 h-10 border-4 border-primary/25 border-t-primary rounded-full animate-spin"></div>
               <div className="space-y-1">
-                <p className="text-sm font-black text-slate-900">جاري الاستعلام ومطابقة المهل القضائية السعودية والمواعيد النافذة حالياً...</p>
-                <p className="text-xs text-slate-700">مراجعة نصوص مذكرات الرد والاعتراض وفلترة مواعيد التمحيص الإداري</p>
+                <p className="text-sm font-black text-white">جاري الاستعلام ومطابقة المهل القضائية السعودية والمواعيد النافذة حالياً...</p>
+                <p className="text-xs text-slate-300">مراجعة نصوص مذكرات الرد والاعتراض وفلترة مواعيد التمحيص الإداري</p>
               </div>
             </div>
           ) : aiAppliedSuccessfully ? (
@@ -962,7 +1019,7 @@ export default function TasksModule({
               <div className="overflow-x-auto rounded-2xl border border-slate-200 bg-white">
                 <table className="w-full text-right border-collapse">
                   <thead>
-                    <tr className="bg-slate-50 text-slate-700 text-[10px] font-black uppercase tracking-wider border-b border-slate-200">
+                    <tr className="bg-slate-50 text-slate-300 text-[10px] font-black uppercase tracking-wider border-b border-slate-200">
                       <th className="p-4">عنوان المهمة المجدولة</th>
                       <th className="p-4">الأولوية الأصلية</th>
                       <th className="p-4">الأولوية المقترحة بالـ AI</th>
@@ -970,7 +1027,7 @@ export default function TasksModule({
                       <th className="p-4">التوصية ومسار التخفيف</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100 text-xs text-slate-800 font-bold">
+                  <tbody className="divide-y divide-slate-100 text-xs text-slate-200 font-bold">
                     {aiSuggestions.map((s, idx) => (
                       <tr key={idx} className="hover:bg-slate-50/50 transition-colors">
                         <td className="p-4 font-black">{s.title}</td>
@@ -1456,16 +1513,16 @@ export default function TasksModule({
                                         const isGlowing = t.status !== 'done' && daysLeft <= 2;
                                         
                                         return (
-                                          <div className={`p-2 rounded-xl shrink-0 mt-0.5 border ${isGlowing ? 'bg-amber-50 border-amber-200 text-amber-400 font-black shadow-sm' : 'bg-slate-50 border-slate-200 text-slate-700'}`}>
+                                          <div className={`p-2 rounded-xl shrink-0 mt-0.5 border ${isGlowing ? 'bg-amber-50 border-amber-200 text-amber-400 font-black shadow-sm' : 'bg-slate-50 border-slate-200 text-slate-300'}`}>
                                             {typeIcon}
                                           </div>
                                         );
                                       })()}
-                                      <h4 className="text-slate-900 font-bold text-[13px] leading-relaxed line-clamp-2">{t.title}</h4>
+                                      <h4 className="text-white font-bold text-[13px] leading-relaxed line-clamp-2">{t.title}</h4>
                                     </div>
                                     
                                     {size !== 'small' && (
-                                      <p className="text-slate-700 font-medium text-xs leading-relaxed line-clamp-3 pl-11">
+                                      <p className="text-slate-300 font-medium text-xs leading-relaxed line-clamp-3 pl-11">
                                         {t.description}
                                       </p>
                                     )}
@@ -1473,12 +1530,12 @@ export default function TasksModule({
                                     {size === 'full' && t.caseNumber && (
                                       <div className="mt-3 text-[10px] bg-slate-50 border border-slate-200 text-slate-200 font-bold px-3 py-2 rounded-xl font-mono flex items-center justify-between shadow-sm pl-11">
                                         <span className="font-bold">قضية قضائية موثقة</span>
-                                        <span className="bg-white px-2 py-0.5 rounded border border-slate-200 text-slate-700">#{t.caseNumber}</span>
+                                        <span className="bg-white px-2 py-0.5 rounded border border-slate-200 text-slate-300">#{t.caseNumber}</span>
                                       </div>
                                     )}
                                   </div>
 
-                                  <div className="border-t border-slate-100 mt-4 pt-3 flex items-center justify-between text-xs font-bold text-slate-700">
+                                  <div className="border-t border-slate-100 mt-4 pt-3 flex items-center justify-between text-xs font-bold text-slate-300">
                                     <span className="flex items-center gap-1.5 bg-slate-50 px-2.5 py-1 rounded-lg border border-slate-200">
                                       <User className="w-3.5 h-3.5 text-slate-200 font-bold" />
                                       <span className="truncate max-w-[90px]">{getEmployeeName(t)}</span>
@@ -1494,7 +1551,7 @@ export default function TasksModule({
                                     <select
                                       value={t.status}
                                       onChange={(e) => handleUpdateStatus(t, e.target.value as any)}
-                                      className="w-full bg-slate-50/80 border border-slate-200 text-slate-700 text-[11px] font-black py-2.5 px-3 rounded-xl outline-none cursor-pointer focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all shadow-sm appearance-none"
+                                      className="w-full bg-slate-50/80 border border-slate-200 text-slate-300 text-[11px] font-black py-2.5 px-3 rounded-xl outline-none cursor-pointer focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all shadow-sm appearance-none"
                                     >
                                       <option value="todo">تعليق</option>
                                       <option value="in_progress">قيد العمل</option>
@@ -1548,25 +1605,27 @@ export default function TasksModule({
                 />
               </div>
 
-              <div>
-                <label className="text-sm text-[#fbbf24]  block mb-1 font-black">المحامي أو الزميل المكلف:</label>
-                <select 
-                  value={selectedEmployeeId}
-                  onChange={(e) => {
-                    const emp = realEmployees.find(em => em.id === e.target.value);
-                    setSelectedEmployeeId(e.target.value);
-                    setSelectedEmployeeName(emp?.name || '');
-                  }}
-                  className="w-full bg-slate-900 border border-slate-700 rounded-xl py-2 px-2 text-xs text-white  font-bold cursor-pointer"
-                >
-                  <option value="">اختر موظفاً...</option>
-                  {realEmployees.map(emp => (
-                    <option key={emp.id} value={emp.id}>
-                      {emp.name} — {emp.job_title || emp.role}
-                    </option>
-                  ))}
-                </select>
-              </div>
+              {!employeeRestrictedName && (
+                <div>
+                  <label className="text-sm text-[#fbbf24]  block mb-1 font-black">المحامي أو الزميل المكلف:</label>
+                  <select 
+                    value={selectedEmployeeId}
+                    onChange={(e) => {
+                      const emp = realEmployees.find(em => em.id === e.target.value);
+                      setSelectedEmployeeId(e.target.value);
+                      setSelectedEmployeeName(emp?.name || '');
+                    }}
+                    className="w-full bg-slate-900 border border-slate-700 rounded-xl py-2 px-2 text-xs text-white  font-bold cursor-pointer"
+                  >
+                    <option value="">اختر موظفاً...</option>
+                    {realEmployees.map(emp => (
+                      <option key={emp.id} value={emp.id}>
+                        {emp.name} — {emp.job_title || emp.role}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
 
               <div className="grid grid-cols-2 gap-4">
                 <div>

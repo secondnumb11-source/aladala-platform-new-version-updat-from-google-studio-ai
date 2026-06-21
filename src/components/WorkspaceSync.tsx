@@ -1206,7 +1206,7 @@ injectAlAdalahBtn();
                     onClick={() => setActiveExtFile(file.id as any)}
                     className={`w-full text-right p-3 rounded-xl text-xs font-bold transition-all border block outline-none cursor-pointer ${
                       activeExtFile === file.id 
-                        ? 'bg-yellow-400 text-slate-900 border-yellow-400' 
+                        ? 'bg-yellow-400 text-white border-yellow-400' 
                         : 'bg-[#050e1b] text-white border-transparent'
                     }`}
                   >

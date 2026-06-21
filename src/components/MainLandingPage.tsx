@@ -459,7 +459,7 @@ export default function MainLandingPage({ onSignInSelect, onTrialSelect }: MainL
                 className={`flex items-center gap-2 px-5 py-3 rounded-2xl text-xs font-black transition-all cursor-pointer ${
                   isTabActive
                     ? 'bg-[#0c2461] text-white   shadow-md scale-105'
-                    : 'bg-white  text-slate-900   border border-slate-800 '
+                    : 'bg-white  text-white   border border-slate-800 '
                 }`}
               >
                 <IconComp className={`w-4 h-4 ${isTabActive ? 'animate-pulse' : ''}`} />

@@ -368,7 +368,7 @@ export default function Sidebar({
                   <div className="relative">
                     <button 
                       onClick={() => setShowClockSettings(!showClockSettings)}
-                      className={`p-1.5 rounded-lg text-slate-700 transition-all ${showClockSettings ? 'bg-slate-800 text-amber-500 rotate-45' : ''}`}
+                      className={`p-1.5 rounded-lg text-slate-300 transition-all ${showClockSettings ? 'bg-slate-800 text-amber-500 rotate-45' : ''}`}
                       title="صلاحية النظام"
                       aria-label="Settings"
                     >

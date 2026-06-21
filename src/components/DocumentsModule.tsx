@@ -1585,7 +1585,7 @@ export default function DocumentsModule({
                     <span className=" text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]  ">|</span>
                     <button
                       onClick={() => setPreviewMode('simulated')}
-                      className={`text-xs px-2.5 py-1 rounded font-black transition-all ${previewMode === 'simulated' ? 'bg-amber-500 text-slate-900 border border-amber-600 font-extrabold shadow-sm' : 'text-white border border-transparent hover:bg-slate-800'}`}
+                      className={`text-xs px-2.5 py-1 rounded font-black transition-all ${previewMode === 'simulated' ? 'bg-amber-500 text-white border border-amber-600 font-extrabold shadow-sm' : 'text-white border border-transparent hover:bg-slate-800'}`}
                     >
                       المنظر الذكي 📜
                     </button>

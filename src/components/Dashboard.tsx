@@ -1317,7 +1317,7 @@ const Dashboard = function Dashboard({
               onClick={() => setIsCustomizing(!isCustomizing)}
               className={`flex items-center gap-2 border px-6 py-3 rounded-2xl text-xs font-black transition-all active:scale-95 shadow-xl cursor-pointer ${
                 isCustomizing 
-                  ? 'bg-amber-500 text-slate-900 border-amber-600 shadow-amber-500/20' 
+                  ? 'bg-amber-500 text-white border-amber-600 shadow-amber-500/20' 
                   : 'bg-slate-800 border-white/10 text-white'
               }`}
             >
@@ -1472,7 +1472,7 @@ const Dashboard = function Dashboard({
                         <span className="font-black text-sm">{w.name}</span>
                         <span className="text-[11px] font-semibold opacity-80 mt-0.5">كارت لوحة العمل</span>
                       </div>
-                      <div className={`w-6 h-6 rounded-full flex items-center justify-center border-2 transition-all ${isVisible ? 'bg-amber-500 border-amber-400 text-slate-900' : 'border-slate-700'}`}>
+                      <div className={`w-6 h-6 rounded-full flex items-center justify-center border-2 transition-all ${isVisible ? 'bg-amber-500 border-amber-400 text-white' : 'border-slate-700'}`}>
                         {isVisible && <Check size={14} />}
                       </div>
                     </button>
@@ -1483,7 +1483,7 @@ const Dashboard = function Dashboard({
               <div className="p-8 border-t border-white/5 bg-slate-950/30 flex justify-end">
                 <button 
                   onClick={() => setIsLibraryOpen(false)}
-                  className="bg-amber-500 text-slate-900 px-8 py-4 rounded-2xl font-black text-sm shadow-xl shadow-amber-500/20 active:scale-95 transition-all"
+                  className="bg-amber-500 text-white px-8 py-4 rounded-2xl font-black text-sm shadow-xl shadow-amber-500/20 active:scale-95 transition-all"
                 >
                   تم، حفظ التغييرات
                 </button>
@@ -1502,19 +1502,19 @@ const Dashboard = function Dashboard({
         >
           <div className="absolute top-0 left-0 w-32 h-32 bg-amber-500/5 rounded-full blur-2xl" />
           <div className="flex items-start gap-4">
-            <div className="w-12 h-12 bg-amber-500 text-slate-900 rounded-2xl flex items-center justify-center shrink-0 shadow-md">
+            <div className="w-12 h-12 bg-amber-500 text-white rounded-2xl flex items-center justify-center shrink-0 shadow-md">
               <AlertTriangle className="w-6 h-6 animate-pulse" />
             </div>
             <div className="space-y-1">
-              <h3 className="text-base font-black text-slate-900">🔔 تنبيه إداري ذكي: وثائق الكادر الوظيفي توشك على الانتهاء!</h3>
+              <h3 className="text-base font-black text-white">🔔 تنبيه إداري ذكي: وثائق الكادر الوظيفي توشك على الانتهاء!</h3>
               <p className="text-xs text-slate-200 font-bold font-bold">يرجى من الإدارة أو الشريك القيادي مخاطبة الموظفين المعنيين ببدء إجراءات التجديد فوراً لتجنب غرامات النظام عِبر بوابة قوى ومقيم.</p>
               
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2 mt-4 pt-4 border-t border-slate-200">
                 {expiringEmployees.map((emp: any) => (
                   <div key={emp.id} className="flex items-center gap-2 text-xs">
                     <span className="w-2 h-2 rounded-full bg-rose-500 shrink-0" />
-                    <span className="font-extrabold text-slate-800">{emp.name}</span>
-                    <span className="text-slate-700 font-bold">({emp.docType})</span>
+                    <span className="font-extrabold text-slate-200">{emp.name}</span>
+                    <span className="text-slate-300 font-bold">({emp.docType})</span>
                     <span className="text-rose-600 font-extrabold">ينتهي خلال {emp.daysLeft} يوماً</span>
                   </div>
                 ))}
@@ -1543,7 +1543,7 @@ const Dashboard = function Dashboard({
               <AlertTriangle className="w-6 h-6 animate-pulse" />
             </div>
             <div className="space-y-1">
-              <h3 className="text-base font-black text-slate-900">🔔 تنبيه عاجل: وكالات شارفت على الانتهاء!</h3>
+              <h3 className="text-base font-black text-white">🔔 تنبيه عاجل: وكالات شارفت على الانتهاء!</h3>
               <p className="text-xs text-rose-700 font-bold">يوجد {expiringAgencies.length} وكالات أوشكت على الانتهاء. تجنباً لتوقف الإجراءات وسقوط الترافع في ناجز والمحاكم، يرجى التجديد فوراً.</p>
               
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2 mt-4 pt-4 border-t border-rose-200">
@@ -1554,8 +1554,8 @@ const Dashboard = function Dashboard({
                         <Scale className="w-4 h-4" />
                       </div>
                       <div>
-                        <span className="font-extrabold text-slate-800 text-xs block">رقم: {poa.poaNumber}</span>
-                        <span className="text-[10px] text-slate-700 font-bold block">{poa.clientName}</span>
+                        <span className="font-extrabold text-slate-200 text-xs block">رقم: {poa.poaNumber}</span>
+                        <span className="text-[10px] text-slate-300 font-bold block">{poa.clientName}</span>
                       </div>
                     </div>
                     <div className="flex flex-col items-end gap-1">
@@ -2082,7 +2082,7 @@ const Dashboard = function Dashboard({
                     )}
                     <div className="bg-[#0a1628] border border-red-500/20 rounded-2xl p-5 h-full">
                       <div className="flex items-center gap-2 mb-4">
-                        <Clock className="w-5 h-5 text-red-400" />
+                        <ClockIcon className="w-5 h-5 text-red-400" />
                         <h3 className="text-white font-black text-sm">مهل الاستئناف القادمة</h3>
                       </div>
                       {upcomingDeadlines.length === 0 ? (
@@ -2276,25 +2276,25 @@ const Dashboard = function Dashboard({
                     <div className="flex flex-wrap items-center gap-2 border-b pb-4 border-slate-100" dir="rtl">
                       <button
                         onClick={() => setPerformanceTab('overview')}
-                        className={`px-4 py-2 text-xs font-black rounded-xl transition-all ${performanceTab === 'overview' ? 'bg-slate-900 text-white border border-slate-800 shadow-sm' : 'text-slate-700 bg-slate-50'}`}
+                        className={`px-4 py-2 text-xs font-black rounded-xl transition-all ${performanceTab === 'overview' ? 'bg-slate-900 text-white border border-slate-800 shadow-sm' : 'text-slate-300 bg-slate-50'}`}
                       >
                         إنتاجية ومؤشرات الأداء 📊
                       </button>
                       <button
                         onClick={() => setPerformanceTab('trends')}
-                        className={`px-4 py-2 text-xs font-black rounded-xl transition-all ${performanceTab === 'trends' ? 'bg-slate-900 text-white border border-slate-800 shadow-sm' : 'text-slate-700 bg-slate-50'}`}
+                        className={`px-4 py-2 text-xs font-black rounded-xl transition-all ${performanceTab === 'trends' ? 'bg-slate-900 text-white border border-slate-800 shadow-sm' : 'text-slate-300 bg-slate-50'}`}
                       >
                         منحنى تطور القضايا (12 شهراً) 📈
                       </button>
                       <button
                         onClick={() => setPerformanceTab('comparison')}
-                        className={`px-4 py-2 text-xs font-black rounded-xl transition-all ${performanceTab === 'comparison' ? 'bg-slate-900 text-white border border-slate-800 shadow-sm' : 'text-slate-700 bg-slate-50'}`}
+                        className={`px-4 py-2 text-xs font-black rounded-xl transition-all ${performanceTab === 'comparison' ? 'bg-slate-900 text-white border border-slate-800 shadow-sm' : 'text-slate-300 bg-slate-50'}`}
                       >
                         مقارنة السوق (المرصد القضائي 🇸🇦)
                       </button>
                       <button
                         onClick={() => setPerformanceTab('whatsapp')}
-                        className={`px-4 py-2 text-xs font-black rounded-xl transition-all ${performanceTab === 'whatsapp' ? 'bg-slate-900 text-white border border-slate-800 shadow-sm' : 'text-slate-700 bg-slate-50'}`}
+                        className={`px-4 py-2 text-xs font-black rounded-xl transition-all ${performanceTab === 'whatsapp' ? 'bg-slate-900 text-white border border-slate-800 shadow-sm' : 'text-slate-300 bg-slate-50'}`}
                       >
                         إحصائيات الواتساب 📱
                       </button>
@@ -2307,7 +2307,7 @@ const Dashboard = function Dashboard({
                             <div className="flex justify-between items-end">
                                <div>
                                   <span className="text-[10px] font-black text-slate-200 font-bold uppercase tracking-widest block mb-1">نسبة ربح القضايا ({performancePeriod === 'monthly' ? 'شهرياً' : 'سنوياً'})</span>
-                                  <span className="text-4xl font-black text-slate-900">{performancePeriod === 'monthly' ? winLossRatio.ratio : Math.min(100, winLossRatio.ratio + 5)}%</span>
+                                  <span className="text-4xl font-black text-white">{performancePeriod === 'monthly' ? winLossRatio.ratio : Math.min(100, winLossRatio.ratio + 5)}%</span>
                                </div>
                                <div className="h-16 w-16">
                                   <ResponsiveContainer width="100%" height="100%" key={themeTick}>
@@ -2342,7 +2342,7 @@ const Dashboard = function Dashboard({
                                   <div>
                                      <div className="flex justify-between text-[11px] mb-1.5 font-black">
                                         <span className="text-slate-200 font-bold">متوسط السوابق القضائية بالسعودية</span>
-                                        <span className="text-slate-700 font-bold font-mono">180 يوم</span>
+                                        <span className="text-slate-300 font-bold font-mono">180 يوم</span>
                                      </div>
                                      <div className="h-1.5 bg-slate-50 rounded-full overflow-hidden">
                                         <div className="h-full bg-slate-300 rounded-full" style={{ width: '65%' }}></div>
@@ -2397,9 +2397,9 @@ const Dashboard = function Dashboard({
                             />
                             <Legend 
                               formatter={(value) => {
-                                if (value === 'active') return <span className="text-xs font-black text-slate-700">قضايا جارية نشطة</span>;
-                                if (value === 'won') return <span className="text-xs font-black text-slate-700">قضايا رابحة كسبت</span>;
-                                return <span className="text-xs font-black text-slate-700">قضايا مقفلة منتهية</span>;
+                                if (value === 'active') return <span className="text-xs font-black text-slate-300">قضايا جارية نشطة</span>;
+                                if (value === 'won') return <span className="text-xs font-black text-slate-300">قضايا رابحة كسبت</span>;
+                                return <span className="text-xs font-black text-slate-300">قضايا مقفلة منتهية</span>;
                               }}
                             />
                             <Line type="monotone" dataKey="active" name="active" stroke="#facc15" strokeWidth={3} activeDot={{ r: 8 }} />
@@ -2417,7 +2417,7 @@ const Dashboard = function Dashboard({
                             <Sparkles className="w-4 h-4 text-amber-500 animate-pulse" />
                             بيانات وإحصاءات المرصد القضائي السعودي (JudicialObservatory)
                           </p>
-                          <p className="text-[11px] text-slate-700 leading-relaxed font-sans font-bold">
+                          <p className="text-[11px] text-slate-300 leading-relaxed font-sans font-bold">
                             توضح الإحصاءات التالية الكفاءة والأداء التشغيلي والعدلي الفعلي لمكتب أحمد البقمي للمحاماة، مقارنةً بالتصنيفات ومتوسط أداء الشركات القانونية الأخرى المسجلة في وزارة العدل بالمملكة العربية السعودية لعام 2026.
                           </p>
                         </div>
@@ -2426,7 +2426,7 @@ const Dashboard = function Dashboard({
                           {/* Item 1 */}
                           <div className="space-y-2">
                             <div className="flex justify-between items-center text-xs font-black">
-                              <span className="text-slate-800">معدل كسب القضايا ونسبة الربح</span>
+                              <span className="text-slate-200">معدل كسب القضايا ونسبة الربح</span>
                               <span className="text-emerald-700">المكتب: 84% | السوق: 68%</span>
                             </div>
                             <div className="h-2 bg-slate-100 rounded-full overflow-hidden flex">
@@ -2439,7 +2439,7 @@ const Dashboard = function Dashboard({
                           {/* Item 2 */}
                           <div className="space-y-2">
                             <div className="flex justify-between items-center text-xs font-black">
-                              <span className="text-slate-800">سرعة الفصل والحل القضائي</span>
+                              <span className="text-slate-200">سرعة الفصل والحل القضائي</span>
                               <span className="text-orange-600">المكتب: 110 أيام | السوق: 180 يوماً</span>
                             </div>
                             <div className="h-2 bg-slate-100 rounded-full overflow-hidden flex">
@@ -2452,7 +2452,7 @@ const Dashboard = function Dashboard({
                           {/* Item 3 */}
                           <div className="space-y-2">
                             <div className="flex justify-between items-center text-xs font-black">
-                              <span className="text-slate-800">نسبة رضا الموكلين والشفافية الإلكترونية</span>
+                              <span className="text-slate-200">نسبة رضا الموكلين والشفافية الإلكترونية</span>
                               <span className="text-indigo-600">المكتب: 92% | السوق: 74%</span>
                             </div>
                             <div className="h-2 bg-slate-100 rounded-full overflow-hidden flex">
@@ -2465,7 +2465,7 @@ const Dashboard = function Dashboard({
                           {/* Item 4 */}
                           <div className="space-y-2">
                             <div className="flex justify-between items-center text-xs font-black">
-                              <span className="text-slate-800">حضور وجدولة الجلسات والامتثال</span>
+                              <span className="text-slate-200">حضور وجدولة الجلسات والامتثال</span>
                               <span className="text-pink-600">المكتب: 98% | السوق: 85%</span>
                             </div>
                             <div className="h-2 bg-slate-100 rounded-full overflow-hidden flex">
@@ -2481,7 +2481,7 @@ const Dashboard = function Dashboard({
                     {performanceTab === 'whatsapp' && (
                       <div className="h-[300px] mt-4 text-right" dir="rtl">
                         <div className="mb-4 flex items-center justify-between">
-                          <h3 className="text-sm font-black text-slate-800">نشاط رسائل الواتساب اليومي (الشهر الحالي)</h3>
+                          <h3 className="text-sm font-black text-slate-200">نشاط رسائل الواتساب اليومي (الشهر الحالي)</h3>
                           {loadingStats && <RefreshCw className="w-4 h-4 animate-spin text-amber-500" />}
                         </div>
                         <ResponsiveContainer width="100%" height="90%">
@@ -2600,12 +2600,12 @@ const Dashboard = function Dashboard({
                  return (
                  <EnhancedSortableWidgetWrapper widgetColor={widget.color} onChangeColor={handleUpdateWidgetColor} className={getWidgetClassName(widget.size)} key="employeePerformanceKPI" id="employeePerformanceKPI" isCustomizing={isCustomizing} widgetSize={widget.size} onResize={handleUpdateWidgetSize}>
                     <div className="bg-white border border-slate-200 rounded-[2.5rem] p-8 shadow-sm space-y-6 text-right" dir="rtl">
-                      <h3 className="font-black text-slate-900 text-lg flex items-center gap-2">
+                      <h3 className="font-black text-white text-lg flex items-center gap-2">
                         <Activity className="w-5 h-5 text-purple-500" />
                         <span>مؤشر أداء الموظفين التفصيلي (ديناميكي)</span>
                       </h3>
                       {calculatedEmps.length === 0 ? (
-                        <div className="text-center p-8 text-slate-700 text-sm font-bold bg-slate-50 rounded-xl">لا تتوفر مهام مسندة لحساب الأداء</div>
+                        <div className="text-center p-8 text-slate-300 text-sm font-bold bg-slate-50 rounded-xl">لا تتوفر مهام مسندة لحساب الأداء</div>
                       ) : (
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                         {/* Employees List */}
@@ -2613,7 +2613,7 @@ const Dashboard = function Dashboard({
                           {calculatedEmps.map((emp, i) => (
                              <div key={i} className="flex flex-col gap-1.5 p-3 transition-colors rounded-2xl border border-transparent">
                                 <div className="flex justify-between items-center text-xs">
-                                  <span className="font-black text-slate-700">{emp.name}</span>
+                                  <span className="font-black text-slate-300">{emp.name}</span>
                                   <div className="flex items-center gap-2">
                                     <span className={emp.kpi >= 90 ? "font-black text-emerald-500" : "font-black text-amber-500"}>{emp.kpi}%</span>
                                   </div>

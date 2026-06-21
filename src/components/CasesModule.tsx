@@ -818,8 +818,8 @@ export default React.memo(function CasesModule({
                   <Archive className="w-6 h-6" />
                 </div>
                 <div>
-                  <h2 className="text-xl font-black text-slate-900 tracking-tight">الأرشيف السحابي والأرشفة الإلكترونية</h2>
-                  <p className="text-xs text-slate-700 font-bold mt-1">إدارة مركزية لكافة المذكرات، اللوائح، والأحكام القضائية الصادرة.</p>
+                  <h2 className="text-xl font-black text-white tracking-tight">الأرشيف السحابي والأرشفة الإلكترونية</h2>
+                  <p className="text-xs text-slate-300 font-bold mt-1">إدارة مركزية لكافة المذكرات، اللوائح، والأحكام القضائية الصادرة.</p>
                 </div>
               </div>
               <button 
@@ -837,13 +837,13 @@ export default React.memo(function CasesModule({
                 <input 
                   type="text" 
                   placeholder="البحث في الأرشيف (برقم القضية، اسم الموكل، أو مسمى المستند)..."
-                  className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-3.5 pr-12 pl-4 text-sm font-bold text-slate-900 focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-3.5 pr-12 pl-4 text-sm font-bold text-white focus:ring-2 focus:ring-primary/20 outline-none transition-all"
                   value={archiveSearchTerm}
                   onChange={(e) => setArchiveSearchTerm(e.target.value)}
                 />
               </div>
               <select 
-                className="bg-slate-50 border border-slate-200 rounded-2xl py-3.5 px-4 text-sm font-bold text-slate-900 focus:ring-2 focus:ring-primary/20 outline-none"
+                className="bg-slate-50 border border-slate-200 rounded-2xl py-3.5 px-4 text-sm font-bold text-white focus:ring-2 focus:ring-primary/20 outline-none"
                 value={archiveTypeFilter}
                 onChange={(e) => setArchiveTypeFilter(e.target.value)}
               >
@@ -861,7 +861,7 @@ export default React.memo(function CasesModule({
                   <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mb-4">
                     <Search className="w-8 h-8 text-white font-bold" />
                   </div>
-                  <p className="text-slate-700 font-bold">لا توجد نتائج مطابقة لبحثك في الأرشيف.</p>
+                  <p className="text-slate-300 font-bold">لا توجد نتائج مطابقة لبحثك في الأرشيف.</p>
                 </div>
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -2113,7 +2113,7 @@ export default React.memo(function CasesModule({
                   </button>
                   <button 
                     onClick={archivedNotice.onClose}
-                    className="p-2.5 text-slate-700 transition-colors"
+                    className="p-2.5 text-slate-300 transition-colors"
                   >
                     <X className="w-5 h-5" />
                   </button>

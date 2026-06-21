@@ -122,7 +122,7 @@ export default function AiGatewayTool() {
                           value={baseURL}
                           onChange={(e) => setBaseURL(e.target.value)}
                           placeholder="https://your-ai-gateway.ngrok.app/v1"
-                          className="w-full bg-slate-50 border border-slate-200 py-3.5 pr-11 pl-4 rounded-xl text-xs font-bold text-slate-700 outline-none focus:ring-4 focus:ring-indigo-500/5 focus:border-indigo-500 transition-all font-sans ltr text-left"
+                          className="w-full bg-slate-50 border border-slate-200 py-3.5 pr-11 pl-4 rounded-xl text-xs font-bold text-slate-300 outline-none focus:ring-4 focus:ring-indigo-500/5 focus:border-indigo-500 transition-all font-sans ltr text-left"
                         />
                       </div>
                     </div>
@@ -135,7 +135,7 @@ export default function AiGatewayTool() {
                           value={apiKey}
                           onChange={(e) => setApiKey(e.target.value)}
                           placeholder="ng-xxxxx-g1-xxxxx"
-                          className="w-full bg-slate-50 border border-slate-200 py-3.5 pr-11 pl-4 rounded-xl text-xs font-bold text-slate-700 outline-none focus:ring-4 focus:ring-indigo-500/5 focus:border-indigo-500 transition-all font-sans ltr text-left"
+                          className="w-full bg-slate-50 border border-slate-200 py-3.5 pr-11 pl-4 rounded-xl text-xs font-bold text-slate-300 outline-none focus:ring-4 focus:ring-indigo-500/5 focus:border-indigo-500 transition-all font-sans ltr text-left"
                         />
                       </div>
                     </div>
@@ -147,7 +147,7 @@ export default function AiGatewayTool() {
                       rows={5}
                       value={query}
                       onChange={(e) => setQuery(e.target.value)}
-                      className="w-full bg-slate-50 border border-slate-200 py-4 px-4 rounded-2xl text-xs font-medium text-slate-700 outline-none focus:ring-4 focus:ring-indigo-500/5 focus:border-indigo-500 min-h-[120px] leading-relaxed"
+                      className="w-full bg-slate-50 border border-slate-200 py-4 px-4 rounded-2xl text-xs font-medium text-slate-300 outline-none focus:ring-4 focus:ring-indigo-500/5 focus:border-indigo-500 min-h-[120px] leading-relaxed"
                     />
                   </div>
 
@@ -172,9 +172,9 @@ export default function AiGatewayTool() {
                     >
                       <div className="flex items-center justify-between mb-4 border-b border-slate-800 pb-3">
                         <span className="text-[11px] text-indigo-400 font-black uppercase tracking-widest">Gateway Response</span>
-                        <div className="flex gap-1.5 font-mono text-[11px] text-slate-700">
+                        <div className="flex gap-1.5 font-mono text-[11px] text-slate-300">
                           <span>HTTP 200 OK</span>
-                          <span className="text-slate-700">|</span>
+                          <span className="text-slate-300">|</span>
                           <span>latency: 482ms</span>
                         </div>
                       </div>
@@ -188,10 +188,10 @@ export default function AiGatewayTool() {
                 <div className="space-y-4">
                   <div className="p-4 bg-slate-900 rounded-xl font-mono text-[10px] text-emerald-400 space-y-2 overflow-x-auto">
                     <div>[2026-06-08 01:33:42] INF - Ingress established at endpoint: your-ai-gateway.ngrok.app</div>
-                    <div className="text-slate-700">[2026-06-08 01:33:45] DBG - Received request POST /v1/chat/completions from 82.164.21.9</div>
+                    <div className="text-slate-300">[2026-06-08 01:33:45] DBG - Received request POST /v1/chat/completions from 82.164.21.9</div>
                     <div className="text-indigo-400">[2026-06-08 01:33:46] INF - Routing to provider 'Google Gemini' (Region: europe-west1)</div>
                     <div>[2026-06-08 01:33:47] INF - Successful response delivered (1240 tokens)</div>
-                    <div className="text-slate-700">[2026-06-08 01:33:51] DBG - Metric update: Gateway throughput increased by 4%</div>
+                    <div className="text-slate-300">[2026-06-08 01:33:51] DBG - Metric update: Gateway throughput increased by 4%</div>
                   </div>
                   <div className="p-4 border border-indigo-100 bg-indigo-50/30 rounded-2xl">
                     <p className="text-[11px] text-indigo-800 font-medium leading-relaxed">
@@ -204,12 +204,12 @@ export default function AiGatewayTool() {
               {activeTab === 'config' && (
                 <div className="space-y-6">
                   <div className="space-y-4">
-                    <h4 className="text-[11px] text-slate-900 font-black border-b border-slate-100 pb-2">سلسلة التبديل عند الفشل (Failover Chain)</h4>
+                    <h4 className="text-[11px] text-white font-black border-b border-slate-100 pb-2">سلسلة التبديل عند الفشل (Failover Chain)</h4>
                     <div className="space-y-2">
                        <div className="flex items-center justify-between p-3 bg-slate-50 rounded-xl border border-slate-100">
                           <div className="flex items-center gap-3">
                              <div className="w-8 h-8 rounded-lg bg-white border border-slate-200 flex items-center justify-center text-xs">1</div>
-                             <span className="text-xs font-bold text-slate-700">Google Gemini (gemini-1.5-flash)</span>
+                             <span className="text-xs font-bold text-slate-300">Google Gemini (gemini-2.5-flash-preview-05-20)</span>
                           </div>
                           <span className="text-[11px] bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full font-black uppercase">Primary</span>
                        </div>
@@ -221,7 +221,7 @@ export default function AiGatewayTool() {
                              <div className="w-8 h-8 rounded-lg bg-white border border-slate-200 flex items-center justify-center text-xs">2</div>
                              <span className="text-xs font-bold">Anthropic (claude-3-5-sonnet)</span>
                           </div>
-                          <span className="text-[11px] bg-slate-200 text-slate-700 px-2 py-0.5 rounded-full font-black uppercase">Backup</span>
+                          <span className="text-[11px] bg-slate-200 text-slate-300 px-2 py-0.5 rounded-full font-black uppercase">Backup</span>
                        </div>
                     </div>
                   </div>
@@ -241,7 +241,7 @@ export default function AiGatewayTool() {
           <div className="bg-white rounded-3xl border border-slate-200 p-8 shadow-sm space-y-6">
              <div className="flex items-center gap-3 border-b border-slate-100 pb-4">
                 <Database className="w-5 h-5 text-indigo-600" />
-                <h3 className="text-sm font-black text-slate-900 uppercase tracking-tight">إحصائيات البوابة</h3>
+                <h3 className="text-sm font-black text-white uppercase tracking-tight">إحصائيات البوابة</h3>
              </div>
              
              <div className="space-y-5">

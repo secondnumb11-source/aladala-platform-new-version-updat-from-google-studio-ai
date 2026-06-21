@@ -449,7 +449,7 @@ export default function ElasticsearchModule() {
         {/* Navigation Sidebar & Console Log */}
         <div className="lg:col-span-1 space-y-4">
           <div className="bg-slate-950 p-4 rounded-xl border border-slate-900 flex flex-col gap-2">
-            <span className="text-xs text-slate-700 font-bold px-1 mb-1">دليل معالجات بوابات البحث</span>
+            <span className="text-xs text-slate-300 font-bold px-1 mb-1">دليل معالجات بوابات البحث</span>
             <TabButton 
               active={activeTab === 'connection'} 
               onClick={() => setActiveTab('connection')} 
@@ -493,7 +493,7 @@ export default function ElasticsearchModule() {
             <div className="bg-slate-900/60 px-4 py-2 border-b border-slate-900 flex items-center justify-between">
               <button 
                 onClick={() => setTerminalLogs([{ type: 'system', text: 'تمت تصفية سجل الطرفية.', timestamp: new Date().toLocaleTimeString() }])}
-                className="text-[10px] text-slate-700 transition-colors cursor-pointer"
+                className="text-[10px] text-slate-300 transition-colors cursor-pointer"
               >
                 مسح الطرفية
               </button>
@@ -637,7 +637,7 @@ export default function ElasticsearchModule() {
                   <button
                     onClick={() => testConnection()}
                     disabled={isConnecting}
-                    className="bg-amber-500 disabled:bg-slate-800 disabled:text-slate-700 text-slate-950 px-5 py-2.5 rounded-lg text-xs font-bold transition-all duration-150 flex items-center gap-2 cursor-pointer shadow-lg shadow-amber-500/10"
+                    className="bg-amber-500 disabled:bg-slate-800 disabled:text-slate-300 text-slate-950 px-5 py-2.5 rounded-lg text-xs font-bold transition-all duration-150 flex items-center gap-2 cursor-pointer shadow-lg shadow-amber-500/10"
                   >
                     {isConnecting ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Network className="w-3.5 h-3.5" />}
                     <span>اختبار الاتصال وجلب الحالة</span>
@@ -655,19 +655,19 @@ export default function ElasticsearchModule() {
                   
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-xs pt-2">
                     <div className="bg-slate-950 p-3 rounded-lg border border-slate-900">
-                      <span className="text-slate-700 block mb-0.5">حالة المرونة</span>
+                      <span className="text-slate-300 block mb-0.5">حالة المرونة</span>
                       <span className="text-emerald-400 font-bold uppercase">{clusterInfo.health_status}</span>
                     </div>
                     <div className="bg-slate-950 p-3 rounded-lg border border-slate-900">
-                      <span className="text-slate-700 block mb-0.5">إصدار Elasticsearch</span>
+                      <span className="text-slate-300 block mb-0.5">إصدار Elasticsearch</span>
                       <span className="text-white font-bold font-mono font-bold">{clusterInfo.version}</span>
                     </div>
                     <div className="bg-slate-950 p-3 rounded-lg border border-slate-900">
-                      <span className="text-slate-700 block mb-0.5">عدد العقد المشغلة</span>
+                      <span className="text-slate-300 block mb-0.5">عدد العقد المشغلة</span>
                       <span className="text-white font-bold font-bold">{clusterInfo.number_of_nodes} OS Nodes</span>
                     </div>
                     <div className="bg-slate-950 p-3 rounded-lg border border-slate-900">
-                      <span className="text-slate-700 block mb-0.5">الشرائح الفعالة</span>
+                      <span className="text-slate-300 block mb-0.5">الشرائح الفعالة</span>
                       <span className="text-white font-bold font-bold">{clusterInfo.active_shards} Shards</span>
                     </div>
                   </div>
@@ -683,7 +683,7 @@ export default function ElasticsearchModule() {
                   </p>
                 </div>
               ) : (
-                <div className="p-4 bg-slate-950/40 text-center rounded-xl border border-slate-900 text-xs text-slate-700">
+                <div className="p-4 bg-slate-950/40 text-center rounded-xl border border-slate-900 text-xs text-slate-300">
                   انقر على زر الاختبار لتوليد قنوات الاتصال بالكتلة المخصصة وجلب الإحصاءات الحيوية.
                 </div>
               )}
@@ -761,7 +761,7 @@ export default function ElasticsearchModule() {
                       
                       <button 
                         onClick={() => handleRemoveField(idx)}
-                        className="text-slate-700 transition-colors cursor-pointer p-1"
+                        className="text-slate-300 transition-colors cursor-pointer p-1"
                         title="حذف هذا الحقل"
                       >
                         <Trash className="w-3.5 h-3.5" />
@@ -859,12 +859,12 @@ export default function ElasticsearchModule() {
                       <div>
                         <div className="flex items-center justify-between mb-1">
                           <span className="bg-amber-500/10 text-amber-500 text-[10px] px-2 py-0.5 rounded border border-amber-500/20">{doc.court_type}</span>
-                          <span className="text-[11px] font-mono text-slate-700">{doc.id}</span>
+                          <span className="text-[11px] font-mono text-slate-300">{doc.id}</span>
                         </div>
                         <h4 className="text-xs font-bold text-white font-bold mb-1.5 leading-relaxed">{doc.title}</h4>
                         <p className="text-[11px] text-slate-200 font-bold leading-relaxed line-clamp-3 mb-2">{doc.details}</p>
                       </div>
-                      <div className="border-t border-slate-900 pt-2 flex justify-between text-[10px] text-slate-700">
+                      <div className="border-t border-slate-900 pt-2 flex justify-between text-[10px] text-slate-300">
                         <span>الحالة: {doc.status}</span>
                         <span>الخصم: {doc.defendant}</span>
                       </div>
@@ -1041,7 +1041,7 @@ export default function ElasticsearchModule() {
                       <button
                         onClick={handlePerformSearch}
                         disabled={isSearching}
-                        className="bg-amber-500 disabled:bg-slate-800 disabled:text-slate-700 text-slate-950 px-6 py-3 rounded-lg text-xs font-bold transition-all duration-150 flex items-center justify-center gap-1.5 cursor-pointer shadow-lg shadow-amber-500/10"
+                        className="bg-amber-500 disabled:bg-slate-800 disabled:text-slate-300 text-slate-950 px-6 py-3 rounded-lg text-xs font-bold transition-all duration-150 flex items-center justify-center gap-1.5 cursor-pointer shadow-lg shadow-amber-500/10"
                       >
                         {isSearching ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
                         <span>ابحث</span>
@@ -1093,7 +1093,7 @@ export default function ElasticsearchModule() {
                             {hit._source.details}
                           </p>
 
-                          <div className="flex justify-between items-center text-[10px] text-slate-700 pt-1">
+                          <div className="flex justify-between items-center text-[10px] text-slate-300 pt-1">
                             <div className="flex gap-4">
                               <span>الخصم: {hit._source.defendant}</span>
                               <span>الطرف المدعي: {hit._source.plaintiff}</span>
@@ -1110,7 +1110,7 @@ export default function ElasticsearchModule() {
                   </div>
                 </div>
               ) : (
-                <div className="p-12 bg-slate-950 text-center rounded-2xl border border-slate-900 text-xs text-slate-700">
+                <div className="p-12 bg-slate-950 text-center rounded-2xl border border-slate-900 text-xs text-slate-300">
                   اكتب عبارة البحث واضغط زر ابحث لاسترجاع صكوك الدعاوى والتحليلات القضائية الموثوقة فوراً.
                 </div>
               )}

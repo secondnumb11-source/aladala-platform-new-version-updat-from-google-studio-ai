@@ -73,7 +73,7 @@ export default function CaseFilters({
     <div className={`p-8 rounded-[2.5rem] border ${isHighContrast ? 'bg-white border-slate-900 shadow-xl' : 'bg-[#050e21] border-slate-800 shadow-2xl'} mb-10 relative z-20 space-y-6 text-right`} dir="rtl">
       <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
         <div className="flex-1 min-w-[320px] relative w-full">
-          <Search className="absolute right-5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-700" />
+          <Search className="absolute right-5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-300" />
           <input 
             type="text" 
             placeholder="البحث في القضايا، الموكلين، أو أرقام الصكوك..." 
@@ -117,14 +117,14 @@ export default function CaseFilters({
             <button 
               type="button"
               onClick={() => setViewMode('table')}
-              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-[10px] font-black uppercase transition-all ${viewMode === 'table' ? 'bg-amber-600 text-white shadow-lg' : 'text-slate-700'}`}
+              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-[10px] font-black uppercase transition-all ${viewMode === 'table' ? 'bg-amber-600 text-white shadow-lg' : 'text-slate-300'}`}
             >
               <FileText className="w-4 h-4" />
               <span>عرض القائمة</span>
             </button>
           </div>
           <div className="bg-slate-900 border border-slate-800 px-5 py-3 rounded-2xl flex items-center gap-3">
-            <span className="text-[10px] text-slate-700 font-black uppercase tracking-widest">إجمالي القضايا:</span>
+            <span className="text-[10px] text-slate-300 font-black uppercase tracking-widest">إجمالي القضايا:</span>
             <span className="text-lg font-mono text-amber-500 font-black leading-none">{(cases || []).length}</span>
           </div>
           <button 

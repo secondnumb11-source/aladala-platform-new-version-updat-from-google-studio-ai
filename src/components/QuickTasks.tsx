@@ -103,7 +103,7 @@ export default function QuickTasks({ tasks }: QuickTasksProps) {
 
       <div className="space-y-3 relative z-10">
         {pendingTasks.length === 0 ? (
-          <div className="text-center py-10 text-slate-700 font-bold">
+          <div className="text-center py-10 text-slate-300 font-bold">
             لا توجد مهام نشطة حالياً. استمتع بيومك!
           </div>
         ) : (
@@ -128,7 +128,7 @@ export default function QuickTasks({ tasks }: QuickTasksProps) {
                   <CountdownTimer targetDate={task.dueDate} taskTitle={task.title} status={task.status} />
                   <div className="flex items-center gap-2">
                     {isUrgent && <AlertTriangle className="w-3 h-3 text-rose-500" />}
-                    <span className={`text-[11px] px-2 py-0.5 rounded-lg font-black uppercase ${isUrgent ? 'bg-rose-500/20 text-rose-400' : 'bg-slate-800 text-slate-700'}`}>
+                    <span className={`text-[11px] px-2 py-0.5 rounded-lg font-black uppercase ${isUrgent ? 'bg-rose-500/20 text-rose-400' : 'bg-slate-800 text-slate-300'}`}>
                       {task.priority === 'high' ? 'عاجل' : 'عادي'}
                     </span>
                   </div>

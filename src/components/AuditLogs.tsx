@@ -354,7 +354,7 @@ export default function AuditLogs() {
           </div>
 
           <div className="relative w-full md:w-80 group">
-            <Search className={`absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 ${getDynamicTextColor('bg-slate-900')} font-bold group-focus-within:text-slate-900 transition-colors`} />
+            <Search className={`absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 ${getDynamicTextColor('bg-slate-900')} font-bold group-focus-within:text-white transition-colors`} />
             <input
               type="text"
               placeholder="البحث العميق في سجلات الجلسات..."

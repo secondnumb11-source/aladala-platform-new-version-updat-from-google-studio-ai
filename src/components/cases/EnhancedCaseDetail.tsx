@@ -253,7 +253,7 @@ export const EnhancedCaseDetail: React.FC<EnhancedCaseDetailProps> = ({
                 ? 'bg-rose-50 text-rose-600 border-rose-100' 
                 : selectedCase.priority === 'medium' 
                 ? 'bg-amber-50 text-amber-600 border-amber-100' 
-                : 'bg-slate-100 text-slate-600 border-slate-200'
+                : 'bg-slate-100 text-slate-400 border-slate-200'
               }`}>
                 <ShieldAlert className="w-3 h-3" />
                 أولوية {selectedCase.priority === 'high' ? 'قصوى عاجلة' : selectedCase.priority === 'medium' ? 'متوسطة' : 'عادية'}
@@ -270,7 +270,7 @@ export const EnhancedCaseDetail: React.FC<EnhancedCaseDetailProps> = ({
             </div>
 
             <div className="flex flex-wrap items-center gap-4">
-              <h1 className="text-3xl md:text-5xl font-display font-black text-slate-900 tracking-tight leading-tight">
+              <h1 className="text-3xl md:text-5xl font-display font-black text-white tracking-tight leading-tight">
                 {selectedCase.caseName}
               </h1>
               <button
@@ -313,7 +313,7 @@ export const EnhancedCaseDetail: React.FC<EnhancedCaseDetailProps> = ({
                 const phone = clientObj.phone.replace(/[^0-9]/g, '');
                 window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank');
               }}
-              className="w-full bg-white border border-slate-200 text-slate-700 font-black px-6 py-4 rounded-2xl text-xs flex items-center justify-center gap-3 transition-all hover:bg-emerald-50 hover:border-emerald-100 hover:text-emerald-700 active:scale-95 shadow-sm"
+              className="w-full bg-white border border-slate-200 text-slate-300 font-black px-6 py-4 rounded-2xl text-xs flex items-center justify-center gap-3 transition-all hover:bg-emerald-50 hover:border-emerald-100 hover:text-emerald-700 active:scale-95 shadow-sm"
             >
               <Share2 className="w-5 h-5 text-emerald-500" />
               <span>إرسال تعميد العميل</span>
@@ -361,7 +361,7 @@ export const EnhancedCaseDetail: React.FC<EnhancedCaseDetailProps> = ({
                     )}
                   </div>
                   <span className={`text-[10px] font-black uppercase text-center max-w-[80px] leading-tight transition-all ${
-                    isPassed ? 'text-slate-900' : 'text-slate-400'
+                    isPassed ? 'text-white' : 'text-slate-400'
                   }`}>
                     {st.label}
                   </span>
@@ -386,7 +386,7 @@ export const EnhancedCaseDetail: React.FC<EnhancedCaseDetailProps> = ({
                   <Archive className="w-6 h-6" />
                 </div>
                 <div>
-                  <h3 className="font-display font-black text-xl text-slate-900 tracking-tight">الأرشفة الإلكترونية المنظمة</h3>
+                  <h3 className="font-display font-black text-xl text-white tracking-tight">الأرشفة الإلكترونية المنظمة</h3>
                   <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest mt-1">Structured Legal Workspace</p>
                 </div>
               </div>
@@ -699,7 +699,7 @@ export const EnhancedCaseDetail: React.FC<EnhancedCaseDetailProps> = ({
                 <Zap className="w-5 h-5" />
               </div>
               <div>
-                <h3 className="font-sans font-black text-xs text-slate-900 uppercase tracking-wider">بروتوكول الإشعارات التلقائية</h3>
+                <h3 className="font-sans font-black text-xs text-white uppercase tracking-wider">بروتوكول الإشعارات التلقائية</h3>
                 <p className="text-[9px] text-slate-400 font-bold uppercase mt-0.5">Automated Client Broadcast Protocol</p>
               </div>
             </div>
@@ -707,7 +707,7 @@ export const EnhancedCaseDetail: React.FC<EnhancedCaseDetailProps> = ({
             {/* Toggle Status Card */}
             <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100 flex justify-between items-center relative z-10 shadow-inner">
               <div className="space-y-0.5">
-                <span className="text-xs text-slate-900 font-black block">إرسال تلقائي للموكل</span>
+                <span className="text-xs text-white font-black block">إرسال تلقائي للموكل</span>
                 <span className="text-[9px] text-emerald-600 font-black uppercase">Active via WhatsApp Gateway</span>
               </div>
               <button

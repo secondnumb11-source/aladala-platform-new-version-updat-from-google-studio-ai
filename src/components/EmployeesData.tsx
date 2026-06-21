@@ -1063,7 +1063,7 @@ export default function EmployeesData({
             className={`font-black px-6 py-4 rounded-2xl flex items-center justify-center gap-2.5 transition-all shadow-md active:scale-95 text-sm ${
               isArranging
                 ? "bg-amber-505 bg-amber-500 text-white border-transparent"
-                : "bg-white text-slate-700 border border-slate-200 hover:bg-slate-50"
+                : "bg-white text-slate-300 border border-slate-200 hover:bg-slate-50"
             }`}
           >
             <SlidersHorizontal className="w-5 h-5 text-amber-500" />
@@ -1092,11 +1092,11 @@ export default function EmployeesData({
           className="mt-8 bg-amber-50 border border-amber-200 rounded-[2rem] p-6 shadow-sm flex items-start gap-4 relative overflow-hidden"
         >
           <div className="absolute top-0 left-0 w-32 h-32 bg-amber-500/5 rounded-full blur-2xl" />
-          <div className="w-12 h-12 bg-amber-500 text-slate-900 rounded-2xl flex items-center justify-center shrink-0 shadow-md">
+          <div className="w-12 h-12 bg-amber-500 text-white rounded-2xl flex items-center justify-center shrink-0 shadow-md">
             <AlertTriangle className="w-6 h-6 animate-pulse" />
           </div>
           <div className="space-y-1">
-            <h3 className="text-base font-black text-slate-900">
+            <h3 className="text-base font-black text-white">
               ⚠️ تنبيه إداري نشط: وثائق رسمية تقترب من الانتهاء خلال 30 يوماً!
             </h3>
             <p className="text-xs text-slate-200 font-bold font-bold">
@@ -1113,7 +1113,7 @@ export default function EmployeesData({
                 >
                   <div className="flex items-center gap-2">
                     <span className="w-2.5 h-2.5 rounded-full bg-rose-500 shrink-0" />
-                    <span className="font-extrabold text-slate-800 truncate max-w-[120px]">
+                    <span className="font-extrabold text-slate-200 truncate max-w-[120px]">
                       {emp.name}
                     </span>
                   </div>
@@ -1133,7 +1133,7 @@ export default function EmployeesData({
           <Search className="absolute right-5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-200 font-bold group-focus-within:text-blue-600 transition-colors" />
           <input
             placeholder="البحث عن موظف (بالاسم، المسمى الوظيفي، رقم الهوية)..."
-            className="w-full bg-slate-50 border border-slate-200 rounded-2xl pr-12 pl-6 py-4 text-sm font-bold outline-none focus:bg-white focus:border-blue-500 transition-all text-slate-900 placeholder:text-slate-200 font-bold"
+            className="w-full bg-slate-50 border border-slate-200 rounded-2xl pr-12 pl-6 py-4 text-sm font-bold outline-none focus:bg-white focus:border-blue-500 transition-all text-white placeholder:text-slate-200 font-bold"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
@@ -1143,7 +1143,7 @@ export default function EmployeesData({
             <select
               value={selectedBranchFilter}
               onChange={(e) => setSelectedBranchFilter(e.target.value)}
-              className="w-full bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-2xl px-4 py-4 text-xs font-black text-slate-700 transition-all outline-none"
+              className="w-full bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-2xl px-4 py-4 text-xs font-black text-slate-300 transition-all outline-none"
             >
               <option value="الكل">بطبيعة الفرع: الكل</option>
               {uniqueBranches
@@ -1159,7 +1159,7 @@ export default function EmployeesData({
             <select
               value={selectedJobTitleFilter}
               onChange={(e) => setSelectedJobTitleFilter(e.target.value)}
-              className="w-full bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-2xl px-4 py-4 text-xs font-black text-slate-700 transition-all outline-none"
+              className="w-full bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-2xl px-4 py-4 text-xs font-black text-slate-300 transition-all outline-none"
             >
               <option value="الكل">بالمسمى الوظيفي: الكل</option>
               {uniqueJobTitles
@@ -1179,7 +1179,7 @@ export default function EmployeesData({
         <div className="py-32 flex flex-col items-center justify-center gap-6">
           <div className="w-12 h-12 border-[4px] border-[#0f172a] border-t-transparent rounded-full animate-spin" />
           <div className="text-center">
-            <h2 className="text-xl font-black text-slate-900">
+            <h2 className="text-xl font-black text-white">
               جاري تحميل سجلات الموظفين
             </h2>
           </div>
@@ -1192,7 +1192,7 @@ export default function EmployeesData({
         >
           <Users className="w-20 h-20 opacity-10" />
           <div className="text-center">
-            <p className="font-black text-xl text-slate-900">
+            <p className="font-black text-xl text-white">
               لا توجد سجلات مطابقة
             </p>
             <p className="font-bold text-slate-200 font-bold text-sm mt-2">
@@ -1249,19 +1249,19 @@ export default function EmployeesData({
                     <div className="h-4 w-[1px] bg-slate-700 mx-1" />
                     <button
                       onClick={() => handleResizeCard(emp.id, "small")}
-                      className={`px-2.5 py-1 text-[10px] font-black rounded-lg transition-colors ${!cardSizes[emp.id] || cardSizes[emp.id] === "small" ? "bg-amber-500 text-slate-900" : "bg-slate-800 text-white font-bold"}`}
+                      className={`px-2.5 py-1 text-[10px] font-black rounded-lg transition-colors ${!cardSizes[emp.id] || cardSizes[emp.id] === "small" ? "bg-amber-500 text-white" : "bg-slate-800 text-white font-bold"}`}
                     >
                       صغير
                     </button>
                     <button
                       onClick={() => handleResizeCard(emp.id, "medium")}
-                      className={`px-2.5 py-1 text-[10px] font-black rounded-lg transition-colors ${cardSizes[emp.id] === "medium" ? "bg-amber-500 text-slate-900" : "bg-slate-800 text-white font-bold"}`}
+                      className={`px-2.5 py-1 text-[10px] font-black rounded-lg transition-colors ${cardSizes[emp.id] === "medium" ? "bg-amber-500 text-white" : "bg-slate-800 text-white font-bold"}`}
                     >
                       متوسط
                     </button>
                     <button
                       onClick={() => handleResizeCard(emp.id, "large")}
-                      className={`px-2.5 py-1 text-[10px] font-black rounded-lg transition-colors ${cardSizes[emp.id] === "large" ? "bg-amber-500 text-slate-900" : "bg-slate-800 text-white font-bold"}`}
+                      className={`px-2.5 py-1 text-[10px] font-black rounded-lg transition-colors ${cardSizes[emp.id] === "large" ? "bg-amber-500 text-white" : "bg-slate-800 text-white font-bold"}`}
                     >
                       عريض
                     </button>
@@ -1282,12 +1282,12 @@ export default function EmployeesData({
                       )}
                     </div>
                     <div>
-                      <h3 className="font-black text-lg text-slate-900 tracking-tight">
+                      <h3 className="font-black text-lg text-white tracking-tight">
                         {emp.name}
                       </h3>
                       <div className="flex items-center gap-2 mt-1">
-                        <Briefcase className="w-3.5 h-3.5 text-slate-700" />
-                        <p className="text-slate-700 font-bold text-[11px] uppercase">
+                        <Briefcase className="w-3.5 h-3.5 text-slate-300" />
+                        <p className="text-slate-300 font-bold text-[11px] uppercase">
                           {emp.jobTitle}
                         </p>
                       </div>

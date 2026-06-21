@@ -1221,7 +1221,7 @@ export default function Settings({
                         <ShieldAlert className="w-6 h-6" />
                       </div>
                       <div>
-                        <h3 className="text-2xl font-black text-slate-900 leading-none">حوكمة تشغيل النظام (System Governance & Audit)</h3>
+                        <h3 className="text-2xl font-black text-white leading-none">حوكمة تشغيل النظام (System Governance & Audit)</h3>
                         <p className="text-sm font-bold text-slate-500 mt-2">رؤية تقنية شاملة لكافة الحركات والوصول الإداري لقاعدة البيانات والواجهات البرمجية.</p>
                       </div>
                    </div>
@@ -1242,8 +1242,8 @@ export default function Settings({
                     <Lock className="w-5 h-5" />
                   </div>
                   <div>
-                    <h2 className="text-base font-black text-slate-900">سجل فواتير ومعاملات الحفظ المعلقة (Database Persistence Failures)</h2>
-                    <p className="text-xs text-slate-700 mt-1">تتبع وعالج المعاملات التي فشلت السحابة في استقبالها لأسباب تتعلق بالـ RLS أو انقطاع الشبكة.</p>
+                    <h2 className="text-base font-black text-white">سجل فواتير ومعاملات الحفظ المعلقة (Database Persistence Failures)</h2>
+                    <p className="text-xs text-slate-300 mt-1">تتبع وعالج المعاملات التي فشلت السحابة في استقبالها لأسباب تتعلق بالـ RLS أو انقطاع الشبكة.</p>
                   </div>
                 </div>
                 
@@ -1268,7 +1268,7 @@ export default function Settings({
                 <div className="text-center py-12 bg-slate-50 border border-slate-100 rounded-2xl min-h-[250px] flex flex-col justify-center items-center gap-3">
                   <span className="text-3xl text-amber-500">✨</span>
                   <h3 className="text-sm font-black text-slate-950">قاعة البيانات خالية من العثرات وسجلات الفشل!</h3>
-                  <p className="text-xs text-slate-700 max-w-sm leading-relaxed text-center">كافة البيانات المتزامنة تم نقلها ومطابقتها بنجاح مع خوادم السجل الموحد (Supabase).</p>
+                  <p className="text-xs text-slate-300 max-w-sm leading-relaxed text-center">كافة البيانات المتزامنة تم نقلها ومطابقتها بنجاح مع خوادم السجل الموحد (Supabase).</p>
                 </div>
               ) : (
                 <div className="space-y-4">
@@ -1776,8 +1776,8 @@ export default function Settings({
               <div className="flex items-center gap-2">
                 <span className="p-1.5 bg-slate-900 text-white border border-slate-700 rounded-lg text-sm">🌙</span>
                 <div>
-                  <h2 className="text-sm font-bold text-slate-900">الوضع الليلي الكامل (Dark Mode)</h2>
-                  <p className="text-[11px] text-slate-900 mt-0.5">تفعيل الوضع الليلي لإعادة توزيع الألوان للنظام بالكامل لتوفير تجربة مريحة للمحامين خلال ساعات العمل الطويلة.</p>
+                  <h2 className="text-sm font-bold text-white">الوضع الليلي الكامل (Dark Mode)</h2>
+                  <p className="text-[11px] text-white mt-0.5">تفعيل الوضع الليلي لإعادة توزيع الألوان للنظام بالكامل لتوفير تجربة مريحة للمحامين خلال ساعات العمل الطويلة.</p>
                 </div>
               </div>
               <button
@@ -2919,7 +2919,7 @@ export default function Settings({
             <div className="flex items-center justify-between border-b border-slate-800 pb-3">
               <div className="flex items-center gap-2">
                 <FolderArchive className="w-5 h-5 text-amber-600" />
-                <h2 className="text-sm font-bold text-slate-900 font-sans">الأرشفة التلقائية وإدارة خمول القضايا والملفات (Flexible Auto-Archive)</h2>
+                <h2 className="text-sm font-bold text-white font-sans">الأرشفة التلقائية وإدارة خمول القضايا والملفات (Flexible Auto-Archive)</h2>
               </div>
               <span className="text-xs bg-amber-50 text-amber-700 px-2 py-0.5 rounded font-black font-mono">AUTO-ARCHIVE ENGINE</span>
             </div>
@@ -2928,8 +2928,8 @@ export default function Settings({
               {/* Left Config Panel */}
               <div className="space-y-4 md:col-span-1">
                 <div className="space-y-2">
-                  <label className="text-xs font-black text-slate-900 block">تحديد مدة الخمول المسموحة للقضية مغلقة:</label>
-                  <p className="text-[11px] text-slate-800 leading-normal font-bold">
+                  <label className="text-xs font-black text-white block">تحديد مدة الخمول المسموحة للقضية مغلقة:</label>
+                  <p className="text-[11px] text-slate-200 leading-normal font-bold">
                     سيقوم النظام بنقل قضايا المكتب المغلقة المكتملة التي لم تشهد أي نشاط طوال الفترة المحددة إلى الأرشيف السحابي تلقائياً.
                   </p>
                 </div>
@@ -2953,17 +2953,17 @@ export default function Settings({
                     <option value="90">90 يوماً (ثلاثة أشهر)</option>
                     <option value="180">180 يوماً (نصف سنة خمول)</option>
                   </select>
-                  <span className="text-[10px] text-slate-900 block font-sans font-bold leading-normal">⚙️ يوصى بتركها على 30 يوماً لضمان عدم ازدحام لوحة البيانات والحفاظ على أداء وسرعة التحميل بالمنصة.</span>
+                  <span className="text-[10px] text-white block font-sans font-bold leading-normal">⚙️ يوصى بتركها على 30 يوماً لضمان عدم ازدحام لوحة البيانات والحفاظ على أداء وسرعة التحميل بالمنصة.</span>
                 </div>
               </div>
 
               {/* Right History and Restore Panel */}
               <div className="md:col-span-2 bg-slate-50 border border-slate-800 p-4 rounded-2xl flex flex-col gap-3 min-w-0">
                 <div className="flex items-center justify-between border-b border-rose-100 pb-2">
-                  <span className="text-xs font-black text-slate-900 block flex items-center gap-1.5">
+                  <span className="text-xs font-black text-white block flex items-center gap-1.5">
                     📑 سجل الملفات والقضايا المودعة مؤخراً في الأرشيف
                   </span>
-                  <span className="text-[10px] bg-slate-200 text-slate-900 px-2 py-0.5 rounded-full font-bold">
+                  <span className="text-[10px] bg-slate-200 text-white px-2 py-0.5 rounded-full font-bold">
                     {(cases || []).filter(c => c.archived === true).length} ملف مؤرشف
                   </span>
                 </div>
@@ -2984,7 +2984,7 @@ export default function Settings({
                       {archivedCases.map((c) => (
                         <div key={c.id || c.caseNumber} className="flex items-center justify-between gap-4 p-3 bg-white border border-slate-200 rounded-xl transition-all hover:bg-slate-50">
                           <div className="text-right min-w-0">
-                            <span className="text-xs font-black text-slate-900 block truncate">{c.caseName}</span>
+                            <span className="text-xs font-black text-white block truncate">{c.caseName}</span>
                             <span className="text-[10px] text-slate-500 font-bold block mt-0.5">رقم القضية: {c.caseNumber} | المحكمة: {c.courtName || 'ناجز العدلية'}</span>
                           </div>
                           <button
@@ -3043,8 +3043,8 @@ export default function Settings({
                 <tbody className="divide-y divide-slate-800 bg-white">
                   {whatsappLogs.length > 0 ? whatsappLogs.map((log) => (
                     <tr key={log.id} className="hover:bg-slate-50 transition-colors">
-                      <td className="p-3 font-mono font-bold text-slate-900">{log.recipient_phone}</td>
-                      <td className="p-3 max-w-[200px] truncate text-slate-900" title={log.message}>{log.message}</td>
+                      <td className="p-3 font-mono font-bold text-white">{log.recipient_phone}</td>
+                      <td className="p-3 max-w-[200px] truncate text-white" title={log.message}>{log.message}</td>
                       <td className="p-3">
                         <span className={`px-2 py-0.5 rounded-full font-black text-[10px] ${
                           log.status === 'success' 
