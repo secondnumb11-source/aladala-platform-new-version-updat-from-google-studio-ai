@@ -416,6 +416,8 @@ interface CasesModuleProps {
   selectedCase: Case | null;
   archivedNotice?: { count: number; onRestore: () => void; onClose: () => void };
   onDeleteCase?: (id: string | number) => void;
+  externalCategoryFilter?: string; // استقبال قيم التصنيفات (مدنية، تجارية، عمالية، شخصية)
+  onCategoryFilterChange?: (category: string) => void;
 }
 
 import { useRenderPerformance } from '../lib/PerformanceOptimizer';
@@ -429,7 +431,9 @@ export default React.memo(function CasesModule({
   onSelectCase,
   selectedCase,
   archivedNotice,
-  onDeleteCase
+  onDeleteCase,
+  externalCategoryFilter,
+  onCategoryFilterChange
 }: CasesModuleProps) {
   const { state, setStateData } = useAppState();
   const draft = state.case_form_draft;
@@ -875,33 +879,33 @@ export default React.memo(function CasesModule({
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                   {filteredArchiveDocuments.map((doc, idx) => (
-                    <div key={idx} className="group bg-white border border-slate-200 p-5 rounded-3xl transition-all duration-300 cursor-pointer relative overflow-hidden">
+                    <div key={idx} className="group bg-slate-50 border border-slate-300 p-6 rounded-3xl transition-all duration-300 cursor-pointer relative overflow-hidden shadow-sm hover:shadow-md">
                       <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 blur-2xl rounded-full -mr-12 -mt-12 transition-colors"></div>
                       
                       <div className="flex items-start justify-between mb-4 relative z-10">
                         <div className={`p-3 rounded-2xl ${
-                          doc.type === 'pdf' ? 'bg-rose-50 text-rose-500' : 
-                          doc.type === 'docx' ? 'bg-blue-50 text-blue-500' : 
-                          'bg-emerald-50 text-emerald-500'
+                          doc.type === 'pdf' ? 'bg-rose-100 text-rose-950 border border-rose-300' : 
+                          doc.type === 'docx' ? 'bg-blue-100 text-blue-950 border border-blue-300' : 
+                          'bg-emerald-100 text-emerald-950 border border-emerald-300'
                         }`}>
-                          <FileText className="w-6 h-6" />
+                          <FileText className="w-6 h-6 stroke-[2.5px]" />
                         </div>
-                        <button className="p-2 text-white font-bold transition-colors">
-                          <Download className="w-5 h-5" />
+                        <button className="p-2 text-slate-800 hover:text-slate-950 font-black transition-colors">
+                          <Download className="w-5 h-5 stroke-[2.5px]" />
                         </button>
                       </div>
 
-                      <div className="space-y-2 relative z-10">
-                        <h4 className="font-black text-slate-900 text-sm line-clamp-2 leading-relaxed">{doc.name}</h4>
+                      <div className="space-y-2.5 relative z-10">
+                        <h4 className="font-extrabold text-slate-950 text-sm leading-relaxed">{doc.name}</h4>
                         <div className="flex flex-wrap gap-2 pt-2">
-                          <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-200">
+                          <span className="text-[10px] font-black px-2.5 py-1 rounded-xl bg-slate-200 text-slate-950 border border-slate-400">
                             {doc.size}
                           </span>
-                          <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-amber-50 text-amber-400 font-black border border-amber-100">
+                          <span className="text-[10px] font-black px-2.5 py-1 rounded-xl bg-amber-100 text-amber-950 border border-amber-300 shadow-sm">
                             #{doc.caseNumber}
                           </span>
                         </div>
-                        <p className="text-[10px] text-white font-black font-bold font-bold mt-2 truncate">القضية: {doc.caseName}</p>
+                        <p className="text-[11px] text-slate-900 font-extrabold mt-2.5 truncate">القضية: {doc.caseName}</p>
                       </div>
                     </div>
                   ))}
@@ -963,15 +967,18 @@ export default React.memo(function CasesModule({
     }
   }, [viewMode, cardScale, gridDensity, loading]);
 
+  const [showScheduledOnly, setShowScheduledOnly] = useState(false);
+
   const categories = [
-    { id: 'all', label: 'الكل', icon: Layers },
-    { id: 'criminal', label: 'جزائية', icon: ShieldAlert },
-    { id: 'commercial', label: 'تجارية', icon: Building2 },
-    { id: 'labor', label: 'عمالية', icon: Briefcase },
-    { id: 'personal_status', label: 'أحوال شخصية', icon: Users },
-    { id: 'administrative', label: 'إدارية', icon: Gavel },
-    { id: 'financial', label: 'مالية', icon: DollarSign },
-    { id: 'archived', label: 'الأرشيف', icon: Archive },
+    { id: 'all', label: 'كافة التصنيفات 📋', icon: Layers },
+    { id: 'civil', label: 'حقوقية / مدنية 📜', icon: Scale },
+    { id: 'commercial', label: 'تجارية 🏛️', icon: Building2 },
+    { id: 'labor', label: 'عمالية 💼', icon: Briefcase },
+    { id: 'personal_status', label: 'أحوال شخصية ⚖️', icon: Users },
+    { id: 'criminal', label: 'جنائية / جزائية 🛡️', icon: ShieldAlert },
+    { id: 'administrative', label: 'إدارية 🏛️', icon: Gavel },
+    { id: 'financial', label: 'مالية 🪙', icon: DollarSign },
+    { id: 'archived', label: 'الأرشيف 📦', icon: Archive },
   ];
 
   // Virtual scrolling / Infinite scroll loading state with skeletal loading indicator
@@ -1761,13 +1768,15 @@ export default React.memo(function CasesModule({
     const isArchivedRequested = categoryFilter.includes('archived');
     const isArchived = c.archived === true || c.status === 'closed' && isArchivedRequested; 
     
-    if (isArchivedRequested && categoryFilter.length === 1) {
+    if (isArchivedRequested && categoryFilter.length === 1 && !externalCategoryFilter) {
       if (!c.archived && c.status !== 'closed') return false;
-    } else if (!isArchivedRequested) {
+    } else if (!isArchivedRequested || externalCategoryFilter) {
       if (c.archived) return false;
     }
 
-    const matchesCategory = categoryFilter.length === 0 || categoryFilter.includes(c.category) || (isArchivedRequested && categoryFilter.length === 1);
+    const matchesCategory = externalCategoryFilter
+      ? (c.category === externalCategoryFilter)
+      : (categoryFilter.length === 0 || categoryFilter.includes(c.category) || (isArchivedRequested && categoryFilter.length === 1));
     const matchesStage = stageFilter === 'all' || c.stage === stageFilter;
     const matchesCourt = courtFilter === 'all' || courtNameSafe.includes(courtFilter);
     
@@ -1802,7 +1811,10 @@ export default React.memo(function CasesModule({
       }
     }
 
-    return matchesSearch && matchesCategory && matchesStage && matchesCourt && matchesDocTag && matchesLastSession && matchesNextAppointment && matchesStatus && matchesLawyer;
+    // Support filtering by Scheduled status
+    const matchesScheduled = !showScheduledOnly || !!c.nextSessionDate;
+
+    return matchesSearch && matchesCategory && matchesStage && matchesCourt && matchesDocTag && matchesLastSession && matchesNextAppointment && matchesStatus && matchesLawyer && matchesScheduled;
   });
 
   const isCaseOverdue = (c: Case) => {
@@ -1941,6 +1953,85 @@ export default React.memo(function CasesModule({
             </div>
           </div>
           
+          {/* Quick Access to Scheduled Cases Filter Bar (Supabase cases connection) */}
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-slate-900/60 border border-amber-500/25 p-5 rounded-[1.8rem] mb-4 font-sans text-right" dir="rtl">
+            <div className="flex items-center gap-3">
+              <div className="p-2.5 bg-amber-500/10 border border-amber-500/20 rounded-2xl">
+                <Calendar className="w-5 h-5 text-amber-400 shrink-0" />
+              </div>
+              <div>
+                <span className="text-xs font-black text-amber-400 block tracking-wide">الوصول السريع للقضايا المجدولة (المزامنة مع جدول Supabase)</span>
+                <p className="text-[11px] text-slate-300 font-bold">بمزامنة حية من جدول القضايا بـ Supabase؛ حدد تصنيفاً بالأسفل ثم فعّل التصفية السريعة:</p>
+              </div>
+            </div>
+            
+            <div className="flex flex-wrap items-center gap-2">
+              <button
+                onClick={() => setShowScheduledOnly(!showScheduledOnly)}
+                className={`px-5 py-2.5 rounded-xl text-xs font-black border transition-all flex items-center gap-2 cursor-pointer shadow-md ${
+                  showScheduledOnly 
+                    ? 'bg-[#FF7F00] text-slate-950 border-amber-400 shadow-[0_0_15px_rgba(255,127,0,0.4)]' 
+                    : 'bg-slate-950 text-amber-400 border-[#D4AF37]/30 hover:border-amber-400 hover:bg-slate-900'
+                }`}
+              >
+                <Clock className="w-4.5 h-4.5 shrink-0" />
+                <span>{showScheduledOnly ? '🔒 عرض الجلسات المجدولة فقط (نشط)' : '📂 تصفية القضايا المجدولة بالجلسات فقط'}</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Universal High-Contrast Classifications Filter Bar (Supabase cases categories connection) */}
+          <div className="bg-[#0b1329] border-2 border-slate-700/60 p-5 rounded-[1.8rem] mb-6 font-sans text-right" dir="rtl">
+            <span className="text-[11px] font-black text-amber-400 block tracking-wide mb-3 uppercase">📂 فلترة تصنيفات الدعاوى بـ Supabase (عرض وتصفية حية لحظية للقضايا)</span>
+            <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-3">
+              {[
+                { id: '', label: 'كافة التصنيفات 📋', count: (cases || []).filter(c => !c.archived).length, color: 'border-slate-705/50 hover:border-amber-400/50' },
+                { id: 'civil', label: 'حقوقية / مدنية 📜', count: (cases || []).filter(c => c.category === 'civil' && !c.archived).length, color: 'border-sky-500/30 hover:border-sky-400' },
+                { id: 'commercial', label: 'تجارية 🏛️', count: (cases || []).filter(c => c.category === 'commercial' && !c.archived).length, color: 'border-amber-500/30 hover:border-amber-400' },
+                { id: 'labor', label: 'عمالية 💼', count: (cases || []).filter(c => c.category === 'labor' && !c.archived).length, color: 'border-teal-500/30 hover:border-teal-400' },
+                { id: 'personal_status', label: 'أحوال شخصية ⚖️', count: (cases || []).filter(c => c.category === 'personal_status' && !c.archived).length, color: 'border-violet-500/30 hover:border-violet-400' },
+                { id: 'criminal', label: 'جنائية / جزائية 🛡️', count: (cases || []).filter(c => c.category === 'criminal' && !c.archived).length, color: 'border-rose-500/30 hover:border-rose-400' },
+                { id: 'administrative', label: 'إدارية 🏛️', count: (cases || []).filter(c => c.category === 'administrative' && !c.archived).length, color: 'border-emerald-500/30 hover:border-emerald-400' },
+              ].map(item => {
+                const getIsActive = () => {
+                  if (externalCategoryFilter !== undefined && externalCategoryFilter !== '') {
+                    return externalCategoryFilter === item.id;
+                  }
+                  if (item.id === '') {
+                    return categoryFilter.length === 0;
+                  }
+                  return categoryFilter.includes(item.id) && categoryFilter.length === 1;
+                };
+                const isActive = getIsActive();
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => {
+                      if (onCategoryFilterChange) {
+                        onCategoryFilterChange(item.id);
+                      }
+                      if (item.id === '') {
+                        setCategoryFilter([]);
+                      } else {
+                        setCategoryFilter([item.id]);
+                      }
+                    }}
+                    className={`px-4 py-3 rounded-xl border text-xs font-black transition-all flex flex-col items-center justify-between gap-1.5 cursor-pointer shadow ${item.color} ${
+                      isActive 
+                        ? 'bg-[#FF7F00] border-amber-400 text-slate-950 font-black font-extrabold shadow-[0_0_15px_rgba(255,127,0,0.4)] hover:text-slate-950 hover:border-amber-400' 
+                        : 'bg-slate-900 text-white font-bold hover:bg-slate-850'
+                    }`}
+                  >
+                    <span className="truncate">{item.label}</span>
+                    <span className={`text-[10px] px-2 py-0.2 rounded font-mono ${isActive ? 'bg-slate-950/20 text-slate-950 text-black' : 'bg-[#030712] text-amber-400'}`}>
+                      {item.count} قضية
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
           <div className="flex items-center gap-3 overflow-x-auto no-scrollbar pb-2">
             {categories.map((cat) => {
               const Icon = cat.icon;
@@ -2172,6 +2263,67 @@ export default React.memo(function CasesModule({
                   
                 {!isFocusMode && filterBarMarkup}
 
+                {/* --- REAL-TIME MANAGER COMPACT STATS BOARD --- */}
+                {(() => {
+                  const casesArray = cases || [];
+                  const underReviewCount = casesArray.filter(c => c.status === 'under_review' && !c.archived).length;
+                  const ruledCount = casesArray.filter(c => (c.status === 'primary_judgment' || c.status === 'final_judgment') && !c.archived).length;
+                  const closedCount = casesArray.filter(c => c.status === 'closed' && !c.archived).length;
+                  return (
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-6" dir="rtl">
+                      
+                      {/* Under Review Card */}
+                      <div className="bg-[#0b1329] border-2 border-amber-500/20 p-5 rounded-[1.5rem] flex items-center justify-between shadow-xl relative overflow-hidden group">
+                        <div className="flex items-center gap-4">
+                          <div className="p-3 bg-amber-500/10 rounded-xl border border-amber-400/30 text-amber-400">
+                            <Scale className="w-6 h-6 stroke-[2.5px]" />
+                          </div>
+                          <div className="text-right">
+                            <span className="text-[11px] font-black text-slate-400 block mb-0.5">قضايا قيد النظر</span>
+                            <span className="text-2xl font-black font-mono text-white tracking-tight">{underReviewCount}</span>
+                          </div>
+                        </div>
+                        <div className="text-xs px-2.5 py-1 rounded-md bg-amber-500/20 text-amber-400 font-extrabold border border-amber-500/30">
+                          متابعة حية ⚡
+                        </div>
+                      </div>
+
+                      {/* Ruled Card */}
+                      <div className="bg-[#0b1329] border-2 border-emerald-500/20 p-5 rounded-[1.5rem] flex items-center justify-between shadow-xl relative overflow-hidden group">
+                        <div className="flex items-center gap-4">
+                          <div className="p-3 bg-emerald-500/10 rounded-xl border border-emerald-400/30 text-emerald-400">
+                            <Gavel className="w-6 h-6 stroke-[2.5px]" />
+                          </div>
+                          <div className="text-right">
+                            <span className="text-[11px] font-black text-slate-400 block mb-0.5">قضايا محكومة</span>
+                            <span className="text-2xl font-black font-mono text-emerald-400 tracking-tight">{ruledCount}</span>
+                          </div>
+                        </div>
+                        <div className="text-xs px-2.5 py-1 rounded-md bg-emerald-500/20 text-emerald-400 font-extrabold border border-emerald-500/30">
+                          حجية الأحكام 📜
+                        </div>
+                      </div>
+
+                      {/* Closed Card */}
+                      <div className="bg-[#0b1329] border-2 border-blue-500/20 p-5 rounded-[1.5rem] flex items-center justify-between shadow-xl relative overflow-hidden group">
+                        <div className="flex items-center gap-4">
+                          <div className="p-3 bg-blue-500/10 rounded-xl border border-blue-400/30 text-blue-400">
+                            <Archive className="w-6 h-6 stroke-[2.5px]" />
+                          </div>
+                          <div className="text-right">
+                            <span className="text-[11px] font-black text-slate-400 block mb-0.5">قضايا منتهية ومغلقة</span>
+                            <span className="text-2xl font-black font-mono text-blue-400 tracking-tight">{closedCount}</span>
+                          </div>
+                        </div>
+                        <div className="text-xs px-2.5 py-1 rounded-md bg-blue-500/20 text-blue-400 font-extrabold border border-blue-500/30">
+                          ملفات مأرشفة 🔒
+                        </div>
+                      </div>
+
+                    </div>
+                  );
+                })()}
+
                 <CasesList
                   filteredCases={filteredCases}
                   viewMode={viewMode}
@@ -2263,6 +2415,7 @@ export default React.memo(function CasesModule({
                       <select value={newCategory} onChange={(e) => { setNewCategory(e.target.value); }}
                         className="w-full bg-[#020813] border-2 border-[#D4AF37]/30 hover:border-[#FF7F00]/60 focus:border-[#FF7F00] rounded-xl py-3 px-4 text-base md:text-lg font-black text-[#FF7F00] focus:outline-none transition-all shadow-[inset_0_2px_8px_rgba(0,0,0,0.9)] focus:ring-1 focus:ring-[#FF7F00]"
                       >
+                        <option value="civil" className="bg-[#050e21] text-[#FF7F00]">مدنية 📜</option>
                         <option value="criminal" className="bg-[#050e21] text-[#FF7F00]">جزائية 🛡️</option>
                         <option value="labor" className="bg-[#050e21] text-[#FF7F00]">عمالية 💼</option>
                         <option value="commercial" className="bg-[#050e21] text-[#FF7F00]">تجارية 🏛️</option>

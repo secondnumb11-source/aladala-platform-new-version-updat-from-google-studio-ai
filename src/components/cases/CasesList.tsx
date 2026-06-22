@@ -50,6 +50,56 @@ export default function CasesList({
   onUpdateCaseStatus,
   onDeleteCase
 }: CasesListProps) {
+  const [focusedIdx, setFocusedIdx] = React.useState<number | null>(null);
+
+  // Keyboard navigation listener
+  React.useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Avoid intercepting keyboard typing inside interactive input controls
+      if (
+        document.activeElement &&
+        ['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement.tagName)
+      ) {
+        return;
+      }
+
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        setFocusedIdx((prev) => {
+          if (prev === null) return 0;
+          return Math.min(prev + 1, filteredCases.length - 1);
+        });
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        setFocusedIdx((prev) => {
+          if (prev === null) return 0;
+          return Math.max(prev - 1, 0);
+        });
+      } else if (e.key === 'Enter') {
+        if (focusedIdx !== null && filteredCases[focusedIdx]) {
+          e.preventDefault();
+          onSelectCase(filteredCases[focusedIdx]);
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [focusedIdx, filteredCases, onSelectCase]);
+
+  // Smooth scroll focused element into browser viewing layout
+  React.useEffect(() => {
+    if (focusedIdx !== null && filteredCases[focusedIdx]) {
+      const activeCase = filteredCases[focusedIdx];
+      const el = document.getElementById(`case-card-${activeCase.id}`);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+    }
+  }, [focusedIdx, filteredCases]);
+
   if (filteredCases.length === 0) {
     return (
       <div className={`p-20 text-center rounded-[3rem] border border-dashed flex flex-col items-center justify-center space-y-6 ${
@@ -89,18 +139,25 @@ export default function CasesList({
             const c = filteredCases[index];
             if (!c) return null;
             const { arabicStatusName, CategoryIcon } = getInteractiveCaseStyles(c.category, c.status);
+            const isRowFocused = index === focusedIdx;
             return (
               <div 
+                id={`case-card-${c.id}`}
                 style={style}
                 className={`flex items-center text-right transition-all group cursor-pointer ${
-                  isHighContrast 
-                    ? (index % 2 === 0 ? 'bg-slate-50 hover:bg-slate-100' : 'bg-white hover:bg-slate-100') 
-                    : (index % 2 === 0 ? 'bg-[#0a182f]/40 hover:bg-amber-500/10' : 'bg-transparent hover:bg-amber-500/10')
+                  isRowFocused 
+                    ? 'bg-[#FF7F00]/25 border-y-2 border-[#FF7F00] shadow-[0_0_15px_rgba(255,127,0,0.3)] scale-[1.005] z-10' 
+                    : isHighContrast 
+                      ? (index % 2 === 0 ? 'bg-slate-50 hover:bg-slate-100' : 'bg-white hover:bg-slate-100') 
+                      : (index % 2 === 0 ? 'bg-[#0a182f]/40 hover:bg-amber-500/10' : 'bg-transparent hover:bg-amber-500/10')
                 } ${c.archived ? 'opacity-50 grayscale-[0.5]' : ''}`} 
-                onClick={() => onSelectCase(c)}
+                onClick={() => {
+                  setFocusedIdx(index);
+                  onSelectCase(c);
+                }}
                 dir="rtl"
               >
-                <div className={`flex-[1] px-4 text-xs font-mono font-black tracking-tight ${isHighContrast ? 'text-amber-800' : 'text-amber-400'} transition-colors`}>#{c.caseNumber}</div>
+                <div className={`flex-[1] px-4 text-xs font-mono font-black tracking-tight ${isRowFocused ? 'text-[#FF7F00]' : isHighContrast ? 'text-amber-800' : 'text-amber-400'} transition-colors`}>#{c.caseNumber}</div>
                 <div className="flex-[2] px-4 text-xs font-black tracking-tight truncate">
                   <div className="flex items-center gap-2">
                     <span className="truncate">{c.caseName}</span>
@@ -110,7 +167,7 @@ export default function CasesList({
                   </div>
                   <CaseClassificationTags category={c.category} status={c.status} isHighContrast={isHighContrast} />
                 </div>
-                <div className={`flex-[1.5] px-4 text-[11px] font-black tracking-tight truncate ${isHighContrast ? 'text-slate-800' : 'text-indigo-300'}`}>{c.clientName}</div>
+                <div className={`flex-[1.5] px-4 text-[11px] font-black tracking-tight truncate ${isRowFocused ? 'text-white font-black' : isHighContrast ? 'text-slate-800' : 'text-indigo-300'}`}>{c.clientName}</div>
                 <div className="flex-[1] px-4">
                   <span className={`text-[11px] font-black px-2.5 py-1.5 rounded-xl border-2 inline-flex items-center gap-1 ${
                     isHighContrast 
@@ -140,7 +197,7 @@ export default function CasesList({
                     <option value="active" className="bg-slate-950 text-white">نشطة جارية ⚖️</option>
                   </select>
                 </div>
-                <div className={`flex-[1] px-4 text-[10px] font-black font-mono tracking-widest truncate ${isHighContrast ? 'text-emerald-900' : 'text-emerald-400'}`}>{c.nextSessionDate || '---'}</div>
+                <div className={`flex-[1] px-4 text-[10px] font-black font-mono tracking-widest truncate ${isRowFocused ? 'text-white' : isHighContrast ? 'text-emerald-900' : 'text-emerald-400'}`}>{c.nextSessionDate || '---'}</div>
                 <div className="flex-[0.5] px-4 text-right flex items-center justify-end gap-2">
                   <button
                     onClick={(e) => {
@@ -168,12 +225,15 @@ export default function CasesList({
 
   // Grid/Bento layout view
   return (
-    <div className={`grid grid-cols-1 ${gridDensity === 'relaxed' ? 'md:grid-cols-2 lg:grid-cols-3 gap-10' : 'md:grid-cols-3 lg:grid-cols-4 gap-6'}`} dir="rtl">
+    <div className={`grid grid-cols-1 ${gridDensity === 'relaxed' ? 'md:grid-cols-2 lg:grid-cols-3' : 'md:grid-cols-3 lg:grid-cols-4'} cases-module-grid-gap`} dir="rtl">
       {filteredCases.slice(0, visibleCount).map((c, idx) => (
         <CaseCard
           key={c.id || idx}
           c={c}
-          onSelectCase={onSelectCase}
+          onSelectCase={(caseObj) => {
+            setFocusedIdx(idx);
+            onSelectCase(caseObj);
+          }}
           isHighContrast={isHighContrast}
           isSyncing={isSyncing}
           onNajizSync={onNajizSync}
@@ -186,6 +246,7 @@ export default function CasesList({
           selectedRole={selectedRole}
           onUpdateCaseStatus={onUpdateCaseStatus}
           onDeleteCase={onDeleteCase}
+          isKeyboardFocused={idx === focusedIdx}
         />
       ))}
     </div>

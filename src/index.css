@@ -3224,5 +3224,163 @@ option.ai-select-high-contrast-option,
   text-shadow: 0 1.5px 3px rgba(0, 0, 0, 0.9) !important;
 }
 
+/* Custom case card typography overrides for enhanced readability, larger size, and extra high contrast */
+.case-card-title-heavy {
+  font-size: 1.35rem !important;
+  font-weight: 800 !important;
+  line-height: 1.45 !important;
+  letter-spacing: -0.015em !important;
+  color: #020617 !important; /* Extremely high contrast on light bg */
+}
+.dark .case-card-title-heavy {
+  color: #ffffff !important; /* Pure radiant white in dark bg modes */
+}
+
+.case-card-subtitle-heavy {
+  font-size: 1.05rem !important;
+  font-weight: 800 !important;
+  letter-spacing: -0.01em !important;
+  color: #09111e !important;
+}
+.dark .case-card-subtitle-heavy {
+  color: #f8fafc !important;
+}
+
+.case-card-text-heavy {
+  font-size: 0.95rem !important;
+  font-weight: 800 !important;
+  color: #1a2536 !important;
+}
+.dark .case-card-text-heavy {
+  color: #f1f5f9 !important;
+}
+
+.case-card-pill-heavy {
+  font-size: 0.85rem !important;
+  font-weight: 800 !important;
+}
+
+/* Custom separation gaps and margins for CasesModule cards and list grids */
+.cases-module-grid-gap {
+  gap: 1.5rem !important; /* Force explicit 1.5rem spacing between cards in grid layout to prevent overlap of larger texts */
+}
+
+.cases-module-card-item {
+  padding: 1.5rem !important; /* Extra padding of 1.5rem to prevent overlap of large text fonts under WCAG */
+  margin-bottom: 1.5rem !important; /* Force explicit 1.5rem margin-bottom between vertical items during content wrap or zoom */
+}
+
+/* Explicit inner padding and text line spacing to prevent overlaps under extreme zoom / large text sizes */
+.cases-module-card-inner {
+  padding: 1.5rem !important; /* WCAG 1.5rem inner padding spacing */
+  gap: 1.5rem !important; /* Spacing gap between text segments */
+}
+
+/* Universal High-Contrast Outline-On-Hover styling for Saved, Edited, Deleted Action Buttons across all modules of Adalah (WCAG Compliant) */
+
+/* 1. Delete / Red Actions Outline on Hover */
+button[class*="bg-rose-"]:hover,
+button[class*="bg-red-"]:hover,
+button[class*="text-rose-"]:hover,
+button[class*="text-red-"]:hover,
+button[class*="bg-[#rose-]"]:hover,
+button[class*="border-rose-"]:hover,
+button[class*="border-red-"]:hover,
+button[class*="hover:bg-rose-"]:hover,
+button[class*="hover:bg-red-"]:hover,
+.action-btn-delete:hover,
+.btn-delete:hover,
+[id*="delete"]:hover,
+[class*="delete"]:hover,
+button.btn-danger:hover {
+  background-color: transparent !important;
+  border: 2px solid #e11d48 !important;
+  color: #f43f5e !important;
+  outline: 2px solid #e11d48 !important;
+  outline-offset: 1px !important;
+  font-weight: 950 !important;
+  box-shadow: 0 0 12px rgba(225, 29, 72, 0.45) !important;
+  border-radius: 12px !important; /* Enforces clean rounded style border shape under WCAG (12px) */
+}
+
+/* 2. Save / Emerald / Green Actions Outline on Hover */
+button[class*="bg-emerald-"]:hover,
+button[class*="bg-green-"]:hover,
+button[class*="bg-teal-"]:hover,
+button[class*="bg-amber-400"]:hover,
+button[class*="bg-amber-500"]:hover,
+button[class*="text-emerald-"]:hover,
+button[class*="border-emerald-"]:hover,
+button[class*="hover:bg-emerald-"]:hover,
+.action-btn-save:hover,
+.btn-save:hover,
+[id*="save"]:hover,
+[class*="save"]:hover,
+button.btn-primary:hover,
+button[type="submit"]:hover {
+  background-color: transparent !important;
+  border: 2px solid #10b981 !important;
+  color: #34d399 !important;
+  outline: 2px solid #10b981 !important;
+  outline-offset: 1px !important;
+  font-weight: 950 !important;
+  box-shadow: 0 0 12px rgba(16, 185, 129, 0.45) !important;
+  border-radius: 12px !important; /* Enforces clean rounded style border shape under WCAG (12px) */
+}
+
+/* 3. Edit / Blue / Orange / Warning Actions Outline on Hover */
+button[class*="bg-orange-"]:hover,
+button[class*="bg-amber-"]:hover,
+button[class*="bg-blue-"]:hover,
+button[class*="bg-indigo-"]:hover,
+button[class*="text-blue-"]:hover,
+button[class*="border-blue-"]:hover,
+button[class*="hover:bg-blue-"]:hover,
+.action-btn-edit:hover,
+.btn-edit:hover,
+[id*="edit"]:hover,
+[class*="edit"]:hover,
+button.btn-secondary:hover {
+  background-color: transparent !important;
+  border: 2px solid #3b82f6 !important;
+  color: #60a5fa !important;
+  outline: 2px solid #3b82f6 !important;
+  outline-offset: 1px !important;
+  font-weight: 950 !important;
+  box-shadow: 0 0 12px rgba(59, 130, 246, 0.45) !important;
+  border-radius: 12px !important; /* Enforces clean rounded style border shape under WCAG (12px) */
+}
+
+/* Light scheme action buttons outline overrides for highest WCAG contrast ratio on light bg */
+.is-light-theme button[class*="bg-rose-"]:hover,
+.is-light-theme button[class*="bg-red-"]:hover,
+.is-light-theme .btn-delete:hover,
+.is-light-theme .action-btn-delete:hover {
+  color: #be123c !important; /* Deeper crimson */
+  border-color: #be123c !important;
+  outline-color: #be123c !important;
+  border-radius: 12px !important;
+}
+
+.is-light-theme button[class*="bg-emerald-"]:hover,
+.is-light-theme .btn-save:hover,
+.is-light-theme .action-btn-save:hover {
+  color: #047857 !important; /* Deeper forest green */
+  border-color: #047857 !important;
+  outline-color: #047857 !important;
+  border-radius: 12px !important;
+}
+
+.is-light-theme button[class*="bg-amber-"]:hover,
+.is-light-theme .btn-edit:hover,
+.is-light-theme .action-btn-edit:hover,
+.is-light-theme button[class*="bg-blue-"]:hover {
+  color: #1d4ed8 !important; /* Deeper royal blue for maximum light mode contrast */
+  border-color: #1d4ed8 !important;
+  outline-color: #1d4ed8 !important;
+  border-radius: 12px !important;
+}
+
+
 
 
