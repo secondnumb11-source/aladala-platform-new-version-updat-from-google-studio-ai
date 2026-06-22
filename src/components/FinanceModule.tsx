@@ -36,6 +36,65 @@ import { Invoice, Client, Case } from '@/types';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip, Legend, AreaChart, Area, XAxis, YAxis, CartesianGrid } from 'recharts';
 import { QRCodeSVG } from 'qrcode.react';
 
+export function calculateTextColor(hexColor: string | undefined): "text-black" | "text-white" {
+  if (!hexColor) return "text-black";
+  const cleanHex = hexColor.replace("#", "");
+  if (cleanHex.toLowerCase() === "white" || cleanHex.toLowerCase() === "ffffff") return "text-black";
+
+  let r = 255, g = 255, b = 255;
+  if (cleanHex.length === 6) {
+    r = parseInt(cleanHex.substring(0, 2), 16);
+    g = parseInt(cleanHex.substring(2, 4), 16);
+    b = parseInt(cleanHex.substring(4, 6), 16);
+  } else if (cleanHex.length === 3) {
+    r = parseInt(cleanHex.substring(0, 1) + cleanHex.substring(0, 1), 16);
+    g = parseInt(cleanHex.substring(1, 2) + cleanHex.substring(1, 2), 16);
+    b = parseInt(cleanHex.substring(2, 3) + cleanHex.substring(2, 3), 16);
+  }
+
+  const getSrgb = (c: number) => {
+    const val = c / 255;
+    return val <= 0.03928 ? val / 12.92 : Math.pow((val + 0.055) / 1.055, 2.4);
+  };
+
+  const L = 0.2126 * getSrgb(r) + 0.7152 * getSrgb(g) + 0.0722 * getSrgb(b);
+  return L > 0.179 ? "text-black" : "text-white";
+}
+
+export function getCalculatorTextColor(hexColor: string): { text: string; subtext: string; label: string; border: string; highlight: string } {
+  const hex = hexColor.startsWith('#') ? hexColor.substring(1) : hexColor;
+  let r = 255, g = 255, b = 255;
+  if (hex.length === 6) {
+    r = parseInt(hex.substring(0, 2), 16);
+    g = parseInt(hex.substring(2, 4), 16);
+    b = parseInt(hex.substring(4, 6), 16);
+  } else if (hex.length === 3) {
+    r = parseInt(hex.substring(0, 1) + hex.substring(0, 1), 16);
+    g = parseInt(hex.substring(1, 2) + hex.substring(1, 2), 16);
+    b = parseInt(hex.substring(2, 3) + hex.substring(2, 3), 16);
+  }
+  
+  const luminance = (r * 299 + g * 587 + b * 114) / 1000;
+  
+  if (luminance >= 140) {
+    return {
+      text: 'text-slate-900',
+      subtext: 'text-slate-800 font-extrabold',
+      label: 'text-slate-500 font-extrabold',
+      border: 'border-slate-300/40',
+      highlight: 'text-rose-600'
+    };
+  } else {
+    return {
+      text: 'text-white font-black drop-shadow-sm',
+      subtext: 'text-slate-100 font-black drop-shadow-sm',
+      label: 'text-slate-305 font-bold',
+      border: 'border-white/10',
+      highlight: 'text-rose-300 font-extrabold'
+    };
+  }
+}
+
 // A custom motion.div wrapper that analyzes background class/color and enforces a perfectly contrasting text color.
 interface ContrastMotionDivProps extends Omit<React.ComponentPropsWithoutRef<typeof motion.div>, 'children'> {
   bgClass?: string;
@@ -711,6 +770,7 @@ export default function FinanceModule({
   const [calcClaimAmount, setCalcClaimAmount] = useState('');
   const [calcRate, setCalcRate] = useState('10');
   const [calcResult, setCalcResult] = useState<number | null>(null);
+  const [calcBgColor, setCalcBgColor] = useState('#fffdf5');
 
   const handleCalculateFees = () => {
     const amount = parseFloat(calcClaimAmount);
@@ -841,134 +901,139 @@ export default function FinanceModule({
         </div>
 
         {/* Card 1: Tax Fee Invoice */}
-        <ContrastMotionDiv 
+        <motion.div 
           onClick={() => setIsInvoiceOpen(true)}
-          className="bg-white border border-slate-200 rounded-[1.5rem] cursor-pointer relative overflow-hidden h-[210px] hover:border-amber-300 shadow-sm hover:shadow-md group transition-all duration-300"
+          whileHover={{ y: -6, scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+          className="bg-gradient-to-br from-[#0a1931] via-[#0f2042] to-[#060e1c] border-2 border-[#1e3a6a]/70 hover:border-amber-400 rounded-[1.8rem] cursor-pointer relative overflow-hidden h-[210px] shadow-[0_12px_28px_rgba(3,7,18,0.5)] hover:shadow-[0_12px_36px_rgba(245,158,11,0.2)] group transition-all duration-300 flex flex-col justify-between"
           id="action-box-invoice"
-          bgClass="bg-white"
         >
-          <div className="absolute top-0 right-0 w-32 h-32 bg-amber-50 rounded-full blur-[40px] translate-x-10 -translate-y-10 group-hover:bg-amber-100 transition-colors"></div>
-          <div className="p-5 h-full flex flex-col justify-between relative z-10">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/10 rounded-full blur-[40px] translate-x-10 -translate-y-10 group-hover:bg-amber-500/15 transition-all duration-500"></div>
+          <div className="p-5 h-full flex flex-col justify-between relative z-10 text-right" dir="rtl">
             <div className="flex justify-between items-center mb-2">
-              <div className="p-2 bg-amber-50 text-amber-600 border border-amber-200 rounded-xl shadow-sm">
+              <div className="p-2.5 bg-[#0b1b36] text-amber-400 border border-amber-500/30 rounded-xl shadow-[0_4px_10px_rgba(0,0,0,0.3)] group-hover:text-yellow-300 group-hover:border-yellow-400 transition-colors">
                 <Plus className="w-5 h-5 stroke-[2.5]" />
               </div>
-              <span className="text-[10px] font-black bg-slate-50 text-slate-600 px-2 py-0.5 rounded-full border border-slate-200 uppercase tracking-widest leading-none shadow-sm">إصدار فاتورة أتعاب</span>
+              <span className="text-[10px] font-black bg-orange-500/20 text-orange-300 px-3 py-1 rounded-lg border border-orange-500/40 uppercase tracking-widest leading-none shadow-sm drop-shadow-[0_1px_2px_rgba(0,0,0,0.4)]">إصدار فاتورة أتعاب</span>
             </div>
             <div>
-              <h3 className="text-xl font-black text-slate-900 transition-colors leading-snug mb-2">
+              <h3 className="text-[19px] font-black text-white group-hover:text-amber-300 transition-colors leading-snug mb-1.5 drop-shadow-[0_1px_2px_rgba(0,0,0,0.6)]">
                 توليد فاتورة أتعاب ضريبية
               </h3>
-              <p className="text-sm font-bold text-slate-500 leading-normal">
-                إصدار وتحرير عقود الفواتير الضريبية المبسطة والشاملة.
+              <p className="text-xs font-black text-yellow-300 leading-normal tracking-wide drop-shadow-[0_1px_2px_rgba(0,0,0,0.4)]">
+                إصدار وتحرير عقود الفواتير الضريبية المبسطة والشاملة لعملاء المكتب والمقاولين.
               </p>
             </div>
           </div>
-        </ContrastMotionDiv>
+        </motion.div>
 
         {/* Card 2: Electronic Payment Gateways */}
-        <ContrastMotionDiv 
+        <motion.div 
           onClick={() => setIsGatewaysOpen(true)}
-          className="bg-white border border-slate-200 rounded-[1.5rem] cursor-pointer relative overflow-hidden h-[210px] hover:border-amber-300 shadow-sm hover:shadow-md group transition-all duration-300"
+          whileHover={{ y: -6, scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+          className="bg-gradient-to-br from-[#0a1931] via-[#0f2042] to-[#060e1c] border-2 border-[#1e3a6a]/70 hover:border-amber-400 rounded-[1.8rem] cursor-pointer relative overflow-hidden h-[210px] shadow-[0_12px_28px_rgba(3,7,18,0.5)] hover:shadow-[0_12px_36px_rgba(245,158,11,0.2)] group transition-all duration-300 flex flex-col justify-between"
           id="action-box-gateways"
-          bgClass="bg-white"
         >
-          <div className="absolute top-0 right-0 w-32 h-32 bg-amber-50 rounded-full blur-[40px] translate-x-10 -translate-y-10 group-hover:bg-amber-100 transition-colors"></div>
-          <div className="p-5 h-full flex flex-col justify-between relative z-10">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/10 rounded-full blur-[40px] translate-x-10 -translate-y-10 group-hover:bg-amber-500/15 transition-all duration-500"></div>
+          <div className="p-5 h-full flex flex-col justify-between relative z-10 text-right" dir="rtl">
             <div className="flex justify-between items-center mb-2">
-              <div className="p-2 bg-amber-50 text-amber-600 border border-amber-200 rounded-xl shadow-sm">
+              <div className="p-2.5 bg-[#0b1b36] text-amber-400 border border-amber-500/30 rounded-xl shadow-[0_4px_10px_rgba(0,0,0,0.3)] group-hover:text-yellow-300 group-hover:border-yellow-400 transition-colors">
                 <CreditCard className="w-5 h-5 stroke-[2.5]" />
               </div>
-              <span className="text-[10px] font-black bg-slate-50 text-slate-600 px-2 py-0.5 rounded-full border border-slate-200 uppercase tracking-widest leading-none shadow-sm">ربط بوابات دفع</span>
+              <span className="text-[10px] font-black bg-amber-500/20 text-yellow-300 px-3 py-1 rounded-lg border border-amber-500/40 uppercase tracking-widest leading-none shadow-sm drop-shadow-[0_1px_2px_rgba(0,0,0,0.4)]">ربط بوابات دفع</span>
             </div>
             <div>
-              <h3 className="text-xl font-black text-slate-900 transition-colors leading-snug mb-2">
+              <h3 className="text-[19px] font-black text-white group-hover:text-orange-300 transition-colors leading-snug mb-1.5 drop-shadow-[0_1px_2px_rgba(0,0,0,0.6)]">
                 بوابات الدفع الإلكتروني
               </h3>
-              <p className="text-sm font-bold text-slate-500 leading-normal">
-                مزامنة بوابات STC Pay و مدي و Apple Pay والروابط الآلية.
+              <p className="text-xs font-black text-orange-400 leading-normal tracking-wide drop-shadow-[0_1px_2px_rgba(0,0,0,0.4)]">
+                مزامنة بوابات STC Pay و مدي و Apple Pay والروابط الآلية الفورية للسداد البنكي.
               </p>
             </div>
           </div>
-        </ContrastMotionDiv>
+        </motion.div>
 
         {/* Card 3: Receipt Voucher */}
-        <ContrastMotionDiv 
+        <motion.div 
           onClick={() => setIsReceiptOpen(true)}
-          className="bg-white border border-slate-200 rounded-[1.5rem] cursor-pointer relative overflow-hidden h-[210px] hover:border-amber-300 shadow-sm hover:shadow-md group transition-all duration-300"
+          whileHover={{ y: -6, scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+          className="bg-gradient-to-br from-[#0a1931] via-[#0f2042] to-[#060e1c] border-2 border-[#1e3a6a]/70 hover:border-amber-400 rounded-[1.8rem] cursor-pointer relative overflow-hidden h-[210px] shadow-[0_12px_28px_rgba(3,7,18,0.5)] hover:shadow-[0_12px_36px_rgba(245,158,11,0.2)] group transition-all duration-300 flex flex-col justify-between"
           id="action-box-receipt"
-          bgClass="bg-white"
         >
-          <div className="absolute top-0 right-0 w-32 h-32 bg-amber-50 rounded-full blur-[40px] translate-x-10 -translate-y-10 group-hover:bg-amber-100 transition-colors"></div>
-          <div className="p-5 h-full flex flex-col justify-between relative z-10">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/10 rounded-full blur-[40px] translate-x-10 -translate-y-10 group-hover:bg-amber-500/15 transition-all duration-500"></div>
+          <div className="p-5 h-full flex flex-col justify-between relative z-10 text-right" dir="rtl">
             <div className="flex justify-between items-center mb-2">
-              <div className="p-2 bg-amber-50 text-amber-600 border border-amber-200 rounded-xl shadow-sm">
+              <div className="p-2.5 bg-[#0b1b36] text-amber-400 border border-amber-500/30 rounded-xl shadow-[0_4px_10px_rgba(0,0,0,0.3)] group-hover:text-yellow-300 group-hover:border-yellow-400 transition-colors">
                 <Printer className="w-5 h-5 stroke-[2.5]" />
               </div>
-              <span className="text-[10px] font-black bg-slate-50 text-slate-600 px-2 py-0.5 rounded-full border border-slate-200 uppercase tracking-widest leading-none shadow-sm">إصدار سند قبض</span>
+              <span className="text-[10px] font-black bg-orange-500/20 text-orange-300 px-3 py-1 rounded-lg border border-orange-500/40 uppercase tracking-widest leading-none shadow-sm drop-shadow-[0_1px_2px_rgba(0,0,0,0.4)]">إصدار سند قبض</span>
             </div>
             <div>
-              <h3 className="text-xl font-black text-slate-900 transition-colors leading-snug mb-2">
+              <h3 className="text-[19px] font-black text-white group-hover:text-amber-300 transition-colors leading-snug mb-1.5 drop-shadow-[0_1px_2px_rgba(0,0,0,0.6)]">
                 إصدار سند قبض رسمي
               </h3>
-              <p className="text-sm font-bold text-slate-500 leading-normal">
-                رصد المقبوضات وتوليد سند قبض فوري مع رمز QR المشفر.
+              <p className="text-xs font-black text-yellow-300 leading-normal tracking-wide drop-shadow-[0_1px_2px_rgba(0,0,0,0.4)]">
+                رصد المقبوضات وتوليد سند قبض فوري مع رمز QR المشفر المتوافق مع نظام الفوترة.
               </p>
             </div>
           </div>
-        </ContrastMotionDiv>
+        </motion.div>
 
         {/* Card 4: Payment Voucher */}
-        <ContrastMotionDiv 
+        <motion.div 
           onClick={() => setIsPaymentOpen(true)}
-          className="bg-white border border-slate-200 rounded-[1.5rem] cursor-pointer relative overflow-hidden h-[210px] hover:border-amber-300 shadow-sm hover:shadow-md group transition-all duration-300"
+          whileHover={{ y: -6, scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+          className="bg-gradient-to-br from-[#0a1931] via-[#0f2042] to-[#060e1c] border-2 border-[#1e3a6a]/70 hover:border-amber-400 rounded-[1.8rem] cursor-pointer relative overflow-hidden h-[210px] shadow-[0_12px_28px_rgba(3,7,18,0.5)] hover:shadow-[0_12px_36px_rgba(245,158,11,0.2)] group transition-all duration-300 flex flex-col justify-between"
           id="action-box-payment"
-          bgClass="bg-white"
         >
-          <div className="absolute top-0 right-0 w-32 h-32 bg-amber-50 rounded-full blur-[40px] translate-x-10 -translate-y-10 group-hover:bg-amber-100 transition-colors"></div>
-          <div className="p-5 h-full flex flex-col justify-between relative z-10">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/10 rounded-full blur-[40px] translate-x-10 -translate-y-10 group-hover:bg-amber-500/15 transition-all duration-500"></div>
+          <div className="p-5 h-full flex flex-col justify-between relative z-10 text-right" dir="rtl">
             <div className="flex justify-between items-center mb-2">
-              <div className="p-2 bg-amber-50 text-amber-600 border border-amber-200 rounded-xl shadow-sm">
+              <div className="p-2.5 bg-[#0b1b36] text-amber-400 border border-amber-500/30 rounded-xl shadow-[0_4px_10px_rgba(0,0,0,0.3)] group-hover:text-yellow-300 group-hover:border-yellow-400 transition-colors">
                 <TrendingDown className="w-5 h-5 stroke-[2.5]" />
               </div>
-              <span className="text-[10px] font-black bg-slate-50 text-slate-600 px-2 py-0.5 rounded-full border border-slate-200 uppercase tracking-widest leading-none shadow-sm">إصدار سند صرف</span>
+              <span className="text-[10px] font-black bg-amber-500/20 text-yellow-300 px-3 py-1 rounded-lg border border-amber-500/40 uppercase tracking-widest leading-none shadow-sm drop-shadow-[0_1px_2px_rgba(0,0,0,0.4)]">إصدار سند صرف</span>
             </div>
             <div>
-              <h3 className="text-xl font-black text-slate-900 transition-colors leading-snug mb-2">
+              <h3 className="text-[19px] font-black text-white group-hover:text-orange-300 transition-colors leading-snug mb-1.5 drop-shadow-[0_1px_2px_rgba(0,0,0,0.6)]">
                 إصدار سند صرف معتمد
               </h3>
-              <p className="text-sm font-bold text-slate-500 leading-normal">
-                إثبات المصروفات التشغيلية والرسوم القضائية.
+              <p className="text-xs font-black text-orange-400 leading-normal tracking-wide drop-shadow-[0_1px_2px_rgba(0,0,0,0.4)]">
+                إثبات ومراقبة المصروفات التشغيلية والرسوم القضائية والعهود العينية المستلمة قانونياً.
               </p>
             </div>
           </div>
-        </ContrastMotionDiv>
+        </motion.div>
 
         {/* Card 5: Legal Fees Calculator */}
-        <ContrastMotionDiv 
+        <motion.div 
           onClick={() => setIsCalculatorOpen(true)}
-          className="bg-white border border-slate-200 rounded-[1.5rem] cursor-pointer relative overflow-hidden h-[210px] hover:border-amber-300 shadow-sm hover:shadow-md group transition-all duration-300"
+          whileHover={{ y: -6, scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+          className="bg-gradient-to-br from-[#0a1931] via-[#0f2042] to-[#060e1c] border-2 border-[#1e3a6a]/70 hover:border-amber-400 rounded-[1.8rem] cursor-pointer relative overflow-hidden h-[210px] shadow-[0_12px_28px_rgba(3,7,18,0.5)] hover:shadow-[0_12px_36px_rgba(245,158,11,0.2)] group transition-all duration-300 flex flex-col justify-between"
           id="action-box-calculator"
-          bgClass="bg-white"
         >
-          <div className="absolute top-0 right-0 w-32 h-32 bg-amber-50 rounded-full blur-[40px] translate-x-10 -translate-y-10 group-hover:bg-amber-100 transition-colors"></div>
-          <div className="p-5 h-full flex flex-col justify-between relative z-10">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/10 rounded-full blur-[40px] translate-x-10 -translate-y-10 group-hover:bg-amber-500/15 transition-all duration-500"></div>
+          <div className="p-5 h-full flex flex-col justify-between relative z-10 text-right" dir="rtl">
             <div className="flex justify-between items-center mb-2">
-              <div className="p-2 bg-amber-50 text-amber-600 border border-amber-200 rounded-xl shadow-sm">
+              <div className="p-2.5 bg-[#0b1b36] text-amber-400 border border-amber-500/30 rounded-xl shadow-[0_4px_10px_rgba(0,0,0,0.3)] group-hover:text-yellow-300 group-hover:border-yellow-400 transition-colors">
                 <Calculator className="w-5 h-5 stroke-[2.5]" />
               </div>
-              <span className="text-[10px] font-black bg-slate-50 text-slate-600 px-2 py-0.5 rounded-full border border-slate-200 uppercase tracking-widest leading-none shadow-sm">حاسبة قضائية</span>
+              <span className="text-[10px] font-black bg-orange-500/20 text-orange-300 px-3 py-1 rounded-lg border border-orange-500/40 uppercase tracking-widest leading-none shadow-sm drop-shadow-[0_1px_2px_rgba(0,0,0,0.4)]">حاسبة قضائية</span>
             </div>
             <div>
-              <h3 className="text-xl font-black text-slate-900 transition-colors leading-snug mb-2">
+              <h3 className="text-[19px] font-black text-white group-hover:text-amber-300 transition-colors leading-snug mb-1.5 drop-shadow-[0_1px_2px_rgba(0,0,0,0.6)]">
                 حاسبة الأتعاب الذكية
               </h3>
-              <p className="text-sm font-bold text-slate-500 leading-normal">
-                احتساب تقديري لأتعاب المحاماة بناءً على قيمة المطالبة ونسبة المسعى.
+              <p className="text-xs font-black text-yellow-300 leading-normal tracking-wide drop-shadow-[0_1px_2px_rgba(0,0,0,0.4)]">
+                احتساب تقديري دقيق لأتعاب المحاماة بناءً على قيمة المطالبة ونسبة المسعى المحددة بعناية.
               </p>
             </div>
           </div>
-        </ContrastMotionDiv>
+        </motion.div>
       </div>
 
       {/* Calculator Modal */}
@@ -1049,7 +1114,49 @@ export default function FinanceModule({
                  احتساب الأتعاب التقديرية
                </button>
 
-               {calcResult !== null && (
+               {calcResult !== null && (() => {
+                  const colors = getCalculatorTextColor(calcBgColor);
+                  return (
+                    <div className="space-y-4">
+                      {/* Background Accessibility Customizer Grid */}
+                      <div className={`border rounded-2xl p-4 transition-all ${luminousTheme === 'dark' ? 'bg-slate-900 border-slate-700' : 'bg-slate-50 border-slate-200'}`}>
+                        <span className={`text-[10px] font-extrabold block mb-2 ${luminousTheme === 'dark' ? 'text-slate-300' : 'text-slate-800'}`}>تخصيص خلفية كارت الحسبة ( Accessibility Live ):</span>
+                        <div className="flex gap-2 justify-center flex-wrap">
+                          {[
+                            { hex: "#ffffff", name: "فائق" },
+                            { hex: "#fffdf5", name: "ذهبي" },
+                            { hex: "#f0f7ff", name: "نيلي" },
+                            { hex: "#faf5ff", name: "عذب" },
+                            { hex: "#0f172a", name: "كحلي" },
+                            { hex: "#4a1d1d", name: "قرمزي" },
+                          ].map(opt => (
+                            <button
+                              type="button"
+                              key={opt.hex}
+                              onClick={() => setCalcBgColor(opt.hex)}
+                              className={`w-10 py-1.5 rounded-lg border text-[9px] font-black transition-all cursor-pointer ${calcBgColor === opt.hex ? 'border-amber-600 scale-105 shadow-sm' : 'border-slate-300 bg-white'}`}
+                              style={{ backgroundColor: opt.hex, color: getCalculatorTextColor(opt.hex).text.includes("white") ? "#ffffff" : "#0f172a" }}
+                            >
+                              {opt.name}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      <motion.div 
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        style={{ backgroundColor: calcBgColor }}
+                        className={`border-2 p-5 rounded-2xl text-center shadow-lg transition-all duration-300 ${colors.border}`}
+                      >
+                         <span className={`text-[10px] font-black block mb-1.5 uppercase tracking-widest ${colors.label}`}>إجمالي الأتعاب المستحقة لمدونة العقد (تقديرياً)</span>
+                         <span className={`text-2xl font-black font-mono tabular-nums ${colors.text}`}>{calcResult.toLocaleString()} <span className="text-xs font-sans">ر.س</span></span>
+                         <p className={`text-[10px] font-bold mt-2 font-sans tracking-tight ${colors.label}`}>لا تشمل الضريبة المضافة (15%) أو الرسوم القضائية.</p>
+                      </motion.div>
+                    </div>
+                  );
+                })()}
+               {false && (
                  <motion.div 
                    initial={{ opacity: 0, y: 10 }}
                    animate={{ opacity: 1, y: 0 }}

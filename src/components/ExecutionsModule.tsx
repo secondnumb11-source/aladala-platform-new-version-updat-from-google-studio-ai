@@ -22,6 +22,78 @@ import {
 } from "lucide-react";
 import { Execution } from "../types";
 
+export function calculateTextColor(hexColor: string | undefined): "text-black" | "text-white" {
+  if (!hexColor) return "text-black";
+  const cleanHex = hexColor.replace("#", "");
+  if (cleanHex.toLowerCase() === "white" || cleanHex.toLowerCase() === "ffffff") return "text-black";
+
+  let r = 255, g = 255, b = 255;
+  if (cleanHex.length === 6) {
+    r = parseInt(cleanHex.substring(0, 2), 16);
+    g = parseInt(cleanHex.substring(2, 4), 16);
+    b = parseInt(cleanHex.substring(4, 6), 16);
+  } else if (cleanHex.length === 3) {
+    r = parseInt(cleanHex.substring(0, 1) + cleanHex.substring(0, 1), 16);
+    g = parseInt(cleanHex.substring(1, 2) + cleanHex.substring(1, 2), 16);
+    b = parseInt(cleanHex.substring(2, 3) + cleanHex.substring(2, 3), 16);
+  }
+
+  const getSrgb = (c: number) => {
+    const val = c / 255;
+    return val <= 0.03928 ? val / 12.92 : Math.pow((val + 0.055) / 1.055, 2.4);
+  };
+
+  const L = 0.2126 * getSrgb(r) + 0.7152 * getSrgb(g) + 0.0722 * getSrgb(b);
+  return L > 0.179 ? "text-black" : "text-white";
+}
+
+export function getTextColorForBg(hexColor: string | undefined): { text: string; subtext: string; label: string; accent: string; border: string; bgBadge?: string } {
+  if (!hexColor || hexColor === '#ffffff' || hexColor === 'white') {
+    return {
+      text: 'text-slate-900',
+      subtext: 'text-slate-705',
+      label: 'text-slate-500',
+      accent: 'text-amber-600',
+      border: 'border-slate-200',
+      bgBadge: 'bg-slate-100 text-slate-800'
+    };
+  }
+  
+  const hex = hexColor.startsWith('#') ? hexColor.substring(1) : hexColor;
+  let r = 255, g = 255, b = 255;
+  if (hex.length === 6) {
+    r = parseInt(hex.substring(0, 2), 16);
+    g = parseInt(hex.substring(2, 4), 16);
+    b = parseInt(hex.substring(4, 6), 16);
+  } else if (hex.length === 3) {
+    r = parseInt(hex.substring(0, 1) + hex.substring(0, 1), 16);
+    g = parseInt(hex.substring(1, 2) + hex.substring(1, 2), 16);
+    b = parseInt(hex.substring(2, 3) + hex.substring(2, 3), 16);
+  }
+  
+  const luminance = (r * 299 + g * 587 + b * 114) / 1000;
+  
+  if (luminance >= 140) {
+    return {
+      text: 'text-slate-900',
+      subtext: 'text-slate-800 font-extrabold',
+      label: 'text-slate-600 font-extrabold',
+      accent: 'text-amber-700',
+      border: 'border-slate-350/50',
+      bgBadge: 'bg-white/90 text-slate-900 border border-slate-200 shadow-sm'
+    };
+  } else {
+    return {
+      text: 'text-white font-black drop-shadow-sm',
+      subtext: 'text-slate-100 font-black drop-shadow-sm',
+      label: 'text-slate-300 font-extrabold',
+      accent: 'text-amber-300 font-black drop-shadow-sm',
+      border: 'border-white/10',
+      bgBadge: 'bg-black/50 text-white border border-white/20'
+    };
+  }
+}
+
 interface ExecutionsModuleProps {
   executions: Execution[];
   onCreateExecution?: (e: Partial<Execution>) => void;
@@ -105,6 +177,7 @@ export default function ExecutionsModule({
     court_name: "",
     issue_date: new Date().toISOString().split("T")[0],
     details: "",
+    card_color: "#ffffff",
   });
 
   const filtered = localExecutions.filter((ex) => {
@@ -131,6 +204,7 @@ export default function ExecutionsModule({
         court_name: "",
         issue_date: new Date().toISOString().split("T")[0],
         details: "",
+        card_color: "#ffffff",
       });
     }
   };
@@ -473,6 +547,54 @@ export default function ExecutionsModule({
                   />
                 </div>
 
+                {/* Accessibility High Contrast Color Settings */}
+                <div className="col-span-full bg-slate-50 p-6 rounded-[2rem] border border-slate-200">
+                  <label className="text-xs font-black text-slate-900 mb-2 block uppercase tracking-wide">
+                    الهوية اللونية والسطوع للكارت (Accessibility High Contrast Settings)
+                  </label>
+                  <p className="text-[11px] text-slate-600 font-extrabold mb-4 leading-relaxed">
+                    اصنع مظهراً متميزاً لكارت طلب التنفيذ. سيقوم محرك الألوان الذكي بمكتب دقة المحاماة تلقائياً بفحص سطوع اللون وتغيير لون النصوص (أبيض أو أسود) بصورة تكفل أعلى درجات الوصول وسهولة القراءة والمطابقة للمعايير العالمية.
+                  </p>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    {[
+                      { hex: "#ffffff", label: "أبيض فائق" },
+                      { hex: "#fffdf5", label: "أمبر ملكي" },
+                      { hex: "#f0f7ff", label: "أزرق نيلي" },
+                      { hex: "#f2faf6", label: "أخضر عذق" },
+                      { hex: "#faf5ff", label: "بنفسجي ناعم" },
+                      { hex: "#3b0764", label: "داكن أرجواني" },
+                      { hex: "#0f172a", label: "كحلي وقاد" },
+                      { hex: "#4a1d1d", label: "قرنفلي قضائي" },
+                    ].map((col) => {
+                      const activeColor = isAdding ? (newExec.card_color || "#ffffff") : (editingExec?.card_color || "#ffffff");
+                      const isSelected = activeColor === col.hex;
+                      const textConfig = getTextColorForBg(col.hex);
+                      return (
+                        <button
+                          type="button"
+                          key={col.hex}
+                          onClick={() => {
+                            if (isAdding) {
+                              setNewExec({ ...newExec, card_color: col.hex });
+                            } else if (editingExec) {
+                              setEditingExec({ ...editingExec, card_color: col.hex });
+                            }
+                          }}
+                          className={`flex items-center gap-2 px-3 py-2.5 rounded-xl border-2 text-xs font-black transition-all cursor-pointer shadow-sm ${
+                            isSelected
+                              ? "border-amber-600 ring-2 ring-amber-500/20 scale-105"
+                              : "border-slate-200 hover:border-slate-300 bg-white"
+                          }`}
+                          style={{ backgroundColor: col.hex, color: textConfig.text.includes("white") ? "#ffffff" : "#0f172a" }}
+                        >
+                          <span className="w-3 h-3 rounded-full border border-slate-300 block shrink-0" style={{ backgroundColor: col.hex }}></span>
+                          <span className="truncate">{col.label}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
                 <div className="col-span-full pt-4 flex gap-4">
                   <button
                     type="submit"
@@ -687,122 +809,141 @@ export default function ExecutionsModule({
               لا توجد سجلات مطابقة لخيارات الفلترة الحالية...
             </div>
           ) : (
-            filtered.map((ex) => (
-              <motion.div
-                layout
-                key={ex.id}
-                onClick={() => setViewingExec(ex)}
-                className="p-6 rounded-[2rem] bg-white border border-slate-200 hover:border-slate-300 shadow-[0_5px_20px_rgba(0,0,0,0.05)] hover:shadow-[0_10px_30px_rgba(0,0,0,0.1)] transition-all duration-300 group cursor-pointer relative overflow-hidden"
-              >
-                <div className="absolute top-0 right-0 w-24 h-24 bg-slate-50 rounded-full blur-2xl -z-10"></div>
+            filtered.map((ex) => {
+              const colors = getTextColorForBg(ex.card_color);
+              const isDarkCard = colors.text.includes("white");
+              return (
+                <motion.div
+                  layout
+                  key={ex.id}
+                  onClick={() => setViewingExec(ex)}
+                  className={`p-7 rounded-[2rem] border hover:shadow-[0_12px_40px_rgba(0,0,0,0.12)] transition-all duration-300 group cursor-pointer relative overflow-hidden ${colors.border}`}
+                  style={{ backgroundColor: ex.card_color || "#ffffff" }}
+                >
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full blur-2xl -z-10"></div>
 
-                <div className="flex justify-between items-start mb-6">
-                  <div className="p-3 bg-[#0f172a] text-white rounded-2xl group-hover:scale-110 transition-transform duration-300 shadow-md">
-                    <Gavel className="w-6 h-6" />
+                  <div className="flex justify-between items-start mb-6">
+                    <div className={`p-3 rounded-2xl group-hover:scale-110 transition-transform duration-300 shadow-sm ${
+                      isDarkCard ? "bg-white/20 text-white border border-white/30" : "bg-[#0f172a] text-amber-400"
+                    }`}>
+                      <Gavel className="w-6 h-6" />
+                    </div>
+                    <span
+                      className={`px-4 py-1.5 rounded-full text-[10px] font-black border uppercase tracking-widest shadow-sm ${
+                        ex.status?.includes("مكتمل") || ex.status?.includes("منتهي")
+                          ? isDarkCard ? "bg-emerald-500/20 text-emerald-300 border-emerald-500/30" : "bg-emerald-50 text-emerald-700 border-emerald-200"
+                          : ex.status?.includes("قيد")
+                            ? isDarkCard ? "bg-amber-500/20 text-amber-300 border-amber-500/30" : "bg-amber-50 text-amber-700 border-amber-200"
+                            : isDarkCard ? "bg-blue-500/20 text-blue-305 border-blue-500/30" : "bg-blue-50 text-blue-700 border-blue-200"
+                      }`}
+                    >
+                      {ex.status}
+                    </span>
                   </div>
-                  <span
-                    className={`px-4 py-1.5 rounded-full text-[10px] font-black border uppercase tracking-widest shadow-sm ${
-                      ex.status?.includes("مكتمل") ||
-                      ex.status?.includes("منتهي")
-                        ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                        : ex.status?.includes("قيد")
-                          ? "bg-amber-50 text-amber-700 border-amber-200"
-                          : "bg-blue-50 text-blue-700 border-blue-200"
-                    }`}
-                  >
-                    {ex.status}
-                  </span>
-                </div>
 
-                <h3 className="text-lg font-black mb-1 text-[#0f172a] group-hover:text-amber-600 transition-colors drop-shadow-sm">
-                  طلب رقم: {ex.execution_number}
-                </h3>
-                {ex.is_najiz_sync && (
-                  <div className="flex items-center gap-1.5 mb-3">
-                    <span className="text-[10px] bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded-md font-black flex items-center gap-1 shadow-sm">
-                      <Activity className="w-3 h-3" /> مستورد ومزامن آلياً عبر ناجز
-                    </span>
-                  </div>
-                )}
-
-                <div className="space-y-4 mb-6 pt-2">
-                  <div className="flex items-center justify-between text-sm border-b border-slate-100 pb-2">
-                    <div className="flex items-center gap-2.5">
-                      <User className="w-4 h-4 text-slate-400" />
-                      <span className="text-slate-500 font-extrabold">
-                        الموكل الطالب:
-                      </span>
-                    </div>
-                    <span className="font-black text-[#0f172a] drop-shadow-sm">
-                      {ex.requester_name}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between text-sm border-b border-slate-100 pb-2">
-                    <div className="flex items-center gap-2.5">
-                      <User className="w-4 h-4 text-slate-400" />
-                      <span className="text-slate-500 font-extrabold">
-                        الطرف المدين:
-                      </span>
-                    </div>
-                    <span className="font-extrabold text-[#334155]">
-                      {ex.opponent_name}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between text-sm border-b border-slate-100 pb-2">
-                    <div className="flex items-center gap-2.5">
-                      <CreditCard className="w-4 h-4 text-slate-400" />
-                      <span className="text-slate-500 font-extrabold">
-                        قيمة السند:
-                      </span>
-                    </div>
-                    <span className="font-black text-base text-amber-600 font-mono drop-shadow-sm">
-                      {(ex.amount || 0).toLocaleString()}{" "}
-                      <span className="text-[10px] text-amber-500 font-sans">
-                        ر.س
-                      </span>
-                    </span>
-                  </div>
-                  {ex.court_name && (
-                    <div className="flex items-center justify-between text-sm">
-                      <div className="flex items-center gap-2.5">
-                        <FileText className="w-4 h-4 text-slate-400" />
-                        <span className="text-slate-500 font-extrabold">
-                          المحكمة:
-                        </span>
-                      </div>
-                      <span className="font-black text-[#334155] text-xs">
-                        {ex.court_name}
+                  <h3 className={`text-lg font-black mb-1.5 transition-colors drop-shadow-sm ${isDarkCard ? "text-white" : "text-[#0f172a] group-hover:text-amber-600"}`}>
+                    طلب رقم: {ex.execution_number}
+                  </h3>
+                  {ex.is_najiz_sync && (
+                    <div className="flex items-center gap-1.5 mb-4">
+                      <span className={`text-[10px] border px-2.5 py-1 rounded-lg font-black flex items-center gap-1 shadow-sm ${
+                        isDarkCard ? "bg-white/10 text-emerald-300 border-white/10" : "bg-emerald-50/80 text-emerald-850 border-emerald-200"
+                      }`}>
+                        <Activity className="w-3.5 h-3.5 animate-pulse" /> مستورد ومزامن آلياً عبر ناجز
                       </span>
                     </div>
                   )}
-                </div>
 
-                <div
-                  className="flex gap-2.5 pt-4 border-t border-slate-100"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <button
-                    onClick={() => setEditingExec(ex)}
-                    className="flex-1 flex items-center justify-center gap-2 p-3 bg-white hover:bg-slate-50 text-[#0f172a] font-black text-xs transition-all border border-slate-200 hover:border-[#0f172a] rounded-xl cursor-pointer shadow-sm hover:shadow-md"
+                  <div className="space-y-4.5 mb-6 pt-1">
+                    <div className={`flex items-center justify-between text-sm pb-2.5 border-b ${isDarkCard ? "border-white/10" : "border-slate-100"}`}>
+                      <div className="flex items-center gap-2.5">
+                        <User className={`w-4 h-4 ${isDarkCard ? "text-slate-300" : "text-slate-400"}`} />
+                        <span className={`${colors.label}`}>
+                          الموكل الطالب:
+                        </span>
+                      </div>
+                      <span className={`font-black ${colors.text}`}>
+                        {ex.requester_name}
+                      </span>
+                    </div>
+
+                    <div className={`flex items-center justify-between text-sm pb-2.5 border-b ${isDarkCard ? "border-white/10" : "border-slate-100"}`}>
+                      <div className="flex items-center gap-2.5">
+                        <User className={`w-4 h-4 ${isDarkCard ? "text-slate-300" : "text-slate-400"}`} />
+                        <span className={`${colors.label}`}>
+                          الطرف المدين:
+                        </span>
+                      </div>
+                      <span className={`font-extrabold ${colors.subtext}`}>
+                        {ex.opponent_name}
+                      </span>
+                    </div>
+
+                    <div className={`flex items-center justify-between text-sm pb-2.5 border-b ${isDarkCard ? "border-white/10" : "border-slate-100"}`}>
+                      <div className="flex items-center gap-2.5">
+                        <CreditCard className={`w-4 h-4 ${isDarkCard ? "text-slate-300" : "text-slate-400"}`} />
+                        <span className={`${colors.label}`}>
+                          قيمة السند:
+                        </span>
+                      </div>
+                      <span className={`font-black text-base font-mono drop-shadow-sm ${colors.accent}`}>
+                        {(ex.amount || 0).toLocaleString()}{" "}
+                        <span className={`text-[10px] font-sans ${isDarkCard ? "text-amber-305" : "text-amber-600"}`}>
+                          ر.س
+                        </span>
+                      </span>
+                    </div>
+
+                    {ex.court_name && (
+                      <div className="flex items-center justify-between text-sm">
+                        <div className="flex items-center gap-2.5">
+                          <FileText className={`w-4 h-4 ${isDarkCard ? "text-slate-300" : "text-slate-400"}`} />
+                          <span className={`${colors.label}`}>
+                            المحكمة:
+                          </span>
+                        </div>
+                        <span className={`font-black text-xs ${colors.subtext}`}>
+                          {ex.court_name}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+
+                  <div
+                    className={`flex gap-2.5 pt-4 border-t ${isDarkCard ? "border-white/10" : "border-slate-100"}`}
+                    onClick={(e) => e.stopPropagation()}
                   >
-                    <Edit2 className="w-4 h-4" />
-                    تعديل البيانات
-                  </button>
-                  <button
-                    onClick={() => {
-                      if (
-                        confirm("هل أنت متأكد من حذف هذا السجل بشكل نهائي؟")
-                      ) {
-                        onDeleteExecution && onDeleteExecution(ex.id);
-                      }
-                    }}
-                    className="p-3 bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 hover:border-rose-300 rounded-xl transition-all cursor-pointer shadow-sm hover:shadow-md"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </div>
-              </motion.div>
-            ))
+                    <button
+                      onClick={() => setEditingExec(ex)}
+                      className={`flex-1 flex items-center justify-center gap-2 p-3 font-black text-xs transition-all border rounded-xl cursor-pointer shadow-sm hover:shadow-md ${
+                        isDarkCard
+                          ? "bg-white/10 hover:bg-white/20 text-white border-white/20 hover:border-white/45"
+                          : "bg-white hover:bg-slate-50 text-[#0f172a] border-slate-200 hover:border-[#0f172a]"
+                      }`}
+                    >
+                      <Edit2 className="w-4 h-4" />
+                      تعديل البيانات
+                    </button>
+                    <button
+                      onClick={() => {
+                        if (
+                          confirm("هل أنت متأكد من حذف هذا السجل بشكل نهائي؟")
+                        ) {
+                          onDeleteExecution && onDeleteExecution(ex.id);
+                        }
+                      }}
+                      className={`p-3 border rounded-xl transition-all cursor-pointer shadow-sm hover:shadow-md ${
+                        isDarkCard
+                          ? "bg-rose-900/40 hover:bg-rose-900/60 text-rose-200 border-rose-800/50"
+                          : "bg-rose-50 hover:bg-rose-100 text-rose-600 border-rose-200 hover:border-rose-300"
+                      }`}
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                </motion.div>
+              );
+            })
           )}
         </div>
       )}

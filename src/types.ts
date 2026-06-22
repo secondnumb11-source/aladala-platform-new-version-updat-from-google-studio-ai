@@ -36,6 +36,7 @@ export interface Execution {
   updated_at?: string;
   is_najiz_sync?: boolean;
   last_sync_at?: string;
+  card_color?: string;
 }
 
 export interface Case {

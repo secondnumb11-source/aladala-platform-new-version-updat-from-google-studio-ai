@@ -87,14 +87,14 @@ function getStrictWCAGAAAPalette(fromHex: string, toHex: string, isHighContrast:
   if (isHighContrast) {
     return {
       primaryText: 'text-slate-950 font-black',
-      secondaryText: 'text-slate-900 font-bold',
-      mutedText: 'text-slate-700 font-medium',
-      accentText: 'text-indigo-900 font-extrabold',
+      secondaryText: 'text-slate-900 font-extrabold',
+      mutedText: 'text-slate-800 font-bold',
+      accentText: 'text-indigo-950 font-extrabold',
       badgeBg: 'bg-slate-200 border-slate-400',
-      badgeText: 'text-slate-950 font-bold',
-      accentBorder: 'border-slate-300',
-      innerCardBg: 'bg-slate-100/90 border border-slate-300',
-      buttonBg: 'bg-slate-950 hover:bg-slate-900 text-white border-slate-950 font-extrabold',
+      badgeText: 'text-slate-950 font-black uppercase text-[10px]',
+      accentBorder: 'border-slate-400',
+      innerCardBg: 'bg-slate-100/90 border-2 border-slate-300',
+      buttonBg: 'bg-slate-950 hover:bg-black text-white border-slate-950 font-extrabold',
       glowShadow: '0 4px 12px rgba(15, 23, 42, 0.08)',
       useOverlayMask: false,
       isLightThemeActive: true
@@ -111,33 +111,30 @@ function getStrictWCAGAAAPalette(fromHex: string, toHex: string, isHighContrast:
   const contrastWithLight = getContrastRatio(1.0, lAvg);
   const contrastWithDark = getContrastRatio(0.005, lAvg);
 
-  // We choose whichever provides the best contrast
-  // If either falls below 7.0, we mark useOverlayMask = true to inject a secondary overlay mask enhancing background
   const useLightText = contrastWithLight >= contrastWithDark || contrastWithLight >= 4.5;
   const maxContrast = Math.max(contrastWithLight, contrastWithDark);
-  const useOverlayMask = maxContrast < 7.0; // Strictly enforce WCAG AAA 7:1
+  const useOverlayMask = maxContrast < 7.0; 
 
   if (useLightText) {
     return {
-      primaryText: 'text-white font-black',
-      secondaryText: 'text-slate-100 font-bold',
-      mutedText: 'text-slate-300 font-medium',
-      accentText: 'text-amber-400 font-black', 
+      primaryText: 'text-white font-black drop-shadow-md',
+      secondaryText: 'text-slate-50 font-extrabold drop-shadow',
+      mutedText: 'text-slate-200 font-bold',
+      accentText: 'text-amber-300 font-black', 
       badgeBg: 'bg-white/10 hover:bg-white/15 border-white/20',
       badgeText: 'text-white font-bold',
       accentBorder: 'border-white/10',
-      innerCardBg: 'bg-white/5 border border-white/10 backdrop-blur-md',
-      buttonBg: 'bg-amber-500/10 hover:bg-amber-500/25 text-amber-300 border-amber-500/40 font-bold',
+      innerCardBg: 'bg-white/10 border border-white/20 backdrop-blur-md',
+      buttonBg: 'bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border-amber-500/50 font-bold',
       glowShadow: '0 10px 40px -12px rgba(0,0,0,0.8), 0 0 20px rgba(212,175,55,0.06)',
       useOverlayMask,
       isLightThemeActive: false
     };
   } else {
-    // If the background is too light, we use elegant dark charcoal text colors
     return {
       primaryText: 'text-slate-950 font-black',
-      secondaryText: 'text-slate-900 font-bold',
-      mutedText: 'text-slate-700 font-semibold',
+      secondaryText: 'text-slate-900 font-extrabold',
+      mutedText: 'text-slate-800 font-bold',
       accentText: 'text-amber-950 font-black', 
       badgeBg: 'bg-black/10 hover:bg-black/15 border-black/20',
       badgeText: 'text-slate-950 font-black',
@@ -272,8 +269,8 @@ export default function CaseCard({
 
               {/* Tag for category type of system */}
               <div className="hidden sm:flex flex-col text-right">
-                <span className={`text-[9px] font-bold opacity-60 uppercase ${palette.primaryText}`}>قالب التصنيف القضائي</span>
-                <span className={`text-[11px] font-black tracking-tight ${palette.accentText}`}>{theme.nameAr}</span>
+                <span className={`text-[10px] font-bold opacity-60 uppercase ${palette.primaryText}`}>قالب التصنيف القضائي</span>
+                <span className={`text-[12px] font-black tracking-tight ${palette.accentText}`}>{theme.nameAr}</span>
               </div>
             </div>
 
@@ -282,10 +279,10 @@ export default function CaseCard({
               {c.is_najiz_sync && (
                 <div className="flex items-center gap-1.5 bg-[#D4AF37]/20 border border-[#D4AF37]/40 px-2.5 py-1 rounded-lg animate-pulse-slow">
                    <Clock className="w-3 h-3 text-[#FACC15]" />
-                   <span className="text-[9px] font-black text-[#FACC15]">مزامنة ناجز: {c.last_sync_at ? new Date(c.last_sync_at).toLocaleDateString('ar-SA') : 'تاريخ غير معروف'}</span>
+                   <span className="text-[10px] font-black text-[#FACC15]">مزامنة ناجز: {c.last_sync_at ? new Date(c.last_sync_at).toLocaleDateString('ar-SA') : 'تاريخ غير معروف'}</span>
                 </div>
               )}
-              <span className={`text-[11px] font-black px-3 py-1.5 rounded-xl border flex items-center gap-1.5 transition-colors shadow-sm ${
+              <span className={`text-xs font-black px-3 py-1.5 rounded-xl border flex items-center gap-1.5 transition-colors shadow-sm ${
                 isHighContrast 
                   ? 'bg-slate-950 text-white border-slate-900' 
                   : 'bg-black/40 text-white border-white/20 hover:border-amber-400/40'
@@ -296,7 +293,7 @@ export default function CaseCard({
                     value={c.status || 'under_study'}
                     onChange={(e) => onUpdateCaseStatus(c, e.target.value)}
                     onClick={(e) => e.stopPropagation()}
-                    className="bg-transparent text-white font-black text-[11px] focus:outline-none cursor-pointer pr-1 leading-tight appearance-none [&>option]:bg-slate-900 [&>option]:text-white select-custom"
+                    className="bg-transparent text-white font-black text-xs focus:outline-none cursor-pointer pr-1 leading-tight appearance-none [&>option]:bg-slate-900 [&>option]:text-white select-custom"
                     style={{ direction: 'rtl' }}
                   >
                     <option value="under_study">قيد الدراسة 🖋️</option>
@@ -315,7 +312,7 @@ export default function CaseCard({
                 )}
               </span>
 
-              <span className={`text-[9px] font-bold tracking-widest px-2 py-0.5 rounded border uppercase shrink-0 ${palette.badgeBg} ${palette.badgeText}`}>
+              <span className={`text-[10px] font-bold tracking-widest px-2 py-0.5 rounded border uppercase shrink-0 ${palette.badgeBg} ${palette.badgeText}`}>
                 {onUpdateCaseStatus ? 'تحديث سريع للحالة ✨' : 'نظام العدالة الفاخرة'}
               </span>
             </div>
@@ -325,7 +322,7 @@ export default function CaseCard({
           <div className="grid grid-cols-1 gap-2.5 py-1">
             <div className="flex items-center gap-2 justify-between">
               {/* Case ID Number */}
-              <span className={`text-[11px] font-mono font-black border px-2.5 py-0.5 rounded-lg tracking-wider ${
+              <span className={`text-[12px] font-mono font-black border px-2.5 py-0.5 rounded-lg tracking-wider ${
                 isHighContrast 
                   ? 'text-slate-950 bg-slate-200 border-slate-400' 
                   : 'text-amber-400 bg-amber-400/10 border-amber-400/20'
@@ -335,21 +332,21 @@ export default function CaseCard({
 
               {/* Delayed Badge with high visibility red */}
               {isCaseOverdue(c) && (
-                <span className="text-[10px] font-bold text-red-500 bg-red-500/10 border border-red-500/30 px-3 py-0.5 rounded-full animate-pulse shadow-sm">
+                <span className="text-[11px] font-bold text-red-500 bg-red-500/10 border border-red-500/30 px-3 py-0.5 rounded-full animate-pulse shadow-sm">
                   طلب مراجعة عاجل
                 </span>
               )}
             </div>
 
             {/* Responsive Case Name Header */}
-            <h3 className={`text-base md:text-lg tracking-tight leading-snug line-clamp-2 ${palette.primaryText} mt-1`} style={{ minHeight: '2.75rem' }}>
+            <h3 className={`text-lg md:text-xl tracking-tight leading-snug line-clamp-2 ${palette.primaryText} mt-1`} style={{ minHeight: '2.75rem' }}>
               {c.caseName}
             </h3>
             
             {/* Associated Client Sub-panel */}
             <div className="flex items-center gap-2 pt-2 border-t border-dashed border-slate-700/10 mt-1">
               <User className={`w-4 h-4 shrink-0 ${palette.accentText}`} />
-              <p className={`text-[12px] ${palette.secondaryText} truncate`}>
+              <p className={`text-[13px] ${palette.secondaryText} truncate`}>
                 الموكل: <span className="font-bold">{c.clientName}</span>
               </p>
             </div>
@@ -362,18 +359,18 @@ export default function CaseCard({
             <div className={`flex flex-col gap-1 p-2.5 rounded-2xl ${palette.innerCardBg}`}>
               <div className="flex items-center gap-1.5 opacity-80">
                 <MapPin className="w-3.5 h-3.5 text-sky-400" />
-                <span className={`text-[10px] font-bold ${palette.mutedText}`}>المحكمة المختصة</span>
+                <span className={`text-[11px] font-bold ${palette.mutedText}`}>المحكمة المختصة</span>
               </div>
-              <span className={`truncate font-black text-[11px] ${palette.primaryText}`}>{c.courtName}</span>
+              <span className={`truncate font-black text-xs ${palette.primaryText}`}>{c.courtName}</span>
             </div>
             
             {/* Session Date Panel */}
             <div className={`flex flex-col gap-1 p-2.5 rounded-2xl ${palette.innerCardBg}`}>
               <div className="flex items-center gap-1.5 opacity-80">
                 <Calendar className="w-3.5 h-3.5 text-amber-500" />
-                <span className={`text-[10px] font-bold ${palette.mutedText}`}>الجلسة القادمة</span>
+                <span className={`text-[11px] font-bold ${palette.mutedText}`}>الجلسة القادمة</span>
               </div>
-              <span className={`font-mono font-black text-[11px] ${palette.accentText}`}>{c.nextSessionDate || 'غير مجدول'}</span>
+              <span className={`font-mono font-black text-xs ${palette.accentText}`}>{c.nextSessionDate || 'غير مجدول'}</span>
             </div>
           </div>
 
@@ -391,23 +388,23 @@ export default function CaseCard({
               className={`px-3 py-1.5 rounded-xl border transition-all cursor-pointer flex items-center gap-1.5 ${palette.buttonBg}`}
               title="سحب وقائع وبيانات صك الحكم من ناجز"
             >
-              <Bot className={`w-3.5 h-3.5 ${isSyncing === c.id ? 'animate-spin' : ''}`} />
-              <span className="text-[10px] font-bold">{isSyncing === c.id ? 'جاري السحب...' : 'مزامنة ناجز'}</span>
+              <Bot className={`w-4 h-4 ${isSyncing === c.id ? 'animate-spin' : ''}`} />
+              <span className="text-[11px] font-bold">{isSyncing === c.id ? 'جاري السحب...' : 'مزامنة ناجز'}</span>
             </button>
 
             {/* Integration source indicator tag */}
             {c.isNajizSync ? (
-              <span className={`text-[10px] font-bold px-2.5 py-1 rounded-lg border flex items-center gap-1.5 shadow-sm ${
+              <span className={`text-[11px] font-bold px-2.5 py-1 rounded-lg border flex items-center gap-1.5 shadow-sm ${
                 isHighContrast ? 'bg-emerald-100 text-emerald-900 border-emerald-300' : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
               }`}>
-                <Bot className="w-3.5 h-3.5 text-emerald-400" />
+                <Bot className="w-4 h-4 text-emerald-400" />
                 <span>مرتبط بنظام ناجز</span>
               </span>
             ) : (
-              <span className={`text-[10px] font-bold px-2.5 py-1 rounded-lg border flex items-center gap-1.5 shadow-sm ${
+              <span className={`text-[11px] font-bold px-2.5 py-1 rounded-lg border flex items-center gap-1.5 shadow-sm ${
                 isHighContrast ? 'bg-orange-100 text-orange-950 border-orange-300' : 'bg-orange-500/10 text-orange-400 border-orange-500/20'
               }`}>
-                <Edit2 className="w-3.5 h-3.5 text-orange-400 animate-pulse" />
+                <Edit2 className="w-4 h-4 text-orange-400 animate-pulse" />
                 <span>تسجيل إدخال يدوي</span>
               </span>
             )}
@@ -419,7 +416,7 @@ export default function CaseCard({
               {cTags.slice(0, 3).map((tag, tIdx) => (
                 <span 
                   key={tIdx} 
-                  className={`text-[10px] px-2 py-0.5 rounded-md font-sans font-bold border ${palette.badgeBg} ${palette.badgeText}`}
+                  className={`text-[11px] px-2 py-0.5 rounded-md font-sans font-bold border ${palette.badgeBg} ${palette.badgeText}`}
                 >
                   {tag}
                 </span>
@@ -438,7 +435,7 @@ export default function CaseCard({
                     e.stopPropagation();
                     onArchiveToggle(c);
                   }}
-                  className={`text-[10px] font-bold px-3 py-1.5 rounded-lg border transition-all ${
+                  className={`text-[11px] font-bold px-3 py-1.5 rounded-lg border transition-all ${
                     c.archived
                       ? (isHighContrast ? 'bg-emerald-100 hover:bg-emerald-200 border-emerald-300 text-emerald-900' : 'bg-emerald-500/10 border-emerald-500/25 text-emerald-400 hover:bg-emerald-500/20')
                       : (isHighContrast ? 'bg-slate-100 hover:bg-slate-200 border-slate-300 text-slate-800' : 'bg-white/5 border-white/10 text-white/55 hover:text-white hover:bg-white/10')
@@ -456,13 +453,13 @@ export default function CaseCard({
                     e.stopPropagation();
                     onDeleteCase(c.id);
                   }}
-                  className={`text-[10px] font-bold px-3 py-1.5 rounded-lg border transition-all flex items-center gap-1.5 cursor-pointer ${
+                  className={`text-[11px] font-bold px-3 py-1.5 rounded-lg border transition-all flex items-center gap-1.5 cursor-pointer ${
                     isHighContrast 
                       ? 'bg-rose-100 hover:bg-rose-200 border-rose-300 text-rose-900' 
                       : 'bg-rose-500/10 border-rose-500/25 text-rose-400 hover:bg-rose-500/20'
                   }`}
                 >
-                  <Trash2 className="w-3.5 h-3.5" />
+                  <Trash2 className="w-4 h-4" />
                   <span>حذف الدعوى</span>
                 </button>
               )}

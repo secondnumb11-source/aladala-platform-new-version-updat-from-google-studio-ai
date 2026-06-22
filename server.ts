@@ -740,32 +740,86 @@ app.post('/api/v1/sync', async (req: any, res: any) => {
     executions: { added: 0, errors: 0 }
   };
 
-  // === حفظ القضايا ===
+  const mapCategory = (text: string) => {
+    const t = text.toLowerCase();
+    if (t.includes('تجار')) return 'commercial';
+    if (t.includes('عمال')) return 'labor';
+    if (t.includes('احوال') || t.includes('أحوال') || t.includes('اسر') || t.includes('أسر') || t.includes('شخصي')) return 'family';
+    if (t.includes('جزائ') || t.includes('جنائ')) return 'criminal';
+    if (t.includes('إداري') || t.includes('اداري') || t.includes('ديوان')) return 'administrative';
+    if (t.includes('تنفيذ')) return 'execution';
+    if (t.includes('مرور')) return 'traffic';
+    return 'civil';
+  };
+
+  // === حفظ القضايا بالبيانات الكاملة ===
   for (const c of cases) {
     if (!c) continue;
     try {
-      // استخراج رقم القضية من جميع الحقول
+      const fields = c.fields || {};
+      const text = c.text || '';
+
       const caseNum = (
-        c.caseNumber ||
-        c.case_number ||
-        c.fields?.caseNumber ||
-        c.fields?.case_number ||
-        (c.text || '').match(/\d{4}[\/\s]\d{3,}/)?.[0]?.replace(/\s/g,'') ||
-        ''
-      ).toString().trim().replace(/\s/g, '');
+        c.caseNumber || fields.caseNumber ||
+        fields['رقم القضية'] || fields['رقم الدعوى'] ||
+        text.match(/\d{4}[\/\s]\d{3,}/)?.[0]?.replace(/\s/g,'') || ''
+      ).toString().trim();
 
-      if (!caseNum) {
-        console.log('[Case Skip] No case number:', JSON.stringify(c).substring(0,100));
-        continue;
-      }
+      if (!caseNum) continue;
 
+      // استخراج جميع الحقول الممكنة
       const title = c.caseName || c.title ||
-        c.fields?.caseName || c.fields?.title ||
-        c.fields?.subject || `قضية ${caseNum}`;
+        fields['موضوع الدعوى'] || fields['اسم الدعوى'] ||
+        fields.title || fields.subject || `قضية ${caseNum}`;
 
-      const status = c.status || c.fields?.status || 'قيد النظر';
-      const court = c.courtName || c.court ||
-        c.fields?.courtName || c.fields?.court || '';
+      const court = c.court || c.courtName ||
+        fields['اسم المحكمة'] || fields['المحكمة'] ||
+        fields.court || fields.courtName || '';
+
+      const circuit = c.circuitNumber || c.circuit ||
+        fields['رقم الدائرة'] || fields['الدائرة'] ||
+        fields.circuitNumber || fields.circuit || '';
+
+      const plaintiff = c.plaintiff || c.clientName ||
+        fields['المدعي'] || fields['الموكل'] ||
+        fields.plaintiff || fields.clientName || '';
+
+      const defendant = c.defendant || c.opponentName ||
+        fields['المدعى عليه'] || fields['الخصم'] ||
+        fields.defendant || fields.opponentName || '';
+
+      const status = c.status || fields['الحالة'] ||
+        fields['حالة القضية'] || fields.status ||
+        text.match(/قيد النظر|منتهي|محكوم|مؤجل/)?.[0] || 'قيد النظر';
+
+      const judgmentDate = c.judgmentDate ||
+        fields['تاريخ الحكم'] || fields.judgmentDate || null;
+
+      const judgmentType = c.judgmentType ||
+        fields['نوع الحكم'] || fields['الحكم'] ||
+        fields.judgmentType || null;
+
+      const nextSession = c.nextSessionDate || c.date ||
+        fields['موعد الجلسة القادمة'] || fields['تاريخ الجلسة'] ||
+        fields.nextSessionDate || null;
+
+      const category = c.category || fields['نوع القضية'] ||
+        fields['تصنيف القضية'] || fields.category || 'civil';
+
+      const summary = c.summary || c.subject ||
+        fields['موضوع الدعوى'] || fields['ملخص'] ||
+        fields.summary || null;
+
+      // البيانات الإضافية في metadata
+      const metadata = JSON.stringify({
+        rawFields: fields,
+        source: 'najiz_extension',
+        syncedAt: new Date().toISOString(),
+        parties: c.parties || fields.parties || [],
+        requests: c.requests || fields['الطلبات'] || [],
+        judgments: c.judgments || fields['الأحكام'] || [],
+        documents: c.documents || fields['المستندات'] || []
+      });
 
       const { data: ex } = await adminSupabase
         .from('cases').select('id')
@@ -773,7 +827,14 @@ app.post('/api/v1/sync', async (req: any, res: any) => {
 
       if (ex) {
         await adminSupabase.from('cases').update({
-          status, court_name: court,
+          title: title || undefined,
+          client_name: plaintiff || undefined,
+          opponent_name: defendant || undefined,
+          court_name: court || undefined,
+          circuit_number: circuit || undefined,
+          status: status || undefined,
+          summary: summary || undefined,
+          metadata,
           is_najiz_sync: true,
           last_sync_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
@@ -785,14 +846,25 @@ app.post('/api/v1/sync', async (req: any, res: any) => {
           case_number: caseNum,
           najiz_case_number: caseNum,
           title,
-          client_name: c.plaintiff || c.clientName ||
-            c.fields?.plaintiff || c.fields?.clientName || '',
-          opponent_name: c.defendant || c.opponentName ||
-            c.fields?.defendant || c.fields?.opponentName || '',
-          status,
-          category: 'civil',
-          stage: 'litigation',
+          client_name: plaintiff,
+          opponent_name: defendant,
           court_name: court,
+          circuit_number: circuit,
+          status,
+          category: mapCategory(category + ' ' + text),
+          stage: 'litigation',
+          summary,
+          metadata,
+          judge_name: c.judge || fields['اسم القاضي'] || fields.judge || null,
+          judgment_summary: judgmentType || null,
+          judgment_date: judgmentDate ? (() => {
+            try { return new Date(judgmentDate).toISOString(); }
+            catch { return null; }
+          })() : null,
+          next_session_at: nextSession ? (() => {
+            try { return new Date(nextSession).toISOString(); }
+            catch { return null; }
+          })() : null,
           is_najiz_sync: true,
           last_sync_at: new Date().toISOString(),
           archived: false,
@@ -800,7 +872,10 @@ app.post('/api/v1/sync', async (req: any, res: any) => {
           updated_at: new Date().toISOString()
         });
         if (!insErr) results.cases.added++;
-        else { console.error('[Case Insert Error]', insErr.message); results.cases.errors++; }
+        else {
+          console.error('[Case Insert]', insErr.message, { caseNum });
+          results.cases.errors++;
+        }
       }
     } catch(e: any) {
       console.error('[Case Error]', e.message);
@@ -844,61 +919,92 @@ app.post('/api/v1/sync', async (req: any, res: any) => {
     }
   }
 
-  // === حفظ الوكالات ===
+  // === حفظ الوكالات الكاملة ===
   for (const p of poas) {
     if (!p) continue;
     try {
+      const fields = p.fields || {};
+      const text = p.text || '';
+
       const poaNum = (
         p.agencyNumber || p.poaNumber || p.poa_number ||
-        p.fields?.agencyNumber || p.fields?.poaNumber ||
-        p.number ||
-        (p.text || '').match(/\d{6,}/)?.[0] || ''
+        fields['رقم الوكالة'] || fields.agencyNumber ||
+        text.match(/\d{6,}/)?.[0] || ''
       ).toString().trim();
 
       if (!poaNum) continue;
 
+      const principal = p.principal || fields['الموكل'] ||
+        fields['اسم الموكل'] || fields.principal || '';
+      const agent = p.agent || fields['الوكيل'] ||
+        fields['اسم الوكيل'] || fields.agent || '';
+      const expiry = p.expiryDate || fields['تاريخ الانتهاء'] ||
+        fields['تاريخ الإنتهاء'] || fields.expiryDate || null;
+      const issue = p.issueDate || fields['تاريخ الإصدار'] ||
+        fields.issueDate || null;
+      const poaType = p.type || fields['نوع الوكالة'] ||
+        fields.type || 'general';
+      const poaStatus = p.status || fields['الحالة'] ||
+        fields.status || 'active';
+
       await adminSupabase.from('powers_of_attorney').upsert({
         id: crypto.randomUUID(),
         poa_number: poaNum,
-        type: p.type || p.fields?.type || 'general',
-        status: p.status || p.fields?.status || 'active',
-        issue_date: p.issueDate || p.fields?.issueDate ||
-          p.fields?.startDate || null,
-        expiry_date: p.expiryDate || p.fields?.expiryDate ||
-          p.fields?.endDate || null,
-        principal_name: p.principal || p.fields?.principal ||
-          p.fields?.grantor || '',
+        type: poaType,
+        status: poaStatus,
+        principal_name: principal,
+        agent_name: agent,
+        issue_date: issue,
+        expiry_date: expiry,
         is_najiz_sync: true,
         najiz_sync_date: new Date().toISOString(),
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
-      }, { onConflict: 'poa_number', ignoreDuplicates: true });
+      }, { onConflict: 'poa_number', ignoreDuplicates: false });
       results.poa.added++;
     } catch(e: any) {
       results.poa.errors++;
     }
   }
 
-  // === حفظ طلبات التنفيذ ===
+  // === حفظ طلبات التنفيذ الكاملة ===
   for (const e of executions) {
     if (!e) continue;
     try {
+      const fields = e.fields || {};
+      const text = e.text || '';
+
       const execNum = (
         e.executionNumber || e.requestNumber ||
-        e.fields?.executionNumber || e.number ||
-        (e.text || '').match(/\d{4}\/\d+|\d{9,}/)?.[0] || ''
+        fields['رقم طلب التنفيذ'] || fields['رقم التنفيذ'] ||
+        fields.executionNumber ||
+        text.match(/\d{4}\/\d+|\d{9,}/)?.[0] || ''
       ).toString().trim();
+
       if (!execNum) continue;
+
+      const execStatus = e.status || fields['الحالة'] ||
+        fields.status || 'pending';
+      const amount = parseFloat(
+        (e.amount || fields['المبلغ'] || fields.amount || '0')
+          .toString().replace(/[^\d.]/g,'')
+      ) || 0;
+      const court = e.courtName || fields['المحكمة'] ||
+        fields.court || '';
+      const requester = e.requester || e.requesterName ||
+        fields['طالب التنفيذ'] || fields.requester || '';
 
       await adminSupabase.from('executions').upsert({
         id: crypto.randomUUID(),
         execution_number: execNum,
-        status: e.status || e.fields?.status || 'pending',
-        amount: parseFloat(e.amount || '0') || 0,
-        court_name: e.courtName || e.fields?.court || '',
+        status: execStatus,
+        amount,
+        court_name: court,
+        requester_name: requester,
+        issue_date: e.date || fields['تاريخ الطلب'] || null,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
-      }, { onConflict: 'execution_number', ignoreDuplicates: true });
+      }, { onConflict: 'execution_number', ignoreDuplicates: false });
       results.executions.added++;
     } catch(e: any) {
       results.executions.errors++;

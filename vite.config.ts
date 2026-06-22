@@ -51,7 +51,9 @@ export default defineConfig(() => {
       strictPort: true,
       hmr: {
         protocol: 'wss',
-        clientPort: 443
+        clientPort: 443,
+        overlay: false,
+        timeout: 30000,
       },
       cors: true,
     },
