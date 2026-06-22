@@ -6,50 +6,63 @@ import App from '@/App';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import '@/index.css';
 
-// كتم وقمع أخطاء الـ WebSocket و Unhandled rejections المزعجة المنبعثة من بيئة التطوير أو الـ iframe
+import { useState, useEffect } from 'react';
+
+// مكون لعرض حالة الاتصال مع بيئة التطوير
+function DevConnectionBanner() {
+  const [isDisconnected, setIsDisconnected] = useState(false);
+
+  useEffect(() => {
+    const handleError = (event: any) => {
+      const msgStr = String(event.message || event.reason?.message || '');
+      if (
+        msgStr.includes('WebSocket') || 
+        msgStr.includes('vite') ||
+        msgStr.includes('failed to connect to websocket') ||
+        msgStr.includes('WebSocket closed')
+      ) {
+        setIsDisconnected(true);
+      }
+    };
+
+    window.addEventListener('error', handleError);
+    window.addEventListener('unhandledrejection', handleError);
+
+    return () => {
+      window.removeEventListener('error', handleError);
+      window.removeEventListener('unhandledrejection', handleError);
+    };
+  }, []);
+
+  if (!isDisconnected) return null;
+
+  return (
+    <div className="fixed bottom-4 left-4 z-[9999] bg-red-600/90 text-white px-4 py-2 rounded-xl shadow-2xl flex items-center gap-2 backdrop-blur-md animate-bounce">
+      <div className="w-2 h-2 bg-white rounded-full animate-pulse" />
+      <span className="text-sm font-bold">فقد الاتصال ببيئة التطوير (HMR مُعطل)</span>
+      <button 
+        onClick={() => window.location.reload()}
+        className="ml-2 bg-white/20 hover:bg-white/30 px-2 py-1 rounded-md text-[10px] font-bold transition-all active:scale-95"
+      >
+        إعادة تحميل
+      </button>
+    </div>
+  );
+}
+
+// كتم وقمع الأخطاء في الـ console فقط لتقليل الضجيج
 if (typeof window !== 'undefined') {
-  const originalConsoleError = console.error;
-  console.error = function (...args) {
-    const msg = args.join(' ');
-    if (msg.includes('WebSocket') || msg.includes('vite') || msg.includes('WebSocket closed without opened')) {
-      return;
-    }
-    originalConsoleError.apply(console, args);
+  const originalError = console.error;
+  console.error = (...args) => {
+    if (args[0]?.includes?.('WebSocket') || args[0]?.includes?.('vite')) return;
+    originalError(...args);
   };
-
-  window.addEventListener('unhandledrejection', (event) => {
-    const reasonStr = event.reason ? String(event.reason.message || event.reason || '') : '';
-    const stackStr = event.reason ? String(event.reason.stack || '') : '';
-    
-    if (
-      reasonStr.includes('WebSocket') || 
-      reasonStr.includes('vite') ||
-      stackStr.includes('WebSocket') ||
-      reasonStr.includes('failed to connect to websocket') ||
-      reasonStr.includes('WebSocket closed')
-    ) {
-      event.preventDefault();
-      event.stopPropagation();
-    }
-  });
-
-  window.addEventListener('error', (event) => {
-    const msgStr = String(event.message || '');
-    if (
-      msgStr.includes('WebSocket') || 
-      msgStr.includes('vite') ||
-      msgStr.includes('failed to connect to websocket') ||
-      msgStr.includes('WebSocket closed')
-    ) {
-      event.preventDefault();
-      event.stopPropagation();
-    }
-  });
 }
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <ErrorBoundary>
+      <DevConnectionBanner />
       <App />
       <Analytics />
       <SpeedInsights />

@@ -843,21 +843,21 @@ ${
   };
 
   const inputClass =
-    "w-full bg-[#050c18] border border-slate-600 hover:border-slate-500 text-white font-bold rounded-xl px-4 py-3 text-sm placeholder-slate-400 focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400/50 focus:shadow-[0_0_12px_rgba(245,158,11,0.25)] transition-all duration-200";
+    "w-full bg-white border border-slate-300 hover:border-slate-400 text-slate-900 font-bold rounded-xl px-4 py-3 text-sm placeholder-slate-400 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500/50 transition-all duration-200 shadow-sm";
 
   return (
-    <div className="min-h-screen bg-[#050e21] text-white p-6" dir="rtl">
+    <div className="min-h-screen bg-slate-50 text-slate-900 p-6" dir="rtl">
       {/* رأس القسم */}
       <div className="mb-6">
         <div className="flex items-center gap-4 mb-6">
-          <div className="p-3 bg-amber-500/10 rounded-2xl border-2 border-amber-500/30 shadow-[0_0_15px_rgba(245,158,11,0.2)]">
-            <Scale className="w-8 h-8 text-amber-500 drop-shadow-[0_0_8px_rgba(245,158,11,0.5)]" />
+          <div className="p-3 bg-amber-50 rounded-2xl border-2 border-amber-200 shadow-[0_0_15px_rgba(245,158,11,0.15)]">
+            <Scale className="w-8 h-8 text-amber-600" />
           </div>
           <div>
-            <h1 className="text-2xl font-black text-white tracking-wide" style={{ textShadow: '0 2px 5px rgba(0,0,0,0.4)' }}>
+            <h1 className="text-2xl font-black text-slate-900 tracking-wide text-shadow-sm">
               الأحكام وضبط الجلسات والمذكرات
             </h1>
-            <p className="text-amber-400 font-black text-sm mt-1 tracking-wide" style={{ textShadow: '0 1px 3px rgba(0,0,0,0.5)' }}>
+            <p className="text-amber-700 font-black text-sm mt-1 tracking-wide">
               إدارة المستندات القضائية لكل قضية مسجلة بكفاءة واحترافية عالية
             </p>
           </div>
@@ -923,14 +923,14 @@ ${
         {/* شريط البحث والفلترة */}
         <div className="flex flex-wrap gap-3">
           <div className="relative flex-1 min-w-[200px]">
-            <Search className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-amber-500" />
+            <Search className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-amber-600" />
             <input
               type="text"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="بحث برقم القضية أو الموكل..."
-              className="w-full bg-[#0a1628] border-2 border-slate-700/80 text-white font-extrabold
-                rounded-2xl pr-11 pl-4 py-3 text-sm placeholder-slate-400
+              className="w-full bg-white border border-slate-300 text-slate-900 font-extrabold
+                rounded-2xl pr-11 pl-4 py-3 text-sm placeholder-slate-400 shadow-sm
                 focus:outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/25 transition-all"
             />
           </div>
@@ -950,16 +950,16 @@ ${
       {/* كروت القضايا */}
       {isLoading ? (
         <div className="flex items-center justify-center py-20">
-          <Loader2 className="w-8 h-8 text-amber-500 animate-spin" />
+          <Loader2 className="w-8 h-8 text-amber-600 animate-spin" />
         </div>
       ) : filteredCases.length === 0 ? (
         <div
           className="flex flex-col items-center justify-center py-20
-          border border-dashed border-slate-700 bg-slate-900/50 rounded-3xl"
+          border border-dashed border-slate-300 bg-white rounded-3xl shadow-sm"
         >
-          <FolderOpen className="w-16 h-16 text-yellow-400 mb-4 animate-bounce" />
-          <p className="text-white font-black text-base">لا توجد قضايا مسجلة</p>
-          <p className="text-yellow-400 text-sm font-bold mt-1">
+          <FolderOpen className="w-16 h-16 text-amber-500 mb-4 animate-bounce" />
+          <p className="text-slate-900 font-black text-base">لا توجد قضايا مسجلة</p>
+          <p className="text-amber-600 text-sm font-bold mt-1">
             أضف قضايا من قسم إدارة القضايا أولاً
           </p>
         </div>
@@ -1352,31 +1352,29 @@ ${
                                       </span>
                                     </div>
 
-                                    {/* أزرار الإجراءات */}
-                                    <div
-                                      className="absolute top-3 left-3 flex gap-1.5
-                                      opacity-0 group-hover:opacity-100 transition-opacity"
-                                    >
+                                    {/* أزرار الإجراءات - نمط مخصص فخم دائم الوضوح بتباين عالي */}
+                                    <div className="flex flex-wrap gap-2 pt-3.5 mt-3 border-t border-slate-200">
+                                      <button
+                                        onClick={() => setViewerDoc(doc)}
+                                        className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-black text-xs rounded-xl shadow-sm hover:shadow transition-all cursor-pointer"
+                                        title="عرض ومعاينة المستند"
+                                      >
+                                        <Eye className="w-4 h-4 text-white" />
+                                        <span>عرض المستند</span>
+                                      </button>
+                                      
                                       <button
                                         onClick={() => {
                                           setAiPanel({ doc, mode: "analyze" });
                                           setAiOutput("");
                                           setAiError("");
                                         }}
-                                        className="p-2 bg-purple-100 hover:bg-purple-200 border border-purple-250
-                                          rounded-lg transition-colors cursor-pointer shadow-sm"
+                                        className="flex items-center justify-center p-2 bg-purple-100 hover:bg-purple-200 active:scale-95 text-purple-700 hover:text-purple-800 border border-purple-200 rounded-xl transition-all cursor-pointer shadow-sm"
                                         title="تحليل بالذكاء الاصطناعي"
                                       >
-                                        <Sparkles className="w-3.5 h-3.5 text-purple-700 stroke-[2]" />
+                                        <Sparkles className="w-4 h-4 stroke-[2]" />
                                       </button>
-                                      <button
-                                        onClick={() => setViewerDoc(doc)}
-                                        className="p-2 bg-blue-100 hover:bg-blue-200 border border-blue-250
-                                          rounded-lg transition-colors cursor-pointer shadow-sm"
-                                        title="عرض"
-                                      >
-                                        <Eye className="w-3.5 h-3.5 text-blue-700 stroke-[2]" />
-                                      </button>
+
                                       <button
                                         onClick={() => {
                                           if (doc.file_url) {
@@ -1387,27 +1385,22 @@ ${
                                             a.click();
                                           }
                                         }}
-                                        className="p-2 bg-emerald-100 hover:bg-emerald-200 border border-emerald-250
-                                          rounded-lg transition-colors cursor-pointer shadow-sm"
-                                        title="تحميل"
+                                        className="flex items-center justify-center p-2 bg-emerald-150 hover:bg-emerald-200 active:scale-95 text-emerald-800 hover:text-emerald-900 border border-emerald-300 rounded-xl transition-all cursor-pointer shadow-sm"
+                                        title="تحميل الملف"
                                       >
-                                        <Download className="w-3.5 h-3.5 text-emerald-700 stroke-[2]" />
+                                        <Download className="w-4 h-4 stroke-[2]" />
                                       </button>
+
                                       <button
                                         onClick={() => handleDelete(doc)}
                                         disabled={isDeleting === doc.id}
-                                        className="p-2 bg-red-100 hover:bg-red-200 border border-red-250
-                                          rounded-lg transition-colors disabled:opacity-50 cursor-pointer
-                                          group/del shadow-sm"
-                                        title="حذف نهائي من قاعدة البيانات"
+                                        className="flex items-center justify-center p-2 bg-red-100 hover:bg-red-200 active:scale-50 text-red-650 hover:text-red-800 border border-red-200 rounded-xl transition-all cursor-pointer disabled:opacity-50 shadow-sm"
+                                        title="حذف نهائي"
                                       >
                                         {isDeleting === doc.id ? (
-                                          <Loader2 className="w-3.5 h-3.5 text-red-650 animate-spin" />
+                                          <Loader2 className="w-4 h-4 text-red-600 animate-spin" />
                                         ) : (
-                                          <Trash2
-                                            className="w-3.5 h-3.5 text-red-700
-                                            group-hover/del:scale-110 transition-transform stroke-[2]"
-                                          />
+                                          <Trash2 className="w-4 h-4 stroke-[2]" />
                                         )}
                                       </button>
                                     </div>
@@ -1431,20 +1424,20 @@ ${
       {uploadModal && (
         <div
           className="fixed inset-0 z-[60] flex items-center justify-center
-          p-4 bg-black/80 backdrop-blur-sm"
+          p-4 bg-slate-900/60 backdrop-blur-sm"
           dir="rtl"
         >
           <div
-            className="bg-gradient-to-b from-[#0a1628] to-[#040c18] border-2 border-amber-500/50 rounded-2xl
-            w-full max-w-xl max-h-[90vh] overflow-y-auto shadow-[0_0_35px_rgba(245,158,11,0.25)] animate-in fade-in zoom-in-95 duration-200"
+            className="bg-white border text-slate-900 border-slate-200 rounded-2xl
+            w-full max-w-xl max-h-[90vh] overflow-y-auto shadow-2xl animate-in fade-in zoom-in-95 duration-200"
           >
             <div
-              className="sticky top-0 bg-[#0a1628]/95 backdrop-blur-md flex items-center
-              justify-between p-6 border-b border-slate-700/80 z-10"
+              className="sticky top-0 bg-slate-50 flex items-center
+              justify-between p-6 border-b border-slate-100 z-10"
             >
               <div>
-                <h2 className="text-white font-black text-lg">رفع مستند جديد</h2>
-                <p className="text-amber-400 font-bold text-xs mt-1">
+                <h2 className="text-slate-900 font-black text-lg">رفع مستند جديد</h2>
+                <p className="text-amber-600 font-bold text-xs mt-1">
                   الموكل / القضية: {uploadModal.caseName}
                 </p>
               </div>
@@ -1453,7 +1446,7 @@ ${
                   setUploadModal(null);
                   resetUploadForm();
                 }}
-                className="p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-xl transition-all"
+                className="p-2 text-slate-400 hover:text-slate-900 hover:bg-slate-200 rounded-xl transition-all"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -1472,7 +1465,7 @@ ${
 
               {/* نوع المستند */}
               <div>
-                <label className="block text-slate-200 text-xs font-black tracking-wide mb-2.5">
+                <label className="block text-slate-800 text-xs font-black tracking-wide mb-2.5">
                   نوع المستند المراد رفعه *
                 </label>
                 <div className="grid grid-cols-2 gap-2.5">
@@ -1486,8 +1479,8 @@ ${
                         className={`flex items-center gap-2.5 p-3.5 rounded-xl
                           border-2 transition-all text-right cursor-pointer ${
                             docType === type.value
-                              ? `${type.bg} ${type.border} ${type.color} ring-1 ring-amber-400/30`
-                              : "bg-[#050e21] border-slate-700/80 text-slate-200 hover:border-slate-500 hover:text-white hover:bg-slate-900"
+                              ? `${type.bg} ${type.border} ${type.color} ring-1 ring-amber-400/30 bg-slate-50`
+                              : "bg-white border-slate-300 text-slate-700 hover:border-slate-400 hover:text-slate-900 hover:bg-slate-50"
                           }`}
                       >
                         <Icon className="w-4.5 h-4.5 shrink-0" />
@@ -1500,7 +1493,7 @@ ${
 
               {/* اسم المستند */}
               <div>
-                <label className="block text-slate-200 text-xs font-black tracking-wide mb-2.5">
+                <label className="block text-slate-800 text-xs font-black tracking-wide mb-2.5">
                   اسم المستند *
                 </label>
                 <input
@@ -1517,7 +1510,7 @@ ${
                 {docType === "judgment" && (
                   <>
                     <div>
-                      <label className="block text-slate-300 text-xs font-black mb-1.5">
+                      <label className="block text-slate-800 text-xs font-black mb-1.5">
                         تاريخ الحكم
                       </label>
                       <input
@@ -1528,7 +1521,7 @@ ${
                       />
                     </div>
                     <div>
-                      <label className="block text-slate-300 text-xs font-black mb-1.5">
+                      <label className="block text-slate-800 text-xs font-black mb-1.5">
                         نوع الحكم
                       </label>
                       <select
@@ -1774,21 +1767,21 @@ ${
               </button>
             </div>
           </div>
-          <div className="flex-1 overflow-auto flex items-center justify-center p-4">
-            {viewerDoc.file_url ? (
-              viewerDoc.file_type?.includes("pdf") ? (
-                <iframe
-                  src={viewerDoc.file_url + "#toolbar=1"}
-                  className="w-full h-full max-w-5xl rounded-xl border border-slate-700"
-                  title={viewerDoc.document_name}
-                />
-              ) : viewerDoc.file_type?.startsWith("image/") ? (
-                <img
-                  src={viewerDoc.file_url}
-                  alt={viewerDoc.document_name}
-                  className="max-w-full max-h-full object-contain rounded-xl shadow-2xl"
-                />
-              ) : (
+           <div className="flex-1 overflow-auto flex items-center justify-center p-4">
+             {viewerDoc.file_url ? (
+               (viewerDoc.file_type?.toLowerCase().includes("pdf") || viewerDoc.file_url?.toLowerCase().split("?")[0].endsWith(".pdf")) ? (
+                 <iframe
+                   src={viewerDoc.file_url + "#toolbar=1"}
+                   className="w-full h-full max-w-5xl rounded-3xl border-2 border-slate-700 bg-white"
+                   title={viewerDoc.document_name}
+                 />
+               ) : (viewerDoc.file_type?.toLowerCase().startsWith("image/") || /\.(jpg|jpeg|png|gif|webp|svg|bmp)(\?.*)?$/i.test(viewerDoc.file_url)) ? (
+                 <img
+                   src={viewerDoc.file_url}
+                   alt={viewerDoc.document_name}
+                   className="max-w-full max-h-full object-contain rounded-3xl shadow-2xl border-4 border-white"
+                 />
+               ) : (
                 <div className="text-center">
                   <LucideFile className="w-20 h-20 text-slate-600 mx-auto mb-4" />
                   <p className="text-white font-bold mb-4">

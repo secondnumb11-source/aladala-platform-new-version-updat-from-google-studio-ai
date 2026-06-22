@@ -50,6 +50,7 @@ export default defineConfig(() => {
       port: 3000,
       strictPort: true,
       hmr: {
+        protocol: 'wss',
         clientPort: 443
       },
       cors: true,

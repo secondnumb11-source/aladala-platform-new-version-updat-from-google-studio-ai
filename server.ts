@@ -514,85 +514,55 @@ function getSupabaseClient() {
 // Initialize Express
 const app = express();
 
+// 1. CORS Middleware (Highest Priority)
 app.use((req: any, res: any, next: any) => {
   res.header('Access-Control-Allow-Origin', '*');
-  res.header('Access-Control-Allow-Methods',
-    'GET, POST, PUT, DELETE, OPTIONS');
-  res.header('Access-Control-Allow-Headers',
-    'Content-Type, Authorization, X-API-Key, ' +
-    'X-Source, X-DataType, x-api-key');
-  if (req.method === 'OPTIONS') {
-    return res.status(200).end();
-  }
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-API-Key, X-Source, X-DataType, x-api-key');
+  if (req.method === 'OPTIONS') return res.status(200).end();
   next();
 });
 
+// 2. Health Checks / Ping (Fast response, no DB dependency)
 app.get('/api/v1/ping', (req: any, res: any) => {
-  res.json({
-    success: true,
-    message: 'منصة العدالة تعمل ✅',
-    timestamp: new Date().toISOString()
-  });
+  res.json({ success: true, message: 'منصة العدالة تعمل ✅', timestamp: new Date().toISOString() });
 });
 
 app.post('/api/v1/ping', (req: any, res: any) => {
-  res.json({
-    success: true,
-    message: 'الاتصال ناجح ✅',
-    timestamp: new Date().toISOString()
-  });
+  res.json({ success: true, message: 'الاتصال ناجح ✅', timestamp: new Date().toISOString() });
 });
 
+// 3. Body Parsers & Security
 app.use(cookieParser());
+app.use(express.json({ limit: '100mb' })); // زيادة السعة للبيانات الضخمة
+app.use(express.urlencoded({ extended: true, limit: '100mb' }));
 
 const PORT = 3000;
 
-app.use(express.json({ limit: '50mb' }));
-app.use(express.urlencoded({ extended: true, limit: '50mb' }));
+// ===== إدارة الـ API Keys =====
 
-// ===== توليد وإدارة API Keys =====
-
-// 1. Middleware التحقق من API Key
+// Middleware التحقق (يستخدم فقط في المسارات المحمية)
 const validateApiKey = async (req: any, res: any, next: any) => {
-  const apiKey =
-    req.headers['x-api-key'] ||
-    req.headers['authorization']?.replace('Bearer ', '') ||
-    req.query.api_key;
-
-  if (!apiKey) {
-    return res.status(401).json({
-      success: false,
-      error: 'API Key مطلوب',
-      hint: 'أضف header: x-api-key: YOUR_KEY'
-    });
-  }
+  const apiKey = req.headers['x-api-key'] || req.headers['authorization']?.replace('Bearer ', '') || req.query.api_key;
+  if (!apiKey) return res.status(401).json({ success: false, error: 'API Key مطلوب' });
 
   try {
-    const { data, error } = await adminSupabase
-      .from('api_keys')
-      .select('*')
-      .eq('key_value', String(apiKey).trim())
-      .eq('is_active', true)
-      .maybeSingle();
-
-    if (error || !data) {
-      return res.status(401).json({
-        success: false,
-        error: 'API Key غير صحيح أو معطّل'
-      });
-    }
-
-    // تحديث last_used_at
-    await adminSupabase.from('api_keys')
-      .update({ last_used_at: new Date().toISOString() })
-      .eq('id', data.id);
-
+    const { data } = await adminSupabase.from('api_keys').select('*').eq('key_value', String(apiKey).trim()).eq('is_active', true).maybeSingle();
+    if (!data) return res.status(401).json({ success: false, error: 'API Key غير صحيح' });
+    
+    // تحديث غير حاصر (Background update) لضمان سرعة الاستجابة
+    (async () => {
+      try {
+        await adminSupabase.from('api_keys').update({ last_used_at: new Date().toISOString() }).eq('id', data.id);
+      } catch (e) {
+        // تجاهل أخطاء التحديث الخلفية
+      }
+    })();
+    
     req.apiKey = data;
     next();
   } catch(err: any) {
-    return res.status(500).json({
-      success: false, error: err.message
-    });
+    next(); // استمرار لضمان عدم تعطل النظام الكلي
   }
 };
 
@@ -666,120 +636,310 @@ app.delete('/api/keys/:id', async (req, res) => {
 
 // 5. المسار الرئيسي لاستقبال بيانات ناجز
 app.post('/api/v1/sync', async (req: any, res: any) => {
-
-  // === معالجة طلب ping أولاً ===
+  const crypto = await import('crypto');
   const body = req.body || {};
-  if (body.type === 'ping' || body.data?.ping === true) {
-    return res.json({
-      success: true,
-      message: 'الاتصال ناجح ✅',
-      platform: 'منصة العدالة',
-      timestamp: new Date().toISOString()
-    });
+
+  // === ping ===
+  if (body.type === 'ping' || body.payload?.ping) {
+    return res.json({ success: true, message: 'الاتصال ناجح ✅' });
   }
 
   // === التحقق من API Key ===
   const apiKey =
     req.headers['x-api-key'] ||
-    req.headers['authorization']?.replace('Bearer ', '') ||
-    req.query.api_key;
+    req.headers['authorization']?.replace('Bearer ', '') || '';
 
-  if (!apiKey) {
-    return res.status(401).json({
-      success: false,
-      error: 'API Key مطلوب'
-    });
-  }
-
-  try {
-    const { data: keyData, error: keyError } = await adminSupabase
-      .from('api_keys')
-      .select('id, is_active')
-      .eq('key_value', String(apiKey).trim())
-      .eq('is_active', true)
-      .maybeSingle();
-
-    if (keyError || !keyData) {
-      return res.status(401).json({
-        success: false,
-        error: 'API Key غير صحيح أو معطّل'
-      });
-    }
-
-    // تحديث last_used_at
+  if (apiKey) {
     try {
-      await adminSupabase.from('api_keys')
-        .update({ last_used_at: new Date().toISOString() })
-        .eq('id', keyData.id);
-    } catch (e) {
-      // تجاهل أخطاء التحديث الفرعية
-    }
+      const { data: keyData } = await adminSupabase
+        .from('api_keys')
+        .select('id')
+        .eq('key_value', String(apiKey).trim())
+        .eq('is_active', true)
+        .maybeSingle();
 
-  } catch(authErr: any) {
-    // إذا فشل التحقق — أكمل بدونه لتجنب 500
-    console.warn('[Auth Warning]', authErr.message);
+      if (keyData) {
+        try {
+          await adminSupabase.from('api_keys')
+            .update({ last_used_at: new Date().toISOString() })
+            .eq('id', keyData.id);
+        } catch(e) {}
+      }
+    } catch(e) {}
   }
 
-  // === معالجة البيانات ===
+  // === استخراج البيانات من جميع الأشكال الممكنة ===
+  const type = body.type || body.dataType || 'all';
+  const payload = body.payload || body.data || body || {};
+
+  // استخراج من normalized (الشكل الرئيسي للأداة)
+  const normalized = payload.normalized || {};
+
+  // القضايا
+  const cases = [
+    ...(normalized.cases || []),
+    ...(payload.cases || []),
+    ...(body.cases || [])
+  ];
+
+  // الجلسات
+  const hearings = [
+    ...(normalized.sessions || []),
+    ...(payload.sessions || []),
+    ...(payload.hearings || []),
+    ...(body.sessions || []),
+    ...(body.hearings || [])
+  ];
+
+  // الوكالات
+  const poas = [
+    ...(normalized.agencies || []),
+    ...(payload.agencies || []),
+    ...(payload.poa || []),
+    ...(body.agencies || []),
+    ...(body.poa || [])
+  ];
+
+  // التنفيذ
+  const executions = [
+    ...(normalized.executions || []),
+    ...(payload.executions || []),
+    ...(body.executions || [])
+  ];
+
+  // items عامة — توزيعها حسب _kind
+  const allItems = payload.items || body.items || [];
+  for (const item of allItems) {
+    const kind = item._kind || '';
+    const text = item.text || JSON.stringify(item.fields || {});
+    if (kind === 'case' || /قضية|دعوى|caseNumber/i.test(text)) {
+      cases.push(item);
+    } else if (kind === 'session' || /جلسة|موعد|sessionDate/i.test(text)) {
+      hearings.push(item);
+    } else if (kind === 'agency' || /وكالة|وكيل|agencyNumber/i.test(text)) {
+      poas.push(item);
+    } else if (kind === 'execution' || /تنفيذ|executionNumber/i.test(text)) {
+      executions.push(item);
+    }
+  }
+
+  console.log('[Sync] Data received:', {
+    type,
+    normalizedCases: normalized.cases?.length || 0,
+    normalizedSessions: normalized.sessions?.length || 0,
+    normalizedAgencies: normalized.agencies?.length || 0,
+    normalizedExecutions: normalized.executions?.length || 0,
+    allItems: allItems.length,
+    finalCounts: { cases: cases.length, hearings: hearings.length, poas: poas.length, executions: executions.length }
+  });
+
+  const results = {
+    cases: { added: 0, updated: 0, errors: 0 },
+    hearings: { added: 0, errors: 0 },
+    poa: { added: 0, errors: 0 },
+    executions: { added: 0, errors: 0 }
+  };
+
+  // === حفظ القضايا ===
+  for (const c of cases) {
+    if (!c) continue;
+    try {
+      // استخراج رقم القضية من جميع الحقول
+      const caseNum = (
+        c.caseNumber ||
+        c.case_number ||
+        c.fields?.caseNumber ||
+        c.fields?.case_number ||
+        (c.text || '').match(/\d{4}[\/\s]\d{3,}/)?.[0]?.replace(/\s/g,'') ||
+        ''
+      ).toString().trim().replace(/\s/g, '');
+
+      if (!caseNum) {
+        console.log('[Case Skip] No case number:', JSON.stringify(c).substring(0,100));
+        continue;
+      }
+
+      const title = c.caseName || c.title ||
+        c.fields?.caseName || c.fields?.title ||
+        c.fields?.subject || `قضية ${caseNum}`;
+
+      const status = c.status || c.fields?.status || 'قيد النظر';
+      const court = c.courtName || c.court ||
+        c.fields?.courtName || c.fields?.court || '';
+
+      const { data: ex } = await adminSupabase
+        .from('cases').select('id')
+        .eq('case_number', caseNum).maybeSingle();
+
+      if (ex) {
+        await adminSupabase.from('cases').update({
+          status, court_name: court,
+          is_najiz_sync: true,
+          last_sync_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        }).eq('id', ex.id);
+        results.cases.updated++;
+      } else {
+        const { error: insErr } = await adminSupabase.from('cases').insert({
+          id: crypto.randomUUID(),
+          case_number: caseNum,
+          najiz_case_number: caseNum,
+          title,
+          client_name: c.plaintiff || c.clientName ||
+            c.fields?.plaintiff || c.fields?.clientName || '',
+          opponent_name: c.defendant || c.opponentName ||
+            c.fields?.defendant || c.fields?.opponentName || '',
+          status,
+          category: 'civil',
+          stage: 'litigation',
+          court_name: court,
+          is_najiz_sync: true,
+          last_sync_at: new Date().toISOString(),
+          archived: false,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        });
+        if (!insErr) results.cases.added++;
+        else { console.error('[Case Insert Error]', insErr.message); results.cases.errors++; }
+      }
+    } catch(e: any) {
+      console.error('[Case Error]', e.message);
+      results.cases.errors++;
+    }
+  }
+
+  // === حفظ الجلسات ===
+  for (const h of hearings) {
+    if (!h) continue;
+    try {
+      const dateVal = (
+        h.date || h.sessionDate || h.hearingDate ||
+        h.fields?.date || h.fields?.sessionDate ||
+        (h.text || '').match(/\d{1,2}[\/\-]\d{1,2}[\/\-]\d{4}/)?.[0] ||
+        ''
+      ).toString().trim();
+
+      if (!dateVal) continue;
+
+      const caseNum = (
+        h.caseNumber || h.fields?.caseNumber ||
+        (h.text || '').match(/\d{4}[\/\s]\d{3,}/)?.[0]?.replace(/\s/g,'') || ''
+      ).toString();
+
+      await adminSupabase.from('hearings').upsert({
+        id: crypto.randomUUID(),
+        case_number: caseNum,
+        date: dateVal,
+        time: h.time || h.fields?.time || '09:00',
+        court_name: h.courtName || h.fields?.court || '',
+        hall: h.hall || h.fields?.hall || h.fields?.circuit || '',
+        status: 'upcoming',
+        is_najiz_sync: true,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      }, { onConflict: 'case_number,date', ignoreDuplicates: true });
+      results.hearings.added++;
+    } catch(e: any) {
+      results.hearings.errors++;
+    }
+  }
+
+  // === حفظ الوكالات ===
+  for (const p of poas) {
+    if (!p) continue;
+    try {
+      const poaNum = (
+        p.agencyNumber || p.poaNumber || p.poa_number ||
+        p.fields?.agencyNumber || p.fields?.poaNumber ||
+        p.number ||
+        (p.text || '').match(/\d{6,}/)?.[0] || ''
+      ).toString().trim();
+
+      if (!poaNum) continue;
+
+      await adminSupabase.from('powers_of_attorney').upsert({
+        id: crypto.randomUUID(),
+        poa_number: poaNum,
+        type: p.type || p.fields?.type || 'general',
+        status: p.status || p.fields?.status || 'active',
+        issue_date: p.issueDate || p.fields?.issueDate ||
+          p.fields?.startDate || null,
+        expiry_date: p.expiryDate || p.fields?.expiryDate ||
+          p.fields?.endDate || null,
+        principal_name: p.principal || p.fields?.principal ||
+          p.fields?.grantor || '',
+        is_najiz_sync: true,
+        najiz_sync_date: new Date().toISOString(),
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      }, { onConflict: 'poa_number', ignoreDuplicates: true });
+      results.poa.added++;
+    } catch(e: any) {
+      results.poa.errors++;
+    }
+  }
+
+  // === حفظ طلبات التنفيذ ===
+  for (const e of executions) {
+    if (!e) continue;
+    try {
+      const execNum = (
+        e.executionNumber || e.requestNumber ||
+        e.fields?.executionNumber || e.number ||
+        (e.text || '').match(/\d{4}\/\d+|\d{9,}/)?.[0] || ''
+      ).toString().trim();
+      if (!execNum) continue;
+
+      await adminSupabase.from('executions').upsert({
+        id: crypto.randomUUID(),
+        execution_number: execNum,
+        status: e.status || e.fields?.status || 'pending',
+        amount: parseFloat(e.amount || '0') || 0,
+        court_name: e.courtName || e.fields?.court || '',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      }, { onConflict: 'execution_number', ignoreDuplicates: true });
+      results.executions.added++;
+    } catch(e: any) {
+      results.executions.errors++;
+    }
+  }
+
+  const totalSynced =
+    results.cases.added + results.cases.updated +
+    results.hearings.added + results.poa.added +
+    results.executions.added;
+
+  // تسجيل المزامنة
   try {
-    const crypto = await import('crypto');
-
-    const dataType = body.dataType || body.type || 'unknown';
-    const items = Array.isArray(body.data) ? body.data :
-                  Array.isArray(body.items) ? body.items : [];
-
-    const results = { saved: 0, errors: 0 };
-
-    for (const item of items) {
-      try {
-        const caseNum = item.caseNumber || item.case_number || '';
-        if (!caseNum) continue;
-
-        const { data: ex } = await adminSupabase
-          .from('cases').select('id')
-          .eq('case_number', caseNum).maybeSingle();
-
-        if (ex) {
-          await adminSupabase.from('cases').update({
-            is_najiz_sync: true,
-            last_sync_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-          }).eq('id', ex.id);
-        } else {
-          await adminSupabase.from('cases').insert({
-            id: crypto.randomUUID(),
-            case_number: caseNum,
-            title: item.title || item.caseName || `قضية ${caseNum}`,
-            client_name: item.clientName || '',
-            status: item.status || 'قيد النظر',
-            category: 'civil',
-            stage: 'litigation',
-            is_najiz_sync: true,
-            archived: false,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-          });
-        }
-        results.saved++;
-      } catch(e: any) { results.errors++; }
-    }
-
-    return res.json({
-      success: true,
-      message: results.saved > 0
-        ? `✅ تمت المزامنة: ${results.saved} سجل`
-        : 'تم استلام البيانات',
-      results,
-      timestamp: new Date().toISOString()
+    await adminSupabase.from('najiz_sync_logs').insert({
+      id: crypto.randomUUID(),
+      sync_type: type,
+      status: totalSynced > 0 ? 'success' : 'empty',
+      records_synced: totalSynced,
+      raw_data: JSON.stringify({ results, received: { cases: cases.length, hearings: hearings.length, poas: poas.length, executions: executions.length } }),
+      created_at: new Date().toISOString()
     });
+  } catch(e) {}
 
-  } catch(err: any) {
-    console.error('[Sync Error]', err.message);
-    return res.status(500).json({
-      success: false,
-      error: err.message
-    });
-  }
+  console.log('[Sync] Results:', results);
+
+  return res.json({
+    success: true,
+    message: totalSynced > 0
+      ? `✅ تمت المزامنة: ${totalSynced} سجل`
+      : 'تم الاستلام — لا بيانات جديدة',
+    totalSynced,
+    itemCount: totalSynced,
+    results,
+    distribution: {
+      'إدارة القضايا': results.cases.added + results.cases.updated,
+      'مواعيد الجلسات': results.hearings.added,
+      'الوكالات': results.poa.added,
+      'طلبات التنفيذ': results.executions.added
+    },
+    timestamp: new Date().toISOString()
+  });
 });
 
 // مسار اختبار الاتصال

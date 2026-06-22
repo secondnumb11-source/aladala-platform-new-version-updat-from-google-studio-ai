@@ -150,32 +150,32 @@ export default function ExecutionsModule({
       dir="rtl"
     >
       {/* Header Section */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 bg-slate-900 border border-slate-800 p-8 rounded-[2rem] shadow-xl relative overflow-hidden backdrop-blur-xl">
-        <div className="absolute top-0 right-0 w-64 h-64 bg-amber-500/5 blur-3xl -z-10"></div>
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 bg-white border border-slate-200 p-8 rounded-[2rem] shadow-sm relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-64 h-64 bg-amber-50 rounded-full blur-3xl -z-10"></div>
         <div>
-          <h1 className="text-3xl font-black text-white flex items-center gap-4 mb-2">
-            <div className="p-2 bg-amber-500/10 rounded-xl border border-amber-500/20">
-              <Scale className="w-8 h-8 text-amber-500" />
+          <h1 className="text-3xl font-black text-slate-900 flex items-center gap-4 mb-2">
+            <div className="p-2 bg-amber-50 rounded-xl border border-amber-200">
+              <Scale className="w-8 h-8 text-amber-600" />
             </div>
             إدارة طلبات التنفيذ
           </h1>
-          <p className="text-slate-400 font-bold text-sm">
+          <p className="text-amber-700 font-bold text-sm">
             متابعة كافة طلبات التنفيذ المزامنة من ناجز أو المضافة يدوياً بتنسيق
             فاخر.
           </p>
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
-          <div className="flex bg-slate-950 p-1 rounded-xl border border-slate-800">
+          <div className="flex bg-slate-50 p-1 rounded-xl border border-slate-200">
             <button
               onClick={() => setViewMode("table")}
-              className={`px-4 py-2 rounded-lg text-xs font-black transition-all ${viewMode === "table" ? "bg-amber-600 text-slate-950 shadow-lg" : "text-slate-500 hover:text-slate-300"}`}
+              className={`px-4 py-2 rounded-lg text-xs font-black transition-all ${viewMode === "table" ? "bg-amber-600 text-white shadow-md" : "text-slate-600 hover:text-slate-900"}`}
             >
               جدول
             </button>
             <button
               onClick={() => setViewMode("card")}
-              className={`px-4 py-2 rounded-lg text-xs font-black transition-all ${viewMode === "card" ? "bg-amber-600 text-slate-950 shadow-lg" : "text-slate-500 hover:text-slate-300"}`}
+              className={`px-4 py-2 rounded-lg text-xs font-black transition-all ${viewMode === "card" ? "bg-amber-600 text-white shadow-md" : "text-slate-600 hover:text-slate-900"}`}
             >
               كروت
             </button>
@@ -192,7 +192,7 @@ export default function ExecutionsModule({
               }, 2000);
             }}
             disabled={isSyncing}
-            className="bg-slate-800 hover:bg-slate-700 text-amber-500 border border-amber-500/30 px-6 py-3 rounded-2xl font-black text-sm flex items-center gap-2 transition-all shadow-lg active:scale-95 disabled:opacity-50"
+            className="bg-white hover:bg-slate-50 text-amber-600 border border-amber-300 px-6 py-3 rounded-2xl font-black text-sm flex items-center gap-2 transition-all shadow-sm active:scale-95 disabled:opacity-50"
           >
             <Activity
               className={`w-5 h-5 ${isSyncing ? "animate-pulse" : ""}`}
@@ -201,11 +201,11 @@ export default function ExecutionsModule({
           </button>
 
           <div className="relative group min-w-[280px]">
-            <Search className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500 group-focus-within:text-amber-500 transition-colors" />
+            <Search className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-amber-600 group-focus-within:text-amber-700 transition-colors" />
             <input
               type="text"
               placeholder="البحث برقم الطلب أو اسم الطرف..."
-              className="bg-slate-950/50 border-2 border-slate-800 rounded-2xl py-3 pr-12 pl-6 text-white text-sm font-black w-full md:w-80 focus:outline-none focus:border-amber-500 transition-all placeholder:text-slate-400 shadow-inner"
+              className="bg-white border-2 border-slate-300 rounded-2xl py-3 pr-12 pl-6 text-slate-900 text-sm font-black w-full md:w-80 focus:outline-none focus:border-amber-500 focus:ring-4 focus:ring-amber-500/20 transition-all placeholder:text-slate-400 shadow-sm"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
@@ -213,7 +213,7 @@ export default function ExecutionsModule({
 
           <button
             onClick={() => setIsAdding(true)}
-            className="bg-amber-600 hover:bg-amber-500 text-slate-950 px-6 py-3 rounded-2xl font-black text-sm flex items-center gap-2 transition-all shadow-lg active:scale-95"
+            className="bg-amber-600 hover:bg-amber-500 text-white px-6 py-3 rounded-2xl font-black text-sm flex items-center gap-2 transition-all shadow-md active:scale-95"
           >
             <Plus className="w-5 h-5" />
             قيد طلب يدوي
@@ -233,18 +233,18 @@ export default function ExecutionsModule({
                 setIsAdding(false);
                 setEditingExec(null);
               }}
-              className="absolute inset-0 bg-slate-950/95 backdrop-blur-md"
+              className="absolute inset-0 bg-slate-900/40 backdrop-blur-md"
             />
             <motion.div
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="relative bg-gradient-to-br from-[#0c142b] to-[#040817] border-2 border-amber-500/30 rounded-[2.5rem] w-full max-w-2xl p-8 shadow-[0_0_60px_rgba(234,179,8,0.25)] overflow-hidden max-h-[90vh] overflow-y-auto"
+              className="relative bg-white border border-slate-200 rounded-[2.5rem] w-full max-w-2xl p-8 shadow-2xl overflow-hidden max-h-[90vh] overflow-y-auto"
             >
-              <div className="absolute top-0 right-0 w-64 h-64 bg-amber-500/10 rounded-full blur-3xl -z-10 pointer-events-none"></div>
+              <div className="absolute top-0 right-0 w-64 h-64 bg-amber-50 rounded-full blur-3xl -z-10 pointer-events-none"></div>
 
-              <div className="flex items-center justify-between mb-8 pb-4 border-b border-amber-500/20 relative z-10">
-                <h2 className="text-2xl font-black text-amber-400 tracking-tight drop-shadow-md">
+              <div className="flex items-center justify-between mb-8 pb-4 border-b border-slate-100 relative z-10">
+                <h2 className="text-2xl font-black text-slate-900 tracking-tight">
                   {isAdding
                     ? "قيد سجل تنفيذ جديد"
                     : `تعديل بيانات طلب التنفيذ: ${editingExec?.execution_number}`}
@@ -254,7 +254,7 @@ export default function ExecutionsModule({
                     setIsAdding(false);
                     setEditingExec(null);
                   }}
-                  className="bg-slate-900 hover:bg-slate-800 text-amber-500 hover:text-amber-400 border border-amber-500/30 w-8 h-8 rounded-full flex items-center justify-center text-xs font-black shadow-[0_0_15px_rgba(234,179,8,0.3)] transition-all duration-200 cursor-pointer"
+                  className="bg-slate-50 hover:bg-slate-100 text-slate-400 hover:text-slate-900 border border-slate-200 w-8 h-8 rounded-full flex items-center justify-center text-xs font-black transition-all duration-200 cursor-pointer"
                 >
                   ✕
                 </button>
@@ -266,13 +266,13 @@ export default function ExecutionsModule({
               >
                 <div className="space-y-5">
                   <div>
-                    <label className="text-xs font-black text-amber-400 mb-2 block uppercase tracking-wide drop-shadow-sm">
+                    <label className="text-xs font-black text-slate-800 mb-2 block uppercase tracking-wide">
                       رقم طلب التنفيذ{" "}
-                      <span className="text-rose-500 font-bold">*</span>
+                      <span className="text-rose-600 font-bold">*</span>
                     </label>
                     <input
                       required
-                      className="w-full bg-slate-900/80 border-2 border-slate-700 p-4 rounded-2xl text-amber-100 font-mono font-black text-sm placeholder-slate-500 hover:border-amber-500/50 focus:border-amber-400 focus:ring-4 focus:ring-amber-500/20 transition-all duration-300 outline-none shadow-inner"
+                      className="w-full bg-slate-50 border-2 border-slate-200 p-4 rounded-2xl text-slate-900 font-mono font-black text-sm placeholder-slate-400 hover:border-amber-400/50 focus:border-amber-500 focus:ring-4 focus:ring-amber-500/20 transition-all duration-300 outline-none shadow-sm"
                       value={
                         isAdding
                           ? newExec.execution_number
@@ -293,13 +293,13 @@ export default function ExecutionsModule({
                     />
                   </div>
                   <div>
-                    <label className="text-xs font-black text-amber-400 mb-2 block uppercase tracking-wide drop-shadow-sm">
+                    <label className="text-xs font-black text-slate-800 mb-2 block uppercase tracking-wide">
                       اسم طالب التنفيذ (الموكل){" "}
-                      <span className="text-rose-500 font-bold">*</span>
+                      <span className="text-rose-600 font-bold">*</span>
                     </label>
                     <input
                       required
-                      className="w-full bg-slate-900/80 border-2 border-slate-700 p-4 rounded-2xl text-amber-100 font-black text-sm placeholder-slate-500 hover:border-amber-500/50 focus:border-amber-400 focus:ring-4 focus:ring-amber-500/20 transition-all duration-300 outline-none shadow-inner"
+                      className="w-full bg-slate-50 border-2 border-slate-200 p-4 rounded-2xl text-slate-900 font-black text-sm placeholder-slate-400 hover:border-amber-400/50 focus:border-amber-500 focus:ring-4 focus:ring-amber-500/20 transition-all duration-300 outline-none shadow-sm"
                       value={
                         isAdding
                           ? newExec.requester_name
@@ -320,13 +320,13 @@ export default function ExecutionsModule({
                     />
                   </div>
                   <div>
-                    <label className="text-xs font-black text-amber-400 mb-2 block uppercase tracking-wide drop-shadow-sm">
+                    <label className="text-xs font-black text-slate-800 mb-2 block uppercase tracking-wide">
                       اسم المنفذ ضده{" "}
-                      <span className="text-rose-500 font-bold">*</span>
+                      <span className="text-rose-600 font-bold">*</span>
                     </label>
                     <input
                       required
-                      className="w-full bg-slate-900/80 border-2 border-slate-700 p-4 rounded-2xl text-amber-100 font-black text-sm placeholder-slate-500 hover:border-amber-500/50 focus:border-amber-400 focus:ring-4 focus:ring-amber-500/20 transition-all duration-300 outline-none shadow-inner"
+                      className="w-full bg-slate-50 border-2 border-slate-200 p-4 rounded-2xl text-slate-900 font-black text-sm placeholder-slate-400 hover:border-amber-400/50 focus:border-amber-500 focus:ring-4 focus:ring-amber-500/20 transition-all duration-300 outline-none shadow-sm"
                       value={
                         isAdding
                           ? newExec.opponent_name
@@ -350,14 +350,14 @@ export default function ExecutionsModule({
 
                 <div className="space-y-5">
                   <div>
-                    <label className="text-xs font-black text-amber-400 mb-2 block uppercase tracking-wide drop-shadow-sm">
+                    <label className="text-xs font-black text-slate-800 mb-2 block uppercase tracking-wide">
                       مبلغ التنفيذ (ر.س){" "}
-                      <span className="text-rose-500 font-bold">*</span>
+                      <span className="text-rose-600 font-bold">*</span>
                     </label>
                     <input
                       type="number"
                       required
-                      className="w-full bg-slate-900/80 border-2 border-slate-700 p-4 rounded-2xl text-amber-100 font-mono font-black text-sm placeholder-slate-500 hover:border-amber-500/50 focus:border-amber-400 focus:ring-4 focus:ring-amber-500/20 transition-all duration-300 outline-none shadow-inner"
+                      className="w-full bg-slate-50 border-2 border-slate-200 p-4 rounded-2xl text-slate-900 font-mono font-black text-sm placeholder-slate-400 hover:border-amber-400/50 focus:border-amber-500 focus:ring-4 focus:ring-amber-500/20 transition-all duration-300 outline-none shadow-sm"
                       value={isAdding ? newExec.amount : editingExec?.amount}
                       onChange={(e) =>
                         isAdding
@@ -373,11 +373,11 @@ export default function ExecutionsModule({
                     />
                   </div>
                   <div>
-                    <label className="text-xs font-black text-amber-400 mb-2 block uppercase tracking-wide drop-shadow-sm">
+                    <label className="text-xs font-black text-slate-800 mb-2 block uppercase tracking-wide">
                       المحكمة / الدائرة
                     </label>
                     <input
-                      className="w-full bg-slate-900/80 border-2 border-slate-700 p-4 rounded-2xl text-amber-100 font-black text-sm placeholder-slate-500 hover:border-amber-500/50 focus:border-amber-400 focus:ring-4 focus:ring-amber-500/20 transition-all duration-300 outline-none shadow-inner"
+                      className="w-full bg-slate-50 border-2 border-slate-200 p-4 rounded-2xl text-slate-900 font-black text-sm placeholder-slate-400 hover:border-amber-400/50 focus:border-amber-500 focus:ring-4 focus:ring-amber-500/20 transition-all duration-300 outline-none shadow-sm"
                       value={
                         isAdding ? newExec.court_name : editingExec?.court_name
                       }
@@ -396,12 +396,12 @@ export default function ExecutionsModule({
                     />
                   </div>
                   <div>
-                    <label className="text-xs font-black text-amber-400 mb-2 block uppercase tracking-wide drop-shadow-sm">
+                    <label className="text-xs font-black text-slate-800 mb-2 block uppercase tracking-wide">
                       تاريخ القيد
                     </label>
                     <input
                       type="date"
-                      className="w-full bg-slate-900/80 border-2 border-slate-700 p-4 rounded-2xl text-amber-100 font-black text-sm placeholder-slate-500 hover:border-amber-500/50 focus:border-amber-400 focus:ring-4 focus:ring-amber-500/20 transition-all duration-300 outline-none shadow-inner [color-scheme:dark]"
+                      className="w-full bg-slate-50 border-2 border-slate-200 p-4 rounded-2xl text-slate-900 font-black text-sm placeholder-slate-400 hover:border-amber-400/50 focus:border-amber-500 focus:ring-4 focus:ring-amber-500/20 transition-all duration-300 outline-none shadow-sm"
                       value={
                         isAdding ? newExec.issue_date : editingExec?.issue_date
                       }
@@ -421,11 +421,11 @@ export default function ExecutionsModule({
                 </div>
 
                 <div className="col-span-full">
-                  <label className="text-xs font-black text-amber-400 mb-2 block uppercase tracking-wide drop-shadow-sm">
+                  <label className="text-xs font-black text-slate-800 mb-2 block uppercase tracking-wide">
                     الحالة الحالية للطلب
                   </label>
                   <select
-                    className="w-full bg-slate-900/80 border-2 border-slate-700 p-4 rounded-2xl text-amber-100 font-black text-sm hover:border-amber-500/50 focus:border-amber-400 focus:ring-4 focus:ring-amber-500/20 transition-all duration-300 outline-none shadow-inner cursor-pointer"
+                    className="w-full bg-slate-50 border-2 border-slate-200 p-4 rounded-2xl text-slate-900 font-black text-sm hover:border-amber-400/50 focus:border-amber-500 focus:ring-4 focus:ring-amber-500/20 transition-all duration-300 outline-none shadow-sm cursor-pointer"
                     value={isAdding ? newExec.status : editingExec?.status}
                     onChange={(e) =>
                       isAdding
@@ -438,16 +438,16 @@ export default function ExecutionsModule({
                   >
                     <option
                       value="قيد التنفيذ"
-                      className="bg-slate-900 text-amber-100"
+                      className="bg-white text-slate-900"
                     >
                       ⏳ قيد التنفيذ
                     </option>
-                    <option value="مكتمل" className="bg-slate-900 text-amber-100">
+                    <option value="مكتمل" className="bg-white text-slate-900">
                       ✅ منتهي ومسدد بنجاح
                     </option>
                     <option
                       value="طلب معلق"
-                      className="bg-slate-900 text-amber-100"
+                      className="bg-white text-slate-900"
                     >
                       ⚠️ معلق بقرار قضائي
                     </option>
@@ -455,12 +455,12 @@ export default function ExecutionsModule({
                 </div>
 
                 <div className="col-span-full">
-                  <label className="text-xs font-black text-amber-400 mb-2 block uppercase tracking-wide drop-shadow-sm">
+                  <label className="text-xs font-black text-slate-800 mb-2 block uppercase tracking-wide">
                     ملاحظات العمل الخاصة بالسجل
                   </label>
                   <textarea
                     rows={3}
-                    className="w-full bg-slate-900/80 border-2 border-slate-700 p-4 rounded-2xl text-amber-100 font-bold text-sm placeholder-slate-500 hover:border-amber-500/50 focus:border-amber-400 focus:ring-4 focus:ring-amber-500/20 transition-all duration-300 outline-none shadow-inner resize-none"
+                    className="w-full bg-slate-50 border-2 border-slate-200 p-4 rounded-2xl text-slate-900 font-bold text-sm placeholder-slate-400 hover:border-amber-400/50 focus:border-amber-500 focus:ring-4 focus:ring-amber-500/20 transition-all duration-300 outline-none shadow-sm resize-none"
                     value={isAdding ? newExec.details : editingExec?.details}
                     onChange={(e) =>
                       isAdding
@@ -476,7 +476,7 @@ export default function ExecutionsModule({
                 <div className="col-span-full pt-4 flex gap-4">
                   <button
                     type="submit"
-                    className="flex-1 bg-amber-600 hover:bg-amber-500 text-slate-950 p-5 rounded-2xl font-extrabold text-sm shadow-[0_0_20px_rgba(217,119,6,0.4)] transition-all active:scale-[0.98] cursor-pointer border border-amber-400/50"
+                    className="flex-1 bg-amber-600 hover:bg-amber-500 text-white p-5 rounded-2xl font-extrabold text-sm shadow-md transition-all active:scale-[0.98] cursor-pointer border border-amber-500/50"
                   >
                     {isAdding
                       ? "اعتماد قيد الطلب الجديد والمزامنة ✅"
@@ -493,7 +493,7 @@ export default function ExecutionsModule({
                           setEditingExec(null);
                         }
                       }}
-                      className="bg-slate-900 text-rose-500 border border-rose-500/30 hover:bg-rose-500 hover:text-white hover:border-rose-500 px-8 rounded-2xl transition-all font-black text-sm cursor-pointer shadow-[0_0_15px_rgba(244,63,94,0.1)] hover:shadow-[0_0_20px_rgba(244,63,94,0.3)]"
+                      className="bg-white text-rose-600 border border-rose-200 hover:bg-rose-50 hover:border-rose-300 px-8 rounded-2xl transition-all font-black text-sm cursor-pointer shadow-sm"
                     >
                       حذف السجل
                     </button>
@@ -511,34 +511,31 @@ export default function ExecutionsModule({
           {
             label: "إجمالي الطلبات",
             value: executions.length,
-            textColor:
-              "text-blue-400 drop-shadow-[0_0_8px_rgba(59,130,246,0.4)]",
-            labelColor: "text-blue-200/90 font-black",
-            bg: "bg-gradient-to-br from-[#0b172a] to-[#040814] border-blue-500/40 hover:border-blue-400 hover:shadow-[0_0_25px_rgba(59,130,246,0.2)]",
+            textColor: "text-blue-700",
+            labelColor: "text-blue-600 font-black",
+            bg: "bg-blue-50 border-blue-200 hover:border-blue-300",
             icon: Scale,
-            iconColor: "text-blue-400",
+            iconColor: "text-blue-600",
           },
           {
             label: "قيد التنفيذ",
             value: executions.filter((e) => e.status?.includes("قيد")).length,
-            textColor:
-              "text-amber-400 drop-shadow-[0_0_8px_rgba(245,158,11,0.4)]",
-            labelColor: "text-amber-200/90 font-black",
-            bg: "bg-gradient-to-br from-[#1c1203] to-[#060401] border-amber-500/40 hover:border-amber-400 hover:shadow-[0_0_25px_rgba(245,158,11,0.2)]",
+            textColor: "text-amber-700",
+            labelColor: "text-amber-600 font-black",
+            bg: "bg-amber-50 border-amber-200 hover:border-amber-300",
             icon: Activity,
-            iconColor: "text-amber-400 animate-pulse",
+            iconColor: "text-amber-600 animate-pulse",
           },
           {
             label: "طلبات مكتملة",
             value: executions.filter(
               (e) => e.status?.includes("منتهي") || e.status?.includes("مكتمل"),
             ).length,
-            textColor:
-              "text-emerald-400 drop-shadow-[0_0_8px_rgba(16,185,129,0.4)]",
-            labelColor: "text-emerald-200/90 font-black",
-            bg: "bg-gradient-to-br from-[#051c0f] to-[#010905] border-emerald-500/40 hover:border-emerald-400 hover:shadow-[0_0_25px_rgba(16,185,129,0.2)]",
+            textColor: "text-emerald-700",
+            labelColor: "text-emerald-600 font-black",
+            bg: "bg-emerald-50 border-emerald-200 hover:border-emerald-300",
             icon: ShieldCheck,
-            iconColor: "text-emerald-400",
+            iconColor: "text-emerald-600",
           },
           {
             label: "إجمالي المبالغ",
@@ -546,17 +543,16 @@ export default function ExecutionsModule({
               executions
                 .reduce((acc, curr) => acc + (curr.amount || 0), 0)
                 .toLocaleString() + " ر.س",
-            textColor:
-              "text-purple-300 drop-shadow-[0_0_8px_rgba(168,85,247,0.4)]",
-            labelColor: "text-purple-200/90 font-black",
-            bg: "bg-gradient-to-br from-[#160b26] to-[#05020c] border-purple-500/40 hover:border-purple-400 hover:shadow-[0_0_25px_rgba(168,85,247,0.2)]",
+            textColor: "text-purple-700",
+            labelColor: "text-purple-600 font-black",
+            bg: "bg-purple-50 border-purple-200 hover:border-purple-300",
             icon: DollarSign,
-            iconColor: "text-purple-400",
+            iconColor: "text-purple-600",
           },
         ].map((stat, i) => (
           <div
             key={i}
-            className={`${stat.bg} p-6 rounded-[2rem] border-2 flex items-center justify-between shadow-lg relative overflow-hidden transition-all duration-300 hover:scale-[1.03]`}
+            className={`${stat.bg} p-6 rounded-[2rem] border-2 flex items-center justify-between shadow-sm relative overflow-hidden transition-all duration-300 hover:scale-[1.03] hover:shadow-md cursor-pointer`}
           >
             <div>
               <p
@@ -568,7 +564,7 @@ export default function ExecutionsModule({
                 {stat.value}
               </p>
             </div>
-            <div className="p-3 bg-white/5 rounded-2xl border border-white/10">
+            <div className="p-3 bg-white/60 rounded-2xl border border-white">
               <stat.icon className={`w-8 h-8 ${stat.iconColor}`} />
             </div>
           </div>
@@ -577,27 +573,27 @@ export default function ExecutionsModule({
 
       {/* Table / Cards Section */}
       {viewMode === "table" ? (
-        <div className="rounded-[2.5rem] p-4 shadow-2xl bg-[#0c142b] border border-slate-800 transition-all duration-300 mb-6">
+        <div className="rounded-[2.5rem] p-4 shadow-sm bg-white border border-slate-200 transition-all duration-300 mb-6 relative overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-right border-separate border-spacing-y-4">
               <thead>
                 <tr className="mb-4">
-                  <th className="px-8 py-3 text-xs font-black tracking-wide text-amber-200/90 whitespace-nowrap">
+                  <th className="px-8 py-3 text-xs font-black tracking-wide text-slate-500 whitespace-nowrap">
                     رقم الطلب الرسمي
                   </th>
-                  <th className="px-6 py-3 text-xs font-black tracking-wide text-amber-200/90 whitespace-nowrap">
+                  <th className="px-6 py-3 text-xs font-black tracking-wide text-slate-500 whitespace-nowrap">
                     طالب الحماية (الموكل)
                   </th>
-                  <th className="px-6 py-3 text-xs font-black tracking-wide text-amber-200/90 whitespace-nowrap">
+                  <th className="px-6 py-3 text-xs font-black tracking-wide text-slate-500 whitespace-nowrap">
                     المنفذ ضده
                   </th>
-                  <th className="px-6 py-3 text-xs font-black tracking-wide text-amber-200/90 whitespace-nowrap text-center">
+                  <th className="px-6 py-3 text-xs font-black tracking-wide text-slate-500 whitespace-nowrap text-center">
                     المبلغ المستحق
                   </th>
-                  <th className="px-6 py-3 text-xs font-black tracking-wide text-amber-200/90 whitespace-nowrap text-center">
+                  <th className="px-6 py-3 text-xs font-black tracking-wide text-slate-500 whitespace-nowrap text-center">
                     الحالة الحالية
                   </th>
-                  <th className="px-8 py-3 text-xs font-black tracking-wide text-amber-200/90 whitespace-nowrap text-left">
+                  <th className="px-8 py-3 text-xs font-black tracking-wide text-slate-500 whitespace-nowrap text-left">
                     خيارات التحكم
                   </th>
                 </tr>
@@ -607,7 +603,7 @@ export default function ExecutionsModule({
                   <tr>
                     <td
                       colSpan={6}
-                      className="px-8 py-20 text-center text-amber-500/70 italic font-black text-lg bg-white/5 rounded-3xl"
+                      className="px-8 py-20 text-center text-slate-400 italic font-black text-lg bg-slate-50 rounded-3xl"
                     >
                       لا توجد نتائج مطابقة لفلترة البحث الحالية...
                     </td>
@@ -616,7 +612,7 @@ export default function ExecutionsModule({
                   filtered.map((ex) => (
                     <tr
                       key={ex.id}
-                      className="hover:scale-[1.01] bg-white transition-all duration-300 group shadow-[0_5px_20px_rgba(0,0,0,0.4)] relative"
+                      className="hover:scale-[1.01] bg-white transition-all duration-300 group shadow-sm hover:shadow-md relative"
                     >
                       <td className="px-8 py-6 whitespace-nowrap font-mono font-black text-sm text-[#0f172a] rounded-r-[2rem] border-y border-r border-slate-200 group-hover:text-amber-600 transition-colors">
                         <div className="flex flex-col gap-1">
@@ -663,14 +659,14 @@ export default function ExecutionsModule({
                         <div className="flex items-center justify-end gap-3">
                           <button
                             onClick={() => setViewingExec(ex)}
-                            className="p-3 bg-[#0f172a] hover:bg-[#1e293b] text-white border border-[#0f172a] rounded-full transition-all cursor-pointer shadow-md hover:shadow-lg hover:-translate-y-0.5"
+                            className="p-3 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 rounded-full transition-all cursor-pointer shadow-sm hover:shadow hover:-translate-y-0.5"
                             title="عرض تفاصيل السجل"
                           >
                             <ArrowUpRight className="w-5 h-5" />
                           </button>
                           <button
                             onClick={() => setEditingExec(ex)}
-                            className="p-3 bg-[#0f172a] hover:bg-[#1e293b] text-white border border-[#0f172a] rounded-full transition-all cursor-pointer shadow-md hover:shadow-lg hover:-translate-y-0.5"
+                            className="p-3 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 rounded-full transition-all cursor-pointer shadow-sm hover:shadow hover:-translate-y-0.5"
                             title="تعديل بيانات السجل"
                           >
                             <Edit2 className="w-5 h-5" />
@@ -687,7 +683,7 @@ export default function ExecutionsModule({
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filtered.length === 0 ? (
-            <div className="col-span-full py-20 text-center text-amber-500/70 italic font-black text-lg bg-white/5 rounded-3xl">
+            <div className="col-span-full py-20 text-center text-slate-400 italic font-black text-lg bg-slate-50 rounded-3xl border border-dashed border-slate-200">
               لا توجد سجلات مطابقة لخيارات الفلترة الحالية...
             </div>
           ) : (
@@ -820,33 +816,33 @@ export default function ExecutionsModule({
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setViewingExec(null)}
-              className="absolute inset-0 bg-slate-950/95 backdrop-blur-md"
+              className="absolute inset-0 bg-slate-900/40 backdrop-blur-md"
             />
             <motion.div
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="relative bg-gradient-to-br from-[#0c142b] to-[#040817] border-2 border-amber-500/30 rounded-[2.5rem] w-full max-w-xl p-8 shadow-[0_0_60px_rgba(234,179,8,0.25)] overflow-hidden max-h-[90vh] overflow-y-auto"
+              className="relative bg-white border border-slate-200 rounded-[2.5rem] w-full max-w-xl p-8 shadow-2xl overflow-hidden max-h-[90vh] overflow-y-auto"
             >
-              <div className="absolute top-0 right-0 w-64 h-64 bg-amber-500/10 rounded-full blur-3xl -z-10 pointer-events-none"></div>
+              <div className="absolute top-0 right-0 w-64 h-64 bg-amber-50 rounded-full blur-3xl -z-10 pointer-events-none"></div>
 
-              <div className="flex items-center justify-between mb-6 pb-4 border-b border-amber-500/20 relative z-10">
+              <div className="flex items-center justify-between mb-6 pb-4 border-b border-slate-100 relative z-10">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-slate-900 rounded-xl border border-amber-500/30 text-amber-500 shadow-[0_0_15px_rgba(234,179,8,0.2)]">
+                  <div className="p-2 bg-amber-50 rounded-xl border border-amber-200 text-amber-600 shadow-sm">
                     <Scale className="w-6 h-6" />
                   </div>
                   <div>
-                    <h2 className="text-xl font-black text-amber-400 tracking-tight drop-shadow-md">
+                    <h2 className="text-xl font-black text-slate-900 tracking-tight">
                       تفاصيل سجل التنفيذ
                     </h2>
-                    <p className="text-xs text-amber-200/80 font-extrabold mt-1 font-mono">
+                    <p className="text-xs text-slate-500 font-extrabold mt-1 font-mono">
                       #{viewingExec.execution_number}
                     </p>
                   </div>
                 </div>
                 <button
                   onClick={() => setViewingExec(null)}
-                  className="bg-slate-900 hover:bg-slate-800 text-amber-500 hover:text-amber-400 border border-amber-500/30 w-8 h-8 rounded-full flex items-center justify-center text-xs font-black shadow-[0_0_15px_rgba(234,179,8,0.3)] transition-all duration-200 cursor-pointer"
+                  className="bg-slate-50 hover:bg-slate-100 text-slate-400 hover:text-slate-900 border border-slate-200 w-8 h-8 rounded-full flex items-center justify-center text-xs font-black transition-all duration-200 cursor-pointer"
                 >
                   ✕
                 </button>
@@ -854,18 +850,18 @@ export default function ExecutionsModule({
 
               <div className="space-y-5 relative z-10">
                 {/* Status Badges Header */}
-                <div className="flex items-center justify-between bg-slate-900/60 p-4 rounded-2xl border border-slate-700">
-                  <span className="text-xs text-amber-400 font-black">
+                <div className="flex items-center justify-between bg-slate-50 p-4 rounded-2xl border border-slate-200">
+                  <span className="text-xs text-slate-600 font-black">
                     حالة السند القانوني:
                   </span>
                   <span
                     className={`px-4 py-1.5 rounded-full text-[11px] font-black border uppercase ${
                       viewingExec.status?.includes("مكتمل") ||
                       viewingExec.status?.includes("منتهي")
-                        ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/30 shadow-sm"
+                        ? "bg-emerald-50 text-emerald-700 border-emerald-200 shadow-sm"
                         : viewingExec.status?.includes("قيد")
-                          ? "bg-amber-500/10 text-amber-400 border-amber-500/30 shadow-sm"
-                          : "bg-blue-500/10 text-blue-400 border-blue-500/30 shadow-sm"
+                          ? "bg-amber-50 text-amber-700 border-amber-200 shadow-sm"
+                          : "bg-blue-50 text-blue-700 border-blue-200 shadow-sm"
                     }`}
                   >
                     {viewingExec.status || "قيد المعالجة"}
@@ -873,48 +869,49 @@ export default function ExecutionsModule({
                 </div>
 
                 {/* Sub details card */}
-                <div className="bg-slate-900/40 border-2 border-slate-800/80 p-6 rounded-3xl space-y-4">
-                  <div className="flex justify-between items-center border-b border-slate-700/50 pb-3">
-                    <span className="text-amber-200/80 text-xs font-black">
+                <div className="bg-white border-2 border-slate-100 shadow-sm p-6 rounded-3xl space-y-4 relative overflow-hidden">
+                   <div className="absolute top-0 right-0 w-32 h-32 bg-slate-50 rounded-full blur-2xl -z-10"></div>
+                  <div className="flex justify-between items-center border-b border-slate-100 pb-3">
+                    <span className="text-slate-500 text-xs font-black">
                       طالب التنفيذ (الموكل):
                     </span>
-                    <span className="text-amber-50 text-sm font-black">
+                    <span className="text-slate-900 text-sm font-black">
                       {viewingExec.requester_name || "غير محدد"}
                     </span>
                   </div>
 
-                  <div className="flex justify-between items-center border-b border-slate-700/50 pb-3">
-                    <span className="text-amber-200/80 text-xs font-black">
+                  <div className="flex justify-between items-center border-b border-slate-100 pb-3">
+                    <span className="text-slate-500 text-xs font-black">
                       المنفذ ضده (المدين):
                     </span>
-                    <span className="text-amber-50 text-sm font-extrabold">
+                    <span className="text-slate-900 text-sm font-extrabold">
                       {viewingExec.opponent_name || "غير محدد"}
                     </span>
                   </div>
 
-                  <div className="flex justify-between items-center border-b border-slate-700/50 pb-3">
-                    <span className="text-amber-200/80 text-xs font-black">
+                  <div className="flex justify-between items-center border-b border-slate-100 pb-3">
+                    <span className="text-slate-500 text-xs font-black">
                       قيمة السند التنفيذي الحالية:
                     </span>
-                    <span className="text-amber-400 font-mono text-base font-black drop-shadow-md">
+                    <span className="text-amber-600 font-mono text-base font-black">
                       {(viewingExec.amount || 0).toLocaleString()} ر.س
                     </span>
                   </div>
 
-                  <div className="flex justify-between items-center border-b border-slate-700/50 pb-3">
-                    <span className="text-amber-200/80 text-xs font-black">
+                  <div className="flex justify-between items-center border-b border-slate-100 pb-3">
+                    <span className="text-slate-500 text-xs font-black">
                       المحكمة القضائية / المختصة:
                     </span>
-                    <span className="text-amber-100 text-xs font-black">
+                    <span className="text-slate-700 text-xs font-black">
                       {viewingExec.court_name || "محكمة التنفيذ بالمنطقة"}
                     </span>
                   </div>
 
                   <div className="flex justify-between items-center whitespace-nowrap">
-                    <span className="text-amber-200/80 text-xs font-black">
+                    <span className="text-slate-500 text-xs font-black">
                       تاريخ القيد ونفاذ الطلب:
                     </span>
-                    <span className="text-amber-100 font-mono text-xs font-extrabold">
+                    <span className="text-slate-700 font-mono text-xs font-extrabold">
                       {viewingExec.issue_date || "غير متوفر"}
                     </span>
                   </div>
@@ -922,15 +919,15 @@ export default function ExecutionsModule({
 
                 {/* Automation Details */}
                 {viewingExec.is_najiz_sync && (
-                  <div className="p-4 bg-emerald-500/10 border-2 border-emerald-500/20 rounded-2xl flex items-center gap-3">
-                    <div className="p-2 bg-emerald-500/20 rounded-xl border border-emerald-500/30 text-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.2)]">
+                  <div className="p-4 bg-emerald-50 border border-emerald-100 rounded-2xl flex items-center gap-3">
+                    <div className="p-2 bg-white rounded-xl border border-emerald-200 text-emerald-600 shadow-sm">
                       <ShieldCheck className="w-5 h-5 animate-pulse" />
                     </div>
                     <div>
-                      <h4 className="text-xs font-black text-emerald-400">
+                      <h4 className="text-xs font-black text-emerald-700">
                         موثق ومزامن آلياً عبر بوابة ناجز
                       </h4>
-                      <p className="text-[10px] text-emerald-400/80 font-bold mt-0.5">
+                      <p className="text-[10px] text-emerald-600 font-bold mt-0.5">
                         آخر مراجعة للتحقق مع ZATCA والعدل:{" "}
                         {viewingExec.last_sync_at
                           ? new Date(
@@ -944,10 +941,10 @@ export default function ExecutionsModule({
 
                 {/* Work description / notes */}
                 <div className="space-y-2">
-                  <span className="text-xs text-amber-400 font-black block">
+                  <span className="text-xs text-slate-800 font-black block">
                     محاضر وسجل الملاحظات التنفيذية:
                   </span>
-                  <div className="bg-slate-900/40 border-2 border-slate-800/80 p-4 rounded-3xl min-h-[80px] text-xs font-bold text-amber-50 leading-relaxed max-h-[140px] overflow-y-auto">
+                  <div className="bg-slate-50 border border-slate-200 p-4 rounded-3xl min-h-[80px] text-xs font-bold text-slate-700 leading-relaxed max-h-[140px] overflow-y-auto">
                     {viewingExec.details ||
                       "لا توجد ملاحظات إضافية مسجلة على هذا الطلب حتى الآن."}
                   </div>
@@ -960,13 +957,13 @@ export default function ExecutionsModule({
                       setViewingExec(null);
                       setEditingExec(backupExec);
                     }}
-                    className="flex-1 bg-amber-600 hover:bg-amber-500 text-slate-950 py-3.5 px-4 rounded-2xl font-extrabold text-sm transition-colors shadow-[0_0_15px_rgba(217,119,6,0.4)] hover:shadow-[0_0_25px_rgba(217,119,6,0.6)] cursor-pointer text-center active:scale-[0.98] border border-amber-400/50"
+                    className="flex-1 bg-amber-600 hover:bg-amber-500 text-white py-3.5 px-4 rounded-2xl font-extrabold text-sm transition-colors shadow-md hover:shadow-lg cursor-pointer text-center active:scale-[0.98] border border-amber-500/50"
                   >
                     تعديل بيانات السجل
                   </button>
                   <button
                     onClick={() => setViewingExec(null)}
-                    className="bg-slate-900 hover:bg-slate-800 text-amber-400 border-2 border-slate-700 hover:border-slate-600 px-6 py-3.5 rounded-2xl font-black text-sm transition-all cursor-pointer text-center shadow-[0_0_10px_rgba(0,0,0,0.5)] active:scale-[0.98]"
+                    className="bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 hover:border-slate-300 px-6 py-3.5 rounded-2xl font-black text-sm transition-all cursor-pointer text-center shadow-sm active:scale-[0.98]"
                   >
                     إغلاق التفاصيل
                   </button>
