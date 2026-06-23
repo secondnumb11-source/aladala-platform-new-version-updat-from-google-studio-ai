@@ -70,46 +70,46 @@ export default function CaseFilters({
 }: CaseFiltersProps) {
 
   return (
-    <div className={`p-8 rounded-[2.5rem] border ${isHighContrast ? 'bg-white border-slate-900 shadow-xl' : 'bg-[#050e21] border-slate-800 shadow-2xl'} mb-10 relative z-20 space-y-6 text-right`} dir="rtl">
+    <div className={`p-8 rounded-[2.5rem] border ${isHighContrast ? 'bg-[#0b1329] border-slate-700/80 shadow-2xl shadow-black/30' : 'bg-[#040e21] border-slate-800 shadow-2xl shadow-black/30'} mb-10 relative z-20 space-y-6 text-right font-sans`} dir="rtl">
       <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
         <div className="flex-1 min-w-[320px] relative w-full">
-          <Search className="absolute right-5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-300" />
+          <Search className="absolute right-5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
           <input 
             type="text" 
             placeholder="البحث في القضايا، الموكلين، أو أرقام الصكوك..." 
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full bg-[#0c1a35] border border-slate-700/50 rounded-2xl py-4 pr-14 pl-6 text-sm font-bold text-white focus:outline-none focus:border-amber-500/50 transition-all shadow-inner"
+            className="w-full bg-[#0b1329] border border-slate-700 rounded-2xl py-4 pr-14 pl-6 text-sm font-black text-white placeholder-slate-500 focus:outline-none focus:border-[#ff7f00]/50 focus:ring-2 focus:ring-[#ff7f00]/20 transition-all shadow-inner"
           />
         </div>
 
         <div className="flex gap-4 w-full md:w-auto">
           <div className="relative">
-            <span className="absolute -top-2 right-4 bg-[#050e21] px-2 text-[10px] font-black text-amber-500/80 uppercase">آخر جلسة</span>
+            <span className="absolute -top-2 right-4 bg-[#040e21] px-2 text-[10px] font-black text-[#facc15] uppercase tracking-wider">آخر جلسة</span>
             <input 
               type="date"
               value={lastSessionFilter}
               onChange={(e) => setLastSessionFilter(e.target.value)}
-              className="bg-[#0c1a35] border border-slate-700/50 rounded-xl py-2.5 px-4 text-[10px] font-black text-white outline-none focus:border-amber-500/50 transition-all"
+              className="bg-[#0b1329] border border-slate-700 rounded-xl py-2.5 px-4 text-[11px] font-black text-white outline-none focus:border-[#facc15]/50 focus:ring-2 focus:ring-[#facc15]/20 transition-all [color-scheme:dark]"
             />
           </div>
           <div className="relative">
-            <span className="absolute -top-2 right-4 bg-[#050e21] px-2 text-[10px] font-black text-indigo-500/80 uppercase">الموعد القادم</span>
+            <span className="absolute -top-2 right-4 bg-[#040e21] px-2 text-[10px] font-black text-[#ff7f00] uppercase tracking-wider">الموعد القادم</span>
             <input 
               type="date"
               value={nextAppointmentFilter}
               onChange={(e) => setNextAppointmentFilter(e.target.value)}
-              className="bg-[#0c1a35] border border-slate-700/50 rounded-xl py-2.5 px-4 text-[10px] font-black text-white outline-none focus:border-indigo-500/50 transition-all"
+              className="bg-[#0b1329] border border-slate-700 rounded-xl py-2.5 px-4 text-[11px] font-black text-white outline-none focus:border-[#ff7f00]/50 focus:ring-2 focus:ring-[#ff7f00]/20 transition-all [color-scheme:dark]"
             />
           </div>
         </div>
         
         <div className="flex items-center gap-4 w-full lg:w-auto">
-          <div className="flex bg-slate-900 border border-slate-800 p-1 rounded-2xl">
+          <div className="flex bg-[#0b1329] border border-slate-700 p-1 rounded-2xl shadow-inner">
             <button 
               type="button"
               onClick={() => setViewMode('grid')}
-              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-[10px] font-black uppercase transition-all ${viewMode === 'grid' ? 'bg-amber-600 text-white shadow-lg' : 'text-slate-700'}`}
+              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-[10px] font-black uppercase transition-all ${viewMode === 'grid' ? 'bg-[#ff7f00] text-slate-950 shadow-lg shadow-[#ff7f00]/20' : 'text-slate-400 hover:text-white'}`}
             >
               <Layers className="w-4 h-4" />
               <span>عرض المربعات</span>
@@ -117,27 +117,27 @@ export default function CaseFilters({
             <button 
               type="button"
               onClick={() => setViewMode('table')}
-              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-[10px] font-black uppercase transition-all ${viewMode === 'table' ? 'bg-amber-600 text-white shadow-lg' : 'text-slate-300'}`}
+              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-[10px] font-black uppercase transition-all ${viewMode === 'table' ? 'bg-[#ff7f00] text-slate-950 shadow-lg shadow-[#ff7f00]/20' : 'text-slate-400 hover:text-white'}`}
             >
               <FileText className="w-4 h-4" />
               <span>عرض القائمة</span>
             </button>
           </div>
-          <div className="bg-slate-900 border border-slate-800 px-5 py-3 rounded-2xl flex items-center gap-3">
-            <span className="text-[10px] text-slate-300 font-black uppercase tracking-widest">إجمالي القضايا:</span>
-            <span className="text-lg font-mono text-amber-500 font-black leading-none">{(cases || []).length}</span>
+          <div className="bg-[#0b1329] border border-slate-700 px-5 py-3 rounded-2xl flex items-center gap-3 shadow-inner">
+            <span className="text-[10px] text-[#facc15] font-black uppercase tracking-widest">إجمالي القضايا:</span>
+            <span className="text-lg font-mono text-white font-black leading-none drop-shadow-md">{(cases || []).length}</span>
           </div>
           <button 
             type="button"
             onClick={() => setIsGraphsOpen(!isGraphsOpen)}
-            className="p-3.5 bg-slate-900 border border-slate-800 rounded-2xl text-white font-black transition-all cursor-pointer"
+            className="p-3.5 bg-[#0b1329] border border-slate-700 rounded-2xl text-white hover:text-[#ff7f00] font-black transition-all cursor-pointer shadow-inner"
           >
             <TrendingUp className="w-5 h-5" />
           </button>
           <button 
             type="button"
             onClick={handleExportCSV}
-            className="px-5 py-3.5 bg-indigo-650 hover:bg-indigo-600 border border-indigo-500 rounded-2xl text-white font-black text-xs cursor-pointer shadow-lg transition-all"
+            className="px-5 py-3.5 bg-indigo-900/40 hover:bg-indigo-800/60 border border-indigo-500/40 rounded-2xl text-indigo-200 hover:text-white font-black text-[11px] cursor-pointer shadow-lg transition-all tracking-wider"
           >
             تصدير CSV
           </button>
@@ -162,15 +162,15 @@ export default function CaseFilters({
                   setCategoryFilter(prev => prev.includes(cat.id) ? prev.filter(id => id !== cat.id) : [...prev, cat.id]);
                 }
               }}
-              className={`flex items-center gap-3 px-5 py-3 rounded-2xl text-xs font-black transition-all border shrink-0 relative group ${
+              className={`flex items-center gap-3 px-5 py-3 rounded-2xl text-[11px] font-black transition-all border shrink-0 relative group shadow-inner ${
                 isActive 
-                  ? 'bg-amber-600 text-white border-amber-500 shadow-xl shadow-amber-600/20' 
-                  : 'bg-[#0c1a35] text-white border-slate-800 hover:border-amber-500/30'
+                  ? 'bg-[#ff7f00] text-slate-950 border-[#ff7f00] shadow-lg shadow-[#ff7f00]/20' 
+                  : 'bg-[#040e21] text-white border-slate-700 hover:border-[#facc15]/50 hover:text-[#facc15]'
               }`}
             >
-              <Icon className={`w-4 h-4 ${isActive ? 'text-white' : 'text-amber-500'}`} />
-              <span>{cat.label}</span>
-              <span className={`text-[10px] px-2 py-0.5 rounded-lg font-mono ${isActive ? 'bg-white/20' : 'bg-slate-800 text-slate-400'}`}>
+              <Icon className={`w-4 h-4 ${isActive ? 'text-slate-950' : 'text-[#ff7f00]'}`} />
+              <span className="tracking-wide">{cat.label}</span>
+              <span className={`text-[10px] px-2 py-0.5 rounded-lg font-mono ${isActive ? 'bg-slate-950/20' : 'bg-slate-800 text-slate-300'}`}>
                 {count}
               </span>
             </button>
@@ -179,13 +179,13 @@ export default function CaseFilters({
       </div>
 
       {/* Advanced Filter Dropdowns bar to make filter system complete */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-4 pt-4 border-t border-slate-800/60 font-sans">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4 pt-4 border-t border-slate-700/80 font-sans">
         <div>
-          <label className="block text-[10px] font-bold text-amber-500 mb-1.5 uppercase">مرحلة التقاضي</label>
+          <label className="block text-[10px] font-black text-[#facc15] mb-1.5 uppercase tracking-wider">مرحلة التقاضي</label>
           <select 
             value={stageFilter} 
             onChange={(e) => setStageFilter(e.target.value)}
-            className="w-full bg-[#0c1a35] text-white border border-slate-700 rounded-xl py-2 px-3 text-xs font-bold"
+            className="w-full bg-[#040e21] text-white border border-slate-700 rounded-xl py-2 px-3 text-xs font-black focus:border-[#ff7f00]/50 focus:ring-2 focus:ring-[#ff7f00]/20 outline-none transition-all"
           >
             <option value="all">كل المراحل 📋</option>
             <option value="litigation">المرافعة والتقاضي ⚖️</option>
@@ -194,11 +194,11 @@ export default function CaseFilters({
           </select>
         </div>
         <div>
-          <label className="block text-[10px] font-bold text-amber-500 mb-1.5 uppercase">مكان المحكمة</label>
+          <label className="block text-[10px] font-black text-[#facc15] mb-1.5 uppercase tracking-wider">مكان المحكمة</label>
           <select 
             value={courtFilter} 
             onChange={(e) => setCourtFilter(e.target.value)}
-            className="w-full bg-[#0c1a35] text-white border border-slate-700 rounded-xl py-2 px-3 text-xs font-bold"
+            className="w-full bg-[#040e21] text-white border border-slate-700 rounded-xl py-2 px-3 text-xs font-black focus:border-[#ff7f00]/50 focus:ring-2 focus:ring-[#ff7f00]/20 outline-none transition-all"
           >
             <option value="all">كل المحاكم ⚖️</option>
             <option value="الرياض">الرياض 📍</option>
@@ -208,11 +208,11 @@ export default function CaseFilters({
           </select>
         </div>
         <div>
-          <label className="block text-[10px] font-bold text-amber-500 mb-1.5 uppercase">حالة المتابعة</label>
+          <label className="block text-[10px] font-black text-[#facc15] mb-1.5 uppercase tracking-wider">حالة المتابعة</label>
           <select 
             value={statusFilter} 
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="w-full bg-[#0c1a35] text-white border border-slate-700 rounded-xl py-2 px-3 text-xs font-bold"
+            className="w-full bg-[#040e21] text-white border border-slate-700 rounded-xl py-2 px-3 text-xs font-black focus:border-[#ff7f00]/50 focus:ring-2 focus:ring-[#ff7f00]/20 outline-none transition-all"
           >
             <option value="all">كل الحالات 🗳️</option>
             <option value="active">نشطة فقط 🟢</option>
@@ -221,11 +221,11 @@ export default function CaseFilters({
           </select>
         </div>
         <div>
-          <label className="block text-[10px] font-bold text-amber-500 mb-1.5 uppercase">المستشار المرخص المسؤول</label>
+          <label className="block text-[10px] font-black text-[#facc15] mb-1.5 uppercase tracking-wider">المستشار المرخص المسؤول</label>
           <select 
             value={lawyerFilter} 
             onChange={(e) => setLawyerFilter(e.target.value)}
-            className="w-full bg-[#0c1a35] text-white border border-slate-700 rounded-xl py-2 px-3 text-xs font-bold"
+            className="w-full bg-[#040e21] text-white border border-slate-700 rounded-xl py-2 px-3 text-xs font-black focus:border-[#ff7f00]/50 focus:ring-2 focus:ring-[#ff7f00]/20 outline-none transition-all"
           >
             <option value="all">كل المحامين 👥</option>
             <option value="baqami">د. البقمي 👑</option>
@@ -236,17 +236,17 @@ export default function CaseFilters({
       </div>
 
       {/* Advanced Document Tag Filter Bar */}
-      <div className="pt-4 border-t border-slate-800/60 mt-4">
+      <div className="pt-4 border-t border-slate-700/80 mt-4">
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
           <div className="flex items-center gap-2">
-            <span className="text-[10px] text-amber-500 font-black uppercase tracking-widest bg-amber-500/10 px-2 py-1 rounded">وسوم المستندات الذكية</span>
+            <span className="text-[10px] text-[#ff7f00] font-black uppercase tracking-widest bg-[#ff7f00]/10 px-2 py-1 rounded">وسوم المستندات الذكية</span>
             <p className="text-[11px] text-white font-bold">فلترة سريعة للقضايا بواسطة وسوم المستندات التلقائية المكتشفة بالذكاء الاصطناعي (AI):</p>
           </div>
           {selectedDocTag !== 'all' && (
             <button 
               type="button"
               onClick={() => setSelectedDocTag('all')}
-              className="text-[10px] text-rose-400 font-extrabold flex items-center gap-1 transition-all cursor-pointer"
+              className="text-[10px] text-rose-400 font-extrabold flex items-center gap-1 transition-all cursor-pointer hover:text-rose-300"
             >
               <X className="w-3 h-3" />
               إلغاء التصفية بالوسم
@@ -275,10 +275,10 @@ export default function CaseFilters({
                 type="button"
                 key={tagItem.id}
                 onClick={() => setSelectedDocTag(tagItem.id)}
-                className={`px-3 py-2 rounded-xl text-[10px] font-black border transition-all cursor-pointer flex items-center gap-1.5 whitespace-nowrap ${
+                className={`px-3 py-2 rounded-xl text-[11px] font-black border transition-all cursor-pointer flex items-center gap-1.5 whitespace-nowrap shadow-inner ${
                   isActive
-                    ? 'bg-amber-600/25 text-amber-400 border-amber-500/60 shadow-lg shadow-amber-500/5'
-                    : 'bg-[#0c1a35] text-white border-slate-800/80 hover:border-amber-500/30'
+                    ? 'bg-[#ff7f00] text-slate-950 border-[#ff7f00] shadow-lg shadow-[#ff7f00]/20'
+                    : 'bg-[#040e21] text-white border-slate-700 hover:border-[#facc15]/50 hover:text-[#facc15]'
                 }`}
               >
                 <span>{tagItem.label}</span>

@@ -916,15 +916,15 @@ export default function AgenciesModule({ clients, onUpdateState }: AgenciesModul
         {showAddModal && (
           <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[110] flex items-center justify-center p-4 overflow-y-auto">
             <motion.div initial={{ scale: 0.95, opacity: 0, y: 30 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.95, opacity: 0, y: 30 }}
-              className="bg-white border border-slate-200 rounded-[2rem] shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col">
+              className="bg-[#0b1329] border border-slate-700/80 rounded-[2rem] shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col">
               
-              <div className="p-6 border-b border-slate-100 bg-slate-50 flex items-center justify-between">
+              <div className="p-6 border-b border-slate-800 bg-[#040e21] flex items-center justify-between">
                 <div>
-                  <h2 className="text-xl font-black text-blue-950 flex items-center gap-2">
-                    <FileSpreadsheet className="w-6 h-6 text-blue-700" /> إضافة توثيق وكالة للعميل
+                  <h2 className="text-xl font-black text-white flex items-center gap-2">
+                    <FileSpreadsheet className="w-6 h-6 text-[#ff7f00]" /> إضافة توثيق وكالة للعميل
                   </h2>
                 </div>
-                <button onClick={() => setShowAddModal(false)} className="p-2 hover:bg-blue-100 rounded-full bg-blue-50 text-blue-900">
+                <button onClick={() => setShowAddModal(false)} className="p-2 hover:bg-slate-800 rounded-full bg-[#0b1329] text-white border border-slate-700 transition-colors cursor-pointer">
                   <X className="w-5 h-5" />
                 </button>
               </div>
@@ -932,14 +932,14 @@ export default function AgenciesModule({ clients, onUpdateState }: AgenciesModul
               <form onSubmit={handleAddAgency} className="p-6 space-y-5 text-right overflow-y-auto max-h-[75vh]">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                   <div className="space-y-1.5">
-                    <label className="text-xs text-blue-800 font-black block">رقم الوكالة العدلية *</label>
+                    <label className="text-xs text-[#facc15] font-black block">رقم الوكالة العدلية *</label>
                     <input type="text" required placeholder="45802144" value={poaNumber} onChange={(e) => setPoaNumber(e.target.value)}
-                      className="w-full px-4 py-3 bg-white border border-blue-300 rounded-xl text-sm font-black focus:outline-none focus:ring-2 focus:ring-blue-500 text-blue-950 shadow-sm" />
+                      className="w-full px-4 py-3 bg-[#040e21] border border-slate-700 rounded-xl text-sm font-black focus:outline-none focus:ring-2 focus:ring-[#ff7f00]/40 focus:border-[#ff7f00] text-white shadow-inner placeholder-slate-500" />
                   </div>
                   <div className="space-y-1.5">
-                    <label className="text-xs text-blue-800 font-black block">اسم العميل المرتبط (مسجل بالنظام)</label>
+                    <label className="text-xs text-[#facc15] font-black block">اسم العميل المرتبط (مسجل بالنظام)</label>
                     <select value={clientId} onChange={(e) => setClientId(e.target.value)}
-                      className="w-full px-4 py-3 bg-white border border-blue-300 rounded-xl text-sm font-black focus:outline-none focus:ring-2 focus:ring-blue-500 text-blue-950 shadow-sm">
+                      className="w-full px-4 py-3 bg-[#040e21] border border-slate-700 rounded-xl text-sm font-black focus:outline-none focus:ring-2 focus:ring-[#ff7f00]/40 focus:border-[#ff7f00] text-white shadow-inner">
                       <option value="">-- ربط بعميل خارجي غير مسجل --</option>
                       {clients.map(c => (
                         <option key={c.id} value={String(c.id)}>{c.name}</option>
@@ -950,30 +950,30 @@ export default function AgenciesModule({ clients, onUpdateState }: AgenciesModul
 
                 {!clientId && (
                   <div className="space-y-1.5">
-                    <label className="text-xs text-blue-800 font-black block">اسم العميل الخارجي *</label>
+                    <label className="text-xs text-[#facc15] font-black block">اسم العميل الخارجي *</label>
                     <input type="text" placeholder="الشركة أو الشخص" value={clientName} onChange={(e) => setClientName(e.target.value)}
-                      className="w-full px-4 py-3 bg-white border border-blue-300 rounded-xl text-sm font-black focus:outline-none focus:ring-2 focus:ring-blue-500 text-blue-950 shadow-sm" />
+                      className="w-full px-4 py-3 bg-[#040e21] border border-slate-700 rounded-xl text-sm font-black focus:outline-none focus:ring-2 focus:ring-[#ff7f00]/40 focus:border-[#ff7f00] text-white shadow-inner placeholder-slate-500" />
                   </div>
                 )}
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                   <div className="space-y-1.5">
-                    <label className="text-xs text-blue-800 font-black block">الموكِّل (Principal) *</label>
+                    <label className="text-xs text-[#facc15] font-black block">الموكِّل (Principal) *</label>
                     <input type="text" required placeholder="أطراف الوكالة الموكل" value={principalName} onChange={(e) => setPrincipalName(e.target.value)}
-                      className="w-full px-4 py-3 bg-white border border-blue-300 rounded-xl text-sm font-black focus:outline-none focus:ring-2 focus:ring-blue-500 text-blue-950 shadow-sm" />
+                      className="w-full px-4 py-3 bg-[#040e21] border border-slate-700 rounded-xl text-sm font-black focus:outline-none focus:ring-2 focus:ring-[#ff7f00]/40 focus:border-[#ff7f00] text-white shadow-inner placeholder-slate-500" />
                   </div>
                   <div className="space-y-1.5">
-                    <label className="text-xs text-blue-800 font-black block">الموكَّل له (Agent) *</label>
+                    <label className="text-xs text-[#facc15] font-black block">الموكَّل له (Agent) *</label>
                     <input type="text" required placeholder="المحامي الوكيل" value={agentName} onChange={(e) => setAgentName(e.target.value)}
-                      className="w-full px-4 py-3 bg-white border border-blue-300 rounded-xl text-sm font-black focus:outline-none focus:ring-2 focus:ring-blue-500 text-blue-950 shadow-sm" />
+                      className="w-full px-4 py-3 bg-[#040e21] border border-slate-700 rounded-xl text-sm font-black focus:outline-none focus:ring-2 focus:ring-[#ff7f00]/40 focus:border-[#ff7f00] text-white shadow-inner placeholder-slate-500" />
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                   <div className="space-y-1.5">
-                    <label className="text-xs text-blue-800 font-black block">حالة الوكالة</label>
+                    <label className="text-xs text-[#facc15] font-black block">حالة الوكالة</label>
                     <select value={status} onChange={(e) => setStatus(e.target.value)}
-                      className="w-full px-4 py-3 bg-white border border-blue-300 rounded-xl text-sm font-black focus:outline-none focus:ring-2 focus:ring-blue-500 text-blue-950 shadow-sm">
+                      className="w-full px-4 py-3 bg-[#040e21] border border-slate-700 rounded-xl text-sm font-black focus:outline-none focus:ring-2 focus:ring-[#ff7f00]/40 focus:border-[#ff7f00] text-white shadow-inner">
                       <option value="نشطة">نشطة / سارية</option>
                       <option value="ملغاة">ملغاة</option>
                       <option value="منتهية">منتهية المدة</option>
@@ -983,22 +983,22 @@ export default function AgenciesModule({ clients, onUpdateState }: AgenciesModul
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                   <div className="space-y-1.5">
-                    <label className="text-xs text-blue-800 font-black block">تاريخ الإصدار *</label>
+                    <label className="text-xs text-[#facc15] font-black block">تاريخ الإصدار *</label>
                     <input type="date" required value={issueDate} onChange={(e) => setIssueDate(e.target.value)}
-                      className="w-full px-4 py-3 bg-white border border-blue-300 rounded-xl text-sm font-black focus:outline-none focus:ring-2 focus:ring-blue-500 text-blue-950 shadow-sm" />
+                      className="w-full px-4 py-3 bg-[#040e21] border border-slate-700 rounded-xl text-sm font-black focus:outline-none focus:ring-2 focus:ring-[#ff7f00]/40 focus:border-[#ff7f00] text-white shadow-inner [color-scheme:dark]" />
                   </div>
                   <div className="space-y-1.5">
-                    <label className="text-xs text-blue-800 font-black block">تاريخ الانتهاء *</label>
+                    <label className="text-xs text-[#facc15] font-black block">تاريخ الانتهاء *</label>
                     <input type="date" required value={expiryDate} onChange={(e) => setExpiryDate(e.target.value)}
-                      className="w-full px-4 py-3 bg-white border border-blue-300 rounded-xl text-sm font-black focus:outline-none focus:ring-2 focus:ring-blue-500 text-blue-950 shadow-sm" />
+                      className="w-full px-4 py-3 bg-[#040e21] border border-slate-700 rounded-xl text-sm font-black focus:outline-none focus:ring-2 focus:ring-[#ff7f00]/40 focus:border-[#ff7f00] text-white shadow-inner [color-scheme:dark]" />
                   </div>
                 </div>
 
                 {expiryDate && (
-                  <div className="bg-blue-50/20 border border-blue-100 p-5 rounded-2xl flex items-center justify-between shadow-inner">
+                  <div className="bg-[#ff7f00]/10 border border-[#ff7f00]/30 p-5 rounded-2xl flex items-center justify-between shadow-inner">
                     <div className="space-y-1">
-                      <span className="text-[10px] font-black text-blue-700 uppercase tracking-widest block">المؤقت الزمني التنازلي</span>
-                      <span className="text-xs font-black text-blue-900 flex items-center gap-2">
+                      <span className="text-[10px] font-black text-[#ff7f00] uppercase tracking-widest block">المؤقت الزمني التنازلي</span>
+                      <span className="text-xs font-black text-white flex items-center gap-2">
                          الزمن المتبقي لانتهاء الوكالة المضافة:
                       </span>
                     </div>
@@ -1006,32 +1006,32 @@ export default function AgenciesModule({ clients, onUpdateState }: AgenciesModul
                   </div>
                 )}
 
-                <div className="bg-blue-50 border border-blue-200 p-4 rounded-xl flex gap-3 text-blue-950 text-xs font-black mt-2">
-                  <div className="shrink-0"><ShieldCheck className="w-5 h-5 text-blue-700" /></div>
+                <div className="bg-blue-500/10 border border-blue-500/30 p-4 rounded-xl flex gap-3 text-white text-xs font-black mt-2">
+                  <div className="shrink-0"><ShieldCheck className="w-5 h-5 text-[#facc15]" /></div>
                   <p className="leading-relaxed">
-                    التأكيد: الإضافة اليدوية مخصصة للحالات الطارئة. لضمان دقة مواعيد الانتهاء للوكالات، نؤكد على ضرورة استخدام <span className="text-blue-900 font-black">"سحب بيانات الوكالات (ناجز)"</span> ليتم مزامنة حالة الوكالة الفورية والصلاحيات آلياً من وزارة العدل وتحديث المؤقت الزمني تلقائياً.
+                    التأكيد: الإضافة اليدوية مخصصة للحالات الطارئة. لضمان دقة مواعيد الانتهاء للوكالات، نؤكد على ضرورة استخدام <span className="text-[#ff7f00] font-black">"سحب بيانات الوكالات (ناجز)"</span> ليتم مزامنة حالة الوكالة الفورية والصلاحيات آلياً من وزارة العدل وتحديث المؤقت الزمني تلقائياً.
                   </p>
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-xs text-blue-800 font-black block">موضوع أو نطاق الوكالة</label>
+                  <label className="text-xs text-[#facc15] font-black block">موضوع أو نطاق الوكالة</label>
                   <textarea rows={2} placeholder="المرافعة والمدافعة في القضايا..." value={scope} onChange={(e) => setScope(e.target.value)}
-                    className="w-full px-4 py-3 bg-white border border-blue-300 rounded-xl text-sm font-black focus:outline-none focus:ring-2 focus:ring-blue-500 text-blue-950 shadow-sm" />
+                    className="w-full px-4 py-3 bg-[#040e21] border border-slate-700 rounded-xl text-sm font-black focus:outline-none focus:ring-2 focus:ring-[#ff7f00]/40 focus:border-[#ff7f00] text-white shadow-inner placeholder-slate-500" />
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-xs text-blue-800 font-black flex justify-between"><span>البنود والصلاحيات</span><span className="text-blue-700 font-black font-medium">(كل بند في سطر)</span></label>
+                  <label className="text-xs text-[#facc15] font-black flex justify-between"><span>البنود والصلاحيات</span><span className="text-slate-400 font-black font-medium">(كل بند في سطر)</span></label>
                   <textarea rows={3} placeholder="المراجعة في الإدارات الحكومية&#10;حق الإقرار والصلح" value={clausesText} onChange={(e) => setClausesText(e.target.value)}
-                    className="w-full px-4 py-3 bg-white border border-blue-300 rounded-xl text-sm font-black focus:outline-none focus:ring-2 focus:ring-blue-500 text-blue-950 shadow-sm" />
+                    className="w-full px-4 py-3 bg-[#040e21] border border-slate-700 rounded-xl text-sm font-black focus:outline-none focus:ring-2 focus:ring-[#ff7f00]/40 focus:border-[#ff7f00] text-white shadow-inner placeholder-slate-500" />
                 </div>
 
-                <div className="pt-4 border-t border-slate-200 flex gap-3 justify-end mt-6">
+                <div className="pt-4 border-t border-slate-800 flex gap-3 justify-end mt-6">
                   <button type="button" onClick={() => setShowAddModal(false)}
-                    className="px-5 py-2.5 bg-white border border-blue-200 hover:bg-blue-50 text-blue-900 rounded-xl text-sm font-black transition-all">
+                    className="px-5 py-2.5 bg-[#0b1329] border border-slate-700 hover:bg-[#040e21] text-white hover:text-[#facc15] rounded-xl text-sm font-black transition-all cursor-pointer">
                     إلغاء
                   </button>
                   <button type="submit"
-                    className="px-6 py-2.5 bg-blue-950 hover:bg-blue-900 text-white rounded-xl text-sm font-black shadow-md transition-all">
+                    className="px-6 py-2.5 bg-[#ff7f00] hover:bg-orange-600 text-slate-950 rounded-xl text-sm font-black shadow-lg shadow-[#ff7f00]/20 transition-all cursor-pointer">
                     حفظ وإضافة الوكالة
                   </button>
                 </div>
@@ -1046,15 +1046,15 @@ export default function AgenciesModule({ clients, onUpdateState }: AgenciesModul
         {editingAgency && (
           <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[110] flex items-center justify-center p-4 overflow-y-auto">
             <motion.div initial={{ scale: 0.95, opacity: 0, y: 30 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.95, opacity: 0, y: 30 }}
-              className="bg-white border border-slate-200 rounded-[2rem] shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col">
+              className="bg-[#0b1329] border border-slate-700/80 rounded-[2rem] shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col">
               
-              <div className="p-6 border-b border-slate-100 bg-slate-50 flex items-center justify-between">
+              <div className="p-6 border-b border-slate-800 bg-[#040e21] flex items-center justify-between">
                 <div>
-                  <h2 className="text-xl font-black text-blue-950 flex items-center gap-2">
-                    <FileSpreadsheet className="w-6 h-6 text-[#0B2545]" /> تعديل وتحديث بيانات الوكالة
+                  <h2 className="text-xl font-black text-white flex items-center gap-2">
+                    <FileSpreadsheet className="w-6 h-6 text-[#ff7f00]" /> تعديل وتحديث بيانات الوكالة
                   </h2>
                 </div>
-                <button onClick={() => setEditingAgency(null)} className="p-2 hover:bg-blue-100 rounded-full bg-blue-50 text-blue-900">
+                <button onClick={() => setEditingAgency(null)} className="p-2 hover:bg-slate-800 rounded-full bg-[#0b1329] text-white border border-slate-700 transition-colors cursor-pointer">
                   <X className="w-5 h-5" />
                 </button>
               </div>
@@ -1062,14 +1062,14 @@ export default function AgenciesModule({ clients, onUpdateState }: AgenciesModul
               <form onSubmit={handleUpdateAgency} className="p-6 space-y-5 text-right overflow-y-auto max-h-[75vh]">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                   <div className="space-y-1.5">
-                    <label className="text-xs text-blue-800 font-black block">رقم الوكالة العدلية *</label>
+                    <label className="text-xs text-[#facc15] font-black block">رقم الوكالة العدلية *</label>
                     <input type="text" required placeholder="45802144" value={poaNumber} onChange={(e) => setPoaNumber(e.target.value)}
-                      className="w-full px-4 py-3 bg-white border border-blue-300 rounded-xl text-sm font-black focus:outline-none focus:ring-2 focus:ring-blue-500 text-blue-950 shadow-sm" />
+                      className="w-full px-4 py-3 bg-[#040e21] border border-slate-700 rounded-xl text-sm font-black focus:outline-none focus:ring-2 focus:ring-[#facc15]/40 focus:border-[#facc15] text-white shadow-inner placeholder-slate-500" />
                   </div>
                   <div className="space-y-1.5">
-                    <label className="text-xs text-blue-800 font-black block">اسم العميل المرتبط (مسجل بالنظام)</label>
+                    <label className="text-xs text-[#facc15] font-black block">اسم العميل المرتبط (مسجل بالنظام)</label>
                     <select value={clientId} onChange={(e) => setClientId(e.target.value)}
-                      className="w-full px-4 py-3 bg-white border border-blue-300 rounded-xl text-sm font-black focus:outline-none focus:ring-2 focus:ring-blue-500 text-blue-950 shadow-sm">
+                      className="w-full px-4 py-3 bg-[#040e21] border border-slate-700 rounded-xl text-sm font-black focus:outline-none focus:ring-2 focus:ring-[#facc15]/40 focus:border-[#facc15] text-white shadow-inner">
                       <option value="">-- ربط بعميل خارجي غير مسجل --</option>
                       {clients.map(c => (
                         <option key={c.id} value={String(c.id)}>{c.name}</option>
@@ -1080,30 +1080,30 @@ export default function AgenciesModule({ clients, onUpdateState }: AgenciesModul
 
                 {!clientId && (
                   <div className="space-y-1.5">
-                    <label className="text-xs text-blue-800 font-black block">اسم العميل الخارجي *</label>
+                    <label className="text-xs text-[#facc15] font-black block">اسم العميل الخارجي *</label>
                     <input type="text" placeholder="الشركة أو الشخص" value={clientName} onChange={(e) => setClientName(e.target.value)}
-                      className="w-full px-4 py-3 bg-white border border-blue-300 rounded-xl text-sm font-black focus:outline-none focus:ring-2 focus:ring-blue-500 text-blue-950 shadow-sm" />
+                      className="w-full px-4 py-3 bg-[#040e21] border border-slate-700 rounded-xl text-sm font-black focus:outline-none focus:ring-2 focus:ring-[#facc15]/40 focus:border-[#facc15] text-white shadow-inner placeholder-slate-500" />
                   </div>
                 )}
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                   <div className="space-y-1.5">
-                    <label className="text-xs text-blue-800 font-black block">الموكِّل (Principal) *</label>
+                    <label className="text-xs text-[#facc15] font-black block">الموكِّل (Principal) *</label>
                     <input type="text" required placeholder="أطراف الوكالة الموكل" value={principalName} onChange={(e) => setPrincipalName(e.target.value)}
-                      className="w-full px-4 py-3 bg-white border border-blue-300 rounded-xl text-sm font-black focus:outline-none focus:ring-2 focus:ring-blue-500 text-blue-950 shadow-sm" />
+                      className="w-full px-4 py-3 bg-[#040e21] border border-slate-700 rounded-xl text-sm font-black focus:outline-none focus:ring-2 focus:ring-[#facc15]/40 focus:border-[#facc15] text-white shadow-inner placeholder-slate-500" />
                   </div>
                   <div className="space-y-1.5">
-                    <label className="text-xs text-blue-800 font-black block">الموكَّل له (Agent) *</label>
+                    <label className="text-xs text-[#facc15] font-black block">الموكَّل له (Agent) *</label>
                     <input type="text" required placeholder="المحامي الوكيل" value={agentName} onChange={(e) => setAgentName(e.target.value)}
-                      className="w-full px-4 py-3 bg-white border border-blue-300 rounded-xl text-sm font-black focus:outline-none focus:ring-2 focus:ring-blue-500 text-blue-950 shadow-sm" />
+                      className="w-full px-4 py-3 bg-[#040e21] border border-slate-700 rounded-xl text-sm font-black focus:outline-none focus:ring-2 focus:ring-[#facc15]/40 focus:border-[#facc15] text-white shadow-inner placeholder-slate-500" />
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                   <div className="space-y-1.5">
-                    <label className="text-xs text-blue-800 font-black block">حالة الوكالة</label>
+                    <label className="text-xs text-[#facc15] font-black block">حالة الوكالة</label>
                     <select value={status} onChange={(e) => setStatus(e.target.value)}
-                      className="w-full px-4 py-3 bg-white border border-blue-300 rounded-xl text-sm font-black focus:outline-none focus:ring-2 focus:ring-blue-500 text-blue-950 shadow-sm">
+                      className="w-full px-4 py-3 bg-[#040e21] border border-slate-700 rounded-xl text-sm font-black focus:outline-none focus:ring-2 focus:ring-[#facc15]/40 focus:border-[#facc15] text-white shadow-inner">
                       <option value="نشطة">نشطة / سارية</option>
                       <option value="ملغاة">ملغاة</option>
                       <option value="منتهية">منتهية المدة</option>
@@ -1113,36 +1113,36 @@ export default function AgenciesModule({ clients, onUpdateState }: AgenciesModul
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                   <div className="space-y-1.5">
-                    <label className="text-xs text-blue-800 font-black block">تاريخ الإصدار *</label>
+                    <label className="text-xs text-[#facc15] font-black block">تاريخ الإصدار *</label>
                     <input type="date" required value={issueDate} onChange={(e) => setIssueDate(e.target.value)}
-                      className="w-full px-4 py-3 bg-white border border-blue-300 rounded-xl text-sm font-black focus:outline-none focus:ring-2 focus:ring-blue-500 text-blue-950 shadow-sm" />
+                      className="w-full px-4 py-3 bg-[#040e21] border border-slate-700 rounded-xl text-sm font-black focus:outline-none focus:ring-2 focus:ring-[#facc15]/40 focus:border-[#facc15] text-white shadow-inner [color-scheme:dark]" />
                   </div>
                   <div className="space-y-1.5">
-                    <label className="text-xs text-blue-800 font-black block">تاريخ الانتهاء *</label>
+                    <label className="text-xs text-[#facc15] font-black block">تاريخ الانتهاء *</label>
                     <input type="date" required value={expiryDate} onChange={(e) => setExpiryDate(e.target.value)}
-                      className="w-full px-4 py-3 bg-white border border-blue-300 rounded-xl text-sm font-black focus:outline-none focus:ring-2 focus:ring-blue-500 text-blue-950 shadow-sm" />
+                      className="w-full px-4 py-3 bg-[#040e21] border border-slate-700 rounded-xl text-sm font-black focus:outline-none focus:ring-2 focus:ring-[#facc15]/40 focus:border-[#facc15] text-white shadow-inner [color-scheme:dark]" />
                   </div>
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-xs text-blue-800 font-black block">موضوع أو نطاق الوكالة</label>
+                  <label className="text-xs text-[#facc15] font-black block">موضوع أو نطاق الوكالة</label>
                   <textarea rows={2} placeholder="المرافعة والمدافعة في القضايا..." value={scope} onChange={(e) => setScope(e.target.value)}
-                    className="w-full px-4 py-3 bg-white border border-blue-300 rounded-xl text-sm font-black focus:outline-none focus:ring-2 focus:ring-blue-500 text-blue-950 shadow-sm" />
+                    className="w-full px-4 py-3 bg-[#040e21] border border-slate-700 rounded-xl text-sm font-black focus:outline-none focus:ring-2 focus:ring-[#facc15]/40 focus:border-[#facc15] text-white shadow-inner placeholder-slate-500" />
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-xs text-blue-800 font-black flex justify-between"><span>البنود والصلاحيات</span><span className="text-blue-700 font-black font-medium">(كل بند في سطر)</span></label>
+                  <label className="text-xs text-[#facc15] font-black flex justify-between"><span>البنود والصلاحيات</span><span className="text-slate-400 font-black font-medium">(كل بند في سطر)</span></label>
                   <textarea rows={3} placeholder="المراجعة في الإدارات الحكومية&#10;حق الإقرار والصلح" value={clausesText} onChange={(e) => setClausesText(e.target.value)}
-                    className="w-full px-4 py-3 bg-white border border-blue-300 rounded-xl text-sm font-black focus:outline-none focus:ring-2 focus:ring-blue-500 text-blue-950 shadow-sm" />
+                    className="w-full px-4 py-3 bg-[#040e21] border border-slate-700 rounded-xl text-sm font-black focus:outline-none focus:ring-2 focus:ring-[#facc15]/40 focus:border-[#facc15] text-white shadow-inner placeholder-slate-500" />
                 </div>
 
-                <div className="pt-4 border-t border-slate-200 flex gap-3 justify-end mt-6">
+                <div className="pt-4 border-t border-slate-800 flex gap-3 justify-end mt-6">
                   <button type="button" onClick={() => setEditingAgency(null)}
-                    className="px-5 py-2.5 bg-white border border-[#0B2545]/20 hover:bg-slate-50 text-blue-900 rounded-xl text-sm font-black transition-all">
+                    className="px-5 py-2.5 bg-[#0b1329] border border-slate-700 hover:bg-[#040e21] text-white hover:text-[#ff7f00] rounded-xl text-sm font-black transition-all cursor-pointer">
                     إلغاء التعديل
                   </button>
                   <button type="submit"
-                    className="px-6 py-2.5 bg-blue-950 hover:bg-blue-900 text-white rounded-xl text-sm font-black shadow-md transition-all">
+                    className="px-6 py-2.5 bg-[#facc15] hover:bg-yellow-500 text-slate-950 rounded-xl text-sm font-black shadow-lg shadow-[#facc15]/20 transition-all cursor-pointer">
                     تحديث وحفظ التغييرات
                   </button>
                 </div>

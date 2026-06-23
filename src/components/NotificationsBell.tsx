@@ -25,11 +25,10 @@ const NotificationItem = ({ notif, handleMarkAsRead, setIsOpen, getTypeStyles }:
 
   return (
     <div 
-      className="notifications-email-card relative p-5 rounded-2xl border border-slate-800/80 cursor-pointer transition-all duration-300 hover:border-[#ff7f00]/40 shadow-xl bg-[#0b1329] text-white select-none"
+      className="notifications-email-card relative p-5 rounded-2xl border border-slate-800/80 cursor-pointer transition-all duration-300 hover:border-[#ff7f00]/40 shadow-xl bg-[#0b1329] text-white select-none gap-4"
       style={{
         display: 'grid',
-        gridTemplateAreas: '"badge chevron" "title title" "category category" "content content" "actions actions"',
-        gap: '1rem'
+        gridTemplateAreas: "'badge badge' 'sender sender' 'title category' 'content content' 'actions actions'"
       }}
       onClick={() => setIsExpanded(!isExpanded)}
     >
@@ -38,38 +37,43 @@ const NotificationItem = ({ notif, handleMarkAsRead, setIsOpen, getTypeStyles }:
       )}
 
       {/* Area: Badge */}
-      <div style={{ gridArea: 'badge' }} className="flex items-center gap-3">
-        <span className={`text-[10px] tracking-wider px-2.5 py-0.5 rounded-full border ${getHighContrastTypeStyles(notif.type)}`}>
-          {notif.type === 'urgent' ? 'عاجل 🔥' : notif.type === 'warning' ? 'تنبيه ⚠️' : notif.type === 'success' ? 'نجاح مأمول ✨' : 'مذكرة ℹ️'}
-        </span>
-        <span className="text-[10px] font-black text-slate-300 flex items-center gap-1 bg-slate-950/40 px-2 py-0.5 rounded">
-          <Clock className="w-3 h-3 text-[#facc15]" />
-          {notif.time}
-        </span>
+      <div style={{ gridArea: 'badge' }} className="flex justify-between items-center w-full">
+        <div className="flex items-center gap-3">
+          <span className={`text-[10px] tracking-wider px-2.5 py-0.5 rounded-full border ${getHighContrastTypeStyles(notif.type)}`}>
+            {notif.type === 'urgent' ? 'عاجل 🔥' : notif.type === 'warning' ? 'تنبيه ⚠️' : notif.type === 'success' ? 'نجاح مأمول ✨' : 'مذكرة ℹ️'}
+          </span>
+          <span className="text-[10px] font-black text-slate-300 flex items-center gap-1 bg-slate-950/40 px-2 py-0.5 rounded">
+            <Clock className="w-3 h-3 text-[#facc15]" />
+            {notif.time}
+          </span>
+        </div>
+        <ChevronDown className={`w-5 h-5 transition-all duration-300 cursor-pointer hover:scale-110 ${isExpanded ? 'rotate-180 text-[#ff7f00]' : 'text-[#facc15]'}`} />
       </div>
 
-      {/* Area: Chevron */}
-      <div style={{ gridArea: 'chevron' }} className="flex justify-end items-center text-[#facc15]">
-        <ChevronDown className={`w-5 h-5 transition-all duration-300 cursor-pointer hover:scale-110 ${isExpanded ? 'rotate-180 text-[#ff7f00]' : ''}`} />
+      {/* Area: Sender */}
+      <div style={{ gridArea: 'sender' }} className="flex items-center gap-2 text-xs font-black text-white/95 border-b border-slate-800/80 pb-2">
+        <span className="text-[#ff7f00]">👤</span>
+        <span className="text-slate-400">المرسل:</span>
+        <span className="text-[#facc15] font-black">{notif.sender || 'نظام ذكاء اصطناعي آلي'}</span>
       </div>
 
       {/* Area: Title */}
-      <div style={{ gridArea: 'title' }} className="flex flex-col">
+      <div style={{ gridArea: 'title' }} className="flex flex-col justify-center">
         <h4 className={`text-sm font-black leading-snug tracking-tight ${notif.read ? 'text-white' : 'text-[#facc15] drop-shadow-[0_0_6px_rgba(250,204,21,0.3)]'}`}>
           {notif.title}
         </h4>
       </div>
 
       {/* Area: Category */}
-      <div style={{ gridArea: 'category' }} className="flex">
-        <span className={`text-[10px] font-black px-2 py-0.5 rounded border uppercase tracking-widest ${categoryTag.color}`}>
-          تصنيف: {categoryTag.label}
+      <div style={{ gridArea: 'category' }} className="flex justify-end items-center">
+        <span className={`text-[10px] font-black px-2.5 py-1 rounded border uppercase tracking-widest ${categoryTag.color}`}>
+          {categoryTag.label}
         </span>
       </div>
 
       {/* Area: Content */}
       <div style={{ gridArea: 'content' }}>
-        <p className={`text-xs leading-relaxed font-bold ${isExpanded ? 'line-clamp-none text-white' : 'line-clamp-2 text-slate-100'} transition-all duration-300`}>
+        <p className={`text-xs leading-relaxed font-bold ${isExpanded ? 'line-clamp-none text-white' : 'line-clamp-2 text-slate-200'} transition-all duration-300`}>
           {notif.message}
         </p>
       </div>

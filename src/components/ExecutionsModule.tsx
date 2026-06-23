@@ -836,33 +836,33 @@ export default function ExecutionsModule({
 
       {/* Table / Cards Section */}
       {viewMode === "table" ? (
-        <div className="rounded-[2.5rem] p-4 shadow-sm bg-white border border-slate-200 transition-all duration-300 mb-6 relative overflow-hidden">
+        <div className="rounded-[2.5rem] p-4 shadow-2xl bg-[#0b1329] border border-slate-800 transition-all duration-300 mb-6 relative overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-right border-separate border-spacing-y-4">
               <thead>
                 <tr className="mb-4">
-                  <th className="px-8 py-3 text-xs font-black tracking-wide text-slate-500 whitespace-nowrap">
+                  <th className="px-8 py-3 text-xs font-black tracking-wide text-white whitespace-nowrap">
                     رقم الطلب
                   </th>
-                  <th className="px-6 py-3 text-xs font-black tracking-wide text-slate-500 whitespace-nowrap">
+                  <th className="px-6 py-3 text-xs font-black tracking-wide text-white whitespace-nowrap">
                     نوع الطلب
                   </th>
-                  <th className="px-6 py-3 text-xs font-black tracking-wide text-slate-500 whitespace-nowrap">
+                  <th className="px-6 py-3 text-xs font-black tracking-wide text-white whitespace-nowrap">
                     نوع السند
                   </th>
-                  <th className="px-6 py-3 text-xs font-black tracking-wide text-slate-500 whitespace-nowrap">
+                  <th className="px-6 py-3 text-xs font-black tracking-wide text-white whitespace-nowrap">
                     تاريخ تقديم الطلب
                   </th>
-                  <th className="px-6 py-3 text-xs font-black tracking-wide text-slate-500 whitespace-nowrap">
+                  <th className="px-6 py-3 text-xs font-black tracking-wide text-white whitespace-nowrap">
                     إسم المنفذ ضده
                   </th>
-                  <th className="px-6 py-3 text-xs font-black tracking-wide text-slate-500 whitespace-nowrap">
+                  <th className="px-6 py-3 text-xs font-black tracking-wide text-white whitespace-nowrap">
                     إسم المحكمة
                   </th>
-                  <th className="px-6 py-3 text-xs font-black tracking-wide text-slate-500 whitespace-nowrap text-center">
+                  <th className="px-6 py-3 text-xs font-black tracking-wide text-white whitespace-nowrap text-center">
                     حالة الطلب
                   </th>
-                  <th className="px-8 py-3 text-xs font-black tracking-wide text-slate-500 whitespace-nowrap text-left">
+                  <th className="px-8 py-3 text-xs font-black tracking-wide text-white whitespace-nowrap text-left">
                     خيارات التحكم
                   </th>
                 </tr>
@@ -872,7 +872,7 @@ export default function ExecutionsModule({
                   <tr>
                     <td
                       colSpan={8}
-                      className="px-8 py-20 text-center text-slate-400 italic font-black text-lg bg-slate-50 rounded-3xl"
+                      className="px-8 py-20 text-center text-slate-350 italic font-black text-lg bg-[#040e21] rounded-3xl"
                     >
                       لا توجد نتائج مطابقة لفلترة البحث الحالية...
                     </td>
@@ -883,9 +883,9 @@ export default function ExecutionsModule({
                     return (
                       <tr
                         key={ex.id}
-                        className="hover:scale-[1.01] bg-white transition-all duration-300 group shadow-sm hover:shadow-md relative"
+                        className="hover:scale-[1.01] bg-[#040e21] transition-all duration-300 group shadow-lg hover:shadow-xl relative"
                       >
-                        <td className="px-8 py-6 whitespace-nowrap font-mono font-black text-sm text-[#0f172a] rounded-r-[2rem] border-y border-r border-slate-200 group-hover:text-amber-600 transition-colors">
+                        <td className="px-8 py-6 whitespace-nowrap font-mono font-black text-sm text-[#facc15] rounded-r-[2rem] border-y border-r border-slate-800 group-hover:text-[#ff7f00] transition-colors">
                           <div className="flex flex-col gap-1">
                             <span
                               className="cursor-pointer hover:underline text-lg drop-shadow-sm"
@@ -894,53 +894,53 @@ export default function ExecutionsModule({
                               #{ex.execution_number}
                             </span>
                             {ex.is_najiz_sync && (
-                              <span className="text-[10px] bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded-md flex items-center gap-1 w-fit font-black shadow-sm">
+                              <span className="text-[10px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded-md flex items-center gap-1 w-fit font-black shadow-sm">
                                 <Activity className="w-2.5 h-2.5" /> مزامنة ناجز
                               </span>
                             )}
                           </div>
                         </td>
-                        <td className="px-6 py-6 whitespace-nowrap text-[#0f172a] font-extrabold text-base border-y border-slate-200">
+                        <td className="px-6 py-6 whitespace-nowrap text-white font-extrabold text-base border-y border-slate-800">
                           {meta.executionType}
                         </td>
-                        <td className="px-6 py-6 whitespace-nowrap text-[#334155] font-bold text-base border-y border-slate-200">
+                        <td className="px-6 py-6 whitespace-nowrap text-[#facc15] font-bold text-base border-y border-slate-800">
                           {meta.bondType}
                         </td>
-                        <td className="px-6 py-6 whitespace-nowrap text-[#334155] font-mono text-sm border-y border-slate-200">
+                        <td className="px-6 py-6 whitespace-nowrap text-slate-300 font-mono text-sm border-y border-slate-800">
                           {ex.issue_date || "—"}
                         </td>
-                        <td className="px-6 py-6 whitespace-nowrap text-[#0f172a] font-extrabold text-base border-y border-slate-200">
+                        <td className="px-6 py-6 whitespace-nowrap text-white font-extrabold text-base border-y border-slate-800">
                           {ex.opponent_name}
                         </td>
-                        <td className="px-6 py-6 whitespace-nowrap text-[#334155] font-bold text-sm border-y border-slate-200">
+                        <td className="px-6 py-6 whitespace-nowrap text-[#facc15] font-bold text-sm border-y border-slate-800">
                           {ex.court_name || "—"}
                         </td>
-                        <td className="px-6 py-6 whitespace-nowrap text-center border-y border-slate-200">
+                        <td className="px-6 py-6 whitespace-nowrap text-center border-y border-slate-800">
                           <span
                             className={`px-5 py-2 rounded-full text-[11px] font-black border uppercase tracking-widest ${
                               ex.status?.includes("مكتمل") ||
                               ex.status?.includes("منتهي")
-                                ? "bg-emerald-50 text-emerald-700 border-emerald-200 shadow-sm"
+                                ? "bg-emerald-500/20 text-emerald-400 border-emerald-500/30 shadow-sm"
                                 : ex.status?.includes("قيد")
-                                  ? "bg-amber-50 text-amber-700 border-amber-200 shadow-sm"
-                                  : "bg-blue-50 text-blue-700 border-blue-200 shadow-sm"
+                                  ? "bg-[#ff7f00]/20 text-[#ff7f00] border-[#ff7f00]/30 shadow-sm"
+                                  : "bg-blue-500/20 text-blue-400 border-blue-500/30 shadow-sm"
                             }`}
                           >
                             {ex.status}
                           </span>
                         </td>
-                        <td className="px-8 py-6 whitespace-nowrap text-left rounded-l-[2rem] border-y border-l border-slate-200">
+                        <td className="px-8 py-6 whitespace-nowrap text-left rounded-l-[2rem] border-y border-l border-slate-800">
                           <div className="flex items-center justify-end gap-3">
                             <button
                               onClick={() => setViewingExec(ex)}
-                              className="p-3 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 rounded-full transition-all cursor-pointer shadow-sm hover:shadow hover:-translate-y-0.5"
+                              className="p-3 bg-[#0b1329] hover:bg-[#ff7f00] text-slate-300 hover:text-white border border-slate-700 hover:border-[#ff7f00] rounded-full transition-all cursor-pointer shadow-sm hover:shadow-lg hover:-translate-y-0.5"
                               title="عرض تفاصيل السجل"
                             >
                               <ArrowUpRight className="w-5 h-5" />
                             </button>
                             <button
                               onClick={() => setEditingExec(ex)}
-                              className="p-3 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 rounded-full transition-all cursor-pointer shadow-sm hover:shadow hover:-translate-y-0.5"
+                              className="p-3 bg-[#0b1329] hover:bg-[#facc15] text-slate-300 hover:text-slate-900 border border-slate-700 hover:border-[#facc15] rounded-full transition-all cursor-pointer shadow-sm hover:shadow-lg hover:-translate-y-0.5"
                               title="تعديل بيانات السجل"
                             >
                               <Edit2 className="w-5 h-5" />

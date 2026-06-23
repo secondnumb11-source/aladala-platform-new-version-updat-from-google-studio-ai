@@ -688,15 +688,15 @@ export const EnhancedCaseDetail: React.FC<EnhancedCaseDetailProps> = ({
         <div className="lg:col-span-8 space-y-8">
           
           {/* Bento-style Archive Section */}
-          <section className="bg-[#030a16] border border-slate-800/80 rounded-[2.5rem] p-8 space-y-8 shadow-2xl">
+          <section className="bg-[#0b1329] border border-slate-700/80 rounded-[2.5rem] p-8 space-y-8 shadow-2xl">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-slate-800 pb-6">
               <div className="flex items-center gap-4">
-                <div className="p-3.5 bg-[#0b1329] text-[#ff7f00] rounded-2xl border border-slate-800 shadow-md">
+                <div className="p-3.5 bg-[#040e21] text-[#ff7f00] rounded-2xl border border-slate-700 shadow-md">
                   <Archive className="w-6 h-6" />
                 </div>
                 <div>
                   <h3 className="font-display font-black text-xl text-white tracking-tight">الأرشفة الإلكترونية المنظمة</h3>
-                  <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest mt-1">Structured Legal Workspace</p>
+                  <p className="text-[10px] text-[#facc15] font-black uppercase tracking-widest mt-1">Structured Legal Workspace</p>
                 </div>
               </div>
               <button 
@@ -710,22 +710,22 @@ export const EnhancedCaseDetail: React.FC<EnhancedCaseDetailProps> = ({
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {[
-                { id: 'pleadings', label: 'اللوائح الجوابية والاعتبارية', icon: FileText, count: caseAttachments.filter(a => a.category === 'pleadings' || a.category === 'pleading').length, color: 'text-[#ff7f00]', bg: 'bg-[#ff7f00]/10 border-[#ff7f00]/20' },
-                { id: 'documents', label: 'المستندات الثبوتية والمرافعات', icon: Paperclip, count: caseAttachments.filter(a => a.category === 'documents' || a.category === 'evidence').length, color: 'text-[#facc15]', bg: 'bg-[#facc15]/10 border-[#facc15]/20' },
-                { id: 'judgments', label: 'الأحكام والصكوك القضائية', icon: Gavel, count: caseAttachments.filter(a => a.category === 'judgments' || a.category === 'judgment').length, color: 'text-emerald-400', bg: 'bg-emerald-500/10 border-emerald-500/20' },
-                { id: 'execution', label: 'قرارات التنفيذ (مادة ٣٤/٤٦)', icon: Zap, count: caseAttachments.filter(a => a.category === 'execution').length, color: 'text-rose-400', bg: 'bg-rose-500/10 border-rose-500/20' },
+                { id: 'pleadings', label: 'اللوائح الجوابية والمذكرات الدفاعية', icon: FileText, count: caseAttachments.filter(a => a.category === 'pleadings' || a.category === 'pleading').length, color: 'text-[#ff7f00]', bg: 'bg-[#ff7f00]/10 border-[#ff7f00]/25' },
+                { id: 'documents', label: 'المستندات الثبوتية وحجج الإثبات', icon: Paperclip, count: caseAttachments.filter(a => a.category === 'documents' || a.category === 'evidence').length, color: 'text-[#facc15]', bg: 'bg-[#facc15]/10 border-[#facc15]/25' },
+                { id: 'judgments', label: 'صكوك الأحكام والقرارات القضائية', icon: Gavel, count: caseAttachments.filter(a => a.category === 'judgments' || a.category === 'judgment').length, color: 'text-[#ff7f00]', bg: 'bg-[#ff7f00]/10 border-[#ff7f00]/25' },
+                { id: 'execution', label: 'قرارات سندات التنفيذ (مادة ٣٤/٤٦)', icon: Zap, count: caseAttachments.filter(a => a.category === 'execution').length, color: 'text-[#facc15]', bg: 'bg-[#facc15]/10 border-[#facc15]/25' },
               ].map((cat) => {
                 const isSelected = selectedDocCategory === cat.id;
                 return (
                   <div 
                     key={cat.id} 
                     onClick={() => setSelectedDocCategory(isSelected ? 'all' : cat.id)}
-                    className={`p-5 border rounded-3xl hover:border-[#ff7f00]/40 hover:shadow-2xl transition-all duration-300 group cursor-pointer bg-[#0b1329] ${
-                      isSelected ? 'border-[#ff7f00] shadow-2xl ring-2 ring-[#ff7f00]/20' : 'border-slate-800'
+                    className={`p-5 border rounded-3xl hover:border-[#ff7f00]/60 hover:shadow-2xl transition-all duration-300 group cursor-pointer bg-[#040e21] ${
+                      isSelected ? 'border-[#ff7f00] shadow-2xl ring-2 ring-[#ff7f00]/30' : 'border-slate-800'
                     }`}
                   >
                     <div className="flex items-center justify-between mb-4">
-                      <div className={`p-2.5 rounded-xl border group-hover:border-[#ff7f00]/30 transition-all ${cat.bg} ${cat.color}`}>
+                      <div className={`p-2.5 rounded-xl border group-hover:border-[#ff7f00]/40 transition-all ${cat.bg} ${cat.color}`}>
                         <cat.icon className="w-5 h-5" />
                       </div>
                       <span className="text-[10px] font-black px-3 py-1 rounded-full bg-slate-950 text-[#facc15] border border-slate-800">
@@ -733,7 +733,7 @@ export const EnhancedCaseDetail: React.FC<EnhancedCaseDetailProps> = ({
                       </span>
                     </div>
                     <h4 className="text-sm font-black text-white group-hover:text-[#ff7f00] transition-colors">{cat.label}</h4>
-                    <div className="flex items-center justify-between text-[10px] font-bold text-slate-300 pt-4 mt-4 border-t border-slate-800/80">
+                    <div className="flex items-center justify-between text-[10px] font-black text-white pt-4 mt-4 border-t border-slate-800/80">
                       <span>{isSelected ? 'تصفية نشطة حالياً' : 'اضغط للتصفية والفلترة'}</span>
                       <Download className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 text-[#ff7f00] transition-all translate-y-2 group-hover:translate-y-0" />
                     </div>
@@ -757,10 +757,10 @@ export const EnhancedCaseDetail: React.FC<EnhancedCaseDetailProps> = ({
               <div className="flex justify-between items-center">
                 <h4 className="text-xs font-black text-[#facc15] uppercase tracking-widest">
                   سجل المستندات المودعة ({selectedDocCategory === 'all' ? 'جميع التصنيفات' : 
-                    selectedDocCategory === 'pleadings' ? 'اللوائح الجوابية والاعتبارية' :
-                    selectedDocCategory === 'documents' ? 'المستندات الثبوتية والمرافعات' :
-                    selectedDocCategory === 'judgments' ? 'الأحكام والصكوك القضائية' :
-                    'قرارات التنفيذ'
+                    selectedDocCategory === 'pleadings' ? 'اللوائح الجوابية والمذكرات الدفاعية' :
+                    selectedDocCategory === 'documents' ? 'المستندات الثبوتية وحجج الإثبات' :
+                    selectedDocCategory === 'judgments' ? 'صكوك الأحكام والقرارات القضائية' :
+                    'قرارات سندات التنفيذ'
                   })
                 </h4>
                 {selectedDocCategory !== 'all' && (
@@ -774,14 +774,14 @@ export const EnhancedCaseDetail: React.FC<EnhancedCaseDetailProps> = ({
               </div>
 
               {caseAttachments.length === 0 ? (
-                <div className="p-12 text-center rounded-2xl border border-dashed border-slate-800 bg-[#040e21] text-slate-400 text-xs font-bold" dir="rtl">
+                <div className="p-12 text-center rounded-2xl border border-dashed border-slate-800 bg-[#040e21] text-slate-350 text-xs font-black" dir="rtl">
                   📂 لا يوجد مستندات مؤرشفة ومرفوعة لهذه القضية حالياً. انقر على "إيداع مستند جديد" لبدء الأرشفة.
                 </div>
               ) : (
                 <div className="overflow-x-auto">
                   <table className="w-full text-right text-xs border-collapse">
                     <thead>
-                      <tr className="border-b border-slate-800 text-slate-400 font-bold">
+                      <tr className="border-b border-slate-800 text-white font-black">
                         <th className="py-3 px-2">اسم المستند في الملف</th>
                         <th className="py-3 px-2">التصنيف</th>
                         <th className="py-3 px-2 text-center">الحجم</th>
@@ -789,36 +789,36 @@ export const EnhancedCaseDetail: React.FC<EnhancedCaseDetailProps> = ({
                         <th className="py-3 px-2 text-center">التحكم والعمليات</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-slate-800/60 text-slate-200">
+                    <tbody className="divide-y divide-slate-800/60 text-slate-100">
                       {caseAttachments
                         .filter(a => selectedDocCategory === 'all' || a.category === selectedDocCategory)
                         .map((a) => (
-                          <tr key={a.id} className="hover:bg-[#0b1329]/50 transition-colors">
+                          <tr key={a.id} className="hover:bg-[#040e21] transition-colors">
                             <td className="py-3 px-2 font-black text-white flex items-center gap-2">
                               <span>📄</span>
                               <span>{a.fileName}</span>
                             </td>
                             <td className="py-3 px-2">
-                              <span className={`px-2 py-0.5 rounded-md font-sans font-bold text-[10px] ${
+                              <span className={`px-2 py-1 rounded-md font-sans font-black text-[10px] ${
                                 a.category === 'pleadings' ? 'bg-[#ff7f00]/20 text-[#ff7f00] border border-[#ff7f00]/30' :
                                 a.category === 'documents' ? 'bg-[#facc15]/20 text-[#facc15] border border-[#facc15]/30' :
-                                a.category === 'judgments' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' :
-                                a.category === 'execution' ? 'bg-rose-500/20 text-rose-400 border border-rose-500/30' :
-                                'bg-slate-800 text-slate-300'
+                                a.category === 'judgments' ? 'bg-[#ff7f00]/20 text-[#ff7f00] border border-[#ff7f00]/30' :
+                                a.category === 'execution' ? 'bg-[#facc15]/20 text-[#facc15] border border-[#facc15]/30' :
+                                'bg-slate-800 text-white'
                               }`}>
                                 {a.category === 'pleadings' ? 'لائحة جوابية' :
                                  a.category === 'documents' ? 'مستند ثبوتي' :
-                                 a.category === 'judgments' ? 'حكم قضائي' :
+                                 a.category === 'judgments' ? 'صك حكم قضائي' :
                                  a.category === 'execution' ? 'قرار تنفيذ' : 'أخرى'}
                               </span>
                             </td>
-                            <td className="py-3 px-2 text-center text-slate-300 font-mono text-[10px]">{a.fileSize}</td>
-                            <td className="py-3 px-2 text-center text-slate-400 font-bold text-[10px]">{new Date(a.createdAt).toLocaleDateString('ar-SA')}</td>
+                            <td className="py-3 px-2 text-center text-white font-mono font-black text-[10px]">{a.fileSize}</td>
+                            <td className="py-3 px-2 text-center text-[#facc15] font-black text-[10px]">{new Date(a.createdAt).toLocaleDateString('ar-SA')}</td>
                             <td className="py-3 px-2">
                               <div className="flex items-center justify-end gap-2">
                                 <button 
                                   onClick={() => setViewingAttachment(a)}
-                                  className="px-3 py-1 bg-[#0b1329] hover:bg-[#040e21] text-[#facc15] border border-slate-800 hover:border-[#ff7f00]/30 rounded-lg text-[10px] font-black cursor-pointer transition-colors"
+                                  className="px-3 py-1 bg-[#0b1329] hover:bg-[#040e21] text-[#facc15] border border-slate-700 hover:border-[#ff7f00]/30 rounded-lg text-[10px] font-black cursor-pointer transition-colors"
                                 >
                                   عرض مستندي 👁️
                                 </button>
@@ -836,7 +836,7 @@ export const EnhancedCaseDetail: React.FC<EnhancedCaseDetailProps> = ({
                       }
                       {caseAttachments.filter(a => selectedDocCategory === 'all' || a.category === selectedDocCategory).length === 0 && (
                         <tr>
-                          <td colSpan={5} className="py-8 text-center text-slate-500 font-bold text-xs">
+                          <td colSpan={5} className="py-8 text-center text-slate-350 font-black text-xs">
                             لا توجد مستندات بعد في هذا التصنيف المحدد.
                           </td>
                         </tr>
@@ -849,30 +849,30 @@ export const EnhancedCaseDetail: React.FC<EnhancedCaseDetailProps> = ({
           </section>
 
           {/* Deep Details Section */}
-          <section className="bg-[#030a16] border border-slate-800/80 rounded-[2.5rem] p-8 space-y-8 shadow-2xl">
-            <div className="flex items-center gap-4 border-b border-slate-850 pb-6">
-              <div className="p-3.5 bg-[#0b1329] text-[#ff7f00] rounded-2xl border border-slate-800 shadow-md">
+          <section className="bg-[#0b1329] border border-slate-700/80 rounded-[2.5rem] p-8 space-y-8 shadow-2xl">
+            <div className="flex items-center gap-4 border-b border-slate-800 pb-6">
+              <div className="p-3.5 bg-[#040e21] text-[#ff7f00] rounded-2xl border border-slate-750 shadow-md">
                 <FileText className="w-6 h-6" />
               </div>
               <div>
                 <h3 className="font-display font-black text-xl text-white tracking-tight">تفاصيل موضوع النزاع</h3>
-                <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest mt-1">Foundation Context Details</p>
+                <p className="text-[10px] text-[#facc15] font-black uppercase tracking-widest mt-1">Foundation Context Details</p>
               </div>
             </div>
             
             <div className="space-y-6">
-              <div className="bg-[#0b1329] p-8 rounded-[2rem] border border-slate-800/80 shadow-inner">
-                <p className="text-sm md:text-base leading-relaxed font-bold text-white text-justify">
+              <div className="bg-[#040e21] p-8 rounded-[2rem] border border-slate-800/80 shadow-inner">
+                <p className="text-sm md:text-base leading-relaxed font-black text-white text-justify">
                   {selectedCase.details || 'لم يتم إدخال تفاصيل مطولة بعد لهذا الملف القضائي.'}
                 </p>
               </div>
 
-              <div className="bg-[#ff7f00]/10 p-6 rounded-2xl border border-[#ff7f00]/20 flex flex-col md:flex-row gap-6">
+              <div className="bg-[#ff7f00]/20 p-6 rounded-2xl border border-[#ff7f00]/40 flex flex-col md:flex-row gap-6">
                 <div className="flex flex-col gap-1 min-w-[140px]">
                   <span className="text-[11px] font-black uppercase tracking-widest text-[#ff7f00]">ملخص الربط:</span>
                   <div className="w-10 h-1 bg-[#facc15] rounded-full"></div>
                 </div>
-                <p className="text-sm font-bold text-white leading-relaxed italic">
+                <p className="text-sm font-black text-[#facc15] leading-relaxed italic">
                   "{selectedCase.summary}"
                 </p>
               </div>
@@ -935,21 +935,21 @@ export const EnhancedCaseDetail: React.FC<EnhancedCaseDetailProps> = ({
         <div className="lg:col-span-4 space-y-6">
           
           {/* Gemini RAG Summarizer Card */}
-          <div className="bg-[#0b1329] border border-slate-800/80 rounded-[2rem] p-6 space-y-6 shadow-2xl hover:border-[#ff7f00]/40 transition-all duration-300">
+          <div className="bg-[#0b1329] border border-slate-700/80 rounded-[2rem] p-6 space-y-6 shadow-2xl hover:border-[#ff7f00]/50 transition-all duration-300">
             <div className="flex items-center gap-3 border-b border-slate-800 pb-4">
-              <div className="p-2.5 bg-[#ff7f00]/10 text-[#ff7f00] rounded-xl border border-[#ff7f00]/20">
+              <div className="p-2.5 bg-[#ff7f00]/10 text-[#ff7f00] rounded-xl border border-[#ff7f00]/25">
                 <Sparkles className="w-5 h-5" />
               </div>
               <div>
                 <h3 className="font-sans font-black text-xs text-[#facc15] uppercase tracking-wider">موجز المستندات الذكي</h3>
-                <p className="text-[9px] text-slate-300 font-bold uppercase mt-0.5">Gemini RAG Summarizer Engine</p>
+                <p className="text-[9px] text-[#ff7f00] font-black uppercase mt-0.5">Gemini RAG Summarizer Engine</p>
               </div>
             </div>
 
             <div className="space-y-4">
               {caseDocumentMemo ? (
                 <div className="space-y-4">
-                  <div className="bg-[#040e21] p-5 rounded-2xl border border-slate-800/80 text-[12px] text-white leading-relaxed font-bold whitespace-pre-line italic shadow-inner">
+                  <div className="bg-[#040e21] p-5 rounded-2xl border border-slate-800/80 text-[12px] text-white leading-relaxed font-black whitespace-pre-line italic shadow-inner">
                     {caseDocumentMemo}
                   </div>
                   <button
@@ -958,7 +958,7 @@ export const EnhancedCaseDetail: React.FC<EnhancedCaseDetailProps> = ({
                         setCaseDocumentMemo('');
                         onUpdateState('cases', { ...selectedCase, summary: '' });
                     }}
-                    className="w-full py-3 rounded-xl border border-slate-800 text-slate-300 hover:text-rose-400 hover:bg-rose-950/40 hover:border-rose-900 text-[10px] font-black transition-all"
+                    className="w-full py-3 rounded-xl border border-[#ff7f00]/30 text-[#ff7f00] hover:text-[#facc15] hover:border-[#ff7f00]/60 hover:bg-[#ff7f00]/10 text-[10px] font-black transition-all cursor-pointer"
                   >
                     إعادة الصياغة / مسح الموجز 🗑️
                   </button>
@@ -970,7 +970,7 @@ export const EnhancedCaseDetail: React.FC<EnhancedCaseDetailProps> = ({
                     value={caseDocumentText}
                     onChange={(e) => setCaseDocumentText(e.target.value)}
                     placeholder="ألصق نصوص المرافعة أو المستندات هنا لاستخراج ملخص آلي..."
-                    className="w-full bg-[#040e21] border border-slate-800/80 p-4 rounded-xl text-xs font-bold text-white outline-none focus:ring-2 focus:ring-[#ff7f00]/20 focus:border-[#ff7f00]/40 transition-all placeholder-slate-500"
+                    className="w-full bg-[#040e21] border border-slate-800/80 p-4 rounded-xl text-xs font-black text-white outline-none focus:ring-2 focus:ring-[#ff7f00]/20 focus:border-[#ff7f00]/40 transition-all placeholder-slate-400"
                   />
                   
                   <button
@@ -982,7 +982,7 @@ export const EnhancedCaseDetail: React.FC<EnhancedCaseDetailProps> = ({
                         ? 'bg-slate-800 text-slate-400 cursor-wait'
                         : !caseDocumentText.trim()
                           ? 'bg-[#040e21] text-slate-500 border border-slate-800/80 cursor-not-allowed'
-                          : 'bg-[#ff7f00] hover:bg-orange-500 text-slate-950 shadow-lg'
+                          : 'bg-[#ff7f00] hover:bg-orange-500 text-slate-950 shadow-lg cursor-pointer'
                     }`}
                   >
                     {isCaseSummarizing ? (
@@ -1000,16 +1000,16 @@ export const EnhancedCaseDetail: React.FC<EnhancedCaseDetailProps> = ({
           </div>
 
           {/* Automated Protocol Card */}
-          <div className="bg-[#0b1329] border border-slate-800/80 rounded-[2rem] p-6 space-y-6 shadow-2xl overflow-hidden relative hover:border-[#ff7f00]/40 transition-all duration-300">
+          <div className="bg-[#0b1329] border border-slate-700/80 rounded-[2rem] p-6 space-y-6 shadow-2xl overflow-hidden relative hover:border-[#ff7f00]/50 transition-all duration-300">
             <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/5 blur-[40px] -mr-12 -mt-12"></div>
             
             <div className="flex items-center gap-3 border-b border-slate-800 pb-4 relative z-10">
-              <div className="p-2.5 bg-[#ff7f00]/10 text-[#ff7f00] rounded-xl border border-[#ff7f00]/20">
+              <div className="p-2.5 bg-[#ff7f00]/10 text-[#ff7f00] rounded-xl border border-[#ff7f00]/25">
                 <Zap className="w-5 h-5" />
               </div>
               <div>
                 <h3 className="font-sans font-black text-xs text-[#facc15] uppercase tracking-wider">بروتوكول الإشعارات التلقائية</h3>
-                <p className="text-[9px] text-slate-300 font-bold uppercase mt-0.5">Automated Client Broadcast Protocol</p>
+                <p className="text-[9px] text-[#ff7f00] font-black uppercase mt-0.5">Automated Client Broadcast Protocol</p>
               </div>
             </div>
 
@@ -1025,7 +1025,7 @@ export const EnhancedCaseDetail: React.FC<EnhancedCaseDetailProps> = ({
                   const currentVal = (selectedCase as any).whatsappNotificationsEnabled !== false;
                   onUpdateState('cases', { ...selectedCase, whatsappNotificationsEnabled: !currentVal });
                 }}
-                className={`relative inline-flex h-6 w-11 shrink-0 rounded-full border-2 border-transparent transition-colors duration-300 ease-in-out focus:outline-none ${
+                className={`relative inline-flex h-6 w-11 shrink-0 rounded-full border-2 border-transparent transition-colors duration-300 ease-in-out focus:outline-none cursor-pointer ${
                     (selectedCase as any).whatsappNotificationsEnabled !== false ? 'bg-emerald-500' : 'bg-slate-700'
                 }`}
               >
@@ -1037,7 +1037,7 @@ export const EnhancedCaseDetail: React.FC<EnhancedCaseDetailProps> = ({
 
             {/* Quick Status Switches */}
             <div className="space-y-3 relative z-10">
-              <span className="text-[10px] text-slate-300 uppercase tracking-widest font-black block mb-4">تحفيز بث الإشعار الفوري:</span>
+              <span className="text-[10px] text-white uppercase tracking-widest font-black block mb-4">تحفيز بث الإشعار الفوري:</span>
               
               <div className="space-y-2">
                 {[
@@ -1049,10 +1049,10 @@ export const EnhancedCaseDetail: React.FC<EnhancedCaseDetailProps> = ({
                     key={st.id}
                     type="button"
                     onClick={() => handleStatusTransition(selectedCase, st.id)}
-                    className={`w-full py-3 px-4 rounded-xl text-[10.5px] font-black flex items-center justify-between border transition-all group ${
+                    className={`w-full py-3 px-4 rounded-xl text-[10.5px] font-black flex items-center justify-between border transition-all group cursor-pointer ${
                       selectedCase.status === st.id
                         ? `bg-gradient-to-r from-[#ff7f00] to-orange-600 text-white border-[#ff7f00] shadow-[0_0_15px_rgba(255,127,0,0.3)]`
-                        : `bg-[#040e21] text-slate-200 border-slate-800/80 hover:border-[#ff7f00]/30 hover:text-white`
+                        : `bg-[#040e21] text-white border-slate-750 hover:border-[#ff7f00]/50 hover:text-[#ff7f00]`
                     }`}
                   >
                     <span className="flex items-center gap-2">
@@ -1069,12 +1069,12 @@ export const EnhancedCaseDetail: React.FC<EnhancedCaseDetailProps> = ({
 
             {/* Delivery History Log */}
             <div className="space-y-4 pt-4 border-t border-slate-800 relative z-10">
-              <span className="text-[10px] text-slate-300 font-black uppercase tracking-widest block">سجل البث لقنوات الواتساب</span>
+              <span className="text-[10px] text-[#facc15] font-black uppercase tracking-widest block">سجل البث لقنوات الواتساب</span>
               <div className="space-y-2.5">
                 {whatsAppLogs.filter(log => log.caseNumber === selectedCase.caseNumber).length === 0 ? (
-                  <div className="p-10 border-2 border-dashed border-slate-850 rounded-3xl flex flex-col items-center justify-center gap-3 bg-[#040e21]">
-                    <MessageSquare className="w-6 h-6 text-slate-700" />
-                    <p className="text-[10px] text-slate-500 font-black uppercase">No delivery events logged yet</p>
+                  <div className="p-10 border-2 border-dashed border-slate-800 rounded-3xl flex flex-col items-center justify-center gap-3 bg-[#040e21]">
+                    <MessageSquare className="w-6 h-6 text-slate-600" />
+                    <p className="text-[10.5px] text-[#ff7f00] font-black">لا توجد عمليات بث نشطة مسجلة حالياً</p>
                   </div>
                 ) : (
                   whatsAppLogs.filter(log => log.caseNumber === selectedCase.caseNumber).map((log, idx) => (
@@ -1083,9 +1083,9 @@ export const EnhancedCaseDetail: React.FC<EnhancedCaseDetailProps> = ({
                         <span className={`font-black uppercase ${log.status === 'success' ? 'text-emerald-400' : 'text-rose-400'}`}>
                           {log.status === 'success' ? 'SENT SUCCESS' : 'FAILED'}
                         </span>
-                        <span className="text-slate-400 font-mono font-bold">{log.timestamp}</span>
+                        <span className="text-[#facc15] font-mono font-black">{log.timestamp}</span>
                       </div>
-                      <p className="text-[11px] text-white font-bold leading-tight">{log.message}</p>
+                      <p className="text-[11px] text-white font-black leading-relaxed">{log.message}</p>
                     </div>
                   ))
                 )}
@@ -1094,9 +1094,9 @@ export const EnhancedCaseDetail: React.FC<EnhancedCaseDetailProps> = ({
           </div>
 
           {/* Quick Parties Insight */}
-          <div className="bg-[#0b1329] border border-slate-800/80 rounded-[2rem] p-6 space-y-6 shadow-2xl overflow-hidden group hover:border-[#ff7f00]/40 transition-all duration-300">
+          <div className="bg-[#0b1329] border border-slate-700/80 rounded-[2rem] p-6 space-y-6 shadow-2xl overflow-hidden group hover:border-[#ff7f00]/50 transition-all duration-300">
             <div className="flex items-center gap-3 border-b border-slate-800 pb-4">
-              <div className="p-2.5 bg-indigo-500/10 text-indigo-400 rounded-xl border border-indigo-500/20">
+              <div className="p-2.5 bg-[#ff7f00]/10 text-[#ff7f00] rounded-xl border border-[#ff7f00]/25">
                 <Users className="w-5 h-5" />
               </div>
               <h3 className="font-sans font-black text-xs text-[#facc15] uppercase tracking-wider">أطراف النزاع</h3>
