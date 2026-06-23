@@ -8,10 +8,11 @@ import '@/index.css';
 
 import { useState, useEffect } from 'react';
 
-// مكون لعرض حالة الاتصال مع بيئة التطوير بنمط فاخر ورياضي يخدم المحامين
-function DevConnectionBanner() {
+// مكون شريط متصل ذكي لعرض حالة الاتصال مع الخادم وحالة WebSocket
+function ConnectionStatusBar() {
   const [isDisconnected, setIsDisconnected] = useState(false);
   const [isRetrying, setIsRetrying] = useState(false);
+  const [lastOnline, setLastOnline] = useState<Date>(new Date());
 
   useEffect(() => {
     // 1. مراقبة أخطاء المتصفح والاتصال
@@ -21,7 +22,8 @@ function DevConnectionBanner() {
         msgStr.toLowerCase().includes('websocket') || 
         msgStr.toLowerCase().includes('vite') ||
         msgStr.toLowerCase().includes('failed to connect') ||
-        msgStr.toLowerCase().includes('unreached')
+        msgStr.toLowerCase().includes('unreached') ||
+        msgStr.toLowerCase().includes('networkerror')
       ) {
         setIsDisconnected(true);
       }
@@ -29,6 +31,11 @@ function DevConnectionBanner() {
 
     window.addEventListener('error', handleError);
     window.addEventListener('unhandledrejection', handleError);
+    window.addEventListener('offline', () => setIsDisconnected(true));
+    window.addEventListener('online', () => {
+      setIsDisconnected(false);
+      setLastOnline(new Date());
+    });
 
     // 2. محرك الفحص النشط الصامت (Heartbeat) للتحقق من الاتصال الفعلي بالخادم
     const checkConnection = async () => {
@@ -44,6 +51,7 @@ function DevConnectionBanner() {
         clearTimeout(timeoutId);
         
         if (response.ok) {
+          if (isDisconnected) setLastOnline(new Date());
           setIsDisconnected(false);
         } else {
           setIsDisconnected(true);
@@ -54,21 +62,24 @@ function DevConnectionBanner() {
     };
 
     // تشغيل الفحص دورياً للتأكد من حالة الاتصال الحقيقية بالخادم
-    const interval = setInterval(checkConnection, 6000);
+    const interval = setInterval(checkConnection, 5000);
 
     return () => {
       window.removeEventListener('error', handleError);
       window.removeEventListener('unhandledrejection', handleError);
+      window.removeEventListener('offline', () => setIsDisconnected(true));
+      window.removeEventListener('online', () => setIsDisconnected(false));
       clearInterval(interval);
     };
-  }, []);
+  }, [isDisconnected]);
 
-  const handleManualRetry = async () => {
+  const handleReconnect = async () => {
     setIsRetrying(true);
     try {
       const response = await fetch('/api/health', { method: 'GET', headers: { 'Cache-Control': 'no-cache' } });
       if (response.ok) {
         setIsDisconnected(false);
+        setLastOnline(new Date());
         setIsRetrying(false);
       } else {
         setTimeout(() => {
@@ -88,39 +99,54 @@ function DevConnectionBanner() {
 
   return (
     <div 
-      className="fixed bottom-6 right-6 left-6 md:left-auto md:w-96 z-[99999] bg-white border-2 border-amber-500/80 text-right p-5 rounded-2xl shadow-[0_20px_50px_rgba(245,158,11,0.25)] flex flex-col gap-3.5 backdrop-blur-md animate-fade-in text-slate-800 font-sans"
+      className="fixed bottom-0 left-0 right-0 z-[99999] bg-rose-600 shadow-[0_-5px_25px_rgba(225,29,72,0.3)] animate-slide-up text-white font-sans overflow-hidden"
       dir="rtl"
     >
-      <div className="flex items-start gap-3">
-        <div className="p-2.5 bg-amber-50 text-amber-600 rounded-xl border border-amber-200 shrink-0">
-          <svg className="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 15H18" />
-          </svg>
+      <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10 pointer-events-none" />
+      <div className="max-w-7xl mx-auto px-4 md:px-6 py-2.5 flex flex-col sm:flex-row items-center justify-between gap-3 relative z-10">
+        <div className="flex items-center gap-3 w-full sm:w-auto">
+          <div className="p-2 bg-white/20 rounded-full shrink-0 flex items-center justify-center relative">
+            <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M18.364 5.636a9 9 0 010 12.728m0 0l-2.829-2.829m2.829 2.829L21 21M15.536 8.464a5 5 0 010 7.072m0 0l-2.829-2.829m-4.243 2.829a4.978 4.978 0 01-1.414-2.83m-1.414 5.658a9 9 0 01-2.167-9.238m7.824 2.167a1 1 0 111.414 1.414m-1.414-1.414L3 3" />
+            </svg>
+            <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-yellow-400 rounded-full animate-ping" />
+          </div>
+          <div className="flex-1 text-right">
+            <h4 className="text-[13px] md:text-sm font-black flex flex-wrap items-center gap-2">
+              <span>تم فقدان الاتصال بالخادم (Offline)</span>
+              <span className="bg-white/20 px-2 py-0.5 rounded text-[10px]">
+                تمت المحاولة الأخيرة: {new Date().toLocaleTimeString('ar-SA')}
+              </span>
+            </h4>
+            <p className="text-[11px] md:text-xs text-rose-100 mt-0.5 font-bold leading-tight">
+              لا يمكن حفظ أحدث التعديلات أو جلب بيانات جديدة. تحقق من اتصال الإنترنت أو حالة الشبكة.
+            </p>
+          </div>
         </div>
-        <div>
-          <h4 className="text-sm font-black text-slate-900 flex items-center gap-1.5">
-            <span>تنبيه تزامن الاتصال الفوري بالمنصة</span>
-            <span className="w-1.5 h-1.5 bg-amber-500 rounded-full animate-ping" />
-          </h4>
-          <p className="text-xs text-slate-600 mt-1.5 leading-relaxed font-semibold">
-            تم فقدان الاتصال اللحظي بمخدم التطوير مؤقتاً. جاري محاولة إعادة الاتصال للتزامن مع التعديلات البرمجية لضمان تماسك الجلسة.
-          </p>
+
+        <div className="flex gap-2 w-full sm:w-auto shrink-0 mt-1 sm:mt-0 justify-end">
+          <button 
+            onClick={handleReconnect}
+            disabled={isRetrying}
+            className="bg-white hover:bg-rose-50 text-rose-700 active:scale-95 text-xs font-black px-5 py-2 rounded-xl transition-all shadow-md cursor-pointer flex items-center justify-center gap-1.5 w-full sm:w-auto"
+          >
+            {isRetrying ? (
+              <>
+                <svg className="w-4 h-4 animate-spin text-rose-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 15H18" />
+                </svg>
+                <span>جاري محاولة الاتصال...</span>
+              </>
+            ) : (
+              <>
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 15H18" />
+                </svg>
+                <span>إعادة الاتصال الآن</span>
+              </>
+            )}
+          </button>
         </div>
-      </div>
-      <div className="flex gap-2 justify-end mt-1 border-t border-slate-100 pt-3">
-        <button 
-          onClick={handleManualRetry}
-          disabled={isRetrying}
-          className="bg-amber-500 hover:bg-amber-600 active:scale-95 text-white text-[11px] font-black px-4 py-2 rounded-xl transition-all shadow-md cursor-pointer flex items-center gap-1"
-        >
-          {isRetrying ? 'جاري الفحص المباشر...' : 'فحص الاتصال وتحديث'}
-        </button>
-        <button 
-          onClick={() => setIsDisconnected(false)}
-          className="bg-slate-100 hover:bg-slate-200 active:scale-95 text-slate-700 text-[11px] font-black px-3.5 py-2 rounded-xl transition-all border border-slate-205 cursor-pointer"
-        >
-          تجاهل التنبيه مؤقتاً
-        </button>
       </div>
     </div>
   );
@@ -160,7 +186,7 @@ if (typeof window !== 'undefined') {
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <ErrorBoundary>
-      <DevConnectionBanner />
+      <ConnectionStatusBar />
       <App />
       <Analytics />
       <SpeedInsights />

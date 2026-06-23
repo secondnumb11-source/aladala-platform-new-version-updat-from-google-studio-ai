@@ -326,6 +326,14 @@ export const EnhancedCaseDetail: React.FC<EnhancedCaseDetailProps> = ({
               <Printer className="w-5 h-5" />
               <span>تصدير ملف الدعوى (PDF)</span>
             </button>
+
+            <button 
+              onClick={() => window.print()}
+              className="w-full bg-gradient-to-r from-amber-600 to-amber-700 text-white font-black px-6 py-4 rounded-2xl text-xs flex items-center justify-center gap-3 transition-all hover:from-amber-700 hover:to-amber-800 active:scale-95 shadow-lg shadow-amber-550/20"
+            >
+              <Printer className="w-5 h-5 text-amber-100" />
+              <span>طباعة ملف القضية ورقياً 🖨️</span>
+            </button>
           </div>
         </div>
 
@@ -928,7 +936,195 @@ export const EnhancedCaseDetail: React.FC<EnhancedCaseDetailProps> = ({
         </div>
       </div>
     )}
+
+    {/* Elegant Formal Legal Print Layout (Visible ONLY on print) */}
+    <div className="hidden print:block official-print-report official-print-case-report text-slate-900 font-serif" dir="rtl">
+      {/* Royal Headings */}
+      <div className="flex justify-between items-center border-b-2 border-amber-600 pb-6 mb-8">
+        <div className="text-right text-xs space-y-1 font-bold text-slate-600">
+          <div>المملكة العربية السعودية</div>
+          <div>ديوان المظالم / وزارة العدل</div>
+          <div>منصة العدالة الموحدة للمحاماة</div>
+        </div>
+        <div className="text-center">
+          <div className="w-12 h-12 bg-amber-600/10 border border-amber-600 rounded-full flex items-center justify-center mx-auto mb-2 font-bold text-amber-700">
+            ⚖️
+          </div>
+          <h1 className="text-xl font-black text-slate-900 tracking-tight">تقرير ملف دعوى قضائية رسمي معتمد</h1>
+          <p className="text-[10px] text-slate-500 font-mono">ADALAH CASE MANAGEMENT REPORT</p>
+        </div>
+        <div className="text-left text-xs space-y-1 font-bold text-slate-600">
+          <div>الرقم المرجعي: {selectedCase.id.slice(0, 8).toUpperCase()}</div>
+          <div>تاريخ الطباعة: {new Date().toLocaleDateString('ar-SA')}</div>
+          <div>وقت المعاينة: {new Date().toLocaleTimeString('ar-SA')}</div>
+        </div>
+      </div>
+
+      {/* Main Core Case Frame */}
+      <div className="official-print-border space-y-6">
+        <div className="border-b border-slate-200 pb-3 mb-4">
+          <h2 className="text-sm font-black text-amber-800 uppercase tracking-widest flex items-center gap-2">
+            <span>◆ البيانات الأساسية لملف الدعوى القضائية</span>
+          </h2>
+        </div>
+
+        <div className="grid grid-cols-2 gap-y-4 gap-x-6 text-xs leading-relaxed">
+          <div className="border-b border-dashed border-slate-100 pb-2">
+            <span className="font-bold text-slate-500">اسم القضية / موضوع الخصومة: </span>
+            <strong className="text-slate-900 text-[13px]">{selectedCase.caseName}</strong>
+          </div>
+          <div className="border-b border-dashed border-slate-100 pb-2">
+            <span className="font-bold text-slate-500">رقم قيد القضية الموحد: </span>
+            <strong className="text-slate-900 text-[13px] font-sans">{selectedCase.caseNumber}</strong>
+          </div>
+          <div className="border-b border-dashed border-slate-100 pb-2">
+            <span className="font-bold text-slate-500">المحكمة القضائية المختصة: </span>
+            <strong className="text-slate-900 text-[13px]">{selectedCase.courtName}</strong>
+          </div>
+          <div className="border-b border-dashed border-slate-100 pb-2">
+            <span className="font-bold text-slate-500">رقم الدائرة القضائية: </span>
+            <strong className="text-slate-900 text-[13px]">{selectedCase.circuitNumber || 'الدائرة الأولى'}</strong>
+          </div>
+          <div className="border-b border-dashed border-slate-100 pb-2">
+            <span className="font-bold text-slate-500">تصنيف الدعوى: </span>
+            <strong className="text-slate-900 text-[13px] capitalize">{selectedCase.category}</strong>
+          </div>
+          <div className="border-b border-dashed border-slate-100 pb-2">
+            <span className="font-bold text-slate-500">المرحلة الإجرائية الحالية: </span>
+            <strong className="text-slate-900 text-[13px]">{selectedCase.stage === 'litigation' ? 'جلسات المرافعة' : selectedCase.stage === 'appeals' ? 'سير الاستئناف' : selectedCase.stage === 'execution' ? 'التنفيذ وإصدار الصك' : 'الحكم القطعي المنتهي'}</strong>
+          </div>
+        </div>
+      </div>
+
+      {/* Litigants */}
+      <div className="official-print-border space-y-6 mt-6">
+        <div className="border-b border-slate-200 pb-3 mb-4">
+          <h2 className="text-sm font-black text-amber-800 uppercase tracking-widest">
+            <span>◆ أطراف النزاع والخصومة والتمثيل القانوني</span>
+          </h2>
+        </div>
+        <div className="grid grid-cols-2 gap-6 text-xs">
+          <div className="p-4 bg-slate-50 rounded-xl space-y-2 border border-slate-100">
+            <div className="font-black text-slate-700 pb-1 border-b border-slate-200">الطرف الأول (المدعي / الموكل):</div>
+            <div>
+              <span className="text-slate-500">الاسم الكريم:</span> <strong className="text-slate-900">{selectedCase.clientName}</strong>
+            </div>
+            <div>
+              <span className="text-slate-500">الفئة:</span> <span className="text-slate-900">موكل مصادق عليه</span>
+            </div>
+          </div>
+
+          <div className="p-4 bg-slate-50 rounded-xl space-y-2 border border-slate-100">
+            <div className="font-black text-slate-700 pb-1 border-b border-slate-200">الطرف الثاني (المدعى عليه / الخصم):</div>
+            <div>
+              <span className="text-slate-500">اسم الخصم المقيد:</span> <strong className="text-slate-900">{selectedCase.opponentName || 'غير مقيد بالملف'}</strong>
+            </div>
+            <div>
+              <span className="text-slate-500">رقم الهوية الوطنية/السجل للخصم:</span> <span className="text-slate-900 font-sans">{selectedCase.opponentNationalId || 'غير متوفر'}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Case Details / Facts */}
+      <div className="page-break-avoid official-print-border space-y-4 mt-6">
+        <div className="border-b border-slate-200 pb-2">
+          <h2 className="text-sm font-black text-amber-800">◆ تفاصيل موضوع الدعوى ومذكرات ومطالبات الموضوع</h2>
+        </div>
+        <p className="text-xs leading-relaxed text-slate-800 whitespace-pre-wrap font-sans">
+          {selectedCase.details || 'لم يتم تدوين تفاصيل موضوعية بالملف الرئيسي حتى تاريخ إصدار هذا التقرير.'}
+        </p>
+      </div>
+
+      {/* Scheduled Sessions Log */}
+      <div className="page-break-avoid official-print-border space-y-4 mt-6">
+        <div className="border-b border-slate-200 pb-2">
+          <h2 className="text-sm font-black text-amber-800">◆ مواعيد الجلسات وسجل الاستحقاق القضائي القادم</h2>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+          <div className="p-3 bg-amber-500/5 rounded-xl border border-amber-500/10 space-y-1">
+            <div className="font-black text-amber-700">موعد الجلسة القضائية المجدولة القادمة:</div>
+            <div>التاريخ: {selectedCase.nextSessionDate || 'لا توجد جلسات معلنة قريباً'}</div>
+            {selectedCase.nextSessionTime && <div>الوقت المعتمد: {selectedCase.nextSessionTime}</div>}
+          </div>
+          <div className="p-3 bg-slate-50 rounded-xl border border-slate-100 space-y-1">
+            <div className="font-black text-slate-700">تاريخ آخر جلسة قضائية ومحضر ضبط:</div>
+            <div>تاريخ المعاملة: {selectedCase.lastSessionDate || 'لا تتوفر جلسات مسجلة سابقاً'}</div>
+          </div>
+        </div>
+      </div>
+
+      {/* AI Summary and Strategy */}
+      {(aiAnalysis || selectedCase.aiRecommendations) && (
+        <div className="page-break-avoid official-print-border space-y-4 mt-6">
+          <div className="border-b border-slate-200 pb-2">
+            <h2 className="text-sm font-black text-amber-800 flex items-center gap-1.5">
+              <span>🧠 التحليل القضائي الاستراتيجي التلقائي (الذكاء الاصطناعي)</span>
+            </h2>
+          </div>
+          <div className="p-4 bg-slate-50 rounded-xl border border-slate-100 text-xs leading-relaxed text-slate-700 whitespace-pre-wrap font-sans">
+            {aiAnalysis || selectedCase.aiRecommendations}
+          </div>
+        </div>
+      )}
+
+      {/* Financial Statement */}
+      {selectedCase.financialRecords && selectedCase.financialRecords.length > 0 && (
+        <div className="page-break-avoid official-print-border space-y-4 mt-6">
+          <div className="border-b border-slate-200 pb-2">
+            <h2 className="text-sm font-black text-amber-800">◆ كشف الحساب المالي للقضية والمصاريف والرسوم المودعة</h2>
+          </div>
+          <table className="w-full text-right text-xs border-collapse">
+            <thead>
+              <tr className="bg-slate-100 border-b border-slate-200">
+                <th className="p-2 font-black text-slate-700">البيان / الوصف</th>
+                <th className="p-2 font-black text-slate-700 text-center">التاريخ</th>
+                <th className="p-2 font-black text-slate-700">النوع</th>
+                <th className="p-2 font-black text-slate-700 text-left">المبلغ (ر.س)</th>
+              </tr>
+            </thead>
+            <tbody>
+              {selectedCase.financialRecords.map((rec: any, idx: number) => (
+                <tr key={idx} className="border-b border-slate-100">
+                  <td className="p-2 text-slate-800">{rec.description}</td>
+                  <td className="p-2 text-slate-500 text-center font-sans">{rec.date}</td>
+                  <td className="p-2 text-slate-600">{rec.type === 'expense' ? 'مصاريف مكتب' : rec.type === 'fee' ? 'رسوم قضائية' : 'أتعاب محاماة'}</td>
+                  <td className="p-2 text-slate-900 font-sans text-left font-bold">{rec.amount} ر.س</td>
+                </tr>
+              ))}
+              <tr className="bg-slate-50 border-t border-slate-300 font-black">
+                <td colSpan={3} className="p-2 text-slate-900">إجمالي النفقات والرسوم الموثقة بالملف:</td>
+                <td className="p-2 text-amber-700 text-left font-sans">
+                  {selectedCase.financialRecords.reduce((acc: number, r: any) => acc + (r.amount ? parseFloat(r.amount) : 0), 0).toLocaleString()} ر.س
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {/* Authentications Seals & Signatures */}
+      <div className="page-break-avoid mt-12 border-t border-slate-300 pt-8 flex justify-between items-start text-xs text-slate-600">
+        <div className="text-right space-y-2">
+          <div className="font-black text-slate-850">مكتب المحامي والمستشار القانوني المعتمد</div>
+          <div className="text-[10px] text-emerald-600">✓ تم التوثيق إلكترونياً بالتوافق مع المعايير العدلية الرقمية</div>
+          <div className="h-16"></div>
+          <div>التوقيع / المصادقة: .......................................</div>
+        </div>
+
+        {/* Traditional Legal Seal */}
+        <div className="flex flex-col items-center">
+          <div className="w-20 h-20 rounded-full border-4 border-double border-amber-600 flex flex-col items-center justify-center text-amber-600 font-bold rotate-12 select-none">
+            <span className="text-[7px] font-sans">ADALAH FIRM</span>
+            <span className="text-[9px] font-black">ختم معتمد مستقل</span>
+            <span className="text-[7px]">ديوان العدالة</span>
+          </div>
+          <span className="text-[9px] text-slate-400 mt-2 font-mono">ID: {selectedCase.id.slice(0, 8)}</span>
+        </div>
+      </div>
+    </div>
     </>
+
   );
 };
 

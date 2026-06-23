@@ -104,6 +104,7 @@ export interface Case {
   communicationLog?: CommunicationLog[];
   timeline?: TimelineEvent[];
   history?: CaseHistoryEntry[];
+  aiRecommendations?: string;
 }
 
 export type CourtCase = Case;

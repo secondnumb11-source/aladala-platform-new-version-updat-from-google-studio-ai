@@ -3381,6 +3381,112 @@ button.btn-secondary:hover {
   border-radius: 12px !important;
 }
 
+/* ==========================================================================
+   FORMAL OFFICIAL LEGAL PRINT STYLES - ROYAL COURT LUXURY THEMATIC STYLING
+   ========================================================================== */
+@media print {
+  /* Set document margin to standard A4 printing sizes and ensure white backgrounds */
+  @page {
+    size: A4;
+    margin: 20mm 15mm 20mm 15mm;
+  }
+
+  /* Force all parent containers and children to use light background colors to save printer ink */
+  body, html, main, #root, div, section, article {
+    background: #ffffff !important;
+    background-color: #ffffff !important;
+    background-image: none !important;
+    color: #111827 !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  body, html {
+    font-family: 'Cairo', 'Amiri', serif !important;
+    font-size: 12pt !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* Hide navigation, sidebar, bells, buttons, footers, popovers and anything interactive */
+  aside, 
+  nav, 
+  header, 
+  footer, 
+  button, 
+  input, 
+  select, 
+  textarea, 
+  .no-print, 
+  .no-print-important, 
+  [role="navigation"], 
+  [role="button"],
+  .fixed,
+  .absolute-top-controls,
+  .activity-log-trigger,
+  .upload-widget,
+  .whatsapp-logs-panel {
+    display: none !important;
+  }
+
+  /* Expand main content container to 100% printed viewport width */
+  main, .flex-1, .grid, .container {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    float: none !important;
+    display: block !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+
+  /* Page Break optimization */
+  .page-break-avoid {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  /* Custom legal report container for high fidelity official paper printing */
+  .official-print-case-report {
+    display: block !important;
+    visibility: visible !important;
+    background: white !important;
+    color: #111827 !important;
+    padding: 2.5cm 2cm 2cm 2cm !important;
+    border: none !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Dedicated rule for .official-print-report to optimize A4 margins and format */
+  .official-print-report {
+    display: block !important;
+    visibility: visible !important;
+    background: white !important;
+    color: #111827 !important;
+    width: 100% !important;
+    max-width: 210mm !important; /* A4 size constraint */
+    min-height: 297mm !important; /* A4 page height constraint */
+    padding: 2cm !important;
+    margin: 0 auto !important;
+    box-sizing: border-box !important;
+    position: relative !important;
+    z-index: 1000 !important;
+  }
+
+  /* Custom header border for formal appearance */
+  .official-print-border {
+    border: 3px double #b45309 !important;
+    padding: 1.5rem !important;
+    margin-bottom: 2rem !important;
+    border-radius: 8px !important;
+  }
+}
+
+
 
 
 

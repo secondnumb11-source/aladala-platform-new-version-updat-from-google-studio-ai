@@ -25,7 +25,7 @@ interface DocumentUploadWidgetProps {
 
 export default function DocumentUploadWidget({ caseId, onUploadComplete }: DocumentUploadWidgetProps) {
   const [isUploading, setIsUploading] = useState(false);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [selectedFile, setSelectedFile] = useState<globalThis.File | null>(null);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
@@ -132,10 +132,10 @@ export default function DocumentUploadWidget({ caseId, onUploadComplete }: Docum
             <button
               key={cat.id}
               onClick={() => setFileCategory(cat.id)}
-              className={`px-3 py-1.5 rounded-lg text-[10px] font-black transition-all border-2 ${
+              className={`text-xs px-3 py-1.5 rounded-lg border font-black transition-all ${
                 fileCategory === cat.id
-                  ? 'bg-emerald-600 border-emerald-600 text-white shadow-md'
-                  : 'bg-white border-slate-100 text-slate-600 hover:border-slate-200'
+                  ? 'bg-emerald-50 text-emerald-700 border-emerald-300'
+                  : 'bg-white text-slate-500 border-slate-200 hover:bg-slate-50'
               }`}
             >
               {cat.label}
@@ -143,115 +143,83 @@ export default function DocumentUploadWidget({ caseId, onUploadComplete }: Docum
           ))}
         </div>
 
-        {/* Upload Area */}
-        <div 
-          className={`relative border-2 border-dashed rounded-2xl p-8 transition-all flex flex-col items-center justify-center gap-3 text-center ${
-            selectedFile 
-              ? 'border-emerald-500 bg-emerald-50/20' 
-              : 'border-slate-200 bg-slate-50/50 hover:bg-slate-50 hover:border-slate-300'
-          }`}
-        >
+        {/* File Dropzone / Selector */}
+        <div className="relative border-2 border-dashed border-slate-200 rounded-2xl p-6 hover:bg-slate-50 transition-colors flex flex-col items-center justify-center text-center group">
           <input
             type="file"
             onChange={handleFileChange}
             className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-            disabled={isUploading}
+            accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.csv,.xlsx"
           />
           
           {selectedFile ? (
-            <>
-              <div className="p-3 bg-white rounded-full shadow-sm text-emerald-600">
-                <FileText className="w-8 h-8" />
-              </div>
-              <div>
-                <p className="text-xs font-black text-slate-900 truncate max-w-[200px]">
-                  {selectedFile.name}
-                </p>
-                <p className="text-[10px] text-slate-500 font-bold">
-                  {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
-                </p>
-              </div>
-              <button 
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setSelectedFile(null);
-                }}
-                className="absolute top-2 left-2 p-1.5 bg-white border border-slate-200 rounded-full text-slate-400 hover:text-rose-500 transition-colors"
-                title="إلغاء الملف"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </>
+            <div className="flex flex-col items-center gap-2">
+              <File className="w-8 h-8 text-emerald-500" />
+              <p className="text-xs font-black text-slate-900">{selectedFile.name}</p>
+              <p className="text-[10px] text-slate-500 font-bold">{(selectedFile.size / 1024 / 1024).toFixed(2)} MB</p>
+            </div>
           ) : (
             <>
-              <div className="p-3 bg-white rounded-full shadow-sm text-slate-400">
-                <Upload className="w-8 h-8" />
-              </div>
-              <div>
-                <p className="text-xs font-black text-slate-900">اضغط للرفع أو اسحب الملف هنا</p>
-                <p className="text-[10px] text-slate-500 font-bold mt-1"> PDF, JPEG, PNG (بحد أقصى 10MB)</p>
-              </div>
+              <Upload className="w-6 h-6 text-slate-400 group-hover:text-emerald-500 transition-colors mb-2" />
+              <p className="text-sm font-black text-slate-700">اضغط أو اسحب الملف هنا</p>
+              <p className="text-[10px] text-slate-400 mt-1">يدعم PDF, Word, Excel, Images (Max 10MB)</p>
             </>
           )}
         </div>
 
-        {/* Progress Bar */}
-        {isUploading && (
-          <div className="space-y-2">
-            <div className="flex justify-between items-center text-[10px] font-black text-slate-600">
-              <span>جاري المعالجة والأرشفة...</span>
-              <span>{Math.round(uploadProgress)}%</span>
-            </div>
-            <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
-              <motion.div 
-                initial={{ width: 0 }}
-                animate={{ width: `${uploadProgress}%` }}
-                className="h-full bg-emerald-500"
-              />
-            </div>
-          </div>
-        )}
-
-        {/* Status Messages */}
+        {/* Status Indicators */}
         <AnimatePresence>
           {error && (
-            <motion.div 
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-              className="flex items-center gap-2 p-3 bg-rose-50 text-rose-700 rounded-xl border border-rose-100 text-[10px] font-bold"
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="px-3 py-2 bg-rose-50 border border-rose-100 rounded-xl flex items-center gap-2 text-rose-600 text-xs font-bold"
             >
-              <AlertCircle className="w-4 h-4 shrink-0" />
+              <AlertCircle className="w-4 h-4" />
               <span>{error}</span>
             </motion.div>
           )}
+
           {success && (
-            <motion.div 
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-              className="flex items-center gap-2 p-3 bg-emerald-50 text-emerald-700 rounded-xl border border-emerald-100 text-[10px] font-bold"
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="px-3 py-2 bg-emerald-50 border border-emerald-100 rounded-xl flex items-center gap-2 text-emerald-600 text-xs font-bold"
             >
-              <CheckCircle2 className="w-4 h-4 shrink-0" />
-              <span>تم رفع الملف وأرشفته في ملف القضية بنجاح!</span>
+              <CheckCircle2 className="w-4 h-4" />
+              <span>تم حفظ وإيداع المستند بنجاح</span>
             </motion.div>
+          )}
+
+          {isUploading && (
+            <div className="space-y-1.5">
+              <div className="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
+                <motion.div
+                  initial={{ width: 0 }}
+                  animate={{ width: `${uploadProgress}%` }}
+                  className="bg-emerald-500 h-full"
+                />
+              </div>
+              <div className="flex justify-between text-[10px] text-slate-500 font-mono">
+                <span>{uploadProgress}%</span>
+                <span>جاري الرفع والأرشفة...</span>
+              </div>
+            </div>
           )}
         </AnimatePresence>
 
-        {/* Actions */}
+        {/* Save/Upload Action Button */}
         <button
           onClick={handleUpload}
           disabled={!selectedFile || isUploading}
-          className={`w-full py-3 rounded-2xl font-black text-xs transition-all flex items-center justify-center gap-2 shadow-sm ${
-            !selectedFile || isUploading
-              ? 'bg-slate-100 text-slate-400 cursor-not-allowed border border-slate-200'
-              : 'bg-slate-950 text-white hover:bg-slate-800'
-          }`}
+          className="bg-transparent border-2 border-emerald-500 text-emerald-600 font-extrabold py-2.5 px-6 rounded-xl text-sm transition-all hover:bg-emerald-500 hover:text-white flex items-center justify-center gap-2 outline-none disabled:opacity-50 shadow-sm w-full"
         >
           {isUploading ? (
-            <Loader2 className="w-4 h-4 animate-spin text-emerald-400" />
+            <Loader2 className="w-4 h-4 animate-spin" />
           ) : (
-            <Database className="w-4 h-4 text-emerald-400" />
+            <Database className="w-4 h-4" />
           )}
           <span>{isUploading ? 'جاري الحفظ الآمن...' : 'تأكيد الحفظ في الأرشيف'}</span>
         </button>

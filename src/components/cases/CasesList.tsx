@@ -29,6 +29,9 @@ interface CasesListProps {
   selectedRole?: string;
   onUpdateCaseStatus?: (c: Case, newStatus: string) => void;
   onDeleteCase?: (id: string | number) => void;
+  searchActive?: boolean;
+  focusedIdx?: number | null;
+  setFocusedIdx?: (idx: number | null) => void;
 }
 
 export default function CasesList({
@@ -48,9 +51,14 @@ export default function CasesList({
   onArchiveToggle,
   selectedRole,
   onUpdateCaseStatus,
-  onDeleteCase
+  onDeleteCase,
+  searchActive = false,
+  focusedIdx: externalFocusedIdx,
+  setFocusedIdx: externalSetFocusedIdx
 }: CasesListProps) {
-  const [focusedIdx, setFocusedIdx] = React.useState<number | null>(null);
+  const [internalFocusedIdx, setInternalFocusedIdx] = React.useState<number | null>(null);
+  const focusedIdx = externalFocusedIdx !== undefined ? externalFocusedIdx : internalFocusedIdx;
+  const setFocusedIdx = externalSetFocusedIdx || setInternalFocusedIdx;
 
   // Keyboard navigation listener
   React.useEffect(() => {
@@ -230,6 +238,7 @@ export default function CasesList({
         <CaseCard
           key={c.id || idx}
           c={c}
+          searchHighlight={searchActive}
           onSelectCase={(caseObj) => {
             setFocusedIdx(idx);
             onSelectCase(caseObj);

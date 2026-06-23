@@ -66,6 +66,7 @@ import { InteractiveCard } from './InteractiveCard';
 import { Case, Client, Attachment } from '@/types';
 import { useAdaptiveContrast } from '../utils/themeUtils';
 import CasesList from './cases/CasesList';
+import CaseStatisticsBar from './cases/CaseStatisticsBar';
 import CaseFilters from './cases/CaseFilters';
 import AddCaseModal from './cases/AddCaseModal';
 import EnhancedCaseDetail from './cases/EnhancedCaseDetail';
@@ -342,7 +343,7 @@ export const getLeadLawyerName = (c: Case): string => {
     return (
       <div className="space-y-4 mb-8">
         {/* User Control Bar */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 p-3 bg-[#050e21]/90 rounded-2xl border border-slate-800 text-xs text-white font-bold shadow-xl relative z-25">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 p-3 bg-white rounded-2xl border border-slate-200 text-xs text-slate-800 font-bold shadow-xl relative z-25">
           <div className="flex flex-wrap items-center gap-3 lg:col-span-2">
             <div className="flex items-center gap-1.5">
               <span className="font-sans font-black text-white text-[10px]">مظهر ولون البيانات:</span>
@@ -774,13 +775,44 @@ export default React.memo(function CasesModule({
 
   // Electronic Archive and Document Vault States
   const [searchTerm, setSearchTerm] = useState('');
+  const [categorySearchTerm, setCategorySearchTerm] = useState('');
+  const [isCatDropdownOpen, setIsCatDropdownOpen] = useState(false);
+  const [isAdvancedSearchOpen, setIsAdvancedSearchOpen] = useState(false);
+  const [isMetaDropdownOpen, setIsMetaDropdownOpen] = useState(false);
+  const [advFilters, setAdvFilters] = useState({ opponent: '', circuit: '', judgmentCategory: '' });
+
+  // Computed real-time statistics counters from Supabase sync
+  const statsSummary = React.useMemo(() => {
+    const safeCases = cases || [];
+    const activeCount = safeCases.filter(c => !c.archived && (c.status === 'active' || c.status === 'under_study' || c.status === 'pending_session')).length;
+    
+    const adjudicatedCount = safeCases.filter(c => !c.archived && (
+      c.status === 'judgment_issued' || 
+      c.status === 'final_judgment' || 
+      c.status === 'primary_judgment' ||
+      c.status === 'appeal'
+    )).length;
+    
+    const closedCount = safeCases.filter(c => c.archived || c.status === 'closed').length;
+    
+    return {
+      active: activeCount,
+      adjudicated: adjudicatedCount,
+      closed: closedCount,
+      total: safeCases.length
+    };
+  }, [cases]);
   const [lastSessionFilter, setLastSessionFilter] = useState('');
   const [nextAppointmentFilter, setNextAppointmentFilter] = useState('');
+  const [nextAppointmentFilterType, setNextAppointmentFilterType] = useState<'all' | 'all_scheduled' | 'today' | 'soon' | 'month' | 'custom'>('all');
+  const [isNextSessionDropdownOpen, setIsNextSessionDropdownOpen] = useState(false);
   const [selectedDocTag, setSelectedDocTag] = useState('all');
   const [activityLogCaseId, setActivityLogCaseId] = useState<string | null>(null);
   const [isArchiveModalOpen, setIsArchiveModalOpen] = useState(false);
   const [archiveSearchTerm, setArchiveSearchTerm] = useState('');
   const [archiveTypeFilter, setArchiveTypeFilter] = useState('all');
+
+  const [focusedIdx, setFocusedIdx] = useState<number | null>(null);
 
   const allDocuments = React.useMemo(() => {
     const docs: any[] = [];
@@ -1742,25 +1774,37 @@ export default React.memo(function CasesModule({
 
   // Filters
   const filteredCases = (cases || []).filter(c => {
-    const caseNameSafe = c.caseName || '';
-    const caseNumberSafe = c.caseNumber || '';
-    const clientNameSafe = c.clientName || '';
-    const courtNameSafe = c.courtName || '';
-
+    const caseNameSafe = (c.caseName || '').toLowerCase();
+    const caseNumberSafe = (c.caseNumber || '').toLowerCase();
+    const clientNameSafe = (c.clientName || '').toLowerCase();
+    const courtNameSafe = (c.courtName || '').toLowerCase();
+    const opponentNameSafe = (c.opponentName || '').toLowerCase();
+    const circuitNumberSafe = (c.circuitNumber || '').toLowerCase();
+    const caseCategorySafe = (c.category || '').toLowerCase();
+    
     // Skip/exclude temporary RLS security check cases from appearing in the UI
     if (
-      caseNameSafe.includes('فحص أمان RLS') ||
-      caseNameSafe.includes('RLS_Test') ||
-      caseNumberSafe.includes('Boot-RLS-Test-') ||
-      caseNameSafe.includes('RLS مؤقت')
+      caseNameSafe.includes('فحص أمان rls') ||
+      caseNameSafe.includes('rls_test') ||
+      caseNumberSafe.includes('boot-rls-test-') ||
+      caseNameSafe.includes('rls مؤقت')
     ) {
       return false;
     }
 
-    const matchesSearch = caseNameSafe.includes(searchTerm) || 
-                          caseNumberSafe.includes(searchTerm) || 
-                          clientNameSafe.includes(searchTerm) ||
-                          courtNameSafe.includes(searchTerm);
+    const searchLower = searchTerm.toLowerCase();
+    const matchesGlobalSearch = searchLower === '' || 
+                          caseNameSafe.includes(searchLower) || 
+                          caseNumberSafe.includes(searchLower) || 
+                          clientNameSafe.includes(searchLower) ||
+                          courtNameSafe.includes(searchLower) ||
+                          opponentNameSafe.includes(searchLower);
+
+    const matchesAdvOpponent = advFilters.opponent === '' || opponentNameSafe.includes(advFilters.opponent.toLowerCase());
+    const matchesAdvCircuit = advFilters.circuit === '' || circuitNumberSafe.includes(advFilters.circuit.toLowerCase());
+    const matchesAdvCategory = advFilters.judgmentCategory === '' || caseCategorySafe.includes(advFilters.judgmentCategory.toLowerCase());
+
+    const matchesSearch = matchesGlobalSearch && matchesAdvOpponent && matchesAdvCircuit && matchesAdvCategory;
     
     // Auto-archive filter logic:
     // If 'archived' category is selected, show only archived cases.
@@ -1784,7 +1828,56 @@ export default React.memo(function CasesModule({
     const matchesDocTag = selectedDocTag === 'all' || getCaseDocumentTags(c).includes(selectedDocTag);
     
     const matchesLastSession = !lastSessionFilter || (c.lastSessionDate && c.lastSessionDate.includes(lastSessionFilter));
-    const matchesNextAppointment = !nextAppointmentFilter || (c.nextSessionDate && c.nextSessionDate.includes(nextAppointmentFilter));
+    
+    let matchesNextAppointment = true;
+    if (nextAppointmentFilterType === 'today') {
+      const todayStr = new Date().toISOString().split('T')[0];
+      matchesNextAppointment = !!c.nextSessionDate && c.nextSessionDate === todayStr;
+    } else if (nextAppointmentFilterType === 'soon') {
+      if (!c.nextSessionDate) {
+        matchesNextAppointment = false;
+      } else {
+        try {
+          const parsedDate = new Date(c.nextSessionDate);
+          if (isNaN(parsedDate.getTime())) {
+            matchesNextAppointment = false;
+          } else {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            parsedDate.setHours(0, 0, 0, 0);
+            const diffTime = parsedDate.getTime() - today.getTime();
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            matchesNextAppointment = diffDays >= 0 && diffDays <= 7;
+          }
+        } catch {
+          matchesNextAppointment = false;
+        }
+      }
+    } else if (nextAppointmentFilterType === 'month') {
+      if (!c.nextSessionDate) {
+        matchesNextAppointment = false;
+      } else {
+        try {
+          const parsedDate = new Date(c.nextSessionDate);
+          if (isNaN(parsedDate.getTime())) {
+            matchesNextAppointment = false;
+          } else {
+            const today = new Date();
+            const nextMonth = new Date(today);
+            nextMonth.setDate(today.getDate() + 30);
+            today.setHours(0, 0, 0, 0);
+            parsedDate.setHours(0, 0, 0, 0);
+            matchesNextAppointment = parsedDate >= today && parsedDate <= nextMonth;
+          }
+        } catch {
+          matchesNextAppointment = false;
+        }
+      }
+    } else if (nextAppointmentFilterType === 'custom') {
+      matchesNextAppointment = !nextAppointmentFilter || (c.nextSessionDate && c.nextSessionDate.includes(nextAppointmentFilter));
+    } else if (nextAppointmentFilterType === 'all_scheduled') {
+      matchesNextAppointment = !!c.nextSessionDate;
+    }
 
     // Support filtering by Status: (active, closed, under_review)
     let matchesStatus = true;
@@ -1816,6 +1909,54 @@ export default React.memo(function CasesModule({
 
     return matchesSearch && matchesCategory && matchesStage && matchesCourt && matchesDocTag && matchesLastSession && matchesNextAppointment && matchesStatus && matchesLawyer && matchesScheduled;
   });
+
+  // Keyboard navigation listener at the page/module-level (CasesModule)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Avoid intercepting keyboard typing inside interactive input controls
+      if (
+        document.activeElement &&
+        ['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement.tagName)
+      ) {
+        return;
+      }
+
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        setFocusedIdx((prev) => {
+          if (prev === null) return 0;
+          return Math.min(prev + 1, filteredCases.length - 1);
+        });
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        setFocusedIdx((prev) => {
+          if (prev === null) return 0;
+          return Math.max(prev - 1, 0);
+        });
+      } else if (e.key === 'Enter') {
+        if (focusedIdx !== null && filteredCases[focusedIdx]) {
+          e.preventDefault();
+          onSelectCase(filteredCases[focusedIdx]);
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [focusedIdx, filteredCases, onSelectCase]);
+
+  // Smooth scroll focused element into browser viewing layout
+  useEffect(() => {
+    if (focusedIdx !== null && filteredCases[focusedIdx]) {
+      const activeCase = filteredCases[focusedIdx];
+      const el = document.getElementById(`case-card-${activeCase.id}`);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+    }
+  }, [focusedIdx, filteredCases]);
 
   const isCaseOverdue = (c: Case) => {
     // Statutory deadline logic: e.g. more than 30 days since last session with no next appointment
@@ -1889,79 +2030,387 @@ export default React.memo(function CasesModule({
   };
 
       const filterBarMarkup = (
-        <div className="bg-[#050e21] p-8 rounded-[2.5rem] border border-slate-800 shadow-2xl mb-10 relative z-20 space-y-6">
+        <div className="bg-white p-8 rounded-[2.5rem] border border-slate-200 shadow-2xl mb-10 relative z-20 space-y-6">
           <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
-            <div className="flex-1 min-w-[320px] relative w-full">
-              <Search className="absolute right-5 top-1/2 -translate-y-1/2 w-5 h-5 text-amber-400" />
-              <input 
-                type="text" 
-                placeholder="البحث في القضايا، الموكلين، أو أرقام الصكوك..." 
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full bg-[#0c1a35] border border-slate-700/50 rounded-2xl py-4 pr-14 pl-6 text-sm font-bold text-white focus:outline-none focus:border-amber-500/50 transition-all shadow-inner"
-              />
+            <div className="flex-1 min-w-[320px] w-full flex items-center gap-3">
+              <div className="relative flex-1">
+                <Search className="absolute right-5 top-1/2 -translate-y-1/2 w-5 h-5 text-amber-400" />
+                <input 
+                  type="text" 
+                  placeholder="البحث الشامل (اسم، خصم، محكمة، رقم الصك)..." 
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-4 pr-14 pl-6 text-sm font-bold text-slate-900 focus:outline-none focus:border-amber-500/50 transition-all shadow-inner"
+                />
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsAdvancedSearchOpen(!isAdvancedSearchOpen)}
+                className={`p-4 rounded-2xl border transition-all shrink-0 ${isAdvancedSearchOpen ? 'bg-amber-100 border-amber-300 text-amber-700 shadow-inner' : 'bg-slate-50 border-slate-200 text-slate-500 hover:text-amber-600 hover:bg-amber-50 shadow-sm'}`}
+                title="فلاتر البحث المتقدمة في البيانات الوصفية (Metadata)"
+              >
+                <Filter className="w-5 h-5" />
+              </button>
+
+              {/* Metadata Search Dropdown */}
+              <div className="relative metadata-dropdown-container shrink-0">
+                <button
+                  type="button"
+                  id="metadata-search-dropdown-btn"
+                  onClick={() => setIsMetaDropdownOpen(!isMetaDropdownOpen)}
+                  className={`p-4 rounded-2xl border transition-all flex items-center gap-2 cursor-pointer ${
+                    isMetaDropdownOpen || advFilters.opponent || advFilters.circuit || advFilters.judgmentCategory
+                      ? 'bg-amber-100 border-amber-400 text-emerald-900 shadow-inner' 
+                      : 'bg-slate-50 border-slate-200 text-slate-600 hover:text-amber-600 hover:bg-amber-50 shadow-sm'
+                  }`}
+                  title="البحث المخصص الذكي في البيانات الوصفية لحقول القضايا"
+                >
+                  <Sparkles className="w-3.5 h-3.5 text-amber-500 animate-pulse" />
+                  <span className="text-[11px] font-black hidden sm:inline leading-none">تصفية الوصفية (Metadata)</span>
+                </button>
+
+                {isMetaDropdownOpen && (
+                  <div className="absolute top-full left-0 mt-3 w-80 bg-white border-2 border-slate-200 rounded-[2rem] shadow-[0_20px_50px_rgba(0,0,0,0.15)] p-5 z-50 space-y-4" dir="rtl">
+                    <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+                      <span className="text-[11px] font-black text-slate-800 flex items-center gap-1.5">
+                        <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+                        بحث مخصص للبيانات الوصفية
+                      </span>
+                      <button 
+                        type="button" 
+                        onClick={() => {
+                          setAdvFilters({ opponent: '', circuit: '', judgmentCategory: '' });
+                        }}
+                        className="text-[10px] font-black text-rose-600 hover:text-rose-800 transition-colors"
+                      >
+                        مسح الفلاتر
+                      </button>
+                    </div>
+
+                    {/* Metadata Field Search Selector */}
+                    <div className="space-y-3">
+                      <div>
+                        <label className="text-[10px] font-black text-slate-500 block mb-1">اسم الخصم</label>
+                        <input
+                          type="text"
+                          placeholder="ابحث باسم الخصم..."
+                          value={advFilters.opponent}
+                          onChange={(e) => setAdvFilters({ ...advFilters, opponent: e.target.value })}
+                          className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-[11px] font-bold text-slate-900 outline-none focus:border-amber-500/45 transition-colors"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="text-[10px] font-black text-slate-500 block mb-1">رقم الدائرة</label>
+                        <input
+                          type="text"
+                          placeholder="مثال: الدائرة الثالثة..."
+                          value={advFilters.circuit}
+                          onChange={(e) => setAdvFilters({ ...advFilters, circuit: e.target.value })}
+                          className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-[11px] font-bold text-slate-900 outline-none focus:border-amber-500/45 transition-colors"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="text-[10px] font-black text-slate-500 block mb-1">نوع الحكم</label>
+                        <select
+                          value={advFilters.judgmentCategory}
+                          onChange={(e) => setAdvFilters({ ...advFilters, judgmentCategory: e.target.value })}
+                          className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-[11px] font-semibold text-slate-900 outline-none focus:border-amber-500/45 transition-colors cursor-pointer"
+                        >
+                          <option value="">كل التصنيفات والقضايا</option>
+                          <option value="commercial">تجاري ⚖️</option>
+                          <option value="labor">عمالي 💼</option>
+                          <option value="civil">مدني حقوقي 📜</option>
+                          <option value="criminal">جزائي جنائي 🛡️</option>
+                          <option value="personal_status">أحوال شخصية وإرث ⚖️</option>
+                          <option value="administrative">إداري مظالم 🏛️</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[10px]">
+                      <span className="text-slate-400 font-bold">النتائج المطابقة لحظياً:</span>
+                      <span className="bg-amber-150 text-amber-900 font-black px-2.5 py-1 rounded-lg">
+                        {filteredCases.length} قضايا مستوفية
+                      </span>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => setIsMetaDropdownOpen(false)}
+                      className="w-full bg-slate-900 hover:bg-slate-950 text-white font-black py-2.5 rounded-xl text-[11px] transition-colors cursor-pointer"
+                    >
+                      تأكيد وإغلاق المنفذ
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
 
-            <div className="flex gap-4 w-full md:w-auto">
+            <div className="flex flex-wrap md:flex-nowrap gap-4 w-full md:w-auto items-center">
               <div className="relative">
-                <span className="absolute -top-2 right-4 bg-[#050e21] px-2 text-[10px] font-black text-amber-400 uppercase">آخر جلسة</span>
+                <span className="absolute -top-2 right-4 bg-white px-2 text-[10px] font-black text-amber-400 uppercase">آخر جلسة</span>
                 <input 
                   type="date"
                   value={lastSessionFilter}
                   onChange={(e) => setLastSessionFilter(e.target.value)}
-                  className="bg-[#0c1a35] border border-slate-700/50 rounded-xl py-2.5 px-4 text-[10px] font-black text-white outline-none focus:border-amber-500/50 transition-all"
+                  className="bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-4 text-[10px] font-black text-slate-900 outline-none focus:border-amber-500/50 transition-all"
                 />
               </div>
-              <div className="relative">
-                <span className="absolute -top-2 right-4 bg-[#050e21] px-2 text-[10px] font-black text-amber-400 uppercase">الموعد القادم</span>
-                <input 
-                  type="date"
-                  value={nextAppointmentFilter}
-                  onChange={(e) => setNextAppointmentFilter(e.target.value)}
-                  className="bg-[#0c1a35] border border-slate-700/50 rounded-xl py-2.5 px-4 text-[10px] font-black text-white outline-none focus:border-amber-500/50 transition-all"
-                />
+              <div className="relative session-date-dropdown-container">
+                <span className="absolute -top-2 right-4 bg-white px-2 text-[10px] font-black text-amber-400 uppercase z-10">الجلسة القادمة</span>
+                <button
+                  type="button"
+                  id="next-session-filter-btn"
+                  onClick={() => setIsNextSessionDropdownOpen(!isNextSessionDropdownOpen)}
+                  className="bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-4 text-[10px] font-black text-slate-950 flex items-center justify-between gap-2 transition-all hover:bg-slate-100 min-w-[160px] cursor-pointer font-sans"
+                >
+                  <span className="truncate">
+                    {nextAppointmentFilterType === 'all' && '💼 كل القضايا'}
+                    {nextAppointmentFilterType === 'all_scheduled' && '📅 كل الجلسات المجدولة'}
+                    {nextAppointmentFilterType === 'today' && '🚨 جلسات اليوم المفتوحة'}
+                    {nextAppointmentFilterType === 'soon' && '⏳ الجلسات العاجلة (٧ أيام)'}
+                    {nextAppointmentFilterType === 'month' && '📅 جلسات هذا الشهر'}
+                    {nextAppointmentFilterType === 'custom' && (nextAppointmentFilter ? `🎯 محدد: ${nextAppointmentFilter}` : '🎯 حدد تاريخاً')}
+                  </span>
+                  <span className="text-amber-500 text-[8px]">▼</span>
+                </button>
+
+                {isNextSessionDropdownOpen && (
+                  <div className="absolute top-full right-0 mt-2 w-72 bg-white border border-slate-200 rounded-2xl shadow-2xl p-4 z-50 space-y-3" dir="rtl">
+                    <div className="text-right text-[11px] font-black text-slate-600 border-b border-slate-150 pb-1.5 flex items-center justify-between">
+                      <span>تصفية الجدولة الفورية</span>
+                      <button 
+                        type="button"
+                        onClick={() => {
+                          setNextAppointmentFilterType('all');
+                          setNextAppointmentFilter('');
+                          setIsNextSessionDropdownOpen(false);
+                        }}
+                        className="text-amber-650 hover:text-amber-800 font-bold"
+                      >
+                        إعادة تعيين
+                      </button>
+                    </div>
+
+                    <div className="space-y-1.5 max-h-60 overflow-y-auto no-scrollbar">
+                      {[
+                        { type: 'all', label: 'كل القضايا الحالية', desc: 'استعراض كافة ملفات القضايا المفتوحة والمغلقة' },
+                        { type: 'all_scheduled', label: 'كل الجلسات المجدولة', desc: 'فقط القضايا التي تملك موعد مرافعة قادم' },
+                        { type: 'today', label: '🔥 جلسات اليوم المحضرة', desc: 'مواعيد الجلسات المطابقة لتاريخ اليوم المحقق' },
+                        { type: 'soon', label: '🚨 الجلسات العاجلة جداً', desc: 'المرافعة الوشيكة خلال الـ ٧ أيام القادمة' },
+                        { type: 'month', label: '📅 جلسات الشهر الثلاثين يوماً', desc: 'جميع المواعيد المجدولة خلال الـ ٣٠ يوماً القادمة' },
+                        { type: 'custom', label: '🎯 فلتر اختيار تاريخ دقيق', desc: 'تحديد يوم مرافعة قضائي محدد عبر الرزنامة' }
+                      ].map((item) => (
+                        <button
+                          key={item.type}
+                          type="button"
+                          onClick={() => {
+                            setNextAppointmentFilterType(item.type as any);
+                            if (item.type !== 'custom') {
+                              setNextAppointmentFilter('');
+                              setIsNextSessionDropdownOpen(false);
+                            }
+                          }}
+                          className={`w-full text-right p-2.5 rounded-xl text-[10px] flex flex-col justify-between transition-all cursor-pointer ${
+                            nextAppointmentFilterType === item.type 
+                              ? 'bg-amber-100 border border-amber-300 text-amber-950 font-black' 
+                              : 'text-slate-800 hover:bg-slate-50 border border-transparent'
+                          }`}
+                        >
+                          <span className="font-extrabold">{item.label}</span>
+                          <span className="text-[8px] text-slate-400 font-normal mt-0.5">{item.desc}</span>
+                        </button>
+                      ))}
+                    </div>
+
+                    {nextAppointmentFilterType === 'custom' && (
+                      <div className="pt-2 border-t border-slate-100 space-y-2">
+                        <label className="text-[9px] font-black text-slate-500 block">اختر تاريخ الجلسة:</label>
+                        <div className="flex gap-2">
+                          <input 
+                            type="date"
+                            value={nextAppointmentFilter}
+                            onChange={(e) => setNextAppointmentFilter(e.target.value)}
+                            className="bg-slate-50 border border-slate-200 rounded-xl py-1.5 px-3 text-[10.5px] font-bold text-slate-900 outline-none w-full"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setIsNextSessionDropdownOpen(false)}
+                            className="bg-slate-900 text-white rounded-xl px-3 text-[10px] font-black hover:bg-slate-950 cursor-pointer"
+                          >
+                            تثبيت
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* Advanced Searchable Category dropdown for instant Scheduled Access */}
+              <div className="relative search-category-dropdown-container">
+                <span className="absolute -top-2 right-4 bg-white px-2 text-[10px] font-black text-amber-400 uppercase z-10">تصنيف الجلسة المجدولة</span>
+                <button
+                  type="button"
+                  onClick={() => setIsCatDropdownOpen(!isCatDropdownOpen)}
+                  className="bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-4 text-[10px] font-black text-slate-950 flex items-center justify-between gap-2 transition-all hover:bg-slate-100 min-w-[160px] cursor-pointer font-sans"
+                >
+                  <span className="truncate">
+                    {categoryFilter.length === 0 
+                      ? '🔎 تصفية بحث تصنيف...' 
+                      : categories.find(cat => cat.id === categoryFilter[0])?.label || 'عدّة تصنيفات'}
+                  </span>
+                  <span className="text-amber-500 text-[8px]">▼</span>
+                </button>
+
+                {isCatDropdownOpen && (
+                  <div className="absolute top-full right-0 mt-2 w-64 bg-white border border-slate-200 rounded-2xl shadow-2xl p-3 z-50 space-y-2">
+                    <div className="relative">
+                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs text-right">🔍</span>
+                      <input
+                        type="text"
+                        placeholder="ابحث داخل التصانيف..."
+                        value={categorySearchTerm}
+                        onChange={(e) => setCategorySearchTerm(e.target.value)}
+                        className="w-full bg-slate-50 border border-slate-150 rounded-lg pr-8 pl-3 py-1.5 text-[10.5px] font-bold text-slate-950 outline-none focus:border-amber-500/40 font-sans text-right"
+                        autoFocus
+                      />
+                    </div>
+                    
+                    <div className="max-h-48 overflow-y-auto space-y-1 no-scrollbar pt-1">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setCategoryFilter([]);
+                          setIsCatDropdownOpen(false);
+                        }}
+                        className={`w-full text-right px-2.5 py-1.5 rounded-lg text-[10px] font-black flex items-center justify-between transition-colors cursor-pointer ${categoryFilter.length === 0 ? 'bg-amber-50 text-amber-800' : 'text-slate-700 hover:bg-slate-100'}`}
+                      >
+                        <span>كل التصنيفات المجدولة</span>
+                        <span className="bg-slate-100 px-1.5 py-0.5 rounded text-[8px] font-mono">
+                          {(cases || []).filter(c => c.nextSessionDate).length}
+                        </span>
+                      </button>
+
+                      {categories
+                        .filter(cat => cat.id !== 'all' && cat.id !== 'archived')
+                        .filter(cat => cat.label.toLowerCase().includes(categorySearchTerm.toLowerCase()))
+                        .map(cat => {
+                          const isSel = categoryFilter.includes(cat.id);
+                          const scheduledCount = (cases || []).filter(c => c.category === cat.id && c.nextSessionDate).length;
+                          return (
+                            <button
+                              key={cat.id}
+                              type="button"
+                              onClick={() => {
+                                setCategoryFilter(isSel ? [] : [cat.id]);
+                                setIsCatDropdownOpen(false);
+                              }}
+                              className={`w-full text-right px-2.5 py-1.5 rounded-lg text-[10px] font-bold flex items-center justify-between transition-colors cursor-pointer ${isSel ? 'bg-amber-150 text-amber-900 font-black' : 'text-slate-800 hover:bg-slate-50'}`}
+                            >
+                              <span>{cat.label}</span>
+                              <span className="bg-amber-400/20 text-amber-800 px-1.5 py-0.5 rounded text-[8px] font-mono font-black">
+                                {scheduledCount} مجدولة
+                              </span>
+                            </button>
+                          );
+                        })}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
             
             <div className="flex items-center gap-4 w-full lg:w-auto">
-              <div className="flex bg-slate-900 border border-slate-800 p-1 rounded-2xl">
+              <div className="flex bg-slate-100 border border-slate-200 p-1 rounded-2xl">
                 <button 
                   onClick={() => setViewMode('grid')}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-xl text-[10px] font-black uppercase transition-all ${viewMode === 'grid' ? 'bg-amber-600 text-white shadow-lg' : 'text-white'}`}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-xl text-[10px] font-black uppercase transition-all ${viewMode === 'grid' ? 'bg-amber-600 text-slate-900 shadow-lg' : 'text-slate-900'}`}
                 >
                   <Layers className="w-4 h-4" />
                   <span>عرض المربعات</span>
                 </button>
                 <button 
                   onClick={() => setViewMode('table')}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-xl text-[10px] font-black uppercase transition-all ${viewMode === 'table' ? 'bg-amber-600 text-white shadow-lg' : 'text-white'}`}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-xl text-[10px] font-black uppercase transition-all ${viewMode === 'table' ? 'bg-amber-600 text-slate-900 shadow-lg' : 'text-slate-900'}`}
                 >
                   <FileText className="w-4 h-4" />
                   <span>عرض القائمة</span>
                 </button>
               </div>
-              <div className="bg-slate-900 border border-slate-800 px-5 py-3 rounded-2xl flex items-center gap-3">
-                <span className="text-[10px] text-white font-black uppercase tracking-widest">إجمالي القضايا:</span>
+              <div className="bg-slate-100 border border-slate-200 px-5 py-3 rounded-2xl flex items-center gap-3">
+                <span className="text-[10px] text-slate-900 font-black uppercase tracking-widest">إجمالي القضايا:</span>
                 <span className="text-lg font-mono text-amber-400 font-black leading-none">{(cases || []).length}</span>
               </div>
               <button 
                 onClick={() => setIsGraphsOpen(!isGraphsOpen)}
-                className="p-3.5 bg-slate-900 border border-slate-800 rounded-2xl text-white font-black font-bold transition-all cursor-pointer"
+                className="p-3.5 bg-slate-100 border border-slate-200 rounded-2xl text-slate-900 font-black font-bold transition-all cursor-pointer"
               >
                 <TrendingUp className="w-5 h-5" />
               </button>
             </div>
           </div>
           
+          <AnimatePresence>
+            {isAdvancedSearchOpen && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                className="overflow-hidden"
+              >
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4 border-t border-slate-100">
+                  <div className="space-y-2">
+                    <label className="text-[11px] font-black text-slate-500 uppercase tracking-widest px-1">اسم الخصم (الطرف الآخر)</label>
+                    <input 
+                      type="text" 
+                      placeholder="ابحث باسم الخصم..." 
+                      value={advFilters.opponent}
+                      onChange={(e) => setAdvFilters({ ...advFilters, opponent: e.target.value })}
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-xs font-bold text-slate-900 outline-none focus:ring-2 focus:ring-amber-500/20"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[11px] font-black text-slate-500 uppercase tracking-widest px-1">رقم الدائرة القضائية</label>
+                    <input 
+                      type="text" 
+                      placeholder="مثال: الدائرة التجارية الأولى..." 
+                      value={advFilters.circuit}
+                      onChange={(e) => setAdvFilters({ ...advFilters, circuit: e.target.value })}
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-xs font-bold text-slate-900 outline-none focus:ring-2 focus:ring-amber-500/20"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[11px] font-black text-slate-500 uppercase tracking-widest px-1">القالب القضائي (التصنيف)</label>
+                    <select 
+                      value={advFilters.judgmentCategory}
+                      onChange={(e) => setAdvFilters({ ...advFilters, judgmentCategory: e.target.value })}
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-xs font-bold text-slate-900 outline-none focus:ring-2 focus:ring-amber-500/20 appearance-none"
+                    >
+                      <option value="">جميع التصنيفات</option>
+                      <option value="commercial">تجارية</option>
+                      <option value="labor">عمالية</option>
+                      <option value="civil">أحوال مدنية</option>
+                      <option value="criminal">جزائية</option>
+                      <option value="execution">تنفيذ</option>
+                    </select>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
           {/* Quick Access to Scheduled Cases Filter Bar (Supabase cases connection) */}
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-slate-900/60 border border-amber-500/25 p-5 rounded-[1.8rem] mb-4 font-sans text-right" dir="rtl">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-slate-100/60 border border-amber-500/25 p-5 rounded-[1.8rem] mb-4 font-sans text-right" dir="rtl">
             <div className="flex items-center gap-3">
               <div className="p-2.5 bg-amber-500/10 border border-amber-500/20 rounded-2xl">
                 <Calendar className="w-5 h-5 text-amber-400 shrink-0" />
               </div>
               <div>
                 <span className="text-xs font-black text-amber-400 block tracking-wide">الوصول السريع للقضايا المجدولة (المزامنة مع جدول Supabase)</span>
-                <p className="text-[11px] text-slate-300 font-bold">بمزامنة حية من جدول القضايا بـ Supabase؛ حدد تصنيفاً بالأسفل ثم فعّل التصفية السريعة:</p>
+                <p className="text-[11px] text-slate-500 font-bold">بمزامنة حية من جدول القضايا بـ Supabase؛ حدد تصنيفاً بالأسفل ثم فعّل التصفية السريعة:</p>
               </div>
             </div>
             
@@ -1971,7 +2420,7 @@ export default React.memo(function CasesModule({
                 className={`px-5 py-2.5 rounded-xl text-xs font-black border transition-all flex items-center gap-2 cursor-pointer shadow-md ${
                   showScheduledOnly 
                     ? 'bg-[#FF7F00] text-slate-950 border-amber-400 shadow-[0_0_15px_rgba(255,127,0,0.4)]' 
-                    : 'bg-slate-950 text-amber-400 border-[#D4AF37]/30 hover:border-amber-400 hover:bg-slate-900'
+                    : 'bg-slate-950 text-amber-400 border-[#D4AF37]/30 hover:border-amber-400 hover:bg-slate-100'
                 }`}
               >
                 <Clock className="w-4.5 h-4.5 shrink-0" />
@@ -1981,7 +2430,7 @@ export default React.memo(function CasesModule({
           </div>
 
           {/* Universal High-Contrast Classifications Filter Bar (Supabase cases categories connection) */}
-          <div className="bg-[#0b1329] border-2 border-slate-700/60 p-5 rounded-[1.8rem] mb-6 font-sans text-right" dir="rtl">
+          <div className="bg-white border-2 border-slate-200 p-5 rounded-[1.8rem] mb-6 font-sans text-right" dir="rtl">
             <span className="text-[11px] font-black text-amber-400 block tracking-wide mb-3 uppercase">📂 فلترة تصنيفات الدعاوى بـ Supabase (عرض وتصفية حية لحظية للقضايا)</span>
             <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-3">
               {[
@@ -2019,7 +2468,7 @@ export default React.memo(function CasesModule({
                     className={`px-4 py-3 rounded-xl border text-xs font-black transition-all flex flex-col items-center justify-between gap-1.5 cursor-pointer shadow ${item.color} ${
                       isActive 
                         ? 'bg-[#FF7F00] border-amber-400 text-slate-950 font-black font-extrabold shadow-[0_0_15px_rgba(255,127,0,0.4)] hover:text-slate-950 hover:border-amber-400' 
-                        : 'bg-slate-900 text-white font-bold hover:bg-slate-850'
+                        : 'bg-slate-100 text-slate-900 font-bold hover:bg-slate-850'
                     }`}
                   >
                     <span className="truncate">{item.label}</span>
@@ -2051,13 +2500,13 @@ export default React.memo(function CasesModule({
                   }}
                   className={`flex items-center gap-3 px-5 py-3 rounded-2xl text-xs font-black transition-all border shrink-0 relative group ${
                     isActive 
-                      ? 'bg-amber-600 text-white border-amber-500 shadow-xl shadow-amber-600/20' 
-                      : 'bg-[#0c1a35] text-white font-bold border-slate-800 hover:bg-[#0e2145]'
+                      ? 'bg-amber-600 text-slate-900 border-amber-500 shadow-xl shadow-amber-600/20' 
+                      : 'bg-slate-50 text-slate-900 font-bold border-slate-200 hover:bg-slate-100'
                   }`}
                 >
-                  <Icon className={`w-4 h-4 ${isActive ? 'text-white' : 'text-amber-400'}`} />
+                  <Icon className={`w-4 h-4 ${isActive ? 'text-slate-900' : 'text-amber-400'}`} />
                   <span>{cat.label}</span>
-                  <span className={`text-[10px] px-2 py-0.5 rounded-lg font-mono ${isActive ? 'bg-white/20 text-white' : 'bg-slate-800 text-white'}`}>
+                  <span className={`text-[10px] px-2 py-0.5 rounded-lg font-mono ${isActive ? 'bg-white/20 text-slate-900' : 'bg-slate-800 text-slate-900'}`}>
                     {count}
                   </span>
                 </button>
@@ -2066,11 +2515,11 @@ export default React.memo(function CasesModule({
           </div>
 
           {/* Advanced Document Tag Filter Bar */}
-          <div className="pt-4 border-t border-slate-800/60 mt-4">
+          <div className="pt-4 border-t border-slate-200/60 mt-4">
             <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
               <div className="flex items-center gap-2">
                 <span className="text-[10px] text-amber-400 font-black uppercase tracking-widest bg-amber-500/10 px-2 py-1 rounded">وسوم المستندات الذكية</span>
-                <p className="text-[11px] text-white font-black font-bold font-bold">فلترة سريعة للقضايا بواسطة وسوم المستندات التلقائية المكتشفة بالذكاء الاصطناعي (AI):</p>
+                <p className="text-[11px] text-slate-900 font-black font-bold font-bold">فلترة سريعة للقضايا بواسطة وسوم المستندات التلقائية المكتشفة بالذكاء الاصطناعي (AI):</p>
               </div>
               {selectedDocTag !== 'all' && (
                 <button 
@@ -2105,8 +2554,8 @@ export default React.memo(function CasesModule({
                     onClick={() => setSelectedDocTag(tagItem.id)}
                     className={`px-3 py-2 rounded-xl text-[10px] font-black border transition-all cursor-pointer flex items-center gap-1.5 whitespace-nowrap ${
                       isActive
-                        ? 'bg-amber-600 text-white border-amber-500 shadow-lg shadow-amber-500/10'
-                        : 'bg-[#0c1a35] text-white hover:text-amber-300 border-slate-700'
+                        ? 'bg-amber-600 text-slate-900 border-amber-500 shadow-lg shadow-amber-500/10'
+                        : 'bg-slate-50 text-slate-900 hover:text-amber-300 border-slate-700'
                     }`}
                   >
                     <span>{tagItem.label}</span>
@@ -2127,7 +2576,7 @@ export default React.memo(function CasesModule({
               {/* Headline + Add Button */}
               <div className="mb-4 animate-fade-in">
              
-                <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-8 bg-slate-900/40 p-6 md:p-8 rounded-[2rem] border border-slate-800 shadow-2xl relative overflow-hidden">
+                <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-8 bg-slate-100/40 p-6 md:p-8 rounded-[2rem] border border-slate-200 shadow-2xl relative overflow-hidden">
                   <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/5 to-amber-500/5 mix-blend-overlay"></div>
                   <div className="space-y-4 relative z-10 w-full lg:w-auto">
                     <div className="flex items-center gap-4">
@@ -2155,21 +2604,21 @@ export default React.memo(function CasesModule({
 
                     <button 
                       onClick={() => setIsCreateOpen(true)}
-                      className="bg-[#0f172a][#1e293b] text-[#b8860b] font-black py-3.5 px-6 rounded-2xl text-[11px] flex items-center justify-center gap-3 shadow-[0_0_15px_rgba(184,134,11,0.4)][0_0_25px_rgba(184,134,11,0.7)] transition-all w-full md:w-auto group border border-[#b8860b]/40 cursor-pointer"
+                      className="bg-amber-100 text-[#b8860b] font-black py-3.5 px-6 rounded-2xl text-[11px] flex items-center justify-center gap-3 shadow-[0_0_15px_rgba(184,134,11,0.4)][0_0_25px_rgba(184,134,11,0.7)] transition-all w-full md:w-auto group border border-[#b8860b]/40 cursor-pointer"
                     >
                       <Plus className="w-5 h-5 stroke-[3px] text-[#b8860b]" />
                       <span className="uppercase tracking-widest font-extrabold text-[#d4af37] drop-shadow-[0_0_8px_rgba(212,175,55,0.9)]">إضافة بيانات القضية يدوياً</span>
                     </button>
                     <button
                       onClick={() => setIsGraphsOpen(!isGraphsOpen)}
-                      className="bg-[#050e21] text-white font-bold font-black py-3.5 px-5 rounded-2xl text-[11px] flex items-center justify-center gap-3 border border-slate-700 transition-all w-full md:w-auto shadow-md cursor-pointer"
+                      className="bg-white text-slate-900 font-bold font-black py-3.5 px-5 rounded-2xl text-[11px] flex items-center justify-center gap-3 border border-slate-700 transition-all w-full md:w-auto shadow-md cursor-pointer"
                     >
                       {isGraphsOpen ? <TrendingDown className="w-4 h-4" /> : <TrendingUp className="w-4 h-4 text-amber-400" />}
                       <span>{isGraphsOpen ? 'إخفاء الإحصائيات' : 'عرض الإحصائيات'}</span>
                     </button>
                     <button
                       onClick={() => setIsFocusMode(!isFocusMode)}
-                      className={`bg-[#050e21] text-white font-bold font-black py-3.5 px-5 rounded-2xl text-[11px] flex items-center justify-center gap-3 border transition-all w-full md:w-auto shadow-md cursor-pointer ${isFocusMode ? 'border-emerald-500 text-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.3)]' : 'border-slate-700'}`}
+                      className={`bg-white text-slate-900 font-bold font-black py-3.5 px-5 rounded-2xl text-[11px] flex items-center justify-center gap-3 border transition-all w-full md:w-auto shadow-md cursor-pointer ${isFocusMode ? 'border-emerald-500 text-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.3)]' : 'border-slate-700'}`}
                     >
                       {isFocusMode ? <Maximize2 className="w-4 h-4" /> : <Minimize2 className="w-4 h-4 text-emerald-500" />}
                       <span>{isFocusMode ? 'إيقاف وضع التركيز' : 'وضع التركيز (Focus Mode)'}</span>
@@ -2177,6 +2626,9 @@ export default React.memo(function CasesModule({
                   </div>
                 </div>
               </div>
+
+              {/* Real-time Statistics Counters Bar */}
+              <CaseStatisticsBar casesTrigger={cases} />
 
               <AnimatePresence>
                 {isGraphsOpen && (
@@ -2209,7 +2661,7 @@ export default React.memo(function CasesModule({
                     <Archive className="w-6 h-6" />
                   </div>
                   <div>
-                    <h4 className="text-white font-black text-sm">تم أرشفة {archivedNotice.count} قضايا تلقائياً</h4>
+                    <h4 className="text-slate-900 font-black text-sm">تم أرشفة {archivedNotice.count} قضايا تلقائياً</h4>
                     <p className="text-amber-500/70 text-xs font-bold mt-0.5">بسبب عدم النشاط لأكثر من 30 يوماً وتصنيف القضايا كمغلقة.</p>
                   </div>
                 </div>
@@ -2223,7 +2675,7 @@ export default React.memo(function CasesModule({
                   </button>
                   <button 
                     onClick={archivedNotice.onClose}
-                    className="p-2.5 text-slate-300 transition-colors"
+                    className="p-2.5 text-slate-500 transition-colors"
                   >
                     <X className="w-5 h-5" />
                   </button>
@@ -2266,58 +2718,47 @@ export default React.memo(function CasesModule({
                 {/* --- REAL-TIME MANAGER COMPACT STATS BOARD --- */}
                 {(() => {
                   const casesArray = cases || [];
+                  const activeCount = casesArray.filter(c => c.status === 'active' && !c.archived).length;
                   const underReviewCount = casesArray.filter(c => c.status === 'under_review' && !c.archived).length;
                   const ruledCount = casesArray.filter(c => (c.status === 'primary_judgment' || c.status === 'final_judgment') && !c.archived).length;
                   const closedCount = casesArray.filter(c => c.status === 'closed' && !c.archived).length;
+                  const totalCount = casesArray.filter(c => !c.archived).length;
                   return (
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-6" dir="rtl">
+                    <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-6" dir="rtl">
                       
+                      {/* Total Cases Card */}
+                      <div className="bg-[#0b1329] p-4 rounded-[1.5rem] flex flex-col items-center justify-center shadow-lg relative overflow-hidden border border-slate-700/50">
+                        <div className="absolute inset-0 bg-white/5 opacity-0 hover:opacity-100 transition-opacity"></div>
+                        <span className="text-[11px] font-black text-white block mb-1 relative z-10 drop-shadow-md">إجمالي القضايا النشطة</span>
+                        <span className="text-3xl font-black font-mono text-white tracking-tight relative z-10 drop-shadow-lg">{totalCount}</span>
+                      </div>
+
+                      {/* Active Card */}
+                      <div className="bg-[#0b1329] p-4 rounded-[1.5rem] flex flex-col items-center justify-center shadow-lg relative overflow-hidden border border-[#00e5ff]/20">
+                        <div className="absolute inset-0 bg-[#00e5ff]/5 opacity-0 hover:opacity-100 transition-opacity"></div>
+                        <span className="text-[11px] font-black text-white block mb-1 relative z-10 drop-shadow-md">قضايا سارية</span>
+                        <span className="text-3xl font-black font-mono text-white tracking-tight relative z-10 drop-shadow-[0_0_8px_#ffffff]">{activeCount}</span>
+                      </div>
+
                       {/* Under Review Card */}
-                      <div className="bg-[#0b1329] border-2 border-amber-500/20 p-5 rounded-[1.5rem] flex items-center justify-between shadow-xl relative overflow-hidden group">
-                        <div className="flex items-center gap-4">
-                          <div className="p-3 bg-amber-500/10 rounded-xl border border-amber-400/30 text-amber-400">
-                            <Scale className="w-6 h-6 stroke-[2.5px]" />
-                          </div>
-                          <div className="text-right">
-                            <span className="text-[11px] font-black text-slate-400 block mb-0.5">قضايا قيد النظر</span>
-                            <span className="text-2xl font-black font-mono text-white tracking-tight">{underReviewCount}</span>
-                          </div>
-                        </div>
-                        <div className="text-xs px-2.5 py-1 rounded-md bg-amber-500/20 text-amber-400 font-extrabold border border-amber-500/30">
-                          متابعة حية ⚡
-                        </div>
+                      <div className="bg-[#0b1329] p-4 rounded-[1.5rem] flex flex-col items-center justify-center shadow-lg relative overflow-hidden border border-[#ff7f00]/30 hover:border-[#ff7f00]/70 transition-all">
+                        <div className="absolute inset-0 bg-[#ff7f00]/10 opacity-0 hover:opacity-100 transition-opacity"></div>
+                        <span className="text-[11px] font-black text-[#ff7f00] block mb-1 relative z-10 drop-shadow-md">قضايا قيد النظر</span>
+                        <span className="text-3xl font-black font-mono text-[#ff7f00] tracking-tight relative z-10 drop-shadow-[0_0_12px_#ff7f00]">{underReviewCount}</span>
                       </div>
 
                       {/* Ruled Card */}
-                      <div className="bg-[#0b1329] border-2 border-emerald-500/20 p-5 rounded-[1.5rem] flex items-center justify-between shadow-xl relative overflow-hidden group">
-                        <div className="flex items-center gap-4">
-                          <div className="p-3 bg-emerald-500/10 rounded-xl border border-emerald-400/30 text-emerald-400">
-                            <Gavel className="w-6 h-6 stroke-[2.5px]" />
-                          </div>
-                          <div className="text-right">
-                            <span className="text-[11px] font-black text-slate-400 block mb-0.5">قضايا محكومة</span>
-                            <span className="text-2xl font-black font-mono text-emerald-400 tracking-tight">{ruledCount}</span>
-                          </div>
-                        </div>
-                        <div className="text-xs px-2.5 py-1 rounded-md bg-emerald-500/20 text-emerald-400 font-extrabold border border-emerald-500/30">
-                          حجية الأحكام 📜
-                        </div>
+                      <div className="bg-[#0b1329] p-4 rounded-[1.5rem] flex flex-col items-center justify-center shadow-lg relative overflow-hidden border border-[#ffff00]/30 hover:border-[#ffff00]/70 transition-all">
+                        <div className="absolute inset-0 bg-[#ffff00]/10 opacity-0 hover:opacity-100 transition-opacity"></div>
+                        <span className="text-[11px] font-black text-[#ffff00] block mb-1 relative z-10 drop-shadow-md">قضايا محكومة</span>
+                        <span className="text-3xl font-black font-mono text-[#ffff00] tracking-tight relative z-10 drop-shadow-[0_0_12px_#ffff00]">{ruledCount}</span>
                       </div>
 
                       {/* Closed Card */}
-                      <div className="bg-[#0b1329] border-2 border-blue-500/20 p-5 rounded-[1.5rem] flex items-center justify-between shadow-xl relative overflow-hidden group">
-                        <div className="flex items-center gap-4">
-                          <div className="p-3 bg-blue-500/10 rounded-xl border border-blue-400/30 text-blue-400">
-                            <Archive className="w-6 h-6 stroke-[2.5px]" />
-                          </div>
-                          <div className="text-right">
-                            <span className="text-[11px] font-black text-slate-400 block mb-0.5">قضايا منتهية ومغلقة</span>
-                            <span className="text-2xl font-black font-mono text-blue-400 tracking-tight">{closedCount}</span>
-                          </div>
-                        </div>
-                        <div className="text-xs px-2.5 py-1 rounded-md bg-blue-500/20 text-blue-400 font-extrabold border border-blue-500/30">
-                          ملفات مأرشفة 🔒
-                        </div>
+                      <div className="bg-[#0b1329] p-4 rounded-[1.5rem] flex flex-col items-center justify-center shadow-lg relative overflow-hidden border border-white/20">
+                        <div className="absolute inset-0 bg-white/5 opacity-0 hover:opacity-100 transition-opacity"></div>
+                        <span className="text-[11px] font-black text-white block mb-1 relative z-10 drop-shadow-md">القضايا المنتهية</span>
+                        <span className="text-3xl font-black font-mono text-white tracking-tight relative z-10 drop-shadow-lg">{closedCount}</span>
                       </div>
 
                     </div>
@@ -2350,211 +2791,35 @@ export default React.memo(function CasesModule({
                     onUpdateState('cases', { ...c, status: newStatus });
                   }}
                   onDeleteCase={onDeleteCase}
+                  searchActive={searchTerm !== '' || advFilters.opponent !== '' || advFilters.circuit !== '' || advFilters.judgmentCategory !== ''}
+                  focusedIdx={focusedIdx}
+                  setFocusedIdx={setFocusedIdx}
                 />
               </div>
             )}
 
       {isCreateOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#050e21]/80 backdrop-blur-md p-6 animate-in fade-in duration-500">
-          <div className="bg-[#050e21] border border-slate-800 rounded-[2.5rem] w-full max-w-5xl p-0 overflow-hidden shadow-2xl animate-in zoom-in-95 duration-500 relative">
-            
-            {/* Animated Luxury Gradient Vertical Bar */}
-            <div className="absolute top-0 right-0 w-6 h-full bg-gradient-to-b from-[#D4AF37] via-[#B8860B] to-[#020813] animate-pulse"></div>
-            
-            <div className="bg-gradient-to-br from-[#050e21] to-[#0c1a35] p-10 flex items-center justify-between text-white border-b border-primary/20 mr-6">
-              <div className="flex items-center gap-6">
-                <div className="p-4 bg-primary/10 text-primary rounded-2xl border border-primary/20">
-                  <ShieldAlert className="w-8 h-8" />
-                </div>
-                <div>
-                  <h2 className="font-display font-black text-2xl tracking-tight uppercase text-white" style={{ color: '#ffffff' }}>منصة العدالة لإدارة مكاتب المحاماة</h2>
-                  <p className="text-primary text-xs font-black mt-2 uppercase tracking-[0.2em] opacity-80">عميل جديد</p>
-                </div>
-              </div>
-              <button 
-                onClick={() => setIsCreateOpen(false)}
-                className="w-12 h-12 bg-[#050e21] text-white rounded-2xl flex items-center justify-center transition-all cursor-pointer border border-white"
-              >
-                ×
-              </button>
-            </div>
-
-            <form onSubmit={handleCreateCase} className="p-8 pb-10 mr-6">
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 font-sans">
-                {/* Fieldset 1: الأساسيات */}
-                <fieldset className="border border-[#D4AF37]/40 rounded-3xl p-6 space-y-6 bg-[#0a1e3f]/50 relative overflow-hidden shadow-[0_12px_40px_rgba(0,0,0,0.6)]">
-                  <legend className="text-sm font-black text-[#FFD700] px-4 py-1.5 bg-[#050e21] border-2 border-[#D4AF37]/70 rounded-xl shadow-[0_0_15px_rgba(212,175,55,0.4)]">البيانات الأساسية</legend>
-                  
-                  <div className="space-y-2 relative">
-                    <div className="flex items-center justify-between">
-                      <label className="text-sm font-black text-[#FFD700] uppercase tracking-wider block">رقم الدعوى</label>
-                      {lastActionState?.field === 'newCaseNumber' && (
-                        <button type="button" onClick={handleUndo} className="text-xs text-blue-400 hover:text-blue-300 font-bold bg-blue-900/30 px-2 py-0.5 rounded transition-colors" title="تراجع عن الإجراء الأخير">
-                           تراجع
-                        </button>
-                      )}
-                    </div>
-                    <input type="text" value={newCaseNumber} onChange={(e) => handleCaseNumberChange(e.target.value)} placeholder="مثال: 450123" required
-                      className={`w-full bg-[#020813] border-2 ${caseNumberError || serverValidationError?.field === 'caseNumber' ? 'border-red-500 focus:border-red-600 focus:ring-red-500 text-red-500 hover:border-red-400' : 'border-[#D4AF37]/30 hover:border-[#FF7F00]/60 focus:border-[#FF7F00] text-[#FF7F00] focus:ring-[#FF7F00]'} rounded-xl py-3 px-4 text-base md:text-lg font-black placeholder-[#FF7F00]/40 focus:outline-none transition-all shadow-[inset_0_2px_8px_rgba(0,0,0,0.9)] focus:ring-1`} title={caseNumberError || "أدخل رقم القضية"} />
-                    {(caseNumberError || serverValidationError?.field === 'caseNumber') && <p className="text-red-400 text-xs font-bold mt-1 animate-pulse">{caseNumberError || serverValidationError?.message}</p>}
-                  </div>
-                  <div className="space-y-2 relative">
-                    <label className="text-sm font-black text-[#FFD700] uppercase tracking-wider block">مسمى الخصومة</label>
-                    <input type="text" value={newCaseName} onChange={(e) => setNewCaseName(e.target.value)} placeholder="اسم الدعوى بالكامل" required
-                      className={`w-full bg-[#020813] border-2 ${serverValidationError?.field === 'caseName' ? 'border-red-500 focus:border-red-600 text-red-500 hover:border-red-400' : 'border-[#D4AF37]/30 hover:border-[#FF7F00]/60 focus:border-[#FF7F00] text-[#FF7F00]'} rounded-xl py-3 px-4 text-base md:text-lg font-black placeholder-[#FF7F00]/40 focus:outline-none transition-all shadow-[inset_0_2px_8px_rgba(0,0,0,0.9)] focus:ring-1 focus:ring-[#FF7F00]`} />
-                    {serverValidationError?.field === 'caseName' && <p className="text-red-400 text-xs font-bold mt-1 animate-pulse">{serverValidationError.message}</p>}
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <label className="text-sm font-black text-[#FFD700] uppercase tracking-wider block">المحكمة</label>
-                      <input type="text" value={newCourt} onChange={(e) => setNewCourt(e.target.value)} placeholder="اسم المحكمة"
-                        className="w-full bg-[#020813] border-2 border-[#D4AF37]/30 hover:border-[#FF7F00]/60 focus:border-[#FF7F00] rounded-xl py-3 px-4 text-base md:text-lg font-black text-[#FF7F00] placeholder-[#FF7F00]/40 focus:outline-none transition-all shadow-[inset_0_2px_8px_rgba(0,0,0,0.9)] focus:ring-1 focus:ring-[#FF7F00]" />
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-sm font-black text-[#FFD700] uppercase tracking-wider block">التصنيف</label>
-                      <select value={newCategory} onChange={(e) => { setNewCategory(e.target.value); }}
-                        className="w-full bg-[#020813] border-2 border-[#D4AF37]/30 hover:border-[#FF7F00]/60 focus:border-[#FF7F00] rounded-xl py-3 px-4 text-base md:text-lg font-black text-[#FF7F00] focus:outline-none transition-all shadow-[inset_0_2px_8px_rgba(0,0,0,0.9)] focus:ring-1 focus:ring-[#FF7F00]"
-                      >
-                        <option value="civil" className="bg-[#050e21] text-[#FF7F00]">مدنية 📜</option>
-                        <option value="criminal" className="bg-[#050e21] text-[#FF7F00]">جزائية 🛡️</option>
-                        <option value="labor" className="bg-[#050e21] text-[#FF7F00]">عمالية 💼</option>
-                        <option value="commercial" className="bg-[#050e21] text-[#FF7F00]">تجارية 🏛️</option>
-                        <option value="personal_status" className="bg-[#050e21] text-[#FF7F00]">أحوال شخصية ⚖️</option>
-                        <option value="administrative" className="bg-[#050e21] text-[#FF7F00]">إدارية 🏛️</option>
-                        <option value="execution" className="bg-[#050e21] text-[#FF7F00]">منازعة تنفيذ ⚡</option>
-                        <option value="consultation" className="bg-[#050e21] text-[#FF7F00]">استشارة قانونية 💡</option>
-                        <option value="other" className="bg-[#050e21] text-[#FF7F00]">أخرى 📌</option>
-                      </select>
-                    </div>
-                  </div>
-                </fieldset>
-
-                {/* Fieldset 2: الأطراف */}
-                <fieldset className="border border-[#D4AF37]/40 rounded-3xl p-6 space-y-6 bg-[#0a1e3f]/50 relative overflow-hidden shadow-[0_12px_40px_rgba(0,0,0,0.6)]">
-                  <legend className="text-sm font-black text-[#FFD700] px-4 py-1.5 bg-[#050e21] border-2 border-[#D4AF37]/70 rounded-xl shadow-[0_0_15px_rgba(212,175,55,0.4)]">بيانات الأطراف</legend>
-                  
-                  <div className="flex gap-6 mb-3">
-                    <label className="flex items-center gap-2 text-base font-black text-white hover:text-[#FF7F00] transition-colors cursor-pointer">
-                      <input type="radio" name="clientType" value="individual" checked={newClientType === 'individual'} onChange={() => setNewClientType('individual')} className="accent-[#FF7F00] h-5 w-5" />
-                      فرد
-                    </label>
-                    <label className="flex items-center gap-2 text-base font-black text-white hover:text-[#FF7F00] transition-colors cursor-pointer">
-                      <input type="radio" name="clientType" value="company" checked={newClientType === 'company'} onChange={() => setNewClientType('company')} className="accent-[#FF7F00] h-5 w-5" />
-                      شركة تجارية
-                    </label>
-                  </div>
-
-                  {newClientType === 'individual' ? (
-                    <div className="space-y-4 transition-all duration-300">
-                      <div className="space-y-2">
-                        <label className="text-sm font-black text-[#FFD700] uppercase block">العميل / المدعي (فرد)</label>
-                        <div className="flex flex-col gap-3 relative">
-                          <input type="text" value={newClientName} onChange={(e) => setNewClientName(e.target.value)} placeholder="اسم المدعي بالكامل" required list="clients-list"
-                            className="w-full bg-[#020813] border-2 border-[#D4AF37]/30 hover:border-[#FF7F00]/60 focus:border-[#FF7F00] rounded-xl py-3 px-4 text-base md:text-lg font-black text-[#FF7F00] placeholder-[#FF7F00]/40 focus:outline-none transition-all shadow-[inset_0_2px_8px_rgba(0,0,0,0.9)] focus:ring-1 focus:ring-[#FF7F00]" 
-                          />
-                          <datalist id="clients-list">
-                            {clients.map(cl => ( <option key={cl.id} value={cl.name} className="bg-[#050e21] text-[#FF7F00]" /> ))}
-                          </datalist>
-                          <input type="text" value={newPlaintiffNationalId} onChange={(e) => setNewPlaintiffNationalId(e.target.value)} placeholder="رقم هوية المدعي"
-                            className="w-full bg-[#020813] border-2 border-[#D4AF37]/30 hover:border-[#FF7F00]/60 focus:border-[#FF7F00] rounded-xl py-3 px-4 text-base md:text-lg font-black text-[#FF7F00] placeholder-[#FF7F00]/40 focus:outline-none transition-all shadow-[inset_0_2px_8px_rgba(0,0,0,0.9)] focus:ring-1 focus:ring-[#FF7F00]" />
-                          <input type="text" value={newPlaintiffPhone} onChange={(e) => setNewPlaintiffPhone(e.target.value)} placeholder="رقم هاتف المدعي"
-                            className="w-full bg-[#020813] border-2 border-[#D4AF37]/30 hover:border-[#FF7F00]/60 focus:border-[#FF7F00] rounded-xl py-3 px-4 text-base md:text-lg font-black text-[#FF7F00] placeholder-[#FF7F00]/40 focus:outline-none transition-all shadow-[inset_0_2px_8px_rgba(0,0,0,0.9)] focus:ring-1 focus:ring-[#FF7F00]" />
-                        </div>
-                      </div>
-                      
-                      <div className="space-y-2 pt-3 border-t-2 border-[#D4AF37]/20">
-                        <label className="text-sm font-black text-[#FFD700] uppercase block">الخصم / المدعى عليه (فرد)</label>
-                        <div className="flex flex-col gap-3">
-                          <input type="text" value={newOpponent} onChange={(e) => setNewOpponent(e.target.value)} placeholder="اسم المدعى عليه"
-                            className="w-full bg-[#020813] border-2 border-[#D4AF37]/30 hover:border-[#FF7F00]/60 focus:border-[#FF7F00] rounded-xl py-3 px-4 text-base md:text-lg font-black text-[#FF7F00] placeholder-[#FF7F00]/40 focus:outline-none transition-all shadow-[inset_0_2px_8px_rgba(0,0,0,0.9)] focus:ring-1 focus:ring-[#FF7F00]" />
-                          <input type="text" value={newOpponentNationalId} onChange={(e) => setNewOpponentNationalId(e.target.value)} placeholder="رقم هوية المدعى عليه"
-                            className="w-full bg-[#020813] border-2 border-[#D4AF37]/30 hover:border-[#FF7F00]/60 focus:border-[#FF7F00] rounded-xl py-3 px-4 text-base md:text-lg font-black text-[#FF7F00] placeholder-[#FF7F00]/40 focus:outline-none transition-all shadow-[inset_0_2px_8px_rgba(0,0,0,0.9)] focus:ring-1 focus:ring-[#FF7F00]" />
-                        </div>
-                      </div>
- 
-                      <div className="space-y-2 pt-3 border-t-2 border-[#D4AF37]/20">
-                         <div className="flex flex-col gap-3">
-                          <input type="text" value={newPoANumber} onChange={(e) => setNewPoANumber(e.target.value)} placeholder="رقم الوكالة"
-                            className="w-full bg-[#020813] border-2 border-[#D4AF37]/30 hover:border-[#FF7F00]/60 focus:border-[#FF7F00] rounded-xl py-3 px-4 text-base md:text-lg font-black text-[#FF7F00] placeholder-[#FF7F00]/40 focus:outline-none transition-all shadow-[inset_0_2px_8px_rgba(0,0,0,0.9)] focus:ring-1 focus:ring-[#FF7F00]" />
-                          <input type="text" value={newNajizNumber} onChange={(e) => setNewNajizNumber(e.target.value)} placeholder="رقم الدعوى على ناجز (إن وجد)"
-                            className="w-full bg-[#020813] border-2 border-[#D4AF37]/30 hover:border-[#FF7F00]/60 focus:border-[#FF7F00] rounded-xl py-3 px-4 text-base md:text-lg font-black text-[#FF7F00] placeholder-[#FF7F00]/40 focus:outline-none transition-all shadow-[inset_0_2px_8px_rgba(0,0,0,0.9)] focus:ring-1 focus:ring-[#FF7F00]" />
-                         </div>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="space-y-4 transition-all duration-300">
-                      <div className="space-y-2">
-                        <label className="text-sm font-black text-[#FFD700] uppercase block">بيانات الشركة (تجارية)</label>
-                        <div className="flex flex-col gap-3">
-                          <input type="text" value={newClientName} onChange={(e) => setNewClientName(e.target.value)} placeholder="اسم الشركة" required
-                            className="w-full bg-[#020813] border-2 border-[#D4AF37]/30 hover:border-[#FF7F00]/60 focus:border-[#FF7F00] rounded-xl py-3 px-4 text-base md:text-lg font-black text-[#FF7F00] placeholder-[#FF7F00]/40 focus:outline-none transition-all shadow-[inset_0_2px_8px_rgba(0,0,0,0.9)] focus:ring-1 focus:ring-[#FF7F00]" />
-                          <input type="text" value={newCompanyCR} onChange={(e) => setNewCompanyCR(e.target.value)} placeholder="رقم السجل التجاري أو الرقم الموحد"
-                            className="w-full bg-[#020813] border-2 border-[#D4AF37]/30 hover:border-[#FF7F00]/60 focus:border-[#FF7F00] rounded-xl py-3 px-4 text-base md:text-lg font-black text-[#FF7F00] placeholder-[#FF7F00]/40 focus:outline-none transition-all shadow-[inset_0_2px_8px_rgba(0,0,0,0.9)] focus:ring-1 focus:ring-[#FF7F00]" />
-                        </div>
-                      </div>
-                      
-                      <div className="space-y-2 pt-3 border-t-2 border-[#D4AF37]/20">
-                         <div className="flex flex-col gap-3">
-                          <input type="text" value={newPoANumber} onChange={(e) => setNewPoANumber(e.target.value)} placeholder="رقم الوكالة (إن وجد)"
-                            className="w-full bg-[#020813] border-2 border-[#D4AF37]/30 hover:border-[#FF7F00]/60 focus:border-[#FF7F00] rounded-xl py-3 px-4 text-base md:text-lg font-black text-[#FF7F00] placeholder-[#FF7F00]/40 focus:outline-none transition-all shadow-[inset_0_2px_8px_rgba(0,0,0,0.9)] focus:ring-1 focus:ring-[#FF7F00]" />
-                          <input type="text" value={newNajizNumber} onChange={(e) => setNewNajizNumber(e.target.value)} placeholder="رقم الدعوى على ناجز (إن وجد)"
-                            className="w-full bg-[#020813] border-2 border-[#D4AF37]/30 hover:border-[#FF7F00]/60 focus:border-[#FF7F00] rounded-xl py-3 px-4 text-base md:text-lg font-black text-[#FF7F00] placeholder-[#FF7F00]/40 focus:outline-none transition-all shadow-[inset_0_2px_8px_rgba(0,0,0,0.9)] focus:ring-1 focus:ring-[#FF7F00]" />
-                         </div>
-                      </div>
-                    </div>
-                  )}
-                </fieldset>
-
-                {/* Fieldset 3: التفاصيل وتاريخ الجلسة */}
-                <fieldset className="border border-[#D4AF37]/40 rounded-3xl p-6 space-y-6 bg-[#0a1e3f]/50 flex flex-col relative overflow-hidden shadow-[0_12px_40px_rgba(0,0,0,0.6)]">
-                  <legend className="text-sm font-black text-[#FFD700] px-4 py-1.5 bg-[#050e21] border-2 border-[#D4AF37]/70 rounded-xl shadow-[0_0_15px_rgba(212,175,55,0.4)]">الجدولة والملاحظات</legend>
-                  
-                  <div className="space-y-2">
-                    <label className="text-sm font-black text-[#FFD700] uppercase block">تاريخ الجلسة القادمة</label>
-                    <input type="date" value={newNextDate} onChange={(e) => setNewNextDate(e.target.value)}
-                      className="w-full bg-[#020813] border-2 border-[#D4AF37]/30 hover:border-[#FF7F00]/60 focus:border-[#FF7F00] rounded-xl py-3 px-4 text-base md:text-lg font-black text-[#FF7F00] placeholder-[#FF7F00]/40 focus:outline-none transition-all shadow-[inset_0_2px_8px_rgba(0,0,0,0.9)] focus:ring-1 focus:ring-[#FF7F00]" />
-                  </div>
-                  <div className="space-y-2 flex-grow flex flex-col relative">
-                    <label className="text-sm font-black text-[#FFD700] uppercase block">مذكرة الملخص السريع</label>
-                    <textarea value={newSummary} onChange={(e) => setNewSummary(e.target.value)} placeholder="اكتب ملخصاً هنا..."
-                      className="w-full bg-[#020813] border-2 border-[#D4AF37]/30 hover:border-[#FF7F00]/60 focus:border-[#FF7F00] rounded-xl py-3 px-4 text-base md:text-lg font-black text-[#FF7F00] placeholder-[#FF7F00]/40 focus:outline-none transition-all shadow-[inset_0_2px_8px_rgba(0,0,0,0.9)] focus:ring-1 focus:ring-[#FF7F00] resize-none flex-grow min-h-[90px]"
-                    ></textarea>
-                  </div>
-                  <div className="space-y-2 flex-grow flex flex-col relative">
-                    <label className="text-sm font-black text-[#FFD700] uppercase block">تفاصيل الدعوى</label>
-                    <textarea value={newDetails} onChange={(e) => setNewDetails(e.target.value)} placeholder="اكتب التفاصيل الهامة..."
-                      className="w-full bg-[#020813] border-2 border-[#D4AF37]/30 hover:border-[#FF7F00]/60 focus:border-[#FF7F00] rounded-xl py-3 px-4 text-base md:text-lg font-black text-[#FF7F00] placeholder-[#FF7F00]/40 focus:outline-none transition-all shadow-[inset_0_2px_8px_rgba(0,0,0,0.9)] focus:ring-1 focus:ring-[#FF7F00] resize-none flex-grow min-h-[90px]"
-                    ></textarea>
-                  </div>
-                </fieldset>
-              </div>
-
-              <div className="flex gap-4 pt-6 mt-4 border-t border-slate-800 w-full justify-end">
-                <button type="button" onClick={() => setIsCreateOpen(false)}
-                  className="bg-[#0c1a35] text-white font-bold font-black py-3 px-8 rounded-xl text-xs uppercase transition-all border border-slate-700 cursor-pointer"
-                >إلغاء</button>
-                <button type="submit"
-                  className="bg-amber-400 text-blue-950 font-black py-3 px-12 rounded-xl text-xs uppercase transition-all shadow-[0_0_15px_rgba(251,191,36,0.3)] border border-amber-500 cursor-pointer"
-                >حفظ الدعوى والمزامنة تلقائياً</button>
-              </div>
-            </form>
-          </div>
-        </div>
+        <AddCaseModal 
+          isOpen={isCreateOpen} 
+          onClose={() => setIsCreateOpen(false)} 
+          clients={clients} 
+          onUpdateState={onUpdateState} 
+        />
       )}
 
       {/* Scanned Document Attachments Upload Modal */}
       {isUploadOpen && selectedCase && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#050e21]/90 backdrop-blur-xl p-6 animate-in fade-in duration-500">
-          <div className="bg-[#050e21]  border border-slate-800  rounded-[3rem] w-full max-w-xl p-0 overflow-hidden shadow-2xl animate-in zoom-in-95 duration-500">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-xl p-6 animate-in fade-in duration-500">
+          <div className="bg-white  border border-slate-200  rounded-[3rem] w-full max-w-xl p-0 overflow-hidden shadow-2xl animate-in zoom-in-95 duration-500">
             
-            <div className="bg-gradient-to-br from-[#050e21] to-[#0c1a35] p-10 flex items-center justify-between text-white border-b border-primary/20">
+            <div className="bg-gradient-to-br from-[#050e21] to-[#0c1a35] p-10 flex items-center justify-between text-slate-900 border-b border-primary/20">
               <div className="flex items-center gap-6">
-                <div className="p-4 bg-primary/10 text-primary rounded-2xl border border-primary/20">
+                <div className="p-4 bg-primary/10 text-amber-600 rounded-2xl border border-primary/20">
                   <Paperclip className="w-8 h-8" />
                 </div>
                 <div>
                   <h2 className="font-display font-black text-2xl tracking-tight uppercase">مركز أرشفة الوثائق السحابي</h2>
-                  <p className="text-primary text-xs font-black mt-2 uppercase tracking-[0.2em] opacity-80">Secure Legal Asset Repository</p>
+                  <p className="text-amber-600 text-xs font-black mt-2 uppercase tracking-[0.2em] opacity-80">Secure Legal Asset Repository</p>
                 </div>
               </div>
               <button 
@@ -2563,7 +2828,7 @@ export default React.memo(function CasesModule({
                   setUploadingState('idle');
                   setAttachFileName('');
                 }}
-                className="w-12 h-12 bg-[#050e21][#050e21] text-white rounded-2xl flex items-center justify-center transition-all cursor-pointer border border-white"
+                className="w-12 h-12 bg-white[#050e21] text-slate-900 rounded-2xl flex items-center justify-center transition-all cursor-pointer border border-white"
               >
                 ×
               </button>
@@ -2575,7 +2840,7 @@ export default React.memo(function CasesModule({
                 onDragOver={(e) => e.preventDefault()}
                 onDrop={handleFileDropInCases}
                 onClick={() => fileInputRef.current?.click()}
-                className="border-4 border-dashed border-primary/10 transition-colors rounded-[2.5rem] p-12 bg-[#0c1a35]  text-center flex flex-col items-center justify-center space-y-6 group cursor-pointer shadow-inner"
+                className="border-4 border-dashed border-primary/10 transition-colors rounded-[2.5rem] p-12 bg-slate-50  text-center flex flex-col items-center justify-center space-y-6 group cursor-pointer shadow-inner"
               >
                 <input 
                   type="file" 
@@ -2585,34 +2850,34 @@ export default React.memo(function CasesModule({
                   accept=".pdf,.docx" 
                 />
                 <div className="w-24 h-24 bg-primary/10 rounded-full flex items-center justify-center transition-transform duration-500">
-                   <Download className="w-10 h-10 text-primary animate-bounce" />
+                   <Download className="w-10 h-10 text-amber-600 animate-bounce" />
                 </div>
                 <div>
-                  <span className="text-sm  text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]   font-black block mb-2">إسقاط وثائق الـ PDF أو الـ Word هنا أو انقر لاختيار ملف</span>
-                  <span className="text-xs  text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]   font-bold uppercase tracking-[0.2em]">encrypted protocol material v4.0.1</span>
+                  <span className="text-sm  text-slate-900 drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]   font-black block mb-2">إسقاط وثائق الـ PDF أو الـ Word هنا أو انقر لاختيار ملف</span>
+                  <span className="text-xs  text-slate-900 drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]   font-bold uppercase tracking-[0.2em]">encrypted protocol material v4.0.1</span>
                 </div>
               </div>
 
               <div className="space-y-8">
                 <div className="space-y-3">
-                  <label className="text-xs font-black  text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]   uppercase tracking-widest block">مسمى الوثيقة القانونية</label>
+                  <label className="text-xs font-black  text-slate-900 drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]   uppercase tracking-widest block">مسمى الوثيقة القانونية</label>
                   <input 
                     type="text"
                     value={attachFileName}
                     onChange={(e) => setAttachFileName(e.target.value)}
                     placeholder="مذكرة_الرد_على_بينة_المدعي"
                     required
-                    className="w-full bg-[#0c1a35]  border border-slate-800  rounded-2xl py-5 px-6 text-sm font-black  text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]   focus:outline-none focus:border-primary shadow-inner"
+                    className="w-full bg-slate-50  border border-slate-200  rounded-2xl py-5 px-6 text-sm font-black  text-slate-900 drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]   focus:outline-none focus:border-primary shadow-inner"
                   />
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8 font-sans">
                   <div className="space-y-3">
-                    <label className="text-xs font-black  text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]   uppercase tracking-widest block">صيغة الملف الاحترافية</label>
+                    <label className="text-xs font-black  text-slate-900 drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]   uppercase tracking-widest block">صيغة الملف الاحترافية</label>
                     <select
                       value={attachFileType}
                       onChange={(e: any) => setAttachFileType(e.target.value)}
-                      className="w-full bg-[#0c1a35]  border border-slate-800  rounded-2xl py-5 px-5 text-xs font-black  text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]   focus:outline-none focus:border-primary"
+                      className="w-full bg-slate-50  border border-slate-200  rounded-2xl py-5 px-5 text-xs font-black  text-slate-900 drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]   focus:outline-none focus:border-primary"
                     >
                       <option value="pdf">Protected PDF (Highly Secure)</option>
                       <option value="docx">Word Document (Editable)</option>
@@ -2620,11 +2885,11 @@ export default React.memo(function CasesModule({
                   </div>
 
                   <div className="space-y-3">
-                    <label className="text-xs font-black  text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]   uppercase tracking-widest block">معيار الجودة والدقة</label>
+                    <label className="text-xs font-black  text-slate-900 drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]   uppercase tracking-widest block">معيار الجودة والدقة</label>
                     <select
                       value={attachFileSize}
                       onChange={(e) => setAttachFileSize(e.target.value)}
-                      className="w-full bg-[#0c1a35]  border border-slate-800  rounded-2xl py-5 px-5 text-xs font-black  text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]   focus:outline-none focus:border-primary"
+                      className="w-full bg-slate-50  border border-slate-200  rounded-2xl py-5 px-5 text-xs font-black  text-slate-900 drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]   focus:outline-none focus:border-primary"
                     >
                       <option value="1.5 MB">Optimal (1.5 MB)</option>
                       <option value="4.2 MB">High-Res Scanner (4.2 MB)</option>
@@ -2636,12 +2901,12 @@ export default React.memo(function CasesModule({
 
               {/* Progress Bar Simulation */}
               {uploadingState === 'uploading' && (
-                <div className="space-y-3 bg-[#0c1a35]  p-6 rounded-3xl border border-slate-800  shadow-inner">
-                  <div className="flex justify-between text-xs font-black  text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]   uppercase tracking-widest font-sans">
+                <div className="space-y-3 bg-slate-50  p-6 rounded-3xl border border-slate-200  shadow-inner">
+                  <div className="flex justify-between text-xs font-black  text-slate-900 drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]   uppercase tracking-widest font-sans">
                     <span>{uploadProgress}% جاري التشفير والمزامنة</span>
-                    <span className="text-primary">Processing Assets...</span>
+                    <span className="text-amber-600">Processing Assets...</span>
                   </div>
-                  <div className="w-full bg-[#050e21]  rounded-full h-2.5 overflow-hidden border border-slate-800 ">
+                  <div className="w-full bg-white  rounded-full h-2.5 overflow-hidden border border-slate-200 ">
                     <motion.div 
                       className="bg-gradient-to-r from-primary to-primary-light h-full rounded-full transition-all shadow-[0_0_15px_rgba(184,134,11,0.4)]" 
                       style={{ width: `${uploadProgress}%` }}
@@ -2652,7 +2917,7 @@ export default React.memo(function CasesModule({
 
               {uploadingState === 'completed' && (
                 <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="bg-emerald-500 border border-emerald-500 py-5 px-6 rounded-2xl text-center text-xs text-emerald-500 font-extrabold flex items-center justify-center gap-3">
-                  <div className="w-8 h-8 bg-emerald-500 text-white rounded-full flex items-center justify-center">✓</div>
+                  <div className="w-8 h-8 bg-emerald-500 text-slate-900 rounded-full flex items-center justify-center">✓</div>
                   <span className="uppercase tracking-widest">Protocol Success: Asset Secured and Synced</span>
                 </motion.div>
               )}
@@ -2665,14 +2930,14 @@ export default React.memo(function CasesModule({
                     setUploadingState('idle');
                     setAttachFileName('');
                   }}
-                  className="flex-1 bg-slate-100   text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]   font-black py-5 rounded-[1.5rem] text-xs uppercase tracking-widest"
+                  className="flex-1 bg-slate-100   text-slate-900 drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]   font-black py-5 rounded-[1.5rem] text-xs uppercase tracking-widest"
                 >
                   إلغاء التراجع
                 </button>
                 <button 
                   type="submit"
                   disabled={uploadingState === 'uploading' || uploadingState === 'completed'}
-                  className="flex-[2] bg-primary text-white font-black py-5 rounded-[1.5rem] text-xs shadow-xl shadow-primary/20 active:scale-95 transition-all border border-primary-light/20 uppercase tracking-widest disabled:opacity-50"
+                  className="flex-[2] bg-primary text-slate-900 font-black py-5 rounded-[1.5rem] text-xs shadow-xl shadow-primary/20 active:scale-95 transition-all border border-primary-light/20 uppercase tracking-widest disabled:opacity-50"
                 >
                   بدء الرفع والترميز الاحترافي 📎
                 </button>
@@ -2696,7 +2961,7 @@ export default React.memo(function CasesModule({
                 animate={{ opacity: 0.7 }}
                 exit={{ opacity: 0 }}
                 onClick={() => setActivityLogCaseId(null)}
-                className="absolute inset-0 bg-slate-950/80 backdrop-blur-sm"
+                className="absolute inset-0 bg-slate-100/80 backdrop-blur-sm"
               />
               {/* Drawer Container */}
               <motion.div 
@@ -2704,38 +2969,38 @@ export default React.memo(function CasesModule({
                 animate={{ x: 0 }}
                 exit={{ x: '100%' }}
                 transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-                className="absolute inset-y-0 right-0 w-full max-w-lg bg-[#050e21] border-l border-slate-800 shadow-2xl flex flex-col justify-between"
+                className="absolute inset-y-0 right-0 w-full max-w-lg bg-white border-l border-slate-200 shadow-2xl flex flex-col justify-between"
               >
                 <div className="flex-1 flex flex-col overflow-y-auto">
-                  <div className="p-6 border-b border-slate-800 flex justify-between items-center bg-[#09101f] backdrop-blur-md sticky top-0 z-20">
+                  <div className="p-6 border-b border-slate-200 flex justify-between items-center bg-slate-100 backdrop-blur-md sticky top-0 z-20">
                     <div className="flex items-center gap-3">
                       <div className="p-2.5 bg-amber-500/10 text-amber-500 rounded-xl border border-amber-500/20">
                         <Clock className="w-5 h-5" />
                       </div>
                       <div className="text-right">
-                        <h3 className="font-display font-black text-white text-base">سجل النشاط والتعديلات العدلية</h3>
+                        <h3 className="font-display font-black text-slate-900 text-base">سجل النشاط والتعديلات العدلية</h3>
                         <p className="text-[10px] font-mono text-amber-500 tracking-wider">Activity History: #{activeC.caseNumber}</p>
                       </div>
                     </div>
                     <button 
                       onClick={() => setActivityLogCaseId(null)}
-                      className="p-1.5 rounded-lg text-white font-black font-bold transition-colors cursor-pointer"
+                      className="p-1.5 rounded-lg text-slate-900 font-black font-bold transition-colors cursor-pointer"
                     >
                       <X className="w-5 h-5" />
                     </button>
                   </div>
 
                   <div className="p-6 space-y-6">
-                    <div className="bg-slate-950/70 p-5 rounded-2xl border border-slate-800 space-y-2 text-right">
+                    <div className="bg-slate-50 p-5 rounded-2xl border border-slate-200 space-y-2 text-right">
                       <span className="text-[10px] text-amber-500 font-extrabold uppercase tracking-widest block">الدعوى المستهدفة</span>
-                      <h4 className="text-sm font-black text-white leading-snug">{activeC.caseName}</h4>
-                      <div className="flex justify-between items-center text-xs text-white font-black font-bold pt-3 border-t border-slate-800/65">
-                        <span>العميل: <strong className="text-white font-bold">{activeC.clientName}</strong></span>
-                        <span>رقم القضية: <strong className="text-white font-bold font-mono">#{activeC.caseNumber}</strong></span>
+                      <h4 className="text-sm font-black text-slate-900 leading-snug">{activeC.caseName}</h4>
+                      <div className="flex justify-between items-center text-xs text-slate-900 font-black font-bold pt-3 border-t border-slate-200/65">
+                        <span>العميل: <strong className="text-slate-900 font-bold">{activeC.clientName}</strong></span>
+                        <span>رقم القضية: <strong className="text-slate-900 font-bold font-mono">#{activeC.caseNumber}</strong></span>
                       </div>
                     </div>
 
-                    <div className="relative border-r-2 border-slate-800 mr-3 pr-6 space-y-8 py-3 text-right">
+                    <div className="relative border-r-2 border-slate-200 mr-3 pr-6 space-y-8 py-3 text-right">
                       {timelineData.map((t, tIdx) => (
                         <div key={tIdx} className="relative">
                           {/* Timeline dot */}
@@ -2743,15 +3008,15 @@ export default React.memo(function CasesModule({
                           
                           <div className="space-y-2">
                             <div className="flex flex-wrap items-center justify-between gap-2.5">
-                              <span className="text-[10px] font-mono bg-slate-950 text-white font-bold border border-slate-850 px-2 py-0.5 rounded-md font-bold direction-ltr">
+                              <span className="text-[10px] font-mono bg-slate-100 text-slate-900 font-bold border border-slate-850 px-2 py-0.5 rounded-md font-bold direction-ltr">
                                 {t.date} • {t.time}
                               </span>
                               <span className={`text-[9.5px] font-black px-2 py-0.5 rounded bg-amber-500/10 text-amber-500 border border-amber-500/20`}>
                                 {t.badge}
                               </span>
                             </div>
-                            <h5 className="text-xs font-black text-white">{t.title}</h5>
-                            <p className="text-[11px] text-white font-bold leading-relaxed font-bold">{t.desc}</p>
+                            <h5 className="text-xs font-black text-slate-900">{t.title}</h5>
+                            <p className="text-[11px] text-slate-900 font-bold leading-relaxed font-bold">{t.desc}</p>
                           </div>
                         </div>
                       ))}
@@ -2759,10 +3024,10 @@ export default React.memo(function CasesModule({
                   </div>
                 </div>
 
-                <div className="p-6 border-t border-slate-800 bg-[#09101f] text-center">
+                <div className="p-6 border-t border-slate-200 bg-slate-100 text-center">
                   <button 
                     onClick={() => setActivityLogCaseId(null)}
-                    className="w-full bg-[#050e21][#0c1a35] text-white border border-slate-800 text-xs font-black py-4 rounded-xl transition-all cursor-pointer"
+                    className="w-full bg-white[#0c1a35] text-slate-900 border border-slate-200 text-xs font-black py-4 rounded-xl transition-all cursor-pointer"
                   >
                     إغلاق سجل النشاط عدليّاً
                   </button>
@@ -2782,7 +3047,7 @@ export default React.memo(function CasesModule({
             className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-10"
             dir="rtl"
           >
-            <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-md" onClick={() => setReportModalCase(null)}></div>
+            <div className="absolute inset-0 bg-slate-100/80 backdrop-blur-md" onClick={() => setReportModalCase(null)}></div>
             <motion.div 
               initial={{ scale: 0.95, y: 20 }}
               animate={{ scale: 1, y: 0 }}
@@ -2794,14 +3059,14 @@ export default React.memo(function CasesModule({
                   <Printer className="w-5 h-5 text-emerald-600" />
                   <h3 className="font-black text-slate-900 text-lg">تقرير حالة القضية</h3>
                 </div>
-                <button onClick={() => setReportModalCase(null)} className="p-2 text-white font-black font-bold hover:text-white font-black font-bold cursor-pointer transition-colors">
+                <button onClick={() => setReportModalCase(null)} className="p-2 text-slate-900 font-black font-bold hover:text-slate-900 font-black font-bold cursor-pointer transition-colors">
                   <X className="w-5 h-5" />
                 </button>
               </div>
               <div className="p-8 space-y-6">
                 <div className="bg-slate-50 p-6 flex flex-col items-center justify-center border-2 border-dashed border-slate-200 rounded-2xl mb-6">
                    <div className="w-12 h-12 bg-white rounded-xl shadow-sm border border-slate-100 flex items-center justify-center mb-3">
-                     <FileText className="w-6 h-6 text-white font-black font-bold" />
+                     <FileText className="w-6 h-6 text-slate-900 font-black font-bold" />
                    </div>
                    <h4 className="text-sm font-black text-slate-800">توليد تقرير وملخص للقضية</h4>
                    <p className="text-xs text-center text-slate-700 font-bold mt-2">
@@ -2848,7 +3113,7 @@ export default React.memo(function CasesModule({
                     }
                     setReportModalCase(null);
                   }}
-                  className="flex-[2] bg-slate-900 border border-slate-900 text-white font-black py-3 rounded-xl hover:bg-slate-800 transition-colors shadow-lg shadow-slate-900/10"
+                  className="flex-[2] bg-slate-900 border border-slate-900 text-slate-900 font-black py-3 rounded-xl hover:bg-slate-800 transition-colors shadow-lg shadow-slate-900/10"
                 >
                   صياغة وطباعة
                 </button>
