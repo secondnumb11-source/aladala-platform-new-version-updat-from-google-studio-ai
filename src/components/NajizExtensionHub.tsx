@@ -555,6 +555,35 @@ export default function NajizExtensionHub({ currentUser, onUpdateState }: NajizE
         const execNo = extractedNumber || `E-${Math.floor(Math.random() * 9000000) + 1000000}`;
         const issueDate = item.rawDate || new Date().toISOString().split('T')[0];
         
+        const rawText = item.rawText || `تفاصيل طلب التنفيذ المسحوب آلياً من بوابة ناجز برقم ${execNo}`;
+        let executionType = "تنفيذ مالي";
+        let bondType = "سند لأمر";
+
+        const lowerText = rawText.toLowerCase();
+        if (lowerText.includes("أحوال شخصية") || lowerText.includes("حضانة") || lowerText.includes("نفقة") || lowerText.includes("زيارة")) {
+          executionType = "تنفيذ أحوال شخصية";
+        } else if (lowerText.includes("إخلاء") || lowerText.includes("عقار") || lowerText.includes("تسليم") || lowerText.includes("عقارية")) {
+          executionType = "تنفيذ غير مالي / إخلاء";
+        } else if (lowerText.includes("جنائي") || lowerText.includes("حق عام") || lowerText.includes("غرامة")) {
+          executionType = "تنفيذ جنائي";
+        }
+
+        if (lowerText.includes("حكم قضائي") || lowerText.includes("قرار قضائي") || lowerText.includes("حكم") || lowerText.includes("قرار")) {
+          bondType = "حكم قضائي";
+        } else if (lowerText.includes("شيك")) {
+          bondType = "شيك";
+        } else if (lowerText.includes("عقد موثق") || lowerText.includes("عقد إيجار") || lowerText.includes("إيجار") || lowerText.includes("عقد")) {
+          bondType = "عقد موثق";
+        } else if (lowerText.includes("كمبيالة")) {
+          bondType = "كمبيالة";
+        }
+
+        const serializedDetails = JSON.stringify({
+          detailsText: rawText,
+          executionType,
+          bondType
+        });
+
         const execRes = await upsertRecord('executions', {
           execution_number: execNo,
           requester_name: targetClientName,
@@ -563,7 +592,7 @@ export default function NajizExtensionHub({ currentUser, onUpdateState }: NajizE
           amount: item.amount || 0,
           court_name: item.court_name || 'إدارة التنفيذ بالمحكمة المعنية',
           issue_date: issueDate,
-          details: item.rawText || `تفاصيل طلب التنفيذ المسحوب آلياً من بوابة ناجز برقم ${execNo}`,
+          details: serializedDetails,
           is_najiz_sync: true,
           last_sync_at: new Date().toISOString()
         }, 'execution_number');

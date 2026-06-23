@@ -116,6 +116,9 @@ export default function DocumentsModule({
   const [selectedTagFilter, setSelectedTagFilter] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [isScanning, setIsScanning] = useState(false);
+  const [isCameraActive, setIsCameraActive] = useState(false);
+  const [isCameraProcessing, setIsCameraProcessing] = useState(false);
+  const [cameraScanResult, setCameraScanResult] = useState<{ caseNumber?: string; caseDate?: string; confidence?: number; text?: string } | null>(null);
 
   const handleAiScan = () => {
     setIsScanning(true);
@@ -874,7 +877,7 @@ export default function DocumentsModule({
   };
 
   // Quick Document Preview States
-  const [rightPanelTab, setRightPanelTab] = useState<'ocr' | 'preview' | 'versions' | 'memo'>('preview');
+  const [rightPanelTab, setRightPanelTab] = useState<'ocr' | 'preview' | 'versions' | 'memo' | 'camera-scan'>('preview');
 
   // Smart Legal Memo Draft Creator States (Gemini-Powered)
   const [memoSelectedCaseId, setMemoSelectedCaseId] = useState('');
@@ -1409,6 +1412,17 @@ export default function DocumentsModule({
               >
                 <Sparkles className="w-3.5 h-3.5 text-amber-500 animate-pulse" />
                 <span>منشئ المذكرات 🤖</span>
+              </button>
+              <button
+                onClick={() => setRightPanelTab('camera-scan')}
+                className={`py-2 px-2 text-[10px] sm:text-[11px] font-black rounded-xl transition-all cursor-pointer text-center flex items-center justify-center gap-1 col-span-2 sm:col-span-4 ${
+                  rightPanelTab === 'camera-scan'
+                    ? 'bg-emerald-600 text-white shadow-md shadow-emerald-200'
+                    : 'text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 font-black'
+                }`}
+              >
+                <Camera className="w-4 h-4" />
+                <span>مسح ضوئي ذكي للمستندات (AI Scan) 📷</span>
               </button>
             </div>
 
@@ -2476,6 +2490,112 @@ export default function DocumentsModule({
                     </div>
                   </div>
                 )}
+              </div>
+            )}
+
+            {/* TAB CONTENT: CAMERA SCAN & AI EXTRACTION */}
+            {rightPanelTab === 'camera-scan' && (
+              <div className="flex-1 flex flex-col min-h-0 space-y-4 text-right" dir="rtl">
+                <div className="flex items-center justify-between border-b border-emerald-500/20 pb-2">
+                  <div>
+                    <h3 className="font-black text-xs text-emerald-700 flex items-center gap-1.5 justify-end">
+                      <Camera className="w-4 h-4 text-emerald-500 animate-pulse" />
+                      المسح المباشر بالكاميرا (Camera Scanner)
+                    </h3>
+                    <p className="text-[10px] text-slate-500 font-bold leading-normal">
+                      توجيه الكاميرا إلى المستندات الورقية واستخراج رقم القضية وتاريخها والبيانات المهمة تلقائياً بالذكاء الاصطناعي.
+                    </p>
+                  </div>
+                </div>
+
+                {!isCameraActive && !cameraScanResult ? (
+                  <div className="flex-1 flex flex-col items-center justify-center space-y-4 pt-10">
+                    <div className="w-24 h-24 bg-emerald-100 rounded-full flex items-center justify-center border border-emerald-200 cursor-pointer hover:bg-emerald-200 transition-colors" onClick={() => setIsCameraActive(true)}>
+                      <Camera className="w-10 h-10 text-emerald-600" />
+                    </div>
+                    <button 
+                      className="bg-emerald-600 hover:bg-emerald-700 text-white font-black px-6 py-3 rounded-xl shadow-md transition-all active:scale-95"
+                      onClick={() => setIsCameraActive(true)}
+                    >
+                      فتح الكاميرا للمسح الضوئي 📷
+                    </button>
+                  </div>
+                ) : isCameraActive && !cameraScanResult ? (
+                  <div className="flex-1 flex flex-col space-y-4">
+                    <div className="relative w-full h-[300px] bg-slate-900 rounded-xl overflow-hidden shadow-inner flex items-center justify-center border-2 border-slate-800">
+                      <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10"></div>
+                      <div className="absolute w-[80%] h-[80%] border-2 border-emerald-500/50 rounded-lg">
+                        <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-emerald-500"></div>
+                        <div className="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-emerald-500"></div>
+                        <div className="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-emerald-500"></div>
+                        <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-emerald-500"></div>
+                      </div>
+                      
+                      {isCameraProcessing ? (
+                        <div className="flex flex-col items-center space-y-2 z-10">
+                          <Cpu className="w-10 h-10 text-emerald-400 animate-pulse" />
+                          <span className="text-white text-xs font-black">جاري تحليل الشبكة وفك ترميز النصوص...</span>
+                        </div>
+                      ) : (
+                        <span className="text-slate-500 text-xs font-black z-10">معاينة الكاميرا (محاكاة)</span>
+                      )}
+                    </div>
+                    <div className="flex gap-2">
+                       <button 
+                         className="flex-1 bg-slate-800 text-white py-2.5 rounded-lg text-xs font-bold"
+                         onClick={() => setIsCameraActive(false)}
+                       >
+                         إلغاء ❌
+                       </button>
+                       <button 
+                         className="flex-[2] bg-emerald-600 hover:bg-emerald-500 text-white py-2.5 rounded-lg text-xs font-black flex items-center justify-center gap-2"
+                         disabled={isCameraProcessing}
+                         onClick={() => {
+                           setIsCameraProcessing(true);
+                           setTimeout(() => {
+                             setIsCameraProcessing(false);
+                             setIsCameraActive(false);
+                             setCameraScanResult({
+                               caseNumber: '٤٥٦٧٨٩' + Math.floor(Math.random() * 100),
+                               caseDate: new Intl.DateTimeFormat('ar-SA-u-nu-latn').format(new Date()),
+                               confidence: 96.5,
+                               text: "محكمة الأحوال الشخصية\nالموضوع: دعوى نفقة وحضانة...\nالتفاصيل كاملة هنا..."
+                             });
+                           }, 2000);
+                         }}
+                       >
+                         {isCameraProcessing ? 'جاري المسح AI...' : 'التقاط واستخراج البيانات 📸'}
+                       </button>
+                    </div>
+                  </div>
+                ) : cameraScanResult ? (
+                  <div className="flex-1 flex flex-col space-y-4">
+                     <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4 flex justify-between items-center">
+                       <span className="text-emerald-800 font-bold text-xs">تم التقاط المستند وتحليله بنجاح ✅</span>
+                       <button onClick={() => setCameraScanResult(null)} className="text-emerald-600 hover:underline text-[10px] font-bold">إعادة المسح</button>
+                     </div>
+                     <div className="bg-slate-100 p-4 rounded-xl border border-slate-200 space-y-3">
+                       <div className="grid grid-cols-2 gap-3">
+                         <div className="bg-white p-2 rounded-lg border border-slate-200 shadow-sm flex flex-col">
+                           <span className="text-slate-500 text-[10px] font-bold">رقم القضية المستخرج</span>
+                           <span className="text-slate-900 font-black text-sm">{cameraScanResult.caseNumber}</span>
+                         </div>
+                         <div className="bg-white p-2 rounded-lg border border-slate-200 shadow-sm flex flex-col">
+                           <span className="text-slate-500 text-[10px] font-bold">تاريخ الجلسة/القضية</span>
+                           <span className="text-slate-900 font-black text-sm">{cameraScanResult.caseDate}</span>
+                         </div>
+                       </div>
+                       <div className="bg-white p-3 rounded-lg border border-slate-200 shadow-sm flex items-center justify-between">
+                         <span className="text-[10px] font-black text-slate-700">دقة استخراج البيانات AI (Confidence)</span>
+                         <span className="text-emerald-600 font-mono font-bold text-xs bg-emerald-100 px-2 py-0.5 rounded-full">{cameraScanResult.confidence}%</span>
+                       </div>
+                     </div>
+                     <div className="flex-1 bg-slate-900 rounded-xl p-4 overflow-auto custom-scrollbar border border-slate-800 text-right">
+                       <span className="text-[#fbbf24] text-[10px] block mb-2 font-black border-b border-slate-700 pb-1">نص المستند المقروء:</span>
+                       <div className="text-white text-xs leading-loose font-mono whitespace-pre-wrap">{cameraScanResult.text}</div>
+                     </div>
+                  </div>
+                ) : null}
               </div>
             )}
           </div>

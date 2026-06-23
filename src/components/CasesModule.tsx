@@ -70,6 +70,7 @@ import CaseStatisticsBar from './cases/CaseStatisticsBar';
 import CaseFilters from './cases/CaseFilters';
 import AddCaseModal from './cases/AddCaseModal';
 import EnhancedCaseDetail from './cases/EnhancedCaseDetail';
+import DashboardStatistics from './cases/DashboardStatistics';
 import { jsPDF } from 'jspdf';
 
 const CaseAnalyticsDashboard = React.lazy(() => import('./cases/CaseAnalyticsDashboard'));
@@ -781,6 +782,20 @@ export default React.memo(function CasesModule({
   const [isMetaDropdownOpen, setIsMetaDropdownOpen] = useState(false);
   const [advFilters, setAdvFilters] = useState({ opponent: '', circuit: '', judgmentCategory: '' });
 
+  const uniqueOpponents = React.useMemo(() => {
+    const names = (cases || [])
+      .map(c => c.opponentName?.trim())
+      .filter((name): name is string => typeof name === 'string' && name.length > 0);
+    return Array.from(new Set(names));
+  }, [cases]);
+
+  const uniqueCircuits = React.useMemo(() => {
+    const circuits = (cases || [])
+      .map(c => c.circuitNumber?.trim())
+      .filter((num): num is string => typeof num === 'string' && num.length > 0);
+    return Array.from(new Set(circuits));
+  }, [cases]);
+
   // Computed real-time statistics counters from Supabase sync
   const statsSummary = React.useMemo(() => {
     const safeCases = cases || [];
@@ -811,6 +826,81 @@ export default React.memo(function CasesModule({
   const [isArchiveModalOpen, setIsArchiveModalOpen] = useState(false);
   const [archiveSearchTerm, setArchiveSearchTerm] = useState('');
   const [archiveTypeFilter, setArchiveTypeFilter] = useState('all');
+
+  // Real-time live query to Supabase whenever Next Session Date filter changes
+  useEffect(() => {
+    const fetchFilteredNextSessionFromSupabase = async () => {
+      if (nextAppointmentFilterType === 'all') return;
+      
+      try {
+        console.log(`[Supabase Filter] Fetching cases from Supabase where next appointment is filtered by: ${nextAppointmentFilterType}`);
+        let query = supabase.from('cases').select('*').eq('archived', false);
+        
+        const todayStr = new Date().toISOString().split('T')[0];
+        
+        if (nextAppointmentFilterType === 'today') {
+          query = query.eq('next_session_at', todayStr);
+        } else if (nextAppointmentFilterType === 'soon') {
+          const today = new Date();
+          const sevenDaysLater = new Date();
+          sevenDaysLater.setDate(today.getDate() + 7);
+          const sevenDaysStr = sevenDaysLater.toISOString().split('T')[0];
+          query = query.gte('next_session_at', todayStr).lte('next_session_at', sevenDaysStr);
+        } else if (nextAppointmentFilterType === 'month') {
+          const today = new Date();
+          const thirtyDaysLater = new Date();
+          thirtyDaysLater.setDate(today.getDate() + 30);
+          const thirtyDaysStr = thirtyDaysLater.toISOString().split('T')[0];
+          query = query.gte('next_session_at', todayStr).lte('next_session_at', thirtyDaysStr);
+        } else if (nextAppointmentFilterType === 'custom' && nextAppointmentFilter) {
+          query = query.eq('next_session_at', nextAppointmentFilter);
+        } else if (nextAppointmentFilterType === 'all_scheduled') {
+          query = query.not('next_session_at', 'is', null);
+        }
+        
+        const { data, error } = await query.order('created_at', { ascending: false });
+        if (error) {
+          console.error('[Supabase Next Session Filter Error]', error);
+          return;
+        }
+        
+        if (data) {
+          const mappedCases = data.map(c => ({
+            id: c.id,
+            caseNumber: c.case_number,
+            caseName: c.title || c.case_name || 'قضية ناجز',
+            category: c.category || 'other',
+            stage: c.stage || 'litigation',
+            status: c.status || 'active',
+            clientName: c.client_name || 'عميل ناجز',
+            clientId: c.client_id,
+            opponentName: c.opponent_name || '',
+            courtName: c.court_name || '',
+            nextSessionDate: c.next_session_at ? c.next_session_at.split('T')[0] : '',
+            nextSessionTime: c.next_session_time || '',
+            summary: c.summary || '',
+            details: c.details || '',
+            isNajizSync: c.is_najiz_sync || false,
+            najizCaseNumber: c.najiz_case_number,
+            priority: c.priority || 'medium',
+            isConfidential: c.is_confidential || false,
+            archived: c.archived || false,
+            createdAt: c.created_at
+          }));
+          
+          // Upsert into active state via onUpdateState
+          for (const mc of mappedCases) {
+            onUpdateState('cases', mc);
+          }
+          console.log(`[Supabase Filter] Loaded ${mappedCases.length} cases matching next session filter: ${nextAppointmentFilterType}`);
+        }
+      } catch (err) {
+        console.error('[Supabase Next Session Filter Exception]', err);
+      }
+    };
+    
+    fetchFilteredNextSessionFromSupabase();
+  }, [nextAppointmentFilterType, nextAppointmentFilter]);
 
   const [focusedIdx, setFocusedIdx] = useState<number | null>(null);
 
@@ -1802,7 +1892,9 @@ export default React.memo(function CasesModule({
 
     const matchesAdvOpponent = advFilters.opponent === '' || opponentNameSafe.includes(advFilters.opponent.toLowerCase());
     const matchesAdvCircuit = advFilters.circuit === '' || circuitNumberSafe.includes(advFilters.circuit.toLowerCase());
-    const matchesAdvCategory = advFilters.judgmentCategory === '' || caseCategorySafe.includes(advFilters.judgmentCategory.toLowerCase());
+    const matchesAdvCategory = advFilters.judgmentCategory === '' || 
+      caseCategorySafe === advFilters.judgmentCategory.toLowerCase() ||
+      (c.status || '').toLowerCase() === advFilters.judgmentCategory.toLowerCase();
 
     const matchesSearch = matchesGlobalSearch && matchesAdvOpponent && matchesAdvCircuit && matchesAdvCategory;
     
@@ -2091,40 +2183,58 @@ export default React.memo(function CasesModule({
                     <div className="space-y-3">
                       <div>
                         <label className="text-[10px] font-black text-slate-500 block mb-1">اسم الخصم</label>
-                        <input
-                          type="text"
-                          placeholder="ابحث باسم الخصم..."
+                        <select
                           value={advFilters.opponent}
                           onChange={(e) => setAdvFilters({ ...advFilters, opponent: e.target.value })}
-                          className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-[11px] font-bold text-slate-900 outline-none focus:border-amber-500/45 transition-colors"
-                        />
+                          className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-[11px] font-semibold text-slate-900 outline-none focus:border-amber-500/45 transition-colors cursor-pointer"
+                        >
+                          <option value="">كل الخصوم</option>
+                          {uniqueOpponents.map((opponent) => (
+                            <option key={opponent} value={opponent}>
+                              {opponent}
+                            </option>
+                          ))}
+                        </select>
                       </div>
 
                       <div>
                         <label className="text-[10px] font-black text-slate-500 block mb-1">رقم الدائرة</label>
-                        <input
-                          type="text"
-                          placeholder="مثال: الدائرة الثالثة..."
+                        <select
                           value={advFilters.circuit}
                           onChange={(e) => setAdvFilters({ ...advFilters, circuit: e.target.value })}
-                          className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-[11px] font-bold text-slate-900 outline-none focus:border-amber-500/45 transition-colors"
-                        />
+                          className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-[11px] font-semibold text-slate-900 outline-none focus:border-amber-500/45 transition-colors cursor-pointer"
+                        >
+                          <option value="">كل الدوائر</option>
+                          {uniqueCircuits.map((circuit) => (
+                            <option key={circuit} value={circuit}>
+                              {circuit}
+                            </option>
+                          ))}
+                        </select>
                       </div>
 
                       <div>
-                        <label className="text-[10px] font-black text-slate-500 block mb-1">نوع الحكم</label>
+                        <label className="text-[10px] font-black text-slate-500 block mb-1">نوع الحكم / تصنيف القضية</label>
                         <select
                           value={advFilters.judgmentCategory}
                           onChange={(e) => setAdvFilters({ ...advFilters, judgmentCategory: e.target.value })}
                           className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-[11px] font-semibold text-slate-900 outline-none focus:border-amber-500/45 transition-colors cursor-pointer"
                         >
-                          <option value="">كل التصنيفات والقضايا</option>
-                          <option value="commercial">تجاري ⚖️</option>
-                          <option value="labor">عمالي 💼</option>
-                          <option value="civil">مدني حقوقي 📜</option>
-                          <option value="criminal">جزائي جنائي 🛡️</option>
-                          <option value="personal_status">أحوال شخصية وإرث ⚖️</option>
-                          <option value="administrative">إداري مظالم 🏛️</option>
+                          <option value="">كل الأنواع والتصنيفات</option>
+                          <optgroup label="حالة ونوع الحكم">
+                            <option value="under_review">قيد النظر والمرافعة 🔍</option>
+                            <option value="primary_judgment">حكم ابتدائي 📜</option>
+                            <option value="final_judgment">حكم نهائي قطعي ⚖️</option>
+                            <option value="closed">منتهية ومغلقة 🔒</option>
+                          </optgroup>
+                          <optgroup label="تصنيف القضية">
+                            <option value="commercial">تجاري ⚖️</option>
+                            <option value="labor">عمالي 💼</option>
+                            <option value="civil">مدني حقوقي 📜</option>
+                            <option value="criminal">جزائي جنائي 🛡️</option>
+                            <option value="personal_status">أحوال شخصية وإرث ⚖️</option>
+                            <option value="administrative">إداري مظالم 🏛️</option>
+                          </optgroup>
                         </select>
                       </div>
                     </div>
@@ -2364,37 +2474,56 @@ export default React.memo(function CasesModule({
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4 border-t border-slate-100">
                   <div className="space-y-2">
                     <label className="text-[11px] font-black text-slate-500 uppercase tracking-widest px-1">اسم الخصم (الطرف الآخر)</label>
-                    <input 
-                      type="text" 
-                      placeholder="ابحث باسم الخصم..." 
+                    <select 
                       value={advFilters.opponent}
                       onChange={(e) => setAdvFilters({ ...advFilters, opponent: e.target.value })}
-                      className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-xs font-bold text-slate-900 outline-none focus:ring-2 focus:ring-amber-500/20"
-                    />
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-xs font-bold text-slate-900 outline-none focus:ring-2 focus:ring-amber-500/20 cursor-pointer"
+                    >
+                      <option value="">كل الخصوم</option>
+                      {uniqueOpponents.map((opponent) => (
+                        <option key={opponent} value={opponent}>
+                          {opponent}
+                        </option>
+                      ))}
+                    </select>
                   </div>
                   <div className="space-y-2">
                     <label className="text-[11px] font-black text-slate-500 uppercase tracking-widest px-1">رقم الدائرة القضائية</label>
-                    <input 
-                      type="text" 
-                      placeholder="مثال: الدائرة التجارية الأولى..." 
+                    <select 
                       value={advFilters.circuit}
                       onChange={(e) => setAdvFilters({ ...advFilters, circuit: e.target.value })}
-                      className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-xs font-bold text-slate-900 outline-none focus:ring-2 focus:ring-amber-500/20"
-                    />
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-xs font-bold text-slate-900 outline-none focus:ring-2 focus:ring-amber-500/20 cursor-pointer"
+                    >
+                      <option value="">كل الدوائر</option>
+                      {uniqueCircuits.map((circuit) => (
+                        <option key={circuit} value={circuit}>
+                          {circuit}
+                        </option>
+                      ))}
+                    </select>
                   </div>
                   <div className="space-y-2">
-                    <label className="text-[11px] font-black text-slate-500 uppercase tracking-widest px-1">القالب القضائي (التصنيف)</label>
+                    <label className="text-[11px] font-black text-slate-500 uppercase tracking-widest px-1">نوع الحكم / تصنيف القضية</label>
                     <select 
                       value={advFilters.judgmentCategory}
                       onChange={(e) => setAdvFilters({ ...advFilters, judgmentCategory: e.target.value })}
-                      className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-xs font-bold text-slate-900 outline-none focus:ring-2 focus:ring-amber-500/20 appearance-none"
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-xs font-bold text-slate-900 outline-none focus:ring-2 focus:ring-amber-500/20 cursor-pointer"
                     >
-                      <option value="">جميع التصنيفات</option>
-                      <option value="commercial">تجارية</option>
-                      <option value="labor">عمالية</option>
-                      <option value="civil">أحوال مدنية</option>
-                      <option value="criminal">جزائية</option>
-                      <option value="execution">تنفيذ</option>
+                      <option value="">كل الأنواع والتصنيفات</option>
+                      <optgroup label="حالة ونوع الحكم">
+                        <option value="under_review">قيد النظر والمرافعة 🔍</option>
+                        <option value="primary_judgment">حكم ابتدائي 📜</option>
+                        <option value="final_judgment">حكم نهائي قطعي ⚖️</option>
+                        <option value="closed">منتهية ومغلقة 🔒</option>
+                      </optgroup>
+                      <optgroup label="تصنيف القضية">
+                        <option value="commercial">تجاري ⚖️</option>
+                        <option value="labor">عمالي 💼</option>
+                        <option value="civil">مدني حقوقي 📜</option>
+                        <option value="criminal">جزائي جنائي 🛡️</option>
+                        <option value="personal_status">أحوال شخصية وإرث ⚖️</option>
+                        <option value="administrative">إداري مظالم 🏛️</option>
+                      </optgroup>
                     </select>
                   </div>
                 </div>
@@ -2430,7 +2559,7 @@ export default React.memo(function CasesModule({
           </div>
 
           {/* Universal High-Contrast Classifications Filter Bar (Supabase cases categories connection) */}
-          <div className="bg-white border-2 border-slate-200 p-5 rounded-[1.8rem] mb-6 font-sans text-right" dir="rtl">
+          <div className="bg-gradient-to-b from-[#060b18] to-[#0d162d] border border-slate-800 p-5 rounded-[1.8rem] mb-6 font-sans text-right shadow-[0_4px_30px_rgba(0,0,0,0.4)]" dir="rtl">
             <span className="text-[11px] font-black text-amber-400 block tracking-wide mb-3 uppercase">📂 فلترة تصنيفات الدعاوى بـ Supabase (عرض وتصفية حية لحظية للقضايا)</span>
             <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-3">
               {[
@@ -2452,6 +2581,25 @@ export default React.memo(function CasesModule({
                   return categoryFilter.includes(item.id) && categoryFilter.length === 1;
                 };
                 const isActive = getIsActive();
+                
+                // Set custom glowing text color scheme when not active
+                let textColor = 'text-white';
+                let borderColor = 'border-slate-700/80';
+                
+                if (item.id === '') {
+                  textColor = 'text-[#FF7F00]'; // البرتقالي الساطع
+                  borderColor = 'border-[#FF7F00]/50';
+                } else if (item.id === 'civil' || item.id === 'personal_status') {
+                  textColor = 'text-white'; // الأبيض الساطع
+                  borderColor = 'border-slate-700/60';
+                } else if (item.id === 'commercial' || item.id === 'criminal') {
+                  textColor = 'text-[#FACC15]'; // الأصفر الساطع
+                  borderColor = 'border-[#FACC15]/30';
+                } else if (item.id === 'labor' || item.id === 'administrative') {
+                  textColor = 'text-[#FF7F00]'; // البرتقالي الساطع
+                  borderColor = 'border-[#FF7F00]/30';
+                }
+
                 return (
                   <button
                     key={item.id}
@@ -2465,14 +2613,14 @@ export default React.memo(function CasesModule({
                         setCategoryFilter([item.id]);
                       }
                     }}
-                    className={`px-4 py-3 rounded-xl border text-xs font-black transition-all flex flex-col items-center justify-between gap-1.5 cursor-pointer shadow ${item.color} ${
+                    className={`px-4 py-3 rounded-xl border text-xs font-black transition-all flex flex-col items-center justify-between gap-1.5 cursor-pointer shadow-md ${
                       isActive 
-                        ? 'bg-[#FF7F00] border-amber-400 text-slate-950 font-black font-extrabold shadow-[0_0_15px_rgba(255,127,0,0.4)] hover:text-slate-950 hover:border-amber-400' 
-                        : 'bg-slate-100 text-slate-900 font-bold hover:bg-slate-850'
+                        ? 'bg-gradient-to-br from-[#FF7F00] to-[#E65100] text-slate-950 border-2 border-amber-300 font-black shadow-[0_0_20px_rgba(255,127,0,0.5)] hover:text-slate-950 hover:border-amber-300' 
+                        : `bg-gradient-to-br from-[#0b1329] to-[#122244] ${borderColor} ${textColor} font-black hover:border-amber-400 hover:shadow-[0_0_15px_rgba(250,204,21,0.25)]`
                     }`}
                   >
-                    <span className="truncate">{item.label}</span>
-                    <span className={`text-[10px] px-2 py-0.2 rounded font-mono ${isActive ? 'bg-slate-950/20 text-slate-950 text-black' : 'bg-[#030712] text-amber-400'}`}>
+                    <span className="truncate drop-shadow-[0_1.5px_3px_rgba(0,0,0,0.7)]">{item.label}</span>
+                    <span className={`text-[10px] px-2 py-0.5 rounded font-mono font-[900] ${isActive ? 'bg-slate-950/20 text-slate-950' : 'bg-[#030712] text-amber-400 border border-amber-500/10'}`}>
                       {item.count} قضية
                     </span>
                   </button>
@@ -2488,6 +2636,29 @@ export default React.memo(function CasesModule({
               const safeCases = cases || [];
               const count = cat.id === 'all' ? safeCases.filter(c => !c.archived).length : countByCategory(cat.id);
               
+              // Set custom glowing text color scheme when not active
+              let textColor = 'text-white';
+              let borderColor = 'border-slate-700/80';
+              let iconColor = 'text-white';
+              
+              if (cat.id === 'all') {
+                textColor = 'text-[#FF7F00]';
+                borderColor = 'border-[#FF7F00]/50';
+                iconColor = 'text-[#FF7F00]';
+              } else if (cat.id === 'civil' || cat.id === 'personal_status' || cat.id === 'archived') {
+                textColor = 'text-white';
+                borderColor = 'border-slate-700/60';
+                iconColor = 'text-white';
+              } else if (cat.id === 'commercial' || cat.id === 'criminal') {
+                textColor = 'text-[#FACC15]';
+                borderColor = 'border-[#FACC15]/30';
+                iconColor = 'text-[#FACC15]';
+              } else if (cat.id === 'labor' || cat.id === 'administrative' || cat.id === 'financial') {
+                textColor = 'text-[#FF7F00]';
+                borderColor = 'border-[#FF7F00]/30';
+                iconColor = 'text-[#FF7F00]';
+              }
+
               return (
                 <button
                   key={cat.id}
@@ -2500,13 +2671,13 @@ export default React.memo(function CasesModule({
                   }}
                   className={`flex items-center gap-3 px-5 py-3 rounded-2xl text-xs font-black transition-all border shrink-0 relative group ${
                     isActive 
-                      ? 'bg-amber-600 text-slate-900 border-amber-500 shadow-xl shadow-amber-600/20' 
-                      : 'bg-slate-50 text-slate-900 font-bold border-slate-200 hover:bg-slate-100'
+                      ? 'bg-gradient-to-br from-[#FF7F00] to-[#E65100] text-slate-950 border-2 border-amber-300 font-black shadow-[0_0_15px_rgba(255,127,0,0.4)]' 
+                      : `bg-gradient-to-br from-[#0b1329] to-[#122244] ${borderColor} ${textColor} font-black hover:border-amber-400 hover:shadow-[0_0_12px_rgba(250,204,21,0.2)]`
                   }`}
                 >
-                  <Icon className={`w-4 h-4 ${isActive ? 'text-slate-900' : 'text-amber-400'}`} />
-                  <span>{cat.label}</span>
-                  <span className={`text-[10px] px-2 py-0.5 rounded-lg font-mono ${isActive ? 'bg-white/20 text-slate-900' : 'bg-slate-800 text-slate-900'}`}>
+                  <Icon className={`w-4 h-4 ${isActive ? 'text-slate-950' : iconColor}`} />
+                  <span className="drop-shadow-[0_1.5px_3px_rgba(0,0,0,0.7)]">{cat.label}</span>
+                  <span className={`text-[10px] px-2 py-0.5 rounded-lg font-mono font-[900] ${isActive ? 'bg-white/20 text-slate-900' : 'bg-slate-950 text-amber-400 border border-slate-800'}`}>
                     {count}
                   </span>
                 </button>
@@ -2715,55 +2886,10 @@ export default React.memo(function CasesModule({
                   
                 {!isFocusMode && filterBarMarkup}
 
-                {/* --- REAL-TIME MANAGER COMPACT STATS BOARD --- */}
-                {(() => {
-                  const casesArray = cases || [];
-                  const activeCount = casesArray.filter(c => c.status === 'active' && !c.archived).length;
-                  const underReviewCount = casesArray.filter(c => c.status === 'under_review' && !c.archived).length;
-                  const ruledCount = casesArray.filter(c => (c.status === 'primary_judgment' || c.status === 'final_judgment') && !c.archived).length;
-                  const closedCount = casesArray.filter(c => c.status === 'closed' && !c.archived).length;
-                  const totalCount = casesArray.filter(c => !c.archived).length;
-                  return (
-                    <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-6" dir="rtl">
-                      
-                      {/* Total Cases Card */}
-                      <div className="bg-[#0b1329] p-4 rounded-[1.5rem] flex flex-col items-center justify-center shadow-lg relative overflow-hidden border border-slate-700/50">
-                        <div className="absolute inset-0 bg-white/5 opacity-0 hover:opacity-100 transition-opacity"></div>
-                        <span className="text-[11px] font-black text-white block mb-1 relative z-10 drop-shadow-md">إجمالي القضايا النشطة</span>
-                        <span className="text-3xl font-black font-mono text-white tracking-tight relative z-10 drop-shadow-lg">{totalCount}</span>
-                      </div>
-
-                      {/* Active Card */}
-                      <div className="bg-[#0b1329] p-4 rounded-[1.5rem] flex flex-col items-center justify-center shadow-lg relative overflow-hidden border border-[#00e5ff]/20">
-                        <div className="absolute inset-0 bg-[#00e5ff]/5 opacity-0 hover:opacity-100 transition-opacity"></div>
-                        <span className="text-[11px] font-black text-white block mb-1 relative z-10 drop-shadow-md">قضايا سارية</span>
-                        <span className="text-3xl font-black font-mono text-white tracking-tight relative z-10 drop-shadow-[0_0_8px_#ffffff]">{activeCount}</span>
-                      </div>
-
-                      {/* Under Review Card */}
-                      <div className="bg-[#0b1329] p-4 rounded-[1.5rem] flex flex-col items-center justify-center shadow-lg relative overflow-hidden border border-[#ff7f00]/30 hover:border-[#ff7f00]/70 transition-all">
-                        <div className="absolute inset-0 bg-[#ff7f00]/10 opacity-0 hover:opacity-100 transition-opacity"></div>
-                        <span className="text-[11px] font-black text-[#ff7f00] block mb-1 relative z-10 drop-shadow-md">قضايا قيد النظر</span>
-                        <span className="text-3xl font-black font-mono text-[#ff7f00] tracking-tight relative z-10 drop-shadow-[0_0_12px_#ff7f00]">{underReviewCount}</span>
-                      </div>
-
-                      {/* Ruled Card */}
-                      <div className="bg-[#0b1329] p-4 rounded-[1.5rem] flex flex-col items-center justify-center shadow-lg relative overflow-hidden border border-[#ffff00]/30 hover:border-[#ffff00]/70 transition-all">
-                        <div className="absolute inset-0 bg-[#ffff00]/10 opacity-0 hover:opacity-100 transition-opacity"></div>
-                        <span className="text-[11px] font-black text-[#ffff00] block mb-1 relative z-10 drop-shadow-md">قضايا محكومة</span>
-                        <span className="text-3xl font-black font-mono text-[#ffff00] tracking-tight relative z-10 drop-shadow-[0_0_12px_#ffff00]">{ruledCount}</span>
-                      </div>
-
-                      {/* Closed Card */}
-                      <div className="bg-[#0b1329] p-4 rounded-[1.5rem] flex flex-col items-center justify-center shadow-lg relative overflow-hidden border border-white/20">
-                        <div className="absolute inset-0 bg-white/5 opacity-0 hover:opacity-100 transition-opacity"></div>
-                        <span className="text-[11px] font-black text-white block mb-1 relative z-10 drop-shadow-md">القضايا المنتهية</span>
-                        <span className="text-3xl font-black font-mono text-white tracking-tight relative z-10 drop-shadow-lg">{closedCount}</span>
-                      </div>
-
-                    </div>
-                  );
-                })()}
+                {/* --- REAL-TIME INTUITIVE DASHBOARD STATISTICS BOARD --- */}
+                {!isFocusMode && (
+                  <DashboardStatistics cases={cases} isHighContrast={isHighContrast} />
+                )}
 
                 <CasesList
                   filteredCases={filteredCases}

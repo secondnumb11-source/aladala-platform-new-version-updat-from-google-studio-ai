@@ -1101,45 +1101,46 @@ ${
 
                   // Scoped bright/lux style generator for high-contrast presentation inside expanded list items
                   const getDocStyle = (type: string) => {
+                    const baseBg = "bg-gradient-to-br from-slate-900 to-[#020617]";
                     switch (type) {
                       case "lawsuit_sheet":
                         return {
-                          bg: "bg-gradient-to-br from-[#eff6ff] to-[#f4f8ff]",
-                          border: "border-blue-200/90 hover:border-blue-500 hover:shadow-[0_10px_25px_rgba(59,130,246,0.08)]",
-                          iconBg: "bg-blue-100 border-blue-200",
-                          iconColor: "text-blue-700",
+                          bg: baseBg,
+                          border: "border-blue-500/30 hover:border-[#FACC15] hover:shadow-[0_10px_25px_rgba(250,204,21,0.15)]",
+                          iconBg: "bg-blue-900/40 border-blue-500/50",
+                          iconColor: "text-blue-300",
                           label: "صحيفة الدعوى"
                         };
                       case "judgment":
                         return {
-                          bg: "bg-gradient-to-br from-[#fef3c7] to-[#fffbc7]",
-                          border: "border-amber-200/90 hover:border-amber-500 hover:shadow-[0_10px_25px_rgba(217,119,6,0.08)]",
-                          iconBg: "bg-amber-100 border-amber-200",
-                          iconColor: "text-amber-800",
+                          bg: baseBg,
+                          border: "border-amber-500/30 hover:border-[#FF7F00] hover:shadow-[0_10px_25px_rgba(255,127,0,0.15)]",
+                          iconBg: "bg-amber-900/40 border-amber-500/50",
+                          iconColor: "text-[#FACC15]",
                           label: "حكم قضائي"
                         };
                       case "session_record":
                         return {
-                          bg: "bg-gradient-to-br from-[#ecfdf5] to-[#f0fff7]",
-                          border: "border-emerald-200/90 hover:border-emerald-500 hover:shadow-[0_10px_25px_rgba(5,150,105,0.08)]",
-                          iconBg: "bg-emerald-100 border-emerald-200",
-                          iconColor: "text-emerald-700",
+                          bg: baseBg,
+                          border: "border-emerald-500/30 hover:border-[#FACC15] hover:shadow-[0_10px_25px_rgba(250,204,21,0.15)]",
+                          iconBg: "bg-emerald-900/40 border-emerald-500/50",
+                          iconColor: "text-emerald-300",
                           label: "محضر ضبط الجلسة"
                         };
                       case "response_memo":
                         return {
-                          bg: "bg-gradient-to-br from-[#faf5ff] to-[#fdfaff]",
-                          border: "border-purple-200/90 hover:border-purple-500 hover:shadow-[0_10px_25px_rgba(124,58,237,0.08)]",
-                          iconBg: "bg-purple-100 border-purple-200",
-                          iconColor: "text-purple-700",
+                          bg: baseBg,
+                          border: "border-purple-500/30 hover:border-[#FACC15] hover:shadow-[0_10px_25px_rgba(250,204,21,0.15)]",
+                          iconBg: "bg-purple-900/40 border-purple-500/50",
+                          iconColor: "text-purple-300",
                           label: "مذكرة جوابية"
                         };
                       default:
                         return {
-                          bg: "bg-slate-50",
-                          border: "border-slate-300 hover:border-slate-500",
-                          iconBg: "bg-slate-100 border-slate-200",
-                          iconColor: "text-slate-800",
+                          bg: baseBg,
+                          border: "border-slate-700 hover:border-[#FACC15]",
+                          iconBg: "bg-slate-800 border-slate-600",
+                          iconColor: "text-[#FACC15]",
                           label: "مستند قضائي"
                         };
                     }
@@ -1262,152 +1263,152 @@ ${
                                       p-5 transition-all duration-300 hover:-translate-y-1
                                       ${styles.bg} ${styles.border} shadow-md`}
                                   >
-                                    {/* نوع المستند مع شارة حديثاً أو مسبقاً */}
-                                    <div className="flex items-center justify-between gap-1.5 mb-4 select-none">
-                                      <div
-                                        className={`inline-flex items-center gap-2
-                                        text-xs font-black px-3 py-1.5 rounded-xl
-                                        ${styles.iconBg} ${styles.iconColor} border shadow-sm`}
-                                      >
-                                        <Icon className="w-4 h-4 shrink-0" />
-                                        <span className="tracking-wide">{styles.label}</span>
+                                      {/* نوع المستند مع شارة حديثاً أو مسبقاً */}
+                                      <div className="flex items-center justify-between gap-1.5 mb-4 select-none">
+                                        <div
+                                          className={`inline-flex items-center gap-2
+                                          text-xs font-black px-3 py-1.5 rounded-xl
+                                          ${styles.iconBg} ${styles.iconColor} border shadow-sm`}
+                                        >
+                                          <Icon className="w-4 h-4 shrink-0" />
+                                          <span className="tracking-wide text-white">{styles.label}</span>
+                                        </div>
+
+                                        {isDocRecent ? (
+                                          <span className="text-[10px] px-2.5 py-1 rounded-xl bg-emerald-900/40 text-emerald-300 border border-emerald-500/50 font-extrabold flex items-center gap-1.5 font-sans animate-pulse">
+                                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 block shadow-[0_0_8px_rgba(52,211,153,0.8)]" />
+                                            مرفوع حديثاً
+                                          </span>
+                                        ) : (
+                                          <span className="text-[10px] px-2.5 py-1 rounded-xl bg-slate-800/80 text-slate-300 border border-slate-600 font-extrabold flex items-center gap-1.5 font-sans">
+                                            <span className="w-1.5 h-1.5 rounded-full bg-slate-400 block" />
+                                            محفوظ مسبقاً
+                                          </span>
+                                        )}
                                       </div>
 
-                                      {isDocRecent ? (
-                                        <span className="text-[10px] px-2.5 py-1 rounded-xl bg-emerald-100 text-emerald-800 border border-emerald-200 font-extrabold flex items-center gap-1.5 font-sans animate-pulse">
-                                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 block" />
-                                          مرفوع حديثاً
-                                        </span>
-                                      ) : (
-                                        <span className="text-[10px] px-2.5 py-1 rounded-xl bg-slate-100 text-slate-800 border border-slate-200 font-extrabold flex items-center gap-1.5 font-sans">
-                                          <span className="w-1.5 h-1.5 rounded-full bg-slate-400 block" />
-                                          محفوظ مسبقاً
-                                        </span>
-                                      )}
-                                    </div>
+                                      {/* اسم المستند */}
+                                      <p className="text-white font-black text-sm mb-4 leading-relaxed hover:text-[#FACC15] transition-colors duration-200">
+                                        {doc.document_name}
+                                      </p>
 
-                                    {/* اسم المستند */}
-                                    <p className="text-[#0f172a] font-black text-sm mb-4 leading-relaxed hover:text-amber-700 transition-colors duration-200">
-                                      {doc.document_name}
-                                    </p>
-
-                                    {/* تفاصيل - نصوص داكنة بتباين مثالي */}
-                                    <div className="space-y-2 mb-4 bg-white/80 p-3.5 rounded-xl border border-slate-200 shadow-sm">
-                                      {doc.judgment_date && (
-                                        <div className="flex items-center gap-2">
-                                          <Calendar className="w-3.5 h-3.5 text-amber-700 shrink-0" />
-                                          <span className="text-amber-900 font-black text-xs">
-                                            تاريخ الحكم: {doc.judgment_date}
-                                          </span>
-                                        </div>
-                                      )}
-                                      {doc.hearing_date && (
-                                        <div className="flex items-center gap-2">
-                                          <Calendar className="w-3.5 h-3.5 text-blue-700 shrink-0" />
-                                          <span className="text-blue-900 font-black text-xs">
-                                            تاريخ الجلسة: {doc.hearing_date}
-                                          </span>
-                                        </div>
-                                      )}
-                                      {doc.judgment_type && (
-                                        <div className="flex items-center gap-2">
-                                          <span
-                                            className="inline-block text-[11px] px-2.5 py-1
-                                            bg-amber-100 text-amber-900 border border-amber-200
-                                            rounded-lg font-black"
-                                          >
-                                            {doc.judgment_type}
-                                          </span>
-                                        </div>
-                                      )}
-                                      {doc.court_name && (
-                                        <div className="flex items-center gap-2">
-                                          <Building2 className="w-3.5 h-3.5 text-indigo-700 shrink-0" />
-                                          <span className="text-slate-800 font-black text-xs truncate">
-                                            {doc.court_name}
-                                            {doc.circuit_number
-                                              ? ` — دائرة ${doc.circuit_number}`
-                                              : ""}
-                                          </span>
-                                        </div>
-                                      )}
-                                    </div>
-
-                                    {/* حجم + تاريخ برؤية واضحة للغاية */}
-                                    <div
-                                      className="flex items-center justify-between
-                                      pt-3 border-t border-slate-200/80"
-                                    >
-                                      <span className="text-slate-600 font-bold text-xs">
-                                        الحجم:{" "}
-                                        <span className="text-[#0f172a] font-black">
-                                          {formatFileSize(
-                                            doc.compressed_size || doc.file_size,
-                                          )}
-                                        </span>
-                                      </span>
-                                      <span className="text-slate-600 font-bold text-xs">
-                                        التاريخ:{" "}
-                                        <span className="text-[#0f172a] font-black">
-                                          {new Date(doc.created_at).toLocaleDateString(
-                                            "ar-SA",
-                                          )}
-                                        </span>
-                                      </span>
-                                    </div>
-
-                                    {/* أزرار الإجراءات - نمط مخصص فخم دائم الوضوح بتباين عالي */}
-                                    <div className="flex flex-wrap gap-2 pt-3.5 mt-3 border-t border-slate-200">
-                                      <button
-                                        onClick={() => setViewerDoc(doc)}
-                                        className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-black text-xs rounded-xl shadow-sm hover:shadow transition-all cursor-pointer"
-                                        title="عرض ومعاينة المستند"
-                                      >
-                                        <Eye className="w-4 h-4 text-white" />
-                                        <span>عرض المستند</span>
-                                      </button>
-                                      
-                                      <button
-                                        onClick={() => {
-                                          setAiPanel({ doc, mode: "analyze" });
-                                          setAiOutput("");
-                                          setAiError("");
-                                        }}
-                                        className="flex items-center justify-center p-2 bg-purple-100 hover:bg-purple-200 active:scale-95 text-purple-700 hover:text-purple-800 border border-purple-200 rounded-xl transition-all cursor-pointer shadow-sm"
-                                        title="تحليل بالذكاء الاصطناعي"
-                                      >
-                                        <Sparkles className="w-4 h-4 stroke-[2]" />
-                                      </button>
-
-                                      <button
-                                        onClick={() => {
-                                          if (doc.file_url) {
-                                            const a = document.createElement("a");
-                                            a.href = doc.file_url;
-                                            a.download = doc.document_name;
-                                            a.target = "_blank";
-                                            a.click();
-                                          }
-                                        }}
-                                        className="flex items-center justify-center p-2 bg-emerald-150 hover:bg-emerald-200 active:scale-95 text-emerald-800 hover:text-emerald-900 border border-emerald-300 rounded-xl transition-all cursor-pointer shadow-sm"
-                                        title="تحميل الملف"
-                                      >
-                                        <Download className="w-4 h-4 stroke-[2]" />
-                                      </button>
-
-                                      <button
-                                        onClick={() => handleDelete(doc)}
-                                        disabled={isDeleting === doc.id}
-                                        className="flex items-center justify-center p-2 bg-red-100 hover:bg-red-200 active:scale-50 text-red-650 hover:text-red-800 border border-red-200 rounded-xl transition-all cursor-pointer disabled:opacity-50 shadow-sm"
-                                        title="حذف نهائي"
-                                      >
-                                        {isDeleting === doc.id ? (
-                                          <Loader2 className="w-4 h-4 text-red-600 animate-spin" />
-                                        ) : (
-                                          <Trash2 className="w-4 h-4 stroke-[2]" />
+                                      {/* تفاصيل - نصوص ساطعة بتباين مثالي مع الخلفية الداكنة */}
+                                      <div className="space-y-2 mb-4 bg-slate-800/40 p-3.5 rounded-xl border border-slate-700 shadow-inner">
+                                        {doc.judgment_date && (
+                                          <div className="flex items-center gap-2">
+                                            <Calendar className="w-3.5 h-3.5 text-[#FACC15] shrink-0" />
+                                            <span className="text-amber-100 font-bold text-xs">
+                                              تاريخ الحكم: <span className="text-[#FACC15] font-black">{doc.judgment_date}</span>
+                                            </span>
+                                          </div>
                                         )}
-                                      </button>
-                                    </div>
+                                        {doc.hearing_date && (
+                                          <div className="flex items-center gap-2">
+                                            <Calendar className="w-3.5 h-3.5 text-blue-400 shrink-0" />
+                                            <span className="text-blue-100 font-bold text-xs">
+                                              تاريخ الجلسة: <span className="text-[#60A5FA] font-black">{doc.hearing_date}</span>
+                                            </span>
+                                          </div>
+                                        )}
+                                        {doc.judgment_type && (
+                                          <div className="flex items-center gap-2">
+                                            <span
+                                              className="inline-block text-[11px] px-2.5 py-1
+                                              bg-amber-900/40 text-[#FACC15] border border-amber-500/50
+                                              rounded-lg font-black"
+                                            >
+                                              {doc.judgment_type}
+                                            </span>
+                                          </div>
+                                        )}
+                                        {doc.court_name && (
+                                          <div className="flex items-center gap-2">
+                                            <Building2 className="w-3.5 h-3.5 text-[#FF7F00] shrink-0" />
+                                            <span className="text-orange-100 font-bold text-xs truncate">
+                                              المحكمة: <span className="text-[#FF7F00] font-black">{doc.court_name}</span>
+                                              {doc.circuit_number
+                                                ? ` — دائرة ${doc.circuit_number}`
+                                                : ""}
+                                            </span>
+                                          </div>
+                                        )}
+                                      </div>
+
+                                      {/* حجم + تاريخ برؤية واضحة للغاية */}
+                                      <div
+                                        className="flex items-center justify-between
+                                        pt-3 border-t border-slate-700/80"
+                                      >
+                                        <span className="text-slate-400 font-bold text-xs">
+                                          الحجم:{" "}
+                                          <span className="text-white font-black">
+                                            {formatFileSize(
+                                              doc.compressed_size || doc.file_size,
+                                            )}
+                                          </span>
+                                        </span>
+                                        <span className="text-slate-400 font-bold text-xs">
+                                          التاريخ:{" "}
+                                          <span className="text-white font-black">
+                                            {new Date(doc.created_at).toLocaleDateString(
+                                              "ar-SA",
+                                            )}
+                                          </span>
+                                        </span>
+                                      </div>
+
+                                      {/* أزرار الإجراءات - نمط مخصص فخم دائم الوضوح بتباين عالي */}
+                                      <div className="flex flex-wrap gap-2 pt-3.5 mt-3 border-t border-slate-700">
+                                        <button
+                                          onClick={() => setViewerDoc(doc)}
+                                          className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 bg-blue-600 hover:bg-blue-500 active:scale-95 text-white font-black text-xs rounded-xl shadow-sm hover:shadow transition-all cursor-pointer"
+                                          title="عرض ومعاينة المستند"
+                                        >
+                                          <Eye className="w-4 h-4 text-white" />
+                                          <span>عرض المستند</span>
+                                        </button>
+                                        
+                                        <button
+                                          onClick={() => {
+                                            setAiPanel({ doc, mode: "analyze" });
+                                            setAiOutput("");
+                                            setAiError("");
+                                          }}
+                                          className="flex items-center justify-center p-2 bg-purple-900/40 hover:bg-purple-800/60 active:scale-95 text-purple-300 border border-purple-500/50 rounded-xl transition-all cursor-pointer shadow-sm"
+                                          title="تحليل بالذكاء الاصطناعي"
+                                        >
+                                          <Sparkles className="w-4 h-4 stroke-[2]" />
+                                        </button>
+
+                                        <button
+                                          onClick={() => {
+                                            if (doc.file_url) {
+                                              const a = document.createElement("a");
+                                              a.href = doc.file_url;
+                                              a.download = doc.document_name;
+                                              a.target = "_blank";
+                                              a.click();
+                                            }
+                                          }}
+                                          className="flex items-center justify-center p-2 bg-emerald-900/40 hover:bg-emerald-800/60 active:scale-95 text-emerald-400 border border-emerald-500/50 rounded-xl transition-all cursor-pointer shadow-sm"
+                                          title="تحميل الملف"
+                                        >
+                                          <Download className="w-4 h-4 stroke-[2]" />
+                                        </button>
+
+                                        <button
+                                          onClick={() => handleDelete(doc)}
+                                          disabled={isDeleting === doc.id}
+                                          className="flex items-center justify-center p-2 bg-rose-900/40 hover:bg-rose-800/60 active:scale-50 text-rose-400 border border-rose-500/50 rounded-xl transition-all cursor-pointer disabled:opacity-50 shadow-sm"
+                                          title="حذف نهائي"
+                                        >
+                                          {isDeleting === doc.id ? (
+                                            <Loader2 className="w-4 h-4 text-rose-500 animate-spin" />
+                                          ) : (
+                                            <Trash2 className="w-4 h-4 stroke-[2]" />
+                                          )}
+                                        </button>
+                                      </div>
                                   </div>
                                 );
                               })}

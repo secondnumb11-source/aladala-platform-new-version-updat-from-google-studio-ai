@@ -6,7 +6,7 @@
 import React from 'react';
 import { List } from 'react-window';
 const VirtualList = List as any;
-import { ChevronLeft, Trash2 } from 'lucide-react';
+import { ChevronLeft, Trash2, MoreVertical, ChevronDown } from 'lucide-react';
 import { Case } from '@/types';
 import CaseCard from './CaseCard';
 import { CaseClassificationTags } from '../CasesModule';
@@ -59,6 +59,80 @@ export default function CasesList({
   const [internalFocusedIdx, setInternalFocusedIdx] = React.useState<number | null>(null);
   const focusedIdx = externalFocusedIdx !== undefined ? externalFocusedIdx : internalFocusedIdx;
   const setFocusedIdx = externalSetFocusedIdx || setInternalFocusedIdx;
+
+  const [activeMenuCaseId, setActiveMenuCaseId] = React.useState<string | null>(null);
+
+  // Helper function to format date
+  const formatCaseDate = (dateStr?: string) => {
+    if (!dateStr) return '---';
+    try {
+      if (/^\d{4}\/\d{2}\/\d{2}$/.test(dateStr)) return dateStr;
+      const date = new Date(dateStr);
+      if (isNaN(date.getTime())) return dateStr;
+      return date.toISOString().split('T')[0].replace(/-/g, '/');
+    } catch {
+      return dateStr;
+    }
+  };
+
+  // Helper to get beautiful Arabic Category Name
+  const getArabicCategoryName = (category?: string) => {
+    switch (category) {
+      case 'commercial': return 'تجاري';
+      case 'labor': return 'عمالي';
+      case 'civil': return 'مدني';
+      case 'criminal': return 'جزائي';
+      case 'personal_status': return 'أحوال شخصية';
+      case 'administrative': return 'إداري';
+      case 'financial': return 'مالي';
+      case 'execution': return 'تنفيذ';
+      default: return 'عامة';
+    }
+  };
+
+  // Helper for Status Pills
+  const getStatusBadgeStyles = (status?: string) => {
+    switch (status) {
+      case 'under_study':
+        return isHighContrast 
+          ? 'border-slate-300 text-slate-800 bg-slate-100 hover:bg-slate-200' 
+          : 'border-slate-700/60 text-slate-300 bg-slate-800/60 hover:bg-slate-700/60';
+      case 'under_review':
+      case 'active':
+        return isHighContrast 
+          ? 'border-amber-300 text-amber-800 bg-amber-50 hover:bg-amber-100' 
+          : 'border-amber-500/30 text-amber-400 bg-amber-500/10 hover:bg-amber-500/20';
+      case 'struck_off':
+        return isHighContrast 
+          ? 'border-gray-300 text-gray-800 bg-gray-100 hover:bg-gray-200' 
+          : 'border-gray-700 text-gray-400 bg-gray-800/60 hover:bg-gray-700/60';
+      case 'appeal':
+        return isHighContrast 
+          ? 'border-indigo-300 text-indigo-800 bg-indigo-50 hover:bg-indigo-100' 
+          : 'border-indigo-500/30 text-indigo-400 bg-indigo-500/10 hover:bg-indigo-500/20';
+      case 'execution':
+        return isHighContrast 
+          ? 'border-orange-300 text-orange-800 bg-orange-50 hover:bg-orange-100' 
+          : 'border-orange-500/30 text-orange-400 bg-orange-500/10 hover:bg-orange-500/20';
+      case 'primary_judgment':
+      case 'final_judgment':
+        return isHighContrast 
+          ? 'border-emerald-300 text-emerald-800 bg-emerald-50 hover:bg-emerald-100' 
+          : 'border-emerald-500/30 text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20';
+      case 'postponed':
+        return isHighContrast 
+          ? 'border-rose-300 text-rose-800 bg-rose-50 hover:bg-rose-100' 
+          : 'border-rose-500/30 text-rose-400 bg-rose-500/10 hover:bg-rose-500/20';
+      case 'closed':
+        return isHighContrast 
+          ? 'border-slate-300 text-slate-800 bg-slate-100 hover:bg-slate-200' 
+          : 'border-slate-700 text-slate-400 bg-slate-800/40 hover:bg-slate-700/40';
+      default:
+        return isHighContrast 
+          ? 'border-slate-200 text-slate-700 bg-slate-50' 
+          : 'border-slate-800 text-slate-400 bg-slate-900/40';
+    }
+  };
 
   // Keyboard navigation listener
   React.useEffect(() => {
@@ -126,15 +200,40 @@ export default function CasesList({
           ? 'bg-white border-slate-900 border-2 shadow-slate-200' 
           : 'bg-[#050e21] border-slate-700/50 shadow-black/80'
       }`} dir="rtl">
-        <div className={`flex items-center text-right border-b ${isHighContrast ? 'bg-slate-200 border-slate-900' : 'bg-slate-900/80 border-slate-800'}`} dir="rtl">
-          <div className="flex-[1] px-4 py-4 text-[11px] font-black uppercase tracking-[0.2em]">رقم الدعوى</div>
-          <div className="flex-[2] px-4 py-4 text-[11px] font-black uppercase tracking-[0.2em]">اسم الدعوى</div>
-          <div className="flex-[1.5] px-4 py-4 text-[11px] font-black uppercase tracking-[0.2em]">العميل</div>
-          <div className="flex-[1] px-4 py-4 text-[11px] font-black uppercase tracking-[0.2em]">التصنيف</div>
-          <div className="flex-[1] px-4 py-4 text-[11px] font-black uppercase tracking-[0.2em]">الحالة</div>
-          <div className="flex-[1] px-4 py-4 text-[11px] font-black uppercase tracking-[0.2em]">الجلسة القادمة</div>
-          <div className="flex-[0.5] px-4 py-4"></div>
+        {/* Table Header */}
+        <div className={`flex items-center text-right border-b ${
+          isHighContrast ? 'bg-slate-200 border-slate-900 text-slate-950' : 'bg-slate-900/80 border-slate-800 text-slate-200'
+        } font-[900] text-xs h-14`} dir="rtl">
+          {/* 1. Green column right-most */}
+          <div className="w-14 self-stretch flex items-center justify-center bg-[#00b274] text-white shrink-0 font-bold text-base select-none rounded-tr-[2.4rem]">
+            <ChevronDown className="w-4 h-4" />
+          </div>
+          
+          {/* 2. رقم القضية */}
+          <div className={`flex-[1.2] min-w-[120px] h-full px-4 flex items-center font-black border-l ${
+            isHighContrast ? 'bg-slate-100/30 border-slate-200' : 'bg-slate-900/30 border-slate-800/30'
+          }`}>رقم القضية</div>
+          
+          {/* 3. تاريخ القضية */}
+          <div className="flex-[1.2] min-w-[110px] h-full px-4 flex items-center font-black border-l border-slate-200/10">تاريخ القضية</div>
+          
+          {/* 4. نوع القضية */}
+          <div className="flex-[1.5] min-w-[130px] h-full px-4 flex items-center font-black border-l border-slate-200/10">نوع القضية</div>
+          
+          {/* 5. المدعي */}
+          <div className="flex-[2] min-w-[150px] h-full px-4 flex items-center font-black border-l border-slate-200/10">المدعي</div>
+          
+          {/* 6. المدعى عليه */}
+          <div className="flex-[2] min-w-[150px] h-full px-4 flex items-center font-black border-l border-slate-200/10">المدعى عليه</div>
+          
+          {/* 7. الحالة */}
+          <div className="flex-[1.2] min-w-[120px] h-full px-4 flex items-center font-black border-l border-slate-200/10">الحالة</div>
+          
+          {/* 8. Options Column (left-most) */}
+          <div className="w-12 h-full flex items-center justify-center shrink-0"></div>
         </div>
+
+        {/* Table Body (Virtualized list) */}
         <VirtualList
           style={{ direction: "rtl" }}
           height={600}
@@ -146,51 +245,79 @@ export default function CasesList({
           {({ index, style }: any) => {
             const c = filteredCases[index];
             if (!c) return null;
-            const { arabicStatusName, CategoryIcon } = getInteractiveCaseStyles(c.category, c.status);
+            const { CategoryIcon } = getInteractiveCaseStyles(c.category, c.status);
             const isRowFocused = index === focusedIdx;
+            const isMenuOpen = activeMenuCaseId === c.id;
+
             return (
               <div 
                 id={`case-card-${c.id}`}
                 style={style}
-                className={`flex items-center text-right transition-all group cursor-pointer ${
+                className={`flex items-center text-right transition-all group cursor-pointer border-b ${
                   isRowFocused 
-                    ? 'bg-[#FF7F00]/25 border-y-2 border-[#FF7F00] shadow-[0_0_15px_rgba(255,127,0,0.3)] scale-[1.005] z-10' 
+                    ? 'bg-amber-500/20 border-y-2 border-[#D4AF37] shadow-[0_0_15px_rgba(212,175,55,0.4)] scale-[1.005] z-10' 
                     : isHighContrast 
                       ? (index % 2 === 0 ? 'bg-slate-50 hover:bg-slate-100' : 'bg-white hover:bg-slate-100') 
                       : (index % 2 === 0 ? 'bg-[#0a182f]/40 hover:bg-amber-500/10' : 'bg-transparent hover:bg-amber-500/10')
-                } ${c.archived ? 'opacity-50 grayscale-[0.5]' : ''}`} 
+                } ${c.archived ? 'opacity-50 grayscale-[0.5]' : ''} ${isHighContrast ? 'border-slate-200' : 'border-slate-800/40'}`} 
                 onClick={() => {
                   setFocusedIdx(index);
                   onSelectCase(c);
                 }}
                 dir="rtl"
               >
-                <div className={`flex-[1] px-4 text-xs font-mono font-black tracking-tight ${isRowFocused ? 'text-[#FF7F00]' : isHighContrast ? 'text-amber-800' : 'text-amber-400'} transition-colors`}>#{c.caseNumber}</div>
-                <div className="flex-[2] px-4 text-xs font-black tracking-tight truncate">
-                  <div className="flex items-center gap-2">
-                    <span className="truncate">{c.caseName}</span>
-                    {isCaseOverdue(c) && (
-                      <span className="shrink-0 w-2 h-2 rounded-full bg-rose-500 animate-pulse relative" title="تجاوزت المهلة النظامية" />
-                    )}
-                  </div>
-                  <CaseClassificationTags category={c.category} status={c.status} isHighContrast={isHighContrast} />
+                {/* 1. Green stripe right-most */}
+                <div className="w-14 self-stretch flex items-center justify-center bg-[#00b274] text-white shrink-0 font-bold text-base select-none border-l border-slate-200/20">
+                  <ChevronDown className="w-4 h-4 text-white" />
                 </div>
-                <div className={`flex-[1.5] px-4 text-[11px] font-black tracking-tight truncate ${isRowFocused ? 'text-white font-black' : isHighContrast ? 'text-slate-800' : 'text-indigo-300'}`}>{c.clientName}</div>
-                <div className="flex-[1] px-4">
-                  <span className={`text-[11px] font-black px-2.5 py-1.5 rounded-xl border-2 inline-flex items-center gap-1 ${
-                    isHighContrast 
-                      ? 'bg-slate-100 border-slate-900 text-slate-950' 
-                      : 'bg-slate-900 border-slate-700 text-white'
-                  }`}>
-                    <CategoryIcon className="w-3 h-3" />
+
+                {/* 2. رقم القضية */}
+                <div className={`flex-[1.2] min-w-[120px] h-full px-4 flex items-center font-mono font-black text-xs text-right border-l ${
+                  isHighContrast ? 'bg-slate-100/50 border-slate-200 text-slate-850' : 'bg-slate-900/30 border-slate-800/50 text-amber-400'
+                }`}>
+                  #{c.caseNumber}
+                </div>
+
+                {/* 3. تاريخ القضية */}
+                <div className={`flex-[1.2] min-w-[110px] h-full px-4 flex items-center font-mono text-xs text-right border-l ${
+                  isHighContrast ? 'border-slate-200 text-slate-600' : 'border-slate-800/50 text-slate-300'
+                }`}>
+                  {formatCaseDate(c.startDate || c.createdAt)}
+                </div>
+
+                {/* 4. نوع القضية */}
+                <div className={`flex-[1.5] min-w-[130px] h-full px-4 flex items-center text-xs text-right font-[850] border-l ${
+                  isHighContrast ? 'border-slate-200 text-slate-700' : 'border-slate-800/50 text-slate-200'
+                }`}>
+                  <span className="flex items-center gap-1.5">
+                    <CategoryIcon className="w-3.5 h-3.5 opacity-75 shrink-0" />
+                    {getArabicCategoryName(c.category)}
                   </span>
                 </div>
-                <div className="flex-[1] px-4" onClick={(e) => e.stopPropagation()}>
+
+                {/* 5. المدعي */}
+                <div className={`flex-[2] min-w-[150px] h-full px-4 flex items-center text-xs font-[800] text-right border-l truncate ${
+                  isHighContrast ? 'border-slate-200 text-slate-800' : 'border-slate-800/50 text-indigo-300'
+                }`} title={c.clientName}>
+                  {c.clientName || 'غير محدد'}
+                </div>
+
+                {/* 6. المدعى عليه */}
+                <div className={`flex-[2] min-w-[150px] h-full px-4 flex items-center text-xs font-[800] text-right border-l truncate ${
+                  isHighContrast ? 'border-slate-200 text-slate-800' : 'border-slate-800/50 text-rose-300'
+                }`} title={c.opponentName}>
+                  {c.opponentName || 'غير محدد'}
+                </div>
+
+                {/* 7. الحالة */}
+                <div className={`flex-[1.2] min-w-[120px] h-full px-4 flex items-center border-l ${
+                  isHighContrast ? 'border-slate-200' : 'border-slate-800/50'
+                }`} onClick={(e) => e.stopPropagation()}>
                   <select
                     value={c.status || 'under_study'}
                     onChange={(e) => onUpdateCaseStatus && onUpdateCaseStatus(c, e.target.value)}
-                    className={`text-[11px] font-black bg-transparent focus:outline-none border rounded-lg p-1.5 cursor-pointer ${
-                      isHighContrast ? 'text-slate-950 border-slate-900 bg-white font-black' : 'text-amber-400 border-slate-700/50 bg-[#050e21] font-bold'
+                    className={`text-[11px] font-black focus:outline-none border-2 rounded-xl px-2.5 py-1.5 cursor-pointer w-full text-center shadow-sm transition-all ${
+                      getStatusBadgeStyles(c.status)
                     }`}
                   >
                     <option value="under_study" className="bg-slate-950 text-white">قيد الدراسة 🖋️</option>
@@ -205,23 +332,85 @@ export default function CasesList({
                     <option value="active" className="bg-slate-950 text-white">نشطة جارية ⚖️</option>
                   </select>
                 </div>
-                <div className={`flex-[1] px-4 text-[10px] font-black font-mono tracking-widest truncate ${isRowFocused ? 'text-white' : isHighContrast ? 'text-emerald-900' : 'text-emerald-400'}`}>{c.nextSessionDate || '---'}</div>
-                <div className="flex-[0.5] px-4 text-right flex items-center justify-end gap-2">
+
+                {/* 8. Options Menu / Actions Column (left-most) */}
+                <div className="w-12 h-full flex items-center justify-center shrink-0 relative" onClick={(e) => e.stopPropagation()}>
                   <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onDeleteCase && onDeleteCase(c.id);
-                    }}
-                    className={`p-1.5 rounded-lg border transition-all ${
+                    onClick={() => setActiveMenuCaseId(isMenuOpen ? null : c.id)}
+                    className={`p-2 rounded-full transition-all border ${
                       isHighContrast 
-                        ? 'bg-rose-50 border-rose-200 text-rose-600 hover:bg-rose-100' 
-                        : 'bg-rose-500/10 border-rose-500/20 text-rose-400 hover:bg-rose-500/20'
+                        ? 'hover:bg-slate-100 text-slate-700 border-transparent hover:border-slate-200' 
+                        : 'hover:bg-slate-800 text-slate-300 border-transparent hover:border-slate-700/50'
                     }`}
-                    title="حذف القضية نهائياً"
+                    title="خيارات التحكم"
                   >
-                    <Trash2 className="w-3.5 h-3.5" />
+                    <MoreVertical className="w-4 h-4" />
                   </button>
-                  <ChevronLeft className="w-4 h-4 transition-all rotate-180 inline-block drop-shadow-sm text-slate-700" />
+
+                  {/* Dropdown Popover */}
+                  {isMenuOpen && (
+                    <div 
+                      className={`absolute left-4 top-1/2 -translate-y-1/2 z-50 w-48 rounded-2xl shadow-xl border p-1.5 transition-all animate-in fade-in slide-in-from-left-2 ${
+                        isHighContrast 
+                          ? 'bg-white border-slate-200 text-slate-800' 
+                          : 'bg-[#0b172a] border-slate-700/80 text-slate-200 shadow-black/80'
+                      }`}
+                    >
+                      <button
+                        onClick={() => {
+                          setActiveMenuCaseId(null);
+                          onSelectCase(c);
+                        }}
+                        className={`w-full text-right px-3 py-2 rounded-xl text-xs font-black flex items-center gap-2 transition-all ${
+                          isHighContrast ? 'hover:bg-slate-100' : 'hover:bg-slate-800/80'
+                        }`}
+                      >
+                        <span>📂</span> عرض تفاصيل القضية
+                      </button>
+                      
+                      {onNajizSync && (
+                        <button
+                          onClick={() => {
+                            setActiveMenuCaseId(null);
+                            onNajizSync(c);
+                          }}
+                          className={`w-full text-right px-3 py-2 rounded-xl text-xs font-black flex items-center gap-2 transition-all ${
+                            isHighContrast ? 'hover:bg-slate-100' : 'hover:bg-slate-800/80'
+                          }`}
+                        >
+                          <span>🔄</span> مزامنة مع ناجز
+                        </button>
+                      )}
+
+                      {onArchiveToggle && (
+                        <button
+                          onClick={() => {
+                            setActiveMenuCaseId(null);
+                            onArchiveToggle(c);
+                          }}
+                          className={`w-full text-right px-3 py-2 rounded-xl text-xs font-black flex items-center gap-2 transition-all ${
+                            isHighContrast ? 'hover:bg-slate-100' : 'hover:bg-slate-800/80'
+                          }`}
+                        >
+                          <span>📦</span> {c.archived ? 'إلغاء الأرشفة' : 'أرشفة القضية'}
+                        </button>
+                      )}
+
+                      <div className="h-px bg-slate-200/10 dark:bg-slate-700/30 my-1" />
+
+                      <button
+                        onClick={() => {
+                          setActiveMenuCaseId(null);
+                          if (onDeleteCase) onDeleteCase(c.id);
+                        }}
+                        className={`w-full text-right px-3 py-2 rounded-xl text-xs font-black flex items-center gap-2 text-rose-500 transition-all ${
+                          isHighContrast ? 'hover:bg-rose-50' : 'hover:bg-rose-500/10'
+                        }`}
+                      >
+                        <span>🗑️</span> حذف القضية نهائياً
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
             );

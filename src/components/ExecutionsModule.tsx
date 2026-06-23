@@ -94,6 +94,86 @@ export function getTextColorForBg(hexColor: string | undefined): { text: string;
   }
 }
 
+export function normalizeExecutionItem(ex: any): any {
+  if (!ex) return ex;
+  return {
+    id: ex.id,
+    execution_number: ex.execution_number || ex.executionNumber || "",
+    case_number: ex.case_number || ex.caseNumber || "",
+    requester_name: ex.requester_name || ex.requesterName || "",
+    opponent_name: ex.opponent_name || ex.opponentName || "",
+    status: ex.status || "قيد التنفيذ",
+    amount: ex.amount || 0,
+    court_name: ex.court_name || ex.courtName || "",
+    issue_date: ex.issue_date || ex.issueDate || "",
+    last_update: ex.last_update || ex.lastUpdate || "",
+    details: ex.details || "",
+    is_najiz_sync: ex.is_najiz_sync !== undefined ? ex.is_najiz_sync : ex.isNajizSync,
+    card_color: ex.card_color || ex.cardColor || "#ffffff",
+    created_at: ex.created_at || ex.createdAt || "",
+  };
+}
+
+export interface ExecutionMetadata {
+  detailsText: string;
+  executionType: string;
+  bondType: string;
+}
+
+export function getExecutionMetadata(details: string | undefined): ExecutionMetadata {
+  const defaultRes = {
+    detailsText: details || "",
+    executionType: "تنفيذ مالي",
+    bondType: "سند لأمر"
+  };
+  if (!details) return defaultRes;
+
+  const trimmed = details.trim();
+  if (trimmed.startsWith("{") && trimmed.endsWith("}")) {
+    try {
+      const parsed = JSON.parse(trimmed);
+      if (parsed && typeof parsed === "object") {
+        return {
+          detailsText: parsed.detailsText || parsed.details || "",
+          executionType: parsed.executionType || parsed.execution_type || "تنفيذ مالي",
+          bondType: parsed.bondType || parsed.bond_type || "سند لأمر"
+        };
+      }
+    } catch (e) {
+      // ignore
+    }
+  }
+
+  // Smart heuristic based on text
+  let executionType = "تنفيذ مالي";
+  let bondType = "سند لأمر";
+
+  const lowerText = trimmed.toLowerCase();
+  if (lowerText.includes("أحوال شخصية") || lowerText.includes("حضانة") || lowerText.includes("نفقة") || lowerText.includes("زيارة")) {
+    executionType = "تنفيذ أحوال شخصية";
+  } else if (lowerText.includes("إخلاء") || lowerText.includes("عقار") || lowerText.includes("تسليم") || lowerText.includes("عقارية")) {
+    executionType = "تنفيذ غير مالي / إخلاء";
+  } else if (lowerText.includes("جنائي") || lowerText.includes("حق عام") || lowerText.includes("غرامة")) {
+    executionType = "تنفيذ جنائي";
+  }
+
+  if (lowerText.includes("حكم قضائي") || lowerText.includes("قرار قضائي") || lowerText.includes("حكم") || lowerText.includes("قرار")) {
+    bondType = "حكم قضائي";
+  } else if (lowerText.includes("شيك")) {
+    bondType = "شيك";
+  } else if (lowerText.includes("عقد موثق") || lowerText.includes("عقد إيجار") || lowerText.includes("إيجار") || lowerText.includes("عقد")) {
+    bondType = "عقد موثق";
+  } else if (lowerText.includes("كمبيالة")) {
+    bondType = "كمبيالة";
+  }
+
+  return {
+    detailsText: trimmed,
+    executionType,
+    bondType
+  };
+}
+
 interface ExecutionsModuleProps {
   executions: Execution[];
   onCreateExecution?: (e: Partial<Execution>) => void;
@@ -117,10 +197,10 @@ export default function ExecutionsModule({
   const [isSyncing, setIsSyncing] = useState(false);
 
   const [localExecutions, setLocalExecutions] =
-    useState<Execution[]>(executions);
+    useState<Execution[]>(() => (executions || []).map(normalizeExecutionItem));
 
   useEffect(() => {
-    setLocalExecutions(executions);
+    setLocalExecutions((executions || []).map(normalizeExecutionItem));
   }, [executions]);
 
   const loadExecutions = async () => {
@@ -132,18 +212,7 @@ export default function ExecutionsModule({
 
       if (!error && data) {
         setLocalExecutions(
-          data.map((db: any) => ({
-            id: db.id,
-            execution_number: db.execution_number || "",
-            status: db.status || "pending",
-            amount: db.amount || 0,
-            court_name: db.court_name || "",
-            requester_name: db.requester_name || "",
-            opponent_name: db.opponent_name || "",
-            issue_date: db.issue_date || "",
-            is_najiz_sync: db.is_najiz_sync || false,
-            created_at: db.created_at,
-          })),
+          data.map(normalizeExecutionItem)
         );
       }
     } catch (e) {
@@ -166,6 +235,26 @@ export default function ExecutionsModule({
       window.removeEventListener("najiz_sync_complete", handleSyncComplete);
     };
   }, []);
+
+  // Form type and bond states
+  const [formExecutionType, setFormExecutionType] = useState("تنفيذ مالي");
+  const [formBondType, setFormBondType] = useState("سند لأمر");
+
+  useEffect(() => {
+    if (isAdding) {
+      setFormExecutionType("تنفيذ مالي");
+      setFormBondType("سند لأمر");
+    }
+  }, [isAdding]);
+
+  useEffect(() => {
+    if (editingExec) {
+      const norm = normalizeExecutionItem(editingExec);
+      const meta = getExecutionMetadata(norm.details);
+      setFormExecutionType(meta.executionType);
+      setFormBondType(meta.bondType);
+    }
+  }, [editingExec]);
 
   // New execution form state
   const [newExec, setNewExec] = useState<Partial<Execution>>({
@@ -193,7 +282,15 @@ export default function ExecutionsModule({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (onCreateExecution) {
-      onCreateExecution(newExec);
+      const serializedDetails = JSON.stringify({
+        detailsText: newExec.details || "",
+        executionType: formExecutionType,
+        bondType: formBondType
+      });
+      onCreateExecution({
+        ...newExec,
+        details: serializedDetails
+      });
       setIsAdding(false);
       setNewExec({
         execution_number: "",
@@ -212,7 +309,17 @@ export default function ExecutionsModule({
   const handleUpdateSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (editingExec && onUpdateExecution) {
-      onUpdateExecution(editingExec.id, editingExec);
+      const norm = normalizeExecutionItem(editingExec);
+      const serializedDetails = JSON.stringify({
+        detailsText: norm.details || "",
+        executionType: formExecutionType,
+        bondType: formBondType
+      });
+      
+      onUpdateExecution(norm.id, {
+        ...norm,
+        details: serializedDetails
+      });
       setEditingExec(null);
     }
   };
@@ -494,6 +601,40 @@ export default function ExecutionsModule({
                   </div>
                 </div>
 
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 col-span-full">
+                  <div>
+                    <label className="text-xs font-black text-slate-800 mb-2 block uppercase tracking-wide">
+                      نوع الطلب <span className="text-rose-600 font-bold">*</span>
+                    </label>
+                    <select
+                      className="w-full bg-slate-50 border-2 border-slate-200 p-4 rounded-2xl text-slate-900 font-black text-sm hover:border-amber-400/50 focus:border-amber-500 focus:ring-4 focus:ring-amber-500/20 transition-all duration-300 outline-none shadow-sm cursor-pointer"
+                      value={formExecutionType}
+                      onChange={(e) => setFormExecutionType(e.target.value)}
+                    >
+                      <option value="تنفيذ مالي">تنفيذ مالي</option>
+                      <option value="تنفيذ أحوال شخصية">تنفيذ أحوال شخصية</option>
+                      <option value="تنفيذ غير مالي / إخلاء">تنفيذ غير مالي / إخلاء</option>
+                      <option value="تنفيذ جنائي">تنفيذ جنائي</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-xs font-black text-slate-800 mb-2 block uppercase tracking-wide">
+                      نوع السند <span className="text-rose-600 font-bold">*</span>
+                    </label>
+                    <select
+                      className="w-full bg-slate-50 border-2 border-slate-200 p-4 rounded-2xl text-slate-900 font-black text-sm hover:border-amber-400/50 focus:border-amber-500 focus:ring-4 focus:ring-amber-500/20 transition-all duration-300 outline-none shadow-sm cursor-pointer"
+                      value={formBondType}
+                      onChange={(e) => setFormBondType(e.target.value)}
+                    >
+                      <option value="سند لأمر">سند لأمر</option>
+                      <option value="حكم قضائي">حكم قضائي</option>
+                      <option value="عقد موثق">عقد موثق</option>
+                      <option value="شيك">شيك</option>
+                      <option value="كمبيالة">كمبيالة</option>
+                    </select>
+                  </div>
+                </div>
+
                 <div className="col-span-full">
                   <label className="text-xs font-black text-slate-800 mb-2 block uppercase tracking-wide">
                     الحالة الحالية للطلب
@@ -535,7 +676,7 @@ export default function ExecutionsModule({
                   <textarea
                     rows={3}
                     className="w-full bg-slate-50 border-2 border-slate-200 p-4 rounded-2xl text-slate-900 font-bold text-sm placeholder-slate-400 hover:border-amber-400/50 focus:border-amber-500 focus:ring-4 focus:ring-amber-500/20 transition-all duration-300 outline-none shadow-sm resize-none"
-                    value={isAdding ? newExec.details : editingExec?.details}
+                    value={isAdding ? newExec.details : getExecutionMetadata(editingExec?.details).detailsText}
                     onChange={(e) =>
                       isAdding
                         ? setNewExec({ ...newExec, details: e.target.value })
@@ -701,19 +842,25 @@ export default function ExecutionsModule({
               <thead>
                 <tr className="mb-4">
                   <th className="px-8 py-3 text-xs font-black tracking-wide text-slate-500 whitespace-nowrap">
-                    رقم الطلب الرسمي
+                    رقم الطلب
                   </th>
                   <th className="px-6 py-3 text-xs font-black tracking-wide text-slate-500 whitespace-nowrap">
-                    طالب الحماية (الموكل)
+                    نوع الطلب
                   </th>
                   <th className="px-6 py-3 text-xs font-black tracking-wide text-slate-500 whitespace-nowrap">
-                    المنفذ ضده
+                    نوع السند
+                  </th>
+                  <th className="px-6 py-3 text-xs font-black tracking-wide text-slate-500 whitespace-nowrap">
+                    تاريخ تقديم الطلب
+                  </th>
+                  <th className="px-6 py-3 text-xs font-black tracking-wide text-slate-500 whitespace-nowrap">
+                    إسم المنفذ ضده
+                  </th>
+                  <th className="px-6 py-3 text-xs font-black tracking-wide text-slate-500 whitespace-nowrap">
+                    إسم المحكمة
                   </th>
                   <th className="px-6 py-3 text-xs font-black tracking-wide text-slate-500 whitespace-nowrap text-center">
-                    المبلغ المستحق
-                  </th>
-                  <th className="px-6 py-3 text-xs font-black tracking-wide text-slate-500 whitespace-nowrap text-center">
-                    الحالة الحالية
+                    حالة الطلب
                   </th>
                   <th className="px-8 py-3 text-xs font-black tracking-wide text-slate-500 whitespace-nowrap text-left">
                     خيارات التحكم
@@ -724,79 +871,85 @@ export default function ExecutionsModule({
                 {filtered.length === 0 ? (
                   <tr>
                     <td
-                      colSpan={6}
+                      colSpan={8}
                       className="px-8 py-20 text-center text-slate-400 italic font-black text-lg bg-slate-50 rounded-3xl"
                     >
                       لا توجد نتائج مطابقة لفلترة البحث الحالية...
                     </td>
                   </tr>
                 ) : (
-                  filtered.map((ex) => (
-                    <tr
-                      key={ex.id}
-                      className="hover:scale-[1.01] bg-white transition-all duration-300 group shadow-sm hover:shadow-md relative"
-                    >
-                      <td className="px-8 py-6 whitespace-nowrap font-mono font-black text-sm text-[#0f172a] rounded-r-[2rem] border-y border-r border-slate-200 group-hover:text-amber-600 transition-colors">
-                        <div className="flex flex-col gap-1">
-                          <span
-                            className="cursor-pointer hover:underline text-lg drop-shadow-sm"
-                            onClick={() => setViewingExec(ex)}
-                          >
-                            #{ex.execution_number}
-                          </span>
-                          {ex.is_najiz_sync && (
-                            <span className="text-[10px] bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded-md flex items-center gap-1 w-fit font-black shadow-sm">
-                              <Activity className="w-2.5 h-2.5" /> مزامنة ناجز
+                  filtered.map((ex) => {
+                    const meta = getExecutionMetadata(ex.details);
+                    return (
+                      <tr
+                        key={ex.id}
+                        className="hover:scale-[1.01] bg-white transition-all duration-300 group shadow-sm hover:shadow-md relative"
+                      >
+                        <td className="px-8 py-6 whitespace-nowrap font-mono font-black text-sm text-[#0f172a] rounded-r-[2rem] border-y border-r border-slate-200 group-hover:text-amber-600 transition-colors">
+                          <div className="flex flex-col gap-1">
+                            <span
+                              className="cursor-pointer hover:underline text-lg drop-shadow-sm"
+                              onClick={() => setViewingExec(ex)}
+                            >
+                              #{ex.execution_number}
                             </span>
-                          )}
-                        </div>
-                      </td>
-                      <td className="px-6 py-6 whitespace-nowrap text-[#0f172a] font-extrabold text-base border-y border-slate-200">
-                        {ex.requester_name}
-                      </td>
-                      <td className="px-6 py-6 whitespace-nowrap text-[#334155] font-bold text-base border-y border-slate-200">
-                        {ex.opponent_name}
-                      </td>
-                      <td className="px-6 py-6 whitespace-nowrap text-center text-amber-600 font-mono font-black text-lg border-y border-slate-200">
-                        {(ex.amount || 0).toLocaleString()}{" "}
-                        <span className="text-xs text-amber-500 font-sans font-bold">
-                          ر.س
-                        </span>
-                      </td>
-                      <td className="px-6 py-6 whitespace-nowrap text-center border-y border-slate-200">
-                        <span
-                          className={`px-5 py-2 rounded-full text-[11px] font-black border uppercase tracking-widest ${
-                            ex.status?.includes("مكتمل") ||
-                            ex.status?.includes("منتهي")
-                              ? "bg-emerald-50 text-emerald-700 border-emerald-200 shadow-sm"
-                              : ex.status?.includes("قيد")
-                                ? "bg-amber-50 text-amber-700 border-amber-200 shadow-sm"
-                                : "bg-blue-50 text-blue-700 border-blue-200 shadow-sm"
-                          }`}
-                        >
-                          {ex.status}
-                        </span>
-                      </td>
-                      <td className="px-8 py-6 whitespace-nowrap text-left rounded-l-[2rem] border-y border-l border-slate-200">
-                        <div className="flex items-center justify-end gap-3">
-                          <button
-                            onClick={() => setViewingExec(ex)}
-                            className="p-3 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 rounded-full transition-all cursor-pointer shadow-sm hover:shadow hover:-translate-y-0.5"
-                            title="عرض تفاصيل السجل"
+                            {ex.is_najiz_sync && (
+                              <span className="text-[10px] bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded-md flex items-center gap-1 w-fit font-black shadow-sm">
+                                <Activity className="w-2.5 h-2.5" /> مزامنة ناجز
+                              </span>
+                            )}
+                          </div>
+                        </td>
+                        <td className="px-6 py-6 whitespace-nowrap text-[#0f172a] font-extrabold text-base border-y border-slate-200">
+                          {meta.executionType}
+                        </td>
+                        <td className="px-6 py-6 whitespace-nowrap text-[#334155] font-bold text-base border-y border-slate-200">
+                          {meta.bondType}
+                        </td>
+                        <td className="px-6 py-6 whitespace-nowrap text-[#334155] font-mono text-sm border-y border-slate-200">
+                          {ex.issue_date || "—"}
+                        </td>
+                        <td className="px-6 py-6 whitespace-nowrap text-[#0f172a] font-extrabold text-base border-y border-slate-200">
+                          {ex.opponent_name}
+                        </td>
+                        <td className="px-6 py-6 whitespace-nowrap text-[#334155] font-bold text-sm border-y border-slate-200">
+                          {ex.court_name || "—"}
+                        </td>
+                        <td className="px-6 py-6 whitespace-nowrap text-center border-y border-slate-200">
+                          <span
+                            className={`px-5 py-2 rounded-full text-[11px] font-black border uppercase tracking-widest ${
+                              ex.status?.includes("مكتمل") ||
+                              ex.status?.includes("منتهي")
+                                ? "bg-emerald-50 text-emerald-700 border-emerald-200 shadow-sm"
+                                : ex.status?.includes("قيد")
+                                  ? "bg-amber-50 text-amber-700 border-amber-200 shadow-sm"
+                                  : "bg-blue-50 text-blue-700 border-blue-200 shadow-sm"
+                            }`}
                           >
-                            <ArrowUpRight className="w-5 h-5" />
-                          </button>
-                          <button
-                            onClick={() => setEditingExec(ex)}
-                            className="p-3 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 rounded-full transition-all cursor-pointer shadow-sm hover:shadow hover:-translate-y-0.5"
-                            title="تعديل بيانات السجل"
-                          >
-                            <Edit2 className="w-5 h-5" />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))
+                            {ex.status}
+                          </span>
+                        </td>
+                        <td className="px-8 py-6 whitespace-nowrap text-left rounded-l-[2rem] border-y border-l border-slate-200">
+                          <div className="flex items-center justify-end gap-3">
+                            <button
+                              onClick={() => setViewingExec(ex)}
+                              className="p-3 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 rounded-full transition-all cursor-pointer shadow-sm hover:shadow hover:-translate-y-0.5"
+                              title="عرض تفاصيل السجل"
+                            >
+                              <ArrowUpRight className="w-5 h-5" />
+                            </button>
+                            <button
+                              onClick={() => setEditingExec(ex)}
+                              className="p-3 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 rounded-full transition-all cursor-pointer shadow-sm hover:shadow hover:-translate-y-0.5"
+                              title="تعديل بيانات السجل"
+                            >
+                              <Edit2 className="w-5 h-5" />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })
                 )}
               </tbody>
             </table>
@@ -1012,6 +1165,25 @@ export default function ExecutionsModule({
                 {/* Sub details card */}
                 <div className="bg-white border-2 border-slate-100 shadow-sm p-6 rounded-3xl space-y-4 relative overflow-hidden">
                    <div className="absolute top-0 right-0 w-32 h-32 bg-slate-50 rounded-full blur-2xl -z-10"></div>
+                  
+                  <div className="flex justify-between items-center border-b border-slate-100 pb-3">
+                    <span className="text-slate-500 text-xs font-black">
+                      نوع الطلب:
+                    </span>
+                    <span className="text-slate-950 text-sm font-black bg-amber-50 px-3 py-1 rounded-lg border border-amber-200">
+                      {getExecutionMetadata(viewingExec.details).executionType}
+                    </span>
+                  </div>
+
+                  <div className="flex justify-between items-center border-b border-slate-100 pb-3">
+                    <span className="text-slate-500 text-xs font-black">
+                      نوع السند:
+                    </span>
+                    <span className="text-slate-950 text-sm font-black bg-slate-50 px-3 py-1 rounded-lg border border-slate-200">
+                      {getExecutionMetadata(viewingExec.details).bondType}
+                    </span>
+                  </div>
+
                   <div className="flex justify-between items-center border-b border-slate-100 pb-3">
                     <span className="text-slate-500 text-xs font-black">
                       طالب التنفيذ (الموكل):
@@ -1086,7 +1258,7 @@ export default function ExecutionsModule({
                     محاضر وسجل الملاحظات التنفيذية:
                   </span>
                   <div className="bg-slate-50 border border-slate-200 p-4 rounded-3xl min-h-[80px] text-xs font-bold text-slate-700 leading-relaxed max-h-[140px] overflow-y-auto">
-                    {viewingExec.details ||
+                    {getExecutionMetadata(viewingExec.details).detailsText ||
                       "لا توجد ملاحظات إضافية مسجلة على هذا الطلب حتى الآن."}
                   </div>
                 </div>

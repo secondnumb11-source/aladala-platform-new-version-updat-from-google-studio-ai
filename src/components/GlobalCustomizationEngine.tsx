@@ -35,6 +35,73 @@ export default function GlobalCustomizationEngine() {
     return el.id;
   };
 
+  useEffect(() => {
+    // contrastOptimizer: Real-time scan and correction of dark text on dark backgrounds
+    const optimizeContrast = () => {
+      const elements = document.querySelectorAll(
+        '.card-professional, .card-professional-item, .glass-panel, [class*="bg-slate-"], [class*="bg-sky-"], [class*="bg-gray-"], [data-contrast-target]'
+      );
+      
+      elements.forEach((el) => {
+        const computed = window.getComputedStyle(el);
+        const bg = computed.backgroundColor;
+        
+        let r = 255, g = 255, b = 255;
+        if (bg !== "transparent" && bg !== "rgba(0, 0, 0, 0)") {
+          if (bg.startsWith('rgb')) {
+            const vals = bg.replace(/[^\d,]/g, '').split(',');
+            if (vals.length >= 3) {
+              r = parseInt(vals[0], 10);
+              g = parseInt(vals[1], 10);
+              b = parseInt(vals[2], 10);
+            }
+          }
+        }
+        
+        const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+        const isDark = brightness < 128;
+        
+        if (bg !== "transparent" && bg !== "rgba(0, 0, 0, 0)") {
+          if (isDark) {
+            if (el.getAttribute('data-contrast-level') !== 'dark') {
+              el.setAttribute('data-contrast-level', 'dark');
+              el.classList.add('text-high-contrast-light-bg');
+            }
+          } else {
+            if (el.getAttribute('data-contrast-level') !== 'light') {
+              el.setAttribute('data-contrast-level', 'light');
+              el.classList.remove('text-high-contrast-light-bg');
+            }
+          }
+        }
+      });
+      
+      // Force table stripes readability
+      const tableRows = document.querySelectorAll('tbody tr');
+      tableRows.forEach(row => {
+          row.classList.add('high-contrast-table-row');
+      });
+    };
+
+    const observer = new MutationObserver((mutations) => {
+      let shouldScan = false;
+      for (let mutation of mutations) {
+        if (mutation.type === 'childList') {
+          shouldScan = true;
+          break;
+        }
+      }
+      if (shouldScan) {
+        optimizeContrast();
+      }
+    });
+
+    observer.observe(document.body, { childList: true, subtree: true });
+    optimizeContrast();
+
+    return () => observer.disconnect();
+  }, []);
+
   useLayoutEffect(() => {
     // Apply saved styles on load and when active
     const applySavedStyles = () => {

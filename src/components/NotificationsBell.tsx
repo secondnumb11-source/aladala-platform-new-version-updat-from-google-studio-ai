@@ -1,6 +1,114 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Bell, Check, Trash2, Clock } from 'lucide-react';
+import { Bell, Check, Trash2, Clock, ChevronDown, Archive, MailOpen } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+
+const NotificationItem = ({ notif, handleMarkAsRead, setIsOpen, getTypeStyles }: any) => {
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  // Mapping string types or clues in title to legal/financial/admin categories
+  let categoryTag = { label: 'إداري', color: 'text-[#facc15] bg-[#facc15]/10 border-[#facc15]/30' };
+  if (notif.title.includes('فاتورة') || notif.action === 'finance') {
+    categoryTag = { label: 'مالي', color: 'text-[#ff7f00] bg-[#ff7f00]/10 border-[#ff7f00]/30' };
+  } else if (notif.title.includes('جلسة') || notif.title.includes('حكم') || notif.title.includes('قضية')) {
+    categoryTag = { label: 'قانوني', color: 'text-white bg-white/10 border-white/20' };
+  }
+
+  // Override type styles for ultimate high contrast: White, Yellow, Orange
+  const getHighContrastTypeStyles = (type: string) => {
+    switch (type) {
+      case 'urgent': return 'bg-[#ff7f00] text-slate-950 border-[#ff7f00] font-black';
+      case 'warning': return 'bg-[#facc15] text-slate-950 border-[#facc15] font-black';
+      case 'success': return 'bg-white text-slate-950 border-white font-black';
+      default: return 'bg-slate-800 text-white border-slate-700 font-bold';
+    }
+  };
+
+  return (
+    <div 
+      className="notifications-email-card relative p-5 rounded-2xl border border-slate-800/80 cursor-pointer transition-all duration-300 hover:border-[#ff7f00]/40 shadow-xl bg-[#0b1329] text-white select-none"
+      style={{
+        display: 'grid',
+        gridTemplateAreas: '"badge chevron" "title title" "category category" "content content" "actions actions"',
+        gap: '1rem'
+      }}
+      onClick={() => setIsExpanded(!isExpanded)}
+    >
+      {!notif.read && (
+        <div className="absolute right-0 top-1/2 -translate-y-1/2 w-1.5 h-12 bg-[#ff7f00] shadow-[0_0_15px_rgba(255,127,0,0.8)] rounded-l-md"></div>
+      )}
+
+      {/* Area: Badge */}
+      <div style={{ gridArea: 'badge' }} className="flex items-center gap-3">
+        <span className={`text-[10px] tracking-wider px-2.5 py-0.5 rounded-full border ${getHighContrastTypeStyles(notif.type)}`}>
+          {notif.type === 'urgent' ? 'عاجل 🔥' : notif.type === 'warning' ? 'تنبيه ⚠️' : notif.type === 'success' ? 'نجاح مأمول ✨' : 'مذكرة ℹ️'}
+        </span>
+        <span className="text-[10px] font-black text-slate-300 flex items-center gap-1 bg-slate-950/40 px-2 py-0.5 rounded">
+          <Clock className="w-3 h-3 text-[#facc15]" />
+          {notif.time}
+        </span>
+      </div>
+
+      {/* Area: Chevron */}
+      <div style={{ gridArea: 'chevron' }} className="flex justify-end items-center text-[#facc15]">
+        <ChevronDown className={`w-5 h-5 transition-all duration-300 cursor-pointer hover:scale-110 ${isExpanded ? 'rotate-180 text-[#ff7f00]' : ''}`} />
+      </div>
+
+      {/* Area: Title */}
+      <div style={{ gridArea: 'title' }} className="flex flex-col">
+        <h4 className={`text-sm font-black leading-snug tracking-tight ${notif.read ? 'text-white' : 'text-[#facc15] drop-shadow-[0_0_6px_rgba(250,204,21,0.3)]'}`}>
+          {notif.title}
+        </h4>
+      </div>
+
+      {/* Area: Category */}
+      <div style={{ gridArea: 'category' }} className="flex">
+        <span className={`text-[10px] font-black px-2 py-0.5 rounded border uppercase tracking-widest ${categoryTag.color}`}>
+          تصنيف: {categoryTag.label}
+        </span>
+      </div>
+
+      {/* Area: Content */}
+      <div style={{ gridArea: 'content' }}>
+        <p className={`text-xs leading-relaxed font-bold ${isExpanded ? 'line-clamp-none text-white' : 'line-clamp-2 text-slate-100'} transition-all duration-300`}>
+          {notif.message}
+        </p>
+      </div>
+
+      {/* Area: Actions */}
+      {isExpanded && (
+        <div 
+          style={{ gridArea: 'actions' }} 
+          className="flex justify-start gap-2 pt-3 border-t border-slate-800/80"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <button 
+            onClick={(e) => { e.stopPropagation(); handleMarkAsRead(notif.id); }}
+            className="p-2 bg-slate-950/60 hover:bg-slate-900 border border-slate-800 text-[#facc15] hover:text-white rounded-xl flex items-center gap-1.5 transition-colors font-black text-[10px]"
+            title="تحديد كمقروء"
+          >
+            <MailOpen className="w-3.5 h-3.5" />
+            <span>مقروء</span>
+          </button>
+          <button 
+            onClick={(e) => { 
+              e.stopPropagation(); 
+              handleMarkAsRead(notif.id); 
+              if (notif.action) {
+                 const event = new CustomEvent('global-navigate', { detail: notif.action });
+                 window.dispatchEvent(event);
+                 setIsOpen(false);
+              }
+            }}
+            className="p-2 bg-[#ff7f00]/10 hover:bg-[#ff7f00]/20 border border-[#ff7f00]/30 text-[#ff7f00] hover:text-white rounded-xl flex items-center gap-1 transition-colors font-black text-[10px]"
+            title="عرض التفاصيل"
+          >
+            <span>فتح شاشة التفاصيل المعمقة 🔎</span>
+          </button>
+        </div>
+      )}
+    </div>
+  );
+};
 
 interface Notification {
   id: string;
@@ -278,41 +386,15 @@ export default function NotificationsBell() {
             {/* List */}
             <div className="max-h-[min(60vh,400px)] overflow-y-auto w-full custom-scrollbar">
               {notifications.length > 0 ? (
-                <div className="flex flex-col">
+                <div className="flex flex-col gap-2 p-2">
                   {notifications.map((notif) => (
-                    <div 
-                      key={notif.id}
-                      onClick={() => {
-                        handleMarkAsRead(notif.id);
-                        if (notif.action) {
-                           const event = new CustomEvent('global-navigate', { detail: notif.action });
-                           window.dispatchEvent(event);
-                           setIsOpen(false);
-                        }
-                      }}
-                      className={`p-4 border-b border-slate-800 cursor-pointer transition-all relative group ${!notif.read ? 'bg-amber-500/5' : 'bg-slate-900'}`}
-                    >
-                      {!notif.read && (
-                        <div className="absolute right-2 top-1/2 -translate-y-1/2 w-1.5 h-1.5 bg-[#fbbf24] rounded-full shadow-[0_0_5px_rgba(251,191,36,0.5)]"></div>
-                      )}
-                      <div className="pr-4">
-                        <div className="flex items-center justify-between mb-1">
-                          <span className={`text-[10px] font-black px-2 py-0.5 rounded border ${getTypeStyles(notif.type)}`}>
-                            {notif.type === 'urgent' ? 'عاجل' : notif.type === 'warning' ? 'تنبيه' : notif.type === 'success' ? 'نجاح' : 'معلومة'}
-                          </span>
-                          <span className="text-[10px] font-bold text-slate-700 flex items-center gap-1">
-                            <Clock className="w-3 h-3" />
-                            {notif.time}
-                          </span>
-                        </div>
-                        <h4 className={`text-sm font-black mb-1 leading-tight ${notif.read ? 'text-white font-bold' : 'text-[#fbbf24]'}`}>
-                          {notif.title}
-                        </h4>
-                        <p className={`text-xs font-bold leading-relaxed line-clamp-2 ${notif.read ? 'text-slate-200 font-bold' : 'text-white'}`}>
-                          {notif.message}
-                        </p>
-                      </div>
-                    </div>
+                    <NotificationItem 
+                      key={notif.id} 
+                      notif={notif} 
+                      handleMarkAsRead={handleMarkAsRead}
+                      setIsOpen={setIsOpen}
+                      getTypeStyles={getTypeStyles}
+                    />
                   ))}
                 </div>
               ) : (

@@ -316,7 +316,7 @@ export default function CaseCard({
       onMouseLeave={() => setIsHovered(false)}
       className={`relative cursor-pointer rounded-[1.8rem] border-2 p-[3px] overflow-hidden cases-module-card-item transition-all ${
         c.archived ? 'opacity-65 grayscale-[0.2]' : ''
-      } ${isKeyboardFocused ? 'ring-4 ring-[#FF7F00] ring-offset-2 ring-offset-[#050e21]' : ''} ${searchHighlight ? 'ring-2 ring-amber-400 ring-offset-2 ring-offset-[#020817]' : ''}`}
+      } ${isKeyboardFocused ? 'ring-4 ring-[#D4AF37] ring-offset-4 ring-offset-[#020817] scale-[1.03] z-10' : ''} ${searchHighlight ? 'ring-2 ring-amber-400 ring-offset-2 ring-offset-[#020817]' : ''}`}
       style={cardStyle}
       id={`case-card-${c.id}`}
     >
@@ -332,280 +332,176 @@ export default function CaseCard({
         dir="rtl"
       >
         {/* CSS GRID PANEL FOR ALL INNER CARD ELEMENTS */}
-        <div className="grid grid-cols-1 gap-6 text-right w-full">
+        <div className="flex flex-col gap-2.5 text-right w-full h-full justify-between">
           
-          {/* GRID ROW 1: HEADER CONTROLS AND STATUSES */}
-          <div className="grid grid-cols-[1fr_auto] items-center gap-5 border-b border-dashed border-slate-700/60 pb-4">
-            
-            {/* Quick Actions (Clock/History) & Category Logo details */}
-            <div className="flex items-center gap-2.5">
-              <div className="relative group/tooltip">
-                <button
-                  type="button"
-                  id={`btn-history-${c.id}`}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setActivityLogCaseId(c.id);
-                  }}
-                  className={`p-2 rounded-xl transition-all cursor-pointer shrink-0 border-2 bg-transparent border-amber-500 text-amber-500 hover:bg-amber-500 hover:text-slate-900 shadow-sm`}
-                  title="سجل تعديلات ونشاط القضية"
-                >
-                  <Clock className="w-4 h-4" />
-                </button>
-                <div className="absolute bottom-full right-1/2 translate-x-1/2 mb-2 px-3 py-2 bg-slate-900 border border-amber-500/40 text-amber-400 text-[10px] font-black rounded-xl pointer-events-none opacity-0 group-hover/tooltip:opacity-100 transition-opacity duration-200 z-50 whitespace-nowrap shadow-xl">
-                  مراجعة سجل الأحداث والوقائع التاريخية المحدثة للدعوى 📜
-                </div>
-              </div>
-
-              <div className={`rounded-xl border-2 border-amber-500 flex items-center justify-center shrink-0 shadow-sm bg-slate-950 text-white`}
-              style={{ width: '38px', height: '38px' }}>
-                <IconComponent className="text-amber-400" style={{ width: '18px', height: '18px' }} />
-              </div>
-
-              {/* Tag for category type of system */}
-              <div className="hidden sm:flex flex-col text-right">
-                <span className={`uppercase ${calculateTextColor(isLightTheme, isHighContrast, 'primary', palette)}`}>قالب التصنيف القضائي</span>
-                <span className={`tracking-tight ${calculateTextColor(isLightTheme, isHighContrast, 'secondary', palette)}`}>{theme.nameAr}</span>
-              </div>
-            </div>
-
-            {/* Displaying Current Case Status and Najiz Sync Badge */}
-            <div className="flex flex-col items-end gap-1.5 z-10">
-              {c.is_najiz_sync && (
-                <div className="flex items-center gap-1.5 bg-[#D4AF37]/20 border-2 border-[#D4AF37] px-2.5 py-1 rounded-lg animate-pulse-slow">
-                   <Clock className="w-3.5 h-3.5 text-[#FACC15]" />
-                   <span className="text-xs font-black text-[#FACC15]">مزامنة ناجز: {c.last_sync_at ? new Date(c.last_sync_at).toLocaleDateString('ar-SA') : 'تاريخ غير معروف'}</span>
-                </div>
-              )}
-              <span className={`px-3 py-1.5 rounded-xl flex items-center gap-1.5 transition-colors shadow-sm bg-transparent border-2 border-[#FF7F00] text-[#FF7F00]`}>
-                <span className={`w-2.5 h-2.5 rounded-full ${c.status === 'closed' ? 'bg-slate-400': 'bg-amber-400 animate-ping'}`} />
-                {onUpdateCaseStatus ? (
-                  <select
-                    value={c.status || 'under_study'}
-                    onChange={(e) => onUpdateCaseStatus(c, e.target.value)}
-                    onClick={(e) => e.stopPropagation()}
-                    className="bg-transparent text-white font-extrabold focus:outline-none cursor-pointer pr-1 leading-tight appearance-none text-base"
-                    style={{ direction: 'rtl' }}
-                  >
-                    <option value="under_study">قيد الدراسة 🖋️</option>
-                    <option value="under_review">قيد النظر ⚖️</option>
-                    <option value="struck_off">شطبت 🗑️</option>
-                    <option value="appeal">استئناف ⤴️</option>
-                    <option value="execution">تنفيذ ⚡</option>
-                    <option value="primary_judgment">حكم ابتدائي 📜</option>
-                    <option value="final_judgment">حكم قطعي ✅</option>
-                    <option value="postponed">مؤجلة ⏳</option>
-                    <option value="closed">ملف مقفل منتهي 🔒</option>
-                    <option value="active">نشطة جارية ⚖️</option>
-                  </select>
-                ) : (
-                  <span className="font-extrabold text-base">{arabicStatusName}</span>
-                )}
-              </span>
-
-              <span className={`px-2 py-0.5 rounded-lg border-2 uppercase shrink-0 border-[#f59e0b] text-[#f59e0b] bg-transparent text-[11px] font-[900]`}>
-                {onUpdateCaseStatus ? 'تحديث سريع للحالة ✨' : 'نظام العدالة الفاخرة'}
-              </span>
-            </div>
+          {/* Row 1: Status (Top Left) and Case Number (Top Right) */}
+          <div className="flex justify-between items-start gap-2">
+             {/* Case Number (Medium) & Quick Actions */}
+             <div className="flex-1 bg-slate-900/50 border border-slate-700/60 rounded-xl p-3 shadow-sm flex justify-between items-center">
+                 <div className="flex flex-col justify-center items-start">
+                     <span className="text-slate-400 text-[10px] font-black block mb-1">رقم القضية</span>
+                     <span className={`font-mono font-[900] text-amber-400 text-lg drop-shadow-sm`}>#{c.caseNumber}</span>
+                 </div>
+                 <div className="flex gap-1.5">
+                    <button
+                      type="button"
+                      id={`btn-history-${c.id}`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setActivityLogCaseId(c.id);
+                      }}
+                      className="p-1.5 rounded-lg border border-amber-500/50 text-amber-500 hover:bg-amber-500 hover:text-slate-900 transition-all shadow-sm"
+                      title="سجل تعديلات ونشاط القضية"
+                    >
+                      <Clock className="w-3.5 h-3.5" />
+                    </button>
+                    <button
+                      type="button"
+                      id={`btn-quick-note-${c.id}`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setIsNotePopoverOpen(true);
+                      }}
+                      className="p-1.5 rounded-lg border border-[#FF7F00]/50 text-[#FF7F00] hover:bg-[#FF7F00] hover:text-slate-900 transition-all shadow-sm"
+                      title="إضافة ملاحظة سريعة للمكتب"
+                    >
+                      <Notebook className="w-3.5 h-3.5" />
+                    </button>
+                 </div>
+             </div>
+             {/* Status (Small) */}
+             <div className="bg-slate-900/50 border border-slate-700/60 rounded-xl p-3 shadow-sm flex flex-col items-end">
+                 <span className="text-slate-400 text-[10px] font-black block mb-1">حالة القضية</span>
+                 <span className={`px-2.5 py-1 rounded-lg border-2 border-[#FF7F00] text-[#FF7F00] text-[11px] font-[900] flex items-center gap-1.5`}>
+                  <span className={`w-1.5 h-1.5 rounded-full ${c.status === 'closed' ? 'bg-slate-400': 'bg-amber-400 animate-ping'}`} />
+                  {onUpdateCaseStatus ? (
+                    <select
+                      value={c.status || 'under_study'}
+                      onChange={(e) => onUpdateCaseStatus(c, e.target.value)}
+                      onClick={(e) => e.stopPropagation()}
+                      className="bg-transparent text-[#FF7F00] font-[900] focus:outline-none cursor-pointer pr-1 appearance-none text-[11px]"
+                      style={{ direction: 'rtl' }}
+                    >
+                      <option value="under_study">قيد الدراسة 🖋️</option>
+                      <option value="under_review">قيد النظر ⚖️</option>
+                      <option value="struck_off">شطبت 🗑️</option>
+                      <option value="appeal">استئناف ⤴️</option>
+                      <option value="execution">تنفيذ ⚡</option>
+                      <option value="primary_judgment">حكم ابتدائي 📜</option>
+                      <option value="final_judgment">حكم قطعي ✅</option>
+                      <option value="postponed">مؤجلة ⏳</option>
+                      <option value="closed">ملف مقفل 🔒</option>
+                      <option value="active">نشطة ⚖️</option>
+                    </select>
+                  ) : (
+                    <span className="font-[900]">{arabicStatusName}</span>
+                  )}
+                 </span>
+             </div>
           </div>
 
-          {/* GRID ROW 2: IDENTIFICATION, LABELS AND CORE INFORMATION */}
-          <div className="grid grid-cols-1 gap-3 py-1">
-            <div className="flex items-center gap-2 justify-between">
-              {/* Case ID Number */}
-              <span className={`font-mono font-black border-2 border-amber-400 text-amber-400 bg-transparent px-2.5 py-0.5 rounded-lg tracking-wider text-base`}>
-                #{c.caseNumber}
-              </span>
-
-              {/* Delayed Badge with high visibility red */}
-              {isCaseOverdue(c) && (
-                <span className="text-sm font-black text-rose-500 bg-transparent border-2 border-rose-500 px-3 py-1 rounded-xl animate-pulse shadow-sm">
-                  طلب مراجعة عاجل
+          {/* Row 2: Court (Large) & Circuit (Medium) */}
+          <div className="flex gap-2">
+             <div className="flex-[2] bg-slate-900/50 border border-slate-700/60 rounded-xl p-3 shadow-sm">
+                <span className="text-slate-400 text-[10px] font-black block mb-1 flex items-center gap-1.5">
+                  <MapPin className="w-3.5 h-3.5 text-sky-400"/> المحكمة المختصة
                 </span>
-              )}
-            </div>
-
-            {/* Responsive Case Name Header */}
-            <h3 className={`tracking-tight leading-snug line-clamp-2 mt-1 ${calculateTextColor(isLightTheme, isHighContrast, 'primary', palette)}`} style={{ minHeight: '3.5rem' }}>
-              {c.caseName}
-            </h3>
-            
-            {/* Associated Client Sub-panel */}
-            <div className="flex items-center gap-2.5 pt-3 border-t border-dashed border-slate-700/60 mt-1.5 pb-1.5">
-              <User className={`w-5 h-5 shrink-0 stroke-[3px] text-white`} />
-              <p className={`truncate ${calculateTextColor(isLightTheme, isHighContrast, 'secondary', palette)}`}>
-                الموكل: <span className="font-[900] drop-shadow-sm text-white">{c.clientName}</span>
-              </p>
-            </div>
+                <span className={`text-white font-[900] text-xl block truncate leading-tight drop-shadow-md`}>{c.courtName || 'غير محدد'}</span>
+             </div>
+             <div className="flex-1 bg-slate-900/50 border border-slate-700/60 rounded-xl p-3 shadow-sm">
+                <span className="text-slate-400 text-[10px] font-black block mb-1">الدائرة القضائية</span>
+                <span className={`text-white font-[900] text-base block truncate drop-shadow-sm`}>{c.circuitNumber || 'غير محدد'}</span>
+             </div>
           </div>
 
-          {/* GRID ROW 3: DETAILED COURT AND CALENDAR PANELS IN FLEXIBLE GRID */}
-          <div className="grid grid-cols-2 gap-4 pt-2">
-            
-            {/* Court Selection Panel */}
-            <div className={`flex flex-col gap-2 p-4 rounded-2xl ${palette.innerCardBg} shadow-md`}>
-              <div className="flex items-center gap-1.5 opacity-90">
-                <MapPin className="w-5 h-5 text-sky-400 stroke-[3px]" />
-                <span className={`${calculateTextColor(isLightTheme, isHighContrast, 'primary', palette)}`}>المحكمة المختصة</span>
-              </div>
-              <span className={`truncate w-full ${calculateTextColor(isLightTheme, isHighContrast, 'secondary', palette)}`}>{c.courtName}</span>
-            </div>
-            
-            {/* Session Date Panel */}
-            {(() => {
+          {/* Row 3: Client (Large) */}
+          <div className="bg-slate-900/50 border border-slate-700/60 rounded-xl p-3 shadow-sm">
+             <span className="text-slate-400 text-[10px] font-black block mb-1 flex items-center gap-1.5">
+               <User className="w-3.5 h-3.5 text-white"/> أطراف الدعوى / الموكل
+             </span>
+             <span className={`text-white font-[900] text-xl block truncate leading-tight drop-shadow-md`}>{c.clientName || 'غير محدد'}</span>
+          </div>
+
+          {/* Row 4: Case Type (Large) */}
+          <div className="bg-slate-900/50 border border-slate-700/60 rounded-xl p-3 shadow-sm flex items-center gap-3">
+             <div className={`rounded-xl border-2 border-amber-500 flex items-center justify-center shrink-0 shadow-sm bg-slate-950 text-white w-10 h-10`}>
+                <IconComponent className="text-amber-400 w-5 h-5" />
+             </div>
+             <div>
+               <span className="text-slate-400 text-[10px] font-black block mb-1">نوع القضية</span>
+               <span className={`text-amber-400 font-[900] text-xl block truncate leading-tight drop-shadow-md`}>{theme.nameAr}</span>
+             </div>
+          </div>
+
+          {/* Row 5: Case Subject (Medium) */}
+          <div className="bg-slate-900/50 border border-slate-700/60 rounded-xl p-3 shadow-sm">
+             <span className="text-slate-400 text-[10px] font-black block mb-1">موضوع الدعوى</span>
+             <span className={`text-white font-[900] text-base line-clamp-2 leading-snug drop-shadow-sm`}>{c.caseName || 'غير محدد'}</span>
+          </div>
+
+          {/* Row 6: Next Session (Medium) */}
+          {(() => {
               const countdown = getSessionCountdown(c.nextSessionDate);
               const isSoon = countdown && countdown.isSoon;
-              const soonPanelBg = isSoon 
-                ? 'bg-transparent border-2 border-[#FF7F00]/60 shadow-md shadow-orange-950/30'
-                : palette.innerCardBg;
               return (
-                <div className={`flex flex-col gap-2 p-4 rounded-2xl transition-all duration-300 relative overflow-hidden ${soonPanelBg}`}>
-                  <div className="flex items-center gap-1.5 opacity-90">
-                    <Calendar className={`w-5 h-5 stroke-[3px] ${isSoon ? 'text-[#FF7F00] animate-bounce animate-pulse' : 'text-amber-500'}`} />
-                    <span className={`${isSoon ? calculateTextColor(isLightTheme, isHighContrast, 'accent', palette) : calculateTextColor(isLightTheme, isHighContrast, 'primary', palette)}`}>
-                      الجلسة القادمة
-                    </span>
+                  <div className={`bg-slate-900/50 border ${isSoon ? 'border-[#FF7F00]/60 shadow-md shadow-orange-950/30' : 'border-slate-700/60'} rounded-xl p-3 shadow-sm relative overflow-hidden`}>
+                     <span className="text-slate-400 text-[10px] font-black block mb-1 flex items-center gap-1.5">
+                        <Calendar className={`w-3.5 h-3.5 ${isSoon ? 'text-[#FF7F00]' : 'text-amber-500'}`} /> الجلسة القادمة
+                     </span>
+                     <div className="flex justify-between items-center">
+                        <span className={`font-[900] text-base ${isSoon ? 'text-[#FF7F00]' : 'text-amber-400'} font-mono tracking-tight drop-shadow-sm`}>{c.nextSessionDate || 'غير مجدول'}</span>
+                        {isSoon && countdown && (
+                          <span className="text-[10px] font-[900] bg-[#FF7F00] text-white px-2.5 py-1 rounded-lg border border-orange-400 animate-pulse text-center drop-shadow-md">
+                            🚨 {countdown.daysRemaining === 0 ? 'اليوم!' : countdown.daysRemaining === 1 ? 'غداً!' : `متبقي ${countdown.daysRemaining} أيام`}
+                          </span>
+                        )}
+                     </div>
                   </div>
-                  <span className={`font-mono ${isSoon ? calculateTextColor(isLightTheme, isHighContrast, 'accent', palette) : calculateTextColor(isLightTheme, isHighContrast, 'secondary', palette)}`}>
-                    {c.nextSessionDate || 'غير مجدول'}
-                  </span>
-                  
-                  {isSoon && countdown && (
-                    <span className="mt-1.5 text-xs font-black bg-[#FF7F00] text-white px-2 py-0.5 rounded-lg border-2 border-orange-400 animate-pulse text-center block">
-                      🚨 {countdown.daysRemaining === 0 ? 'اليوم!' : countdown.daysRemaining === 1 ? 'غداً!' : `متبقي ${countdown.daysRemaining} أيام!`}
-                    </span>
-                  )}
-                </div>
               );
-            })()}
-          </div>
+          })()}
 
-          {/* CASE STATISTICS HUD - COMPACT STATISTICS AT A GLANCE */}
-          <div className={`grid grid-cols-3 gap-2.5 p-3.5 my-1 rounded-[1.25rem] border border-[#334155] bg-slate-950/40`} dir="rtl">
-            <div className="flex flex-col items-center justify-center text-center">
-              <span className={`text-xs font-black text-slate-400 block mb-0.5`}>📋 مذكرات</span>
-              <span className={`text-lg font-black font-mono tracking-tight text-[#FF7F00]`}>
-                {c.notes?.length || (parseInt(c.caseNumber || '3') % 3 + 1)}
-              </span>
-            </div>
-            
-            <div className="flex flex-col items-center justify-center text-center border-x border-slate-700/30">
-              <span className={`text-xs font-black text-slate-400 block mb-0.5`}>🏛️ جلسات</span>
-              <span className={`text-lg font-black font-mono tracking-tight text-sky-450`}>
-                {c.hearings?.filter(h => h.status === 'completed').length || (parseInt(c.caseNumber || '5') % 2 + 1)}
-              </span>
-            </div>
-
-            <div className="flex flex-col items-center justify-center text-center">
-              <span className={`text-xs font-black text-slate-400 block mb-0.5`}>📂 مستندات</span>
-              <span className={`text-lg font-black font-mono tracking-tight text-emerald-450`}>
-                {c.attachments_count || 0}
-              </span>
-            </div>
-          </div>
-
-          {/* GRID ROW 4: INTERACTIVE ACTIONS & LIVE STATUSES */}
-          <div className="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-dashed border-slate-700/60 pb-1">
-            {/* Sync trigger button with Quick Note option */}
-            <div className="flex items-center gap-2">
-              <div className="relative group/tooltip">
-                <button
-                  type="button"
-                  id={`btn-sync-${c.id}`}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onNajizSync(c);
-                  }}
-                  disabled={isSyncing === c.id}
-                  className="bg-transparent border-2 border-emerald-400 text-emerald-400 font-extrabold py-2 px-3 rounded-xl text-sm transition-all hover:bg-emerald-400 hover:text-slate-900 flex items-center gap-1.5 shadow-sm outline-none cursor-pointer"
-                  title="سحب وقائع وبيانات صك الحكم من ناجز"
-                >
-                  <Bot className={`w-4 h-4 stroke-[2.5px] ${isSyncing === c.id ? 'animate-spin' : ''}`} />
-                  <span className="font-[900]">{isSyncing === c.id ? 'جاري السحب...' : 'مزامنة ناجز'}</span>
-                </button>
-                <div className="absolute bottom-full right-1/2 translate-x-1/2 mb-2 px-3 py-2 bg-slate-900 border border-emerald-500/40 text-emerald-400 text-[10px] font-black rounded-xl pointer-events-none opacity-0 group-hover/tooltip:opacity-100 transition-opacity duration-200 z-50 whitespace-nowrap shadow-xl">
-                  تحديث فوري لبيانات المرافعة وضبط الجلسات عبر بوابة ناجز العدلية 🤖
+          {/* Row 7: Counts & Najiz (Small) */}
+          <div className="flex gap-2">
+             {/* Counts */}
+             <div className="flex-[2] bg-slate-900/50 border border-slate-700/60 rounded-xl p-2.5 shadow-sm grid grid-cols-3 divide-x divide-x-reverse divide-slate-700/50 text-center items-center">
+                <div className="flex flex-col">
+                  <span className="text-slate-400 text-[9px] font-[900] block mb-0.5">مذكرات</span>
+                  <span className="text-white font-[900] text-xs font-mono">{c.notes?.length || (parseInt(c.caseNumber || '3') % 3 + 1)}</span>
                 </div>
-              </div>
-
-              {/* Quick Note Button */}
-              <div className="relative group/tooltip">
-                <button
-                  type="button"
-                  id={`btn-quick-note-${c.id}`}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setIsNotePopoverOpen(true);
-                  }}
-                  className="bg-transparent border-2 border-[#FF7F00] text-[#FF7F00] font-extrabold py-2 px-3 rounded-xl text-sm transition-all hover:bg-[#FF7F00] hover:text-slate-900 flex items-center gap-1.5 shadow-sm outline-none cursor-pointer"
-                  title="إضافة ملاحظة سريعة للمكتب"
-                >
-                  <Notebook className="w-4 h-4 stroke-[2.5px]" />
-                  <span className="font-[900]">ملاحظة سريعة</span>
-                </button>
-                <div className="absolute bottom-full right-1/2 translate-x-1/2 mb-2 px-3 py-2 bg-slate-900 border border-orange-500/40 text-orange-400 text-[10px] font-black rounded-xl pointer-events-none opacity-0 group-hover/tooltip:opacity-100 transition-opacity duration-200 z-50 whitespace-nowrap shadow-xl">
-                  تدوين حواشي وملاحظات قانونية عاجلة لملف القضية للرجوع السريع 📝
+                <div className="flex flex-col">
+                  <span className="text-slate-400 text-[9px] font-[900] block mb-0.5">جلسات</span>
+                  <span className="text-sky-400 font-[900] text-xs font-mono">{c.hearings?.filter(h => h.status === 'completed').length || (parseInt(c.caseNumber || '5') % 2 + 1)}</span>
                 </div>
-              </div>
-            </div>
-
-            {/* Integration source indicator tag */}
-            {c.isNajizSync ? (
-              <span className={`text-xs px-2.5 py-1.5 rounded-lg flex items-center gap-1.5 shadow-sm bg-transparent border-2 border-emerald-500 text-emerald-500 font-black`}>
-                <Bot className="w-4 h-4 text-emerald-500 stroke-[2.5px]" />
-                <span>مرتبط بنظام ناجز</span>
-              </span>
-            ) : (
-              <span className={`text-xs px-2.5 py-1.5 rounded-lg flex items-center gap-1.5 shadow-sm bg-transparent border-2 border-[#FF7F00] text-[#FF7F00] font-black`}>
-                <Edit2 className="w-4 h-4 animate-pulse stroke-[2.5px]" />
-                <span>تسجيل إدخال يدوي</span>
-              </span>
-            )}
+                <div className="flex flex-col">
+                  <span className="text-slate-400 text-[9px] font-[900] block mb-0.5">مستندات</span>
+                  <span className="text-emerald-400 font-[900] text-xs font-mono">{c.attachments_count || 0}</span>
+                </div>
+             </div>
+             {/* Najiz */}
+             <div className="flex-1 bg-slate-900/50 border border-emerald-500/30 rounded-xl p-2.5 shadow-sm flex flex-col items-center justify-center cursor-pointer hover:bg-emerald-500/20 transition-colors"
+                  onClick={(e) => { e.stopPropagation(); onNajizSync(c); }}>
+                <Bot className={`w-4 h-4 text-emerald-400 mb-1 ${isSyncing === c.id ? 'animate-spin' : ''}`} />
+                <span className="text-emerald-400 text-[9px] font-[900] text-center">{c.isNajizSync || c.is_najiz_sync ? 'مرتبط بنظام ناجز' : 'مزامنة ناجز'}</span>
+             </div>
           </div>
 
-          {/* GRID ROW 6: MANAGEMENT ARCHIVING PERMISSIONS CONTROLS */}
+          {/* Row 8: Delete & Archive (Small) */}
           {(onArchiveToggle || onDeleteCase) && (selectedRole === 'admin' || selectedRole === 'lawyer') && (
-            <div className="flex justify-between items-center pt-3 border-t border-dashed border-slate-700/60">
-              {onArchiveToggle && (
-                <div className="relative group/tooltip">
-                  <button
-                    type="button"
-                    id={`btn-archive-${c.id}`}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onArchiveToggle(c);
-                    }}
-                    className="bg-transparent border-2 border-amber-500 text-amber-500 font-black py-2 px-4 rounded-xl text-sm transition-all hover:bg-amber-500 hover:text-slate-900 shadow-sm cursor-pointer"
-                  >
+            <div className="flex justify-between items-center mt-auto pt-2 gap-2">
+              {onDeleteCase ? (
+                  <button onClick={(e) => { e.stopPropagation(); onDeleteCase(c.id); }} className="bg-slate-900/50 border border-rose-500/30 text-rose-500 hover:bg-rose-500 hover:text-white px-3 py-2.5 rounded-xl text-[10px] font-[900] transition-all flex items-center gap-1.5 flex-1 justify-center shadow-sm">
+                    <Trash2 className="w-3.5 h-3.5" />
+                    حذف القضية
+                  </button>
+              ) : <div className="flex-1"></div>}
+              {onArchiveToggle ? (
+                  <button onClick={(e) => { e.stopPropagation(); onArchiveToggle(c); }} className="bg-slate-900/50 border border-amber-500/30 text-amber-500 hover:bg-amber-500 hover:text-slate-900 px-3 py-2.5 rounded-xl text-[10px] font-[900] transition-all flex items-center justify-center gap-1.5 flex-1 shadow-sm">
                     {c.archived ? 'استعادة ملف الدعوى' : 'نقل القضية للأرشيف'}
                   </button>
-                  <div className="absolute bottom-full right-1/2 translate-x-1/2 mb-2 px-3 py-2 bg-slate-900 border border-amber-500/40 text-amber-400 text-[10px] font-black rounded-xl pointer-events-none opacity-0 group-hover/tooltip:opacity-100 transition-opacity duration-200 z-50 whitespace-nowrap shadow-xl">
-                    حفظ وإيداع ملف الدعوى القضائية في الأرشيف المالي والإداري التراكمي 📦
-                  </div>
-                </div>
-              )}
-
-              {onDeleteCase && (
-                <div className="relative group/tooltip">
-                  <button
-                    type="button"
-                    id={`btn-delete-${c.id}`}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onDeleteCase(c.id);
-                    }}
-                    className="bg-transparent border-2 border-rose-500 text-rose-500 font-black py-2 px-4 rounded-xl text-sm transition-all hover:bg-rose-500 hover:text-white flex items-center gap-1.5 shadow-sm outline-none cursor-pointer"
-                  >
-                    <Trash2 className="w-4 h-4 stroke-[2.5px]" />
-                    <span>حذف الدعوى</span>
-                  </button>
-                  <div className="absolute bottom-full right-1/2 translate-x-1/2 mb-2 px-3 py-2 bg-slate-900 border border-red-500/40 text-red-400 text-[10px] font-black rounded-xl pointer-events-none opacity-0 group-hover/tooltip:opacity-100 transition-opacity duration-200 z-50 whitespace-nowrap shadow-xl">
-                    شطب وإزالة ملف الدعوى القضائية نهائياً من قاعدة البيانات النشطة 🗑️
-                  </div>
-                </div>
-              )}
+              ) : <div className="flex-1"></div>}
             </div>
           )}
+
         </div>
 
         {/* --- QUICK NOTE FLOATING POPOVER (OVERLAY HUD) --- */}

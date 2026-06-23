@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { 
   FileText, Plus, Search, ChevronRight, 
   Trash2, ShieldCheck, ShieldAlert, CheckCircle2, 
-  Clock, RefreshCw, X, FileSpreadsheet, User, Scale, FileKey, Edit3
+  Clock, RefreshCw, X, FileSpreadsheet, User, Scale, FileKey, Edit3,
+  LayoutGrid, Table
 } from 'lucide-react';
 import CountdownTimer from './CountdownTimer';
 import { motion, AnimatePresence } from 'motion/react';
@@ -26,6 +27,7 @@ export default function AgenciesModule({ clients, onUpdateState }: AgenciesModul
   const [activePreviewDocId, setActivePreviewDocId] = useState<string | null>(null);
   const [docContents, setDocContents] = useState<Record<string, string>>({});
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [viewMode, setViewMode] = useState<'grid' | 'table'>('table');
 
 
   // Form states (used for both Add and Edit modals)
@@ -433,45 +435,102 @@ export default function AgenciesModule({ clients, onUpdateState }: AgenciesModul
               </div>
 
               <div className="p-6 space-y-5 overflow-y-auto max-h-[500px]">
-                <div className={`p-4 rounded-xl border flex items-center gap-3 justify-between shadow-sm ${
-                  getRemainingDays(selectedAgency.expiryDate) <= 0 ? 'bg-rose-50 border-rose-200 text-rose-800' :
-                  getRemainingDays(selectedAgency.expiryDate) <= 60 ? 'bg-amber-50 border-amber-200 text-amber-800' : 'bg-blue-50 border-blue-200 text-blue-950'
-                }`}>
-                  <div className="flex items-center gap-3">
-                    {getRemainingDays(selectedAgency.expiryDate) <= 30 ? <ShieldAlert className="w-6 h-6 shrink-0" /> : <ShieldCheck className="w-6 h-6 shrink-0" />}
-                    <div>
-                      <h4 className="text-xs font-[800] text-blue-950 mb-0.5">الوضع النظامي للوكالة</h4>
-                      <p className="text-[11px] font-[800] opacity-90">
-                        {getRemainingDays(selectedAgency.expiryDate) <= 0 ? 'هذه الوكالة باطلة بانتهاء مدتها.' : 'هذه الوكالة معتمدة ونشطة قانونياً ومحفظة بالسجل.'}
-                      </p>
+                
+                {/* Beautifully Structured Boxes in Exact Order: رقم الوكالة, ثم تاريخ إصدار الوكالة , ثم تاريخ انتهاء الوكالة , ثم إسم الوكيل, ثم حالة الوكالة */}
+                <div className="space-y-3.5">
+                  
+                  {/* 1. رقم الوكالة */}
+                  <div className="p-4 bg-slate-50 border border-slate-200/80 rounded-2xl flex items-center justify-between shadow-sm">
+                    <div className="flex items-center gap-3">
+                      <div className="w-9 h-9 rounded-xl bg-blue-100/70 border border-blue-200/60 flex items-center justify-center text-blue-900 font-bold shrink-0">
+                        <FileSpreadsheet className="w-4.5 h-4.5" />
+                      </div>
+                      <div>
+                        <span className="text-[10px] text-slate-400 font-[800] block mb-0.5">رقم الوكالة</span>
+                        <span className="text-sm font-mono font-black text-[#0B2545]">{selectedAgency.poaNumber}</span>
+                      </div>
                     </div>
                   </div>
+
+                  {/* 2. تاريخ إصدار الوكالة */}
+                  <div className="p-4 bg-slate-50 border border-slate-200/80 rounded-2xl flex items-center justify-between shadow-sm">
+                    <div className="flex items-center gap-3">
+                      <div className="w-9 h-9 rounded-xl bg-emerald-100/70 border border-emerald-200/60 flex items-center justify-center text-emerald-900 font-bold shrink-0">
+                        <Clock className="w-4.5 h-4.5" />
+                      </div>
+                      <div>
+                        <span className="text-[10px] text-slate-400 font-[800] block mb-0.5">تاريخ إصدار الوكالة</span>
+                        <span className="text-sm font-mono font-black text-[#0B2545]">{selectedAgency.issueDate}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 3. تاريخ انتهاء الوكالة */}
+                  <div className="p-4 bg-slate-50 border border-slate-200/80 rounded-2xl flex items-center justify-between shadow-sm relative overflow-hidden">
+                    <div className="flex items-center gap-3">
+                      <div className="w-9 h-9 rounded-xl bg-indigo-100/70 border border-indigo-200/60 flex items-center justify-center text-indigo-900 font-bold shrink-0">
+                        <Clock className="w-4.5 h-4.5" />
+                      </div>
+                      <div>
+                        <span className="text-[10px] text-slate-400 font-[800] block mb-0.5">تاريخ انتهاء الوكالة</span>
+                        <span className="text-sm font-mono font-black text-[#0B2545]">{selectedAgency.expiryDate}</span>
+                      </div>
+                    </div>
+                    {getRemainingDays(selectedAgency.expiryDate) > 0 && (
+                      <div className="bg-indigo-50 border border-indigo-150 px-2.5 py-1 rounded-xl text-[10.5px] font-black text-indigo-800">
+                        متبقي {getRemainingDays(selectedAgency.expiryDate)} يوم
+                      </div>
+                    )}
+                  </div>
+
+                  {/* 4. إسم الوكيل */}
+                  <div className="p-4 bg-slate-50 border border-slate-200/80 rounded-2xl flex items-center justify-between shadow-sm">
+                    <div className="flex items-center gap-3">
+                      <div className="w-9 h-9 rounded-xl bg-amber-100/70 border border-amber-200/60 flex items-center justify-center text-amber-950 font-bold shrink-0">
+                        <User className="w-4.5 h-4.5" />
+                      </div>
+                      <div>
+                        <span className="text-[10px] text-slate-400 font-[800] block mb-0.5">اسم الوكيل المعتمد</span>
+                        <span className="text-sm font-black text-[#0B2545]">{selectedAgency.lawyerName || selectedAgency.agentName || 'غير محدد'}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 5. حالة الوكالة */}
+                  <div className="p-4 bg-slate-50 border border-slate-200/80 rounded-2xl flex items-center justify-between shadow-sm">
+                    <div className="flex items-center gap-3">
+                      <div className="w-9 h-9 rounded-xl bg-purple-100/70 border border-purple-200/60 flex items-center justify-center text-purple-900 font-bold shrink-0">
+                        <Scale className="w-4.5 h-4.5" />
+                      </div>
+                      <div>
+                        <span className="text-[10px] text-slate-400 font-[800] block mb-0.5">حالة الوكالة</span>
+                        <span className="text-xs font-black text-[#0B2545]">
+                          {getRemainingDays(selectedAgency.expiryDate) <= 0 ? 'منتهية الصلاحية باطلة' : 'نشطة وسارية قانونياً'}
+                        </span>
+                      </div>
+                    </div>
+                    <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-black shadow-sm ${
+                      getRemainingDays(selectedAgency.expiryDate) <= 0 
+                        ? 'bg-rose-50 text-rose-700 border border-rose-200' 
+                        : getRemainingDays(selectedAgency.expiryDate) <= 30
+                        ? 'bg-amber-50 text-amber-700 border border-amber-200'
+                        : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                    }`}>
+                      <span className={`w-1.5 h-1.5 rounded-full ${
+                        getRemainingDays(selectedAgency.expiryDate) <= 0 ? 'bg-rose-500 animate-pulse' : getRemainingDays(selectedAgency.expiryDate) <= 30 ? 'bg-amber-500 animate-pulse' : 'bg-emerald-500'
+                      }`} />
+                      {getRemainingDays(selectedAgency.expiryDate) <= 0 ? 'منتهية' : 'نشطة'}
+                    </span>
+                  </div>
+
                 </div>
 
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="p-3 bg-blue-50/30 border border-blue-100 rounded-xl text-center shadow-sm">
-                    <span className="text-[10px] text-blue-800 font-[800] block mb-1">تاريخ إنشائها</span>
-                    <span className="text-sm font-[800] font-mono text-blue-950 block">{selectedAgency.issueDate}</span>
-                  </div>
-                  <div className="p-3 bg-blue-50/30 border border-blue-100 rounded-xl text-center shadow-sm relative overflow-hidden">
-                    <div className={`absolute top-0 w-full h-1 left-0 ${getRemainingDays(selectedAgency.expiryDate) <= 0 ? 'bg-rose-500' : 'bg-blue-300'}`}></div>
-                    <span className="text-[10px] text-blue-800 font-[800] block mb-1">تاريخ انتهائها</span>
-                    <span className="text-sm font-[800] font-mono text-blue-950 block">{selectedAgency.expiryDate}</span>
-                  </div>
-                </div>
-
-                {getRemainingDays(selectedAgency.expiryDate) > 0 && (
-                  <div className="p-3 bg-blue-50/50 border border-blue-100 rounded-xl flex flex-col items-center gap-1.5">
-                    <span className="text-[9px] font-[800] text-blue-700 uppercase tracking-widest">تنبيه انتهاء الصلاحية</span>
-                    <CountdownTimer targetDate={selectedAgency.expiryDate} />
-                  </div>
-                )}
-
-                <div className="space-y-2">
-                  <h4 className="text-xs font-[800] text-[#0B2545] border-b pb-1.5 flex items-center gap-1">
-                    <User className="w-3.5 h-3.5" /> أطراف الوكالة
-                  </h4>
-                  {selectedAgency.parties && selectedAgency.parties.length > 0 ? (
+                {/* Additional Parties Section if any */}
+                {selectedAgency.parties && selectedAgency.parties.length > 0 && (
+                  <div className="space-y-2 pt-2 border-t border-slate-100">
+                    <h4 className="text-xs font-[800] text-[#0B2545] flex items-center gap-1">
+                      <User className="w-3.5 h-3.5" /> بقية الأطراف بالوكالة
+                    </h4>
                     <div className="space-y-2">
                       {selectedAgency.parties.map((part, index) => (
                         <div key={index} className="flex items-center justify-between p-2.5 bg-slate-50 border border-slate-100 rounded-xl">
@@ -483,19 +542,8 @@ export default function AgenciesModule({ clients, onUpdateState }: AgenciesModul
                         </div>
                       ))}
                     </div>
-                  ) : (
-                    <div className="grid grid-cols-2 gap-3">
-                      <div className="p-2.5 bg-slate-50 border border-slate-100 rounded-xl">
-                        <span className="text-[9px] text-blue-800 font-[800] block mb-0.5">الموكل</span>
-                        <span className="text-xs font-[800] text-[#0B2545] block truncate">{selectedAgency.clientName}</span>
-                      </div>
-                      <div className="p-2.5 bg-slate-50 border border-slate-100 rounded-xl">
-                        <span className="text-[9px] text-blue-800 font-[800] block mb-0.5">الوكيل</span>
-                        <span className="text-xs font-[800] text-[#0B2545] block truncate">{selectedAgency.lawyerName}</span>
-                      </div>
-                    </div>
-                  )}
-                </div>
+                  </div>
+                )}
 
                 <div className="space-y-2">
                   <h4 className="text-xs font-[800] text-[#0B2545] border-b pb-1.5">نطاق العمل العام</h4>
@@ -598,115 +646,227 @@ export default function AgenciesModule({ clients, onUpdateState }: AgenciesModul
         <div className="flex-1 w-full space-y-6">
           
           {/* Filter and Search */}
-          <div className="bg-white border border-slate-200 rounded-2xl p-4 flex flex-col md:flex-row gap-4 items-center justify-between shadow-sm">
-            <div className="relative w-full md:w-96">
+          <div className="bg-white border border-slate-200 rounded-2xl p-4 flex flex-col xl:flex-row gap-4 items-center justify-between shadow-sm">
+            <div className="relative w-full xl:w-96">
               <Search className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-blue-300 font-[800]" />
               <input 
                 type="text" placeholder="البحث برقم الوكالة، الموكل..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full pl-4 pr-11 py-2.5 bg-blue-50/50 border border-blue-100 rounded-xl text-sm font-[800] text-[#0B2545] placeholder:text-blue-300 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
               />
             </div>
-            <div className="flex flex-wrap gap-2">
-              {[
-                { id: 'all', label: 'الكل' },
-                { id: 'active', label: 'النشطة' },
-                { id: 'expiring', label: 'تنتهي قريباً' },
-                { id: 'expired', label: 'المنتهية' }
-              ].map(tab => (
-                <button key={tab.id} onClick={() => setStatusFilter(tab.id as any)}
-                  className={`px-4 py-2 rounded-lg text-xs font-[800] transition-all ${statusFilter === tab.id ? 'bg-[#0B2545] text-white shadow-md' : 'bg-slate-50 text-slate-400 hover:bg-slate-100'}`}>
-                  {tab.label}
+            <div className="flex flex-wrap items-center gap-4 w-full xl:w-auto justify-between xl:justify-end">
+              <div className="flex flex-wrap gap-2">
+                {[
+                  { id: 'all', label: 'الكل' },
+                  { id: 'active', label: 'النشطة' },
+                  { id: 'expiring', label: 'تنتهي قريباً' },
+                  { id: 'expired', label: 'المنتهية' }
+                ].map(tab => (
+                  <button key={tab.id} onClick={() => setStatusFilter(tab.id as any)}
+                    className={`px-4 py-2 rounded-lg text-xs font-[800] transition-all ${statusFilter === tab.id ? 'bg-[#0B2545] text-white shadow-md' : 'bg-slate-50 text-slate-400 hover:bg-slate-100'}`}>
+                    {tab.label}
+                  </button>
+                ))}
+              </div>
+
+              {/* Grid vs Table View Mode Switcher */}
+              <div className="flex bg-slate-100 p-1 rounded-xl border border-slate-200 shadow-inner shrink-0">
+                <button
+                  onClick={() => setViewMode('table')}
+                  className={`p-2 rounded-lg transition-all ${viewMode === 'table' ? 'bg-[#0B2545] text-white shadow-md' : 'text-slate-400 hover:bg-slate-200'}`}
+                  title="عرض الجدول المعتمد"
+                >
+                  <Table className="w-4 h-4" />
                 </button>
-              ))}
+                <button
+                  onClick={() => setViewMode('grid')}
+                  className={`p-2 rounded-lg transition-all ${viewMode === 'grid' ? 'bg-[#0B2545] text-white shadow-md' : 'text-slate-400 hover:bg-slate-200'}`}
+                  title="عرض كروت البيانات"
+                >
+                  <LayoutGrid className="w-4 h-4" />
+                </button>
+              </div>
             </div>
           </div>
 
-          {/* Cards Grid */}
+          {/* List Layout with Grid/Table Switcher */}
           {filteredAgencies.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {filteredAgencies.map((poa) => {
-                const daysRemaining = getRemainingDays(poa.expiryDate);
-                const isFinished = daysRemaining <= 0;
-                const isDanger = daysRemaining > 0 && daysRemaining <= 30;
+            viewMode === 'table' ? (
+              <div className="overflow-hidden bg-white border border-slate-200 rounded-3xl shadow-sm">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-right border-collapse min-w-[800px]">
+                    <thead>
+                      <tr className="bg-[#0B2545]/5 border-b border-slate-200 text-[#0B2545] font-[800] text-xs">
+                        <th className="px-6 py-4 font-black">رقم الوكالة</th>
+                        <th className="px-6 py-4 font-black">تاريخ إصدار الوكالة</th>
+                        <th className="px-6 py-4 font-black">تاريخ انتهاء الوكالة</th>
+                        <th className="px-6 py-4 font-black">اسم الوكيل</th>
+                        <th className="px-6 py-4 font-black">حالة الوكالة</th>
+                        <th className="px-6 py-4 font-black text-left">إجراءات</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100 text-sm">
+                      {filteredAgencies.map((poa) => {
+                        const daysRemaining = getRemainingDays(poa.expiryDate);
+                        const isFinished = daysRemaining <= 0;
+                        const isDanger = daysRemaining > 0 && daysRemaining <= 30;
 
-                return (
-                  <motion.div key={poa.id} layout onClick={() => setSelectedAgency(poa)} whileHover={{ y: -4 }}
-                    className={`agency-card cursor-pointer bg-white rounded-2xl p-6 border shadow-sm hover:shadow-md transition-all flex flex-col justify-between min-h-[300px] relative overflow-hidden ${isFinished ? 'border-rose-200 bg-rose-50/30' : isDanger ? 'border-rose-300' : 'border-slate-200'}`}>
-                    
-                    {/* Accent Top Line */}
-                    <div className={`absolute top-0 right-0 left-0 h-1.5 ${isFinished ? 'bg-rose-500' : isDanger ? 'bg-rose-400 animate-pulse' : daysRemaining <= 60 ? 'bg-amber-400' : 'bg-emerald-500'}`} />
-
-                    <div className="space-y-4">
-                      <div className="flex items-start justify-between">
-                        <div className="space-y-1.5">
-                            <div className="flex items-center gap-2">
-                              <span className="agency-text text-xs font-mono font-[800] bg-blue-50 text-[#0B2545] px-2 py-0.5 rounded border border-blue-100 shadow-sm">
-                                رقم: {poa.poaNumber}
-                              </span>
-                            </div>
-                           {poa.is_najiz_sync && (
-                             <span className="block w-fit bg-[#D4AF37]/10 text-slate-900 text-[9px] font-[800] border border-[#D4AF37]/30 px-1.5 py-0.5 rounded flex items-center gap-1 shadow-sm">
-                               <Clock className="w-2.5 h-2.5 text-amber-600" /> 
-                               مستورد من ناجز ({poa.last_sync_at ? new Date(poa.last_sync_at).toLocaleDateString('ar-SA') : 'تاريخ غير معروف'})
-                             </span>
-                           )}
-                        </div>
-                        <div className="flex items-center gap-1.5">
-                          {/* Edit button in the card */}
-                          <button 
-                            onClick={(e) => handleStartEdit(poa, e)} 
-                            className="p-1.5 bg-blue-50 hover:bg-blue-100 text-[#0B2545] rounded-lg transition-colors border border-blue-200 shadow-sm"
-                            title="تعديل الوكالة"
-                          >
-                            <Edit3 className="w-4 h-4" />
-                          </button>
-                          {/* Delete button in the card */}
-                          <button 
-                            onClick={(e) => { e.stopPropagation(); setDeletingId(poa.id); }} 
-                            className="p-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-lg transition-colors border border-rose-200 shadow-sm"
-                            title="حذف الوكالة"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        </div>
-                      </div>
-
-                      <div>
-                        <h3 className="agency-text text-lg font-[800] text-[#0B2545] line-clamp-1">{poa.clientName}</h3>
-                        <div className="agency-text flex items-center gap-1.5 text-xs text-[#0B2545] font-[800] mt-1 opacity-80">
-                          <Scale className="w-3.5 h-3.5" /> الممثل: {poa.lawyerName}
-                        </div>
-                      </div>
-
-                      <p className="agency-text text-xs text-[#0B2545] font-[800] line-clamp-2 bg-blue-50/30 p-2.5 rounded-xl border border-blue-100/50 leading-relaxed">
-                        {poa.scope || 'لم يتم تخصيص نطاق. الوكالة عامة.'}
-                      </p>
-                      {(() => {
-                        const statusBadge = getExpiryStatus(poa.expiryDate);
-                        if (!statusBadge) return null;
                         return (
-                          <div className={`mt-2 px-3 py-1.5 rounded-lg text-[10px] font-[800] flex items-center gap-1 shadow-sm
-                            ${statusBadge.color === 'red' ? 'bg-red-500/10 text-red-700 border border-red-500/20' :
-                              statusBadge.color === 'orange' ? 'bg-orange-500/10 text-orange-700 border border-orange-500/20' :
-                              statusBadge.color === 'yellow' ? 'bg-yellow-500/10 text-yellow-700 border border-yellow-500/20' :
-                              'bg-green-500/10 text-green-700 border border-green-500/20'}`}>
-                            {statusBadge.urgent ? '⚠️' : '📅'} {statusBadge.label}
-                          </div>
-                        );
-                      })()}
-                    </div>
+                          <tr 
+                            key={poa.id} 
+                            onClick={() => setSelectedAgency(poa)}
+                            className={`hover:bg-slate-50/50 cursor-pointer transition-colors ${selectedAgency?.id === poa.id ? 'bg-blue-50/40' : ''}`}
+                          >
+                            {/* 1. رقم الوكالة */}
+                            <td className="px-6 py-4.5 font-mono font-black text-[#0B2545] text-xs">
+                              <span className="bg-blue-50/80 px-2.5 py-1 rounded-lg border border-blue-100 text-[#0B2545] font-black">
+                                {poa.poaNumber}
+                              </span>
+                            </td>
 
-                      <div className="pt-3 border-t border-slate-100 flex items-center justify-between mt-3">
-                        <div className="space-y-0.5">
-                          <p className="agency-text text-[9px] text-[#0B2545] opacity-50 font-[800] uppercase tracking-wider">تاريخ الانتهاء</p>
-                          <p className={`agency-text text-xs font-mono font-[800] ${isFinished ? 'text-rose-600' : 'text-[#0B2545]'}`}>{poa.expiryDate}</p>
+                            {/* 2. تاريخ إصدار الوكالة */}
+                            <td className="px-6 py-4.5 font-mono text-slate-600 text-xs font-[800]">
+                              {poa.issueDate || 'غير محدد'}
+                            </td>
+
+                            {/* 3. تاريخ انتهاء الوكالة */}
+                            <td className={`px-6 py-4.5 font-mono text-xs font-[800] ${isFinished ? 'text-rose-600' : 'text-slate-600'}`}>
+                              {poa.expiryDate || 'غير محدد'}
+                            </td>
+
+                            {/* 4. اسم الوكيل */}
+                            <td className="px-6 py-4.5 font-black text-[#0B2545] text-xs">
+                              {poa.lawyerName || poa.agentName || 'غير محدد'}
+                            </td>
+
+                            {/* 5. حالة الوكالة */}
+                            <td className="px-6 py-4.5">
+                              <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-black shadow-sm ${
+                                isFinished 
+                                  ? 'bg-rose-50 text-rose-700 border border-rose-200' 
+                                  : isDanger
+                                  ? 'bg-amber-50 text-amber-700 border border-amber-200'
+                                  : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                              }`}>
+                                <span className={`w-1.5 h-1.5 rounded-full ${
+                                  isFinished ? 'bg-rose-500 animate-pulse' : isDanger ? 'bg-amber-500 animate-pulse' : 'bg-emerald-500'
+                                }`} />
+                                {isFinished ? 'منتهية' : 'نشطة'}
+                              </span>
+                            </td>
+
+                            {/* Actions */}
+                            <td className="px-6 py-4.5 text-left" onClick={(e) => e.stopPropagation()}>
+                              <div className="flex items-center gap-2 justify-end">
+                                <button 
+                                  onClick={(e) => handleStartEdit(poa, e)} 
+                                  className="p-1.5 bg-blue-50 hover:bg-blue-100 text-[#0B2545] rounded-lg transition-colors border border-blue-200 shadow-sm"
+                                  title="تعديل الوكالة"
+                                >
+                                  <Edit3 className="w-4 h-4" />
+                                </button>
+                                <button 
+                                  onClick={(e) => { e.stopPropagation(); setDeletingId(poa.id); }} 
+                                  className="p-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-lg transition-colors border border-rose-200 shadow-sm"
+                                  title="حذف الوكالة"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {filteredAgencies.map((poa) => {
+                  const daysRemaining = getRemainingDays(poa.expiryDate);
+                  const isFinished = daysRemaining <= 0;
+                  const isDanger = daysRemaining > 0 && daysRemaining <= 30;
+
+                  return (
+                    <motion.div key={poa.id} layout onClick={() => setSelectedAgency(poa)} whileHover={{ y: -4 }}
+                      className={`agency-card cursor-pointer bg-white rounded-2xl p-6 border shadow-sm hover:shadow-md transition-all flex flex-col justify-between min-h-[300px] relative overflow-hidden ${isFinished ? 'border-rose-200 bg-rose-50/30' : isDanger ? 'border-rose-300' : 'border-slate-200'}`}>
+                      
+                      {/* Accent Top Line */}
+                      <div className={`absolute top-0 right-0 left-0 h-1.5 ${isFinished ? 'bg-rose-500' : isDanger ? 'bg-rose-400 animate-pulse' : daysRemaining <= 60 ? 'bg-amber-400' : 'bg-emerald-500'}`} />
+
+                      <div className="space-y-4">
+                        <div className="flex items-start justify-between">
+                          <div className="space-y-1.5">
+                              <div className="flex items-center gap-2">
+                                <span className="agency-text text-xs font-mono font-[800] bg-blue-50 text-[#0B2545] px-2 py-0.5 rounded border border-blue-100 shadow-sm">
+                                  رقم: {poa.poaNumber}
+                                </span>
+                              </div>
+                             {poa.is_najiz_sync && (
+                               <span className="block w-fit bg-[#D4AF37]/10 text-slate-900 text-[9px] font-[800] border border-[#D4AF37]/30 px-1.5 py-0.5 rounded flex items-center gap-1 shadow-sm">
+                                 <Clock className="w-2.5 h-2.5 text-amber-600" /> 
+                                 مستورد من ناجز ({poa.last_sync_at ? new Date(poa.last_sync_at).toLocaleDateString('ar-SA') : 'تاريخ غير معروف'})
+                               </span>
+                             )}
+                          </div>
+                          <div className="flex items-center gap-1.5">
+                            {/* Edit button in the card */}
+                            <button 
+                              onClick={(e) => handleStartEdit(poa, e)} 
+                              className="p-1.5 bg-blue-50 hover:bg-blue-100 text-[#0B2545] rounded-lg transition-colors border border-blue-200 shadow-sm"
+                              title="تعديل الوكالة"
+                            >
+                              <Edit3 className="w-4 h-4" />
+                            </button>
+                            {/* Delete button in the card */}
+                            <button 
+                              onClick={(e) => { e.stopPropagation(); setDeletingId(poa.id); }} 
+                              className="p-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-lg transition-colors border border-rose-200 shadow-sm"
+                              title="حذف الوكالة"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
                         </div>
-                        <div>{getUrgencyBadge(daysRemaining)}</div>
+
+                        <div>
+                          <h3 className="agency-text text-lg font-[800] text-[#0B2545] line-clamp-1">{poa.clientName}</h3>
+                          <div className="agency-text flex items-center gap-1.5 text-xs text-[#0B2545] font-[800] mt-1 opacity-80">
+                            <Scale className="w-3.5 h-3.5" /> الممثل: {poa.lawyerName}
+                          </div>
+                        </div>
+
+                        <p className="agency-text text-xs text-[#0B2545] font-[800] line-clamp-2 bg-blue-50/30 p-2.5 rounded-xl border border-blue-100/50 leading-relaxed">
+                          {poa.scope || 'لم يتم تخصيص نطاق. الوكالة عامة.'}
+                        </p>
+                        {(() => {
+                          const statusBadge = getExpiryStatus(poa.expiryDate);
+                          if (!statusBadge) return null;
+                          return (
+                            <div className={`mt-2 px-3 py-1.5 rounded-lg text-[10px] font-[800] flex items-center gap-1 shadow-sm
+                              ${statusBadge.color === 'red' ? 'bg-red-500/10 text-red-700 border border-red-500/20' :
+                                statusBadge.color === 'orange' ? 'bg-orange-500/10 text-orange-700 border border-orange-500/20' :
+                                statusBadge.color === 'yellow' ? 'bg-yellow-500/10 text-yellow-700 border border-yellow-500/20' :
+                                'bg-green-500/10 text-green-700 border border-green-500/20'}`}>
+                              {statusBadge.urgent ? '⚠️' : '📅'} {statusBadge.label}
+                            </div>
+                          );
+                        })()}
                       </div>
-                  </motion.div>
-                );
-              })}
-            </div>
+
+                        <div className="pt-3 border-t border-slate-100 flex items-center justify-between mt-3">
+                          <div className="space-y-0.5">
+                            <p className="agency-text text-[9px] text-[#0B2545] opacity-50 font-[800] uppercase tracking-wider">تاريخ الانتهاء</p>
+                            <p className={`agency-text text-xs font-mono font-[800] ${isFinished ? 'text-rose-600' : 'text-[#0B2545]'}`}>{poa.expiryDate}</p>
+                          </div>
+                          <div>{getUrgencyBadge(daysRemaining)}</div>
+                        </div>
+                    </motion.div>
+                  );
+                })}
+              </div>
+            )
           ) : (
             <div className="bg-white border border-blue-100 p-16 rounded-[2rem] text-center space-y-4 max-w-xl mx-auto shadow-inner">
               <div className="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center mx-auto border border-blue-100">

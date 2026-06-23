@@ -29,7 +29,11 @@
   --rotate-x: 0deg;
   --rotate-y: 0deg;
 
-  /* Accessible Text Color Tokens */
+  /* Smart CSS Variables for dynamic text contrast */
+  --text-primary-dynamic: color-mix(in srgb, var(--text-main) 90%, black);
+  --text-secondary-dynamic: color-mix(in srgb, var(--text-muted) 80%, black);
+  --text-muted-dynamic: color-mix(in srgb, var(--text-dim) 70%, black);
+
   --color-text-primary: #ffffff;
   --color-text-secondary: #facc15;
   --color-text-muted: #cbd5e1;
@@ -215,6 +219,40 @@ body {
   animation: bgPulseGlow 3s infinite ease-in-out;
 }
 
+/* Global Form Input Styling for WCAG AAA 7:1 Contrast */
+input, textarea, select {
+  color: var(--text-main-hex) !important; /* Forces high contrast for inputs */
+  border-width: 2px !important;
+  border-color: var(--border) !important;
+  transition: all 0.2s ease;
+  background-color: var(--bg-input) !important;
+}
+
+html.dark input, html.dark textarea, html.dark select {
+  color: var(--text-white-hex) !important;
+}
+
+input:focus, textarea:focus, select:focus {
+  border-color: #facc15 !important; /* Bright Gold */
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(250, 204, 21, 0.2) !important;
+}
+
+/* Calendar Card Optimized with no text-shadow and bright contrast */
+.calendar-card-optimized {
+  color: #FFFFFF !important;
+  text-shadow: none !important;
+}
+
+.calendar-card-optimized h1,
+.calendar-card-optimized h2,
+.calendar-card-optimized h3,
+.calendar-card-optimized h4,
+.calendar-card-optimized .font-bold {
+  color: #FACC15 !important; /* Bright yellow */
+  text-shadow: none !important;
+}
+
 /* Professional Scrollbars */
 ::-webkit-scrollbar {
   width: 8px;
@@ -314,6 +352,17 @@ html.dark .execution-card-custom {
 
 
 /* Specific styling for grey backgrounds to enforce Slate-950 contrast */
+.high-contrast-table-row td,
+.high-contrast-table-row td * {
+  color: #020617 !important; /* Extremely high contrast > 7:1 */
+  font-weight: 700 !important;
+}
+html.dark .high-contrast-table-row td,
+html.dark .high-contrast-table-row td * {
+  color: #FFFFFF !important;
+  font-weight: 700 !important;
+}
+
 tr[class*="bg-slate-50"] td,
 tr[class*="bg-slate-50"] td *,
 tr[class*="bg-slate-100"] td,
@@ -507,6 +556,48 @@ h4,
 
 .text-balance {
   text-wrap: balance;
+}
+
+/* High contrast badges with defined borders for optimal legibility */
+.badge-high-contrast {
+  border-width: 1px !important;
+  font-weight: 700 !important;
+}
+
+.badge-high-contrast.bg-rose-100, .badge-high-contrast.bg-rose-50 {
+  border-color: #f43f5e !important;
+  color: #9f1239 !important; /* Extremely dark red for high contrast */
+}
+html.dark .badge-high-contrast.bg-rose-100 {
+  background-color: rgba(159, 18, 57, 0.2) !important;
+  color: #fda4af !important;
+}
+
+.badge-high-contrast.bg-emerald-100, .badge-high-contrast.bg-emerald-50 {
+  border-color: #10b981 !important;
+  color: #064e3b !important;
+}
+html.dark .badge-high-contrast.bg-emerald-100 {
+  background-color: rgba(6, 78, 59, 0.2) !important;
+  color: #6ee7b7 !important;
+}
+
+.badge-high-contrast.bg-amber-100, .badge-high-contrast.bg-amber-50 {
+  border-color: #f59e0b !important;
+  color: #78350f !important;
+}
+html.dark .badge-high-contrast.bg-amber-100 {
+  background-color: rgba(120, 53, 15, 0.2) !important;
+  color: #fcd34d !important;
+}
+
+.badge-high-contrast.bg-blue-100, .badge-high-contrast.bg-blue-50, .badge-high-contrast.bg-sky-100 {
+  border-color: #3b82f6 !important;
+  color: #1e3a8a !important;
+}
+html.dark .badge-high-contrast.bg-blue-100, html.dark .badge-high-contrast.bg-sky-100 {
+  background-color: rgba(30, 58, 138, 0.2) !important;
+  color: #93c5fd !important;
 }
 
 /* Professional UI Components (Strict High Contrast Light Mode) */
