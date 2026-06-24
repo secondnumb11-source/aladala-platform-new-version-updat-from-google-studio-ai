@@ -6,6 +6,7 @@ import { Case, Client, Task, Hearing, Document, PowerOfAttorney, Invoice, Employ
 import { validatePayload } from '@/lib/persistenceManager';
 import { toCamel, toSnake } from '@/utils/schemaMapping';
 import { handleRlsPolicyFriction } from '@/lib/debug-supabase';
+import { getOrCreateOffice, clearSession, isUserChanged, verifyAndEnforceSessionIntegrity } from '@/lib/officeManager';
 
 // ======================================================
 // SCHEMA GUARD - الأعمدة المسموح بها فقط لكل جدول
@@ -535,7 +536,7 @@ export function useSupabaseData() {
     const snakeData = await convertToSnakeCase(tableName, data);
     
     Object.keys(snakeData).forEach(key => {
-      if (allowed.includes(key)) {
+      if (allowed.includes(key) || key === 'office_id') {
         payload[key] = snakeData[key];
       }
     });                
@@ -562,6 +563,71 @@ export function useSupabaseData() {
 
   const fetchData = useCallback(async () => {
     try {
+      const officeId = typeof window !== 'undefined' ? localStorage.getItem('adala_office_id') : null;
+
+      let casesQuery = supabase.from('cases').select('id, case_number, title, case_name, client_id, court_name, status, category, stage, last_session_at, last_session_date, next_session_at, next_session_date, opponent_name, priority, summary, details, attachments_count, created_at, assigned_lawyers, metadata, is_confidential, is_najiz_sync, lead_lawyer_id, judgment_summary, judgment_date, appeal_deadline, execution_status').order('created_at', { ascending: false });
+      if (officeId) casesQuery = casesQuery.eq('office_id', officeId);
+
+      let clientsQuery = supabase.from('clients').select('id, name, phone, email, type, is_company, national_id, id_number, address, notes, portal_token, portal_link, created_at').order('created_at', { ascending: false });
+      if (officeId) clientsQuery = clientsQuery.eq('office_id', officeId);
+
+      let tasksQuery = supabase.from('tasks').select('id, title, description, status, priority, assigned_to, due_date, case_number, timer_active, timer_duration, target_completion_time, created_at').order('created_at', { ascending: false });
+      if (officeId) tasksQuery = tasksQuery.eq('office_id', officeId);
+
+      let hearingsQuery = supabase.from('hearings').select('id, case_number, case_name, date, time, court_name, status, judge_name, notes, hall_number, decision, created_at').order('date', { ascending: true });
+      if (officeId) hearingsQuery = hearingsQuery.eq('office_id', officeId);
+
+      let docsQuery = supabase.from('documents').select('id, name, category, uploaded_at, size, content_text, tags, color_code, file_url, storage_path, created_at').order('uploaded_at', { ascending: false });
+      if (officeId) docsQuery = docsQuery.eq('office_id', officeId);
+
+      let poasQuery = supabase.from('powers_of_attorney').select('id, poa_number, issue_date, expiry_date, status, agent_name, principal_name, type, is_najiz_sync, created_at').order('issue_date', { ascending: false });
+      if (officeId) poasQuery = poasQuery.eq('office_id', officeId);
+
+      let invoicesQuery = supabase.from('invoices').select('id, client_id, client_name, amount, vat_amount, total_amount, status, issue_date, due_date, payment_method, description, client_vat, is_zatca_submitted, zatca_timestamp, created_at').order('created_at', { ascending: false });
+      if (officeId) invoicesQuery = invoicesQuery.eq('office_id', officeId);
+
+      let employeesQuery = supabase.from('employees').select('id, name, nationality, national_id, phone, job_title, manager, qualification, start_date, end_date, email, branch, notes, avatar_url, employee_code, role, department, salary, created_at, username, permissions').order('created_at', { ascending: false });
+      if (officeId) employeesQuery = employeesQuery.eq('office_id', officeId);
+
+      let expensesQuery = supabase.from('expenses').select('id, description, amount, category, date, case_number, created_at').order('created_at', { ascending: false });
+      if (officeId) expensesQuery = expensesQuery.eq('office_id', officeId);
+
+      let messagesQuery = supabase.from('messages').select('id, sender, sender_name, text, timestamp, case_number, created_at').order('created_at', { ascending: false });
+      if (officeId) messagesQuery = messagesQuery.eq('office_id', officeId);
+
+      let contractsQuery = supabase.from('contracts').select('id, description, amount, date, created_at').order('created_at', { ascending: false });
+      if (officeId) contractsQuery = contractsQuery.eq('office_id', officeId);
+
+      let executionsQuery = supabase.from('executions').select('id, execution_number, case_number, requester_name, opponent_name, status, amount, court_name, issue_date, last_update, details, created_at').order('created_at', { ascending: false });
+      if (officeId) executionsQuery = executionsQuery.eq('office_id', officeId);
+
+      let auditQuery = supabase.from('audit_trails').select('id, user_id, user_name, action, entity_type, entity_id, details, metadata, created_at').order('created_at', { ascending: false }).limit(10);
+      if (officeId) auditQuery = auditQuery.eq('office_id', officeId);
+
+      let attachmentsQuery = supabase.from('attachments').select('id, record_id, record_type, file_name, file_url, file_size, storage_path, created_at').order('file_name', { ascending: false });
+      if (officeId) attachmentsQuery = attachmentsQuery.eq('office_id', officeId);
+
+      let clientPortalQuery = supabase.from('client_portal').select('id, client_id, last_login, created_at').order('created_at', { ascending: false });
+      if (officeId) clientPortalQuery = clientPortalQuery.eq('office_id', officeId);
+
+      let employeePortalQuery = supabase.from('employee_portal').select('id, employee_id, last_login, created_at').order('created_at', { ascending: false });
+      if (officeId) employeePortalQuery = employeePortalQuery.eq('office_id', officeId);
+
+      let attendanceQuery = supabase.from('attendance').select('id, employee_id, date, status, check_in, check_out, created_at').order('date', { ascending: false });
+      if (officeId) attendanceQuery = attendanceQuery.eq('office_id', officeId);
+
+      let leaveRequestsQuery = supabase.from('leave_requests').select('id, employee_id, type, start_date, end_date, status, reason, created_at').order('created_at', { ascending: false });
+      if (officeId) leaveRequestsQuery = leaveRequestsQuery.eq('office_id', officeId);
+
+      let paymentsQuery = supabase.from('payments').select('id, client_id, amount, date, status, payment_method, created_at').order('payment_date', { ascending: false });
+      if (officeId) paymentsQuery = paymentsQuery.eq('office_id', officeId);
+
+      let notificationsQuery = supabase.from('notifications').select('id, user_id, title, message, type, is_read, metadata, created_at').order('created_at', { ascending: false });
+      if (officeId) notificationsQuery = notificationsQuery.eq('office_id', officeId);
+
+      let systemErrorsQuery = supabase.from('system_errors').select('id, error_code, component, details, created_at').order('created_at', { ascending: false }).limit(100);
+      if (officeId) systemErrorsQuery = systemErrorsQuery.eq('office_id', officeId);
+
       const [
         casesRes, 
         clientsRes, 
@@ -585,27 +651,27 @@ export function useSupabaseData() {
         messagesRes,
         contractsRes
       ] = await Promise.all([
-        supabase.from('cases').select('id, case_number, title, case_name, client_id, court_name, status, category, stage, last_session_at, last_session_date, next_session_at, next_session_date, opponent_name, priority, summary, details, attachments_count, created_at, assigned_lawyers, metadata, is_confidential, is_najiz_sync, lead_lawyer_id, judgment_summary, judgment_date, appeal_deadline, execution_status').order('created_at', { ascending: false }),
-        supabase.from('clients').select('id, name, phone, email, type, is_company, national_id, id_number, address, notes, portal_token, portal_link, created_at').order('created_at', { ascending: false }),
-        supabase.from('tasks').select('id, title, description, status, priority, assigned_to, due_date, case_number, timer_active, timer_duration, target_completion_time, created_at').order('created_at', { ascending: false }),
-        supabase.from('hearings').select('id, case_number, case_name, date, time, court_name, status, judge_name, notes, hall_number, decision, created_at').order('date', { ascending: true }),
-        supabase.from('documents').select('id, name, category, uploaded_at, size, content_text, tags, color_code, file_url, storage_path, created_at').order('uploaded_at', { ascending: false }),
-        supabase.from('powers_of_attorney').select('id, poa_number, issue_date, expiry_date, status, agent_name, principal_name, type, is_najiz_sync, created_at').order('issue_date', { ascending: false }),
-        supabase.from('invoices').select('id, client_id, client_name, amount, vat_amount, total_amount, status, issue_date, due_date, payment_method, description, client_vat, is_zatca_submitted, zatca_timestamp, created_at').order('created_at', { ascending: false }),
-        supabase.from('employees').select('id, name, nationality, national_id, phone, job_title, manager, qualification, start_date, end_date, email, branch, notes, avatar_url, employee_code, role, department, salary, created_at, username, permissions').order('created_at', { ascending: false }),
-        supabase.from('expenses').select('id, description, amount, category, date, case_number, created_at').order('created_at', { ascending: false }),
-        supabase.from('messages').select('id, sender, sender_name, text, timestamp, case_number, created_at').order('created_at', { ascending: false }),
-        supabase.from('contracts').select('id, description, amount, date, created_at').order('created_at', { ascending: false }).then(r => r, () => ({ data: [] } as any)),
-        supabase.from('executions').select('id, execution_number, case_number, requester_name, opponent_name, status, amount, court_name, issue_date, last_update, details, created_at').order('created_at', { ascending: false }).then(r => r, () => ({ data: [] } as any)),
-        supabase.from('audit_trails').select('id, user_id, user_name, action, entity_type, entity_id, details, metadata, created_at').order('created_at', { ascending: false }).limit(10).then(r => r, () => ({ data: [] } as any)),
-        supabase.from('attachments').select('id, record_id, record_type, file_name, file_url, file_size, storage_path, created_at').order('file_name', { ascending: false }).then(r => r, () => ({ data: [] } as any)),
-        supabase.from('client_portal').select('id, client_id, last_login, created_at').order('created_at', { ascending: false }).then(r => r, () => ({ data: [] } as any)),
-        supabase.from('employee_portal').select('id, employee_id, last_login, created_at').order('created_at', { ascending: false }).then(r => r, () => ({ data: [] } as any)),
-        supabase.from('attendance').select('id, employee_id, date, status, check_in, check_out, created_at').order('date', { ascending: false }).then(r => r, () => ({ data: [] } as any)),
-        supabase.from('leave_requests').select('id, employee_id, type, start_date, end_date, status, reason, created_at').order('created_at', { ascending: false }).then(r => r, () => ({ data: [] } as any)),
-        supabase.from('payments').select('id, client_id, amount, date, status, payment_method, created_at').order('payment_date', { ascending: false }).then(r => r, () => ({ data: [] } as any)),
-        supabase.from('notifications').select('id, user_id, title, message, type, is_read, metadata, created_at').order('created_at', { ascending: false }).then(r => r, () => ({ data: [] } as any)),
-        supabase.from('system_errors').select('id, error_code, component, details, created_at').order('created_at', { ascending: false }).limit(100).then(r => r, () => ({ data: [] } as any)),
+        casesQuery,
+        clientsQuery,
+        tasksQuery,
+        hearingsQuery,
+        docsQuery,
+        poasQuery,
+        invoicesQuery,
+        employeesQuery,
+        executionsQuery.then(r => r, () => ({ data: [] } as any)),
+        auditQuery.then(r => r, () => ({ data: [] } as any)),
+        attachmentsQuery.then(r => r, () => ({ data: [] } as any)),
+        clientPortalQuery.then(r => r, () => ({ data: [] } as any)),
+        employeePortalQuery.then(r => r, () => ({ data: [] } as any)),
+        attendanceQuery.then(r => r, () => ({ data: [] } as any)),
+        leaveRequestsQuery.then(r => r, () => ({ data: [] } as any)),
+        paymentsQuery.then(r => r, () => ({ data: [] } as any)),
+        notificationsQuery.then(r => r, () => ({ data: [] } as any)),
+        systemErrorsQuery.then(r => r, () => ({ data: [] } as any)),
+        expensesQuery.then(r => r, () => ({ data: [] } as any)),
+        messagesQuery.then(r => r, () => ({ data: [] } as any)),
+        contractsQuery.then(r => r, () => ({ data: [] } as any))
       ]);
 
       let mappedClients: Client[] = [];
@@ -650,7 +716,7 @@ export function useSupabaseData() {
   }, []);
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (event === 'SIGNED_OUT') {
         // Clear all states
         setCases([]);
@@ -683,15 +749,51 @@ export function useSupabaseData() {
           }
         });
         
-        localStorage.removeItem('adala_current_user');
-        localStorage.removeItem('adala_current_email');
+        clearSession();
       } else if (event === 'SIGNED_IN') {
         const userId = session?.user?.id;
+        const email = session?.user?.email || '';
         if (userId) {
+          if (isUserChanged(userId)) {
+            // Clear React state lists immediately to prevent showing previous account's data
+            setCases([]);
+            setClients([]);
+            setTasks([]);
+            setHearings([]);
+            setDocuments([]);
+            setPowersOfAttorney([]);
+            setInvoices([]);
+            setEmployees([]);
+            setExecutions([]);
+            setExpenses([]);
+            setMessages([]);
+            setContracts([]);
+            setAuditTrails([]);
+            setAttachments([]);
+            setClientPortal([]);
+            setEmployeePortal([]);
+            setAttendance([]);
+            setLeaveRequests([]);
+            setPayments([]);
+            setNotifications([]);
+            setSystemErrors([]);
+
+            // Clear session & local backups
+            clearSession();
+          }
+
           localStorage.setItem('adala_current_user', userId);
-          if (session?.user?.email) localStorage.setItem('adala_current_email', session.user.email);
+          if (email) localStorage.setItem('adala_current_email', email);
+
+          // Get or create office and load data
+          const officeId = await getOrCreateOffice(userId, email);
+          if (officeId) {
+            // 🛡️ [Security] أداة تسجيل والتحقق من سلامة الجلسة لمنع تداخل البيانات
+            verifyAndEnforceSessionIntegrity(userId, officeId);
+            
+            fetchData();
+          }
         }
-        fetchData();
       }
     });
 
@@ -701,36 +803,42 @@ export function useSupabaseData() {
   }, [fetchData]);
 
   const refreshAllData = useCallback(async () => {
-
     try {
+      const officeId = typeof window !== 'undefined' ? localStorage.getItem('adala_office_id') : null;
+
+      let casesQuery = supabase.from('cases').select('*').eq('archived', false).order('created_at', { ascending: false });
+      if (officeId) casesQuery = casesQuery.eq('office_id', officeId);
+
+      let hearingsQuery = supabase.from('hearings').select('*').order('date', { ascending: true });
+      if (officeId) hearingsQuery = hearingsQuery.eq('office_id', officeId);
+
+      let poaQuery = supabase.from('powers_of_attorney').select('*').order('created_at', { ascending: false });
+      if (officeId) poaQuery = poaQuery.eq('office_id', officeId);
+
+      let executionsQuery = supabase.from('executions').select('*').order('created_at', { ascending: false });
+      if (officeId) executionsQuery = executionsQuery.eq('office_id', officeId);
+
+      let clientsQuery = supabase.from('clients').select('*').eq('status', 'active').order('name');
+      if (officeId) clientsQuery = clientsQuery.eq('office_id', officeId);
+
+      let tasksQuery = supabase.from('tasks').select('*').order('created_at', { ascending: false });
+      if (officeId) tasksQuery = tasksQuery.eq('office_id', officeId);
+
+      let invoicesQuery = supabase.from('invoices').select('*').order('created_at', { ascending: false });
+      if (officeId) invoicesQuery = invoicesQuery.eq('office_id', officeId);
+
       const [
         casesRes, hearingsRes, poaRes,
         executionsRes, clientsRes, tasksRes,
         invoicesRes
       ] = await Promise.all([
-        supabase.from('cases')
-          .select('*')
-          .eq('archived', false)
-          .order('created_at', { ascending: false }),
-        supabase.from('hearings')
-          .select('*')
-          .order('date', { ascending: true }),
-        supabase.from('powers_of_attorney')
-          .select('*')
-          .order('created_at', { ascending: false }),
-        supabase.from('executions')
-          .select('*')
-          .order('created_at', { ascending: false }),
-        supabase.from('clients')
-          .select('*')
-          .eq('status', 'active')
-          .order('name'),
-        supabase.from('tasks')
-          .select('*')
-          .order('created_at', { ascending: false }),
-        supabase.from('invoices')
-          .select('*')
-          .order('created_at', { ascending: false })
+        casesQuery,
+        hearingsQuery,
+        poaQuery,
+        executionsQuery,
+        clientsQuery,
+        tasksQuery,
+        invoicesQuery
       ]);
 
       if (casesRes.data) setCases(casesRes.data.map(mapCaseFromDB) as unknown as Case[]);

@@ -75,10 +75,10 @@ export const DashboardStatistics: React.FC<DashboardStatisticsProps> = ({
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
         
         {/* Left Side: Real-time Luxurious Counters */}
-        <div className="lg:col-span-7 grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="lg:col-span-7 grid grid-cols-1 sm:grid-cols-3 gap-4 perspective-container">
           
           {/* 1. Under Review Card */}
-          <div className="bg-slate-900/40 border border-[#f59e0b]/30 hover:border-[#f59e0b]/70 rounded-[2rem] p-6 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 shadow-lg shadow-black/40 relative overflow-hidden group">
+          <div className="bg-slate-900/40 border border-[#f59e0b]/30 hover:border-[#f59e0b]/70 rounded-[2rem] p-6 flex flex-col justify-between transition-all duration-300 shadow-lg shadow-black/40 relative overflow-hidden group three-d-hover-card">
             <div className="absolute inset-0 bg-gradient-to-br from-[#f59e0b]/5 via-transparent to-transparent pointer-events-none" />
             <div className="flex justify-between items-start mb-4">
               <div className="p-3 bg-[#f59e0b]/10 rounded-2xl group-hover:scale-110 transition-all">
@@ -98,7 +98,7 @@ export const DashboardStatistics: React.FC<DashboardStatisticsProps> = ({
           </div>
 
           {/* 2. Ruled Card */}
-          <div className="bg-slate-900/40 border border-purple-500/30 hover:border-purple-500/70 rounded-[2rem] p-6 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 shadow-lg shadow-black/40 relative overflow-hidden group">
+          <div className="bg-slate-900/40 border border-purple-500/30 hover:border-purple-500/70 rounded-[2rem] p-6 flex flex-col justify-between transition-all duration-300 shadow-lg shadow-black/40 relative overflow-hidden group three-d-hover-card">
             <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 via-transparent to-transparent pointer-events-none" />
             <div className="flex justify-between items-start mb-4">
               <div className="p-3 bg-purple-500/10 rounded-2xl group-hover:scale-110 transition-all">
@@ -118,7 +118,7 @@ export const DashboardStatistics: React.FC<DashboardStatisticsProps> = ({
           </div>
 
           {/* 3. Completed/Closed Card */}
-          <div className="bg-slate-900/40 border border-emerald-500/30 hover:border-emerald-500/70 rounded-[2rem] p-6 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 shadow-lg shadow-black/40 relative overflow-hidden group">
+          <div className="bg-slate-900/40 border border-emerald-500/30 hover:border-emerald-500/70 rounded-[2rem] p-6 flex flex-col justify-between transition-all duration-300 shadow-lg shadow-black/40 relative overflow-hidden group three-d-hover-card">
             <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 via-transparent to-transparent pointer-events-none" />
             <div className="flex justify-between items-start mb-4">
               <div className="p-3 bg-emerald-500/10 rounded-2xl group-hover:scale-110 transition-all">

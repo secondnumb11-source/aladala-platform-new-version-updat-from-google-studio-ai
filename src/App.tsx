@@ -29,6 +29,7 @@ import { supabase } from '@/lib/supabase';
 import { auditLogger, AuditAction } from '@/lib/AuditLogger';
 import { useSupabaseConnection } from '@/lib/supabase/connection';
 import '@/lib/supabase/init';
+import { clearSession } from '@/lib/officeManager';
 import { 
   Case, 
   Client, 
@@ -932,9 +933,7 @@ useEffect(() => {
       console.warn("Auth logout details (session variables cleared):", err);
     } finally {
       // Clear session storage but NOT necessary Supabase-native preferences
-      
-      // We do not clear localStorage now as it's Supabase-native.
-      // But we keep failed_persistence_logs and supabase_retry_queue
+      clearSession();
 
       setShowLandingPage(false);
       setCurrentUser(null);
@@ -1059,7 +1058,15 @@ useEffect(() => {
                                 /bg-(red|emerald|green|rose|amber|blue|indigo)-/i.test(classStr) || 
                                 htmlEl.getAttribute('data-contrast-ignore') === 'true' ||
                                 htmlEl.classList.contains('case-status-badge') || 
-                                htmlEl.closest('.case-status-badge') !== null;
+                                htmlEl.closest('.case-status-badge') !== null ||
+                                htmlEl.classList.contains('golden-glow-text') ||
+                                htmlEl.classList.contains('gold-text-blue-glow') ||
+                                htmlEl.classList.contains('darkblue-text-orange-glow') ||
+                                htmlEl.classList.contains('darkblue-orange-glow') ||
+                                htmlEl.closest('.golden-glow-text') !== null ||
+                                htmlEl.closest('.gold-text-blue-glow') !== null ||
+                                htmlEl.closest('.darkblue-text-orange-glow') !== null ||
+                                htmlEl.closest('.darkblue-orange-glow') !== null;
         if (isColoredStatus) return;
 
         // SPECIFIC RULE FOR THE RIGHT LOGIN SIDEBAR PANEL CARD

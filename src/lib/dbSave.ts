@@ -223,7 +223,7 @@ export function mapToDBPayload(
   const allowedFields = TABLE_FIELDS[tableName];
   if (allowedFields) {
     Object.keys(payload).forEach(key => {
-      if (!allowedFields.includes(key)) {
+      if (!allowedFields.includes(key) && key !== 'office_id') {
         delete payload[key];
       }
     });
@@ -233,6 +233,12 @@ export function mapToDBPayload(
   Object.keys(payload).forEach(key => {
     if (payload[key] === undefined) delete payload[key];
   });
+
+  // سادساً: إضافة الـ office_id للمستأجر المتعدد تلقائياً
+  const officeId = typeof window !== 'undefined' ? localStorage.getItem('adala_office_id') : null;
+  if (officeId) {
+    payload.office_id = officeId;
+  }
 
   return payload;
 }

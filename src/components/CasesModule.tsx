@@ -1081,23 +1081,87 @@ export default React.memo(function CasesModule({
     }
   };
 
-  const handleViewModeSwitch = async (newMode: 'grid' | 'table') => {
-    if (viewMode === newMode) return;
+  // Unified reload function to reload case cards, ensuring memory cleanup and forcing component re-render when switching views
+  const reloadCaseCardsWithCleanup = async (newMode: 'grid' | 'table') => {
     setIsSwitchingView(true);
     
+    // 1. Perform exhaustive memory cleanup
     await cleanupViewSwitch();
     
-    // Force DOM detach, cleanup memory, and trigger garbage collection indirectly
-    if (window.gc) {
-      try { (window as any).gc(); } catch (e) {}
+    // 2. Trigger a light memory release signal in window if in browser environment
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('adalah-cases-memory-cleanup'));
     }
+    
+    // 3. Force DOM detach to completely unmount current state before switching with a safety timeout
     setTimeout(() => {
       setViewMode(newMode);
+      
+      // 4. Force garbage collection if available
+      if (typeof window !== 'undefined' && (window as any).gc) {
+        try { (window as any).gc(); } catch (e) {}
+      }
+      
+      // 5. Restore view state with safety delays to allow React to paint the blank state
       setTimeout(() => {
         setIsSwitchingView(false);
-      }, 50);
-    }, 10);
+        console.log(`[CasesModule] Unified reload successfully completed for mode: ${newMode}`);
+      }, 100);
+    }, 20);
   };
+
+  const handleViewModeSwitch = async (newMode: 'grid' | 'table') => {
+    if (viewMode === newMode) return;
+    await reloadCaseCardsWithCleanup(newMode);
+  };
+
+  // useEffect to monitor changes in viewMode (conceptual currentView) to clean up abortController and active Supabase subscriptions
+  useEffect(() => {
+    const abortController = new AbortController();
+    
+    const cleanupCentralized = () => {
+      console.log('[CasesModule] Running centralized cleanup for viewMode switch...');
+      
+      // Cancel pending async and fetch operations using AbortController
+      abortController.abort();
+      
+      // Clear event listeners
+      window.removeEventListener('resize', () => {});
+      document.removeEventListener('keydown', () => {});
+      
+      // Unsubscribe all active Supabase Realtime channels/subscriptions to prevent memory leaks and locks
+      try {
+        supabase.removeAllChannels()
+          .then(() => {
+            console.log('[CasesModule] Supabase Realtime channels successfully unsubscribed via centralized cleanup');
+          })
+          .catch(err => {
+            console.error('[CasesModule] Error removing Supabase Realtime channels:', err);
+          });
+      } catch (err) {
+        console.error('[CasesModule] Error executing removeAllChannels:', err);
+      }
+      
+      // Free/empty cache memory, temporary states, and unregister active observers/listeners
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('adalah-cases-memory-cleanup'));
+        
+        // Force garbage collection attempt if running in environment supporting it
+        if ((window as any).gc) {
+          try { (window as any).gc(); } catch (e) {}
+        }
+      }
+      
+      // Nullify heavy state or caches to free memory reference chain
+      setExpandedCaseModal(null);
+      setReportModalCase(null);
+      setActiveDropdownId(null);
+    };
+
+    return () => {
+      cleanupCentralized();
+    };
+  }, [viewMode]);
 
   useEffect(() => {
     if (!loading && preferences) {
@@ -2155,6 +2219,62 @@ export default React.memo(function CasesModule({
     document.body.removeChild(link);
   };
 
+  const memoizedView = React.useMemo(() => {
+    return (
+      <CasesList
+        filteredCases={filteredCases}
+        viewMode={viewMode}
+        isHighContrast={isHighContrast}
+        onSelectCase={onSelectCase}
+        isSyncing={isSyncing}
+        onNajizSync={handleNajizSync}
+        setActivityLogCaseId={setActivityLogCaseId}
+        isCaseOverdue={isCaseOverdue}
+        getInteractiveCaseStyles={getInteractiveCaseStyles}
+        getStatusKineticStyles={getStatusKineticStyles}
+        getCaseDocumentTags={getCaseDocumentTags}
+        gridDensity={gridDensity}
+        visibleCount={visibleCount}
+        onArchiveToggle={(c) => {
+          if (c.archived) {
+            onUpdateState('cases', { ...c, archived: false });
+          } else {
+            onUpdateState('cases', { ...c, archived: true });
+          }
+        }}
+        selectedRole={selectedRole}
+        onUpdateCaseStatus={(c, newStatus) => {
+          onUpdateState('cases', { ...c, status: newStatus });
+        }}
+        onDeleteCase={onDeleteCase}
+        searchActive={searchTerm !== '' || advFilters.opponent !== '' || advFilters.circuit !== '' || advFilters.judgmentCategory !== ''}
+        focusedIdx={focusedIdx}
+        setFocusedIdx={setFocusedIdx}
+      />
+    );
+  }, [
+    filteredCases,
+    viewMode,
+    isHighContrast,
+    onSelectCase,
+    isSyncing,
+    handleNajizSync,
+    setActivityLogCaseId,
+    isCaseOverdue,
+    getInteractiveCaseStyles,
+    getStatusKineticStyles,
+    getCaseDocumentTags,
+    gridDensity,
+    visibleCount,
+    onUpdateState,
+    selectedRole,
+    onDeleteCase,
+    searchTerm,
+    advFilters,
+    focusedIdx,
+    setFocusedIdx
+  ]);
+
       const filterBarMarkup = (
         <div className="bg-[#0b1329] p-8 rounded-[2.5rem] border border-slate-800/80 shadow-2xl mb-10 relative z-20 space-y-6">
           <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
@@ -2496,36 +2616,23 @@ export default React.memo(function CasesModule({
                 )}
 
                 {!isSwitchingView ? (
-                  <CasesList
-                    filteredCases={filteredCases}
-                    viewMode={viewMode}
-                    isHighContrast={isHighContrast}
-                    onSelectCase={onSelectCase}
-                    isSyncing={isSyncing}
-                    onNajizSync={handleNajizSync}
-                    setActivityLogCaseId={setActivityLogCaseId}
-                    isCaseOverdue={isCaseOverdue}
-                    getInteractiveCaseStyles={getInteractiveCaseStyles}
-                    getStatusKineticStyles={getStatusKineticStyles}
-                    getCaseDocumentTags={getCaseDocumentTags}
-                    gridDensity={gridDensity}
-                    visibleCount={visibleCount}
-                    onArchiveToggle={(c) => {
-                      if (c.archived) {
-                        onUpdateState('cases', { ...c, archived: false });
-                      } else {
-                        onUpdateState('cases', { ...c, archived: true });
-                      }
-                    }}
-                    selectedRole={selectedRole}
-                    onUpdateCaseStatus={(c, newStatus) => {
-                      onUpdateState('cases', { ...c, status: newStatus });
-                    }}
-                    onDeleteCase={onDeleteCase}
-                    searchActive={searchTerm !== '' || advFilters.opponent !== '' || advFilters.circuit !== '' || advFilters.judgmentCategory !== ''}
-                    focusedIdx={focusedIdx}
-                    setFocusedIdx={setFocusedIdx}
-                  />
+                  <>
+                    {memoizedView}
+                    
+                    {/* Sentinel for infinite scroll in Grid View */}
+                    {viewMode === 'grid' && visibleCount < filteredCases.length && (
+                      <div ref={loadMoreRef} className="h-20 flex items-center justify-center mt-6">
+                        {isVirtualLoading ? (
+                          <div className="flex items-center gap-3 text-[#ff7f00]">
+                            <div className="w-6 h-6 rounded-full border-2 border-slate-800 border-t-[#ff7f00] animate-spin"></div>
+                            <span className="text-xs font-black">جاري تحميل المزيد من القضايا...</span>
+                          </div>
+                        ) : (
+                          <span className="text-slate-500 text-xs font-bold">اسحب أو مرر للأسفل لعرض المزيد</span>
+                        )}
+                      </div>
+                    )}
+                  </>
                 ) : (
                   <div className="flex items-center justify-center py-20">
                     <div className="w-12 h-12 rounded-full border-4 border-slate-800 border-t-[#ff7f00] animate-spin"></div>

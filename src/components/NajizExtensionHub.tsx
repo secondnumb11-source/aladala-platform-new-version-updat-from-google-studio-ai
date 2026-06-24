@@ -885,6 +885,10 @@ export default function NajizExtensionHub({ currentUser, onUpdateState }: NajizE
       zip.file('icons/icon48.png', base64Png, { base64: true });
       zip.file('icons/icon128.png', base64Png, { base64: true });
 
+      // Add a hidden dummy .DS_Store file or thumbs file to test cleanZipFiles / generateExtensionZip function
+      zip.file('icons/.DS_Store', 'dummy_mac_metadata');
+      zip.file('__MACOSX/icons/icon16.png', 'dummy_macosx_metadata');
+
       // manifest.json
       zip.file('manifest.json', JSON.stringify({
         manifest_version: 3,
@@ -1257,7 +1261,25 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       zip.file('injected.js', `// injected script
 console.log('Aladala Najiz sync injected.');`);
 
-      const blob = await zip.generateAsync({ type:'blob', compression:'DEFLATE', compressionOptions:{ level:9 } });
+      // generateExtensionZip logic with automatic correction / cleanup
+      const generateExtensionZip = async (zipInstance: any) => {
+        console.log('[Extension v13 Auto-Correction] Scanning zip archive files for hidden metadata...');
+        Object.keys(zipInstance.files).forEach((filename) => {
+          if (
+            filename.includes('.DS_Store') || 
+            filename.includes('__MACOSX') || 
+            filename.startsWith('.') || 
+            filename.includes('/.') ||
+            filename.endsWith('Thumbs.db')
+          ) {
+            console.warn(`[Extension v13 Auto-Correction] Removing forbidden file path to satisfy Chrome store rules: ${filename}`);
+            zipInstance.remove(filename);
+          }
+        });
+        return await zipInstance.generateAsync({ type: 'blob', compression: 'DEFLATE', compressionOptions: { level: 9 } });
+      };
+
+      const blob = await generateExtensionZip(zip);
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url; a.download = 'adala-najiz-extension-v13.zip';
@@ -1313,6 +1335,52 @@ console.log('Aladala Najiz sync injected.');`);
           text-shadow: 0 2px 4px rgba(0, 0, 0, 0.98), 0 0 8px rgba(255, 255, 255, 0.5) !important;
           font-weight: 700 !important;
         }
+        
+        /* WCAG AAA High Contrast Guidelines (Contrast Ratio > 7:1) */
+        .najiz-wcag-aaa-gold {
+          color: #FFD700 !important; /* Premium high-contrast gold */
+          font-weight: 900 !important;
+          text-shadow: 0 2px 5px rgba(0, 0, 0, 0.95), 0 0 10px rgba(0, 0, 0, 0.9) !important;
+        }
+        .najiz-wcag-aaa-white {
+          color: #FFFFFF !important;
+          font-weight: 800 !important;
+          text-shadow: 0 2px 5px rgba(0, 0, 0, 0.95), 0 0 8px rgba(0, 0, 0, 0.9) !important;
+        }
+        .najiz-luminous-input-text {
+          color: #020617 !important; /* Extremely high contrast dark slate for glowing fields */
+          font-weight: 800 !important;
+          text-shadow: none !important;
+        }
+
+        /* 3D hover effects with perspective & rotateY */
+        .najiz-3d-card {
+          perspective: 1000px !important;
+          transform-style: preserve-3d !important;
+          transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s ease !important;
+        }
+        
+        /* Apply 3D perspective and rotateY hover animations only on fine-pointer desktop devices (prevent lag on low-end systems) */
+        @media (hover: hover) and (pointer: fine) and (min-width: 1024px) {
+          .najiz-3d-card:hover {
+            transform: perspective(1000px) rotateY(12deg) rotateX(4deg) scale3d(1.03, 1.03, 1.03) translateY(-4px) !important;
+            box-shadow: 0 35px 70px -15px rgba(250, 204, 21, 0.25), 0 0 30px 2px rgba(250, 204, 21, 0.15) !important;
+          }
+        }
+        
+        /* Auto disable animations for users with reduced motion preferences or low-end/touch/mobile systems */
+        @media (prefers-reduced-motion: reduce), (max-width: 1023px), (pointer: coarse) {
+          .najiz-3d-card {
+            transform: none !important;
+            perspective: none !important;
+            transform-style: flat !important;
+            transition: transform 0.2s ease !important;
+          }
+          .najiz-3d-card:hover {
+            transform: translateY(-4px) !important;
+          }
+        }
+
         .najiz-luxury-light-card {
           background-color: #ffffff !important;
           border: 2.5px solid #d97706 !important;
@@ -1413,13 +1481,13 @@ console.log('Aladala Najiz sync injected.');`);
               { step: 2, title: 'حقن الأداة', desc: 'بمجرد تنشيط "العدالة" على المتصفح، سيظهر رادار السحب الذكي فوراً.' },
               { step: 3, title: 'التدفق الملكي', desc: 'ضغطة زر واحدة كفيلة بنقل كل ما يهمك من سجلات إلى خوادم مكتبك بأمان تام.' }
             ].map((s) => (
-              <div key={s.step} className="bg-[#0A0F1E] border-4 border-yellow-400/20 rounded-[2.5rem] p-10 flex flex-col space-y-4 hover:border-yellow-400/40 transition-all relative group overflow-hidden shadow-xl">
+              <div key={s.step} className="bg-[#0A0F1E] border-4 border-yellow-400/20 rounded-[2.5rem] p-10 flex flex-col space-y-4 hover:border-yellow-400/40 transition-all relative group overflow-hidden shadow-xl najiz-3d-card">
                  <div className="absolute top-0 right-0 w-24 h-24 bg-yellow-400/[0.03] blur-3xl rounded-full" />
                  <div className="flex items-center gap-5 relative z-10 font-bold">
                    <div className="w-12 h-12 rounded-2xl bg-yellow-400 text-black flex items-center justify-center text-xl font-black shadow-lg shadow-yellow-400/20">{s.step}</div>
-                   <h4 className="najiz-glow-yellow font-extrabold text-xl">{s.title}</h4>
+                   <h4 className="najiz-wcag-aaa-gold font-extrabold text-xl">{s.title}</h4>
                  </div>
-                 <p className="najiz-glow-white font-semibold leading-relaxed relative z-10 pr-2">{s.desc}</p>
+                 <p className="najiz-wcag-aaa-white font-semibold leading-relaxed relative z-10 pr-2">{s.desc}</p>
                  <div className="absolute bottom-0 left-0 w-full h-1 bg-yellow-400/20 opacity-0 group-hover:opacity-100 transition-opacity" />
               </div>
             ))}
@@ -1646,7 +1714,7 @@ console.log('Aladala Najiz sync injected.');`);
                                setCustomApiUrl(e.target.value);
                                localStorage.setItem('adalah_custom_api_url', e.target.value);
                              }}
-                             className="w-full najiz-luxury-input rounded-xl p-4 text-xs font-mono font-bold outline-none shadow-sm"
+                             className="w-full najiz-luxury-input najiz-luminous-input-text rounded-xl p-4 text-xs font-mono font-bold outline-none shadow-sm"
                              placeholder="https://your-server.com/api/najiz-sync"
                            />
                         </div>
@@ -1662,7 +1730,7 @@ console.log('Aladala Najiz sync injected.');`);
                                setCustomApiKey(e.target.value);
                                localStorage.setItem('adalah_custom_api_key', e.target.value);
                              }}
-                             className="w-full najiz-luxury-input rounded-xl p-4 text-xs font-mono font-bold outline-none shadow-sm"
+                             className="w-full najiz-luxury-input najiz-luminous-input-text rounded-xl p-4 text-xs font-mono font-bold outline-none shadow-sm"
                              placeholder="ادخل المفتاح أو اتركه فارغاً"
                            />
                            <p className="text-[10px] text-slate-500 font-semibold italic mt-1 leading-relaxed">عند ترك الحقل فارغاً، سيتم الاعتماد على وضع المزامنة التلقائية بدون مفتاح كخيار افتراضي.</p>

@@ -6,7 +6,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'motion/react';
 import { 
-  Clock, Bot, Edit2, Calendar, MapPin, ChevronLeft, Trash2, Eye, User, Notebook, Plus
+  Clock, Bot, Edit2, Calendar, MapPin, ChevronLeft, Trash2, Eye, User, Notebook, Plus, Download
 } from 'lucide-react';
 import { Case } from '@/types';
 import { supabase } from '@/lib/supabase';
@@ -510,7 +510,7 @@ export function getLuxuryCardTheme(category: string, isDark: boolean): CardTheme
   }
 }
 
-export default function CaseCard({
+const CaseCard = React.memo(function CaseCard({
   c,
   onSelectCase,
   isHighContrast,
@@ -661,12 +661,27 @@ export default function CaseCard({
   const cTags = getCaseDocumentTags(c);
 
   // 3D Tilt Values
+  const [enable3D, setEnable3D] = useState(true);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const mediaQueryList = window.matchMedia('(max-width: 768px), (prefers-reduced-motion: reduce)');
+    setEnable3D(!mediaQueryList.matches);
+
+    const listener = (e: MediaQueryListEvent) => {
+      setEnable3D(!e.matches);
+    };
+    mediaQueryList.addEventListener('change', listener);
+    return () => mediaQueryList.removeEventListener('change', listener);
+  }, []);
+
   const [rotateX, setRotateX] = useState(0);
   const [rotateY, setRotateY] = useState(0);
   const [glareX, setGlareX] = useState(50);
   const [glareY, setGlareY] = useState(50);
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!enable3D) return;
     const card = e.currentTarget;
     const rect = card.getBoundingClientRect();
     const x = e.clientX - rect.left;
@@ -699,10 +714,12 @@ export default function CaseCard({
       ? `0 25px 60px -15px ${cardTheme.glowShadow}, 0 0 20px 2px ${cardTheme.glowShadow}, inset 0 0 0 1.5px rgba(212, 175, 55, 0.4)` 
       : (isHighContrast ? '0 10px 40px -10px rgba(0,0,0,0.08), inset 0 0 0 1px rgba(0,0,0,0.1)' : `0 10px 40px -10px ${cardTheme.glowShadow}, inset 0 0 0 1px rgba(255,255,255,0.05)`),
     transform: (isHovered || isKeyboardFocused) 
-      ? `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.025, 1.025, 1.025) translateY(-5px)` 
-      : 'perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1) translateY(0)',
+      ? (enable3D 
+          ? `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.025, 1.025, 1.025) translateY(-5px)` 
+          : 'translateY(-4px)')
+      : 'none',
     transition: isHovered ? 'transform 0.05s ease-out, box-shadow 0.3s ease-out' : 'transform 0.5s ease-out, box-shadow 0.5s ease-out',
-    transformStyle: 'preserve-3d',
+    transformStyle: enable3D ? 'preserve-3d' : 'flat',
   };
 
   return (
@@ -711,13 +728,22 @@ export default function CaseCard({
       onMouseEnter={() => setIsHovered(true)}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
-      className={`relative cursor-pointer rounded-[2.2rem] border overflow-hidden transition-all duration-300 ${
+      className={`relative cursor-pointer rounded-[2.2rem] border overflow-hidden transition-all duration-300 three-d-hover-card ${
         c.archived ? 'opacity-65 grayscale-[0.2]' : ''
       } ${isKeyboardFocused ? 'ring-4 ring-[#D4AF37] ring-offset-4 ring-offset-transparent z-10' : ''} ${searchHighlight ? 'ring-2 ring-amber-400 ring-offset-2 ring-offset-transparent' : ''} ${
-        isHighContrast ? 'border-slate-300 text-slate-900' : `${cardTheme.border}`
+        isHighContrast 
+          ? 'border-slate-300 text-slate-900 wcag-aaa-light-mode' 
+          : `${cardTheme.border} luxurious-dark-gradient-card ${
+              c.status === 'active' || c.status === 'final_judgment' || c.status === 'primary_judgment' 
+                ? 'kinetic-glow-status-active kinetic-glow-status' 
+                : c.status === 'closed' 
+                  ? 'kinetic-glow-status-closed kinetic-glow-status' 
+                  : 'kinetic-glow-status-review kinetic-glow-status'
+            }`
       }`}
       style={cardStyle}
       id={`case-card-${c.id}`}
+      data-status={c.status || 'under_study'}
     >
       {/* 3D Golden/Holographic Glare Effect */}
       {isHovered && !isHighContrast && (
@@ -776,17 +802,23 @@ export default function CaseCard({
             <div className={`px-3 py-1.5 rounded-xl border text-[11px] font-black tracking-wide flex items-center gap-1.5 shadow-sm ${
                isHighContrast 
                  ? 'bg-emerald-100 border-emerald-400 text-emerald-950 font-black' 
-                 : `${cardTheme.badgeBg} ${cardTheme.badgeText}`
+                 : `${cardTheme.badgeBg} ${cardTheme.badgeText} ${
+                      c.status === 'active' || c.status === 'final_judgment' || c.status === 'primary_judgment' 
+                        ? 'kinetic-glow-status-active kinetic-glow-status' 
+                        : c.status === 'closed' 
+                          ? 'kinetic-glow-status-closed kinetic-glow-status' 
+                          : 'kinetic-glow-status-review kinetic-glow-status'
+                    }`
             }`}>
               <div className={`w-1.5 h-1.5 rounded-full ${isHighContrast ? 'bg-emerald-600' : 'bg-emerald-400 animate-pulse'}`}></div>
-              {c.status || arabicStatusName || 'نشطة'}
+              {arabicStatusName || c.status || 'نشطة'}
             </div>
           </div>
 
           {/* MAIN CARD HEADLINE: CASE SUBJECT */}
           <div className={`border-b pb-3 mb-4 ${isHighContrast ? 'border-slate-200' : 'border-white/5'}`}>
-            <span className={`text-[10px] font-black block mb-1 tracking-wider uppercase ${isHighContrast ? 'text-slate-500' : `${cardTheme.textMuted}`}`}>موضوع الدعوى / ملف القضية</span>
-            <span className={`text-base font-black tracking-tight leading-snug block line-clamp-2 ${isHighContrast ? 'text-slate-950' : `${cardTheme.textPrimary} drop-shadow-md`}`}>
+            <span className={`text-[10px] font-black block mb-1 tracking-wider uppercase ${isHighContrast ? 'text-slate-500 text-muted-high-contrast' : `${cardTheme.textMuted}`}`}>موضوع الدعوى / ملف القضية</span>
+            <span className={`text-base font-black tracking-tight leading-snug block line-clamp-2 ${isHighContrast ? 'text-slate-950 text-primary-high-contrast' : `${cardTheme.textPrimary} drop-shadow-md`}`}>
               {c.caseName || 'قضية عامة بدون عنوان'}
             </span>
           </div>
@@ -799,8 +831,8 @@ export default function CaseCard({
                 ? 'bg-slate-50 border-slate-300 hover:bg-slate-100' 
                 : `${cardTheme.innerCardBg}`
             }`}>
-              <span className={`text-[9px] font-black tracking-wider block mb-1 uppercase ${isHighContrast ? 'text-slate-500' : `${cardTheme.textMuted}`}`}>المحكمة المختصة</span>
-              <span className={`font-black text-xs truncate block ${isHighContrast ? 'text-slate-900' : `${cardTheme.textSecondary}`}`}>{c.courtName || 'غير محدد'}</span>
+              <span className={`text-[9px] font-black tracking-wider block mb-1 uppercase ${isHighContrast ? 'text-slate-500 text-muted-high-contrast' : `${cardTheme.textMuted}`}`}>المحكمة المختصة</span>
+              <span className={`font-black text-xs truncate block ${isHighContrast ? 'text-slate-900 text-secondary-high-contrast' : `${cardTheme.textSecondary}`}`}>{c.courtName || 'غير مححدد'}</span>
             </div>
 
             {/* Case Number */}
@@ -809,8 +841,8 @@ export default function CaseCard({
                 ? 'bg-amber-50 border-amber-300 hover:bg-amber-100' 
                 : `${cardTheme.innerCardBg}`
             }`}>
-              <span className={`text-[9px] font-black tracking-wider block mb-1 uppercase ${isHighContrast ? 'text-amber-800' : `${cardTheme.textMuted}`}`}>رقم القضية</span>
-              <span className={`font-black text-xs truncate ${isHighContrast ? 'text-amber-700' : `${cardTheme.accentText}`}`} dir="ltr">#{c.caseNumber}</span>
+              <span className={`text-[9px] font-black tracking-wider block mb-1 uppercase ${isHighContrast ? 'text-amber-800 text-muted-high-contrast' : `${cardTheme.textMuted}`}`}>رقم القضية</span>
+              <span className={`font-black text-xs truncate ${isHighContrast ? 'text-amber-700 accent-text-high-contrast' : `${cardTheme.accentText}`}`} dir="ltr">#{c.caseNumber}</span>
             </div>
 
             {/* Category */}
@@ -819,8 +851,8 @@ export default function CaseCard({
                 ? 'bg-slate-50 border-slate-300 hover:bg-slate-100' 
                 : `${cardTheme.innerCardBg}`
             }`}>
-              <span className={`text-[9px] font-black tracking-wider block mb-1 uppercase ${isHighContrast ? 'text-slate-500' : `${cardTheme.textMuted}`}`}>تصنيف القضية</span>
-              <span className={`font-black text-[11px] truncate flex items-center gap-1.5 ${isHighContrast ? 'text-slate-900' : `${cardTheme.textSecondary}`}`}>
+              <span className={`text-[9px] font-black tracking-wider block mb-1 uppercase ${isHighContrast ? 'text-slate-500 text-muted-high-contrast' : `${cardTheme.textMuted}`}`}>تصنيف القضية</span>
+              <span className={`font-black text-[11px] truncate flex items-center gap-1.5 ${isHighContrast ? 'text-slate-900 text-secondary-high-contrast' : `${cardTheme.textSecondary}`}`}>
                 {IconComponent && <IconComponent className="w-3.5 h-3.5" />}
                 {LUXURY_THEMES[c.category]?.nameAr || 'عامة'}
               </span>
@@ -832,8 +864,8 @@ export default function CaseCard({
                 ? 'bg-slate-50 border-slate-300 hover:bg-slate-100' 
                 : `${cardTheme.innerCardBg}`
             }`}>
-              <span className={`text-[9px] font-black tracking-wider block mb-1 uppercase ${isHighContrast ? 'text-slate-500' : `${cardTheme.textMuted}`}`}>الدائرة القضائية</span>
-              <span className={`font-black text-xs truncate block ${isHighContrast ? 'text-slate-900' : `${cardTheme.textSecondary}`}`}>{c.circuitNumber || 'غير محدد'}</span>
+              <span className={`text-[9px] font-black tracking-wider block mb-1 uppercase ${isHighContrast ? 'text-slate-500 text-muted-high-contrast' : `${cardTheme.textMuted}`}`}>الدائرة القضائية</span>
+              <span className={`font-black text-xs truncate block ${isHighContrast ? 'text-slate-900 text-secondary-high-contrast' : `${cardTheme.textSecondary}`}`}>{c.circuitNumber || 'غير محدد'}</span>
             </div>
           </div>
 
@@ -843,8 +875,8 @@ export default function CaseCard({
               ? 'bg-slate-50 border-slate-300 hover:bg-slate-100' 
               : `${cardTheme.innerCardBg}`
           }`}>
-            <span className={`text-[9px] font-black block mb-1 tracking-wider uppercase ${isHighContrast ? 'text-slate-500' : `${cardTheme.textMuted}`}`}>أطراف الدعوى / الموكل والخصم</span>
-            <span className={`font-black text-xs truncate block ${isHighContrast ? 'text-slate-950' : `${cardTheme.textPrimary}`}`}>
+            <span className={`text-[9px] font-black block mb-1 tracking-wider uppercase ${isHighContrast ? 'text-slate-500 text-muted-high-contrast' : `${cardTheme.textMuted}`}`}>أطراف الدعوى / الموكل والخصم</span>
+            <span className={`font-black text-xs truncate block ${isHighContrast ? 'text-slate-950 text-primary-high-contrast' : `${cardTheme.textPrimary}`}`}>
               {c.clientName || 'غير محدد'}
               {c.opponentName ? ` ضد ${c.opponentName}` : ''}
             </span>
@@ -856,8 +888,8 @@ export default function CaseCard({
               ? 'bg-[#064e3b]/5 border-emerald-400 hover:bg-[#064e3b]/10' 
               : 'bg-emerald-950/20 border-emerald-500/25 hover:bg-emerald-950/30'
           }`}>
-            <span className={`text-[10px] font-black block mb-1 tracking-wider uppercase ${isHighContrast ? 'text-emerald-800' : 'text-emerald-400'}`}>موعد الجلسة القضائية القادمة</span>
-            <span className={`font-black text-sm flex items-center gap-2 ${isHighContrast ? 'text-emerald-900' : 'text-[#00ff88] drop-shadow-[0_0_5px_rgba(0,255,136,0.3)]'}`}>
+            <span className={`text-[10px] font-black block mb-1 tracking-wider uppercase ${isHighContrast ? 'text-emerald-800 text-muted-high-contrast' : 'text-emerald-400'}`}>موعد الجلسة القضائية القادمة</span>
+            <span className={`font-black text-sm flex items-center gap-2 ${isHighContrast ? 'text-emerald-900 text-primary-high-contrast' : 'text-[#00ff88] drop-shadow-[0_0_5px_rgba(0,255,136,0.3)]'}`}>
               <Calendar className="w-4 h-4 text-emerald-500" />
               {c.nextSessionDate || 'غير مجدولة بعد'}
             </span>
@@ -910,9 +942,9 @@ export default function CaseCard({
             {isExporting ? (
               <span className={`w-3.5 h-3.5 border-2 border-t-transparent rounded-full animate-spin ${isHighContrast ? 'border-amber-600' : 'border-amber-400'}`} />
             ) : (
-              <span className="text-base">📋</span>
+              <Download className="w-4 h-4 text-current animate-bounce" />
             )}
-            {isExporting ? 'جاري تصدير التقرير الفاخر...' : 'تصدير التقرير الرسمي (PDF)'}
+            {isExporting ? 'جاري تصدير القضية...' : 'تصدير القضية (تحميل PDF مباشر)'}
           </button>
 
           {/* Row 7: Archive & Delete Actions */}
@@ -1282,4 +1314,6 @@ export default function CaseCard({
       </div>
     </div>
   );
-}
+});
+
+export default CaseCard;

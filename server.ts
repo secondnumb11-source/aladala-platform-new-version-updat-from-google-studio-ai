@@ -647,8 +647,17 @@ app.post('/api/v1/sync', async (req: any, res: any) => {
   // التحقق من API Key
   const apiKey = req.headers['x-api-key'] ||
     req.headers['authorization']?.replace('Bearer ','') || '';
+  let officeId: string | null = null;
   if (apiKey) {
     try {
+      const { data: keyData } = await adminSupabase.from('api_keys')
+        .select('office_id')
+        .eq('key_value', apiKey.trim())
+        .eq('is_active', true)
+        .maybeSingle();
+      if (keyData?.office_id) {
+        officeId = keyData.office_id;
+      }
       await adminSupabase.from('api_keys')
         .update({ last_used_at: new Date().toISOString() })
         .eq('key_value', apiKey.trim())
@@ -730,7 +739,7 @@ app.post('/api/v1/sync', async (req: any, res: any) => {
         .from('cases').select('id')
         .eq('case_number', caseNum).maybeSingle();
 
-      const payload_case = {
+      const payload_case: any = {
         case_number: caseNum,
         najiz_case_number: caseNum,
         title: getField(c,'caseName','case_name','title','subject') || `قضية ${caseNum}`,
@@ -748,6 +757,9 @@ app.post('/api/v1/sync', async (req: any, res: any) => {
         archived: false,
         updated_at: new Date().toISOString()
       };
+      if (officeId) {
+        payload_case.office_id = officeId;
+      }
 
       if (existing?.id) {
         await adminSupabase.from('cases')
@@ -788,7 +800,8 @@ app.post('/api/v1/sync', async (req: any, res: any) => {
         session_type: getField(s,'sessionType','نوع الجلسة') || 'جلسة',
         is_najiz_sync: true,
         created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
+        ...(officeId ? { office_id: officeId } : {})
       }, { onConflict: 'case_number,date', ignoreDuplicates: true });
       results.sessions.added++;
     } catch(e: any) {
@@ -816,7 +829,8 @@ app.post('/api/v1/sync', async (req: any, res: any) => {
         is_najiz_sync: true,
         najiz_sync_date: new Date().toISOString(),
         created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
+        ...(officeId ? { office_id: officeId } : {})
       }, { onConflict: 'poa_number', ignoreDuplicates: false });
       results.agencies.added++;
     } catch(e: any) {
@@ -845,7 +859,8 @@ app.post('/api/v1/sync', async (req: any, res: any) => {
         issue_date: getField(e,'requestDate','date','تاريخ تقديم الطلب') || null,
         is_najiz_sync: true,
         created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
+        ...(officeId ? { office_id: officeId } : {})
       }, { onConflict: 'execution_number', ignoreDuplicates: false });
       results.executions.added++;
     } catch(e2: any) {
@@ -877,7 +892,8 @@ app.post('/api/v1/sync', async (req: any, res: any) => {
         ].filter(Boolean).join(' | '),
         is_najiz_sync: true,
         created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
+        ...(officeId ? { office_id: officeId } : {})
       }, { onConflict: 'id' });
       results.judgments.added++;
     } catch(e: any) {
@@ -903,7 +919,8 @@ app.post('/api/v1/sync', async (req: any, res: any) => {
           phone: getField(cl,'phone','mobile') || null,
           status: 'active',
           created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
+          updated_at: new Date().toISOString(),
+          ...(officeId ? { office_id: officeId } : {})
         });
         results.clients.added++;
       }
@@ -5034,6 +5051,68 @@ async function initializeDatabaseTables() {
         created_at TIMESTAMPTZ DEFAULT NOW()
       );
     `);
+
+    // --- MULTI-TENANCY OFFICE MIGRATIONS ---
+    console.log('[Schema Auto-Init] Migrating columns for multi-tenancy...');
+    await client.query(`
+      ALTER TABLE public.cases ADD COLUMN IF NOT EXISTS office_id UUID;
+      ALTER TABLE public.clients ADD COLUMN IF NOT EXISTS office_id UUID;
+      ALTER TABLE public.employees ADD COLUMN IF NOT EXISTS office_id UUID;
+      ALTER TABLE public.tasks ADD COLUMN IF NOT EXISTS office_id UUID;
+      ALTER TABLE public.hearings ADD COLUMN IF NOT EXISTS office_id UUID;
+      ALTER TABLE public.powers_of_attorney ADD COLUMN IF NOT EXISTS office_id UUID;
+      ALTER TABLE public.executions ADD COLUMN IF NOT EXISTS office_id UUID;
+      ALTER TABLE public.invoices ADD COLUMN IF NOT EXISTS office_id UUID;
+      ALTER TABLE public.case_documents ADD COLUMN IF NOT EXISTS office_id UUID;
+      ALTER TABLE public.api_keys ADD COLUMN IF NOT EXISTS office_id UUID;
+    `);
+
+    try {
+      await client.query(`ALTER TABLE public.messages ADD COLUMN IF NOT EXISTS office_id UUID;`);
+    } catch (e) {
+      console.log('[Schema Auto-Init] Optional message table office_id skipped.');
+    }
+
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS public.offices (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        user_id UUID UNIQUE NOT NULL,
+        email TEXT NOT NULL,
+        office_name TEXT DEFAULT 'مكتبي',
+        created_at TIMESTAMPTZ DEFAULT NOW()
+      );
+    `);
+
+    try {
+      await client.query(`ALTER TABLE public.offices ENABLE ROW LEVEL SECURITY;`);
+    } catch (e) {}
+
+    try {
+      await client.query(`
+        CREATE POLICY "offices_own" ON public.offices
+          AS PERMISSIVE FOR ALL
+          USING (user_id = auth.uid())
+          WITH CHECK (user_id = auth.uid());
+      `);
+    } catch (e) {
+      // Policy might already exist
+    }
+
+    await client.query(`
+      CREATE INDEX IF NOT EXISTS idx_cases_office ON public.cases(office_id);
+      CREATE INDEX IF NOT EXISTS idx_clients_office ON public.clients(office_id);
+      CREATE INDEX IF NOT EXISTS idx_employees_office ON public.employees(office_id);
+      CREATE INDEX IF NOT EXISTS idx_tasks_office ON public.tasks(office_id);
+      CREATE INDEX IF NOT EXISTS idx_hearings_office ON public.hearings(office_id);
+    `);
+
+    await client.query(`
+      CREATE OR REPLACE FUNCTION get_office_id()
+      RETURNS UUID AS $$
+        SELECT id FROM public.offices WHERE user_id = auth.uid() LIMIT 1;
+      $$ LANGUAGE SQL SECURITY DEFINER STABLE;
+    `);
+    console.log('[Schema Auto-Init] Multi-tenancy office migrations completed successfully.');
 
     // Reload PostgREST's schema cache so that Supabase is immediately aware of new tables
     await client.query("NOTIFY pgrst, 'reload schema';");

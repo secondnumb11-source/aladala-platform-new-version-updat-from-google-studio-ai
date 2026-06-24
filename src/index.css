@@ -3547,6 +3547,248 @@ button.btn-secondary:hover {
   }
 }
 
+/* High Contrast WCAG AAA Light Mode overrides for Case Cards */
+.wcag-aaa-light-mode .text-primary-high-contrast {
+  color: #0f172a !important; /* Extremely dark slate (near black) for maximum readability */
+  font-weight: 900 !important;
+}
+
+.wcag-aaa-light-mode .text-secondary-high-contrast {
+  color: #1e293b !important; /* Dark slate */
+  font-weight: 800 !important;
+}
+
+.wcag-aaa-light-mode .text-muted-high-contrast {
+  color: #334155 !important; /* Slate 700 */
+  font-weight: 700 !important;
+}
+
+.wcag-aaa-light-mode .accent-text-high-contrast {
+  color: #b45309 !important; /* Warm amber-700 (high contrast orange/gold) */
+  font-weight: 900 !important;
+}
+
+/* Ensure Gold and White texts are highly clear over dark backgrounds inside cards */
+.dark-card-gold-text {
+  color: #fef08a !important; /* Bright light yellow-gold for readability */
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8), 0 0 8px rgba(234, 179, 8, 0.4) !important;
+  font-weight: 900 !important;
+}
+
+.dark-card-white-text {
+  color: #ffffff !important;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.9) !important;
+  font-weight: 800 !important;
+}
+
+.dark-card-muted-text {
+  color: #cbd5e1 !important; /* Light slate 300 for soft but very readable contrast */
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8) !important;
+}
+
+/* 3D Transform & Perspective effects for Cards in CasesModule */
+.perspective-container {
+  perspective: 1200px;
+}
+
+.three-d-hover-card {
+  transition: transform 0.5s cubic-bezier(0.2, 1, 0.3, 1), box-shadow 0.5s cubic-bezier(0.2, 1, 0.3, 1);
+  transform-style: preserve-3d;
+}
+
+.three-d-hover-card:hover {
+  transform: translateY(-8px) rotateX(4deg) rotateY(-4deg) scale(1.02);
+  box-shadow: 
+    0 20px 40px -15px rgba(0, 0, 0, 0.3), 
+    0 0 20px rgba(212, 175, 55, 0.15);
+}
+
+/* Disable or simplify 3D transforms for low-performance/mobile/reduced-motion devices */
+@media (prefers-reduced-motion: reduce) {
+  .three-d-hover-card,
+  .three-d-hover-card:hover {
+    transform: none !important;
+    transition: none !important;
+    transform-style: flat !important;
+  }
+}
+
+@media (max-width: 768px), (hover: none) {
+  .three-d-hover-card:hover {
+    transform: translateY(-4px) !important;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2) !important;
+  }
+}
+
+/* Luxurious Dark Gradient Classes based on case status */
+.luxurious-dark-gradient-card {
+  background: linear-gradient(135deg, #090e1a 0%, #111827 50%, #1f2937 100%) !important;
+}
+
+/* Status-based variations to enhance visual distinction */
+.luxurious-dark-gradient-card[data-status="active"],
+.luxurious-dark-gradient-card[data-status="under_study"] {
+  background: linear-gradient(135deg, #050b14 0%, #0c1a30 50%, #172d54 100%) !important; /* Rich Dark Blue */
+}
+
+.luxurious-dark-gradient-card[data-status="under_review"] {
+  background: linear-gradient(135deg, #09090b 0%, #1b1307 50%, #35230a 100%) !important; /* Warm Amber hint */
+}
+
+.luxurious-dark-gradient-card[data-status="closed"] {
+  background: linear-gradient(135deg, #0b0f19 0%, #111827 50%, #1f2937 100%) !important; /* Neutral Slate */
+}
+
+.luxurious-dark-gradient-card[data-status="final_judgment"],
+.luxurious-dark-gradient-card[data-status="primary_judgment"] {
+  background: linear-gradient(135deg, #030a08 0%, #062218 50%, #0c422f 100%) !important; /* Royal Emerald Green */
+}
+
+.luxurious-dark-gradient-card[data-status="postponed"],
+.luxurious-dark-gradient-card[data-status="struck_off"] {
+  background: linear-gradient(135deg, #0c0206 0%, #250512 50%, #4c0724 100%) !important; /* Crimson Red */
+}
+
+/* Dynamic Kinetic Glow animation for luxury indicators */
+@keyframes kinetic-glow {
+  0%, 100% {
+    box-shadow: 0 0 6px rgba(212, 175, 55, 0.25), inset 0 0 3px rgba(212, 175, 55, 0.15);
+    opacity: 0.92;
+  }
+  50% {
+    box-shadow: 0 0 16px rgba(212, 175, 55, 0.75), inset 0 0 8px rgba(212, 175, 55, 0.45);
+    opacity: 1;
+  }
+}
+
+.kinetic-glow-status {
+  animation: kinetic-glow 2.8s infinite ease-in-out;
+  border-color: rgba(212, 175, 55, 0.5) !important;
+}
+
+/* Status-specific kinetic glows */
+.kinetic-glow-status-active {
+  animation: kinetic-glow-emerald 3.2s infinite ease-in-out;
+}
+.kinetic-glow-status-closed {
+  animation: kinetic-glow-slate 3.2s infinite ease-in-out;
+}
+.kinetic-glow-status-review {
+  animation: kinetic-glow-amber 3.2s infinite ease-in-out;
+}
+
+@keyframes kinetic-glow-emerald {
+  0%, 100% {
+    box-shadow: 0 0 6px rgba(16, 185, 129, 0.25), inset 0 0 3px rgba(16, 185, 129, 0.15);
+  }
+  50% {
+    box-shadow: 0 0 18px rgba(16, 185, 129, 0.8), inset 0 0 10px rgba(16, 185, 129, 0.5);
+  }
+}
+
+@keyframes kinetic-glow-slate {
+  0%, 100% {
+    box-shadow: 0 0 4px rgba(148, 163, 184, 0.2), inset 0 0 2px rgba(148, 163, 184, 0.1);
+  }
+  50% {
+    box-shadow: 0 0 12px rgba(148, 163, 184, 0.55), inset 0 0 7px rgba(148, 163, 184, 0.35);
+  }
+}
+
+@keyframes kinetic-glow-amber {
+  0%, 100% {
+    box-shadow: 0 0 6px rgba(245, 158, 11, 0.25), inset 0 0 3px rgba(245, 158, 11, 0.15);
+  }
+  50% {
+    box-shadow: 0 0 18px rgba(245, 158, 11, 0.8), inset 0 0 10px rgba(245, 158, 11, 0.5);
+  }
+}
+
+/* WCAG AAA High Contrast helper classes for List View text */
+.wcag-aaa-gold-dark {
+  color: #fbbf24 !important; /* Very high contrast gold for dark theme */
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.9);
+  font-weight: 900 !important;
+}
+
+.wcag-aaa-gold-light {
+  color: #78350f !important; /* Deep amber/bronze for light theme (WCAG AAA compliant) */
+  font-weight: 900 !important;
+}
+
+.wcag-aaa-green-dark {
+  color: #34d399 !important; /* High contrast mint green for dark theme */
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.9);
+  font-weight: 900 !important;
+}
+
+.wcag-aaa-green-light {
+  color: #064e3b !important; /* Ultra-deep forest green for light theme (WCAG AAA compliant) */
+  font-weight: 900 !important;
+}
+
+/* Golden text with blue glow effect to replace white text inside specified cards */
+.golden-glow-text,
+.golden-glow-text * {
+  color: #a27b1e !important; /* Elegant dark golden color */
+  text-shadow: 0 0 8px rgba(30, 58, 138, 0.9), 0 0 16px rgba(30, 58, 138, 0.6) !important;
+  font-weight: 900 !important;
+}
+
+/* Gold text with high-intensity blue glow for premium legal dashboard branding */
+.gold-text-blue-glow,
+.gold-text-blue-glow * {
+  color: #A27B1E !important;
+  text-shadow: 0 0 8px rgba(30, 58, 138, 0.95), 0 0 16px rgba(30, 58, 138, 0.8), 0 0 24px rgba(30, 58, 138, 0.6) !important;
+  font-weight: 900 !important;
+}
+
+/* Luxury card backgrounds in UnifiedAuthLanding sidebar */
+.login-card-luxury {
+  background: linear-gradient(135deg, rgba(245, 242, 230, 0.85), rgba(255, 255, 255, 0.9)) !important;
+  backdrop-filter: blur(10px) !important;
+  -webkit-backdrop-filter: blur(10px) !important;
+  border: 2px solid rgba(212, 175, 55, 0.45) !important;
+  transition: all 0.3s ease !important;
+}
+.login-card-luxury:hover {
+  border-color: rgba(162, 123, 30, 0.8) !important;
+  box-shadow: 0 10px 25px -5px rgba(162, 123, 30, 0.15), 0 8px 10px -6px rgba(162, 123, 30, 0.1) !important;
+}
+
+/* Unified input border and focus blue glow */
+.login-input-glow {
+  border: 1px solid #A27B1E !important;
+  transition: all 0.3s ease !important;
+}
+.login-input-glow:focus {
+  border-color: #A27B1E !important;
+  box-shadow: 0 0 12px rgba(30, 58, 138, 0.8), 0 0 24px rgba(30, 58, 138, 0.4) !important;
+  outline: none !important;
+}
+
+/* Golden icons with dynamic blue drop shadow */
+.golden-glow-icon {
+  color: #A27B1E !important;
+  filter: drop-shadow(0 0 4px rgba(30, 58, 138, 0.65)) !important;
+}
+
+/* Elegant dark blue text with vibrant orange glow for outside landing page interactive cards */
+.darkblue-text-orange-glow,
+.darkblue-text-orange-glow * {
+  color: #0c2461 !important;
+  text-shadow: 0 0 8px rgba(249, 115, 22, 0.95), 0 0 16px rgba(234, 88, 12, 0.85), 0 0 24px rgba(251, 146, 60, 0.6) !important;
+  font-weight: 900 !important;
+}
+
+.darkblue-orange-glow {
+  color: #0c2461 !important;
+  text-shadow: 0 0 8px rgba(249, 115, 22, 0.95), 0 0 16px rgba(234, 88, 12, 0.85), 0 0 24px rgba(251, 146, 60, 0.6) !important;
+  font-weight: 900 !important;
+}
+
+
+
 
 
 

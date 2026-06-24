@@ -528,7 +528,15 @@ export default function MainLandingPage({ onSignInSelect, onTrialSelect }: MainL
                         <div className="p-1 bg-emerald-500 text-emerald-100 rounded-lg shrink-0 w-fit mb-2">
                           <Check className="w-3.5 h-3.5 font-extrabold" />
                         </div>
-                        <p className={`text-[11.5px] font-black leading-relaxed ${activeTab === 'ai-drafting' ? 'text-[#0c2461]' : 'text-slate-900'}`}>
+                        <p className={`text-[11.5px] font-black leading-relaxed ${
+                          activeTab === 'whatsapp-alerts' || activeTab === 'najiz-sync' || activeTab === 'vault-security'
+                            ? 'gold-text-blue-glow'
+                            : activeTab === 'task-management' || activeTab === 'finance-zatca'
+                              ? 'darkblue-text-orange-glow'
+                              : activeTab === 'ai-drafting' 
+                                ? 'text-[#0c2461]' 
+                                : 'text-slate-900'
+                        }`}>
                           {benefit}
                         </p>
                       </div>
@@ -555,7 +563,15 @@ export default function MainLandingPage({ onSignInSelect, onTrialSelect }: MainL
                       }`}>
                         🔴 {isEn ? "Traditional Method" : "العمل بالطرق التقليدية اليدوية"}
                       </span>
-                      <p className={`text-sm leading-relaxed font-bold ${activeTab === 'ai-drafting' ? 'text-rose-50' : 'text-slate-900'}`}>
+                      <p className={`text-sm leading-relaxed font-bold ${
+                        activeTab === 'whatsapp-alerts' || activeTab === 'najiz-sync' || activeTab === 'vault-security'
+                          ? 'gold-text-blue-glow'
+                          : activeTab === 'task-management' || activeTab === 'finance-zatca'
+                            ? 'darkblue-text-orange-glow'
+                            : activeTab === 'ai-drafting' 
+                              ? 'text-rose-50' 
+                              : 'text-slate-900'
+                      }`}>
                         {isEn ? matchingF.workflowBeforeEn : matchingF.workflowBeforeAr}
                       </p>
                     </div>
@@ -572,7 +588,15 @@ export default function MainLandingPage({ onSignInSelect, onTrialSelect }: MainL
                       }`}>
                         🟢 {isEn ? "After Al-Adalah Platform" : "بينما مع حلول منصة العدالة"}
                       </span>
-                      <p className={`text-sm leading-relaxed font-extrabold ${activeTab === 'ai-drafting' ? 'text-emerald-50' : 'text-slate-900'}`}>
+                      <p className={`text-sm leading-relaxed font-extrabold ${
+                        activeTab === 'whatsapp-alerts' || activeTab === 'najiz-sync' || activeTab === 'vault-security'
+                          ? 'gold-text-blue-glow'
+                          : activeTab === 'task-management' || activeTab === 'finance-zatca'
+                            ? 'darkblue-text-orange-glow'
+                            : activeTab === 'ai-drafting' 
+                              ? 'text-emerald-50' 
+                              : 'text-slate-900'
+                      }`}>
                         {isEn ? matchingF.workflowAfterEn : matchingF.workflowAfterAr}
                       </p>
                     </div>
@@ -594,13 +618,21 @@ export default function MainLandingPage({ onSignInSelect, onTrialSelect }: MainL
                       }`}>
                         ⚖️ {isEn ? "Al-Adalah Advantage" : "منفعة منصة العدالة الحصرية"}
                       </span>
-                      <p className={`text-[13px] leading-relaxed font-black ${activeTab === 'ai-drafting' ? 'text-amber-50' : 'text-slate-900'}`}>
+                      <p className={`text-[13px] leading-relaxed font-black ${
+                        activeTab === 'whatsapp-alerts' || activeTab === 'najiz-sync' || activeTab === 'vault-security'
+                          ? 'gold-text-blue-glow'
+                          : activeTab === 'task-management' || activeTab === 'finance-zatca'
+                            ? 'darkblue-text-orange-glow'
+                            : activeTab === 'ai-drafting' 
+                              ? 'text-amber-50' 
+                              : 'text-slate-900'
+                      }`}>
                         {matchingF.advAdalah}
                       </p>
                     </div>
                     <div className={`flex items-center gap-2.5 text-[10px] font-black mt-4 pt-4 border-t ${activeTab === 'ai-drafting' ? 'border-amber-500/10 text-amber-400' : 'border-emerald-200/50 text-emerald-600'}`}>
                       <CheckCircle2 className="w-4 h-4 flex-shrink-0" />
-                      <span>{isEn ? "Included in Trial Version" : "مفعَّل بالنسخة التجريبية"}</span>
+                      <span className={activeTab === 'whatsapp-alerts' || activeTab === 'najiz-sync' || activeTab === 'vault-security' ? 'gold-text-blue-glow' : ''}>{isEn ? "Included in Trial Version" : "مفعَّل بالنسخة التجريبية"}</span>
                     </div>
                   </div>
 
@@ -616,13 +648,21 @@ export default function MainLandingPage({ onSignInSelect, onTrialSelect }: MainL
                       }`}>
                         ✘ {isEn ? "Standard Competitor Systems" : "العيوب بالبرامج الأخرى"}
                       </span>
-                      <p className={`text-[13px] leading-relaxed font-bold ${activeTab === 'ai-drafting' ? 'text-rose-100/80' : 'text-slate-200 font-bold'}`}>
+                      <p className={`text-[13px] leading-relaxed font-bold ${
+                        activeTab === 'whatsapp-alerts' || activeTab === 'najiz-sync' || activeTab === 'vault-security'
+                          ? 'gold-text-blue-glow'
+                          : activeTab === 'task-management' || activeTab === 'finance-zatca'
+                            ? 'darkblue-text-orange-glow'
+                            : activeTab === 'ai-drafting' 
+                              ? 'text-rose-100/80' 
+                              : 'text-slate-200 font-bold'
+                      }`}>
                         {matchingF.advCompetitors}
                       </p>
                     </div>
                     <div className={`flex items-center gap-2.5 text-[10px] font-black mt-4 pt-4 border-t ${activeTab === 'ai-drafting' ? 'border-rose-500/10 text-rose-400' : 'border-rose-200/50 text-rose-400'}`}>
                       <ShieldAlert className="w-4 h-4 flex-shrink-0" />
-                      <span>{isEn ? "High operational risk & missing sync" : "يهدر الساعات ويؤخر الأداء"}</span>
+                      <span className={activeTab === 'whatsapp-alerts' || activeTab === 'najiz-sync' || activeTab === 'vault-security' ? 'gold-text-blue-glow' : ''}>{isEn ? "High operational risk & missing sync" : "يهدر الساعات ويؤخر الأداء"}</span>
                     </div>
                   </div>
 
@@ -684,13 +724,13 @@ export default function MainLandingPage({ onSignInSelect, onTrialSelect }: MainL
                         <span>💬 {isEn ? "WhatsApp Message (Auto dispatched)" : "رسالة واتساب (مرسلة آلياً)"}</span>
                         <span className="text-emerald-400 font-bold">10:30 ص</span>
                       </div>
-                      <p className="text-emerald-100 font-medium leading-relaxed">
+                      <p className={`text-emerald-100 font-medium leading-relaxed ${activeTab === 'whatsapp-alerts' ? 'golden-glow-text' : ''}`}>
                         {isEn ? '"Hearing Remind: Dear Ahmed, we notify you that your hearing #43194 is tomorrow morning..."' : '"تذكير قضائي عاجل: المحترم أحمد بكر، نحيط سعادتكم علماً باقتراب تاريخ جلسة المرافعة المجدولة لقضيتكم رقم 43194 صبيحة يوم غدٍ أي بعد أقل من 24 ساعة..."'}
                       </p>
                     </div>
 
                     <div className="p-2.5 bg-white border border-slate-200 rounded-xl flex justify-between items-center text-xs text-slate-900 font-bold shadow-sm">
-                      <span className="text-slate-200 font-bold">{isEn ? "Carrier: Official WhatsApp API" : "الناقل: Twilio Official WhatsApp"}</span>
+                      <span className={`text-slate-200 font-bold ${activeTab === 'whatsapp-alerts' ? 'golden-glow-text' : ''}`}>{isEn ? "Carrier: Official WhatsApp API" : "الناقل: Twilio Official WhatsApp"}</span>
                       <span className="text-emerald-700 font-black">✓ {isEn ? "Delivered" : "تم التوصيل (تحقق آلي)"}</span>
                     </div>
                   </div>
@@ -700,50 +740,50 @@ export default function MainLandingPage({ onSignInSelect, onTrialSelect }: MainL
                   <div className="space-y-3 text-right text-xs font-mono text-slate-950">
                     <div className="p-3 bg-white border border-slate-205 rounded-xl space-y-2 shadow-sm">
                       <div className="flex justify-between items-center text-xs text-amber-900 border-b border-slate-100 pb-1.5 font-black">
-                        <span>{isEn ? "Najiz Portal - MoJ" : "بوابة ناجز - وزارة العدل"}</span>
-                        <span className={isNajizConnected ? "animate-pulse text-emerald-700 font-bold" : "text-slate-700 font-bold"}>
+                        <span className="gold-text-blue-glow">{isEn ? "Najiz Portal - MoJ" : "بوابة ناجز - وزارة العدل"}</span>
+                        <span className={`gold-text-blue-glow ${isNajizConnected ? "animate-pulse" : ""}`}>
                           {isNajizConnected ? "● متصل آمن (API)" : "● اتصال محلي مفعَّل"}
                         </span>
                       </div>
-                      <p className="text-[#0c2461] font-black">🔍 {isEn ? "Discovered Commercial Lawsuit #437194619" : "رصد دعوى تجارية جديدة (الرقم: 437194619)"}</p>
-                      <p className="text-slate-850 font-bold">{isEn ? "Plaintiff: Public Beverages Co." : "المدعي: شركة المشروبات العامة"}</p>
-                      <p className="text-slate-800 font-bold">{isEn ? "Hearing Date: June 15, 2026, 10:00 AM" : "تاريخ الجلسة القادمة: 15 يونيو 2026 الساعة 10:00 ص"}</p>
+                      <p className="gold-text-blue-glow">🔍 {isEn ? "Discovered Commercial Lawsuit #437194619" : "رصد دعوى تجارية جديدة (الرقم: 437194619)"}</p>
+                      <p className="gold-text-blue-glow">{isEn ? "Plaintiff: Public Beverages Co." : "المدعي: شركة المشروبات العامة"}</p>
+                      <p className="gold-text-blue-glow">{isEn ? "Hearing Date: June 15, 2026, 10:00 AM" : "تاريخ الجلسة القادمة: 15 يونيو 2026 الساعة 10:00 ص"}</p>
                     </div>
-                    <p className="text-slate-800 text-[10px] text-center font-bold">
+                    <p className="gold-text-blue-glow text-[10px] text-center">
                       {isEn ? "✓ Continuous background synchronization is live." : "✓ مزامنة مستمرة تضمن سلامة الأجندة لمديري المكاتب والمستشارين"}
                     </p>
                   </div>
                 )}
 
                 {activeTab === 'task-management' && (
-                  <div className="space-y-3 text-right text-[10.5px] font-mono text-slate-950">
-                    <p className="text-amber-900 font-black">📋 {isEn ? "Kanban Frame & Case Milestones:" : "لوحة التحكم وسير المهام (Kanban Frame):"}</p>
+                  <div className="space-y-3 text-right text-[10.5px] font-mono text-slate-950 darkblue-text-orange-glow">
+                    <p className="darkblue-orange-glow text-amber-900 font-black">📋 {isEn ? "Kanban Frame & Case Milestones:" : "لوحة التحكم وسير المهام (Kanban Frame):"}</p>
                     <div className="grid grid-cols-2 gap-2 text-[10px]">
                       <div className="p-2.5 bg-amber-50 border border-amber-200 rounded-xl shadow-sm">
-                        <span className="text-[11px] text-amber-850 block font-extrabold">⏳ {isEn ? "Working" : "قيد العمل"}</span>
-                        <strong className="text-slate-950 block mt-1">{isEn ? "Reviewing EPC Contract" : "دراسة عقد المقاولة"}</strong>
-                        <span className="text-slate-700 block mt-1">{isEn ? "Assigned: Eng. Saleh" : "مكلَّف: م. صالح"}</span>
+                        <span className="darkblue-orange-glow text-[11px] text-amber-850 block font-extrabold">⏳ {isEn ? "Working" : "قيد العمل"}</span>
+                        <strong className="darkblue-orange-glow text-slate-950 block mt-1">{isEn ? "Reviewing EPC Contract" : "دراسة عقد المقاولة"}</strong>
+                        <span className="darkblue-orange-glow text-slate-700 block mt-1">{isEn ? "Assigned: Eng. Saleh" : "مكلَّف: م. صالح"}</span>
                       </div>
                       <div className="p-2.5 bg-emerald-50 border-2 border-emerald-350 rounded-xl relative shadow-sm">
-                        <span className="text-[11px] text-emerald-800 block font-black">✓ {isEn ? "Completed" : "مكتملة"}</span>
-                        <strong className="text-slate-800 block mt-1 line-through">{isEn ? "Edit Appeal Memo" : "تعديل مذكرة الاستئناف"}</strong>
-                        <span className="text-emerald-700 font-black block mt-1">✓ {isEn ? "Drag & Drop Done" : "سحب وإفلات ناجح ⚡"}</span>
+                        <span className="darkblue-orange-glow text-[11px] text-emerald-800 block font-black">✓ {isEn ? "Completed" : "مكتملة"}</span>
+                        <strong className="darkblue-orange-glow text-slate-800 block mt-1 line-through">{isEn ? "Edit Appeal Memo" : "تعديل مذكرة الاستئناف"}</strong>
+                        <span className="darkblue-orange-glow text-emerald-700 font-black block mt-1">✓ {isEn ? "Drag & Drop Done" : "سحب وإفلات ناجح ⚡"}</span>
                       </div>
                     </div>
                   </div>
                 )}
 
                 {activeTab === 'finance-zatca' && (
-                  <div className="space-y-3 text-right text-xs font-mono text-slate-950">
+                  <div className="space-y-3 text-right text-xs font-mono text-slate-950 darkblue-text-orange-glow">
                     <div className="p-3 bg-white border-r-3 border-amber-600 border-y border-l border-slate-205 rounded-xl space-y-2 shadow-sm">
                       <div className="flex justify-between font-black">
-                        <span className="text-[#0c2461]">{isEn ? "Tax Invoice (Simplified)" : "سند قبض ضريبي (فاتورة مبسطة)"}</span>
-                        <span className="text-amber-800">#FT-1029</span>
+                        <span className="darkblue-orange-glow text-[#0c2461]">{isEn ? "Tax Invoice (Simplified)" : "سند قبض ضريبي (فاتورة مبسطة)"}</span>
+                        <span className="darkblue-orange-glow text-amber-800">#FT-1029</span>
                       </div>
-                      <p className="text-slate-800 font-bold">{isEn ? "Client Name: Sadafco Corp" : "اسم العميل: شركة سدافكو للتنمية"}</p>
+                      <p className="darkblue-orange-glow text-slate-800 font-bold">{isEn ? "Client Name: Sadafco Corp" : "اسم العميل: شركة سدافكو للتنمية"}</p>
                       <div className="flex justify-between text-emerald-850 font-black text-xs pt-1.5 border-t border-slate-100">
-                        <span>{isEn ? "Total Amount (with 15% VAT):" : "المبلغ الإجمالي (شامل القيمة المضافة):"}</span>
-                        <span>42,000 {isEn ? "SAR" : "ر.س"}</span>
+                        <span className="darkblue-orange-glow">{isEn ? "Total Amount (with 15% VAT):" : "المبلغ الإجمالي (شامل القيمة المضافة):"}</span>
+                        <span className="darkblue-orange-glow">42,000 {isEn ? "SAR" : "ر.س"}</span>
                       </div>
                     </div>
                     <div className="flex justify-center p-2 bg-white rounded-xl w-20 h-20 mx-auto border border-slate-100 shadow-inner">
@@ -764,14 +804,14 @@ export default function MainLandingPage({ onSignInSelect, onTrialSelect }: MainL
                   <div className="space-y-3 text-right text-[10.5px] font-mono text-slate-950">
                     <div className="p-3 bg-white border border-slate-200 rounded-xl flex items-center justify-between shadow-sm">
                       <div className="space-y-1">
-                        <span className="text-slate-950 block font-bold">📄 {isEn ? "Confidential_Defense_Plea_v2.pdf" : "وثيقة_تعميل_سري_للغاية.pdf"}</span>
-                        <span className="text-[9.5px] text-slate-700 block font-black">{isEn ? "Size: 4.2 MB • AES-256 Encrypted" : "الحجم: 4.2 MB • تشفير AES-256"}</span>
+                        <span className="gold-text-blue-glow block font-bold">📄 {isEn ? "Confidential_Defense_Plea_v2.pdf" : "وثيقة_تعميل_سري_للغاية.pdf"}</span>
+                        <span className="gold-text-blue-glow block font-black">{isEn ? "Size: 4.2 MB • AES-256 Encrypted" : "الحجم: 4.2 MB • تشفير AES-256"}</span>
                       </div>
                       <div className="p-2.5 bg-emerald-100 text-emerald-800 rounded-lg shrink-0">
-                        <Shield className="w-5 h-5 font-black" />
+                        <Shield className="w-5 h-5 font-black text-[#A27B1E]" />
                       </div>
                     </div>
-                    <div className="text-red-950 text-[10px] font-extrabold text-center bg-red-50 p-2.5 rounded-xl border border-red-200 leading-normal shadow-sm">
+                    <div className="gold-text-blue-glow text-[10px] text-center bg-red-50 p-2.5 rounded-xl border border-red-200 leading-normal shadow-sm">
                       ⚠️ {isEn ? "Protected by smart forensic watermark with active logger." : "محمي بعلامة مائية رقمية تمنع تسريب تفاصيل التعميل والمرافعات خارج مكاتب المستشارين والمحاميين والمستشاريين القانونيين القانونيين المعتمدين."}
                     </div>
                   </div>
