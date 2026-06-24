@@ -349,83 +349,86 @@ export default function CaseCard({
                <button
                  type="button"
                  onClick={(e) => { e.stopPropagation(); setIsNotePopoverOpen(true); }}
-                 className="p-2 rounded-xl border border-[#facc15] bg-black/40 text-[#facc15] hover:bg-black/60 transition-all shadow-sm"
+                 className="p-2 rounded-xl border border-white/20 bg-black/20 text-white/80 hover:bg-black/40 transition-all shadow-sm"
                  title="إضافة ملاحظة سريعة للمكتب"
                >
-                 <Notebook className="w-4 h-4 text-[#facc15]" />
+                 <Notebook className="w-4 h-4" />
                </button>
             </div>
           </div>
 
           {/* Row 1: Case Number, Court */}
           <div className="grid grid-cols-2 gap-2 mb-2">
-            <div className="bg-black/40 border border-[#facc15] rounded-xl p-2.5 shadow-sm text-center flex flex-col justify-center">
-              <span className="text-[#facc15] text-[10px] font-black block mb-1 tracking-wider">رقم القضية</span>
-              <span className="text-[#facc15] font-black text-lg truncate">#{c.caseNumber}</span>
+            <div className="bg-black/20 border border-white/10 rounded-xl p-3 shadow-sm text-center flex flex-col justify-center overflow-hidden transition-colors hover:bg-black/30">
+              <span className="text-white/60 text-[10px] font-bold block mb-1 tracking-wider uppercase">المحكمة المختصة</span>
+              <span className="text-white font-bold text-sm truncate block">{c.courtName || 'غير محدد'}</span>
             </div>
-            <div className="bg-black/40 border border-[#fbbf24] rounded-xl p-2.5 shadow-sm text-center flex flex-col justify-center overflow-hidden">
-              <span className="text-[#fbbf24] text-[10px] font-black block mb-1 tracking-wider">المحكمة المختصة</span>
-              <span className="text-[#fbbf24] font-black text-lg truncate block">{c.courtName || 'غير محدد'}</span>
+            <div className="bg-black/20 border border-white/10 rounded-xl p-3 shadow-sm text-center flex flex-col justify-center transition-colors hover:bg-black/30">
+              <span className="text-white/60 text-[10px] font-bold block mb-1 tracking-wider uppercase">رقم القضية</span>
+              <span className="text-amber-400 font-black text-lg truncate" dir="ltr">#{c.caseNumber}</span>
             </div>
           </div>
 
           {/* Row 2: Circuit, Category */}
           <div className="grid grid-cols-2 gap-2 mb-2">
-            <div className="bg-black/40 border border-[#facc15] rounded-xl p-2.5 shadow-sm text-center flex flex-col justify-center overflow-hidden">
-              <span className="text-[#facc15] text-[10px] font-black block mb-1 tracking-wider">الدائرة القضائية</span>
-              <span className="text-white font-bold text-base truncate block">{c.circuitNumber || 'غير محدد'}</span>
+            <div className="bg-black/20 border border-white/10 rounded-xl p-3 shadow-sm text-center flex flex-col justify-center overflow-hidden transition-colors hover:bg-black/30">
+              <span className="text-white/60 text-[10px] font-bold block mb-1 tracking-wider uppercase">نوع القضية</span>
+              <span className="text-white font-bold text-sm truncate block">{c.category || theme.nameAr || 'غير محدد'}</span>
             </div>
-            <div className="bg-black/40 border border-white rounded-xl p-2.5 shadow-sm text-center flex flex-col justify-center overflow-hidden">
-              <span className="text-white text-[10px] font-black block mb-1 tracking-wider">نوع القضية</span>
-              <span className="text-[#facc15] font-black text-lg truncate block">{c.category || theme.nameAr || 'غير محدد'}</span>
+            <div className="bg-black/20 border border-white/10 rounded-xl p-3 shadow-sm text-center flex flex-col justify-center overflow-hidden transition-colors hover:bg-black/30">
+              <span className="text-white/60 text-[10px] font-bold block mb-1 tracking-wider uppercase">الدائرة القضائية</span>
+              <span className="text-white font-bold text-sm truncate block">{c.circuitNumber || 'غير محدد'}</span>
             </div>
           </div>
 
           {/* Row 3: Client */}
-          <div className="bg-black/40 border border-[#f97316] rounded-xl p-2.5 shadow-sm text-center mb-2 flex flex-col justify-center overflow-hidden">
-            <span className="text-[#f97316] text-[10px] font-black block mb-1 tracking-wider">أطراف الدعوى / الموكل</span>
-            <span className="text-[#f97316] font-black text-lg truncate block">{c.clientName || 'غير محدد'}</span>
+          <div className="bg-black/20 border border-white/10 rounded-xl p-3 shadow-sm text-center mb-2 flex flex-col justify-center overflow-hidden transition-colors hover:bg-black/30">
+            <span className="text-white/60 text-[10px] font-bold block mb-1 tracking-wider uppercase">أطراف الدعوى / الموكل</span>
+            <span className="text-white font-bold text-sm truncate block">
+              {c.clientName || 'غير محدد'}
+              {c.opponentName ? ` ضد ${c.opponentName}` : ''}
+            </span>
           </div>
 
           {/* Row 4: Subject */}
-          <div className="bg-black/40 border border-white rounded-xl p-3 shadow-sm text-center mb-2 flex flex-col justify-center overflow-hidden">
-            <span className="text-white text-[10px] font-black block mb-1 tracking-wider">موضوع الدعوى</span>
-            <span className="text-[#facc15] font-bold text-base block truncate">{c.caseName || 'غير محدد'}</span>
+          <div className="bg-black/20 border border-white/10 rounded-xl p-3 shadow-sm text-center mb-2 flex flex-col justify-center overflow-hidden transition-colors hover:bg-black/30">
+            <span className="text-white/60 text-[10px] font-bold block mb-1 tracking-wider uppercase">موضوع الدعوى</span>
+            <span className="text-white font-bold text-base block truncate">{c.caseName || 'غير محدد'}</span>
           </div>
 
           {/* Row 5: Next Session */}
-          <div className="bg-black/40 border border-[#f97316] rounded-xl p-3 shadow-sm text-center mb-2 flex flex-col justify-center">
-            <span className="text-[#f97316] text-[10px] font-black block mb-1 tracking-wider">الجلسة القادمة</span>
-            <span className="text-[#fbbf24] font-bold text-base block flex justify-center items-center gap-1.5">
-              <Calendar className="w-4 h-4 text-[#facc15]" />
+          <div className="bg-black/20 border border-white/10 rounded-xl p-3 shadow-sm text-center mb-2 flex flex-col justify-center transition-colors hover:bg-black/30">
+            <span className="text-white/60 text-[10px] font-bold block mb-1 tracking-wider uppercase">الجلسة القادمة</span>
+            <span className="text-amber-400 font-bold text-sm flex items-center justify-center gap-1.5">
+              <Calendar className="w-4 h-4 text-amber-400" />
               {c.nextSessionDate || 'غير مجدول'}
             </span>
           </div>
 
           {/* Row 6: Status & Counts & Najiz Sync */}
           <div className="flex gap-2 mb-3">
-             <div className="flex-[3] bg-black/40 border border-[#facc15] rounded-xl p-2 shadow-sm grid grid-cols-4 divide-x divide-x-reverse divide-[#facc15] text-center items-center">
+             <div className="flex-[3] bg-black/20 border border-white/10 rounded-xl p-2 shadow-sm grid grid-cols-4 divide-x divide-x-reverse divide-white/10 text-center items-center">
                 <div className="flex flex-col">
-                  <span className="text-[#facc15] text-[9px] font-black block mb-0.5 tracking-wider">الحالة</span>
+                  <span className="text-white/60 text-[9px] font-bold block mb-0.5 tracking-wider">الحالة</span>
                   <span className="text-white font-bold text-[10px] truncate">{c.status || arabicStatusName || 'غير محدد'}</span>
                 </div>
                 <div className="flex flex-col">
-                  <span className="text-[#facc15] text-[9px] font-black block mb-0.5 tracking-wider">مذكرات</span>
+                  <span className="text-white/60 text-[9px] font-bold block mb-0.5 tracking-wider">مذكرات</span>
                   <span className="text-white font-bold text-xs font-mono">{c.notes?.length || (parseInt(c.caseNumber || '3') % 3 + 1)}</span>
                 </div>
                 <div className="flex flex-col">
-                  <span className="text-[#facc15] text-[9px] font-black block mb-0.5 tracking-wider">جلسات</span>
+                  <span className="text-white/60 text-[9px] font-bold block mb-0.5 tracking-wider">جلسات</span>
                   <span className="text-white font-bold text-xs font-mono">{c.hearings?.filter(h => h.status === 'completed').length || (parseInt(c.caseNumber || '5') % 2 + 1)}</span>
                 </div>
                 <div className="flex flex-col">
-                  <span className="text-[#facc15] text-[9px] font-black block mb-0.5 tracking-wider">مستندات</span>
+                  <span className="text-white/60 text-[9px] font-bold block mb-0.5 tracking-wider">مستندات</span>
                   <span className="text-white font-bold text-xs font-mono">{c.attachments_count || 0}</span>
                 </div>
              </div>
-             <div className="flex-[2] bg-black/40 border border-[#4ade80] rounded-xl p-2 shadow-sm flex flex-col items-center justify-center cursor-pointer hover:bg-black/60 transition-colors"
+             <div className="flex-[2] bg-emerald-500/10 border border-emerald-500/30 rounded-xl p-2 shadow-sm flex flex-col items-center justify-center cursor-pointer hover:bg-emerald-500/20 transition-colors"
                   onClick={(e) => { e.stopPropagation(); onNajizSync(c); }}>
-                <Bot className={`w-4 h-4 text-[#facc15] mb-1 ${isSyncing === c.id ? 'animate-spin' : ''}`} />
-                <span className="text-[#4ade80] text-[9px] font-bold text-center tracking-wider">{c.isNajizSync || c.is_najiz_sync ? 'مرتبط بنظام ناجز' : 'مزامنة ناجز'}</span>
+                <Bot className={`w-4 h-4 text-emerald-400 mb-1 ${isSyncing === c.id ? 'animate-spin' : ''}`} />
+                <span className="text-emerald-400 text-[9px] font-bold text-center tracking-wider">{c.isNajizSync || c.is_najiz_sync ? 'مرتبط بنظام ناجز' : 'مزامنة ناجز'}</span>
              </div>
           </div>
 
@@ -434,14 +437,14 @@ export default function CaseCard({
             <div className="flex justify-between items-center gap-2 mt-auto">
               {/* Archive - Right */}
               {onArchiveToggle ? (
-                  <button onClick={(e) => { e.stopPropagation(); onArchiveToggle(c); }} className="flex-[1] bg-black/40 border border-[#f97316] text-[#f97316] hover:bg-black/60 px-3 py-2.5 rounded-xl text-[11px] font-bold transition-all flex items-center justify-center gap-1.5 shadow-sm">
+                  <button onClick={(e) => { e.stopPropagation(); onArchiveToggle(c); }} className="flex-[1] bg-black/20 border border-white/10 text-white/80 hover:bg-black/40 hover:text-white px-3 py-2.5 rounded-xl text-[11px] font-bold transition-all flex items-center justify-center gap-1.5 shadow-sm">
                     {c.archived ? 'استعادة ملف الدعوى' : 'نقل القضية للأرشيف'}
                   </button>
               ) : <div className="flex-[1]"></div>}
               {/* Delete - Left */}
               {onDeleteCase ? (
-                  <button onClick={(e) => { e.stopPropagation(); onDeleteCase(c.id); }} className="flex-[1] bg-black/40 border border-[#ef4444] text-[#ef4444] hover:bg-black/60 px-3 py-2.5 rounded-xl text-[11px] font-bold transition-all flex items-center justify-center gap-1.5 shadow-sm">
-                    <Trash2 className="w-3.5 h-3.5 text-[#facc15]" />
+                  <button onClick={(e) => { e.stopPropagation(); onDeleteCase(c.id); }} className="flex-[1] bg-rose-500/10 border border-rose-500/30 text-rose-400 hover:bg-rose-500/20 px-3 py-2.5 rounded-xl text-[11px] font-bold transition-all flex items-center justify-center gap-1.5 shadow-sm">
+                    <Trash2 className="w-3.5 h-3.5" />
                     حذف القضية
                   </button>
               ) : <div className="flex-[1]"></div>}

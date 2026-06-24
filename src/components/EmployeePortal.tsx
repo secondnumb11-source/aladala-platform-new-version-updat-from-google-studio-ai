@@ -1944,8 +1944,8 @@ export default function EmployeePortal({
       sessionStorage.setItem("employee-portal-token", "bypass-token-" + updatedEmployee.id);
       sessionStorage.setItem("active-logged-in-employee-v2", JSON.stringify(updatedEmployee));
       
-      if (updatedEmployee.sidebarModules && updatedEmployee.sidebarModules.length > 0) {
-        setActivePortalTab(updatedEmployee.sidebarModules[0]);
+      if ((updatedEmployee as any).sidebarModules && (updatedEmployee as any).sidebarModules.length > 0) {
+        setActivePortalTab((updatedEmployee as any).sidebarModules[0]);
       } else {
         setActivePortalTab("dashboard");
       }
