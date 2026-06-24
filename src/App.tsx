@@ -637,6 +637,68 @@ useEffect(() => {
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
   
   const [officeLogo, setOfficeLogo] = useState<string | null>(() => localStorage.getItem('office_logo'));
+  
+  const [sessionAlertHearing, setSessionAlertHearing] = useState<any | null>(null);
+
+  // Check for hearings starting in less than 1 hour (Real-time Scanner)
+  useEffect(() => {
+    if (!hearings || hearings.length === 0) return;
+
+    const checkUpcomingHearings = () => {
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = String(now.getMonth() + 1).padStart(2, '0');
+      const day = String(now.getDate()).padStart(2, '0');
+      const todayStr = `${year}-${month}-${day}`;
+
+      const upcomingSoon = hearings.find((h: any) => {
+        if (h.status !== 'upcoming') return false;
+        if (h.date !== todayStr) return false;
+
+        try {
+          const timeStr = h.time || '';
+          if (!timeStr) return false;
+
+          const timeCleaned = timeStr.replace(/[\s\u200B-\u200D\uFEFF]/g, '');
+          const isPM = timeCleaned.includes('م') || timeCleaned.toLowerCase().includes('pm');
+          const isAM = timeCleaned.includes('ص') || timeCleaned.toLowerCase().includes('am');
+          
+          const digits = timeCleaned.replace(/[^\d:]/g, '');
+          const parts = digits.split(':');
+          if (parts.length < 2) return false;
+
+          let hours = parseInt(parts[0], 10);
+          const minutes = parseInt(parts[1], 10);
+
+          if (isPM && hours < 12) hours += 12;
+          else if (isAM && hours === 12) hours = 0;
+
+          const hDate = new Date();
+          hDate.setHours(hours, minutes, 0, 0);
+
+          const diffMs = hDate.getTime() - now.getTime();
+          const oneHourMs = 60 * 60 * 1000;
+
+          // Starting in less than 1 hour (and hasn't passed more than 5 minutes ago)
+          return diffMs > -300000 && diffMs <= oneHourMs;
+        } catch (err) {
+          return false;
+        }
+      });
+
+      if (upcomingSoon) {
+        const alreadyNotified = sessionStorage.getItem(`notified-hearing-${upcomingSoon.id}`);
+        if (!alreadyNotified) {
+          setSessionAlertHearing(upcomingSoon);
+          sessionStorage.setItem(`notified-hearing-${upcomingSoon.id}`, 'true');
+        }
+      }
+    };
+
+    checkUpcomingHearings();
+    const interval = setInterval(checkUpcomingHearings, 30000);
+    return () => clearInterval(interval);
+  }, [hearings]);
 
   useEffect(() => {
     const handleStorageChange = () => {
@@ -2394,6 +2456,89 @@ useEffect(() => {
       )}
 
       <ErrorToaster />
+
+      {/* Luxury Pop-up Alert Modal (Court Session < 1 Hour) */}
+      {sessionAlertHearing && (
+        <div 
+          className="fixed inset-0 z-[10000] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-300"
+          onClick={() => setSessionAlertHearing(null)}
+          dir="rtl"
+        >
+          <div 
+            className="relative w-full max-w-lg bg-gradient-to-b from-[#0a1426] to-[#040d1a] border-2 border-[#D4AF37] rounded-[2rem] p-8 shadow-[0_0_50px_rgba(212,175,55,0.25)] animate-in zoom-in-95 duration-300 text-right space-y-6"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Pulsing Beacon / Scales emblem */}
+            <div className="flex flex-col items-center text-center space-y-4">
+              <div className="relative">
+                <div className="absolute inset-0 rounded-full bg-amber-500/20 animate-ping" />
+                <div className="w-16 h-16 rounded-full border-2 border-[#D4AF37] bg-amber-500/10 flex items-center justify-center text-3xl shadow-lg shadow-amber-500/10">
+                  ⚖️
+                </div>
+              </div>
+              <div className="space-y-1">
+                <span className="px-3 py-1 rounded-full bg-amber-500/15 border border-amber-500/30 text-[#D4AF37] font-black text-[10px] tracking-widest uppercase">
+                  تنبيه عاجل: جلسة قضائية قريبة جداً ⚡
+                </span>
+                <h3 className="text-xl font-black text-white">اقتراب موعد الجلسة القضائية</h3>
+                <p className="text-xs text-white/60">تبدأ الجلسة القضائية الخاصة بالدعوى خلال أقل من ساعة</p>
+              </div>
+            </div>
+
+            {/* Hearing metadata box */}
+            <div className="bg-black/40 border border-[#D4AF37]/20 rounded-2xl p-4 space-y-3">
+              <div className="flex justify-between items-center border-b border-white/10 pb-2">
+                <span className="text-white/60 text-xs">رقم ملف القضية</span>
+                <span className="text-amber-400 font-bold font-mono text-xs">#{sessionAlertHearing.caseNumber}</span>
+              </div>
+              <div>
+                <span className="text-white/40 text-[10px] block mb-1">موضوع الدعوى / الأطراف</span>
+                <p className="text-sm font-black text-white leading-relaxed">{sessionAlertHearing.caseName || 'دعوى مجهولة العنوان'}</p>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-3 pt-2">
+                <div className="bg-white/5 border border-white/10 rounded-xl p-3 text-center">
+                  <span className="text-white/50 text-[10px] block mb-1">تاريخ ووقت الجلسة</span>
+                  <strong className="text-amber-400 text-xs font-mono block">{sessionAlertHearing.date} - {sessionAlertHearing.time || 'غير محدد'}</strong>
+                </div>
+                <div className="bg-white/5 border border-white/10 rounded-xl p-3 text-center">
+                  <span className="text-white/50 text-[10px] block mb-1">المحكمة المختصة</span>
+                  <strong className="text-white text-xs truncate block">{sessionAlertHearing.courtName || 'المحكمة العامة'}</strong>
+                </div>
+              </div>
+            </div>
+
+            {/* Action buttons */}
+            <div className="flex flex-col sm:flex-row items-center gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => {
+                  // Set session storage judgments search term so judgments section expands it automatically
+                  sessionStorage.setItem('judgmentsSearchTerm', sessionAlertHearing.caseNumber || '');
+                  // Fire custom event to ensure the judgments tab picks up search term if already loaded
+                  window.dispatchEvent(new CustomEvent('update-judgments-search', {
+                    detail: sessionAlertHearing.caseNumber || ''
+                  }));
+                  // Navigate to Judgements & Sessions tab
+                  setCurrentTab('case-judgments');
+                  setSessionAlertHearing(null);
+                }}
+                className="w-full sm:flex-1 py-3 px-4 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-500 text-slate-950 font-black text-xs hover:opacity-95 transition-all shadow-lg shadow-amber-500/20 active:scale-[0.98] text-center"
+              >
+                فتح تفاصيل الجلسة في قسم الأحكام 📂
+              </button>
+              <button
+                type="button"
+                onClick={() => setSessionAlertHearing(null)}
+                className="w-full sm:w-auto px-6 py-3 rounded-xl bg-white/10 hover:bg-white/15 text-white/90 border border-white/15 font-bold text-xs transition-all text-center"
+              >
+                إغلاق التنبيه
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
     </div>
   );

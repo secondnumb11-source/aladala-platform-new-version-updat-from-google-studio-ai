@@ -81,9 +81,19 @@ export default function CaseJudgmentsModule({
 }: CaseJudgmentsModuleProps) {
   const [documents, setDocuments] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchTerm, setSearchTerm] = useState(() => {
+    const s = sessionStorage.getItem("judgments_search_term") || "";
+    if (s) sessionStorage.removeItem("judgments_search_term");
+    return s;
+  });
   const [filterType, setFilterType] = useState("all");
   const [expandedCaseId, setExpandedCaseId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (searchTerm && filteredCases.length === 1) {
+      setExpandedCaseId(filteredCases[0].id);
+    }
+  }, [searchTerm, cases]);
   const [viewerDoc, setViewerDoc] = useState<any | null>(null);
   const [previewRotation, setPreviewRotation] = useState(0);
   const [uploadModal, setUploadModal] = useState<{

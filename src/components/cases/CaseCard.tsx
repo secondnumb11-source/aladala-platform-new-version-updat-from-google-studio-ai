@@ -9,6 +9,8 @@ import {
 } from 'lucide-react';
 import { Case } from '@/types';
 import { supabase } from '@/lib/supabase';
+import { jsPDF } from 'jspdf';
+import html2canvas from 'html2canvas';
 
 interface CaseCardProps {
   c: Case;
@@ -247,6 +249,69 @@ export default function CaseCard({
   const [quickNoteText, setQuickNoteText] = useState('');
   const [isSavingNote, setIsSavingNote] = useState(false);
   const [noteSavedSuccessfully, setNoteSavedSuccessfully] = useState(false);
+  
+  const [isExporting, setIsExporting] = useState(false);
+  const [confirmDialog, setConfirmDialog] = useState<{
+    isOpen: boolean;
+    type: 'delete' | 'archive';
+    title: string;
+    message: string;
+    onConfirm: () => void;
+  } | null>(null);
+
+  const handleExportReport = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsExporting(true);
+    try {
+      const element = document.getElementById(`pdf-report-template-${c.id}`);
+      if (!element) throw new Error("ملخص التقرير غير متوفر في الصفحة حالياً");
+
+      // Temporarily change style of offscreen element to static for html2canvas
+      const originalStyle = element.getAttribute('style') || '';
+      element.style.position = 'static';
+      element.style.left = '0';
+
+      const canvas = await html2canvas(element, {
+        scale: 2, // High DPI
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: '#ffffff'
+      });
+
+      // Restore style
+      element.setAttribute('style', originalStyle);
+
+      const imgData = canvas.toDataURL('image/jpeg', 0.95);
+      const pdf = new jsPDF({
+        orientation: 'p',
+        unit: 'mm',
+        format: 'a4'
+      });
+
+      const imgWidth = 210; // A4 Width in mm
+      const pageHeight = 297; // A4 Height in mm
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      let heightLeft = imgHeight;
+      let position = 0;
+
+      pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
+
+      while (heightLeft >= 0) {
+        position = heightLeft - imgHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
+      }
+
+      pdf.save(`تقرير_القضية_رقم_${c.caseNumber || c.id}.pdf`);
+    } catch (err: any) {
+      console.error(err);
+      alert("حدث خطأ أثناء تصدير التقرير إلى PDF: " + err.message);
+    } finally {
+      setIsExporting(false);
+    }
+  };
 
   const handleSaveQuickNote = async (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -432,24 +497,300 @@ export default function CaseCard({
              </div>
           </div>
 
+          {/* Export Report (PDF) - Saudi Court Standard */}
+          <button
+            type="button"
+            disabled={isExporting}
+            onClick={handleExportReport}
+            className={`w-full mb-3 py-2.5 rounded-xl border border-[#D4AF37]/40 bg-gradient-to-r from-amber-500/10 to-yellow-500/10 text-amber-400 hover:from-amber-500/20 hover:to-yellow-500/20 hover:border-[#D4AF37] transition-all flex items-center justify-center gap-2 font-black text-xs shadow-sm ${
+              isExporting ? 'opacity-50 cursor-not-allowed animate-pulse' : ''
+            }`}
+          >
+            {isExporting ? (
+              <span className="w-3.5 h-3.5 border-2 border-amber-400 border-t-transparent rounded-full animate-spin" />
+            ) : (
+              <span className="text-base">📋</span>
+            )}
+            {isExporting ? 'جاري تصدير التقرير الفاخر...' : 'تصدير التقرير الرسمي (PDF)'}
+          </button>
+
           {/* Row 7: Archive & Delete */}
           {(onArchiveToggle || onDeleteCase) && (selectedRole === 'admin' || selectedRole === 'lawyer') && (
             <div className="flex justify-between items-center gap-2 mt-auto">
               {/* Archive - Right */}
               {onArchiveToggle ? (
-                  <button onClick={(e) => { e.stopPropagation(); onArchiveToggle(c); }} className="flex-[1] bg-black/20 border border-white/10 text-white/80 hover:bg-black/40 hover:text-white px-3 py-2.5 rounded-xl text-[11px] font-bold transition-all flex items-center justify-center gap-1.5 shadow-sm">
+                  <button 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (!onArchiveToggle) return;
+                      setConfirmDialog({
+                        isOpen: true,
+                        type: 'archive',
+                        title: c.archived ? 'استعادة ملف الدعوى 📦' : 'نقل القضية للأرشيف 📦',
+                        message: c.archived 
+                          ? 'هل أنت متأكد من رغبتك في استعادة هذا الملف من الأرشيف وإعادته لقائمة القضايا النشطة؟'
+                          : 'هل تريد نقل هذا الملف إلى أرشيف النظام؟ لن تظهر القضية في القائمة الرئيسية النشطة بعد الآن.',
+                        onConfirm: () => onArchiveToggle(c)
+                      });
+                    }} 
+                    className="flex-[1] bg-black/20 border border-white/10 text-white/80 hover:bg-black/40 hover:text-white px-3 py-2.5 rounded-xl text-[11px] font-bold transition-all flex items-center justify-center gap-1.5 shadow-sm"
+                  >
                     {c.archived ? 'استعادة ملف الدعوى' : 'نقل القضية للأرشيف'}
                   </button>
               ) : <div className="flex-[1]"></div>}
               {/* Delete - Left */}
               {onDeleteCase ? (
-                  <button onClick={(e) => { e.stopPropagation(); onDeleteCase(c.id); }} className="flex-[1] bg-rose-500/10 border border-rose-500/30 text-rose-400 hover:bg-rose-500/20 px-3 py-2.5 rounded-xl text-[11px] font-bold transition-all flex items-center justify-center gap-1.5 shadow-sm">
+                  <button 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (!onDeleteCase) return;
+                      setConfirmDialog({
+                        isOpen: true,
+                        type: 'delete',
+                        title: 'تأكيد حذف ملف القضية نهائياً ⚠️',
+                        message: 'هل أنت متأكد من حذف هذه القضية؟ سيتم إزالة كافة السجلات المرتبطة والمستندات نهائياً من الخادم ولا يمكن التراجع عن هذا الإجراء.',
+                        onConfirm: () => onDeleteCase(c.id)
+                      });
+                    }} 
+                    className="flex-[1] bg-rose-500/10 border border-rose-500/30 text-rose-400 hover:bg-rose-500/20 px-3 py-2.5 rounded-xl text-[11px] font-bold transition-all flex items-center justify-center gap-1.5 shadow-sm"
+                  >
                     <Trash2 className="w-3.5 h-3.5" />
                     حذف القضية
                   </button>
               ) : <div className="flex-[1]"></div>}
             </div>
           )}
+
+          {/* Custom confirmation dialog inside CaseCard */}
+          {confirmDialog && confirmDialog.isOpen && (
+            <div 
+              className="absolute inset-0 z-50 p-6 flex flex-col justify-between transition-all duration-300 text-white rounded-[1.8rem] bg-black/95 backdrop-blur-md border-2 border-amber-500/50 shadow-[0_0_30px_rgba(212,175,55,0.3)] animate-in fade-in"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex-1 flex flex-col justify-center items-center text-center space-y-4">
+                <div className={`w-14 h-14 rounded-full flex items-center justify-center text-2xl ${
+                  confirmDialog.type === 'delete' ? 'bg-rose-500/10 text-rose-500 border-2 border-rose-500/30' : 'bg-amber-500/10 text-amber-500 border-2 border-amber-500/30'
+                }`}>
+                  {confirmDialog.type === 'delete' ? '⚠️' : '📦'}
+                </div>
+                <div className="space-y-2">
+                  <h4 className="text-base font-black text-amber-400">{confirmDialog.title}</h4>
+                  <p className="text-xs text-white/80 leading-relaxed max-w-[240px]">{confirmDialog.message}</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3 mt-4">
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    confirmDialog.onConfirm();
+                    setConfirmDialog(null);
+                  }}
+                  className={`flex-1 py-2.5 text-xs font-black rounded-xl text-white transition-all shadow-md ${
+                    confirmDialog.type === 'delete' ? 'bg-rose-600 hover:bg-rose-700' : 'bg-amber-500 hover:bg-amber-600'
+                  }`}
+                >
+                  موافق، استمر
+                </button>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setConfirmDialog(null);
+                  }}
+                  className="px-4 py-2.5 text-xs font-black rounded-xl bg-white/10 hover:bg-white/15 text-white/90 border border-white/20 transition-all"
+                >
+                  إلغاء
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Hidden high-quality Arabic printable PDF Template */}
+          <div
+            id={`pdf-report-template-${c.id}`}
+            className="fixed -left-[9999px] top-0 bg-white text-slate-900 p-10 font-sans"
+            style={{ width: '800px', direction: 'rtl' }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="border-[6px] border-[#D4AF37] p-6 rounded-2xl relative bg-white">
+              <div className="border border-[#111827] p-6 rounded-xl relative">
+                
+                {/* Header with National/Government Emblem Style */}
+                <div className="flex justify-between items-start border-b-2 border-slate-300 pb-6 mb-6">
+                  {/* Right side: KSA Details */}
+                  <div className="text-right space-y-1 text-xs font-bold text-slate-800">
+                    <p className="text-sm font-black text-slate-950">المملكة العربية السعودية</p>
+                    <p>وزارة العدل</p>
+                    <p>{c.courtName || 'المحكمة العامة'}</p>
+                    <p>{c.circuitNumber ? `الدائرة القضائية ${c.circuitNumber}` : 'الدائرة العامة'}</p>
+                  </div>
+
+                  {/* Center: Gold Scales of Justice / Firm Seal Emblem */}
+                  <div className="text-center flex flex-col items-center">
+                    <div className="w-16 h-16 rounded-full border-2 border-[#D4AF37] flex items-center justify-center bg-amber-50 shadow-sm mb-2">
+                      <span className="text-2xl">⚖️</span>
+                    </div>
+                    <span className="text-[10px] tracking-[0.25em] font-black text-[#D4AF37] uppercase">شركة العدالة للمحاماة</span>
+                  </div>
+
+                  {/* Left side: Date & Ref */}
+                  <div className="text-left space-y-1 text-xs font-bold text-slate-800" style={{ direction: 'ltr' }}>
+                    <p>الرقم: #{c.caseNumber}</p>
+                    <p>التاريخ: {new Date().toLocaleDateString('ar-SA')}</p>
+                    <p>المرفقات: {c.attachments_count || 0}</p>
+                  </div>
+                </div>
+
+                {/* Main Document Title */}
+                <div className="text-center my-6 space-y-2">
+                  <h2 className="text-2xl font-black text-slate-950 underline underline-offset-8 decoration-[#D4AF37]">
+                    تقرير ملخص ملف قضية رسمي
+                  </h2>
+                  <p className="text-xs text-slate-500 font-medium">
+                    مستند رسمي صادر عن بوابة العدالة الذكية للخدمات القانونية والمحاماة
+                  </p>
+                </div>
+
+                {/* Grid of Case Basic Metadata */}
+                <div className="grid grid-cols-2 gap-4 mb-6 text-sm text-right">
+                  <div className="bg-slate-50 border border-slate-200 p-3 rounded-xl">
+                    <span className="text-xs text-slate-500 font-bold block mb-1">رقم القضية</span>
+                    <strong className="text-slate-900 font-black text-base">#{c.caseNumber}</strong>
+                  </div>
+                  <div className="bg-slate-50 border border-slate-200 p-3 rounded-xl">
+                    <span className="text-xs text-slate-500 font-bold block mb-1">نوع القضية</span>
+                    <strong className="text-slate-900 font-black text-base">{c.category || 'عامة'}</strong>
+                  </div>
+                  <div className="bg-slate-50 border border-slate-200 p-3 rounded-xl">
+                    <span className="text-xs text-slate-500 font-bold block mb-1">المحكمة المختصة</span>
+                    <strong className="text-slate-900 font-black text-base">{c.courtName || 'غير محدد'}</strong>
+                  </div>
+                  <div className="bg-slate-50 border border-slate-200 p-3 rounded-xl">
+                    <span className="text-xs text-slate-500 font-bold block mb-1">الدائرة القضائية</span>
+                    <strong className="text-slate-900 font-black text-base">{c.circuitNumber || 'غير محدد'}</strong>
+                  </div>
+                </div>
+
+                {/* Litigating Parties Box */}
+                <div className="border border-slate-200 rounded-xl overflow-hidden mb-6 text-sm text-right">
+                  <div className="bg-slate-100 px-4 py-2 border-b border-slate-200">
+                    <h3 className="font-black text-slate-900">أطراف الخصومة والدعوى</h3>
+                  </div>
+                  <div className="p-4 grid grid-cols-2 gap-4">
+                    <div>
+                      <span className="text-xs text-slate-500 font-bold block mb-1">الموكل (المدعي)</span>
+                      <strong className="text-slate-900 font-black">{c.clientName || 'غير محدد'}</strong>
+                    </div>
+                    <div>
+                      <span className="text-xs text-slate-500 font-bold block mb-1">الطرف المقابل (المدعى عليه)</span>
+                      <strong className="text-slate-900 font-black">{c.opponentName || 'غير محدد'}</strong>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Case Topic / Summary details */}
+                <div className="border border-slate-200 rounded-xl overflow-hidden mb-6 text-sm text-right">
+                  <div className="bg-slate-100 px-4 py-2 border-b border-slate-200">
+                    <h3 className="font-black text-slate-900">موضوع ومضمون الدعوى</h3>
+                  </div>
+                  <div className="p-4 space-y-3">
+                    <div>
+                      <span className="text-xs text-slate-500 font-bold block mb-1">موضوع القضية الرئيسي</span>
+                      <p className="text-slate-800 font-bold text-sm leading-relaxed">{c.caseName || 'لا يوجد موضوع رئيسي مسجل'}</p>
+                    </div>
+                    {c.details && (
+                      <div>
+                        <span className="text-xs text-slate-500 font-bold block mb-1">تفاصيل ومذكرات القضية</span>
+                        <p className="text-slate-700 text-xs leading-relaxed whitespace-pre-line">{c.details}</p>
+                      </div>
+                    )}
+                    {c.summary && (
+                      <div className="bg-amber-50/50 border border-amber-200 p-3 rounded-xl mt-2">
+                        <span className="text-xs text-amber-700 font-black block mb-1 flex items-center gap-1.5">
+                          ✨ ملخص الذكاء الاصطناعي الذكي
+                        </span>
+                        <p className="text-slate-800 text-xs leading-relaxed">{c.summary}</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Upcoming & Past Hearings Section */}
+                <div className="border border-slate-200 rounded-xl overflow-hidden mb-6 text-sm text-right">
+                  <div className="bg-slate-100 px-4 py-2 border-b border-slate-200 flex justify-between items-center">
+                    <h3 className="font-black text-slate-900">جدول الجلسات القضائية</h3>
+                    <span className="text-xs text-slate-500 font-bold">تاريخ الجلسة القادمة: {c.nextSessionDate || 'غير محدد'}</span>
+                  </div>
+                  <div className="p-4">
+                    {c.hearings && c.hearings.length > 0 ? (
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-right border-collapse text-xs">
+                          <thead>
+                            <tr className="border-b border-slate-200 text-slate-500 font-bold">
+                              <th className="pb-2">رقم الجلسة</th>
+                              <th className="pb-2">تاريخ الجلسة</th>
+                              <th className="pb-2">الوقت</th>
+                              <th className="pb-2">حالة الجلسة</th>
+                              <th className="pb-2">القرار المتخذ / ملاحظات</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-slate-100">
+                            {c.hearings.map((h, i) => (
+                              <tr key={h.id || i} className="text-slate-800">
+                                <td className="py-2.5 font-bold font-mono">#{i + 1}</td>
+                                <td className="py-2.5 font-bold font-mono">{h.date}</td>
+                                <td className="py-2.5 font-mono">{h.time || 'غير محدد'}</td>
+                                <td className="py-2.5">
+                                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                                    h.status === 'upcoming' ? 'bg-amber-100 text-amber-800 border border-amber-200' :
+                                    h.status === 'completed' ? 'bg-emerald-100 text-emerald-800 border border-emerald-200' :
+                                    'bg-slate-100 text-slate-600 border border-slate-200'
+                                  }`}>
+                                    {h.status === 'upcoming' ? 'مجدولة قادمة' :
+                                     h.status === 'completed' ? 'منجزة' : 'ملغاة'}
+                                  </span>
+                                </td>
+                                <td className="py-2.5 max-w-[200px] truncate" title={h.decision || h.notes}>
+                                  {h.decision || h.notes || '—'}
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    ) : (
+                      <div className="text-center py-4 text-slate-400 space-y-1">
+                        <p className="font-bold">لا يوجد جلسات إضافية مجدولة في سجل القضية حتى الآن.</p>
+                        <p className="text-[10px]">الجلسة القادمة المسجلة في النظام: {c.nextSessionDate || 'لا يوجد'} في تمام الساعة {c.nextSessionTime || 'غير محدد'}</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Official Stamp & Signatures Footer */}
+                <div className="flex justify-between items-center mt-12 pt-8 border-t border-slate-200 text-xs">
+                  <div className="text-right space-y-1">
+                    <p className="text-slate-500 font-bold">المحامـي المسؤول:</p>
+                    <p className="text-slate-900 font-black text-sm">{c.lead_lawyer_id || 'مستشار مكتب العدالة الرئيسي'}</p>
+                    <p className="text-slate-400">التوقيع: ............................</p>
+                  </div>
+                  
+                  {/* Beautiful Circular Gold Stamp */}
+                  <div className="w-20 h-20 rounded-full border-4 border-dashed border-[#D4AF37] flex flex-col items-center justify-center p-1 opacity-80 rotate-12">
+                    <span className="text-[7px] text-[#D4AF37] font-black uppercase tracking-wider">مكتب العدالة</span>
+                    <span className="text-base">⚖️</span>
+                    <span className="text-[6px] text-[#D4AF37] font-black">الختم الرسمي</span>
+                  </div>
+
+                  <div className="text-left space-y-1">
+                    <p className="text-slate-400">نظام العدالة الذكي للخدمات السحابية</p>
+                    <p className="text-slate-400">Al-Adalah Cloud Justice Core</p>
+                    <p className="text-[9px] text-slate-300 font-mono">REF_ID: {c.id}</p>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </div>
 
         </div>
 

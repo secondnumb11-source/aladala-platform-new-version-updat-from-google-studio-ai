@@ -70,16 +70,28 @@ export default function CaseFilters({
 }: CaseFiltersProps) {
 
   return (
-    <div className={`p-8 rounded-[2.5rem] border ${isHighContrast ? 'bg-[#0b1329] border-slate-700/80 shadow-2xl shadow-black/30' : 'bg-[#040e21] border-slate-800 shadow-2xl shadow-black/30'} mb-10 relative z-20 space-y-6 text-right font-sans`} dir="rtl">
+    <div className={`p-8 rounded-[2.5rem] border ${isHighContrast ? 'bg-[#0b1329] border-amber-500/40 shadow-[0_0_35px_rgba(212,175,55,0.15)]' : 'bg-[#040e21] border-amber-500/20 shadow-[0_0_25px_rgba(212,175,55,0.1)]'} mb-10 relative z-20 space-y-6 text-right font-sans`} dir="rtl">
+      
+      {/* Premium Header for Advanced Search and Filters */}
+      <div className="flex items-center gap-3 pb-4 border-b border-slate-700/60">
+        <div className="w-10 h-10 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-500 flex items-center justify-center text-slate-950 font-black shadow-md shadow-amber-500/20">
+          🔍
+        </div>
+        <div>
+          <h3 className="text-sm font-black text-amber-400 tracking-wide">بوابة التصفية والبحث المتقدم</h3>
+          <p className="text-[10px] text-white/60 font-medium">البحث والفرز الذكي داخل القضايا بناءً على نوع الدعوى، حالة القضية، أو اسم العميل وأطراف الخصومة</p>
+        </div>
+      </div>
+
       <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
         <div className="flex-1 min-w-[320px] relative w-full">
-          <Search className="absolute right-5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+          <Search className="absolute right-5 top-1/2 -translate-y-1/2 w-5 h-5 text-amber-500" />
           <input 
             type="text" 
-            placeholder="البحث في القضايا، الموكلين، أو أرقام الصكوك..." 
+            placeholder="البحث باسم العميل، نوع القضية، حالة القضية أو رقم الصك..." 
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full bg-[#0b1329] border border-slate-700 rounded-2xl py-4 pr-14 pl-6 text-sm font-black text-white placeholder-slate-500 focus:outline-none focus:border-[#ff7f00]/50 focus:ring-2 focus:ring-[#ff7f00]/20 transition-all shadow-inner"
+            className="w-full bg-[#0b1329] border border-slate-700 rounded-2xl py-4 pr-14 pl-6 text-sm font-black text-white placeholder-slate-500 focus:outline-none focus:border-[#D4AF37]/60 focus:ring-2 focus:ring-[#D4AF37]/20 transition-all shadow-inner"
           />
         </div>
 
