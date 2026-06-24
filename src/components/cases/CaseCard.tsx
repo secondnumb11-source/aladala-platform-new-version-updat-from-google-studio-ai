@@ -3,7 +3,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { motion } from 'motion/react';
 import { 
   Clock, Bot, Edit2, Calendar, MapPin, ChevronLeft, Trash2, Eye, User, Notebook, Plus
 } from 'lucide-react';
@@ -225,6 +226,290 @@ function getSessionCountdown(dateStr: string | null | undefined) {
   return null;
 }
 
+interface CardThemeConfig {
+  bg: string;
+  border: string;
+  textPrimary: string;
+  textSecondary: string;
+  textMuted: string;
+  innerCardBg: string;
+  badgeBg: string;
+  badgeText: string;
+  accentText: string;
+  accentBorder: string;
+  glowShadow: string;
+  tagBg: string;
+  tagText: string;
+}
+
+export function getLuxuryCardTheme(category: string, isDark: boolean): CardThemeConfig {
+  if (isDark) {
+    // Elegant Dark Mode Theme configs with glowing gold accents
+    switch (category) {
+      case 'commercial':
+        return {
+          bg: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',
+          border: 'border-[#D4AF37]/35',
+          textPrimary: 'text-amber-100 font-extrabold',
+          textSecondary: 'text-slate-300 font-bold',
+          textMuted: 'text-slate-400 font-medium',
+          innerCardBg: 'bg-slate-950/60 border border-[#D4AF37]/20',
+          badgeBg: 'bg-amber-500/15 border border-[#D4AF37]/30',
+          badgeText: 'text-amber-300 font-black',
+          accentText: 'text-amber-400 font-black',
+          accentBorder: 'border-amber-500/40',
+          glowShadow: 'rgba(212, 175, 55, 0.15)',
+          tagBg: 'bg-slate-900/80 border border-slate-700/50',
+          tagText: 'text-slate-300'
+        };
+      case 'labor':
+        return {
+          bg: 'linear-gradient(135deg, #022c22 0%, #064e3b 100%)',
+          border: 'border-emerald-500/35',
+          textPrimary: 'text-emerald-100 font-extrabold',
+          textSecondary: 'text-slate-300 font-bold',
+          textMuted: 'text-emerald-300/70 font-medium',
+          innerCardBg: 'bg-emerald-950/60 border border-emerald-500/20',
+          badgeBg: 'bg-emerald-500/15 border border-emerald-500/30',
+          badgeText: 'text-emerald-300 font-black',
+          accentText: 'text-emerald-400 font-black',
+          accentBorder: 'border-emerald-500/40',
+          glowShadow: 'rgba(16, 185, 129, 0.15)',
+          tagBg: 'bg-emerald-950/80 border border-emerald-900/50',
+          tagText: 'text-emerald-300'
+        };
+      case 'civil':
+        return {
+          bg: 'linear-gradient(135deg, #0B1A33 0%, #1e3a8a 100%)',
+          border: 'border-blue-400/35',
+          textPrimary: 'text-blue-50 font-extrabold',
+          textSecondary: 'text-slate-300 font-bold',
+          textMuted: 'text-blue-300/70 font-medium',
+          innerCardBg: 'bg-slate-950/60 border border-blue-500/20',
+          badgeBg: 'bg-blue-500/15 border border-blue-500/30',
+          badgeText: 'text-blue-300 font-black',
+          accentText: 'text-blue-400 font-black',
+          accentBorder: 'border-blue-500/40',
+          glowShadow: 'rgba(59, 130, 246, 0.15)',
+          tagBg: 'bg-slate-900/80 border border-slate-700/50',
+          tagText: 'text-blue-300'
+        };
+      case 'criminal':
+        return {
+          bg: 'linear-gradient(135deg, #450a0a 0%, #7f1d1d 100%)',
+          border: 'border-rose-500/35',
+          textPrimary: 'text-rose-100 font-extrabold',
+          textSecondary: 'text-slate-300 font-bold',
+          textMuted: 'text-rose-300/70 font-medium',
+          innerCardBg: 'bg-rose-950/60 border border-rose-500/20',
+          badgeBg: 'bg-rose-500/15 border border-rose-500/30',
+          badgeText: 'text-rose-300 font-black',
+          accentText: 'text-rose-400 font-black',
+          accentBorder: 'border-rose-500/40',
+          glowShadow: 'rgba(239, 68, 68, 0.15)',
+          tagBg: 'bg-rose-950/80 border border-rose-900/50',
+          tagText: 'text-rose-300'
+        };
+      case 'personal_status':
+        return {
+          bg: 'linear-gradient(135deg, #2e1065 0%, #4c1d95 100%)',
+          border: 'border-purple-500/35',
+          textPrimary: 'text-purple-100 font-extrabold',
+          textSecondary: 'text-slate-300 font-bold',
+          textMuted: 'text-purple-300/70 font-medium',
+          innerCardBg: 'bg-purple-950/60 border border-purple-500/20',
+          badgeBg: 'bg-purple-500/15 border border-purple-500/30',
+          badgeText: 'text-purple-300 font-black',
+          accentText: 'text-purple-400 font-black',
+          accentBorder: 'border-purple-500/40',
+          glowShadow: 'rgba(168, 85, 247, 0.15)',
+          tagBg: 'bg-purple-950/80 border border-purple-900/50',
+          tagText: 'text-purple-300'
+        };
+      case 'administrative':
+        return {
+          bg: 'linear-gradient(135deg, #1c1917 0%, #44403c 100%)',
+          border: 'border-stone-500/35',
+          textPrimary: 'text-stone-100 font-extrabold',
+          textSecondary: 'text-slate-300 font-bold',
+          textMuted: 'text-stone-300/70 font-medium',
+          innerCardBg: 'bg-stone-950/60 border border-stone-500/20',
+          badgeBg: 'bg-stone-500/15 border border-stone-500/30',
+          badgeText: 'text-stone-300 font-black',
+          accentText: 'text-stone-400 font-black',
+          accentBorder: 'border-stone-500/40',
+          glowShadow: 'rgba(120, 113, 108, 0.15)',
+          tagBg: 'bg-stone-900/80 border border-stone-700/50',
+          tagText: 'text-stone-300'
+        };
+      case 'execution':
+        return {
+          bg: 'linear-gradient(135deg, #451a03 0%, #78350f 100%)',
+          border: 'border-amber-500/35',
+          textPrimary: 'text-amber-100 font-extrabold',
+          textSecondary: 'text-slate-300 font-bold',
+          textMuted: 'text-amber-300/70 font-medium',
+          innerCardBg: 'bg-amber-950/60 border border-amber-500/20',
+          badgeBg: 'bg-amber-500/15 border border-amber-500/30',
+          badgeText: 'text-amber-300 font-black',
+          accentText: 'text-amber-400 font-black',
+          accentBorder: 'border-amber-500/40',
+          glowShadow: 'rgba(245, 158, 11, 0.15)',
+          tagBg: 'bg-amber-950/80 border border-amber-900/50',
+          tagText: 'text-amber-300'
+        };
+      default:
+        return {
+          bg: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',
+          border: 'border-slate-500/35',
+          textPrimary: 'text-slate-100 font-extrabold',
+          textSecondary: 'text-slate-300 font-bold',
+          textMuted: 'text-slate-400 font-medium',
+          innerCardBg: 'bg-slate-950/60 border border-slate-500/20',
+          badgeBg: 'bg-slate-500/15 border border-slate-500/30',
+          badgeText: 'text-slate-300 font-black',
+          accentText: 'text-slate-400 font-black',
+          accentBorder: 'border-slate-500/40',
+          glowShadow: 'rgba(100, 116, 139, 0.15)',
+          tagBg: 'bg-slate-900/80 border border-slate-700/50',
+          tagText: 'text-slate-300'
+        };
+    }
+  } else {
+    // Elegant Light Mode Theme configs with strong contrast (WCAG Compliance)
+    switch (category) {
+      case 'commercial':
+        return {
+          bg: 'linear-gradient(135deg, #FCF9F2 0%, #F5EFE0 100%)',
+          border: 'border-[#D4AF37]/50',
+          textPrimary: 'text-[#1c1917] font-black',
+          textSecondary: 'text-[#44403c] font-extrabold',
+          textMuted: 'text-[#78716c] font-bold',
+          innerCardBg: 'bg-white/95 border border-[#D4AF37]/35 shadow-sm',
+          badgeBg: 'bg-amber-100 border border-amber-400',
+          badgeText: 'text-amber-950 font-black',
+          accentText: 'text-amber-800 font-black',
+          accentBorder: 'border-amber-500/30',
+          glowShadow: 'rgba(212, 175, 55, 0.12)',
+          tagBg: 'bg-white border border-slate-200',
+          tagText: 'text-slate-800 font-bold'
+        };
+      case 'labor':
+        return {
+          bg: 'linear-gradient(135deg, #F0FDF4 0%, #DCFCE7 100%)',
+          border: 'border-emerald-500/40',
+          textPrimary: 'text-emerald-950 font-black',
+          textSecondary: 'text-emerald-900 font-extrabold',
+          textMuted: 'text-emerald-800 font-bold',
+          innerCardBg: 'bg-white/95 border border-emerald-300 shadow-sm',
+          badgeBg: 'bg-emerald-100 border border-emerald-400',
+          badgeText: 'text-emerald-950 font-black',
+          accentText: 'text-emerald-800 font-black',
+          accentBorder: 'border-emerald-500/30',
+          glowShadow: 'rgba(16, 185, 129, 0.12)',
+          tagBg: 'bg-white border border-slate-200',
+          tagText: 'text-emerald-800 font-bold'
+        };
+      case 'civil':
+        return {
+          bg: 'linear-gradient(135deg, #F0F9FF 0%, #E0F2FE 100%)',
+          border: 'border-blue-400/40',
+          textPrimary: 'text-blue-950 font-black',
+          textSecondary: 'text-blue-900 font-extrabold',
+          textMuted: 'text-blue-800 font-bold',
+          innerCardBg: 'bg-white/95 border border-blue-300 shadow-sm',
+          badgeBg: 'bg-blue-100 border border-blue-400',
+          badgeText: 'text-blue-950 font-black',
+          accentText: 'text-blue-800 font-black',
+          accentBorder: 'border-blue-500/30',
+          glowShadow: 'rgba(59, 130, 246, 0.12)',
+          tagBg: 'bg-white border border-slate-200',
+          tagText: 'text-blue-800 font-bold'
+        };
+      case 'criminal':
+        return {
+          bg: 'linear-gradient(135deg, #FFF1F2 0%, #FFE4E6 100%)',
+          border: 'border-rose-400/40',
+          textPrimary: 'text-rose-950 font-black',
+          textSecondary: 'text-rose-900 font-extrabold',
+          textMuted: 'text-rose-800 font-bold',
+          innerCardBg: 'bg-white/95 border border-rose-300 shadow-sm',
+          badgeBg: 'bg-rose-100 border border-rose-400',
+          badgeText: 'text-rose-950 font-black',
+          accentText: 'text-rose-800 font-black',
+          accentBorder: 'border-rose-500/30',
+          glowShadow: 'rgba(239, 68, 68, 0.12)',
+          tagBg: 'bg-white border border-slate-200',
+          tagText: 'text-rose-800 font-bold'
+        };
+      case 'personal_status':
+        return {
+          bg: 'linear-gradient(135deg, #FAF5FF 0%, #F3E8FF 100%)',
+          border: 'border-purple-400/40',
+          textPrimary: 'text-purple-950 font-black',
+          textSecondary: 'text-purple-900 font-extrabold',
+          textMuted: 'text-purple-800 font-bold',
+          innerCardBg: 'bg-white/95 border border-purple-300 shadow-sm',
+          badgeBg: 'bg-purple-100 border border-purple-400',
+          badgeText: 'text-purple-950 font-black',
+          accentText: 'text-purple-800 font-black',
+          accentBorder: 'border-purple-500/30',
+          glowShadow: 'rgba(168, 85, 247, 0.12)',
+          tagBg: 'bg-white border border-slate-200',
+          tagText: 'text-purple-800 font-bold'
+        };
+      case 'administrative':
+        return {
+          bg: 'linear-gradient(135deg, #F9FAF5 0%, #F5F7E0 100%)',
+          border: 'border-stone-400/30',
+          textPrimary: 'text-stone-950 font-black',
+          textSecondary: 'text-stone-900 font-extrabold',
+          textMuted: 'text-[#57534e] font-bold',
+          innerCardBg: 'bg-white/95 border border-stone-300 shadow-sm',
+          badgeBg: 'bg-[#f5f5f4] border border-stone-300',
+          badgeText: 'text-stone-950 font-black',
+          accentText: 'text-stone-800 font-black',
+          accentBorder: 'border-stone-500/20',
+          glowShadow: 'rgba(120, 113, 108, 0.08)',
+          tagBg: 'bg-white border border-slate-200',
+          tagText: 'text-stone-800 font-bold'
+        };
+      case 'execution':
+        return {
+          bg: 'linear-gradient(135deg, #FFFBEB 0%, #FEF3C7 100%)',
+          border: 'border-amber-500/40',
+          textPrimary: 'text-amber-950 font-black',
+          textSecondary: 'text-[#78350f] font-extrabold',
+          textMuted: 'text-[#92400e] font-bold',
+          innerCardBg: 'bg-white/95 border border-amber-300 shadow-sm',
+          badgeBg: 'bg-amber-100 border border-amber-400',
+          badgeText: 'text-amber-950 font-black',
+          accentText: 'text-amber-900 font-black',
+          accentBorder: 'border-amber-500/30',
+          glowShadow: 'rgba(245, 158, 11, 0.12)',
+          tagBg: 'bg-white border border-slate-200',
+          tagText: 'text-amber-800 font-bold'
+        };
+      default:
+        return {
+          bg: 'linear-gradient(135deg, #F8FAF9 0%, #F1F5F4 100%)',
+          border: 'border-slate-300',
+          textPrimary: 'text-slate-950 font-black',
+          textSecondary: 'text-slate-900 font-extrabold',
+          textMuted: 'text-slate-800 font-bold',
+          innerCardBg: 'bg-white/95 border border-slate-200 shadow-sm',
+          badgeBg: 'bg-slate-100 border border-slate-300',
+          badgeText: 'text-slate-950 font-black',
+          accentText: 'text-slate-800 font-black',
+          accentBorder: 'border-slate-300',
+          glowShadow: 'rgba(148, 163, 184, 0.08)',
+          tagBg: 'bg-white border border-slate-200',
+          tagText: 'text-slate-800 font-bold'
+        };
+    }
+  }
+}
+
 export default function CaseCard({
   c,
   onSelectCase,
@@ -349,7 +634,23 @@ export default function CaseCard({
     }
   };
 
-  const isLightTheme = false; // Forced Dark Blue
+  const [isDark, setIsDark] = useState(() => {
+    if (typeof document !== 'undefined') {
+      return document.documentElement.classList.contains('dark');
+    }
+    return true; // Default to dark mode
+  });
+
+  useEffect(() => {
+    if (typeof document === 'undefined') return;
+    const observer = new MutationObserver(() => {
+      setIsDark(document.documentElement.classList.contains('dark'));
+    });
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+    return () => observer.disconnect();
+  }, []);
+
+  const cardTheme = getLuxuryCardTheme(c.category, isDark);
 
   // Retrieve basic meta styles from CasesModule
   const { 
@@ -359,79 +660,100 @@ export default function CaseCard({
 
   const cTags = getCaseDocumentTags(c);
 
-  // Retrieve luxurious gradient configuration
-  const theme = LUXURY_THEMES[c.category] || LUXURY_THEMES.other;
-  const palette = getStrictWCAGAAAPalette(theme.from, theme.to, isHighContrast, !isHighContrast); // Use isHighContrast properly to trigger light/dark
+  // 3D Tilt Values
+  const [rotateX, setRotateX] = useState(0);
+  const [rotateY, setRotateY] = useState(0);
+  const [glareX, setGlareX] = useState(50);
+  const [glareY, setGlareY] = useState(50);
 
-  // 3D luxury shadow values
-  const shadowLight = searchHighlight 
-    ? '0 0 20px rgba(212, 175, 55, 0.4), 0 10px 40px -10px rgba(0, 0, 0, 0.15)' 
-    : '0 10px 40px -10px rgba(0, 0, 0, 0.08), inset 0 0 0 1px rgba(255,255,255,0.4)';
-  const shadowDark = searchHighlight 
-    ? '0 0 20px rgba(212, 175, 55, 0.15), 0 10px 40px -10px rgba(0, 0, 0, 0.5), inset 0 0 0 1px rgba(212, 175, 55, 0.3)' 
-    : '0 10px 40px -10px rgba(0, 0, 0, 0.4), inset 0 0 0 1px rgba(255,255,255,0.05)';
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    const card = e.currentTarget;
+    const rect = card.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
     
-  const luxuryShadow = isHighContrast ? shadowLight : shadowDark;
+    const xc = rect.width / 2;
+    const yc = rect.height / 2;
+    
+    const rotX = -((y - yc) / yc) * 12;
+    const rotY = ((x - xc) / xc) * 12;
+    
+    setRotateX(rotX);
+    setRotateY(rotY);
+    
+    setGlareX((x / rect.width) * 100);
+    setGlareY((y / rect.height) * 100);
+  };
 
-  const shadowHoverLight = '0 20px 50px -15px rgba(0, 0, 0, 0.15), inset 0 0 0 2px rgba(212, 175, 55, 0.5)';
-  const shadowHoverDark = '0 20px 50px -15px rgba(0, 0, 0, 0.6), inset 0 0 0 1px rgba(212, 175, 55, 0.5)';
-  
-  const luxuryHoverShadow = isHighContrast ? shadowHoverLight : shadowHoverDark;
+  const handleMouseLeave = () => {
+    setIsHovered(false);
+    setRotateX(0);
+    setRotateY(0);
+  };
 
   const cardStyle: React.CSSProperties = {
     background: isHighContrast 
-      ? `linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)` // Elegant white/silver
-      : `linear-gradient(135deg, ${theme.from} 0%, ${theme.to} 100%)`, 
-    boxShadow: (isHovered || isKeyboardFocused) ? luxuryHoverShadow : luxuryShadow,
-    transform: (isHovered || isKeyboardFocused) ? 'translateY(-6px) scale(1.018)' : 'translateY(0) scale(1)',
-    transition: 'all 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
+      ? `linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)` 
+      : cardTheme.bg,
+    boxShadow: (isHovered || isKeyboardFocused) 
+      ? `0 25px 60px -15px ${cardTheme.glowShadow}, 0 0 20px 2px ${cardTheme.glowShadow}, inset 0 0 0 1.5px rgba(212, 175, 55, 0.4)` 
+      : (isHighContrast ? '0 10px 40px -10px rgba(0,0,0,0.08), inset 0 0 0 1px rgba(0,0,0,0.1)' : `0 10px 40px -10px ${cardTheme.glowShadow}, inset 0 0 0 1px rgba(255,255,255,0.05)`),
+    transform: (isHovered || isKeyboardFocused) 
+      ? `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.025, 1.025, 1.025) translateY(-5px)` 
+      : 'perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1) translateY(0)',
+    transition: isHovered ? 'transform 0.05s ease-out, box-shadow 0.3s ease-out' : 'transform 0.5s ease-out, box-shadow 0.5s ease-out',
     transformStyle: 'preserve-3d',
-    perspective: '1000px'
   };
 
   return (
     <div
       onClick={() => onSelectCase(c)}
       onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-      className={`relative cursor-pointer rounded-[2rem] border overflow-hidden cases-module-card-item transition-all ${
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+      className={`relative cursor-pointer rounded-[2.2rem] border overflow-hidden transition-all duration-300 ${
         c.archived ? 'opacity-65 grayscale-[0.2]' : ''
-      } ${isKeyboardFocused ? 'ring-4 ring-[#D4AF37] ring-offset-4 ring-offset-transparent scale-[1.03] z-10' : ''} ${searchHighlight ? 'ring-2 ring-amber-400 ring-offset-2 ring-offset-transparent' : ''} ${
-        isHighContrast ? 'border-slate-200 text-slate-800' : 'border-[#D4AF37]/20 text-white'
+      } ${isKeyboardFocused ? 'ring-4 ring-[#D4AF37] ring-offset-4 ring-offset-transparent z-10' : ''} ${searchHighlight ? 'ring-2 ring-amber-400 ring-offset-2 ring-offset-transparent' : ''} ${
+        isHighContrast ? 'border-slate-300 text-slate-900' : `${cardTheme.border}`
       }`}
       style={cardStyle}
       id={`case-card-${c.id}`}
     >
-      {/* Subtle gold ambient gradient overlay at top of dark luxury option */}
+      {/* 3D Golden/Holographic Glare Effect */}
+      {isHovered && !isHighContrast && (
+        <div 
+          className="absolute inset-0 pointer-events-none z-30 transition-opacity duration-300"
+          style={{
+            background: `radial-gradient(circle at ${glareX}% ${glareY}%, rgba(212, 175, 55, 0.18) 0%, transparent 60%)`,
+            mixBlendMode: 'screen'
+          }}
+        />
+      )}
+
+      {/* Background patterns and glowing effects */}
       {!isHighContrast && (
-        <div className="absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-amber-500/15 via-transparent to-transparent pointer-events-none z-0" />
+        <div className="absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-amber-500/10 via-transparent to-transparent pointer-events-none z-0" />
       )}
 
-      {/* Light mode luxury highlight overlay */}
-      {isHighContrast && isHovered && (
-         <div className="absolute inset-0 bg-gradient-to-tr from-amber-500/5 to-transparent pointer-events-none z-0 transition-opacity duration-300" />
-      )}
-
-      {/* MAIN LAYOUT STRUCTURE - UNIFIED LUXURY BENTO BOX */}
+      {/* MAIN CONTAINER */}
       <div 
-        className={`relative z-10 w-full h-full p-5 flex flex-col justify-between cases-module-card-inner transition-colors duration-300 ${
-          isHighContrast ? 'bg-white/40' : 'bg-black/40 backdrop-blur-md'
+        className={`relative z-10 w-full h-full p-6 flex flex-col justify-between transition-colors duration-300 ${
+          isHighContrast ? 'bg-white/40' : 'bg-black/15 backdrop-blur-[2px]'
         }`}
         dir="rtl"
       >
-        {/* CSS GRID PANEL FOR ALL INNER CARD ELEMENTS */}
         <div className="flex flex-col w-full h-full justify-between font-sans">
           
           {/* Top Actions (Row 0) */}
-          <div className="flex justify-between items-start mb-4">
+          <div className="flex justify-between items-center mb-5">
             <div className="flex gap-2">
                <button
                  type="button"
                  onClick={(e) => { e.stopPropagation(); setActivityLogCaseId(c.id); }}
                  className={`p-2 rounded-xl border transition-all shadow-sm ${
                    isHighContrast 
-                     ? 'border-amber-400/50 bg-amber-50 text-amber-700 hover:bg-amber-100 hover:shadow-md' 
-                     : 'border-[#facc15] bg-black/40 text-[#facc15] hover:bg-black/60'
+                     ? 'border-amber-500 bg-amber-50 text-amber-800 hover:bg-amber-100 hover:shadow-md' 
+                     : 'border-[#facc15]/30 bg-black/40 text-[#facc15] hover:bg-black/60 hover:border-[#facc15]'
                  }`}
                  title="سجل تعديلات ونشاط القضية"
                >
@@ -442,8 +764,8 @@ export default function CaseCard({
                  onClick={(e) => { e.stopPropagation(); setIsNotePopoverOpen(true); }}
                  className={`p-2 rounded-xl border transition-all shadow-sm ${
                    isHighContrast 
-                     ? 'border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100 hover:shadow-md' 
-                     : 'border-white/20 bg-black/20 text-white/80 hover:bg-black/40'
+                     ? 'border-slate-300 bg-slate-50 text-slate-700 hover:bg-slate-100 hover:shadow-md' 
+                     : 'border-white/10 bg-black/30 text-white/90 hover:bg-black/50'
                  }`}
                  title="إضافة ملاحظة سريعة للمكتب"
                >
@@ -451,121 +773,124 @@ export default function CaseCard({
                </button>
             </div>
             
-            <div className={`px-3 py-1.5 rounded-xl border text-[10px] font-black tracking-wider flex items-center gap-1.5 shadow-sm ${
+            <div className={`px-3 py-1.5 rounded-xl border text-[11px] font-black tracking-wide flex items-center gap-1.5 shadow-sm ${
                isHighContrast 
-                 ? 'bg-emerald-50 border-emerald-200 text-emerald-700' 
-                 : 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400'
+                 ? 'bg-emerald-100 border-emerald-400 text-emerald-950 font-black' 
+                 : `${cardTheme.badgeBg} ${cardTheme.badgeText}`
             }`}>
-              <div className={`w-1.5 h-1.5 rounded-full ${isHighContrast ? 'bg-emerald-500' : 'bg-emerald-400 animate-pulse'}`}></div>
+              <div className={`w-1.5 h-1.5 rounded-full ${isHighContrast ? 'bg-emerald-600' : 'bg-emerald-400 animate-pulse'}`}></div>
               {c.status || arabicStatusName || 'نشطة'}
             </div>
           </div>
 
-          {/* Row 1: Case Number, Court */}
-          <div className="grid grid-cols-2 gap-3 mb-3">
-            <div className={`border rounded-[1.25rem] p-3 shadow-sm text-center flex flex-col justify-center overflow-hidden transition-all duration-300 ${
-              isHighContrast 
-                ? 'bg-slate-50 border-slate-200 hover:bg-slate-100 hover:shadow-md' 
-                : 'bg-black/20 border-white/10 hover:bg-black/30'
-            }`}>
-              <span className={`text-[10px] font-bold block mb-1 tracking-wider uppercase ${isHighContrast ? 'text-slate-500' : 'text-white/60'}`}>المحكمة المختصة</span>
-              <span className={`font-black text-xs truncate block ${isHighContrast ? 'text-slate-900' : 'text-white'}`}>{c.courtName || 'غير محدد'}</span>
-            </div>
-            <div className={`border rounded-[1.25rem] p-3 shadow-sm text-center flex flex-col justify-center transition-all duration-300 ${
-              isHighContrast 
-                ? 'bg-amber-50 border-amber-200 hover:bg-amber-100 hover:shadow-md' 
-                : 'bg-black/20 border-amber-500/20 hover:bg-black/30'
-            }`}>
-              <span className={`text-[10px] font-bold block mb-1 tracking-wider uppercase ${isHighContrast ? 'text-amber-700' : 'text-amber-400/80'}`}>رقم القضية</span>
-              <span className={`font-black text-sm truncate ${isHighContrast ? 'text-amber-600' : 'text-amber-400'}`} dir="ltr">#{c.caseNumber}</span>
-            </div>
+          {/* MAIN CARD HEADLINE: CASE SUBJECT */}
+          <div className={`border-b pb-3 mb-4 ${isHighContrast ? 'border-slate-200' : 'border-white/5'}`}>
+            <span className={`text-[10px] font-black block mb-1 tracking-wider uppercase ${isHighContrast ? 'text-slate-500' : `${cardTheme.textMuted}`}`}>موضوع الدعوى / ملف القضية</span>
+            <span className={`text-base font-black tracking-tight leading-snug block line-clamp-2 ${isHighContrast ? 'text-slate-950' : `${cardTheme.textPrimary} drop-shadow-md`}`}>
+              {c.caseName || 'قضية عامة بدون عنوان'}
+            </span>
           </div>
 
-          {/* Row 2: Circuit, Category */}
-          <div className="grid grid-cols-2 gap-3 mb-3">
-            <div className={`border rounded-[1.25rem] p-3 shadow-sm text-center flex flex-col justify-center overflow-hidden transition-all duration-300 ${
+          {/* TWO-COLUMN BENTO INFO GRID */}
+          <div className="grid grid-cols-2 gap-3 mb-4">
+            {/* Court */}
+            <div className={`border rounded-[1.4rem] p-3 shadow-sm text-right flex flex-col justify-between transition-all duration-300 ${
               isHighContrast 
-                ? 'bg-slate-50 border-slate-200 hover:bg-slate-100 hover:shadow-md' 
-                : 'bg-black/20 border-white/10 hover:bg-black/30'
+                ? 'bg-slate-50 border-slate-300 hover:bg-slate-100' 
+                : `${cardTheme.innerCardBg}`
             }`}>
-              <span className={`text-[10px] font-bold block mb-1 tracking-wider uppercase ${isHighContrast ? 'text-slate-500' : 'text-white/60'}`}>نوع القضية</span>
-              <span className={`font-black text-xs truncate block flex items-center justify-center gap-1.5 ${isHighContrast ? 'text-slate-900' : 'text-white'}`}>
+              <span className={`text-[9px] font-black tracking-wider block mb-1 uppercase ${isHighContrast ? 'text-slate-500' : `${cardTheme.textMuted}`}`}>المحكمة المختصة</span>
+              <span className={`font-black text-xs truncate block ${isHighContrast ? 'text-slate-900' : `${cardTheme.textSecondary}`}`}>{c.courtName || 'غير محدد'}</span>
+            </div>
+
+            {/* Case Number */}
+            <div className={`border rounded-[1.4rem] p-3 shadow-sm text-right flex flex-col justify-between transition-all duration-300 ${
+              isHighContrast 
+                ? 'bg-amber-50 border-amber-300 hover:bg-amber-100' 
+                : `${cardTheme.innerCardBg}`
+            }`}>
+              <span className={`text-[9px] font-black tracking-wider block mb-1 uppercase ${isHighContrast ? 'text-amber-800' : `${cardTheme.textMuted}`}`}>رقم القضية</span>
+              <span className={`font-black text-xs truncate ${isHighContrast ? 'text-amber-700' : `${cardTheme.accentText}`}`} dir="ltr">#{c.caseNumber}</span>
+            </div>
+
+            {/* Category */}
+            <div className={`border rounded-[1.4rem] p-3 shadow-sm text-right flex flex-col justify-between transition-all duration-300 ${
+              isHighContrast 
+                ? 'bg-slate-50 border-slate-300 hover:bg-slate-100' 
+                : `${cardTheme.innerCardBg}`
+            }`}>
+              <span className={`text-[9px] font-black tracking-wider block mb-1 uppercase ${isHighContrast ? 'text-slate-500' : `${cardTheme.textMuted}`}`}>تصنيف القضية</span>
+              <span className={`font-black text-[11px] truncate flex items-center gap-1.5 ${isHighContrast ? 'text-slate-900' : `${cardTheme.textSecondary}`}`}>
                 {IconComponent && <IconComponent className="w-3.5 h-3.5" />}
-                {c.category || theme.nameAr || 'غير محدد'}
+                {LUXURY_THEMES[c.category]?.nameAr || 'عامة'}
               </span>
             </div>
-            <div className={`border rounded-[1.25rem] p-3 shadow-sm text-center flex flex-col justify-center overflow-hidden transition-all duration-300 ${
+
+            {/* Circuit Number */}
+            <div className={`border rounded-[1.4rem] p-3 shadow-sm text-right flex flex-col justify-between transition-all duration-300 ${
               isHighContrast 
-                ? 'bg-slate-50 border-slate-200 hover:bg-slate-100 hover:shadow-md' 
-                : 'bg-black/20 border-white/10 hover:bg-black/30'
+                ? 'bg-slate-50 border-slate-300 hover:bg-slate-100' 
+                : `${cardTheme.innerCardBg}`
             }`}>
-              <span className={`text-[10px] font-bold block mb-1 tracking-wider uppercase ${isHighContrast ? 'text-slate-500' : 'text-white/60'}`}>الدائرة القضائية</span>
-              <span className={`font-black text-xs truncate block ${isHighContrast ? 'text-slate-900' : 'text-white'}`}>{c.circuitNumber || 'غير محدد'}</span>
+              <span className={`text-[9px] font-black tracking-wider block mb-1 uppercase ${isHighContrast ? 'text-slate-500' : `${cardTheme.textMuted}`}`}>الدائرة القضائية</span>
+              <span className={`font-black text-xs truncate block ${isHighContrast ? 'text-slate-900' : `${cardTheme.textSecondary}`}`}>{c.circuitNumber || 'غير محدد'}</span>
             </div>
           </div>
 
-          {/* Row 3: Client */}
-          <div className={`border rounded-[1.25rem] p-3 shadow-sm text-center mb-3 flex flex-col justify-center overflow-hidden transition-all duration-300 ${
+          {/* Client & Opponent Block */}
+          <div className={`border rounded-[1.4rem] p-3.5 shadow-sm text-right mb-4 flex flex-col justify-center transition-all duration-300 ${
             isHighContrast 
-              ? 'bg-slate-50 border-slate-200 hover:bg-slate-100 hover:shadow-md' 
-              : 'bg-black/20 border-white/10 hover:bg-black/30'
+              ? 'bg-slate-50 border-slate-300 hover:bg-slate-100' 
+              : `${cardTheme.innerCardBg}`
           }`}>
-            <span className={`text-[10px] font-bold block mb-1 tracking-wider uppercase ${isHighContrast ? 'text-slate-500' : 'text-white/60'}`}>أطراف الدعوى / الموكل</span>
-            <span className={`font-black text-xs truncate block ${isHighContrast ? 'text-slate-900' : 'text-white'}`}>
+            <span className={`text-[9px] font-black block mb-1 tracking-wider uppercase ${isHighContrast ? 'text-slate-500' : `${cardTheme.textMuted}`}`}>أطراف الدعوى / الموكل والخصم</span>
+            <span className={`font-black text-xs truncate block ${isHighContrast ? 'text-slate-950' : `${cardTheme.textPrimary}`}`}>
               {c.clientName || 'غير محدد'}
               {c.opponentName ? ` ضد ${c.opponentName}` : ''}
             </span>
           </div>
 
-          {/* Row 4: Subject */}
-          <div className={`border rounded-[1.25rem] p-3.5 shadow-sm text-center mb-3 flex flex-col justify-center overflow-hidden transition-all duration-300 ${
+          {/* NEXT SESSION HIGHLIGHT BLOCK (HIGH DENSITY / HIGH CONTRAST) */}
+          <div className={`border rounded-[1.4rem] p-3.5 shadow-sm text-right mb-4 flex flex-col justify-center transition-all duration-300 ${
             isHighContrast 
-              ? 'bg-slate-100 border-slate-300 hover:bg-slate-200 hover:shadow-md' 
-              : 'bg-black/30 border-white/20 hover:bg-black/40'
+              ? 'bg-[#064e3b]/5 border-emerald-400 hover:bg-[#064e3b]/10' 
+              : 'bg-emerald-950/20 border-emerald-500/25 hover:bg-emerald-950/30'
           }`}>
-            <span className={`text-[10px] font-bold block mb-1.5 tracking-wider uppercase ${isHighContrast ? 'text-slate-600' : 'text-white/70'}`}>موضوع الدعوى</span>
-            <span className={`font-black text-sm block truncate ${isHighContrast ? 'text-slate-950' : 'text-white drop-shadow-md'}`}>{c.caseName || 'غير محدد'}</span>
-          </div>
-
-          {/* Row 5: Next Session */}
-          <div className={`border rounded-[1.25rem] p-3.5 shadow-sm text-center mb-3 flex flex-col justify-center transition-all duration-300 ${
-            isHighContrast 
-              ? 'bg-[#064e3b]/5 border-[#064e3b]/20 hover:bg-[#064e3b]/10 hover:shadow-md' 
-              : 'bg-black/20 border-[#00ff88]/20 hover:bg-black/30'
-          }`}>
-            <span className={`text-[10px] font-bold block mb-1.5 tracking-wider uppercase ${isHighContrast ? 'text-[#064e3b]/70' : 'text-[#00ff88]/60'}`}>تاريخ الجلسة القادمة</span>
-            <span className={`font-black text-sm flex items-center justify-center gap-2 ${isHighContrast ? 'text-[#064e3b]' : 'text-[#00ff88] drop-shadow-[0_0_5px_rgba(0,255,136,0.3)]'}`}>
-              <Calendar className="w-4 h-4" />
-              {c.nextSessionDate || 'غير مجدول'}
+            <span className={`text-[10px] font-black block mb-1 tracking-wider uppercase ${isHighContrast ? 'text-emerald-800' : 'text-emerald-400'}`}>موعد الجلسة القضائية القادمة</span>
+            <span className={`font-black text-sm flex items-center gap-2 ${isHighContrast ? 'text-emerald-900' : 'text-[#00ff88] drop-shadow-[0_0_5px_rgba(0,255,136,0.3)]'}`}>
+              <Calendar className="w-4 h-4 text-emerald-500" />
+              {c.nextSessionDate || 'غير مجدولة بعد'}
             </span>
           </div>
 
-          {/* Row 6: Status & Counts & Najiz Sync */}
+          {/* Statistics and counts bar */}
           <div className="flex gap-2 mb-4">
-             <div className={`flex-[3] border rounded-[1.25rem] p-2 shadow-sm grid grid-cols-3 divide-x divide-x-reverse text-center items-center ${
-               isHighContrast ? 'bg-slate-50 border-slate-200 divide-slate-200' : 'bg-black/20 border-white/10 divide-white/10'
+             <div className={`flex-[3] border rounded-[1.4rem] p-2 shadow-sm grid grid-cols-3 divide-x divide-x-reverse text-center items-center ${
+               isHighContrast ? 'bg-slate-50 border-slate-300 divide-slate-300' : 'bg-black/30 border-white/5 divide-white/5'
              }`}>
                 <div className="flex flex-col">
-                  <span className={`text-[9px] font-bold block mb-0.5 tracking-wider ${isHighContrast ? 'text-slate-500' : 'text-white/60'}`}>مذكرات</span>
-                  <span className={`font-black text-xs font-mono ${isHighContrast ? 'text-slate-900' : 'text-white'}`}>{c.notes?.length || (parseInt(c.caseNumber || '3') % 3 + 1)}</span>
+                  <span className={`text-[9px] font-bold block mb-0.5 tracking-wider ${isHighContrast ? 'text-slate-500' : `${cardTheme.textMuted}`}`}>مذكرات</span>
+                  <span className={`font-black text-xs font-mono ${isHighContrast ? 'text-slate-900' : `${cardTheme.textSecondary}`}`}>{c.notes?.length || (parseInt(c.caseNumber || '3') % 3 + 1)}</span>
                 </div>
                 <div className="flex flex-col">
-                  <span className={`text-[9px] font-bold block mb-0.5 tracking-wider ${isHighContrast ? 'text-slate-500' : 'text-white/60'}`}>جلسات</span>
-                  <span className={`font-black text-xs font-mono ${isHighContrast ? 'text-slate-900' : 'text-white'}`}>{c.hearings?.filter(h => h.status === 'completed').length || (parseInt(c.caseNumber || '5') % 2 + 1)}</span>
+                  <span className={`text-[9px] font-bold block mb-0.5 tracking-wider ${isHighContrast ? 'text-slate-500' : `${cardTheme.textMuted}`}`}>جلسات</span>
+                  <span className={`font-black text-xs font-mono ${isHighContrast ? 'text-slate-900' : `${cardTheme.textSecondary}`}`}>{c.hearings?.filter(h => h.status === 'completed').length || (parseInt(c.caseNumber || '5') % 2 + 1)}</span>
                 </div>
                 <div className="flex flex-col">
-                  <span className={`text-[9px] font-bold block mb-0.5 tracking-wider ${isHighContrast ? 'text-slate-500' : 'text-white/60'}`}>مستندات</span>
-                  <span className={`font-black text-xs font-mono ${isHighContrast ? 'text-slate-900' : 'text-white'}`}>{c.attachments_count || 0}</span>
+                  <span className={`text-[9px] font-bold block mb-0.5 tracking-wider ${isHighContrast ? 'text-slate-500' : `${cardTheme.textMuted}`}`}>مستندات</span>
+                  <span className={`font-black text-xs font-mono ${isHighContrast ? 'text-slate-900' : `${cardTheme.textSecondary}`}`}>{c.attachments_count || 0}</span>
                 </div>
              </div>
-             <div className={`flex-[2] border rounded-[1.25rem] p-2 shadow-sm flex flex-col items-center justify-center cursor-pointer transition-colors ${
+             
+             {/* Najiz Connection button */}
+             <div className={`flex-[2] border rounded-[1.4rem] p-2 shadow-sm flex flex-col items-center justify-center cursor-pointer transition-all duration-300 ${
                isHighContrast 
-                 ? 'bg-emerald-50 border-emerald-200 hover:bg-emerald-100 hover:shadow-md' 
-                 : 'bg-emerald-500/10 border-emerald-500/30 hover:bg-emerald-500/20'
+                 ? 'bg-emerald-50 border-emerald-400 hover:bg-emerald-100' 
+                 : 'bg-emerald-500/10 border-emerald-500/20 hover:bg-emerald-500/20'
              }`}
                   onClick={(e) => { e.stopPropagation(); onNajizSync(c); }}>
-                <Bot className={`w-4 h-4 mb-1 ${isHighContrast ? 'text-emerald-600' : 'text-emerald-400'} ${isSyncing === c.id ? 'animate-spin' : ''}`} />
-                <span className={`text-[9px] font-black text-center tracking-wider ${isHighContrast ? 'text-emerald-700' : 'text-emerald-400'}`}>{c.isNajizSync || c.is_najiz_sync ? 'مرتبط بـ ناجز' : 'مزامنة ناجز'}</span>
+                <Bot className={`w-4 h-4 mb-1 ${isHighContrast ? 'text-emerald-700' : 'text-emerald-400'} ${isSyncing === c.id ? 'animate-spin' : ''}`} />
+                <span className={`text-[9px] font-black text-center tracking-wider ${isHighContrast ? 'text-emerald-800' : 'text-emerald-400'}`}>{c.isNajizSync || c.is_najiz_sync ? 'مرتبط بـ ناجز ✓' : 'مزامنة ناجز 🗲'}</span>
              </div>
           </div>
 
@@ -574,12 +899,12 @@ export default function CaseCard({
             type="button"
             disabled={isExporting}
             onClick={handleExportReport}
-            className={`w-full mb-3 py-3 rounded-xl border transition-all flex items-center justify-center gap-2 font-black text-xs shadow-sm ${
+            className={`w-full mb-4 py-3 rounded-xl border transition-all flex items-center justify-center gap-2 font-black text-xs shadow-sm ${
               isExporting ? 'opacity-50 cursor-not-allowed animate-pulse' : ''
             } ${
               isHighContrast
-                ? 'bg-gradient-to-r from-amber-50 to-yellow-100 border-amber-300 text-amber-800 hover:from-amber-100 hover:to-yellow-200 hover:border-amber-400 hover:shadow-md'
-                : 'bg-gradient-to-r from-amber-500/10 to-yellow-500/10 border-[#D4AF37]/40 text-amber-400 hover:from-amber-500/20 hover:to-yellow-500/20 hover:border-[#D4AF37]'
+                ? 'bg-gradient-to-r from-amber-50 to-yellow-100 border-amber-400 text-amber-900 hover:from-amber-100 hover:to-yellow-200 hover:border-amber-500 hover:shadow-md'
+                : 'bg-gradient-to-r from-amber-500/15 to-yellow-500/15 border-[#D4AF37]/35 text-amber-300 hover:from-amber-500/25 hover:to-yellow-500/25 hover:border-[#D4AF37]'
             }`}
           >
             {isExporting ? (
@@ -590,9 +915,9 @@ export default function CaseCard({
             {isExporting ? 'جاري تصدير التقرير الفاخر...' : 'تصدير التقرير الرسمي (PDF)'}
           </button>
 
-          {/* Row 7: Archive & Delete */}
+          {/* Row 7: Archive & Delete Actions */}
           {(onArchiveToggle || onDeleteCase) && (selectedRole === 'admin' || selectedRole === 'lawyer') && (
-            <div className="flex justify-between items-center gap-2 mt-auto">
+            <div className="flex justify-between items-center gap-2 mt-auto pt-2 border-t border-dashed border-slate-200/10">
               {/* Archive - Right */}
               {onArchiveToggle ? (
                   <button 
@@ -604,20 +929,21 @@ export default function CaseCard({
                         type: 'archive',
                         title: c.archived ? 'استعادة ملف الدعوى 📦' : 'نقل القضية للأرشيف 📦',
                         message: c.archived 
-                          ? 'هل أنت متأكد من رغبتك في استعادة هذا الملف من الأرشيف وإعادته لقائمة القضايا النشطة؟'
-                          : 'هل تريد نقل هذا الملف إلى أرشيف النظام؟ لن تظهر القضية في القائمة الرئيسية النشطة بعد الآن.',
+                           ? 'هل أنت متأكد من رغبتك في استعادة هذا الملف من الأرشيف وإعادته لقائمة القضايا النشطة؟'
+                           : 'هل تريد نقل هذا الملف إلى أرشيف النظام؟ لن تظهر القضية في القائمة الرئيسية النشطة بعد الآن.',
                         onConfirm: () => onArchiveToggle(c)
                       });
                     }} 
-                    className={`flex-[1] border px-3 py-2.5 rounded-xl text-[11px] font-bold transition-all flex items-center justify-center gap-1.5 shadow-sm ${
+                    className={`flex-[1] border px-3 py-2.5 rounded-xl text-[11px] font-black transition-all flex items-center justify-center gap-1.5 shadow-sm ${
                       isHighContrast 
-                        ? 'bg-slate-100 border-slate-300 text-slate-700 hover:bg-slate-200 hover:text-slate-900 hover:shadow-md' 
-                        : 'bg-black/20 border-white/10 text-white/80 hover:bg-black/40 hover:text-white'
+                        ? 'bg-slate-100 border-slate-400 text-slate-800 hover:bg-slate-200' 
+                        : 'bg-black/25 border-white/5 text-white/80 hover:bg-black/45 hover:text-white'
                     }`}
                   >
                     {c.archived ? 'استعادة ملف الدعوى' : 'نقل القضية للأرشيف'}
                   </button>
               ) : <div className="flex-[1]"></div>}
+
               {/* Delete - Left */}
               {onDeleteCase ? (
                   <button 
@@ -632,10 +958,10 @@ export default function CaseCard({
                         onConfirm: () => onDeleteCase(c.id)
                       });
                     }} 
-                    className={`flex-[1] border px-3 py-2.5 rounded-xl text-[11px] font-bold transition-all flex items-center justify-center gap-1.5 shadow-sm ${
+                    className={`flex-[1] border px-3 py-2.5 rounded-xl text-[11px] font-black transition-all flex items-center justify-center gap-1.5 shadow-sm ${
                       isHighContrast 
-                        ? 'bg-rose-50 border-rose-200 text-rose-700 hover:bg-rose-100 hover:text-rose-800 hover:shadow-md' 
-                        : 'bg-rose-500/10 border-rose-500/30 text-rose-400 hover:bg-rose-500/20'
+                        ? 'bg-rose-50 border-rose-300 text-rose-800 hover:bg-rose-100' 
+                        : 'bg-rose-500/10 border-rose-500/20 text-rose-400 hover:bg-rose-500/20'
                     }`}
                   >
                     <Trash2 className="w-3.5 h-3.5" />
