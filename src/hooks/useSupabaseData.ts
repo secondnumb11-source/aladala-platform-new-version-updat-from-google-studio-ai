@@ -841,11 +841,17 @@ export function useSupabaseData() {
         invoicesQuery
       ]);
 
-      if (casesRes.data) setCases(casesRes.data.map(mapCaseFromDB) as unknown as Case[]);
+      let mappedClients: Client[] = [];
+      if (clientsRes.data) {
+        mappedClients = clientsRes.data.map(mapClientFromDB) as unknown as Client[];
+        setClients(mappedClients);
+      }
+      if (casesRes.data) {
+        setCases(casesRes.data.map((c: any) => mapDatabaseCaseToFrontend(c, mappedClients)) as unknown as Case[]);
+      }
       if (hearingsRes.data) setHearings(hearingsRes.data.map(mapHearingFromDB) as unknown as Hearing[]);
       if (poaRes.data) setPowersOfAttorney(poaRes.data.map(mapPOAFromDB) as unknown as PowerOfAttorney[]);
       if (executionsRes.data) setExecutions(executionsRes.data.map(mapExecutionFromDB) as unknown as Execution[]);
-      if (clientsRes.data) setClients(clientsRes.data.map(mapClientFromDB) as unknown as Client[]);
       if (tasksRes.data) setTasks(tasksRes.data.map(mapTaskFromDB) as unknown as Task[]);
       if (invoicesRes.data) setInvoices(invoicesRes.data.map(mapInvoiceFromDB) as unknown as Invoice[]);
 
@@ -903,10 +909,11 @@ export function useSupabaseData() {
 
   useEffect(() => {
     const loadClients = async () => {
-      const { data, error } = await supabase
-        .from('clients')
-        .select('*')
-        .order('name');
+      const officeId = typeof window !== 'undefined' ? localStorage.getItem('adala_office_id') : null;
+      let query = supabase.from('clients').select('*').order('name');
+      if (officeId) query = query.eq('office_id', officeId);
+
+      const { data, error } = await query;
 
       if (error) {
         console.error('[Load Clients]', error.message);
@@ -956,47 +963,46 @@ export function useSupabaseData() {
       setLoading(true);
       try {
         console.log('[Init] جارٍ تحميل البيانات من Supabase...');
+        const officeId = typeof window !== 'undefined' ? localStorage.getItem('adala_office_id') : null;
+
+        let casesQ = supabase.from('cases').select('*').eq('archived', false).order('created_at', { ascending: false });
+        let clientsQ = supabase.from('clients').select('*').order('name');
+        let employeesQ = supabase.from('employees').select('*').order('name');
+        let tasksQ = supabase.from('tasks').select('*').order('created_at', { ascending: false });
+        let hearingsQ = supabase.from('hearings').select('*').order('date');
+        let poasQ = supabase.from('powers_of_attorney').select('*').order('created_at', { ascending: false });
+        let execsQ = supabase.from('executions').select('*').order('created_at', { ascending: false });
+        let invsQ = supabase.from('invoices').select('*').order('created_at', { ascending: false });
+
+        if (officeId) {
+           casesQ = casesQ.eq('office_id', officeId);
+           clientsQ = clientsQ.eq('office_id', officeId);
+           employeesQ = employeesQ.eq('office_id', officeId);
+           tasksQ = tasksQ.eq('office_id', officeId);
+           hearingsQ = hearingsQ.eq('office_id', officeId);
+           poasQ = poasQ.eq('office_id', officeId);
+           execsQ = execsQ.eq('office_id', officeId);
+           invsQ = invsQ.eq('office_id', officeId);
+        }
 
         const [
           casesRes, clientsRes, employeesRes,
           tasksRes, hearingsRes, poaRes, executionsRes,
           invoicesRes
         ] = await Promise.all([
-          supabase.from('cases')
-            .select('*')
-            .eq('archived', false)
-            .order('created_at', { ascending: false }),
-          supabase.from('clients')
-            .select('*')
-            .order('name'),
-          supabase.from('employees')
-            .select('*')
-            .order('name'),
-          supabase.from('tasks')
-            .select('*')
-            .order('created_at', { ascending: false }),
-          supabase.from('hearings')
-            .select('*')
-            .order('date'),
-          supabase.from('powers_of_attorney')
-            .select('*')
-            .order('created_at', { ascending: false }),
-          supabase.from('executions')
-            .select('*')
-            .order('created_at', { ascending: false }),
-          supabase.from('invoices')
-            .select('*')
-            .order('created_at', { ascending: false })
+          casesQ, clientsQ, employeesQ, tasksQ, hearingsQ, poasQ, execsQ, invsQ
         ]);
 
+        let mappedClients: Client[] = [];
+        if (clientsRes.data) {
+          mappedClients = clientsRes.data.map(mapClientFromDB) as unknown as Client[];
+          setClients(mappedClients);
+          console.log('[Init] العملاء:', clientsRes.data.length);
+        }
         if (casesRes.data) {
-          const mapped = casesRes.data.map(mapCaseFromDB);
+          const mapped = casesRes.data.map((c: any) => mapDatabaseCaseToFrontend(c, mappedClients));
           setCases(mapped as unknown as Case[]);
           console.log('[Init] القضايا:', mapped.length);
-        }
-        if (clientsRes.data) {
-          setClients(clientsRes.data.map(mapClientFromDB) as unknown as Client[]);
-          console.log('[Init] العملاء:', clientsRes.data.length);
         }
         if (employeesRes.data) {
           setEmployees(employeesRes.data.map(mapEmployeeFromDB) as unknown as Employee[]);

@@ -1,6 +1,40 @@
-@import url("https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Outfit:wght@400;500;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;900&family=Inter:wght@400;500;600;700&family=Outfit:wght@400;500;600;700&display=swap");
 @import url("https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400;1,700&family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap");
 @import "tailwindcss";
+
+@layer base {
+  :root {
+    /* الخلفيات */
+    --bg-main: #f0f2f5;
+    --bg-card: #ffffff;
+    --bg-sidebar: #1a2744;
+    --bg-banner: #1e3461;
+    --bg-banner-2: #162040;
+
+    /* الذهبي */
+    --gold: #c9a84c;
+    --gold-dark: #a67c30;
+    --gold-light: #e6c05a;
+    --gold-bg: rgba(201,168,76,0.12);
+
+    /* النصوص */
+    --text-dark: #1a2744;
+    --text-muted: #6b7280;
+    --text-light: #9ca3af;
+    --text-white: #ffffff;
+    --text-gold: #c9a84c;
+
+    /* الحدود */
+    --border: #e5e7eb;
+    --border-gold: rgba(201,168,76,0.4);
+
+    /* الحالات */
+    --success: #22c55e;
+    --warning: #f59e0b;
+    --danger: #ef4444;
+    --info: #3b82f6;
+  }
+}
 
 @theme {
   --font-sans: "Inter", "Cairo", ui-sans-serif, system-ui, sans-serif;

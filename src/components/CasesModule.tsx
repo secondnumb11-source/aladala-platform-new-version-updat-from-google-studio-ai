@@ -253,19 +253,19 @@ export const getLeadLawyerName = (c: Case): string => {
     const data = React.useMemo(() => {
       const categoriesList = ['commercial', 'labor', 'civil', 'criminal', 'personal_status', 'administrative', 'financial', 'execution', 'other'];
       return categoriesList.map(cat => {
-        const catCases = cases.filter(c => c.category === cat && !c.archived);
-        const catClosed = cases.filter(c => c.category === cat && (c.status === 'closed' || c.archived)).length;
+        const catCases = (cases || []).filter(c => c && c.category === cat && !c.archived);
+        const catClosed = (cases || []).filter(c => c && c.category === cat && (c.status === 'closed' || c.archived)).length;
         return {
           name: cat,
-          active: catCases.filter(c => c.status !== 'closed' && !c.archived).length,
+          active: catCases.filter(c => c && c.status !== 'closed' && !c.archived).length,
           closed: catClosed,
           total: catCases.length + catClosed
         };
       }).filter(d => d.total > 0);
     }, [cases]);
 
-    const activeTotal = React.useMemo(() => cases.filter(c => c.status !== 'closed' && !c.archived).length, [cases]);
-    const closedTotal = React.useMemo(() => cases.filter(c => c.status === 'closed' || c.archived).length, [cases]);
+    const activeTotal = React.useMemo(() => (cases || []).filter(c => c && c.status !== 'closed' && !c.archived).length, [cases]);
+    const closedTotal = React.useMemo(() => (cases || []).filter(c => c && (c.status === 'closed' || c.archived)).length, [cases]);
 
     const handleExportPDF = () => {
        const printWindow = window.open('', '_blank');
@@ -462,9 +462,13 @@ export default React.memo(function CasesModule({
   useEffect(() => {
     const loadCasesFromDB = async () => {
       try {
+        const officeId = typeof window !== 'undefined' ? localStorage.getItem('adala_office_id') : null;
+        if (!officeId) return;
+
         const { data, error } = await supabase
           .from('cases')
           .select('*')
+          .eq('office_id', officeId)
           .eq('archived', false)
           .order('created_at', { ascending: false });
         
@@ -477,7 +481,7 @@ export default React.memo(function CasesModule({
           // تحويل البيانات من snake_case إلى camelCase
           const mappedCases = data.map(c => ({
             id: c.id,
-            caseNumber: c.case_number,
+            caseNumber: c.case_number || '',
             caseName: c.title || c.case_name || 'قضية ناجز',
             category: c.category || 'other',
             stage: c.stage || 'litigation',
@@ -501,7 +505,7 @@ export default React.memo(function CasesModule({
           // دمج مع القضايا الموجودة في الـ State (لتجنب التكرار)
           // القضايا من DB لها أولوية. handleUpdateGlobalState سيتولى التحديث الآمن
           for (const mc of mappedCases) {
-            const alreadyExists = cases.some(x => x.id === mc.id || (x.caseNumber === mc.caseNumber && x.caseNumber));
+            const alreadyExists = (cases || []).some(x => x && (x.id === mc.id || (x.caseNumber === mc.caseNumber && x.caseNumber)));
             if (!alreadyExists) {
               onUpdateState('cases', mc);
             }
@@ -833,7 +837,11 @@ export default React.memo(function CasesModule({
       
       try {
         console.log(`[Supabase Filter] Fetching cases from Supabase where next appointment is filtered by: ${nextAppointmentFilterType}`);
+        const officeId = typeof window !== 'undefined' ? localStorage.getItem('adala_office_id') : null;
         let query = supabase.from('cases').select('*').eq('archived', false);
+        if (officeId) {
+          query = query.eq('office_id', officeId);
+        }
         
         const todayStr = new Date().toISOString().split('T')[0];
         
@@ -866,7 +874,7 @@ export default React.memo(function CasesModule({
         if (data) {
           const mappedCases = data.map(c => ({
             id: c.id,
-            caseNumber: c.case_number,
+            caseNumber: c.case_number || '',
             caseName: c.title || c.case_name || 'قضية ناجز',
             category: c.category || 'other',
             stage: c.stage || 'litigation',
@@ -921,9 +929,9 @@ export default React.memo(function CasesModule({
   }, [cases]);
 
   const filteredArchiveDocuments = allDocuments.filter(doc => {
-    const matchSearch = doc.name.toLowerCase().includes(archiveSearchTerm.toLowerCase()) || 
-                      doc.caseNumber.includes(archiveSearchTerm) ||
-                      doc.caseName.toLowerCase().includes(archiveSearchTerm.toLowerCase());
+    const matchSearch = (doc.name || '').toLowerCase().includes(archiveSearchTerm.toLowerCase()) || 
+                      (doc.caseNumber || '').includes(archiveSearchTerm) ||
+                      (doc.caseName || '').toLowerCase().includes(archiveSearchTerm.toLowerCase());
     const matchType = archiveTypeFilter === 'all' || doc.type === archiveTypeFilter;
     return matchSearch && matchType;
   });
@@ -1363,9 +1371,9 @@ export default React.memo(function CasesModule({
   const countByCategory = (cat: string) => {
     const safeCases = cases || [];
     if (cat === 'archived') {
-      return safeCases.filter(c => c.archived === true || c.status === 'closed').length;
+      return safeCases.filter(c => c && (c.archived === true || c.status === 'closed')).length;
     }
-    return safeCases.filter(c => c.category === cat && !c.archived).length;
+    return safeCases.filter(c => c && c.category === cat && !c.archived).length;
   };
 
   const calculateDaysLeft = (judgmentDate: string) => {
@@ -1962,6 +1970,7 @@ export default React.memo(function CasesModule({
 
   // Filters
   const filteredCases = (cases || []).filter(c => {
+    if (!c) return false;
     const caseNameSafe = (c.caseName || '').toLowerCase();
     const caseNumberSafe = (c.caseNumber || '').toLowerCase();
     const clientNameSafe = (c.clientName || '').toLowerCase();

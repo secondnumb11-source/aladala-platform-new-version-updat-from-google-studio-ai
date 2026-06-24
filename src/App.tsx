@@ -1,10 +1,11 @@
+import { verifyDataIsolation } from '@/lib/officeManager';
 /**
  * @license
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState, useEffect, useLayoutEffect, Suspense, useRef } from 'react';
-import { Search, AlertCircle, X, Wifi, Activity, AlertTriangle, Server, LogOut, RefreshCw } from 'lucide-react';
+import React, { useState, useEffect, useLayoutEffect, Suspense, useRef, useCallback } from 'react';
+import { Search, AlertCircle, X, Wifi, Activity, AlertTriangle, Server, LogOut, RefreshCw, Bell } from 'lucide-react';
 import Sidebar from '@/components/Sidebar';
 import CommandPalette from '@/components/CommandPalette';
 import ExtensionDownloadSection from '@/components/ExtensionDownloadSection';
@@ -101,6 +102,38 @@ const PerformanceSuspense: React.FC<{ children: React.ReactNode; moduleName: str
 };
 
 export default function App() {
+  // Security: Monitor unauthorized changes to office_id
+  useEffect(() => {
+    const handleStorageChange = (e) => {
+      if (e.key === 'adala_office_id') {
+        console.error('[Adala Security] Unauthorized change to office ID detected! Purging session.');
+        try {
+           localStorage.clear();
+           sessionStorage.clear();
+        } catch(err) {
+           localStorage.clear();
+           sessionStorage.clear();
+        }
+        window.location.reload();
+      }
+    };
+    window.addEventListener('storage', handleStorageChange);
+    
+    // Initial verification
+    if (typeof verifyDataIsolation === 'function' && !verifyDataIsolation()) {
+        try {
+           localStorage.clear();
+           sessionStorage.clear();
+        } catch(err) {
+           localStorage.clear();
+           sessionStorage.clear();
+        }
+        window.location.reload();
+    }
+    
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
+
   const { isValid, error } = useSupabaseConnection();
 
   if (isValid === false) {
@@ -246,6 +279,33 @@ function AppContent() {
 
     return () => window.removeEventListener('beforeunload', cleanup);
   }, []);
+
+  const clearAllAppData = useCallback(() => {
+    setCases([]);
+    setClients([]);
+    setTasks([]);
+    setHearings([]);
+    setDocuments([]);
+    setPowersOfAttorney([]);
+    setExecutions([]);
+    setInvoices([]);
+    setEmployees([]);
+    console.log('[App] 🧹 Storage Integrity Guard: cleared all React state data');
+  }, [setCases, setClients, setTasks, setHearings, setDocuments, setPowersOfAttorney, setExecutions, setInvoices, setEmployees]);
+
+  // مراقبة أي تغير غير مصرح به في adala_office_id عبر علامات تبويب أخرى أو بشكل خارجي
+  useEffect(() => {
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'adala_office_id' && e.newValue !== e.oldValue) {
+        console.warn('⚠️ [Security] Unauthorized adala_office_id change detected in localStorage! Clearing session and states immediately.');
+        clearAllAppData();
+        clearSession();
+        window.location.reload();
+      }
+    };
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, [clearAllAppData]);
 
   // الاستماع لأحداث المزامنة
   useEffect(() => {
@@ -1846,186 +1906,58 @@ useEffect(() => {
       />
 
         {/* Main viewport frame layout */}
-        <main className="flex-1 p-4 pt-24 lg:p-8 overflow-y-auto overflow-x-hidden space-y-8 relative min-h-0">
+        <main className="flex-1 min-h-screen bg-[#f0f2f5] overflow-y-auto relative">
           
-          {/* Universal Notification Bell (Global scope) */}
-          <NotificationsBell />
+          
+        <header className="
+          sticky top-0 z-40
+          bg-white
+          border-b border-[#e5e7eb]
+          px-6 py-2.5
+          flex items-center justify-between
+          shadow-sm
+        " dir="rtl">
+          {/* بحث */}
+          <div className="relative">
+            <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <input
+              className="
+                bg-[#f3f4f6] border border-[#e5e7eb]
+                rounded-xl pr-9 pl-4 py-2
+                text-sm text-gray-700 placeholder-gray-400
+                focus:outline-none focus:border-[#c9a84c]
+                w-72
+              "
+              placeholder="ابحث عن قضية، عميل، موظف..."
+            />
+          </div>
 
-          {/* Notification bar area removed for clean UI */}
-
-          {/* Dedicated Header for Clients vs. Global Controls for Attorney and Staff */}
-          {currentUser?.role === 'client' ? (
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-6 border-b border-slate-205 pb-6" dir="rtl">
+          {/* أيقونات اليمين */}
+          <div className="flex items-center gap-3">
+            <button className="relative p-2 rounded-full hover:bg-gray-100">
+              <Bell className="w-5 h-5 text-gray-600" />
+              <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-red-500 rounded-full text-white text-[9px] flex items-center justify-center font-bold">4</span>
+            </button>
+            <button className="p-2 rounded-full hover:bg-gray-100">
+              <RefreshCw className="w-5 h-5 text-gray-600" />
+            </button>
+            <div className="flex items-center gap-2 bg-[#f3f4f6] rounded-xl px-3 py-1.5 cursor-pointer">
+              <div className="w-7 h-7 bg-[#c9a84c] rounded-full flex items-center justify-center">
+                <span className="text-[#1a2744] text-xs font-black">{currentUser?.name?.charAt(0) || 'م'}</span>
+              </div>
               <div>
-                <h1 className="text-lg font-display font-black text-slate-900 flex items-center gap-2">
-                  <span>منصة العدالة للعملاء والشركاء الأجلاء</span>
-                  <span className="text-[10px] bg-emerald-500/10 text-emerald-700 px-2.5 py-1 rounded-xl font-black">تم التحقق بالنفاذ الآمن الموحد 🔐</span>
-                </h1>
-                <p className="text-xs text-slate-800 font-bold mt-2">
-                  مرحباً بك العميل الكريم الأستاذ/الأستاذة: <strong className="text-primary font-black bg-amber-500/5 px-2 py-0.5 rounded-lg border border-primary/20">{currentUser.name}</strong> المحترم. طاب يومكم بكل خير وسعادة.
-                </p>
-              </div>
-              <div className="flex justify-end gap-3.5 items-center shrink-0">
-                {/* Display Mode Switcher */}
-                <div className="flex border border-slate-300 rounded-lg bg-white p-0.5 shadow-sm gap-0.5 items-center font-sans">
-                  <button
-                    onClick={() => setGlobalDisplayMode('light')}
-                    title={language === 'ar' ? 'الوضع المضيء' : 'Light Mode'}
-                    className={`flex items-center gap-1 px-1.5 py-1 rounded-md text-[10px] font-black transition-all cursor-pointer ${
-                      getGlobalDisplayMode() === 'light'
-                        ? 'bg-amber-100 text-amber-900 border border-amber-305/40'
-                        : 'text-slate-700'
-                    }`}
-                  >
-                    <span>☀️</span>
-                    <span className="hidden md:inline select-none leading-none">{language === 'ar' ? 'مضيء' : 'Light'}</span>
-                  </button>
-                  <button
-                    onClick={() => setGlobalDisplayMode('dark')}
-                    title={language === 'ar' ? 'الوضع الداكن' : 'Dark Mode'}
-                    className={`flex items-center gap-1 px-1.5 py-1 rounded-md text-[10px] font-black transition-all cursor-pointer ${
-                      getGlobalDisplayMode() === 'dark'
-                        ? 'bg-slate-900 text-white border border-slate-800'
-                        : 'text-slate-700'
-                    }`}
-                  >
-                    <span>🌙</span>
-                    <span className="hidden md:inline select-none leading-none">{language === 'ar' ? 'داكن' : 'Dark'}</span>
-                  </button>
-                  <button
-                    onClick={() => setGlobalDisplayMode('high-contrast')}
-                    title={language === 'ar' ? 'عالي التباين' : 'High Contrast'}
-                    className={`flex items-center gap-1 px-1.5 py-1 rounded-md text-[10px] font-black transition-all cursor-pointer ${
-                      getGlobalDisplayMode() === 'high-contrast'
-                        ? 'bg-[#ffe066]/20 text-[#2e180d] border border-[#ffe066]/60'
-                        : 'text-slate-700'
-                    }`}
-                  >
-                    <span>👁️</span>
-                    <span className="hidden md:inline select-none leading-none">{language === 'ar' ? 'تباين' : 'Contrast'}</span>
-                  </button>
-                </div>
-
-                <button
-                  onClick={toggleLanguage}
-                  className="flex items-center gap-1.5 px-3 py-2 text-[10px] font-black rounded-lg bg-white border border-slate-300 text-slate-900 transition-all shadow-sm cursor-pointer"
-                >
-                  <span>🌐</span>
-                  <span>{language === 'ar' ? 'EN' : 'AR'}</span>
-                </button>
-                <button
-                  onClick={handleLogout}
-                  className="flex items-center gap-2 px-5 py-3 text-xs font-black rounded-xl bg-rose-650 text-white transition-all shadow-md cursor-pointer"
-                >
-                  <span>🚪</span>
-                  <span>تسجيل الخروج الآمن</span>
-                </button>
+                <p className="text-[#1a2744] text-xs font-bold">{currentUser?.name || 'المستخدم'}</p>
+                <p className="text-gray-500 text-[10px]">{selectedRole || 'مكتب محاماة'}</p>
               </div>
             </div>
-          ) : (
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-6">
-              <div className="flex-1 max-w-xl relative group">
-                <Search className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-900 w-5 h-5 group-focus-within:text-primary transition-colors" />
-                <input 
-                  type="text" 
-                  placeholder="البحث الشامل في ملفات القضايا، سجل العملاء، والمطالبات المالية لمنصة العدالة..." 
-                  className="w-full bg-white text-[#050e21] border border-slate-300 rounded-2xl pr-14 pl-6 py-4.5 text-sm font-bold focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all placeholder:text-slate-900 font-sans shadow-sm"
-                />
-              </div>
-
-              <div className="flex justify-end gap-3.5 items-center shrink-0">
-                {/* Display Mode Switcher */}
-                <div className="flex border border-slate-300 rounded-lg bg-white p-0.5 shadow-sm gap-0.5 items-center font-sans">
-                  <button
-                    onClick={() => setGlobalDisplayMode('light')}
-                    title={language === 'ar' ? 'الوضع المضيء' : 'Light Mode'}
-                    className={`flex items-center gap-1.5 px-2 py-1.5 rounded-md text-[10px] font-black transition-all cursor-pointer ${
-                      getGlobalDisplayMode() === 'light'
-                        ? 'bg-amber-100 text-amber-900 border border-amber-305/40'
-                        : 'text-slate-700'
-                    }`}
-                  >
-                    <span>☀️</span>
-                    <span className="hidden select-none leading-none md:inline">{language === 'ar' ? 'مضيء' : 'Light'}</span>
-                  </button>
-                  <button
-                    onClick={() => setGlobalDisplayMode('dark')}
-                    title={language === 'ar' ? 'الوضع الداكن' : 'Dark Mode'}
-                    className={`flex items-center gap-1.5 px-2 py-1.5 rounded-md text-[10px] font-black transition-all cursor-pointer ${
-                      getGlobalDisplayMode() === 'dark'
-                        ? 'bg-slate-900 text-white border border-slate-800'
-                        : 'text-slate-300'
-                    }`}
-                  >
-                    <span>🌙</span>
-                    <span className="hidden select-none leading-none md:inline">{language === 'ar' ? 'داكن' : 'Dark'}</span>
-                  </button>
-                  <button
-                    onClick={() => setGlobalDisplayMode('high-contrast')}
-                    title={language === 'ar' ? 'عالي التباين' : 'High Contrast'}
-                    className={`flex items-center gap-1.5 px-2 py-1.5 rounded-md text-[10px] font-black transition-all cursor-pointer ${
-                      getGlobalDisplayMode() === 'high-contrast'
-                        ? 'bg-[#ffe066]/20 text-[#2e180d] border border-[#ffe066]/60'
-                        : 'text-slate-700'
-                    }`}
-                  >
-                    <span>🕶️</span>
-                    <span className="hidden select-none leading-none md:inline">{language === 'ar' ? 'تباين' : 'Contrast'}</span>
-                  </button>
-                </div>
-
-                <button
-                  onClick={toggleLanguage}
-                  className="flex items-center gap-2 px-3 py-2.5 text-[10px] font-black rounded-lg bg-white border border-slate-300 text-[#050e21] transition-all shadow-sm cursor-pointer group"
-                >
-                   <span className="group-hover:rotate-12 transition-transform">🌐</span>
-                   <span className="uppercase tracking-widest">{language === 'ar' ? 'EN' : 'AR'}</span>
-                </button>
-
-                <button
-                   onClick={() => {
-                     if (window.confirm('هل أنت متأكد من رغبتك في إنهاء الجلسة بشكل نهائي والخروج من النظام؟')) {
-                       handleLogout();
-                     }
-                   }}
-                   title="إنهاء جلسة العمل وتسجيل الخروج من النظام"
-                   className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-black rounded-lg bg-slate-900 border border-transparent text-white font-bold transition-all shadow-sm cursor-pointer group shrink-0"
-                >
-                   <span className="group-hover:animate-spin">⏱️</span>
-                   <span>إنهاء الجلسة</span>
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* Real-time Portal Welcome Card */}
-          {currentUser?.role === 'client' && (
-            <div className="bg-gradient-to-r from-primary/10 to-amber-500/5 border-r-4 border-primary p-5 rounded-2xl mb-8 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4 text-slate-800" dir="rtl">
-              <div>
-                <h2 className="text-lg font-black text-slate-900 leading-tight">مرحباً بك العميل الكريم: {currentUser.name} 👤</h2>
-                <p className="text-xs text-slate-700 mt-1 font-bold">أهلاً بك في منصتك التفاعلية لمتابعة مستجدات القضايا والدفوع القانونية وعمليات السداد الفوري.</p>
-              </div>
-              <div className="bg-white border border-slate-300 text-xs px-4 py-2 rounded-xl text-primary font-bold shadow-inner shrink-0">
-                بوابة الوصول الآمن للعميل
-              </div>
-            </div>
-          )}
-
-          {currentUser?.role === 'employee' && (
-            <div className="bg-[#0f172a] border-r-4 border-amber-500 p-5 rounded-2xl mb-8 shadow-md flex flex-col md:flex-row justify-between items-start md:items-center gap-4 text-white" dir="rtl">
-              <div>
-                <h2 className="text-lg font-black text-white leading-tight">المستشار الحالي: {currentUser.name} ⚖️</h2>
-                <p className="text-xs text-amber-500 mt-1 font-bold">
-                  المسمى الوظيفي: {currentUser.jobTitle || 'مستشار قانوني'} | الكود الوظيفي: {currentUser.employeeCode || 'EMP-11'}
-                </p>
-              </div>
-              <div className="bg-slate-900 border border-slate-800 text-xs px-4 py-3 rounded-xl text-amber-400 font-mono font-bold shadow-inner shrink-0">
-                لوحة المستشار المتكاملة
-              </div>
-            </div>
-          )}
-
-        {/* Module Router Multiplexer */}
+            <button onClick={handleLogout} className="p-2 rounded-full hover:bg-gray-100 text-red-500" title="تسجيل الخروج">
+              <LogOut className="w-5 h-5" />
+            </button>
+          </div>
+        </header>
+        
+        <div className="p-0 pb-12">
+{/* Module Router Multiplexer */}
         {currentTab !== 'landing' ? (
           <RouteGuard isAuthenticated={isAuthenticated} setCurrentTab={setCurrentTab}>
             <PerformanceSuspense moduleName={currentTab}>
@@ -2348,7 +2280,7 @@ useEffect(() => {
         ) : (
           currentTab === 'landing' && <MainLandingPage onSignInSelect={() => setCurrentTab('dashboard')} onTrialSelect={() => setCurrentTab('dashboard')} />
         )}
-
+        </div>
       </main>
 
       <FeedbackModal 
@@ -2448,6 +2380,7 @@ useEffect(() => {
           :root:not(.dark) .card-professional .text-white font-bold,
           :root:not(.dark) .card-professional .text-slate-200 font-bold {
              color: #0f172a !important; 
+
           }
         `}
       </style>
