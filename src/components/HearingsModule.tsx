@@ -51,7 +51,11 @@ export default function HearingsModule({ onUpdateState }: HearingsModuleProps) {
           status: h.status || 'upcoming',
           notes: h.notes || '',
           caseNumber: h.case_number || h.caseNumber || '',
-          caseName: h.case_name || h.caseName || 'جلسة قضائية'
+          caseName: h.case_name || h.caseName || 'جلسة قضائية',
+          fromDashboard: h.from_dashboard || h.fromDashboard || false,
+          source: h.source || '',
+          title: h.title || h.case_name || h.caseName || '',
+          raw: h.raw || null
         })));
       }
     } catch (err) {
@@ -295,26 +299,42 @@ export default function HearingsModule({ onUpdateState }: HearingsModuleProps) {
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {filteredHearings.map(hearing => (
-                <div key={hearing.id}
-                  className="flex items-start justify-between p-4
-                    bg-[#0a1628] border border-slate-700/50
-                    hover:border-amber-500/30 rounded-2xl transition-all group">
+              {filteredHearings.map(hearing => {
+                const h = hearing;
+                const fromDashboard = h.fromDashboard ||
+                  h.source === 'najiz_dashboard_calendar' ||
+                  /التقويم العدلي|المواعيد المستقبلية/.test(h.title || h.raw?.text || h.notes || h.caseName || '');
 
-                  {/* بيانات الموعد */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      <CalendarIcon className="w-4 h-4 text-amber-500 shrink-0" />
-                      <span className="text-amber-400 font-bold text-sm">
-                        {hearing.date}
-                      </span>
-                      <span className="text-slate-500 text-xs">
-                        {hearing.time || '09:00'}
-                      </span>
-                    </div>
-                    <p className="text-white font-bold text-sm line-clamp-1 mb-1">
-                      {hearing.caseName}
-                    </p>
+                const sessionTitle = h.title || h.caseName ||
+                  (fromDashboard ? 'موعد من التقويم العدلي' : '');
+
+                return (
+                  <div key={hearing.id}
+                    className={`flex items-start justify-between p-4 border rounded-2xl transition-all group
+                      ${fromDashboard 
+                        ? 'bg-[#0f2441] border-blue-500/40 shadow-[0_0_15px_rgba(59,130,246,0.15)]' 
+                        : 'bg-[#0a1628] border-slate-700/50 hover:border-amber-500/30'
+                      }`}>
+
+                    {/* بيانات الموعد */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <CalendarIcon className="w-4 h-4 text-amber-500 shrink-0" />
+                        <span className="text-amber-400 font-bold text-sm">
+                          {hearing.date}
+                        </span>
+                        <span className="text-slate-500 text-xs">
+                          {hearing.time || '09:00'}
+                        </span>
+                        {fromDashboard && (
+                          <span className="text-[10px] bg-blue-500/20 text-blue-300 border border-blue-500/30 px-1.5 py-0.5 rounded font-black">
+                            التقويم العدلي
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-white font-bold text-sm line-clamp-1 mb-1">
+                        {sessionTitle || 'جلسة قضائية'}
+                      </p>
                     <p className="text-amber-500 font-bold text-xs">
                       #{hearing.caseNumber || '—'}
                     </p>
@@ -378,7 +398,8 @@ export default function HearingsModule({ onUpdateState }: HearingsModuleProps) {
                     </button>
                   </div>
                 </div>
-              ))}
+              );
+            })}
             </div>
           )}
         </div>
@@ -418,23 +439,34 @@ export default function HearingsModule({ onUpdateState }: HearingsModuleProps) {
                   <span className="text-xs font-extrabold text-white/50 block mb-2">{day.dayNum}</span>
                   
                   <div className="flex-1 overflow-y-auto space-y-2 max-h-[100px] scrollbar-none">
-                    {day.hearings.map(hearing => (
-                      <div
-                        key={hearing.id}
-                        className="relative group bg-amber-600/20 border
-                          border-amber-500/40 rounded-lg p-2 mb-1 cursor-pointer
-                          hover:bg-amber-600/30 transition-all text-right"
-                      >
-                        {/* محتوى الموعد */}
-                        <p className="text-amber-300 text-[10px] font-bold truncate">
-                          {hearing.time || '09:00'} — {hearing.caseNumber || ''}
-                        </p>
-                        <p className="text-white text-[10px] truncate">
-                          {hearing.caseName || ''}
-                        </p>
-                        <p className="text-slate-400 text-[9px] truncate">
-                          {hearing.courtName || ''}
-                        </p>
+                    {day.hearings.map(hearing => {
+                      const h = hearing;
+                      const fromDashboard = h.fromDashboard ||
+                        h.source === 'najiz_dashboard_calendar' ||
+                        /التقويم العدلي|المواعيد المستقبلية/.test(h.title || h.raw?.text || h.notes || h.caseName || '');
+
+                      const sessionTitle = h.title || h.caseName ||
+                        (fromDashboard ? 'موعد من التقويم العدلي' : '');
+
+                      return (
+                        <div
+                          key={hearing.id}
+                          className={`relative group border rounded-lg p-2 mb-1 cursor-pointer transition-all text-right
+                            ${fromDashboard 
+                              ? 'bg-blue-600/20 border-blue-400 hover:bg-blue-600/30' 
+                              : 'bg-amber-600/20 border-amber-500/40 hover:bg-amber-600/30'
+                            }`}
+                        >
+                          {/* محتوى الموعد */}
+                          <p className="text-amber-300 text-[10px] font-bold truncate">
+                            {hearing.time || '09:00'} — {hearing.caseNumber || ''} {fromDashboard && '📅'}
+                          </p>
+                          <p className="text-white text-[10px] font-bold truncate">
+                            {sessionTitle || ''}
+                          </p>
+                          <p className="text-slate-300 text-[9px] truncate">
+                            {hearing.courtName || ''}
+                          </p>
 
                         {/* أزرار التعديل والحذف — تظهر عند hover */}
                         <div className="absolute top-1 left-1 flex gap-1
@@ -470,7 +502,8 @@ export default function HearingsModule({ onUpdateState }: HearingsModuleProps) {
                           </button>
                         </div>
                       </div>
-                    ))}
+                    );
+                  })}
                   </div>
                 </div>
               );

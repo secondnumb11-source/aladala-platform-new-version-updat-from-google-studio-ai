@@ -120,23 +120,24 @@ export interface ExecutionMetadata {
   bondType: string;
 }
 
-export function getExecutionMetadata(details: string | undefined): ExecutionMetadata {
+export function getExecutionMetadata(ex: Execution | undefined): ExecutionMetadata {
+  const details = ex?.details;
   const defaultRes = {
     detailsText: details || "",
-    executionType: "تنفيذ مالي",
-    bondType: "سند لأمر"
+    executionType: ex?.request_type || "تنفيذ مالي",
+    bondType: ex?.deed_type || "سند لأمر"
   };
-  if (!details) return defaultRes;
+  if (!details && !ex?.request_type && !ex?.deed_type) return defaultRes;
 
-  const trimmed = details.trim();
+  const trimmed = (details || "").trim();
   if (trimmed.startsWith("{") && trimmed.endsWith("}")) {
     try {
       const parsed = JSON.parse(trimmed);
       if (parsed && typeof parsed === "object") {
         return {
           detailsText: parsed.detailsText || parsed.details || "",
-          executionType: parsed.executionType || parsed.execution_type || "تنفيذ مالي",
-          bondType: parsed.bondType || parsed.bond_type || "سند لأمر"
+          executionType: ex?.request_type || parsed.executionType || parsed.execution_type || "تنفيذ مالي",
+          bondType: ex?.deed_type || parsed.bondType || parsed.bond_type || "سند لأمر"
         };
       }
     } catch (e) {
@@ -145,26 +146,30 @@ export function getExecutionMetadata(details: string | undefined): ExecutionMeta
   }
 
   // Smart heuristic based on text
-  let executionType = "تنفيذ مالي";
-  let bondType = "سند لأمر";
+  let executionType = ex?.request_type || "تنفيذ مالي";
+  let bondType = ex?.deed_type || "سند لأمر";
 
   const lowerText = trimmed.toLowerCase();
-  if (lowerText.includes("أحوال شخصية") || lowerText.includes("حضانة") || lowerText.includes("نفقة") || lowerText.includes("زيارة")) {
-    executionType = "تنفيذ أحوال شخصية";
-  } else if (lowerText.includes("إخلاء") || lowerText.includes("عقار") || lowerText.includes("تسليم") || lowerText.includes("عقارية")) {
-    executionType = "تنفيذ غير مالي / إخلاء";
-  } else if (lowerText.includes("جنائي") || lowerText.includes("حق عام") || lowerText.includes("غرامة")) {
-    executionType = "تنفيذ جنائي";
+  if (!ex?.request_type) {
+    if (lowerText.includes("أحوال شخصية") || lowerText.includes("حضانة") || lowerText.includes("نفقة") || lowerText.includes("زيارة")) {
+      executionType = "تنفيذ أحوال شخصية";
+    } else if (lowerText.includes("إخلاء") || lowerText.includes("عقار") || lowerText.includes("تسليم") || lowerText.includes("عقارية")) {
+      executionType = "تنفيذ غير مالي / إخلاء";
+    } else if (lowerText.includes("جنائي") || lowerText.includes("حق عام") || lowerText.includes("غرامة")) {
+      executionType = "تنفيذ جنائي";
+    }
   }
 
-  if (lowerText.includes("حكم قضائي") || lowerText.includes("قرار قضائي") || lowerText.includes("حكم") || lowerText.includes("قرار")) {
-    bondType = "حكم قضائي";
-  } else if (lowerText.includes("شيك")) {
-    bondType = "شيك";
-  } else if (lowerText.includes("عقد موثق") || lowerText.includes("عقد إيجار") || lowerText.includes("إيجار") || lowerText.includes("عقد")) {
-    bondType = "عقد موثق";
-  } else if (lowerText.includes("كمبيالة")) {
-    bondType = "كمبيالة";
+  if (!ex?.deed_type) {
+    if (lowerText.includes("حكم قضائي") || lowerText.includes("قرار قضائي") || lowerText.includes("حكم") || lowerText.includes("قرار")) {
+      bondType = "حكم قضائي";
+    } else if (lowerText.includes("شيك")) {
+      bondType = "شيك";
+    } else if (lowerText.includes("عقد موثق") || lowerText.includes("عقد إيجار") || lowerText.includes("إيجار") || lowerText.includes("عقد")) {
+      bondType = "عقد موثق";
+    } else if (lowerText.includes("كمبيالة")) {
+      bondType = "كمبيالة";
+    }
   }
 
   return {
@@ -250,7 +255,7 @@ export default function ExecutionsModule({
   useEffect(() => {
     if (editingExec) {
       const norm = normalizeExecutionItem(editingExec);
-      const meta = getExecutionMetadata(norm.details);
+      const meta = getExecutionMetadata(norm);
       setFormExecutionType(meta.executionType);
       setFormBondType(meta.bondType);
     }
@@ -676,7 +681,7 @@ export default function ExecutionsModule({
                   <textarea
                     rows={3}
                     className="w-full bg-slate-50 border-2 border-slate-200 p-4 rounded-2xl text-slate-900 font-bold text-sm placeholder-slate-400 hover:border-amber-400/50 focus:border-amber-500 focus:ring-4 focus:ring-amber-500/20 transition-all duration-300 outline-none shadow-sm resize-none"
-                    value={isAdding ? newExec.details : getExecutionMetadata(editingExec?.details).detailsText}
+                    value={isAdding ? newExec.details : getExecutionMetadata(editingExec).detailsText}
                     onChange={(e) =>
                       isAdding
                         ? setNewExec({ ...newExec, details: e.target.value })
@@ -879,68 +884,94 @@ export default function ExecutionsModule({
                   </tr>
                 ) : (
                   filtered.map((ex) => {
-                    const meta = getExecutionMetadata(ex.details);
+                    const meta = getExecutionMetadata(ex);
+                    const tdBg = "#09152e"; // Premium luxury dark blue
+                    const borderStyle = "1px solid rgba(245, 158, 11, 0.25)"; // Glowing subtle gold/amber border
                     return (
                       <tr
                         key={ex.id}
-                        className="hover:scale-[1.01] bg-[#040e21] transition-all duration-300 group shadow-lg hover:shadow-xl relative"
+                        className="hover:scale-[1.01] bg-[#09152e] transition-all duration-300 group shadow-lg hover:shadow-[0_0_20px_rgba(251,191,36,0.15)] relative"
                       >
-                        <td className="px-8 py-6 whitespace-nowrap font-mono font-black text-sm text-[#facc15] rounded-r-[2rem] border-y border-r border-slate-800 group-hover:text-[#ff7f00] transition-colors">
-                          <div className="flex flex-col gap-1">
+                        <td 
+                          style={{ backgroundColor: tdBg, borderTop: borderStyle, borderBottom: borderStyle, borderRight: borderStyle }}
+                          className="px-8 py-6 whitespace-nowrap font-mono font-black text-sm rounded-r-[2rem] text-[#ffd700] drop-shadow-[0_1px_4px_rgba(255,215,0,0.35)] group-hover:text-[#ff7f00] transition-colors"
+                        >
+                          <div className="flex flex-col gap-1.5">
                             <span
-                              className="cursor-pointer hover:underline text-lg drop-shadow-sm"
+                              className="cursor-pointer hover:underline text-lg font-black tracking-wider"
                               onClick={() => setViewingExec(ex)}
                             >
                               #{ex.execution_number}
                             </span>
                             {ex.is_najiz_sync && (
-                              <span className="text-[10px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded-md flex items-center gap-1 w-fit font-black shadow-sm">
-                                <Activity className="w-2.5 h-2.5" /> مزامنة ناجز
+                              <span className="text-[10px] bg-emerald-500/20 text-emerald-400 border border-emerald-400/40 px-2.5 py-0.5 rounded-md flex items-center gap-1 w-fit font-black shadow-sm">
+                                <Activity className="w-2.5 h-2.5 animate-pulse" /> مزامنة ناجز
                               </span>
                             )}
                           </div>
                         </td>
-                        <td className="px-6 py-6 whitespace-nowrap text-white font-extrabold text-base border-y border-slate-800">
+                        <td 
+                          style={{ backgroundColor: tdBg, borderTop: borderStyle, borderBottom: borderStyle }}
+                          className="px-6 py-6 whitespace-nowrap text-white font-extrabold text-base drop-shadow-[0_1px_2px_rgba(255,255,255,0.15)]"
+                        >
                           {meta.executionType}
                         </td>
-                        <td className="px-6 py-6 whitespace-nowrap text-[#facc15] font-bold text-base border-y border-slate-800">
+                        <td 
+                          style={{ backgroundColor: tdBg, borderTop: borderStyle, borderBottom: borderStyle }}
+                          className="px-6 py-6 whitespace-nowrap text-[#ff8c00] font-black text-base drop-shadow-[0_1px_4px_rgba(255,140,0,0.3)]"
+                        >
                           {meta.bondType}
                         </td>
-                        <td className="px-6 py-6 whitespace-nowrap text-slate-300 font-mono text-sm border-y border-slate-800">
-                          {ex.issue_date || "—"}
+                        <td 
+                          style={{ backgroundColor: tdBg, borderTop: borderStyle, borderBottom: borderStyle }}
+                          className="px-6 py-6 whitespace-nowrap text-slate-100 font-mono font-bold text-sm drop-shadow-[0_1px_1px_rgba(255,255,255,0.1)]"
+                        >
+                          {ex.submission_date || ex.issue_date || "—"}
                         </td>
-                        <td className="px-6 py-6 whitespace-nowrap text-white font-extrabold text-base border-y border-slate-800">
+                        <td 
+                          style={{ backgroundColor: tdBg, borderTop: borderStyle, borderBottom: borderStyle }}
+                          className="px-6 py-6 whitespace-nowrap text-white font-black text-base drop-shadow-[0_1px_2px_rgba(255,255,255,0.15)]"
+                        >
                           {ex.opponent_name}
                         </td>
-                        <td className="px-6 py-6 whitespace-nowrap text-[#facc15] font-bold text-sm border-y border-slate-800">
+                        <td 
+                          style={{ backgroundColor: tdBg, borderTop: borderStyle, borderBottom: borderStyle }}
+                          className="px-6 py-6 whitespace-nowrap text-[#ffe066] font-extrabold text-sm drop-shadow-[0_1px_4px_rgba(255,224,102,0.25)]"
+                        >
                           {ex.court_name || "—"}
                         </td>
-                        <td className="px-6 py-6 whitespace-nowrap text-center border-y border-slate-800">
+                        <td 
+                          style={{ backgroundColor: tdBg, borderTop: borderStyle, borderBottom: borderStyle }}
+                          className="px-6 py-6 whitespace-nowrap text-center"
+                        >
                           <span
                             className={`px-5 py-2 rounded-full text-[11px] font-black border uppercase tracking-widest ${
                               ex.status?.includes("مكتمل") ||
                               ex.status?.includes("منتهي")
-                                ? "bg-emerald-500/20 text-emerald-400 border-emerald-500/30 shadow-sm"
+                                ? "bg-emerald-500/25 text-[#22c55e] border-emerald-400 shadow-[0_0_8px_rgba(34,197,94,0.3)]"
                                 : ex.status?.includes("قيد")
-                                  ? "bg-[#ff7f00]/20 text-[#ff7f00] border-[#ff7f00]/30 shadow-sm"
-                                  : "bg-blue-500/20 text-blue-400 border-blue-500/30 shadow-sm"
+                                  ? "bg-[#ff7f00]/25 text-[#ff7f00] border-[#ff7f00] shadow-[0_0_10px_rgba(255,127,0,0.4)] font-black"
+                                  : "bg-blue-500/25 text-[#3b82f6] border-blue-400 shadow-[0_0_8px_rgba(59,130,246,0.3)]"
                             }`}
                           >
                             {ex.status}
                           </span>
                         </td>
-                        <td className="px-8 py-6 whitespace-nowrap text-left rounded-l-[2rem] border-y border-l border-slate-800">
+                        <td 
+                          style={{ backgroundColor: tdBg, borderTop: borderStyle, borderBottom: borderStyle, borderLeft: borderStyle }}
+                          className="px-8 py-6 whitespace-nowrap text-left rounded-l-[2rem]"
+                        >
                           <div className="flex items-center justify-end gap-3">
                             <button
                               onClick={() => setViewingExec(ex)}
-                              className="p-3 bg-[#0b1329] hover:bg-[#ff7f00] text-slate-300 hover:text-white border border-slate-700 hover:border-[#ff7f00] rounded-full transition-all cursor-pointer shadow-sm hover:shadow-lg hover:-translate-y-0.5"
+                              className="p-3 bg-[#0b1329] hover:bg-[#ff7f00] text-slate-100 hover:text-white border border-[#ff7f00]/40 rounded-xl transition-all cursor-pointer shadow-[0_0_10px_rgba(255,127,0,0.2)] hover:shadow-lg hover:-translate-y-0.5"
                               title="عرض تفاصيل السجل"
                             >
                               <ArrowUpRight className="w-5 h-5" />
                             </button>
                             <button
                               onClick={() => setEditingExec(ex)}
-                              className="p-3 bg-[#0b1329] hover:bg-[#facc15] text-slate-300 hover:text-slate-900 border border-slate-700 hover:border-[#facc15] rounded-full transition-all cursor-pointer shadow-sm hover:shadow-lg hover:-translate-y-0.5"
+                              className="p-3 bg-[#0b1329] hover:bg-[#ffd700] text-slate-100 hover:text-slate-900 border border-amber-500/40 rounded-xl transition-all cursor-pointer shadow-[0_0_10px_rgba(255,215,0,0.2)] hover:shadow-lg hover:-translate-y-0.5"
                               title="تعديل بيانات السجل"
                             >
                               <Edit2 className="w-5 h-5" />
@@ -963,99 +994,106 @@ export default function ExecutionsModule({
             </div>
           ) : (
             filtered.map((ex) => {
-              const colors = getTextColorForBg(ex.card_color);
-              const isDarkCard = colors.text.includes("white");
+              const meta = getExecutionMetadata(ex);
               return (
                 <motion.div
                   layout
                   key={ex.id}
                   onClick={() => setViewingExec(ex)}
-                  className={`p-7 rounded-[2rem] border hover:shadow-[0_12px_40px_rgba(0,0,0,0.12)] transition-all duration-300 group cursor-pointer relative overflow-hidden ${colors.border}`}
-                  style={{ backgroundColor: ex.card_color || "#ffffff" }}
+                  className="p-7 rounded-[2rem] border border-amber-500/25 hover:border-amber-500/50 hover:shadow-[0_0_25px_rgba(251,191,36,0.15)] transition-all duration-300 group cursor-pointer relative overflow-hidden bg-[#09152e]"
+                  style={{ backgroundColor: "#09152e" }}
                 >
-                  <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full blur-2xl -z-10"></div>
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/5 rounded-full blur-2xl -z-10"></div>
 
                   <div className="flex justify-between items-start mb-6">
-                    <div className={`p-3 rounded-2xl group-hover:scale-110 transition-transform duration-300 shadow-sm ${
-                      isDarkCard ? "bg-white/20 text-white border border-white/30" : "bg-[#0f172a] text-amber-400"
-                    }`}>
-                      <Gavel className="w-6 h-6" />
+                    <div className="p-3 rounded-2xl bg-[#0b1329] text-[#ffd700] border border-amber-500/25 group-hover:scale-110 transition-transform duration-300 shadow-sm">
+                      <Gavel className="w-6 h-6 text-[#ffd700] drop-shadow-[0_0_6px_rgba(255,215,0,0.45)]" />
                     </div>
                     <span
                       className={`px-4 py-1.5 rounded-full text-[10px] font-black border uppercase tracking-widest shadow-sm ${
                         ex.status?.includes("مكتمل") || ex.status?.includes("منتهي")
-                          ? isDarkCard ? "bg-emerald-500/20 text-emerald-300 border-emerald-500/30" : "bg-emerald-50 text-emerald-700 border-emerald-200"
+                          ? "bg-emerald-500/25 text-[#22c55e] border-emerald-400 shadow-[0_0_8px_rgba(34,197,94,0.3)]"
                           : ex.status?.includes("قيد")
-                            ? isDarkCard ? "bg-amber-500/20 text-amber-300 border-amber-500/30" : "bg-amber-50 text-amber-700 border-amber-200"
-                            : isDarkCard ? "bg-blue-500/20 text-blue-305 border-blue-500/30" : "bg-blue-50 text-blue-700 border-blue-200"
+                            ? "bg-[#ff7f00]/25 text-[#ff7f00] border-[#ff7f00] shadow-[0_0_10px_rgba(255,127,0,0.4)]"
+                            : "bg-blue-500/25 text-[#3b82f6] border-blue-400 shadow-[0_0_8px_rgba(59,130,246,0.3)]"
                       }`}
                     >
                       {ex.status}
                     </span>
                   </div>
 
-                  <h3 className={`text-lg font-black mb-1.5 transition-colors drop-shadow-sm ${isDarkCard ? "text-white" : "text-[#0f172a] group-hover:text-amber-600"}`}>
+                  <h3 className="text-lg font-black mb-1.5 transition-colors drop-shadow-sm text-white group-hover:text-[#ffd700]">
                     طلب رقم: {ex.execution_number}
                   </h3>
                   {ex.is_najiz_sync && (
                     <div className="flex items-center gap-1.5 mb-4">
-                      <span className={`text-[10px] border px-2.5 py-1 rounded-lg font-black flex items-center gap-1 shadow-sm ${
-                        isDarkCard ? "bg-white/10 text-emerald-300 border-white/10" : "bg-emerald-50/80 text-emerald-850 border-emerald-200"
-                      }`}>
+                      <span className="text-[10px] border px-2.5 py-1 rounded-lg font-black flex items-center gap-1 shadow-sm bg-emerald-500/15 text-emerald-400 border-emerald-500/30">
                         <Activity className="w-3.5 h-3.5 animate-pulse" /> مستورد ومزامن آلياً عبر ناجز
                       </span>
                     </div>
                   )}
 
                   <div className="space-y-4.5 mb-6 pt-1">
-                    <div className={`flex items-center justify-between text-sm pb-2.5 border-b ${isDarkCard ? "border-white/10" : "border-slate-100"}`}>
+                    <div className="flex items-center justify-between text-sm pb-2.5 border-b border-white/10">
                       <div className="flex items-center gap-2.5">
-                        <User className={`w-4 h-4 ${isDarkCard ? "text-slate-300" : "text-slate-400"}`} />
-                        <span className={`${colors.label}`}>
+                        <User className="w-4 h-4 text-slate-400" />
+                        <span className="text-slate-300 font-extrabold">
                           الموكل الطالب:
                         </span>
                       </div>
-                      <span className={`font-black ${colors.text}`}>
+                      <span className="font-black text-white drop-shadow-[0_1px_2px_rgba(255,255,255,0.15)]">
                         {ex.requester_name}
                       </span>
                     </div>
 
-                    <div className={`flex items-center justify-between text-sm pb-2.5 border-b ${isDarkCard ? "border-white/10" : "border-slate-100"}`}>
+                    <div className="flex items-center justify-between text-sm pb-2.5 border-b border-white/10">
                       <div className="flex items-center gap-2.5">
-                        <User className={`w-4 h-4 ${isDarkCard ? "text-slate-300" : "text-slate-400"}`} />
-                        <span className={`${colors.label}`}>
+                        <User className="w-4 h-4 text-slate-400" />
+                        <span className="text-slate-300 font-extrabold">
                           الطرف المدين:
                         </span>
                       </div>
-                      <span className={`font-extrabold ${colors.subtext}`}>
+                      <span className="font-black text-white drop-shadow-[0_1px_2px_rgba(255,255,255,0.15)]">
                         {ex.opponent_name}
                       </span>
                     </div>
 
-                    <div className={`flex items-center justify-between text-sm pb-2.5 border-b ${isDarkCard ? "border-white/10" : "border-slate-100"}`}>
+                    <div className="flex items-center justify-between text-sm pb-2.5 border-b border-white/10">
                       <div className="flex items-center gap-2.5">
-                        <CreditCard className={`w-4 h-4 ${isDarkCard ? "text-slate-300" : "text-slate-400"}`} />
-                        <span className={`${colors.label}`}>
+                        <CreditCard className="w-4 h-4 text-slate-400" />
+                        <span className="text-slate-300 font-extrabold">
                           قيمة السند:
                         </span>
                       </div>
-                      <span className={`font-black text-base font-mono drop-shadow-sm ${colors.accent}`}>
+                      <span className="font-black text-base font-mono drop-shadow-[0_1px_4px_rgba(255,140,0,0.35)] text-[#ff8c00]">
                         {(ex.amount || 0).toLocaleString()}{" "}
-                        <span className={`text-[10px] font-sans ${isDarkCard ? "text-amber-305" : "text-amber-600"}`}>
+                        <span className="text-[10px] font-sans text-[#ff8c00]">
                           ر.س
                         </span>
+                      </span>
+                    </div>
+
+                    <div className="flex items-center justify-between text-sm pb-2.5 border-b border-white/10">
+                      <div className="flex items-center gap-2.5">
+                        <Calendar className="w-4 h-4 text-slate-400" />
+                        <span className="text-slate-300 font-extrabold">
+                          تاريخ تقديم الطلب:
+                        </span>
+                      </div>
+                      <span className="font-black text-xs text-white font-mono drop-shadow-[0_1px_2px_rgba(255,255,255,0.15)]">
+                        {ex.submission_date || ex.issue_date || "—"}
                       </span>
                     </div>
 
                     {ex.court_name && (
                       <div className="flex items-center justify-between text-sm">
                         <div className="flex items-center gap-2.5">
-                          <FileText className={`w-4 h-4 ${isDarkCard ? "text-slate-300" : "text-slate-400"}`} />
-                          <span className={`${colors.label}`}>
+                          <FileText className="w-4 h-4 text-slate-400" />
+                          <span className="text-slate-300 font-extrabold">
                             المحكمة:
                           </span>
                         </div>
-                        <span className={`font-black text-xs ${colors.subtext}`}>
+                        <span className="font-black text-xs text-[#ffe066] drop-shadow-[0_1px_4px_rgba(255,224,102,0.25)]">
                           {ex.court_name}
                         </span>
                       </div>
@@ -1063,16 +1101,12 @@ export default function ExecutionsModule({
                   </div>
 
                   <div
-                    className={`flex gap-2.5 pt-4 border-t ${isDarkCard ? "border-white/10" : "border-slate-100"}`}
+                    className="flex gap-2.5 pt-4 border-t border-white/10"
                     onClick={(e) => e.stopPropagation()}
                   >
                     <button
                       onClick={() => setEditingExec(ex)}
-                      className={`flex-1 flex items-center justify-center gap-2 p-3 font-black text-xs transition-all border rounded-xl cursor-pointer shadow-sm hover:shadow-md ${
-                        isDarkCard
-                          ? "bg-white/10 hover:bg-white/20 text-white border-white/20 hover:border-white/45"
-                          : "bg-white hover:bg-slate-50 text-[#0f172a] border-slate-200 hover:border-[#0f172a]"
-                      }`}
+                      className="flex-1 flex items-center justify-center gap-2 p-3 font-black text-xs transition-all border rounded-xl cursor-pointer shadow-sm hover:shadow-md bg-white/10 hover:bg-white/20 text-white border-white/20 hover:border-white/45"
                     >
                       <Edit2 className="w-4 h-4" />
                       تعديل البيانات
@@ -1085,11 +1119,7 @@ export default function ExecutionsModule({
                           onDeleteExecution && onDeleteExecution(ex.id);
                         }
                       }}
-                      className={`p-3 border rounded-xl transition-all cursor-pointer shadow-sm hover:shadow-md ${
-                        isDarkCard
-                          ? "bg-rose-900/40 hover:bg-rose-900/60 text-rose-200 border-rose-800/50"
-                          : "bg-rose-50 hover:bg-rose-100 text-rose-600 border-rose-200 hover:border-rose-300"
-                      }`}
+                      className="p-3 border rounded-xl transition-all cursor-pointer shadow-sm hover:shadow-md bg-rose-900/40 hover:bg-rose-900/60 text-rose-200 border-rose-800/50"
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
@@ -1171,7 +1201,7 @@ export default function ExecutionsModule({
                       نوع الطلب:
                     </span>
                     <span className="text-slate-950 text-sm font-black bg-amber-50 px-3 py-1 rounded-lg border border-amber-200">
-                      {getExecutionMetadata(viewingExec.details).executionType}
+                      {getExecutionMetadata(viewingExec).executionType}
                     </span>
                   </div>
 
@@ -1180,7 +1210,7 @@ export default function ExecutionsModule({
                       نوع السند:
                     </span>
                     <span className="text-slate-950 text-sm font-black bg-slate-50 px-3 py-1 rounded-lg border border-slate-200">
-                      {getExecutionMetadata(viewingExec.details).bondType}
+                      {getExecutionMetadata(viewingExec).bondType}
                     </span>
                   </div>
 
@@ -1222,10 +1252,10 @@ export default function ExecutionsModule({
 
                   <div className="flex justify-between items-center whitespace-nowrap">
                     <span className="text-slate-500 text-xs font-black">
-                      تاريخ القيد ونفاذ الطلب:
+                      تاريخ تقديم الطلب ونفاذه:
                     </span>
                     <span className="text-slate-700 font-mono text-xs font-extrabold">
-                      {viewingExec.issue_date || "غير متوفر"}
+                      {viewingExec.submission_date || viewingExec.issue_date || "غير متوفر"}
                     </span>
                   </div>
                 </div>
@@ -1258,7 +1288,7 @@ export default function ExecutionsModule({
                     محاضر وسجل الملاحظات التنفيذية:
                   </span>
                   <div className="bg-slate-50 border border-slate-200 p-4 rounded-3xl min-h-[80px] text-xs font-bold text-slate-700 leading-relaxed max-h-[140px] overflow-y-auto">
-                    {getExecutionMetadata(viewingExec.details).detailsText ||
+                    {getExecutionMetadata(viewingExec).detailsText ||
                       "لا توجد ملاحظات إضافية مسجلة على هذا الطلب حتى الآن."}
                   </div>
                 </div>

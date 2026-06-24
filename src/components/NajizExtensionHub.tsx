@@ -1252,6 +1252,11 @@ function notify(title, message) {
       caseName: valueByKeys(fields, /name|title|subject|اسم|موضوع|وصف/i) || firstLine(text),
       court: valueByKeys(fields, /court|محكمة|دائرة/i) || match(text, /[^\n|،]{0,30}محكمة[^\n|،]{0,40}/),
       status: valueByKeys(fields, /status|state|حالة/i) || match(text, /قيد النظر|منتهية|منتهي|محكوم|مؤجلة|نشطة|مغلقة/),
+      startDate: valueByKeys(fields, /date|تاريخ/i) || match(text, /\d{4}[-/]\d{2}[-/]\d{2}/),
+      category: valueByKeys(fields, /type|نوع/i) || match(text, /(تجارية|عمالية|أحوال شخصية|جزائية|مرورية|عامة)/),
+      clientRole: valueByKeys(fields, /role|صفة/i) || match(text, /(مدعي|مدعى عليه|وكيل|أصيل)/),
+      clientName: valueByKeys(fields, /plaintiff|claimant|المدعي/i) || match(text, /المدعي\s*[:：]?\s*([^|\n،]*)/, 1),
+      opponentName: valueByKeys(fields, /defendant|opponent|المدعى عليه/i) || match(text, /المدعى عليه\s*[:：]?\s*([^|\n،]*)/, 1),
       raw: item,
     };
   }
@@ -1291,8 +1296,10 @@ function notify(title, message) {
     return {
       agencyNumber: agencyNumber || "",
       principal: valueByKeys(fields, /principal|موكل/i) || "",
-      agent: valueByKeys(fields, /agent|وكيل/i) || "",
-      expiryDate: valueByKeys(fields, /expiry|expire|endDate|انتهاء|نهاية/i) || matchDate(text),
+      agent: valueByKeys(fields, /agent|وكيل/i) || match(text, /اسم الوكيل\s*[:：]?\s*([^|\n،]*)/, 1) || "",
+      issueDate: valueByKeys(fields, /issueDate|تاريخ.*إصدار/i) || match(text, /تاريخ إصدار الوكالة\s*[:：]?\s*([^|\n،]*)/, 1),
+      expiryDate: valueByKeys(fields, /expiry|expire|endDate|انتهاء|نهاية/i) || match(text, /تاريخ انتهاء الوكالة\s*[:：]?\s*([^|\n،]*)/, 1) || matchDate(text),
+      status: valueByKeys(fields, /status|حالة/i) || match(text, /حالة الوكالة\s*[:：]?\s*([^|\n،]*)/, 1) || "",
       raw: item,
     };
   }
@@ -1300,14 +1307,39 @@ function notify(title, message) {
   function normalizeExecution(item) {
     const fields = item.fields || {};
     const text = item.text || objectToText(fields);
-    const executionNumber = valueByKeys(fields, /execution|enforcement|request.*(no|num)|تنفيذ|طلب/i) || match(text, /\b\d{9,}\b/);
+    const executionNumber = valueByKeys(fields, /execution|enforcement|request.*(no|num)|تنفيذ|رقم الطلب/i) || match(text, /\b\d{9,}\b/);
     if (!executionNumber && !/تنفيذ|منفذ|طالب التنفيذ/.test(text)) return null;
-    return { executionNumber: executionNumber || "", status: valueByKeys(fields, /status|حالة/i) || "", raw: item };
+    return {
+      executionNumber: executionNumber || "",
+      requestType: valueByKeys(fields, /نوع الطلب|request.*type/i) || match(text, /نوع الطلب\s*[:：]?\s*([^|\n،]*)/, 1),
+      deedType: valueByKeys(fields, /نوع السند|deed.*type/i) || match(text, /نوع السند\s*[:：]?\s*([^|\n،]*)/, 1),
+      date: valueByKeys(fields, /تاريخ.*طلب|date/i) || matchDate(text),
+      opponentName: valueByKeys(fields, /المنفذ ضده|opponent/i) || match(text, /المنفذ ضده\s*[:：]?\s*([^|\n،]*)/, 1),
+      court: valueByKeys(fields, /محكمة|court/i) || match(text, /[^\n|،]{0,30}محكمة[^\n|،]{0,40}/),
+      status: valueByKeys(fields, /status|حالة/i) || match(text, /حالة الطلب\s*[:：]?\s*([^|\n،]*)/, 1) || "",
+      raw: item
+    };
   }
 
   function normalizeRequest(item) { return normalizeGeneric(item, /طلب|requests?/i, "requestNumber"); }
   function normalizeMinute(item) { return normalizeGeneric(item, /محضر|ضبط|minutes?/i, "minuteNumber"); }
-  function normalizeJudgment(item) { return normalizeGeneric(item, /حكم|استئناف|judg|appeal/i, "judgmentNumber"); }
+  function normalizeJudgment(item) { 
+    const fields = item.fields || {};
+    const text = item.text || objectToText(fields);
+    if (!/حكم|استئناف|judg|appeal/i.test(text) && !/حكم|استئناف|judg|appeal/i.test(objectToText(fields))) return null;
+    
+    return {
+      judgmentNumber: valueByKeys(fields, /صك|رقم.*صك|number|num|no|id/i) || match(text, /\b\d{6,}\b/) || "",
+      judgmentType: valueByKeys(fields, /نوع.*حكم/i) || match(text, /نوع الحكم\s*[:：]?\s*([^|\n،]*)/, 1) || "",
+      caseNumber: valueByKeys(fields, /رقم.*قضية|case.*(no|num|id)|lawsuit.*(no|num|id)/i) || match(text, /\b\d{4}\s*\/\s*\d{3,}\b|\b\d{9,}\b/),
+      caseType: valueByKeys(fields, /نوع.*قضية|case.*type/i) || match(text, /(تجارية|عمالية|أحوال شخصية|جزائية|مرورية|عامة)/),
+      court: valueByKeys(fields, /محكمة|court/i) || match(text, /[^\n|،]{0,30}محكمة[^\n|،]{0,40}/),
+      plaintiff: valueByKeys(fields, /المدعي|plaintiff|claimant/i) || match(text, /المدعي\s*[:：]?\s*([^|\n،]*)/, 1),
+      defendant: valueByKeys(fields, /المدعى عليه|defendant|opponent/i) || match(text, /المدعى عليه\s*[:：]?\s*([^|\n،]*)/, 1),
+      date: valueByKeys(fields, /تاريخ.*صك|تاريخ|date/i) || matchDate(text),
+      raw: item,
+    };
+  }
   function normalizeNotice(item) { return normalizeGeneric(item, /إشعار|اشعار|تنبيه|notification|notice/i, "noticeNumber"); }
   function normalizeDocument(item) { return normalizeGeneric(item, /مستند|مرفق|وثيقة|document|attachment/i, "documentNumber"); }
 

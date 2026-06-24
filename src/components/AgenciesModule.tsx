@@ -483,6 +483,19 @@ export default function AgenciesModule({ clients, onUpdateState }: AgenciesModul
                     )}
                   </div>
 
+                  {/* 4. إسم الموكل */}
+                  <div className="p-4 bg-slate-50 border border-slate-200/80 rounded-2xl flex items-center justify-between shadow-sm">
+                    <div className="flex items-center gap-3">
+                      <div className="w-9 h-9 rounded-xl bg-purple-100/70 border border-purple-200/60 flex items-center justify-center text-purple-950 font-bold shrink-0">
+                        <User className="w-4.5 h-4.5" />
+                      </div>
+                      <div>
+                        <span className="text-[10px] text-slate-400 font-[800] block mb-0.5">اسم الموكل</span>
+                        <span className="text-sm font-black text-[#0B2545]">{selectedAgency.principalName || selectedAgency.clientName || 'غير محدد'}</span>
+                      </div>
+                    </div>
+                  </div>
+
                   {/* 4. إسم الوكيل */}
                   <div className="p-4 bg-slate-50 border border-slate-200/80 rounded-2xl flex items-center justify-between shadow-sm">
                     <div className="flex items-center gap-3">
@@ -491,7 +504,7 @@ export default function AgenciesModule({ clients, onUpdateState }: AgenciesModul
                       </div>
                       <div>
                         <span className="text-[10px] text-slate-400 font-[800] block mb-0.5">اسم الوكيل المعتمد</span>
-                        <span className="text-sm font-black text-[#0B2545]">{selectedAgency.lawyerName || selectedAgency.agentName || 'غير محدد'}</span>
+                        <span className="text-sm font-black text-[#0B2545]">{selectedAgency.agentName || selectedAgency.lawyerName || 'غير محدد'}</span>
                       </div>
                     </div>
                   </div>
@@ -831,9 +844,9 @@ export default function AgenciesModule({ clients, onUpdateState }: AgenciesModul
                         </div>
 
                         <div>
-                          <h3 className="agency-text text-lg font-[800] text-[#0B2545] line-clamp-1">{poa.clientName}</h3>
+                          <h3 className="agency-text text-lg font-[800] text-[#0B2545] line-clamp-1">{poa.principalName || poa.clientName || 'غير متوفر'}</h3>
                           <div className="agency-text flex items-center gap-1.5 text-xs text-[#0B2545] font-[800] mt-1 opacity-80">
-                            <Scale className="w-3.5 h-3.5" /> الممثل: {poa.lawyerName}
+                            <Scale className="w-3.5 h-3.5" /> الممثل: {poa.agentName || poa.lawyerName || 'غير متوفر'}
                           </div>
                         </div>
 

@@ -69,7 +69,11 @@ export default function CalendarModule({
           hallName: db.hall_number || db.hall || '',
           status: db.status || 'upcoming',
           isNajizSync: db.is_najiz_sync || false,
-          createdAt: db.created_at
+          createdAt: db.created_at,
+          fromDashboard: db.from_dashboard || db.fromDashboard || false,
+          source: db.source || '',
+          title: db.title || db.case_name || '',
+          raw: db.raw || null
         })));
       }
     } catch (e) {
@@ -678,17 +682,31 @@ export default function CalendarModule({
                   >
                     <span className="text-xs font-black" style={{ color: '#FFFFFF', textShadow: 'none' }}>{day.dayNum}</span>
                     <div className="flex flex-col gap-1 w-full overflow-hidden">
-                      {day.hearings.map(h => (
-                        <div 
-                          key={h.id}
-                          draggable
-                          onDragStart={(e) => handleDragStartEvent(e, h.id, 'hearing')}
-                          className="w-full h-4 bg-yellow-500 rounded text-[10px] px-1 text-slate-950 font-black truncate cursor-move"
-                          title={h.caseName}
-                        >
-                          ⚖️ {h.caseName}
-                        </div>
-                      ))}
+                      {day.hearings.map(h => {
+                        const fromDashboard = h.fromDashboard ||
+                          h.source === 'najiz_dashboard_calendar' ||
+                          /التقويم العدلي|المواعيد المستقبلية/.test(h.title || h.raw?.text || h.notes || h.caseName || '');
+
+                        const sessionTitle = h.title || h.caseName ||
+                          (fromDashboard ? 'موعد من التقويم العدلي' : 'جلسة قضائية');
+
+                        return (
+                          <div 
+                            key={h.id}
+                            draggable
+                            onDragStart={(e) => handleDragStartEvent(e, h.id, 'hearing')}
+                            className={`w-full h-4 rounded text-[10px] px-1 font-black truncate cursor-move flex items-center gap-0.5
+                              ${fromDashboard 
+                                ? 'bg-amber-600 text-white border border-amber-300' 
+                                : 'bg-yellow-500 text-slate-950'
+                              }`}
+                            title={sessionTitle}
+                          >
+                            <span>{fromDashboard ? '📅' : '⚖️'}</span>
+                            <span className="truncate">{sessionTitle}</span>
+                          </div>
+                        );
+                      })}
                       {day.tasks.map(t => (
                         <div 
                           key={t.id}
@@ -721,19 +739,30 @@ export default function CalendarModule({
             ) : (
               <div className="space-y-4">
                 {/* Hearings */}
-                {juneDays.find(d => d.dateStr === selectedDate)?.hearings.map((hearing) => (
-                  <div key={hearing.id} className="bg-[#4c0519] border-2 border-[#b91c1c] p-4 rounded-xl flex flex-col gap-3 shadow-lg">
-                    <div className="flex justify-between items-start">
-                      <div className="space-y-2 text-right">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <span className="text-[10px] bg-[#991B1B] text-white px-2 py-0.5 rounded font-black border border-red-500/30" style={{ textShadow: 'none' }}>جلسة قضائية</span>
+                {juneDays.find(d => d.dateStr === selectedDate)?.hearings.map((hearing) => {
+                  const h = hearing;
+                  const fromDashboard = h.fromDashboard ||
+                    h.source === 'najiz_dashboard_calendar' ||
+                    /التقويم العدلي|المواعيد المستقبلية/.test(h.title || h.raw?.text || h.notes || h.caseName || '');
+
+                  const sessionTitle = h.title || h.caseName ||
+                    (fromDashboard ? 'موعد من التقويم العدلي' : 'جلسة قضائية');
+
+                  return (
+                    <div key={hearing.id} className={`${fromDashboard ? 'bg-[#0f2441] border-[#3b82f6]' : 'bg-[#4c0519] border-[#b91c1c]'} border-2 p-4 rounded-xl flex flex-col gap-3 shadow-lg`}>
+                      <div className="flex justify-between items-start">
+                        <div className="space-y-2 text-right">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <span className={`text-[10px] px-2 py-0.5 rounded font-black border ${fromDashboard ? 'bg-[#1e40af] text-white border-blue-400/30' : 'bg-[#991B1B] text-white border-red-500/30'}`} style={{ textShadow: 'none' }}>
+                              {fromDashboard ? 'التقويم العدلي' : 'جلسة قضائية'}
+                            </span>
                           {hearing.is_najiz_sync && (
                             <span className="text-[9px] bg-[#D4AF37] text-slate-950 px-2 py-0.5 rounded font-black flex items-center gap-1">
                                <Clock className="w-2.5 h-2.5" />
                                مستورد من ناجز ({hearing.last_sync_at ? new Date(hearing.last_sync_at).toLocaleDateString('ar-SA') : 'تاريخ غير معروف'})
                             </span>
                           )}
-                          <h4 className="text-xs font-black" style={{ color: '#FFFFFF', textShadow: 'none' }}>{hearing.caseName}</h4>
+                          <h4 className="text-xs font-black text-white" style={{ textShadow: 'none' }}>{sessionTitle}</h4>
                         </div>
                         <div className="text-sm font-black space-y-1">
                           <div style={{ color: '#FFFFFF', textShadow: 'none' }}>🏛️ المحكمة: <strong style={{ color: '#FACC15', textShadow: 'none' }} className="font-black">{hearing.courtName}</strong></div>
@@ -777,7 +806,8 @@ export default function CalendarModule({
 
 
                   </div>
-                ))}
+                );
+              })}
 
                 {/* Tasks */}
                 {juneDays.find(d => d.dateStr === selectedDate)?.tasks.map((task) => (
@@ -937,38 +967,49 @@ export default function CalendarModule({
               </div>
             ) : (
               <div className="space-y-4 relative z-10">
-                {upcoming24hHearings.map(h => (
-                  <div key={h.id} className="bg-orange-950/60 border border-orange-500 p-4 rounded-2xl space-y-3 text-right w-full">
-                    <div className="flex items-center justify-between">
-                      <span className="text-[10px] bg-orange-600 text-white font-black px-2 py-0.5 rounded shadow-lg" style={{ textShadow: 'none' }}>موعد وشيك 🔥</span>
-                      <span className="text-[10px] text-[#FACC15] font-mono font-black" style={{ textShadow: 'none', color: '#FACC15' }}>{h.date}</span>
+                {upcoming24hHearings.map(h => {
+                  const fromDashboard = h.fromDashboard ||
+                    h.source === 'najiz_dashboard_calendar' ||
+                    /التقويم العدلي|المواعيد المستقبلية/.test(h.title || h.raw?.text || h.notes || h.caseName || '');
+
+                  const sessionTitle = h.title || h.caseName ||
+                    (fromDashboard ? 'موعد من التقويم العدلي' : 'جلسة قضائية');
+
+                  return (
+                    <div key={h.id} className={`${fromDashboard ? 'bg-[#0f2441] border-blue-500 shadow-[0_0_15px_rgba(59,130,246,0.25)]' : 'bg-orange-950/60 border-orange-500'} border p-4 rounded-2xl space-y-3 text-right w-full`}>
+                      <div className="flex items-center justify-between">
+                        <span className={`text-[10px] text-white font-black px-2 py-0.5 rounded shadow-lg ${fromDashboard ? 'bg-blue-600' : 'bg-orange-600'}`} style={{ textShadow: 'none' }}>
+                          {fromDashboard ? 'التقويم العدلي 📅' : 'موعد وشيك 🔥'}
+                        </span>
+                        <span className="text-[10px] text-[#FACC15] font-mono font-black" style={{ textShadow: 'none', color: '#FACC15' }}>{h.date}</span>
+                      </div>
+                      <div>
+                        <div className="text-[11px] font-black text-[#FFFFFF]" style={{ textShadow: 'none', color: '#FFFFFF' }}>{sessionTitle}</div>
+                        <p className="text-[10px] text-[#FACC15] font-bold mt-1" style={{ textShadow: 'none', color: '#FACC15' }}>🏛️ {h.courtName}</p>
+                      </div>
+                      
+                      <div className="pt-2 border-t border-orange-500/20 flex flex-col gap-2">
+                         <span className="text-[10px] text-[#FFFFFF] font-black" style={{ textShadow: 'none', color: '#FFFFFF' }}>تحديث الحالة مباشرة:</span>
+                         <div className="flex gap-1.5 overflow-x-auto pb-1 scrollbar-none">
+                            {['جاهزية تامة', 'قيد التحضير', 'طلب تأجيل'].map(status => (
+                              <button 
+                                key={status}
+                                onClick={() => updateHearingStatus(h.id, status)}
+                                className={`px-2 py-1 rounded-lg text-[11px] font-black whitespace-nowrap transition-all ${
+                                  h.hearingStatus === status 
+                                    ? 'bg-orange-500 text-slate-950 shadow-inner' 
+                                    : 'bg-slate-900 text-[#FACC15] border border-orange-500/30'
+                                }`}
+                                style={{ textShadow: 'none' }}
+                              >
+                                {status}
+                              </button>
+                            ))}
+                         </div>
+                      </div>
                     </div>
-                    <div>
-                      <div className="text-[11px] font-black text-[#FFFFFF]" style={{ textShadow: 'none', color: '#FFFFFF' }}>{h.caseName}</div>
-                      <p className="text-[10px] text-[#FACC15] font-bold mt-1" style={{ textShadow: 'none', color: '#FACC15' }}>🏛️ {h.courtName}</p>
-                    </div>
-                    
-                    <div className="pt-2 border-t border-orange-500/20 flex flex-col gap-2">
-                       <span className="text-[10px] text-[#FFFFFF] font-black" style={{ textShadow: 'none', color: '#FFFFFF' }}>تحديث الحالة مباشرة:</span>
-                       <div className="flex gap-1.5 overflow-x-auto pb-1 scrollbar-none">
-                          {['جاهزية تامة', 'قيد التحضير', 'طلب تأجيل'].map(status => (
-                            <button 
-                              key={status}
-                              onClick={() => updateHearingStatus(h.id, status)}
-                              className={`px-2 py-1 rounded-lg text-[11px] font-black whitespace-nowrap transition-all ${
-                                h.hearingStatus === status 
-                                  ? 'bg-orange-500 text-slate-950 shadow-inner' 
-                                  : 'bg-slate-900 text-[#FACC15] border border-orange-500/30'
-                              }`}
-                              style={{ textShadow: 'none' }}
-                            >
-                              {status}
-                            </button>
-                          ))}
-                       </div>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>

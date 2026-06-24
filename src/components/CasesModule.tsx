@@ -2132,7 +2132,7 @@ export default React.memo(function CasesModule({
                   placeholder="البحث الشامل (اسم، خصم، محكمة، رقم الصك)..." 
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full bg-[#040e21] border border-slate-800 rounded-2xl py-4 pr-14 pl-6 text-sm font-bold text-white placeholder-slate-500 focus:outline-none focus:border-[#ff7f00]/60 transition-all shadow-inner"
+                  className="w-full bg-[#040e21] border border-slate-800 rounded-2xl py-4 pr-14 pl-6 text-sm font-bold text-[#0c2461] dark:text-white placeholder-slate-500 focus:outline-none focus:border-[#ff7f00]/60 transition-all shadow-inner"
                 />
               </div>
               <button
@@ -2186,7 +2186,7 @@ export default React.memo(function CasesModule({
                         <select
                           value={advFilters.opponent}
                           onChange={(e) => setAdvFilters({ ...advFilters, opponent: e.target.value })}
-                          className="w-full bg-[#040e21] border border-slate-800 rounded-xl px-3 py-2 text-[11px] font-black text-white outline-none focus:border-[#ff7f00]/45 transition-colors cursor-pointer"
+                          className="w-full bg-[#040e21] border border-slate-800 rounded-xl px-3 py-2 text-[11px] font-black text-[#0c2461] dark:text-white outline-none focus:border-[#ff7f00]/45 transition-colors cursor-pointer"
                         >
                           <option value="">كل الخصوم</option>
                           {uniqueOpponents.map((opponent) => (
@@ -2202,7 +2202,7 @@ export default React.memo(function CasesModule({
                         <select
                           value={advFilters.circuit}
                           onChange={(e) => setAdvFilters({ ...advFilters, circuit: e.target.value })}
-                          className="w-full bg-[#040e21] border border-slate-800 rounded-xl px-3 py-2 text-[11px] font-black text-white outline-none focus:border-[#ff7f00]/45 transition-colors cursor-pointer"
+                          className="w-full bg-[#040e21] border border-slate-800 rounded-xl px-3 py-2 text-[11px] font-black text-[#0c2461] dark:text-white outline-none focus:border-[#ff7f00]/45 transition-colors cursor-pointer"
                         >
                           <option value="">كل الدوائر</option>
                           {uniqueCircuits.map((circuit) => (
@@ -2218,7 +2218,7 @@ export default React.memo(function CasesModule({
                         <select
                           value={advFilters.judgmentCategory}
                           onChange={(e) => setAdvFilters({ ...advFilters, judgmentCategory: e.target.value })}
-                          className="w-full bg-[#040e21] border border-slate-800 rounded-xl px-3 py-2 text-[11px] font-black text-white outline-none focus:border-[#ff7f00]/45 transition-colors cursor-pointer"
+                          className="w-full bg-[#040e21] border border-slate-800 rounded-xl px-3 py-2 text-[11px] font-black text-[#0c2461] dark:text-white outline-none focus:border-[#ff7f00]/45 transition-colors cursor-pointer"
                         >
                           <option value="">كل الأنواع والتصنيفات</option>
                           <optgroup label="حالة ونوع الحكم">
@@ -2266,7 +2266,7 @@ export default React.memo(function CasesModule({
                   type="date"
                   value={lastSessionFilter}
                   onChange={(e) => setLastSessionFilter(e.target.value)}
-                  className="bg-[#030a16] border border-slate-800 rounded-xl py-2.5 px-4 text-[10px] font-black text-white outline-none focus:border-[#ff7f00]/50 transition-all cursor-pointer"
+                  className="bg-[#030a16] border border-slate-800 rounded-xl py-2.5 px-4 text-[10px] font-black text-[#0c2461] dark:text-white outline-none focus:border-[#ff7f00]/50 transition-all cursor-pointer"
                 />
               </div>
 
@@ -2346,7 +2346,7 @@ export default React.memo(function CasesModule({
                             type="date"
                             value={nextAppointmentFilter}
                             onChange={(e) => setNextAppointmentFilter(e.target.value)}
-                            className="bg-[#040e21] border border-slate-800 rounded-xl py-1.5 px-3 text-[10.5px] font-black text-white outline-none w-full"
+                            className="bg-[#040e21] border border-slate-800 rounded-xl py-1.5 px-3 text-[10.5px] font-black text-[#0c2461] dark:text-white outline-none w-full"
                           />
                           <button
                             type="button"
@@ -2387,7 +2387,7 @@ export default React.memo(function CasesModule({
                         placeholder="ابحث داخل التصانيف..."
                         value={categorySearchTerm}
                         onChange={(e) => setCategorySearchTerm(e.target.value)}
-                        className="w-full bg-[#040e21] border border-slate-800 rounded-lg pr-8 pl-3 py-1.5 text-[10.5px] font-black text-white outline-none focus:border-[#ff7f00]/40 font-sans text-right"
+                        className="w-full bg-[#040e21] border border-slate-800 rounded-lg pr-8 pl-3 py-1.5 text-[10.5px] font-black text-[#0c2461] dark:text-white outline-none focus:border-[#ff7f00]/40 font-sans text-right"
                         autoFocus
                       />
                     </div>
@@ -2536,32 +2536,7 @@ export default React.memo(function CasesModule({
             )}
           </AnimatePresence>
 
-          {/* Quick Access to Scheduled Cases Filter Bar (Supabase cases connection) */}
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-[#030a16] border border-slate-800 p-5 rounded-[1.8rem] mb-4 font-sans text-right shadow-2xl" dir="rtl">
-            <div className="flex items-center gap-3">
-              <div className="p-2.5 bg-[#ff7f00]/10 border border-[#ff7f00]/25 rounded-2xl">
-                <Calendar className="w-5 h-5 text-[#ff7f00] shrink-0" />
-              </div>
-              <div>
-                <span className="text-xs font-black text-[#facc15] block tracking-wide">الوصول السريع للقضايا المجدولة (المزامنة مع جدول Supabase)</span>
-                <p className="text-[11px] text-slate-350 font-bold">بمزامنة حية من جدول القضايا بـ Supabase؛ حدد تصنيفاً بالأسفل ثم فعّل التصفية السريعة:</p>
-              </div>
-            </div>
-            
-            <div className="flex flex-wrap items-center gap-2">
-              <button
-                onClick={() => setShowScheduledOnly(!showScheduledOnly)}
-                className={`px-5 py-2.5 rounded-xl text-xs font-black border transition-all flex items-center gap-2 cursor-pointer shadow-md ${
-                  showScheduledOnly 
-                    ? 'bg-[#ff7f00] text-slate-950 border-[#ff7f00] shadow-[0_0_15px_rgba(255,127,0,0.4)]' 
-                    : 'bg-[#0b1329] text-[#facc15] border-slate-800 hover:border-[#ff7f00]/40 hover:bg-[#0b1329]/80'
-                }`}
-              >
-                <Clock className="w-4.5 h-4.5 shrink-0" />
-                <span>{showScheduledOnly ? '🔒 عرض الجلسات المجدولة فقط (نشط)' : '📂 تصفية القضايا المجدولة بالجلسات فقط'}</span>
-              </button>
-            </div>
-          </div>
+
 
           {/* Universal High-Contrast Classifications Filter Bar (Supabase cases categories connection) */}
           <div className="bg-gradient-to-b from-[#060b18] to-[#0d162d] border border-slate-800 p-5 rounded-[1.8rem] mb-6 font-sans text-right shadow-[0_4px_30px_rgba(0,0,0,0.4)]" dir="rtl">

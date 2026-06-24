@@ -1294,43 +1294,120 @@ ${
 
                                       {/* تفاصيل - نصوص ساطعة بتباين مثالي مع الخلفية الداكنة */}
                                       <div className="space-y-2 mb-4 bg-slate-800/40 p-3.5 rounded-xl border border-slate-700 shadow-inner">
-                                        {doc.judgment_date && (
-                                          <div className="flex items-center gap-2">
-                                            <Calendar className="w-3.5 h-3.5 text-[#FACC15] shrink-0" />
-                                            <span className="text-amber-100 font-bold text-xs">
-                                              تاريخ الحكم: <span className="text-[#FACC15] font-black">{doc.judgment_date}</span>
-                                            </span>
+                                        {doc.document_type === 'judgment' && (
+                                          <div className="flex flex-col gap-2">
+                                            {doc.judgment_number && (
+                                              <div className="flex items-center gap-2">
+                                                <FileText className="w-3.5 h-3.5 text-[#FACC15] shrink-0" />
+                                                <span className="text-amber-100 font-bold text-xs">
+                                                  رقم الصك: <span className="text-white font-black">{doc.judgment_number}</span>
+                                                </span>
+                                              </div>
+                                            )}
+                                            {doc.judgment_type && (
+                                              <div className="flex items-center gap-2">
+                                                <Gavel className="w-3.5 h-3.5 text-[#FACC15] shrink-0" />
+                                                <span className="text-amber-100 font-bold text-xs">
+                                                  نوع الحكم: <span className="text-white font-black">{doc.judgment_type}</span>
+                                                </span>
+                                              </div>
+                                            )}
+                                            {doc.case_number && (
+                                              <div className="flex items-center gap-2">
+                                                <FileText className="w-3.5 h-3.5 text-blue-400 shrink-0" />
+                                                <span className="text-blue-100 font-bold text-xs">
+                                                  رقم القضية: <span className="text-white font-black">{doc.case_number}</span>
+                                                </span>
+                                              </div>
+                                            )}
+                                            {doc.case_type && (
+                                              <div className="flex items-center gap-2">
+                                                <Scale className="w-3.5 h-3.5 text-blue-400 shrink-0" />
+                                                <span className="text-blue-100 font-bold text-xs">
+                                                  نوع القضية: <span className="text-white font-black">{doc.case_type}</span>
+                                                </span>
+                                              </div>
+                                            )}
+                                            {doc.court_name && (
+                                              <div className="flex items-center gap-2">
+                                                <Building2 className="w-3.5 h-3.5 text-[#FF7F00] shrink-0" />
+                                                <span className="text-orange-100 font-bold text-xs truncate">
+                                                  المحكمة: <span className="text-white font-black">{doc.court_name}</span>
+                                                </span>
+                                              </div>
+                                            )}
+                                            {doc.plaintiff && (
+                                              <div className="flex items-center gap-2">
+                                                <span className="w-3.5 h-3.5 rounded-full bg-emerald-500/20 border border-emerald-500/50 flex items-center justify-center shrink-0">
+                                                  <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full"></span>
+                                                </span>
+                                                <span className="text-emerald-100 font-bold text-xs truncate">
+                                                  المدعي: <span className="text-white font-black">{doc.plaintiff}</span>
+                                                </span>
+                                              </div>
+                                            )}
+                                            {doc.defendant && (
+                                              <div className="flex items-center gap-2">
+                                                <span className="w-3.5 h-3.5 rounded-full bg-rose-500/20 border border-rose-500/50 flex items-center justify-center shrink-0">
+                                                  <span className="w-1.5 h-1.5 bg-rose-400 rounded-full"></span>
+                                                </span>
+                                                <span className="text-rose-100 font-bold text-xs truncate">
+                                                  المدعى عليه: <span className="text-white font-black">{doc.defendant}</span>
+                                                </span>
+                                              </div>
+                                            )}
+                                            {doc.judgment_date && (
+                                              <div className="flex items-center gap-2">
+                                                <Calendar className="w-3.5 h-3.5 text-[#FACC15] shrink-0" />
+                                                <span className="text-amber-100 font-bold text-xs">
+                                                  تاريخ الصك: <span className="text-white font-black">{doc.judgment_date}</span>
+                                                </span>
+                                              </div>
+                                            )}
                                           </div>
                                         )}
-                                        {doc.hearing_date && (
-                                          <div className="flex items-center gap-2">
-                                            <Calendar className="w-3.5 h-3.5 text-blue-400 shrink-0" />
-                                            <span className="text-blue-100 font-bold text-xs">
-                                              تاريخ الجلسة: <span className="text-[#60A5FA] font-black">{doc.hearing_date}</span>
-                                            </span>
-                                          </div>
-                                        )}
-                                        {doc.judgment_type && (
-                                          <div className="flex items-center gap-2">
-                                            <span
-                                              className="inline-block text-[11px] px-2.5 py-1
-                                              bg-amber-900/40 text-[#FACC15] border border-amber-500/50
-                                              rounded-lg font-black"
-                                            >
-                                              {doc.judgment_type}
-                                            </span>
-                                          </div>
-                                        )}
-                                        {doc.court_name && (
-                                          <div className="flex items-center gap-2">
-                                            <Building2 className="w-3.5 h-3.5 text-[#FF7F00] shrink-0" />
-                                            <span className="text-orange-100 font-bold text-xs truncate">
-                                              المحكمة: <span className="text-[#FF7F00] font-black">{doc.court_name}</span>
-                                              {doc.circuit_number
-                                                ? ` — دائرة ${doc.circuit_number}`
-                                                : ""}
-                                            </span>
-                                          </div>
+
+                                        {doc.document_type !== 'judgment' && (
+                                          <>
+                                            {doc.judgment_date && (
+                                              <div className="flex items-center gap-2">
+                                                <Calendar className="w-3.5 h-3.5 text-[#FACC15] shrink-0" />
+                                                <span className="text-amber-100 font-bold text-xs">
+                                                  تاريخ الحكم: <span className="text-[#FACC15] font-black">{doc.judgment_date}</span>
+                                                </span>
+                                              </div>
+                                            )}
+                                            {doc.hearing_date && (
+                                              <div className="flex items-center gap-2">
+                                                <Calendar className="w-3.5 h-3.5 text-blue-400 shrink-0" />
+                                                <span className="text-blue-100 font-bold text-xs">
+                                                  تاريخ الجلسة: <span className="text-[#60A5FA] font-black">{doc.hearing_date}</span>
+                                                </span>
+                                              </div>
+                                            )}
+                                            {doc.judgment_type && (
+                                              <div className="flex items-center gap-2">
+                                                <span
+                                                  className="inline-block text-[11px] px-2.5 py-1
+                                                  bg-amber-900/40 text-[#FACC15] border border-amber-500/50
+                                                  rounded-lg font-black"
+                                                >
+                                                  {doc.judgment_type}
+                                                </span>
+                                              </div>
+                                            )}
+                                            {doc.court_name && (
+                                              <div className="flex items-center gap-2">
+                                                <Building2 className="w-3.5 h-3.5 text-[#FF7F00] shrink-0" />
+                                                <span className="text-orange-100 font-bold text-xs truncate">
+                                                  المحكمة: <span className="text-[#FF7F00] font-black">{doc.court_name}</span>
+                                                  {doc.circuit_number
+                                                    ? ` — دائرة ${doc.circuit_number}`
+                                                    : ""}
+                                                </span>
+                                              </div>
+                                            )}
+                                          </>
                                         )}
                                       </div>
 

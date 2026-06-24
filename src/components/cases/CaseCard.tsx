@@ -297,14 +297,14 @@ export default function CaseCard({
   const palette = getStrictWCAGAAAPalette(theme.from, theme.to, isHighContrast, isLightTheme);
 
   const luxuryShadow = searchHighlight 
-    ? '0 0 25px rgba(245, 158, 11, 0.4), 0 15px 35px -10px rgba(0, 0, 0, 0.8), 0 0 1px 1px rgba(212, 175, 55, 0.5) inset' 
-    : '0 15px 35px -10px rgba(0, 0, 0, 0.8), 0 0 1px 1px rgba(212, 175, 55, 0.12) inset';
-  const luxuryHoverShadow = '0 25px 50px -12px rgba(0, 0, 0, 0.95), 0 0 1px 1.5px rgba(212, 175, 55, 0.35) inset';
+    ? '0 0 20px rgba(212, 175, 55, 0.15), 0 10px 30px -10px rgba(0, 0, 0, 0.08), 0 0 1px 1px rgba(212, 175, 55, 0.4) inset' 
+    : '0 10px 30px -10px rgba(0, 0, 0, 0.06), 0 0 1px 1px rgba(0, 0, 0, 0.04) inset';
+  const luxuryHoverShadow = '0 20px 40px -12px rgba(0, 0, 0, 0.12), 0 0 1px 1.5px rgba(212, 175, 55, 0.4) inset';
 
   const cardStyle: React.CSSProperties = {
-    background: 'linear-gradient(135deg, #020817 0%, #0f172a 100%)', // Dark Blue Background
+    background: 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)', // Light Luxury Background
     boxShadow: (isHovered || isKeyboardFocused) ? luxuryHoverShadow : luxuryShadow,
-    borderColor: (isHovered || isKeyboardFocused || searchHighlight) ? '#f59e0b' : '#334155', // High Contrast Border
+    borderColor: (isHovered || isKeyboardFocused || searchHighlight) ? '#d4af37' : '#e2e8f0', // Luxury Gold / Slate border
     transform: (isHovered || isKeyboardFocused) ? 'translateY(-6px) scale(1.018)' : 'translateY(0) scale(1)',
     transition: 'all 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
   };
@@ -314,144 +314,211 @@ export default function CaseCard({
       onClick={() => onSelectCase(c)}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      className={`relative cursor-pointer rounded-[1.8rem] border-2 p-[3px] overflow-hidden cases-module-card-item transition-all ${
+      className={`relative cursor-pointer rounded-[1.8rem] border-[1.5px] p-[3px] overflow-hidden cases-module-card-item transition-all ${
         c.archived ? 'opacity-65 grayscale-[0.2]' : ''
-      } ${isKeyboardFocused ? 'ring-4 ring-[#D4AF37] ring-offset-4 ring-offset-[#020817] scale-[1.03] z-10' : ''} ${searchHighlight ? 'ring-2 ring-amber-400 ring-offset-2 ring-offset-[#020817]' : ''}`}
+      } ${isKeyboardFocused ? 'ring-4 ring-[#D4AF37] ring-offset-4 ring-offset-white scale-[1.03] z-10' : ''} ${searchHighlight ? 'ring-2 ring-amber-400 ring-offset-2 ring-offset-white' : ''}`}
       style={cardStyle}
       id={`case-card-${c.id}`}
     >
 
-      {/* Subtle gold ambient gradient overlay at top of dark luxury option */}
-      {!isHighContrast && (
-        <div className="absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-amber-500/8 via-transparent to-transparent pointer-events-none z-0" />
-      )}
+      {/* Subtle gold ambient gradient overlay at top of light luxury option */}
+      <div className="absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-amber-500/5 via-transparent to-transparent pointer-events-none z-0" />
 
       {/* MAIN LAYOUT STRUCTURE - CONVERTED TO ROBUST CSS GRID for alignment and margins */}
       <div 
-        className="relative z-10 w-full h-full p-8 md:p-9 pb-10 rounded-[calc(1.8rem-4px)] flex flex-col justify-between cases-module-card-inner"
+        className="relative z-10 w-full h-full p-6 md:p-8 rounded-[calc(1.8rem-4px)] flex flex-col justify-between cases-module-card-inner bg-white/40"
         dir="rtl"
       >
         {/* CSS GRID PANEL FOR ALL INNER CARD ELEMENTS */}
         <div className="flex flex-col gap-3 text-right w-full h-full justify-between font-sans">
           
-          {/* Row 1: Case Number (Top Right) and Status (Top Left) */}
-          <div className="flex justify-between items-stretch gap-3">
-             {/* Case Number (Medium) */}
-             <div className="flex-[3] bg-[#0b1329]/80 border border-slate-700/80 rounded-2xl p-4 flex justify-between items-center shadow-lg shadow-black/20">
-                 <div className="flex flex-col justify-center items-start">
-                     <span className="text-[#facc15] text-[11px] font-black block mb-1 tracking-wider">رقم القضية</span>
-                     <span className="font-mono font-[900] text-white text-lg drop-shadow-md">#{c.caseNumber}</span>
+          {/* Najiz Synced Exact Format Layout */}
+          {(c.isNajizSync || c.is_najiz_sync) ? (
+             <div className="flex flex-col gap-3">
+               {/* Actions Row */}
+               <div className="flex justify-end gap-2 mb-1">
+                  <button
+                    type="button"
+                    onClick={(e) => { e.stopPropagation(); setActivityLogCaseId(c.id); }}
+                    className="p-1.5 rounded-lg border border-slate-200 text-slate-400 hover:bg-slate-50 hover:text-slate-800 transition-all shadow-sm"
+                  >
+                    <Clock className="w-3.5 h-3.5" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={(e) => { e.stopPropagation(); setIsNotePopoverOpen(true); }}
+                    className="p-1.5 rounded-lg border border-amber-200 text-amber-600 hover:bg-amber-50 hover:text-amber-700 transition-all shadow-sm"
+                  >
+                    <Notebook className="w-3.5 h-3.5" />
+                  </button>
+               </div>
+
+               {/* Row 1: Case Number, Start Date, Category */}
+               <div className="flex gap-2">
+                 <div className="flex-1 bg-white border border-slate-200/80 rounded-2xl p-3 shadow-sm">
+                    <span className="text-slate-500 text-[10px] font-black block mb-1 tracking-wider">رقم القضية</span>
+                    <span className="font-mono font-[900] text-slate-900 text-[13px]">#{c.caseNumber}</span>
                  </div>
-                 <div className="flex gap-2">
-                    <button
-                      type="button"
-                      id={`btn-history-${c.id}`}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setActivityLogCaseId(c.id);
-                      }}
-                      className="p-2 rounded-xl border border-[#ff7f00]/40 text-[#ff7f00] hover:bg-[#ff7f00] hover:text-slate-950 transition-all shadow-sm"
-                      title="سجل تعديلات ونشاط القضية"
-                    >
-                      <Clock className="w-4 h-4" />
-                    </button>
-                    <button
-                      type="button"
-                      id={`btn-quick-note-${c.id}`}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setIsNotePopoverOpen(true);
-                      }}
-                      className="p-2 rounded-xl border border-[#facc15]/40 text-[#facc15] hover:bg-[#facc15] hover:text-slate-950 transition-all shadow-sm"
-                      title="إضافة ملاحظة سريعة للمكتب"
-                    >
-                      <Notebook className="w-4 h-4" />
-                    </button>
+                 <div className="flex-1 bg-white border border-slate-200/80 rounded-2xl p-3 shadow-sm">
+                    <span className="text-slate-500 text-[10px] font-black block mb-1 tracking-wider">تاريخ القضية</span>
+                    <span className="font-[900] text-slate-900 text-[13px]">{c.case_date || c.startDate || 'غير محدد'}</span>
                  </div>
-             </div>
-             {/* Status (Small) */}
-             <div className="flex-[2] bg-[#0b1329]/80 border border-slate-700/80 rounded-2xl p-4 shadow-lg shadow-black/20 flex flex-col justify-center items-start">
-                 <span className="text-[#facc15] text-[11px] font-black block mb-2 tracking-wider">حالة القضية</span>
-                 <div className="bg-[#040e21] border border-[#ff7f00]/50 rounded-xl px-3 py-1.5 w-full flex items-center justify-between">
-                  <span className={`w-2 h-2 rounded-full ${c.status === 'closed' ? 'bg-slate-400': 'bg-[#facc15] animate-pulse'}`} />
-                  {onUpdateCaseStatus ? (
-                    <select
-                      value={c.status || 'under_study'}
-                      onChange={(e) => onUpdateCaseStatus(c, e.target.value)}
-                      onClick={(e) => e.stopPropagation()}
-                      className="bg-transparent text-[#ff7f00] font-[900] focus:outline-none cursor-pointer appearance-none text-[12px] w-full text-left"
-                      style={{ direction: 'rtl' }}
-                    >
-                      <option value="under_study">قيد الدراسة</option>
-                      <option value="under_review">قيد النظر</option>
-                      <option value="struck_off">شطبت</option>
-                      <option value="appeal">استئناف</option>
-                      <option value="execution">تنفيذ</option>
-                      <option value="primary_judgment">حكم ابتدائي</option>
-                      <option value="final_judgment">حكم قطعي</option>
-                      <option value="postponed">مؤجلة</option>
-                      <option value="closed">ملف مقفل</option>
-                      <option value="active">نشطة</option>
-                    </select>
-                  ) : (
-                    <span className="font-[900] text-[#ff7f00] text-[12px]">{arabicStatusName}</span>
-                  )}
+                 <div className="flex-1 bg-white border border-slate-200/80 rounded-2xl p-3 shadow-sm">
+                    <span className="text-slate-500 text-[10px] font-black block mb-1 tracking-wider">نوع القضية</span>
+                    <span className="font-[900] text-slate-900 text-[13px]">{c.category || theme.nameAr || 'غير محدد'}</span>
                  </div>
-             </div>
-          </div>
+               </div>
 
-          {/* Row 2: Court (Large) & Circuit (Medium) */}
-          <div className="flex gap-3">
-             <div className="flex-[3] bg-[#0b1329]/80 border border-slate-700/80 rounded-2xl p-4 shadow-lg shadow-black/20">
-                <span className="text-[#facc15] text-[11px] font-black block mb-1.5 flex items-center gap-1.5 tracking-wider">
-                  <MapPin className="w-4 h-4 text-[#ff7f00]"/> المحكمة المختصة
-                </span>
-                <span className="text-white font-[900] text-xl block truncate leading-tight drop-shadow-md">{c.courtName || 'غير محدد'}</span>
-             </div>
-             <div className="flex-[2] bg-[#0b1329]/80 border border-slate-700/80 rounded-2xl p-4 shadow-lg shadow-black/20">
-                <span className="text-[#facc15] text-[11px] font-black block mb-1.5 tracking-wider">الدائرة القضائية</span>
-                <span className="text-white font-[900] text-lg block truncate drop-shadow-md">{c.circuitNumber || 'غير محدد'}</span>
-             </div>
-          </div>
+               {/* Row 2: Role, Plaintiff, Defendant */}
+               <div className="flex gap-2">
+                 <div className="flex-[0.8] bg-white border border-slate-200/80 rounded-2xl p-3 shadow-sm">
+                    <span className="text-slate-500 text-[10px] font-black block mb-1 tracking-wider">الصفة</span>
+                    <span className="font-[900] text-slate-900 text-[13px] truncate block">{c.capacity || c.metadata?.client_role || 'غير محدد'}</span>
+                 </div>
+                 <div className="flex-[1.1] bg-white border border-slate-200/80 rounded-2xl p-3 shadow-sm overflow-hidden">
+                    <span className="text-slate-500 text-[10px] font-black block mb-1 tracking-wider">أسم المدعي</span>
+                    <span className="font-[900] text-slate-900 text-[13px] truncate block">{c.clientName || 'غير محدد'}</span>
+                 </div>
+                 <div className="flex-[1.1] bg-white border border-slate-200/80 rounded-2xl p-3 shadow-sm overflow-hidden">
+                    <span className="text-slate-500 text-[10px] font-black block mb-1 tracking-wider">المدعى عليه</span>
+                    <span className="font-[900] text-slate-900 text-[13px] truncate block">{c.opponentName || 'غير محدد'}</span>
+                 </div>
+               </div>
 
-          {/* Row 3: Client (Large) */}
-          <div className="bg-[#0b1329]/80 border border-slate-700/80 rounded-2xl p-4 shadow-lg shadow-black/20">
-             <span className="text-[#facc15] text-[11px] font-black block mb-1.5 flex items-center gap-1.5 tracking-wider">
-               <User className="w-4 h-4 text-[#ff7f00]"/> أطراف الدعوى / الموكل
-             </span>
-             <span className="text-white font-[900] text-xl block truncate leading-tight drop-shadow-md">{c.clientName || 'غير محدد'}</span>
-          </div>
-
-          {/* Row 4: Case Type (Large) */}
-          <div className="bg-[#0b1329]/80 border border-slate-700/80 rounded-2xl p-4 shadow-lg shadow-black/20 flex items-center gap-4">
-             <div className="rounded-xl border border-[#ff7f00] shadow-[0_0_10px_rgba(255,127,0,0.2)] flex items-center justify-center shrink-0 bg-[#040e21] text-[#facc15] w-12 h-12">
-                <IconComponent className="w-6 h-6" />
+               {/* Row 3: Status & Subject */}
+               <div className="flex gap-2">
+                 <div className="flex-[1] bg-white border border-slate-200/80 rounded-2xl p-3 shadow-sm">
+                    <span className="text-slate-500 text-[10px] font-black block mb-1 tracking-wider">الحالة</span>
+                    <span className="font-[900] text-slate-900 text-[13px]">{c.status || arabicStatusName || 'غير محدد'}</span>
+                 </div>
+                 <div className="flex-[2] bg-white border border-slate-200/80 rounded-2xl p-3 shadow-sm overflow-hidden">
+                    <span className="text-slate-500 text-[10px] font-black block mb-1 tracking-wider">موضوع الدعوى</span>
+                    <span className="font-[900] text-slate-900 text-[13px] truncate block">{c.caseName || 'غير محدد'}</span>
+                 </div>
+               </div>
              </div>
-             <div>
-               <span className="text-[#facc15] text-[11px] font-black block mb-1 tracking-wider">نوع القضية</span>
-               <span className="text-[#ff7f00] font-[900] text-xl block truncate leading-tight drop-shadow-md">{theme.nameAr}</span>
-             </div>
-          </div>
-
-          {/* Row 5: Case Subject (Medium) */}
-          <div className="bg-[#0b1329]/80 border border-slate-700/80 rounded-2xl p-4 shadow-lg shadow-black/20">
-             <span className="text-[#facc15] text-[11px] font-black block mb-1.5 tracking-wider">موضوع الدعوى</span>
-             <span className="text-white font-[900] text-lg line-clamp-2 leading-snug drop-shadow-md">{c.caseName || 'غير محدد'}</span>
-          </div>
+          ) : (
+            <>
+              {/* Row 1: Case Number (Top Right) and Status (Top Left) */}
+              <div className="flex justify-between items-stretch gap-3">
+                 {/* Case Number (Medium) */}
+                 <div className="flex-[3] bg-white border border-slate-200/80 rounded-2xl p-4 flex justify-between items-center shadow-sm">
+                     <div className="flex flex-col justify-center items-start">
+                         <span className="text-slate-500 text-[11px] font-black block mb-1 tracking-wider">رقم القضية</span>
+                         <span className="font-mono font-[900] text-slate-900 text-lg">#{c.caseNumber}</span>
+                     </div>
+                     <div className="flex gap-2">
+                        <button
+                          type="button"
+                          id={`btn-history-${c.id}`}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setActivityLogCaseId(c.id);
+                          }}
+                          className="p-2 rounded-xl border border-slate-200 text-slate-400 hover:bg-slate-50 hover:text-slate-800 transition-all shadow-sm"
+                          title="سجل تعديلات ونشاط القضية"
+                        >
+                          <Clock className="w-4 h-4" />
+                        </button>
+                        <button
+                          type="button"
+                          id={`btn-quick-note-${c.id}`}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setIsNotePopoverOpen(true);
+                          }}
+                          className="p-2 rounded-xl border border-amber-200 text-amber-600 hover:bg-amber-50 hover:text-amber-700 transition-all shadow-sm"
+                          title="إضافة ملاحظة سريعة للمكتب"
+                        >
+                          <Notebook className="w-4 h-4" />
+                        </button>
+                     </div>
+                 </div>
+                 {/* Status (Small) */}
+                 <div className="flex-[2] bg-white border border-slate-200/80 rounded-2xl p-4 shadow-sm flex flex-col justify-center items-start">
+                     <span className="text-slate-500 text-[11px] font-black block mb-2 tracking-wider">حالة القضية</span>
+                     <div className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 w-full flex items-center justify-between">
+                      <span className={`w-2 h-2 rounded-full ${c.status === 'closed' ? 'bg-slate-400': 'bg-amber-500 animate-pulse'}`} />
+                      {onUpdateCaseStatus ? (
+                        <select
+                          value={c.status || 'under_study'}
+                          onChange={(e) => onUpdateCaseStatus(c, e.target.value)}
+                          onClick={(e) => e.stopPropagation()}
+                          className="bg-transparent text-slate-800 font-[900] focus:outline-none cursor-pointer appearance-none text-[12px] w-full text-left"
+                          style={{ direction: 'rtl' }}
+                        >
+                          <option value="under_study">قيد الدراسة</option>
+                          <option value="under_review">قيد النظر</option>
+                          <option value="struck_off">شطبت</option>
+                          <option value="appeal">استئناف</option>
+                          <option value="execution">تنفيذ</option>
+                          <option value="primary_judgment">حكم ابتدائي</option>
+                          <option value="final_judgment">حكم قطعي</option>
+                          <option value="postponed">مؤجلة</option>
+                          <option value="closed">ملف مقفل</option>
+                          <option value="active">نشطة</option>
+                        </select>
+                      ) : (
+                        <span className="font-[900] text-slate-800 text-[12px]">{arabicStatusName}</span>
+                      )}
+                     </div>
+                 </div>
+              </div>
+    
+              {/* Row 2: Court (Large) & Circuit (Medium) */}
+              <div className="flex gap-3">
+                 <div className="flex-[3] bg-white border border-slate-200/80 rounded-2xl p-4 shadow-sm">
+                    <span className="text-slate-500 text-[11px] font-black block mb-1.5 flex items-center gap-1.5 tracking-wider">
+                      <MapPin className="w-4 h-4 text-amber-600"/> المحكمة المختصة
+                    </span>
+                    <span className="text-slate-900 font-[900] text-xl block truncate leading-tight">{c.courtName || 'غير محدد'}</span>
+                 </div>
+                 <div className="flex-[2] bg-white border border-slate-200/80 rounded-2xl p-4 shadow-sm">
+                    <span className="text-slate-500 text-[11px] font-black block mb-1.5 tracking-wider">الدائرة القضائية</span>
+                    <span className="text-slate-900 font-[900] text-lg block truncate">{c.circuitNumber || 'غير محدد'}</span>
+                 </div>
+              </div>
+    
+              {/* Row 3: Client (Large) */}
+              <div className="bg-white border border-slate-200/80 rounded-2xl p-4 shadow-sm">
+                 <span className="text-slate-500 text-[11px] font-black block mb-1.5 flex items-center gap-1.5 tracking-wider">
+                   <User className="w-4 h-4 text-amber-600"/> أطراف الدعوى / الموكل
+                 </span>
+                 <span className="text-slate-900 font-[900] text-xl block truncate leading-tight">{c.clientName || 'غير محدد'}</span>
+              </div>
+    
+              {/* Row 4: Case Type (Small) */}
+              <div className="bg-white border border-slate-200/80 rounded-2xl p-4 shadow-sm flex items-center gap-4">
+                 <div className="rounded-xl border border-slate-200 shadow-sm flex items-center justify-center shrink-0 bg-slate-50 text-amber-600 w-12 h-12">
+                    <IconComponent className="w-6 h-6" />
+                 </div>
+                 <div>
+                   <span className="text-slate-500 text-[11px] font-black block mb-1 tracking-wider">نوع القضية</span>
+                   <span className="text-slate-800 font-[900] text-sm block truncate leading-tight">{theme.nameAr}</span>
+                 </div>
+              </div>
+    
+              {/* Row 5: Case Subject (Medium) */}
+              <div className="bg-white border border-slate-200/80 rounded-2xl p-4 shadow-sm">
+                 <span className="text-slate-500 text-[11px] font-black block mb-1.5 tracking-wider">موضوع الدعوى</span>
+                 <span className="text-slate-900 font-[900] text-lg line-clamp-2 leading-snug">{c.caseName || 'غير محدد'}</span>
+              </div>
+            </>
+          )}
 
           {/* Row 6: Next Session (Medium) */}
           {(() => {
               const countdown = getSessionCountdown(c.nextSessionDate);
               const isSoon = countdown && countdown.isSoon;
               return (
-                  <div className={`bg-[#0b1329]/80 border ${isSoon ? 'border-[#ff7f00] shadow-[0_0_15px_rgba(255,127,0,0.2)]' : 'border-slate-700/80'} rounded-2xl p-4 shadow-lg shadow-black/20 relative overflow-hidden`}>
-                     <span className="text-[#facc15] text-[11px] font-black block mb-1.5 flex items-center gap-1.5 tracking-wider">
-                        <Calendar className={`w-4 h-4 ${isSoon ? 'text-[#ff7f00]' : 'text-[#facc15]'}`} /> الجلسة القادمة
+                  <div className={`bg-white border ${isSoon ? 'border-amber-400 shadow-md shadow-amber-500/10' : 'border-slate-200/80'} rounded-2xl p-4 shadow-sm relative overflow-hidden`}>
+                     <span className="text-slate-500 text-[11px] font-black block mb-1.5 flex items-center gap-1.5 tracking-wider">
+                        <Calendar className={`w-4 h-4 ${isSoon ? 'text-amber-600' : 'text-slate-400'}`} /> الجلسة القادمة
                      </span>
                      <div className="flex justify-between items-center">
-                        <span className={`font-[900] text-lg ${isSoon ? 'text-[#ff7f00]' : 'text-[#facc15]'} font-mono tracking-tight drop-shadow-md`}>{c.nextSessionDate || 'غير مجدول'}</span>
+                        <span className={`font-[900] text-lg ${isSoon ? 'text-amber-700' : 'text-slate-900'} font-mono tracking-tight`}>{c.nextSessionDate || 'غير مجدول'}</span>
                         {isSoon && countdown && (
-                          <span className="text-[11px] font-[900] bg-[#ff7f00] text-slate-950 px-3 py-1.5 rounded-xl border border-orange-400 animate-pulse text-center drop-shadow-md">
+                          <span className="text-[11px] font-[900] bg-amber-100 text-amber-800 px-3 py-1.5 rounded-xl border border-amber-200 animate-pulse text-center">
                             🚨 {countdown.daysRemaining === 0 ? 'اليوم!' : countdown.daysRemaining === 1 ? 'غداً!' : `متبقي ${countdown.daysRemaining} أيام`}
                           </span>
                         )}
@@ -463,25 +530,25 @@ export default function CaseCard({
           {/* Row 7: Counts & Najiz (Small) */}
           <div className="flex gap-3">
              {/* Counts */}
-             <div className="flex-[3] bg-[#0b1329]/80 border border-slate-700/80 rounded-2xl p-3 shadow-lg shadow-black/20 grid grid-cols-3 divide-x divide-x-reverse divide-slate-700/50 text-center items-center">
+             <div className="flex-[3] bg-white border border-slate-200/80 rounded-2xl p-3 shadow-sm grid grid-cols-3 divide-x divide-x-reverse divide-slate-100 text-center items-center">
                 <div className="flex flex-col">
-                  <span className="text-[#facc15] text-[10px] font-black block mb-1 tracking-wider">مذكرات</span>
-                  <span className="text-white font-[900] text-sm font-mono">{c.notes?.length || (parseInt(c.caseNumber || '3') % 3 + 1)}</span>
+                  <span className="text-slate-500 text-[10px] font-black block mb-1 tracking-wider">مذكرات</span>
+                  <span className="text-slate-900 font-[900] text-sm font-mono">{c.notes?.length || (parseInt(c.caseNumber || '3') % 3 + 1)}</span>
                 </div>
                 <div className="flex flex-col">
-                  <span className="text-[#facc15] text-[10px] font-black block mb-1 tracking-wider">جلسات</span>
-                  <span className="text-white font-[900] text-sm font-mono">{c.hearings?.filter(h => h.status === 'completed').length || (parseInt(c.caseNumber || '5') % 2 + 1)}</span>
+                  <span className="text-slate-500 text-[10px] font-black block mb-1 tracking-wider">جلسات</span>
+                  <span className="text-slate-900 font-[900] text-sm font-mono">{c.hearings?.filter(h => h.status === 'completed').length || (parseInt(c.caseNumber || '5') % 2 + 1)}</span>
                 </div>
                 <div className="flex flex-col">
-                  <span className="text-[#facc15] text-[10px] font-black block mb-1 tracking-wider">مستندات</span>
-                  <span className="text-[#ff7f00] font-[900] text-sm font-mono">{c.attachments_count || 0}</span>
+                  <span className="text-slate-500 text-[10px] font-black block mb-1 tracking-wider">مستندات</span>
+                  <span className="text-amber-600 font-[900] text-sm font-mono">{c.attachments_count || 0}</span>
                 </div>
              </div>
              {/* Najiz */}
-             <div className="flex-[2] bg-[#040e21] border border-[#ff7f00]/30 rounded-2xl p-3 shadow-lg shadow-black/20 flex flex-col items-center justify-center cursor-pointer hover:bg-[#0b1329] transition-colors"
+             <div className="flex-[2] bg-slate-50 border border-slate-200/80 rounded-2xl p-3 shadow-sm flex flex-col items-center justify-center cursor-pointer hover:bg-slate-100 transition-colors"
                   onClick={(e) => { e.stopPropagation(); onNajizSync(c); }}>
-                <Bot className={`w-5 h-5 text-[#ff7f00] mb-1.5 ${isSyncing === c.id ? 'animate-spin' : ''}`} />
-                <span className="text-[#facc15] text-[10px] font-black text-center tracking-wider">{c.isNajizSync || c.is_najiz_sync ? 'مرتبط بنظام ناجز' : 'مزامنة ناجز'}</span>
+                <Bot className={`w-5 h-5 text-amber-600 mb-1.5 ${isSyncing === c.id ? 'animate-spin' : ''}`} />
+                <span className="text-slate-700 text-[10px] font-black text-center tracking-wider">{c.isNajizSync || c.is_najiz_sync ? 'مرتبط بنظام ناجز' : 'مزامنة ناجز'}</span>
              </div>
           </div>
 
@@ -490,13 +557,13 @@ export default function CaseCard({
             <div className="flex justify-between items-center mt-2 gap-3">
               {/* Archive is Right (First in RTL) */}
               {onArchiveToggle ? (
-                  <button onClick={(e) => { e.stopPropagation(); onArchiveToggle(c); }} className="flex-[2] bg-[#040e21] border border-[#facc15]/30 text-[#facc15] hover:bg-[#facc15] hover:text-slate-950 px-4 py-3 rounded-2xl text-[11px] font-black transition-all flex items-center justify-center gap-2 shadow-lg">
+                  <button onClick={(e) => { e.stopPropagation(); onArchiveToggle(c); }} className="flex-[2] bg-amber-50 border border-amber-200/80 text-amber-700 hover:bg-amber-100 px-4 py-3 rounded-2xl text-[11px] font-black transition-all flex items-center justify-center gap-2 shadow-sm">
                     {c.archived ? 'استعادة ملف الدعوى' : 'نقل القضية للأرشيف'}
                   </button>
               ) : <div className="flex-[2]"></div>}
               {/* Delete is Left (Second in RTL) */}
               {onDeleteCase ? (
-                  <button onClick={(e) => { e.stopPropagation(); onDeleteCase(c.id); }} className="flex-[2] bg-[#040e21] border border-rose-500/30 text-rose-500 hover:bg-rose-500 hover:text-white px-4 py-3 rounded-2xl text-[11px] font-black transition-all flex items-center justify-center gap-2 shadow-lg">
+                  <button onClick={(e) => { e.stopPropagation(); onDeleteCase(c.id); }} className="flex-[2] bg-red-50 border border-red-200/80 text-red-600 hover:bg-red-100 px-4 py-3 rounded-2xl text-[11px] font-black transition-all flex items-center justify-center gap-2 shadow-sm">
                     <Trash2 className="w-4 h-4" />
                     حذف القضية
                   </button>
@@ -509,27 +576,26 @@ export default function CaseCard({
         {/* --- QUICK NOTE FLOATING POPOVER (OVERLAY HUD) --- */}
         {isNotePopoverOpen && (
           <div 
-            className="absolute inset-0 z-50 p-6 flex flex-col justify-between transition-all duration-300 text-white rounded-[1.8rem]"
+            className="absolute inset-0 z-50 p-6 flex flex-col justify-between transition-all duration-300 text-slate-900 rounded-[1.8rem] bg-white/95 backdrop-blur-md"
             style={{
-              background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',
-              border: '2px solid #FF7F00',
-              boxShadow: '0 25px 55px rgba(0, 0, 0, 0.95)'
+              border: '2px solid #f59e0b',
+              boxShadow: '0 25px 55px rgba(0, 0, 0, 0.15)'
             }}
             onClick={(e) => e.stopPropagation()} // Prevent card selection click trigger
             dir="rtl"
           >
             <div className="space-y-3 flex-1 flex flex-col justify-between">
               <div>
-                <div className="flex items-center justify-between border-b border-slate-700 pb-1.5 mb-2">
-                  <span className="text-[13px] font-black text-amber-400 flex items-center gap-1.5">
+                <div className="flex items-center justify-between border-b border-slate-200 pb-1.5 mb-2">
+                  <span className="text-[13px] font-black text-amber-600 flex items-center gap-1.5">
                     📝 ملاحظة سريعة جديدة
                   </span>
-                  <span className="text-[11px] font-mono font-black text-slate-400">
+                  <span className="text-[11px] font-mono font-black text-slate-500">
                     #{c.caseNumber}
                   </span>
                 </div>
                 
-                <p className="text-[11px] text-slate-300 text-right mb-1">
+                <p className="text-[11px] text-slate-600 text-right mb-1">
                   سجل ملحوظة وسيتم الحفظ الفوري بجدول الملاحظات (Notes):
                 </p>
               </div>
@@ -539,11 +605,11 @@ export default function CaseCard({
                   <div className="w-10 h-10 rounded-full border-2 border-emerald-500 text-emerald-500 flex items-center justify-center animate-bounce text-lg font-bold">
                     ✓
                   </div>
-                  <span className="text-sm font-black text-emerald-400">تم حفظ الملاحظة بنجاح!</span>
+                  <span className="text-sm font-black text-emerald-600">تم حفظ الملاحظة بنجاح!</span>
                 </div>
               ) : (
                 <textarea
-                  className="w-full flex-1 p-2.5 text-xs bg-slate-950/90 border border-slate-700/60 rounded-xl text-slate-100 placeholder-slate-500 focus:outline-none focus:border-[#FF7F00] text-right font-extrabold resize-none"
+                  className="w-full flex-1 p-2.5 text-xs bg-slate-50 border border-slate-300 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 text-right font-extrabold resize-none"
                   placeholder="مثال: تم مراجعة الجلسة اليوم وسنقدم المذكرة غداً مرافعة..."
                   value={quickNoteText}
                   onChange={(e) => setQuickNoteText(e.target.value)}
@@ -554,12 +620,12 @@ export default function CaseCard({
             </div>
 
             {!noteSavedSuccessfully && (
-              <div className="border-t border-slate-800 pt-2 flex items-center justify-between gap-3 mt-2">
+              <div className="border-t border-slate-200 pt-2 flex items-center justify-between gap-3 mt-2">
                 <button
                   type="button"
                   onClick={handleSaveQuickNote}
                   disabled={isSavingNote || !quickNoteText.trim()}
-                  className="flex-1 py-1.5 text-sm font-black rounded-xl bg-transparent border-2 border-[#FF7F00] text-[#FF7F00] hover:bg-[#FF7F00] hover:text-slate-900 transition-all outline-none"
+                  className="flex-1 py-2 text-sm font-black rounded-xl bg-amber-500 border border-amber-600 text-white hover:bg-amber-600 transition-all outline-none shadow-md"
                 >
                   {isSavingNote ? 'جاري الحفظ...' : 'حفظ الآن 💾'}
                 </button>
@@ -567,7 +633,7 @@ export default function CaseCard({
                   type="button"
                   onClick={() => setIsNotePopoverOpen(false)}
                   disabled={isSavingNote}
-                  className="px-4 py-1.5 text-sm font-black rounded-xl bg-transparent border-2 border-slate-600 text-slate-400 hover:text-white hover:border-slate-400 transition-all outline-none"
+                  className="px-4 py-2 text-sm font-black rounded-xl bg-white border border-slate-300 text-slate-600 hover:bg-slate-50 transition-all outline-none"
                 >
                   إلغاء
                 </button>

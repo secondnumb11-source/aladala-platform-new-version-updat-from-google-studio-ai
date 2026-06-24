@@ -232,6 +232,14 @@ html.dark input, html.dark textarea, html.dark select {
   color: var(--text-white-hex) !important;
 }
 
+html:not(.dark) input, html:not(.dark) textarea, html:not(.dark) select {
+  color: #0c2461 !important;
+}
+
+html:not(.dark) input::placeholder, html:not(.dark) textarea::placeholder {
+  color: #475569 !important;
+}
+
 input:focus, textarea:focus, select:focus {
   border-color: #facc15 !important; /* Bright Gold */
   outline: none;

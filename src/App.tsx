@@ -313,7 +313,11 @@ const mapHearingFromDB = (db: any) => ({
   notes: db.notes,
   hallNumber: db.hall_number || db.hallNumber,
   decision: db.decision,
-  createdAt: db.created_at
+  createdAt: db.created_at,
+  fromDashboard: db.from_dashboard || db.fromDashboard || false,
+  source: db.source || '',
+  title: db.title || db.case_name || '',
+  raw: db.raw || null
 }) as Hearing;
 
 const mapPOAFromDB = (db: any) => ({

@@ -26,6 +26,9 @@ export interface Execution {
   case_number?: string;
   requester_name?: string;
   opponent_name?: string;
+  request_type?: string;
+  deed_type?: string;
+  submission_date?: string;
   status?: string;
   amount?: number;
   court_name?: string;
@@ -69,6 +72,7 @@ export interface Case {
   isNajizSync: boolean;
   is_najiz_sync?: boolean;
   last_sync_at?: string;
+  metadata?: any;
   priority: 'low' | 'medium' | 'high';
   isConfidential?: boolean;
   confidentiality?: 'standard' | 'confidential' | 'highly_confidential';
@@ -76,6 +80,8 @@ export interface Case {
   lastActivityAt?: string;
   createdAt: string;
   startDate?: string;
+  case_date?: string;
+  capacity?: string;
   lead_lawyer_id?: string;
   assigned_lawyers?: string[];
   judge_name?: string;
@@ -143,6 +149,10 @@ export interface Hearing {
   decision?: string;
   is_najiz_sync?: boolean;
   last_sync_at?: string;
+  fromDashboard?: boolean;
+  source?: string;
+  title?: string;
+  raw?: any;
 }
 
 export interface Task {
