@@ -688,78 +688,40 @@ html.dark .glass-panel {
 }
 
 /* Glass reflection removed as requested */
-/* Make text crisp and contrasted inside the card on hover */
-.card-professional:not(:hover) * {
-  text-shadow: 0 0 1px rgba(0, 0, 0, 0.1);
-}
-
 /* Individual items hover glow and float */
 .card-professional-item {
   border-radius: var(--card-border-radius, 1.25rem);
-  transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
   position: relative;
   overflow: hidden;
 }
 
-/* No hover transform on cards */
-html:not(.dark) .card-professional:not(:hover),
-html:not(.dark) .card-professional-item:not(:hover) {
-  background-color: var(--bg-card) !important;
-  transform: none !important;
-  box-shadow: var(--shadow-depth-1) !important;
+.card-professional {
+  background-color: var(--bg-card);
+  border: var(--card-border-width, 1px) solid var(--border) !important;
+  border-radius: var(--card-border-radius, 1.5rem) !important;
+  padding: 1.5rem;
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.08), inset 0 0 0 1px rgba(255,255,255,0.4);
+  transform-style: preserve-3d;
+  perspective: 1000px;
 }
 
-/* Ensure text is readable when card turns light yellow/beige */
-html:not(.dark) .card-professional:not(:hover) h1,
-html:not(.dark) .card-professional:not(:hover) h2,
-html:not(.dark) .card-professional:not(:hover) h3,
-html:not(.dark) .card-professional:not(:hover) h4,
-html:not(.dark) .card-professional:not(:hover) p,
-html:not(.dark) .card-professional:not(:hover) span,
-html:not(.dark) .card-professional:not(:hover) div,
-html:not(.dark) .card-professional-item:not(:hover) h1,
-html:not(.dark) .card-professional-item:not(:hover) h2,
-html:not(.dark) .card-professional-item:not(:hover) h3,
-html:not(.dark) .card-professional-item:not(:hover) h4,
-html:not(.dark) .card-professional-item:not(:hover) p,
-html:not(.dark) .card-professional-item:not(:hover) span,
-html:not(.dark) .card-professional-item:not(:hover) div {
-  color: #0f172a;
-}
-/* except primary colorful badges */
-html:not(.dark) .card-professional:not(:hover) .text-primary,
-html:not(.dark) .card-professional-item:not(:hover) .text-primary {
-  color: #b8860b !important;
-}
-html:not(.dark) .card-professional:not(:hover) .text-rose-400,
-html:not(.dark) .card-professional-item:not(:hover) .text-rose-400 {
-  color: #e11d48 !important;
-}
-html:not(.dark) .card-professional:not(:hover) .text-rose-500,
-html:not(.dark) .card-professional-item:not(:hover) .text-rose-500 {
-  color: #e11d48 !important;
-}
-html:not(.dark) .card-professional:not(:hover) .text-emerald-400,
-html:not(.dark) .card-professional-item:not(:hover) .text-emerald-400 {
-  color: #059669 !important;
-}
-html:not(.dark) .card-professional:not(:hover) .text-emerald-500,
-html:not(.dark) .card-professional-item:not(:hover) .text-emerald-500 {
-  color: #059669 !important;
-}
-html:not(.dark) .card-professional:not(:hover) .text-amber-500,
-html:not(.dark) .card-professional-item:not(:hover) .text-amber-500 {
-  color: #d97706 !important;
-}
-html:not(.dark) .card-professional:not(:hover) .bg-primary\/10,
-html:not(.dark) .card-professional-item:not(:hover) .bg-primary\/10 {
-  background-color: rgba(184, 134, 11, 0.15) !important;
+html.dark .card-professional {
+  box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.4), inset 0 0 0 1px rgba(255,255,255,0.05);
+  background-color: var(--bg-card);
 }
 
-/* Make text crisp and contrasted inside the card on hover */
-.card-professional:not(:hover) *,
-.card-professional-item:not(:hover) * {
-  text-shadow: 0 0 1px rgba(0, 0, 0, 0.1);
+.card-professional:hover, .card-professional-item:hover {
+  transform: translateY(-4px) scale(1.01);
+}
+
+html:not(.dark) .card-professional:hover {
+  box-shadow: 0 20px 50px -15px rgba(0, 0, 0, 0.15), inset 0 0 0 2px rgba(212, 175, 55, 0.5);
+}
+
+html.dark .card-professional:hover {
+  box-shadow: 0 20px 50px -15px rgba(0, 0, 0, 0.6), inset 0 0 0 1px rgba(212, 175, 55, 0.5);
 }
 
 /* Force high contrast on common utility classes across the app for LIGHT backgrounds */

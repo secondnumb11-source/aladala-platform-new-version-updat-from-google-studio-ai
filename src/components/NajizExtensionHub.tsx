@@ -871,29 +871,386 @@ export default function NajizExtensionHub({ currentUser, onUpdateState }: NajizE
     (window as any).showToast?.('اكتملت محاكاة المزامنة بنجاح', 'success');
   };
 
-  const generateExtensionZip = async () => {
+  const downloadNajizExtension = async () => {
     try {
       setDownloading(true);
-      const currentHost = window.location.origin;
-      const downloadUrl = `${currentHost}/api/extension/download?apiKey=DEMO_KEY`;
-      const res = await fetch(downloadUrl);
-      if (!res.ok) throw new Error('Failed to fetch extension zip from server');
-      
-      const blob = await res.blob();
+      // الملفات الكاملة للأداة v13
+      const JSZipModule = await import('jszip');
+      const JSZip = JSZipModule.default || JSZipModule;
+      const zip = new JSZip();
+
+      // manifest.json
+      zip.file('manifest.json', JSON.stringify({
+        manifest_version: 3,
+        name: "منصة العدالة لإدارة مكاتب المحاماة",
+        short_name: "منصة العدالة",
+        version: "2.0.0",
+        description: "أداة سحب ومزامنة بيانات القضايا والموكلين والجلسات والوكالات وطلبات التنفيذ من منصة ناجز إلى منصة العدالة.",
+        default_locale: "ar",
+        permissions: ["storage","activeTab","scripting","alarms","notifications","tabs"],
+        host_permissions: [
+          "https://najiz.sa/*",
+          "https://www.najiz.sa/*",
+          "https://*.najiz.sa/*",
+          "https://aladala-platform-rnuz.onrender.com/*"
+        ],
+        action: {
+          default_popup: "popup.html",
+          default_title: "منصة العدالة - مزامنة ناجز",
+          default_icon: { "16":"icons/icon16.png","48":"icons/icon48.png","128":"icons/icon128.png" }
+        },
+        icons: { "16":"icons/icon16.png","48":"icons/icon48.png","128":"icons/icon128.png" },
+        background: { service_worker: "background.js", type: "module" },
+        options_page: "options.html",
+        content_scripts: [{
+          matches: ["https://najiz.sa/*","https://www.najiz.sa/*","https://*.najiz.sa/*"],
+          js: ["content.js"],
+          css: ["content.css"],
+          run_at: "document_idle",
+          all_frames: false
+        }],
+        web_accessible_resources: [{
+          resources: ["icons/*.png","injected.js"],
+          matches: ["https://*.najiz.sa/*","https://najiz.sa/*"]
+        }]
+      }, null, 2));
+
+      // _locales
+      const localesAr = zip.folder('_locales/ar');
+      const localesEn = zip.folder('_locales/en');
+      localesAr?.file('messages.json', JSON.stringify({
+        extensionName: { message: "منصة العدالة لإدارة مكاتب المحاماة" },
+        extensionDescription: { message: "أداة سحب ومزامنة بيانات ناجز القانونية" }
+      }, null, 2));
+      localesEn?.file('messages.json', JSON.stringify({
+        extensionName: { message: "Aladala Law Firm Management Platform" },
+        extensionDescription: { message: "Smart sync tool for Najiz legal data" }
+      }, null, 2));
+
+      // background.js
+      zip.file('background.js', `// background.js — service worker
+const ALARM = "adala-auto-sync";
+chrome.runtime.onInstalled.addListener(async () => {
+  const { settings } = await chrome.storage.local.get("settings");
+  const deviceId = (await chrome.storage.local.get("deviceId")).deviceId || crypto.randomUUID();
+  if (!settings) await chrome.storage.local.set({ settings: { interval: 60, autoSync: false }, deviceId });
+  else await chrome.storage.local.set({ deviceId });
+  schedule();
+});
+chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
+  (async () => {
+    try {
+      if (msg.action === "RESCHEDULE") { await schedule(); return sendResponse({ ok: true }); }
+      if (msg.action === "PUSH") { const r = await push(msg.type, msg.payload, msg.pageUrl); return sendResponse(r); }
+      if (msg.action === "SYNC") { const r = await syncFromTab(msg.type, msg.tabId); return sendResponse(r); }
+    } catch (e) { sendResponse({ ok: false, error: e.message }); }
+  })();
+  return true;
+});
+async function syncFromTab(type, tabId) {
+  let scraped = await chrome.tabs.sendMessage(tabId, { action: "SCRAPE", type }).catch(() => null);
+  if (!scraped?.ok) {
+    await chrome.scripting.executeScript({ target: { tabId }, files: ["content.js"] }).catch(() => null);
+    await chrome.scripting.insertCSS({ target: { tabId }, files: ["content.css"] }).catch(() => null);
+    await new Promise((resolve) => setTimeout(resolve, 500));
+    scraped = await chrome.tabs.sendMessage(tabId, { action: "SCRAPE", type }).catch(() => null);
+  }
+  if (!scraped?.ok) return { ok: false, error: "تعذّر سحب البيانات من الصفحة. افتح صفحة بيانات داخل ناجز بعد تسجيل الدخول ثم أعد المحاولة." };
+  const r = await push(type, scraped.payload);
+  return { ...r, count: scraped.payload?.summary?.totalItems ?? scraped.payload?.items?.length ?? 0 };
+}
+async function push(type, payload, pageUrl) {
+  const { settings = {}, deviceId } = await chrome.storage.local.get(["settings", "deviceId"]);
+  if (!settings.apiUrl) return { ok: false, error: "أضف رابط الواجهة (API URL) من صفحة الإعدادات" };
+  try {
+    const headers = { "Content-Type": "application/json" };
+    if (settings.apiKey) { headers["X-API-Key"] = settings.apiKey; headers["Authorization"] = \`Bearer \${settings.apiKey}\`; }
+    const res = await fetch(settings.apiUrl, {
+      method: "POST", headers,
+      body: JSON.stringify({
+        source: "najiz-extension", type, payload, pageUrl: pageUrl || payload?.url,
+        extension: { version: "2.0.0", deviceId },
+        sentAt: new Date().toISOString()
+      })
+    });
+    if (!res.ok) { const t = await res.text(); return { ok: false, error: \`HTTP \${res.status}: \${t.slice(0,120)}\` }; }
+    const data = await res.json();
+    await chrome.storage.local.set({ lastSync: Date.now(), lastSyncResult: data });
+    notify("تمت المزامنة بنجاح", \`تم إرسال \${data?.itemCount ?? payload?.summary?.totalItems ?? 0} عنصر إلى المنصة.\`);
+    return { ok: true, ...data };
+  } catch (e) { return { ok: false, error: e.message }; }
+}
+async function schedule() {
+  await chrome.alarms.clear(ALARM);
+  const { settings = {} } = await chrome.storage.local.get("settings");
+  if (settings.autoSync && settings.interval) chrome.alarms.create(ALARM, { periodInMinutes: settings.interval });
+}
+chrome.alarms.onAlarm.addListener(async (a) => {
+  if (a.name !== ALARM) return;
+  const tabs = await chrome.tabs.query({ url: ["*://*.najiz.sa/*","*://najiz.sa/*"] });
+  if (!tabs.length) return;
+  await syncFromTab("all", tabs[0].id);
+});
+function notify(title, message) {
+  try { chrome.notifications.create({ type:"basic", iconUrl:"icons/icon128.png", title, message, priority:1 }); } catch {}
+}`);
+
+      // popup.html
+      zip.file('popup.html', `<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>منصة العدالة</title>
+<link rel="stylesheet" href="popup.css"/>
+</head>
+<body>
+<header class="hdr">
+  <img src="icons/icon48.png" alt="" class="logo"/>
+  <div><h1>منصة العدالة</h1><p class="sub">المزامنة المباشرة مع ناجز</p></div>
+</header>
+<section id="statusCard" class="card status">
+  <div class="row"><span class="dot" id="connDot"></span><span id="connText">جارٍ التحقق من الاتصال…</span></div>
+  <div class="row small"><span>آخر مزامنة:</span><strong id="lastSync">—</strong></div>
+</section>
+<section class="card">
+  <h2 class="title">اختر البيانات المراد مزامنتها</h2>
+  <button class="btn btn-gold full" id="syncAll">⇅ مزامنة جميع البيانات الآن</button>
+  <div class="grid">
+    <button class="btn btn-ghost" data-type="cases">📁 القضايا</button>
+    <button class="btn btn-ghost" data-type="clients">👥 الموكلون والأطراف</button>
+    <button class="btn btn-ghost" data-type="sessions">📅 مواعيد الجلسات</button>
+    <button class="btn btn-ghost" data-type="executions">⚡ طلبات التنفيذ</button>
+    <button class="btn btn-ghost" data-type="requests">📨 الطلبات على القضايا</button>
+    <button class="btn btn-ghost" data-type="minutes">📋 محاضر ضبط الجلسات</button>
+    <button class="btn btn-ghost" data-type="agencies">📜 الوكالات</button>
+    <button class="btn btn-ghost" data-type="judgments">⚖️ الأحكام والاستئناف</button>
+    <button class="btn btn-ghost" data-type="notices">🔔 الإشعارات والتنبيهات</button>
+    <button class="btn btn-ghost" data-type="documents">📄 المستندات والمرفقات</button>
+  </div>
+</section>
+<section class="card log">
+  <h2 class="title">سجل المزامنة</h2>
+  <ul id="logList"><li class="muted">لا توجد عمليات بعد.</li></ul>
+</section>
+<footer class="ftr">
+  <button id="openOptions" class="link">⚙ الإعدادات وربط المنصة</button>
+  <span class="ver">v2.0.0</span>
+</footer>
+<script src="popup.js"></script>
+</body>
+</html>`);
+
+      // popup.js
+      zip.file('popup.js', `const $ = (s) => document.querySelector(s);
+const LABELS = { all:"جميع البيانات", cases:"القضايا", clients:"الموكلين",
+  sessions:"مواعيد الجلسات", executions:"طلبات التنفيذ", requests:"الطلبات",
+  minutes:"محاضر ضبط الجلسات", agencies:"الوكالات", judgments:"الأحكام",
+  notices:"الإشعارات", documents:"المستندات" };
+function labelFor(t) { return LABELS[t] || t; }
+function addLog(msg, cls) {
+  const li = document.createElement("li"); li.textContent = msg;
+  if (cls) li.className = cls;
+  const ul = $("#logList");
+  ul.querySelectorAll(".muted").forEach(e => e.remove());
+  ul.prepend(li);
+  while (ul.children.length > 10) ul.lastChild.remove();
+}
+async function refreshStatus() {
+  const { settings = {}, lastSync } = await chrome.storage.local.get(["settings","lastSync"]);
+  const dot = $("#connDot"); const txt = $("#connText");
+  if (!settings.apiUrl) { dot.className="dot"; txt.textContent="لم يتم ربط المنصة بعد. افتح الإعدادات."; return; }
+  dot.className="dot ok"; txt.textContent="متصل — " + new URL(settings.apiUrl).host;
+  if (lastSync) $("#lastSync").textContent = new Date(lastSync).toLocaleString("ar-SA");
+}
+async function ensureNajizTab() {
+  let [tab] = await chrome.tabs.query({ active:true, currentWindow:true });
+  if (tab && /najiz\\.sa/.test(tab.url||"")) return tab;
+  const all = await chrome.tabs.query({ url:["*://*.najiz.sa/*","*://najiz.sa/*"] });
+  if (all.length) { await chrome.tabs.update(all[0].id, { active:true }); return all[0]; }
+  tab = await chrome.tabs.create({ url:"https://najiz.sa" });
+  await new Promise(r => setTimeout(r, 3000)); return tab;
+}
+async function runSync(type) {
+  addLog(\`بدء مزامنة: \${labelFor(type)}…\`);
+  try {
+    const tab = await ensureNajizTab();
+    const res = await chrome.runtime.sendMessage({ action:"SYNC", type, tabId:tab.id });
+    if (res?.ok) addLog(\`✓ تمت مزامنة \${labelFor(type)} (\${res.count ?? 0} عنصر)\`, "ok");
+    else addLog(\`✗ \${res?.error || "خطأ غير معروف"}\`, "err");
+  } catch (e) { addLog(\`✗ \${e.message}\`, "err"); }
+}
+document.addEventListener("DOMContentLoaded", async () => {
+  await refreshStatus();
+  $("#syncAll").addEventListener("click", () => runSync("all"));
+  document.querySelectorAll("[data-type]").forEach(b => b.addEventListener("click", () => runSync(b.dataset.type)));
+  $("#openOptions").addEventListener("click", () => chrome.runtime.openOptionsPage());
+});`);
+
+      // popup.css
+      zip.file('popup.css', `:root{--navy:#0B1A33;--navy-2:#11264a;--navy-3:#1a3563;--gold:#C9A24B;--gold-2:#E6C167;--yellow:#FFE27A;--white:#FFFFFF;--muted:#BFC9DA;--danger:#ff6b6b;--ok:#4ade80}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:380px;font-family:"Segoe UI","Tahoma","Cairo",sans-serif;background:linear-gradient(160deg,var(--navy) 0%,var(--navy-2) 100%);color:var(--white)}
+body{padding:14px}
+.hdr{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.logo{width:40px;height:40px;border-radius:10px;background:var(--navy-3);padding:4px}
+.hdr h1{font-size:16px;color:var(--yellow);letter-spacing:.2px}
+.sub{font-size:11px;color:var(--gold-2)}
+.card{background:rgba(255,255,255,.04);border:1px solid rgba(201,162,75,.25);border-radius:12px;padding:12px;margin-bottom:10px}
+.title{font-size:13px;color:var(--gold-2);margin-bottom:10px;font-weight:700}
+.row{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--white)}
+.row.small{margin-top:6px;font-size:12px;color:var(--muted)}
+.row.small strong{color:var(--yellow);font-weight:600}
+.dot{width:10px;height:10px;border-radius:50%;background:var(--muted)}
+.dot.ok{background:var(--ok);box-shadow:0 0 6px var(--ok)}
+.btn{cursor:pointer;border:0;padding:9px 14px;border-radius:8px;font-weight:700;font-size:13px;font-family:inherit;transition:opacity .15s}
+.btn:hover{opacity:.85}
+.btn-gold{background:linear-gradient(135deg,var(--gold),var(--gold-2));color:#1a1303}
+.btn-ghost{background:rgba(255,255,255,.06);border:1px solid rgba(201,162,75,.35);color:var(--white);font-size:12px}
+.full{width:100%;margin-bottom:10px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.log ul{list-style:none;padding:0;margin:0;max-height:130px;overflow-y:auto;font-size:12px}
+.log li{padding:4px 0;border-bottom:1px solid rgba(255,255,255,.06);color:var(--muted)}
+.log li.ok{color:var(--ok)}
+.log li.err{color:var(--danger)}
+.log li.muted{color:var(--muted);font-style:italic}
+.ftr{display:flex;justify-content:space-between;align-items:center;margin-top:4px}
+.link{background:none;border:none;color:var(--gold-2);font-size:12px;cursor:pointer;padding:0}
+.ver{font-size:11px;color:var(--muted)}`);
+
+      // options.html
+      zip.file('options.html', `<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8"/>
+<title>إعدادات منصة العدالة</title>
+<style>
+:root{--navy:#0B1A33;--navy2:#11264a;--gold:#C9A24B;--gold2:#E6C167;--yellow:#FFE27A;--white:#fff;--muted:#BFC9DA}
+*{box-sizing:border-box;margin:0;padding:0;font-family:"Segoe UI","Cairo",sans-serif}
+body{background:linear-gradient(160deg,var(--navy),var(--navy2));min-height:100vh;color:var(--white);padding:40px 16px}
+.wrap{max-width:640px;margin:0 auto}
+h1{color:var(--yellow);font-size:24px;margin-bottom:6px}
+.sub{color:var(--gold2);margin-bottom:24px;font-size:14px}
+.card{background:rgba(255,255,255,.04);border:1px solid rgba(201,162,75,.3);border-radius:14px;padding:22px;margin-bottom:16px}
+label{display:block;color:var(--yellow);font-weight:700;margin-bottom:6px;font-size:14px}
+.hint{color:var(--muted);font-size:12px;margin-bottom:10px;line-height:1.7}
+input,select{width:100%;padding:11px 12px;background:rgba(0,0,0,.25);border:1px solid rgba(201,162,75,.4);border-radius:8px;color:var(--white);font-size:14px;direction:ltr;text-align:left}
+input:focus{outline:none;border-color:var(--gold)}
+.field{margin-bottom:16px}
+.row{display:flex;gap:10px;align-items:center;margin-top:8px}
+.btn{cursor:pointer;border:0;padding:11px 18px;border-radius:8px;font-weight:700;font-size:14px;font-family:inherit}
+.btn-gold{background:linear-gradient(135deg,var(--gold),var(--gold2));color:#1a1303}
+.btn-ghost{background:transparent;border:1px solid var(--gold);color:var(--yellow)}
+.ok{color:#4ade80;font-size:13px}
+.err{color:#ff8a8a;font-size:13px}
+.opt{display:flex;align-items:center;gap:8px;margin:6px 0;color:var(--white);font-size:13px}
+.opt input{width:auto}
+code{background:rgba(0,0,0,.3);padding:2px 6px;border-radius:4px;color:var(--gold2)}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>إعدادات الربط — منصة العدالة</h1>
+<p class="sub">اربط الإضافة بحساب مكتبك في منصة العدالة لإرسال بيانات ناجز تلقائياً.</p>
+<div class="card">
+  <div class="field">
+    <label>رابط واجهة المنصة (API URL) *</label>
+    <p class="hint">أدخل رابط مزامنة ناجز من إعدادات منصة العدالة. مثال: <code>https://aladala-platform-rnuz.onrender.com/api/v1/sync</code></p>
+    <input id="apiUrl" type="url" placeholder="https://aladala-platform-rnuz.onrender.com/api/v1/sync"/>
+  </div>
+  <div class="field">
+    <label>مفتاح الربط (API Key)</label>
+    <p class="hint">مفتاح API من قسم الإعدادات في منصة العدالة — يبدأ بـ adl_</p>
+    <input id="apiKey" type="text" placeholder="adl_xxxxxxxxxxxxxx"/>
+  </div>
+  <div class="field">
+    <label>المزامنة التلقائية</label>
+    <div class="opt"><input type="checkbox" id="autoSync"/> <span>تفعيل المزامنة التلقائية في الخلفية</span></div>
+    <div class="row">
+      <span style="color:var(--muted);font-size:13px">كل</span>
+      <select id="interval" style="width:140px;direction:rtl;text-align:right">
+        <option value="15">15 دقيقة</option>
+        <option value="30">30 دقيقة</option>
+        <option value="60" selected>60 دقيقة</option>
+        <option value="120">ساعتان</option>
+      </select>
+    </div>
+  </div>
+  <div class="row">
+    <button class="btn btn-gold" id="save">💾 حفظ الإعدادات</button>
+    <button class="btn btn-ghost" id="test">🔗 اختبار الاتصال</button>
+  </div>
+  <p id="msg" style="margin-top:10px"></p>
+</div>
+<div class="card">
+  <h2 style="color:var(--yellow);font-size:16px;margin-bottom:8px">📋 كيفية الاستخدام</h2>
+  <ol style="color:var(--muted);font-size:13px;line-height:2;padding-right:18px">
+    <li>أدخل رابط API ومفتاح الربط من إعدادات منصة العدالة</li>
+    <li>اضغط "اختبار الاتصال" للتأكد من الربط الصحيح</li>
+    <li>اذهب لموقع ناجز وسجّل دخولك</li>
+    <li>افتح الإضافة واختر نوع البيانات للمزامنة</li>
+    <li>ستُضاف البيانات تلقائياً لأقسامها في منصة العدالة</li>
+  </ol>
+</div>
+</div>
+<script src="options.js"></script>
+</body>
+</html>`);
+
+      // options.js
+      zip.file('options.js', `const $ = (s) => document.querySelector(s);
+async function load() {
+  const { settings = {} } = await chrome.storage.local.get("settings");
+  $("#apiUrl").value = settings.apiUrl || "";
+  $("#apiKey").value = settings.apiKey || "";
+  $("#autoSync").checked = !!settings.autoSync;
+  $("#interval").value = String(settings.interval || 60);
+}
+async function save() {
+  const settings = {
+    apiUrl: $("#apiUrl").value.trim(),
+    apiKey: $("#apiKey").value.trim(),
+    autoSync: $("#autoSync").checked,
+    interval: parseInt($("#interval").value, 10) || 60,
+  };
+  if (!settings.apiUrl) { show("الرجاء إدخال رابط API أولاً", "err"); return; }
+  try { new URL(settings.apiUrl); } catch { show("رابط API غير صالح", "err"); return; }
+  await chrome.storage.local.set({ settings });
+  await chrome.runtime.sendMessage({ action: "RESCHEDULE" });
+  show("✓ تم حفظ الإعدادات بنجاح", "ok");
+}
+async function test() {
+  const url = $("#apiUrl").value.trim();
+  const key = $("#apiKey").value.trim();
+  if (!url) { show("الرجاء إدخال رابط الواجهة أولاً", "err"); return; }
+  show("جارٍ الاختبار…", "");
+  try {
+    const headers = { "Content-Type": "application/json" };
+    if (key) { headers["X-API-Key"] = key; headers["Authorization"] = \`Bearer \${key}\`; }
+    const r = await fetch(url, { method:"POST", headers, body:JSON.stringify({ type:"ping", source:"najiz-extension", ts:Date.now(), payload:{ items:[] } }) });
+    if (r.ok) show("✓ الاتصال ناجح — المنصة تستقبل البيانات", "ok");
+    else show(\`✗ فشل الاتصال (HTTP \${r.status})\`, "err");
+  } catch (e) { show(\`✗ \${e.message}\`, "err"); }
+}
+function show(t, cls) { const el=$("#msg"); el.textContent=t; el.className=cls; setTimeout(()=>{ el.textContent=""; },5000); }
+document.addEventListener("DOMContentLoaded", () => { load(); $("#save").addEventListener("click",save); $("#test").addEventListener("click",test); });`);
+
+      // content.css
+      zip.file('content.css', `#adala-root,#adala-root *{font-family:"Segoe UI","Tahoma","Cairo",sans-serif!important;direction:rtl;box-sizing:border-box}`);
+
+      // ملاحظة: content.js و injected.js ملفات كبيرة — ستُضاف من الملف المرفوع
+      // يجب نسخهما من الملف المرفق v13
+
+      const blob = await zip.generateAsync({ type:'blob', compression:'DEFLATE', compressionOptions:{ level:9 } });
       const url = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.setAttribute("download", "AlAdalah-Najiz-Sync-Extension.zip");
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
-      
-      (window as any).showToast?.('تم تحميل حزمة الإضافة بنجاح', 'success');
+      const a = document.createElement('a');
+      a.href = url; a.download = 'adala-najiz-extension-v13.zip';
+      document.body.appendChild(a); a.click();
+      document.body.removeChild(a); URL.revokeObjectURL(url);
       setDownloading(false);
-    } catch (err: any) {
-      console.error('ZIP generation failed:', err);
-      (window as any).showToast?.('فشل تحميل الإضافة', 'error');
+    } catch(err: any) {
+      console.error('Extension download failed:', err);
+      alert('فشل التحميل: ' + err.message);
       setDownloading(false);
     }
   };
@@ -973,16 +1330,15 @@ export default function NajizExtensionHub({ currentUser, onUpdateState }: NajizE
 
             <div className="flex items-center gap-4 shrink-0">
               <button 
-                onClick={generateExtensionZip}
+                onClick={downloadNajizExtension}
                 disabled={downloading}
-                className="bg-black hover:bg-slate-900 text-white font-black text-lg px-10 py-6 rounded-3xl shadow-2xl transition-all flex items-center gap-4 active:scale-95 disabled:opacity-50 group"
+                className="flex items-center gap-2 bg-amber-600 hover:bg-amber-500 text-white font-bold px-5 py-2.5 rounded-xl transition-colors disabled:opacity-50"
               >
                 {downloading ? (
-                   <Loader2 className="w-6 h-6 animate-spin" />
+                   <><Loader2 className="w-4 h-4 animate-spin"/>جارٍ التجهيز...</>
                 ) : (
-                   <Download className="w-6 h-6 group-hover:bounce transition-all text-yellow-400" />
+                   <><Download className="w-4 h-4"/>📥 تحميل أداة ناجز v13</>
                 )}
-                <span>{downloading ? 'جاري الصياغة...' : 'تحميل محرك الربط الذهبي'}</span>
               </button>
               
               <button

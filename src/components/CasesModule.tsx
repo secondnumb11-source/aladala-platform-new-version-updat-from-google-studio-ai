@@ -780,37 +780,6 @@ export default React.memo(function CasesModule({
   const [isAdvancedSearchOpen, setIsAdvancedSearchOpen] = useState(false);
   const [isMetaDropdownOpen, setIsMetaDropdownOpen] = useState(false);
   const [advFilters, setAdvFilters] = useState({ opponent: '', circuit: '', judgmentCategory: '' });
-  const [urgentHearingAlert, setUrgentHearingAlert] = useState<{caseId: string, hearing: any} | null>(null);
-
-  useEffect(() => {
-    const checkUrgentHearings = () => {
-      const now = new Date();
-      let foundAlert = false;
-      for (const c of cases || []) {
-        if (!c.hearings) continue;
-        for (const h of c.hearings) {
-          if (h.status === 'upcoming' && h.date) {
-            const timeStr = h.time ? h.time : '00:00';
-            const dtStr = `${h.date}T${timeStr}:00`;
-            const hDate = new Date(dtStr);
-            const diffMs = hDate.getTime() - now.getTime();
-            // Less than or equal to 60 minutes
-            if (diffMs > 0 && diffMs <= 60 * 60 * 1000) {
-              setUrgentHearingAlert({ caseId: c.id, hearing: h });
-              foundAlert = true;
-              break;
-            }
-          }
-        }
-        if (foundAlert) break;
-      }
-      if (!foundAlert) setUrgentHearingAlert(null);
-    };
-
-    checkUrgentHearings();
-    const interval = setInterval(checkUrgentHearings, 60000); // Check every minute
-    return () => clearInterval(interval);
-  }, [cases]);
 
   const uniqueOpponents = React.useMemo(() => {
     const names = (cases || [])
@@ -1090,25 +1059,34 @@ export default React.memo(function CasesModule({
   const [priorityFilter, setPriorityFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
   const [lawyerFilter, setLawyerFilter] = useState('all');
-  const { preferences, updatePreference, updateViewMode, loading } = useUserPreferences();
+  const { preferences, updatePreference, loading } = useUserPreferences();
   const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
   const [isSwitchingView, setIsSwitchingView] = useState(false);
   const [cardScale, setCardScale] = useState(1);
   const [gridDensity, setGridDensity] = useState<'compact' | 'relaxed'>('relaxed');
 
-  const handleViewModeSwitch = (newMode: 'grid' | 'table') => {
+  const cleanupViewSwitch = async () => {
+    try {
+      // 1. Cancel Supabase Realtime subscriptions to prevent memory leaks during view switch
+      await supabase.removeAllChannels();
+      console.log('[CasesModule] Supabase channels cleaned up on view switch');
+      
+      // 2. Clear state cache
+      setExpandedCaseModal(null);
+      setReportModalCase(null);
+      setActiveDropdownId(null);
+      setAiAnalysis('');
+    } catch (error) {
+      console.error('[CasesModule] Error during view switch cleanup:', error);
+    }
+  };
+
+  const handleViewModeSwitch = async (newMode: 'grid' | 'table') => {
     if (viewMode === newMode) return;
     setIsSwitchingView(true);
     
-    // دالة تنظيف (Cleanup) وإلغاء تحديد أي حالة نشطة لتجنب التوقف
-    setExpandedCaseModal(null);
-    setReportModalCase(null);
-
-    // حفظ التفضيل عبر الدالة الجديدة
-    if (updateViewMode) {
-      updateViewMode(newMode).catch(e => console.error("Failed to save view mode:", e));
-    }
-
+    await cleanupViewSwitch();
+    
     // Force DOM detach, cleanup memory, and trigger garbage collection indirectly
     if (window.gc) {
       try { (window as any).gc(); } catch (e) {}
@@ -2178,41 +2156,43 @@ export default React.memo(function CasesModule({
   };
 
       const filterBarMarkup = (
-        <div className={`p-8 rounded-[2.5rem] border shadow-2xl mb-10 relative z-20 space-y-6 ${isHighContrast ? 'bg-white border-amber-200' : 'bg-[#0b1329] border-slate-800/80'}`}>
+        <div className="bg-[#0b1329] p-8 rounded-[2.5rem] border border-slate-800/80 shadow-2xl mb-10 relative z-20 space-y-6">
           <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
             <div className="flex-1 min-w-[320px] w-full flex items-center gap-3">
               <div className="relative flex-1">
-                <Search className={`absolute right-5 top-1/2 -translate-y-1/2 w-5 h-5 ${isHighContrast ? 'text-amber-600' : 'text-[#ff7f00]'}`} />
+                <Search className="absolute right-5 top-1/2 -translate-y-1/2 w-5 h-5 text-[#ff7f00]" />
                 <input 
                   type="text" 
                   placeholder="البحث الشامل (اسم، خصم، محكمة، رقم الصك)..." 
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className={`w-full rounded-2xl py-4 pr-14 pl-6 text-sm font-bold placeholder-slate-500 focus:outline-none transition-all shadow-inner border ${isHighContrast ? 'bg-slate-50 border-slate-300 text-slate-900 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20' : 'bg-[#040e21] border-slate-800 text-white focus:border-[#ff7f00]/60 focus:ring-2 focus:ring-[#ff7f00]/20'}`}
+                  className="w-full bg-[#040e21] border border-slate-800 rounded-2xl py-4 pr-14 pl-6 text-sm font-bold text-[#0c2461] dark:text-white placeholder-slate-500 focus:outline-none focus:border-[#ff7f00]/60 transition-all shadow-inner"
                 />
               </div>
               <button
                 type="button"
                 onClick={() => setIsAdvancedSearchOpen(!isAdvancedSearchOpen)}
-                className={`p-4 rounded-2xl border transition-all shrink-0 ${isAdvancedSearchOpen ? (isHighContrast ? 'bg-amber-100 border-amber-300 text-amber-700 shadow-inner' : 'bg-[#ff7f00]/25 border-[#ff7f00]/40 text-[#ff7f00] shadow-inner') : (isHighContrast ? 'bg-slate-50 border-slate-200 text-slate-600 hover:text-amber-600 hover:bg-amber-50' : 'bg-[#030a16] border-slate-850 text-slate-300 hover:text-[#facc15] hover:bg-[#0b1329]/60 shadow-sm')}`}
+                className={`p-4 rounded-2xl border transition-all shrink-0 ${isAdvancedSearchOpen ? 'bg-[#ff7f00]/25 border-[#ff7f00]/40 text-[#ff7f00] shadow-inner' : 'bg-[#030a16] border-slate-850 text-slate-300 hover:text-[#facc15] hover:bg-[#0b1329]/60 shadow-sm'}`}
                 title="فلاتر البحث المتقدمة في البيانات الوصفية (Metadata)"
               >
                 <Filter className="w-5 h-5" />
               </button>
+
+
             </div>
             
             <div className="flex items-center gap-4 w-full lg:w-auto">
-              <div className={`flex border p-1 rounded-2xl ${isHighContrast ? 'bg-slate-50 border-slate-200' : 'bg-[#040e21] border-slate-800'}`}>
+              <div className="flex bg-[#040e21] border border-slate-800 p-1 rounded-2xl">
                 <button 
                   onClick={() => handleViewModeSwitch('grid')}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-xl text-[10px] font-black uppercase transition-all ${viewMode === 'grid' ? (isHighContrast ? 'bg-amber-500 text-white shadow-lg' : 'bg-[#ff7f00] text-slate-950 shadow-lg') : (isHighContrast ? 'text-slate-500 hover:text-amber-600' : 'text-slate-300 hover:text-white')}`}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-xl text-[10px] font-black uppercase transition-all ${viewMode === 'grid' ? 'bg-[#ff7f00] text-slate-950 shadow-lg font-black' : 'text-slate-300 hover:text-white'}`}
                 >
                   <Layers className="w-4 h-4" />
                   <span>عرض المربعات</span>
                 </button>
                 <button 
                   onClick={() => handleViewModeSwitch('table')}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-xl text-[10px] font-black uppercase transition-all ${viewMode === 'table' ? (isHighContrast ? 'bg-amber-500 text-white shadow-lg' : 'bg-[#ff7f00] text-slate-950 shadow-lg') : (isHighContrast ? 'text-slate-500 hover:text-amber-600' : 'text-slate-300 hover:text-white')}`}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-xl text-[10px] font-black uppercase transition-all ${viewMode === 'table' ? 'bg-[#ff7f00] text-slate-950 shadow-lg font-black' : 'text-slate-300 hover:text-white'}`}
                 >
                   <FileText className="w-4 h-4" />
                   <span>عرض القائمة</span>
@@ -2220,13 +2200,13 @@ export default React.memo(function CasesModule({
               </div>
 
               {/* Card 5: Total Cases Indicator */}
-              <div className={`border px-5 py-3 rounded-2xl flex items-center gap-3 ${isHighContrast ? 'bg-amber-50 border-amber-200' : 'bg-[#030a16] border-slate-800'}`}>
-                <span className={`text-[10px] font-black uppercase tracking-widest ${isHighContrast ? 'text-amber-900' : 'text-white'}`}>إجمالي القضايا:</span>
-                <span className={`text-lg font-mono font-black leading-none ${isHighContrast ? 'text-amber-600' : 'text-[#facc15]'}`}>{(cases || []).length}</span>
+              <div className="bg-[#030a16] border border-slate-800 px-5 py-3 rounded-2xl flex items-center gap-3">
+                <span className="text-[10px] text-white font-black uppercase tracking-widest">إجمالي القضايا:</span>
+                <span className="text-lg font-mono text-[#facc15] font-black leading-none">{(cases || []).length}</span>
               </div>
               <button 
                 onClick={() => setIsGraphsOpen(!isGraphsOpen)}
-                className={`p-3.5 border rounded-2xl transition-all cursor-pointer ${isHighContrast ? 'bg-white border-slate-200 text-slate-600 hover:text-amber-600 hover:bg-slate-50' : 'bg-[#030a16] border-slate-800 text-[#facc15] hover:text-white'}`}
+                className="p-3.5 bg-[#030a16] border border-slate-800 rounded-2xl text-[#facc15] hover:text-white transition-all cursor-pointer"
               >
                 <TrendingUp className="w-5 h-5" />
               </button>
@@ -2241,54 +2221,54 @@ export default React.memo(function CasesModule({
                 exit={{ opacity: 0, height: 0 }}
                 className="overflow-hidden"
               >
-                <div className={`grid grid-cols-1 md:grid-cols-3 gap-6 pt-4 border-t ${isHighContrast ? 'border-slate-200' : 'border-slate-800'}`}>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4 border-t border-slate-100">
                   <div className="space-y-2">
-                    <label className={`text-[11px] font-black uppercase tracking-widest px-1 ${isHighContrast ? 'text-slate-500' : 'text-slate-400'}`}>اسم الخصم (الطرف الآخر)</label>
+                    <label className="text-[11px] font-black text-slate-500 uppercase tracking-widest px-1">اسم الخصم (الطرف الآخر)</label>
                     <select 
                       value={advFilters.opponent}
                       onChange={(e) => setAdvFilters({ ...advFilters, opponent: e.target.value })}
-                      className={`w-full rounded-xl py-3 px-4 text-xs font-bold outline-none focus:ring-2 transition-all cursor-pointer ${isHighContrast ? 'bg-slate-50 border border-slate-300 text-slate-900 focus:ring-amber-500/20' : 'bg-[#040e21] border border-slate-700 text-white focus:border-[#ff7f00]/60 focus:ring-[#ff7f00]/20 shadow-inner'}`}
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-xs font-bold text-slate-900 outline-none focus:ring-2 focus:ring-amber-500/20 cursor-pointer"
                     >
-                      <option value="" className={isHighContrast ? 'bg-white' : 'bg-[#040e21]'}>كل الخصوم</option>
+                      <option value="">كل الخصوم</option>
                       {uniqueOpponents.map((opponent) => (
-                        <option key={opponent} value={opponent} className={isHighContrast ? 'bg-white' : 'bg-[#040e21]'}>
+                        <option key={opponent} value={opponent}>
                           {opponent}
                         </option>
                       ))}
                     </select>
                   </div>
                   <div className="space-y-2">
-                    <label className={`text-[11px] font-black uppercase tracking-widest px-1 ${isHighContrast ? 'text-slate-500' : 'text-slate-400'}`}>رقم الدائرة القضائية</label>
+                    <label className="text-[11px] font-black text-slate-500 uppercase tracking-widest px-1">رقم الدائرة القضائية</label>
                     <select 
                       value={advFilters.circuit}
                       onChange={(e) => setAdvFilters({ ...advFilters, circuit: e.target.value })}
-                      className={`w-full rounded-xl py-3 px-4 text-xs font-bold outline-none focus:ring-2 transition-all cursor-pointer ${isHighContrast ? 'bg-slate-50 border border-slate-300 text-slate-900 focus:ring-amber-500/20' : 'bg-[#040e21] border border-slate-700 text-white focus:border-[#ff7f00]/60 focus:ring-[#ff7f00]/20 shadow-inner'}`}
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-xs font-bold text-slate-900 outline-none focus:ring-2 focus:ring-amber-500/20 cursor-pointer"
                     >
-                      <option value="" className={isHighContrast ? 'bg-white' : 'bg-[#040e21]'}>كل الدوائر</option>
+                      <option value="">كل الدوائر</option>
                       {uniqueCircuits.map((circuit) => (
-                        <option key={circuit} value={circuit} className={isHighContrast ? 'bg-white' : 'bg-[#040e21]'}>
+                        <option key={circuit} value={circuit}>
                           {circuit}
                         </option>
                       ))}
                     </select>
                   </div>
                   <div className="space-y-2">
-                    <label className={`text-[11px] font-black uppercase tracking-widest px-1 ${isHighContrast ? 'text-slate-500' : 'text-slate-400'}`}>نوع الحكم / تصنيف القضية</label>
+                    <label className="text-[11px] font-black text-slate-500 uppercase tracking-widest px-1">نوع الحكم / تصنيف القضية</label>
                     <select 
                       value={advFilters.judgmentCategory}
                       onChange={(e) => setAdvFilters({ ...advFilters, judgmentCategory: e.target.value })}
-                      className={`w-full rounded-xl py-3 px-4 text-xs font-bold outline-none focus:ring-2 transition-all cursor-pointer ${isHighContrast ? 'bg-slate-50 border border-slate-300 text-slate-900 focus:ring-amber-500/20' : 'bg-[#040e21] border border-slate-700 text-white focus:border-[#ff7f00]/60 focus:ring-[#ff7f00]/20 shadow-inner'}`}
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-xs font-bold text-slate-900 outline-none focus:ring-2 focus:ring-amber-500/20 cursor-pointer"
                     >
-                      <option value="" className={isHighContrast ? 'bg-white' : 'bg-[#040e21]'}>كل الأنواع والتصنيفات</option>
-                      <optgroup label="حالة ونوع الحكم" className={`font-black ${isHighContrast ? 'bg-slate-100 text-slate-800' : 'bg-slate-900 text-[#ff7f00]'}`}>
-                        <option value="under_review" className={isHighContrast ? 'bg-white font-bold' : 'bg-[#040e21] text-white font-bold'}>قيد النظر والمرافعة 🔍</option>
-                        <option value="primary_judgment" className={isHighContrast ? 'bg-white font-bold' : 'bg-[#040e21] text-white font-bold'}>حكم ابتدائي 📜</option>
-                        <option value="final_judgment" className={isHighContrast ? 'bg-white font-bold' : 'bg-[#040e21] text-white font-bold'}>حكم نهائي قطعي ⚖️</option>
-                        <option value="closed" className={isHighContrast ? 'bg-white font-bold' : 'bg-[#040e21] text-white font-bold'}>منتهية ومغلقة 🔒</option>
+                      <option value="">كل الأنواع والتصنيفات</option>
+                      <optgroup label="حالة ونوع الحكم">
+                        <option value="under_review">قيد النظر والمرافعة 🔍</option>
+                        <option value="primary_judgment">حكم ابتدائي 📜</option>
+                        <option value="final_judgment">حكم نهائي قطعي ⚖️</option>
+                        <option value="closed">منتهية ومغلقة 🔒</option>
                       </optgroup>
-                      <optgroup label="تصنيف القضية" className={`font-black ${isHighContrast ? 'bg-slate-100 text-slate-800' : 'bg-slate-900 text-[#ff7f00]'}`}>
-                        <option value="commercial" className={isHighContrast ? 'bg-white font-bold' : 'bg-[#040e21] text-white font-bold'}>تجاري ⚖️</option>
-                        <option value="labor" className={isHighContrast ? 'bg-white font-bold' : 'bg-[#040e21] text-white font-bold'}>عمالي 💼</option>
+                      <optgroup label="تصنيف القضية">
+                        <option value="commercial">تجاري ⚖️</option>
+                        <option value="labor">عمالي 💼</option>
                         <option value="civil">مدني حقوقي 📜</option>
                         <option value="criminal">جزائي جنائي 🛡️</option>
                         <option value="personal_status">أحوال شخصية وإرث ⚖️</option>
@@ -2878,65 +2858,6 @@ export default React.memo(function CasesModule({
                   className="flex-[1] bg-white border border-slate-200 text-slate-700 font-black py-3 rounded-xl hover:bg-slate-50 transition-colors shadow-sm"
                 >
                   إلغاء
-                </button>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Urgent Hearing Alert Modal */}
-      <AnimatePresence>
-        {urgentHearingAlert && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className={`fixed inset-0 z-[100] flex flex-col justify-center items-center backdrop-blur-sm ${isHighContrast ? 'bg-black/40' : 'bg-black/80'}`}
-          >
-            <motion.div 
-              initial={{ scale: 0.9, y: 20 }}
-              animate={{ scale: 1, y: 0 }}
-              exit={{ scale: 0.9, y: 20 }}
-              className={`w-full max-w-md p-8 rounded-[2rem] border shadow-2xl relative overflow-hidden ${isHighContrast ? 'bg-white border-amber-200' : 'bg-[#040e21] border-[#ff7f00]/30'}`} 
-              dir="rtl"
-            >
-              <div className={`absolute top-0 inset-x-0 h-1.5 ${isHighContrast ? 'bg-amber-500' : 'bg-[#ff7f00]'}`} />
-              <div className="flex justify-center mb-6">
-                <div className={`w-16 h-16 rounded-2xl flex flex-col items-center justify-center border animate-pulse ${isHighContrast ? 'bg-amber-50 border-amber-200 text-amber-600' : 'bg-[#ff7f00]/20 border-[#ff7f00]/40 text-[#ff7f00]'}`}>
-                  <AlertTriangle className="w-8 h-8" />
-                </div>
-              </div>
-              
-              <h3 className={`text-xl font-black text-center mb-2 ${isHighContrast ? 'text-slate-900' : 'text-white'}`}>تنبيه جلسة عاجلة!</h3>
-              <p className={`text-center text-sm font-bold mb-6 ${isHighContrast ? 'text-slate-600' : 'text-slate-400'}`}>
-                تبدأ جلسة تخص القضية رقم {(cases?.find(c => c.id === urgentHearingAlert.caseId)?.caseNumber || '').slice(0, 8)} في أقل من ساعة.
-              </p>
-              
-              <div className={`p-4 rounded-xl border mb-6 flex items-center gap-3 ${isHighContrast ? 'bg-slate-50 border-slate-200' : 'bg-[#0b1329] border-slate-800'}`}>
-                <Clock className={`w-5 h-5 ${isHighContrast ? 'text-amber-600' : 'text-[#ff7f00]'}`} />
-                <div>
-                  <div className={`text-[10px] font-black uppercase tracking-widest ${isHighContrast ? 'text-slate-500' : 'text-slate-500'}`}>موعد الجلسة</div>
-                  <div className={`font-bold text-sm mt-0.5 ${isHighContrast ? 'text-slate-900' : 'text-white'}`}>{urgentHearingAlert.hearing.time} - {urgentHearingAlert.hearing.date}</div>
-                </div>
-              </div>
-              
-              <div className="flex gap-3">
-                <button
-                  onClick={() => {
-                    const targetCase = cases?.find(c => c.id === urgentHearingAlert.caseId);
-                    if (targetCase) onSelectCase(targetCase);
-                    setUrgentHearingAlert(null);
-                  }}
-                  className={`flex-[1.5] py-3 rounded-xl font-black text-center transition-all ${isHighContrast ? 'bg-amber-500 text-white shadow-lg shadow-amber-500/20 hover:bg-amber-600' : 'bg-[#ff7f00] text-[#040e21] shadow-lg shadow-[#ff7f00]/20 hover:bg-[#ff7f00]/80'}`}
-                >
-                  فتح بيانات الجلسة
-                </button>
-                <button
-                  onClick={() => setUrgentHearingAlert(null)}
-                  className={`flex-1 py-3 rounded-xl border font-black text-center transition-all ${isHighContrast ? 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50' : 'bg-[#030a16] border-slate-800 text-slate-300 hover:text-white'}`}
-                >
-                  تجاهل
                 </button>
               </div>
             </motion.div>

@@ -107,39 +107,35 @@ const GaugeMeter = React.memo(({ percentage, color = '#b8860b', label }: { perce
   const strokeDashoffset = circumference - (percentage / 100) * circumference;
   
   return (
-    <div className="flex flex-col items-center justify-center space-y-3 p-5 bg-slate-50 border border-slate-200 rounded-3xl w-full">
+    <div className="flex flex-col items-center justify-center space-y-3 p-5 card-professional-item bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 w-full">
       <div className="relative w-28 h-28 flex items-center justify-center">
         <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
-          <circle cx="50" cy="50" r={radius} fill="none" stroke="#e2e8f0" strokeWidth={strokeWidth} />
-          <circle cx="50" cy="50" r={radius} fill="none" stroke={color} strokeWidth={strokeWidth} strokeDasharray={circumference} strokeDashoffset={strokeDashoffset} strokeLinecap="round" className="transition-all duration-1000 ease-out" />
+          <circle cx="50" cy="50" r={radius} fill="none" stroke="currentColor" strokeWidth={strokeWidth} className="text-slate-200 dark:text-slate-700" />
+          <circle cx="50" cy="50" r={radius} fill="none" stroke={color} strokeWidth={strokeWidth} strokeDasharray={circumference} strokeDashoffset={strokeDashoffset} strokeLinecap="round" className="transition-all duration-1000 ease-out drop-shadow-md" />
         </svg>
         <div className="absolute text-center">
-          <span className="text-xl font-mono font-black text-slate-900 tracking-tighter">{percentage}%</span>
-          <span className="text-[10px] text-slate-200 font-bold block font-black uppercase tracking-wider mt-0.5">منجز اليوم</span>
+          <span className="text-xl font-mono font-black text-slate-900 dark:text-white tracking-tighter">{percentage}%</span>
+          <span className="text-[10px] text-slate-400 dark:text-slate-300 font-bold block uppercase tracking-wider mt-0.5">منجز اليوم</span>
         </div>
       </div>
       <div className="text-center">
-        <strong className="text-xs font-black text-slate-900 block">{label}</strong>
+        <strong className="text-xs font-black text-slate-900 dark:text-white block">{label}</strong>
       </div>
     </div>
   );
 });
 
 export const SummaryWidget = ({ icon, title, description, badgeValue, children }: { icon: React.ReactNode, title: string, description: string, badgeValue?: string | number, children: React.ReactNode }) => {
-  const bgClass = "#0b1329";
-  const textColor = getContrastText(bgClass);
-  const secondaryColor = TEXT_COLORS.goldBright;
-
   return (
-    <div className={`bg-[${bgClass}] border-2 border-[#D4AF37]/50 rounded-3xl p-6 flex flex-col h-full overflow-hidden relative`}>
+    <div className={`card-professional p-6 flex flex-col h-full overflow-hidden relative border-amber-500/30`}>
       <div className="flex items-center justify-between mb-4 relative z-10">
         <div className="flex items-center gap-3">
           <div className="p-3 bg-gradient-to-br from-[#D4AF37] to-[#FACC15] text-white rounded-2xl shadow-lg ring-2 ring-[#D4AF37]/30">
             {icon}
           </div>
           <div>
-            <h4 className={`font-black ${textColor} text-base tracking-tight`}>{title}</h4>
-            <p className={`text-[11px] ${secondaryColor} font-bold mt-0.5`}>{description}</p>
+            <h4 className={`font-black text-slate-900 dark:text-white text-base tracking-tight`}>{title}</h4>
+            <p className={`text-[11px] text-amber-600 dark:text-amber-400 font-bold mt-0.5`}>{description}</p>
           </div>
         </div>
         {badgeValue !== undefined && (
@@ -148,7 +144,7 @@ export const SummaryWidget = ({ icon, title, description, badgeValue, children }
           </span>
         )}
       </div>
-      <div className={`flex-1 bg-[#090f20] rounded-2xl p-4 border border-[#D4AF37]/20 relative z-10 ${getContrastText('#090f20')} font-bold`}>
+      <div className={`flex-1 bg-slate-50 dark:bg-slate-900/50 rounded-2xl p-4 border border-amber-500/20 relative z-10 text-slate-800 dark:text-slate-100 font-bold`}>
         {children}
       </div>
     </div>

@@ -15,7 +15,7 @@ import { motion } from 'motion/react';
 
 export const NajizPerformanceWidget = ({ sessions }: { sessions: any[] }) => {
   return (
-    <div className="bg-white border border-slate-200 rounded-[2.5rem] p-8 shadow-sm h-full flex flex-col">
+    <div className="card-professional p-8 flex flex-col h-full border-indigo-500/20 shadow-sm border-b-4 border-b-indigo-500">
       <div className="flex items-center justify-between mb-6">
         <h3 className="font-black text-slate-900 text-lg flex items-center gap-2">
           <Activity className="w-5 h-5 text-indigo-500" />
@@ -61,7 +61,7 @@ export const AgenciesAlertWidget = ({ agencies }: { agencies: any[] }) => {
   ];
 
   return (
-    <div className="bg-white rounded-[2.5rem] p-8 h-full flex flex-col relative overflow-hidden border-b-4 border-b-[#c0a060]">
+    <div className="card-professional p-8 h-full flex flex-col relative overflow-hidden border-b-4 border-b-[#c0a060]">
       <div className="flex items-center justify-between mb-6 relative z-10">
         <h3 className="font-black text-slate-900 text-lg flex items-center gap-2">
           <ShieldCheck className="w-5 h-5 text-[#c0a060]" />
@@ -112,7 +112,7 @@ export const OverdueTasksWidget = ({ tasks }: { tasks: any[] }) => {
   const overdue = tasks.filter(t => t.dueDate && new Date(t.dueDate) < new Date() && t.status !== 'done');
   
   return (
-    <div className="bg-white border-rose-200 rounded-[2.5rem] p-8 shadow-sm h-full flex flex-col relative overflow-hidden border-b-4 border-b-rose-500">
+    <div className="card-professional p-8 h-full flex flex-col relative overflow-hidden border-rose-200 border-b-4 border-b-rose-500 shadow-sm">
       <div className="flex items-center justify-between mb-6">
         <h3 className="font-black text-rose-600 text-lg flex items-center gap-2">
           <AlertCircle className="w-5 h-5" />
@@ -216,7 +216,7 @@ export const DeadlinesWidget = ({ cases }: { cases: any[] }) => {
   }, []);
 
   return (
-    <div className="bg-[#0b1329] border border-amber-500/30 rounded-[2.5rem] p-8 shadow-2xl h-full flex flex-col relative overflow-hidden">
+    <div className="card-professional p-8 h-full flex flex-col relative overflow-hidden">
       {/* Dark background requires bright yellow/white texts */}
       <div className="absolute top-0 right-0 w-64 h-64 bg-amber-500/5 blur-[80px] rounded-full translate-x-32 -translate-y-32"></div>
       
@@ -281,7 +281,7 @@ export const UpcomingHearingsList = ({ hearings, cases }: { hearings: any[], cas
   const upcoming = hearings.filter(h => new Date(h.date) >= new Date()).slice(0, 3);
 
   return (
-    <div className="bg-white border border-slate-200 rounded-3xl p-5 shadow-sm h-full flex flex-col">
+    <div className="card-professional p-5 h-full flex flex-col">
       <div className="flex items-center justify-between mb-3">
         <h3 className="font-black text-slate-900 text-base flex items-center gap-2">
           <Calendar className="w-5 h-5 text-indigo-500" />
@@ -333,7 +333,7 @@ export const EmployeePerformanceKPI = ({ tasks }: { tasks: any[] }) => {
   })).sort((a, b) => b.completion - a.completion).slice(0, 5);
 
   return (
-    <div className="bg-white border border-slate-200 rounded-[2.5rem] p-8 shadow-sm h-full flex flex-col hover:-translate-y-2 hover:shadow-[0_20px_35px_rgba(212,175,55,0.15)] hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 ease-in-out">
+    <div className="card-professional p-8 h-full flex flex-col transition-all duration-300 ease-in-out">
       <div className="flex items-center justify-between mb-6">
         <h3 className="font-extrabold text-[#0B2545] text-lg flex items-center gap-2" style={{ color: '#0B2545', textShadow: 'none' }}>
           <Users className="w-5 h-5 text-[#8A6201]" style={{ color: '#8A6201' }} />

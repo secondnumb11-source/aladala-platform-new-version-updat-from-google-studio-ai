@@ -639,558 +639,319 @@ app.post('/api/v1/sync', async (req: any, res: any) => {
   const crypto = await import('crypto');
   const body = req.body || {};
 
-  // === ping ===
-  if (body.type === 'ping' || body.payload?.ping) {
-    return res.json({ success: true, message: 'الاتصال ناجح ✅' });
+  // ping للاختبار
+  if (body.type === 'ping' || body.payload?.items?.length === 0) {
+    return res.json({ success: true, message: 'الاتصال ناجح ✅', itemCount: 0 });
   }
 
-  // === التحقق من API Key ===
-  const apiKey =
-    req.headers['x-api-key'] ||
-    req.headers['authorization']?.replace('Bearer ', '') || '';
-
+  // التحقق من API Key
+  const apiKey = req.headers['x-api-key'] ||
+    req.headers['authorization']?.replace('Bearer ','') || '';
   if (apiKey) {
     try {
-      const { data: keyData } = await adminSupabase
-        .from('api_keys')
-        .select('id')
-        .eq('key_value', String(apiKey).trim())
-        .eq('is_active', true)
-        .maybeSingle();
-
-      if (keyData) {
-        try {
-          await adminSupabase.from('api_keys')
-            .update({ last_used_at: new Date().toISOString() })
-            .eq('id', keyData.id);
-        } catch(e) {}
-      }
-    } catch(e) {}
+      await adminSupabase.from('api_keys')
+        .update({ last_used_at: new Date().toISOString() })
+        .eq('key_value', apiKey.trim())
+        .eq('is_active', true);
+    } catch {}
   }
 
-  // === استخراج البيانات من جميع الأشكال الممكنة ===
-  const type = body.type || body.dataType || 'all';
-  const payload = body.payload || body.data || body || {};
+  // استخراج البيانات من جميع الأشكال الممكنة
+  const type = body.type || 'all';
+  const payload = body.payload || body.data || body;
+  const normalized = payload.normalized || payload;
 
-  // استخراج من normalized (الشكل الرئيسي للأداة)
-  const normalizedObj = !Array.isArray(payload.normalized) ? (payload.normalized || {}) : {};
-  const normalizedArr = Array.isArray(payload.normalized) ? payload.normalized : [];
-
-  // القضايا
-  const cases = [
-    ...(normalizedObj.cases || []),
-    ...(payload.cases || []),
-    ...(body.cases || []),
-    ...(type === 'cases' ? normalizedArr : [])
-  ];
-
-  // الجلسات
-  const hearings = [
-    ...(normalizedObj.sessions || []),
-    ...(payload.sessions || []),
-    ...(payload.hearings || []),
-    ...(body.sessions || []),
-    ...(body.hearings || []),
-    ...(type === 'sessions' || type === 'hearings' ? normalizedArr : [])
-  ];
-
-  // الوكالات
-  const poas = [
-    ...(normalizedObj.agencies || []),
-    ...(payload.agencies || []),
-    ...(payload.poa || []),
-    ...(body.agencies || []),
-    ...(body.poa || []),
-    ...(type === 'agencies' || type === 'poas' ? normalizedArr : [])
-  ];
-
-  // التنفيذ
-  const executions = [
-    ...(normalizedObj.executions || []),
-    ...(payload.executions || []),
-    ...(body.executions || []),
-    ...(type === 'executions' ? normalizedArr : [])
-  ];
-
-  // الأحكام/الصكوك
-  const judgments = [
-    ...(normalizedObj.judgments || []),
-    ...(payload.judgments || []),
-    ...(body.judgments || []),
-    ...(type === 'judgments' ? normalizedArr : [])
-  ];
+  // استخراج القوائم
+  const cases = normalized.cases || payload.cases || body.cases || [];
+  const sessions = normalized.sessions || payload.sessions || body.sessions ||
+                   payload.hearings || body.hearings || [];
+  const agencies = normalized.agencies || payload.agencies || body.agencies ||
+                   payload.poa || body.poa || [];
+  const executions = normalized.executions || payload.executions || body.executions || [];
+  const judgments = normalized.judgments || payload.judgments || body.judgments || [];
+  const clients = normalized.clients || payload.clients || body.clients || [];
+  const minutes = normalized.minutes || payload.minutes || body.minutes || [];
+  const requests = normalized.requests || payload.requests || body.requests || [];
 
   // items عامة — توزيعها حسب _kind
-  const allItems = [
-    ...(Array.isArray(payload.items) ? payload.items : []),
-    ...(Array.isArray(body.items) ? body.items : [])
-  ];
-  for (const item of allItems) {
-    const kind = item._kind || '';
-    const text = item.text || JSON.stringify(item.fields || {});
-    if (kind === 'case' || /قضية|دعوى|caseNumber/i.test(text)) {
-      cases.push(item);
-    } else if (kind === 'session' || /جلسة|موعد|sessionDate/i.test(text)) {
-      hearings.push(item);
-    } else if (kind === 'agency' || /وكالة|وكيل|agencyNumber/i.test(text)) {
-      poas.push(item);
-    } else if (kind === 'execution' || /تنفيذ|executionNumber/i.test(text)) {
-      executions.push(item);
-    } else if (kind === 'judgment' || /حكم|صك|judgmentNumber/i.test(text)) {
-      judgments.push(item);
-    }
-  }
-
-  console.log('[Sync] Data received:', {
-    type,
-    normalizedObjCases: normalizedObj.cases?.length || 0,
-    normalizedObjSessions: normalizedObj.sessions?.length || 0,
-    normalizedObjAgencies: normalizedObj.agencies?.length || 0,
-    normalizedObjExecutions: normalizedObj.executions?.length || 0,
-    normalizedObjJudgments: normalizedObj.judgments?.length || 0,
-    normalizedArrSize: normalizedArr.length,
-    allItems: allItems.length,
-    finalCounts: { cases: cases.length, hearings: hearings.length, poas: poas.length, executions: executions.length, judgments: judgments.length }
+  const items = payload.items || body.items || [];
+  items.forEach((item: any) => {
+    const kind = item._kind || inferKind(item);
+    if (kind === 'case') cases.push(item);
+    else if (kind === 'session') sessions.push(item);
+    else if (kind === 'agency') agencies.push(item);
+    else if (kind === 'execution') executions.push(item);
+    else if (kind === 'judgment') judgments.push(item);
+    else if (kind === 'client') clients.push(item);
+    else if (kind === 'minute') minutes.push(item);
+    else if (kind === 'request') requests.push(item);
   });
 
-  const results = {
+  function inferKind(item: any): string {
+    const text = JSON.stringify(item).toLowerCase();
+    if (/casenumber|case_number|قضية|دعوى/.test(text)) return 'case';
+    if (/sessiondate|hearing|جلسة|موعد/.test(text)) return 'session';
+    if (/agencynumber|poa|وكالة/.test(text)) return 'agency';
+    if (/executionnumber|تنفيذ/.test(text)) return 'execution';
+    if (/judgment|حكم|صك/.test(text)) return 'judgment';
+    return 'unknown';
+  }
+
+  function getField(obj: any, ...keys: string[]): string {
+    const item = obj?.fields || obj;
+    for (const k of keys) {
+      if (item[k]) return String(item[k]).trim();
+    }
+    return '';
+  }
+
+  function safeDate(val: string): string | null {
+    if (!val) return null;
+    try { return new Date(val).toISOString(); } catch { return null; }
+  }
+
+  const results: any = {
     cases: { added: 0, updated: 0, errors: 0 },
-    hearings: { added: 0, errors: 0 },
-    poa: { added: 0, updated: 0, errors: 0 },
+    sessions: { added: 0, errors: 0 },
+    agencies: { added: 0, errors: 0 },
     executions: { added: 0, errors: 0 },
-    judgments: { added: 0, updated: 0, errors: 0 }
+    judgments: { added: 0, errors: 0 },
+    clients: { added: 0, errors: 0 }
   };
 
-  const mapCategory = (text: string) => {
-    const t = text.toLowerCase();
-    if (t.includes('تجار')) return 'commercial';
-    if (t.includes('عمال')) return 'labor';
-    if (t.includes('احوال') || t.includes('أحوال') || t.includes('اسر') || t.includes('أسر') || t.includes('شخصي')) return 'family';
-    if (t.includes('جزائ') || t.includes('جنائ')) return 'criminal';
-    if (t.includes('إداري') || t.includes('اداري') || t.includes('ديوان')) return 'administrative';
-    if (t.includes('تنفيذ')) return 'execution';
-    if (t.includes('مرور')) return 'traffic';
-    return 'civil';
-  };
-
-  // === حفظ القضايا بالبيانات الكاملة ===
+  // ===== 1. حفظ القضايا → قسم إدارة القضايا =====
   for (const c of cases) {
-    if (!c) continue;
     try {
-      const fields = c.fields || {};
-      const text = c.text || '';
-
-      const caseNum = (
-        c.caseNumber || fields.caseNumber ||
-        fields['رقم القضية'] || fields['رقم الدعوى'] ||
-        text.match(/\d{4}[\/\s]\d{3,}/)?.[0]?.replace(/\s/g,'') || ''
-      ).toString().trim();
-
+      const caseNum = getField(c, 'caseNumber','case_number','رقم القضية') ||
+        JSON.stringify(c).match(/\d{4}\/\d{3,}/)?.[0] || '';
       if (!caseNum) continue;
 
-      // استخراج جميع الحقول الممكنة
-      const title = c.caseName || c.title ||
-        fields['موضوع الدعوى'] || fields['اسم الدعوى'] ||
-        fields.title || fields.subject || `قضية ${caseNum}`;
-
-      const court = c.court || c.courtName ||
-        fields['اسم المحكمة'] || fields['المحكمة'] ||
-        fields.court || fields.courtName || '';
-
-      const circuit = c.circuitNumber || c.circuit ||
-        fields['رقم الدائرة'] || fields['الدائرة'] ||
-        fields.circuitNumber || fields.circuit || '';
-
-      const plaintiff = c.plaintiff || c.clientName ||
-        fields['المدعي'] || fields['الموكل'] ||
-        fields.plaintiff || fields.clientName || '';
-
-      const defendant = c.defendant || c.opponentName ||
-        fields['المدعى عليه'] || fields['الخصم'] ||
-        fields.defendant || fields.opponentName || '';
-
-      const status = c.status || fields['الحالة'] ||
-        fields['حالة القضية'] || fields.status ||
-        text.match(/قيد النظر|منتهي|محكوم|مؤجل/)?.[0] || 'قيد النظر';
-
-      const judgmentDate = c.judgmentDate ||
-        fields['تاريخ الحكم'] || fields.judgmentDate || null;
-
-      const judgmentType = c.judgmentType ||
-        fields['نوع الحكم'] || fields['الحكم'] ||
-        fields.judgmentType || null;
-
-      const nextSession = c.nextSessionDate || c.date ||
-        fields['موعد الجلسة القادمة'] || fields['تاريخ الجلسة'] ||
-        fields.nextSessionDate || null;
-
-      const category = c.category || fields['نوع القضية'] ||
-        fields['تصنيف القضية'] || fields.category || 'civil';
-
-      const summary = c.summary || c.subject ||
-        fields['موضوع الدعوى'] || fields['ملخص'] ||
-        fields.summary || null;
-
-      const isJudgmentIssued = judgmentType || judgmentDate || (c.judgments && c.judgments.length > 0) || text.includes('محكوم') || text.includes('منتهي') || text.includes('صك الحكم');
-      const finalStatus = isJudgmentIssued ? 'judgment_issued' : status;
-
-      const metadata = JSON.stringify({
-        rawFields: fields,
-        source: 'najiz_extension',
-        syncedAt: new Date().toISOString(),
-        parties: c.parties || fields.parties || [],
-        requests: c.requests || fields['الطلبات'] || [],
-        judgments: c.judgments || fields['الأحكام'] || [],
-        documents: c.documents || fields['المستندات'] || []
-      });
-
-      const { data: ex } = await adminSupabase
+      const { data: existing } = await adminSupabase
         .from('cases').select('id')
         .eq('case_number', caseNum).maybeSingle();
 
-      let caseIdStr = ex ? ex.id : crypto.randomUUID();
+      const payload_case = {
+        case_number: caseNum,
+        najiz_case_number: caseNum,
+        title: getField(c,'caseName','case_name','title','subject') || `قضية ${caseNum}`,
+        client_name: getField(c,'plaintiff','clientName','client_name','المدعي'),
+        opponent_name: getField(c,'defendant','opponentName','opponent_name','المدعى عليه'),
+        status: getField(c,'status','caseStatus','الحالة') || 'قيد النظر',
+        category: mapCategory(getField(c,'caseType','category','نوع القضية')),
+        stage: 'litigation',
+        court_name: getField(c,'court','courtName','court_name','المحكمة'),
+        circuit_number: getField(c,'circuit','circuitNumber','circuit_number','الدائرة'),
+        capacity: getField(c,'capacity','الصفة'),
+        case_date: safeDate(getField(c,'caseDate','case_date','تاريخ القضية')),
+        is_najiz_sync: true,
+        last_sync_at: new Date().toISOString(),
+        archived: false,
+        updated_at: new Date().toISOString()
+      };
 
-      if (ex) {
-        await adminSupabase.from('cases').update({
-          title: title || undefined,
-          client_name: plaintiff || undefined,
-          opponent_name: defendant || undefined,
-          court_name: court || undefined,
-          circuit_number: circuit || undefined,
-          status: finalStatus || undefined,
-          summary: summary || undefined,
-          metadata,
-          is_najiz_sync: true,
-          last_sync_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        }).eq('id', caseIdStr);
+      if (existing?.id) {
+        await adminSupabase.from('cases')
+          .update(payload_case).eq('id', existing.id);
         results.cases.updated++;
       } else {
-        const { error: insErr } = await adminSupabase.from('cases').insert({
-          id: caseIdStr,
-          case_number: caseNum,
-          najiz_case_number: caseNum,
-          title,
-          client_name: plaintiff,
-          opponent_name: defendant,
-          court_name: court,
-          circuit_number: circuit,
-          status: finalStatus,
-          category: mapCategory(category + ' ' + text),
-          stage: 'litigation',
-          summary,
-          metadata,
-          judge_name: c.judge || fields['اسم القاضي'] || fields.judge || null,
-          judgment_summary: judgmentType || null,
-          judgment_date: judgmentDate ? (() => {
-            try { return new Date(judgmentDate).toISOString(); }
-            catch { return null; }
-          })() : null,
-          next_session_at: nextSession ? (() => {
-            try { return new Date(nextSession).toISOString(); }
-            catch { return null; }
-          })() : null,
-          is_najiz_sync: true,
-          last_sync_at: new Date().toISOString(),
-          archived: false,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
+        await adminSupabase.from('cases').insert({
+          ...payload_case,
+          id: crypto.randomUUID(),
+          created_at: new Date().toISOString()
         });
-        if (!insErr) results.cases.added++;
-        else {
-          console.error('[Case Insert]', insErr.message, { caseNum });
-          results.cases.errors++;
-        }
-      }
-
-      // Sync Judgments & Documents
-      const buildCaseDoc = (type: string, name: string, notes: string = '', jDate: string = null) => ({
-        id: crypto.randomUUID(),
-        case_id: caseIdStr,
-        case_number: caseNum,
-        case_name: title,
-        document_type: type,
-        document_name: name,
-        notes: notes || '',
-        judgment_date: jDate || judgmentDate,
-        court_name: court,
-        judge_name: c.judge || fields['اسم القاضي'] || '',
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      });
-
-      // Insert directly
-      if (judgmentType) {
-        await adminSupabase.from('case_documents').insert(buildCaseDoc('judgment', `حكم قضائي: ${judgmentType}`, text, judgmentDate));
-      }
-      
-      const detailsText = JSON.stringify(fields);
-      // Extra logic to parse minutes or memos from the text since they could be present
-      if (detailsText.includes('مذكرة')) {
-        await adminSupabase.from('case_documents').insert(buildCaseDoc('response_memo', 'مذكرة قضائية: مسحوبة تلقائياً', text));
-      }
-      if (detailsText.includes('ضبط') || detailsText.includes('محضر')) {
-        await adminSupabase.from('case_documents').insert(buildCaseDoc('session_record', 'محضر ضبط جلسة: مسحوبة تلقائياً', text));
+        results.cases.added++;
       }
     } catch(e: any) {
-      console.error('[Case Error]', e.message);
+      console.error('[Case]', e.message);
       results.cases.errors++;
     }
   }
 
-  // === حفظ الجلسات ===
-  for (const h of hearings) {
-    if (!h) continue;
+  // ===== 2. حفظ الجلسات → قسم مواعيد الجلسات =====
+  for (const s of sessions) {
     try {
-      const dateVal = (
-        h.date || h.sessionDate || h.hearingDate ||
-        h.fields?.date || h.fields?.sessionDate ||
-        (h.text || '').match(/\d{1,2}[\/\-]\d{1,2}[\/\-]\d{4}/)?.[0] ||
-        ''
-      ).toString().trim();
-
+      const dateVal = getField(s,'date','sessionDate','hearing_date','تاريخ الجلسة','date');
       if (!dateVal) continue;
-
-      const caseNum = (
-        h.caseNumber || h.fields?.caseNumber ||
-        (h.text || '').match(/\d{4}[\/\s]\d{3,}/)?.[0]?.replace(/\s/g,'') || ''
-      ).toString();
-
-      const sessionTitle = h.title || h.caseName || h.fields?.title || h.fields?.caseName || h.fields?.case_name || '';
+      const caseNum = getField(s,'caseNumber','case_number','رقم القضية');
+      const key = `${caseNum}-${dateVal}`;
 
       await adminSupabase.from('hearings').upsert({
         id: crypto.randomUUID(),
         case_number: caseNum,
+        case_name: getField(s,'caseName','case_name','title'),
         date: dateVal,
-        time: h.time || h.fields?.time || '09:00',
-        court_name: h.courtName || h.fields?.court || '',
-        hall: h.hall || h.fields?.hall || h.fields?.circuit || '',
-        status: 'upcoming',
-        session_type: h.sessionType || h.fields?.sessionType || 'جلسة',
-        notes: sessionTitle || null,
+        time: getField(s,'time','sessionTime') || '09:00',
+        court_name: getField(s,'court','courtName','court_name','المحكمة'),
+        hall: getField(s,'hall','قاعة'),
+        circuit_number: getField(s,'circuit','circuitNumber','الدائرة'),
+        status: getField(s,'status','الحالة') || 'upcoming',
+        session_type: getField(s,'sessionType','نوع الجلسة') || 'جلسة',
         is_najiz_sync: true,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       }, { onConflict: 'case_number,date', ignoreDuplicates: true });
-      results.hearings.added++;
+      results.sessions.added++;
     } catch(e: any) {
-      results.hearings.errors++;
+      console.error('[Session]', e.message);
+      results.sessions.errors++;
     }
   }
 
-  // === حفظ الوكالات الكاملة ===
-  for (const p of poas) {
-    if (!p) continue;
+  // ===== 3. حفظ الوكالات → قسم الوكالات =====
+  for (const a of agencies) {
     try {
-      const fields = p.fields || p.raw?.fields || {};
-      const text = p.text || '';
+      const agencyNum = getField(a,'agencyNumber','agency_number','poa_number','رقم الوكالة') ||
+        JSON.stringify(a).match(/\d{6,}/)?.[0] || '';
+      if (!agencyNum) continue;
 
-      const poaNum = (
-        p.agencyNumber || p.poaNumber || p.poa_number ||
-        fields['رقم الوكالة'] || fields.agencyNumber ||
-        text.match(/\b\d{9,}\b/)?.[0] || ''
-      ).toString().trim();
-
-      if (!poaNum) continue;
-
-      const principal = p.principal || fields['الموكل'] ||
-        fields['اسم الموكل'] || fields.principal || '';
-      const agent = p.agent || fields['الوكيل'] ||
-        fields['اسم الوكيل'] || fields.agent || '';
-      const expiry = p.expiryDate || fields['تاريخ الانتهاء'] ||
-        fields['تاريخ الإنتهاء'] || fields['تاريخ انتهاء الوكالة'] || fields.expiryDate || '';
-      const issue = p.issueDate || fields['تاريخ الإصدار'] ||
-        fields['تاريخ إصدار الوكالة'] || fields.issueDate || '';
-      const poaType = p.type || fields['نوع الوكالة'] ||
-        fields.type || 'general';
-      const poaStatus = p.status || fields['الحالة'] || fields['حالة الوكالة'] ||
-        fields.status || 'active';
-
-      const { data: existing } = await adminSupabase
-        .from('powers_of_attorney')
-        .select('id')
-        .eq('poa_number', poaNum)
-        .maybeSingle();
-
-      if (existing) {
-        await adminSupabase.from('powers_of_attorney').update({
-          type: poaType,
-          status: poaStatus,
-          principal_name: principal,
-          agent_name: agent,
-          issue_date: issue,
-          expiry_date: expiry,
-          is_najiz_sync: true,
-          najiz_sync_date: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        }).eq('id', existing.id);
-        results.poa.updated = (results.poa.updated || 0) + 1;
-      } else {
-        await adminSupabase.from('powers_of_attorney').insert({
-          id: crypto.randomUUID(),
-          poa_number: poaNum,
-          type: poaType,
-          status: poaStatus,
-          principal_name: principal,
-          agent_name: agent,
-          issue_date: issue,
-          expiry_date: expiry,
-          is_najiz_sync: true,
-          najiz_sync_date: new Date().toISOString(),
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        });
-        results.poa.added++;
-      }
-    } catch(e: any) {
-      results.poa.errors++;
-    }
-  }
-
-  // === حفظ طلبات التنفيذ الكاملة ===
-  for (const e of executions) {
-    if (!e) continue;
-    try {
-      const fields = e.fields || e.raw?.fields || {};
-      const execNum = (
-        e.executionNumber || e.requestNumber ||
-        fields['رقم طلب التنفيذ'] || fields['رقم التنفيذ'] || fields['رقم الطلب'] ||
-        fields.executionNumber || fields.requestNumber ||
-        (e.text || '').match(/\b\d{9,}\b/)?.[0] || ''
-      ).toString().trim().replace(/\s/g,'');
-      if (!execNum) continue;
-
-      let reqDateISO = null;
-      const reqDateRaw = e.requestDate || fields.requestDate || fields['تاريخ تقديم الطلب'] || e.date || fields.date || '';
-      if (reqDateRaw) {
-        try { reqDateISO = new Date(reqDateRaw).toISOString(); } catch {}
-      }
-
-      await adminSupabase.from('executions').upsert({
+      await adminSupabase.from('powers_of_attorney').upsert({
         id: crypto.randomUUID(),
-        execution_number: execNum,
-        request_type: e.requestType || fields.requestType || fields['نوع الطلب'] || '',
-        deed_type: e.deedType || fields.deedType || fields['نوع السند'] || '',
-        status: e.status || fields.status || fields['الحالة'] || fields['حالة الطلب'] || 'قيد التنفيذ',
-        amount: parseFloat((e.amount || fields['المبلغ'] || fields.amount || '0').toString().replace(/[^\d.]/g,'')) || 0,
-        court_name: e.court || e.courtName || fields.court || fields['المحكمة'] || '',
-        defendant_name: e.defendant || e.opponentName || fields.defendant || fields.opponentName || fields['المنفذ ضده'] || '',
-        requester_name: e.requester || e.requesterName || fields['طالب التنفيذ'] || fields.requester || '',
-        issue_date: reqDateISO || null,
-        submission_date: reqDateRaw || null,
-        metadata: JSON.stringify({ rawFields: fields, source: 'najiz_extension', syncedAt: new Date().toISOString() }),
+        poa_number: agencyNum,
+        type: getField(a,'poaType','type','نوع الوكالة') || 'general',
+        status: getField(a,'status','حالة الوكالة') || 'active',
+        agent_name: getField(a,'agent','agentName','اسم الوكيل'),
+        principal_name: getField(a,'principal','principalName','الموكل'),
+        issue_date: getField(a,'issueDate','issue_date','تاريخ إصدار الوكالة') || null,
+        expiry_date: getField(a,'expiryDate','expiry_date','تاريخ انتهاء الوكالة') || null,
         is_najiz_sync: true,
         najiz_sync_date: new Date().toISOString(),
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
+      }, { onConflict: 'poa_number', ignoreDuplicates: false });
+      results.agencies.added++;
+    } catch(e: any) {
+      console.error('[Agency]', e.message);
+      results.agencies.errors++;
+    }
+  }
+
+  // ===== 4. حفظ طلبات التنفيذ → قسم طلبات التنفيذ =====
+  for (const e of executions) {
+    try {
+      const execNum = getField(e,'executionNumber','requestNumber','execution_number','رقم الطلب') ||
+        JSON.stringify(e).match(/\d{9,}/)?.[0] || '';
+      if (!execNum) continue;
+
+      await adminSupabase.from('executions').upsert({
+        id: crypto.randomUUID(),
+        execution_number: execNum,
+        request_type: getField(e,'requestType','request_type','نوع الطلب'),
+        deed_type: getField(e,'deedType','deed_type','نوع السند'),
+        status: getField(e,'status','حالة الطلب') || 'pending',
+        amount: parseFloat(getField(e,'amount','المبلغ').replace(/[^\d.]/g,'')) || 0,
+        court_name: getField(e,'court','courtName','court_name','اسم المحكمة'),
+        defendant_name: getField(e,'defendant','المنفذ ضده'),
+        requester_name: getField(e,'requester','طالب التنفيذ'),
+        issue_date: getField(e,'requestDate','date','تاريخ تقديم الطلب') || null,
+        is_najiz_sync: true,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
       }, { onConflict: 'execution_number', ignoreDuplicates: false });
       results.executions.added++;
-    } catch(err: any) {
+    } catch(e2: any) {
+      console.error('[Execution]', e2.message);
       results.executions.errors++;
     }
   }
 
-  // === حفظ الأحكام والقرارات كمستندات ===
+  // ===== 5. حفظ الأحكام → قسم الأحكام والمذكرات =====
   for (const j of judgments) {
-    if (!j) continue;
     try {
-      const fields = j.fields || j.raw?.fields || {};
-      const deedNum = (j.deedNumber || j.judgmentNumber || fields.deedNumber || fields.judgmentNumber || fields['رقم الصك'] || fields['رقم الصكوك'] || fields['رقم صك'] || (j.text || '').match(/\b\d{6,}\b/)?.[0] || '').toString().trim();
-      const caseNum = (j.caseNumber || fields.caseNumber || fields['رقم القضية'] || fields['رقم الدعوى'] || (j.text || '').match(/\d{4}[\/\s]\d{3,}/)?.[0] || '').toString().trim().replace(/\s/g,'');
-      
+      const deedNum = getField(j,'deedNumber','deed_number','رقم الصك') || '';
+      const caseNum = getField(j,'caseNumber','case_number','رقم القضية') || '';
       if (!deedNum && !caseNum) continue;
 
-      let deedDateISO = null;
-      const deedDateRaw = j.deedDate || j.date || fields.deedDate || fields.date || fields['تاريخ الصك'] || fields['تاريخ صك'] || null;
-      if (deedDateRaw) {
-        try { deedDateISO = new Date(deedDateRaw).toISOString(); } catch {}
-        if (!deedDateISO) deedDateISO = deedDateRaw; // fallback string
-      }
-
-      const judgmentType = j.judgmentType || fields.judgmentType || fields['نوع الحكم'] || fields['الحكم'] || '';
-      const caseType = j.caseType || fields.caseType || fields['نوع القضية'] || fields['تصنيف القضية'] || '';
-      const court = j.court || j.courtName || fields.court || fields['المحكمة'] || fields['اسم المحكمة'] || '';
-      const plaintiff = j.plaintiff || j.clientName || fields.plaintiff || fields['المدعي'] || fields['الموكل'] || '';
-      const defendant = j.defendant || j.opponentName || fields.defendant || fields['المدعى عليه'] || fields['الخصم'] || '';
-
-      // Check for existing by deedNum or caseNum + document_name to avoid duplication if deedNum exists
-      let existingId = null;
-      if (deedNum) {
-        const { data: existing } = await adminSupabase
-          .from('case_documents')
-          .select('id')
-          .eq('judgment_number', deedNum)
-          .maybeSingle();
-        if (existing) existingId = existing.id;
-      }
-
       await adminSupabase.from('case_documents').upsert({
-        id: existingId || crypto.randomUUID(),
-        case_id: null,
+        id: crypto.randomUUID(),
         case_number: caseNum || deedNum,
-        case_name: caseType || '',
-        judgment_number: deedNum,
+        case_name: getField(j,'caseType','نوع القضية'),
         document_type: 'judgment',
-        document_name: `صك ${deedNum || caseNum} - ${judgmentType || 'حكم'}`,
-        judgment_type: judgmentType,
-        case_type: caseType,
-        judgment_date: deedDateISO,
-        court_name: court,
-        plaintiff: plaintiff,
-        defendant: defendant,
-        notes: `المدعي: ${plaintiff} | المدعى عليه: ${defendant} | رقم الصك: ${deedNum}`,
+        document_name: `صك ${deedNum || caseNum} — ${getField(j,'judgmentType','نوع الحكم') || 'حكم'}`,
+        judgment_type: getField(j,'judgmentType','نوع الحكم'),
+        judgment_date: getField(j,'deedDate','judgmentDate','تاريخ الصك') || null,
+        court_name: getField(j,'court','courtName','المحكمة'),
+        notes: [
+          getField(j,'plaintiff','المدعي') ? `المدعي: ${getField(j,'plaintiff','المدعي')}` : '',
+          getField(j,'defendant','المدعى عليه') ? `المدعى عليه: ${getField(j,'defendant','المدعى عليه')}` : '',
+          deedNum ? `رقم الصك: ${deedNum}` : ''
+        ].filter(Boolean).join(' | '),
         is_najiz_sync: true,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       }, { onConflict: 'id' });
       results.judgments.added++;
-    } catch(err: any) {
+    } catch(e: any) {
+      console.error('[Judgment]', e.message);
       results.judgments.errors++;
-      console.error('[Sync] Judgment error:', err.message);
     }
   }
 
-  const totalSynced =
-    results.cases.added + results.cases.updated +
-    results.hearings.added + results.poa.added +
-    results.executions.added +
-    results.judgments.added + results.judgments.updated;
+  // ===== 6. حفظ العملاء/الأطراف → قسم العملاء =====
+  for (const cl of clients) {
+    try {
+      const name = getField(cl,'name','clientName','partyName','المدعي','الموكل');
+      if (!name || name.length < 2) continue;
 
-  // تسجيل المزامنة
-  try {
-    await adminSupabase.from('najiz_sync_logs').insert({
-      id: crypto.randomUUID(),
-      sync_type: type,
-      status: totalSynced > 0 ? 'success' : 'empty',
-      records_synced: totalSynced,
-      raw_data: JSON.stringify({ 
-        results, 
-        received: { cases: cases.length, hearings: hearings.length, poas: poas.length, executions: executions.length, judgments: judgments.length },
-        source: body.source || 'najiz-extension',
-        deviceId: body.deviceId || null,
-        pageUrl: body.pageUrl || null,
-        sentAt: body.sentAt || null
-      }),
-      created_at: new Date().toISOString()
-    });
-  } catch(e) {}
+      const { data: existing } = await adminSupabase
+        .from('clients').select('id')
+        .eq('name', name).maybeSingle();
 
-  console.log('[Sync] Results:', results);
+      if (!existing) {
+        await adminSupabase.from('clients').insert({
+          id: crypto.randomUUID(),
+          name,
+          phone: getField(cl,'phone','mobile') || null,
+          status: 'active',
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        });
+        results.clients.added++;
+      }
+    } catch(e: any) {
+      console.error('[Client]', e.message);
+      results.clients.errors++;
+    }
+  }
+
+  function mapCategory(text: string): string {
+    if (!text) return 'civil';
+    const t = text.toLowerCase();
+    if (/تجاري|commercial/.test(t)) return 'commercial';
+    if (/عمالي|labor/.test(t)) return 'labor';
+    if (/جزائي|criminal/.test(t)) return 'criminal';
+    if (/أحوال|personal/.test(t)) return 'personal_status';
+    if (/إداري|admin/.test(t)) return 'administrative';
+    return 'civil';
+  }
+
+  const totalSynced = Object.values(results)
+    .reduce((s: any, r: any) => s + (r.added || 0) + (r.updated || 0), 0);
+
+  // تسجيل في سجل المزامنة
+  await adminSupabase.from('najiz_sync_logs').insert({
+    id: crypto.randomUUID(),
+    sync_type: type,
+    status: totalSynced > 0 ? 'success' : 'empty',
+    records_synced: totalSynced,
+    raw_data: JSON.stringify({ results, source: body.source }),
+    created_at: new Date().toISOString()
+  }).catch(() => {});
 
   return res.json({
     success: true,
+    itemCount: totalSynced,
+    totalSynced,
     message: totalSynced > 0
       ? `✅ تمت المزامنة: ${totalSynced} سجل`
-      : 'تم الاستلام — لا بيانات جديدة',
-    totalSynced,
-    itemCount: totalSynced,
+      : 'لا بيانات جديدة',
     results,
     distribution: {
       'إدارة القضايا': results.cases.added + results.cases.updated,
-      'مواعيد الجلسات': results.hearings.added,
-      'الوكالات': results.poa.added,
+      'مواعيد الجلسات': results.sessions.added,
+      'الوكالات': results.agencies.added,
       'طلبات التنفيذ': results.executions.added,
-      'الأحكام ومحاضر ضبط الجلسات والمذكرات': results.judgments.added + results.judgments.updated
+      'الأحكام والمذكرات': results.judgments.added,
+      'العملاء': results.clients.added
     },
     timestamp: new Date().toISOString()
   });

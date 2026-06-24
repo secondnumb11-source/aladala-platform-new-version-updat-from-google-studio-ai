@@ -351,286 +351,357 @@ export default function CaseCard({
 
   const isLightTheme = false; // Forced Dark Blue
 
-  const { arabicStatusName, IconComponent } = getInteractiveCaseStyles(c.category, c.status);
+  // Retrieve basic meta styles from CasesModule
+  const { 
+    arabicStatusName, 
+    IconComponent
+  } = getInteractiveCaseStyles(c.category, c.status);
+
   const cTags = getCaseDocumentTags(c);
 
-  // High contrast dynamic classes
-  const cardBg = isHighContrast 
-    ? 'bg-white border-slate-300 hover:border-amber-500 shadow-sm hover:shadow-xl' 
-    : 'bg-[#0b1329] border-slate-700 hover:border-amber-500 shadow-lg shadow-black/40 hover:shadow-amber-500/10';
-  
-  const textPrimary = isHighContrast ? 'text-slate-950' : 'text-white';
-  const textSecondary = isHighContrast ? 'text-slate-700' : 'text-slate-300';
-  const textMuted = isHighContrast ? 'text-slate-500' : 'text-slate-400';
-  const textAccent = isHighContrast ? 'text-amber-700' : 'text-amber-400';
-  
-  const blockBg = isHighContrast ? 'bg-slate-50 border-slate-200' : 'bg-slate-800/40 border-slate-700/60';
-  const blockHoverBg = isHighContrast ? 'hover:bg-slate-100' : 'hover:bg-slate-800/80';
+  // Retrieve luxurious gradient configuration
+  const theme = LUXURY_THEMES[c.category] || LUXURY_THEMES.other;
+  const palette = getStrictWCAGAAAPalette(theme.from, theme.to, isHighContrast, !isHighContrast); // Use isHighContrast properly to trigger light/dark
 
-  const categoryNameAr = {
-    commercial: 'التجارية',
-    labor: 'العمالية',
-    civil: 'المدنية',
-    criminal: 'الجزائية',
-    personal_status: 'الأحوال الشخصية',
-    administrative: 'الإدارية',
-    financial: 'المالية',
-    execution: 'التنفيذ',
-  }[c.category || 'other'] || 'أخرى';
+  // 3D luxury shadow values
+  const shadowLight = searchHighlight 
+    ? '0 0 20px rgba(212, 175, 55, 0.4), 0 10px 40px -10px rgba(0, 0, 0, 0.15)' 
+    : '0 10px 40px -10px rgba(0, 0, 0, 0.08), inset 0 0 0 1px rgba(255,255,255,0.4)';
+  const shadowDark = searchHighlight 
+    ? '0 0 20px rgba(212, 175, 55, 0.15), 0 10px 40px -10px rgba(0, 0, 0, 0.5), inset 0 0 0 1px rgba(212, 175, 55, 0.3)' 
+    : '0 10px 40px -10px rgba(0, 0, 0, 0.4), inset 0 0 0 1px rgba(255,255,255,0.05)';
+    
+  const luxuryShadow = isHighContrast ? shadowLight : shadowDark;
+
+  const shadowHoverLight = '0 20px 50px -15px rgba(0, 0, 0, 0.15), inset 0 0 0 2px rgba(212, 175, 55, 0.5)';
+  const shadowHoverDark = '0 20px 50px -15px rgba(0, 0, 0, 0.6), inset 0 0 0 1px rgba(212, 175, 55, 0.5)';
+  
+  const luxuryHoverShadow = isHighContrast ? shadowHoverLight : shadowHoverDark;
+
+  const cardStyle: React.CSSProperties = {
+    background: isHighContrast 
+      ? `linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)` // Elegant white/silver
+      : `linear-gradient(135deg, ${theme.from} 0%, ${theme.to} 100%)`, 
+    boxShadow: (isHovered || isKeyboardFocused) ? luxuryHoverShadow : luxuryShadow,
+    transform: (isHovered || isKeyboardFocused) ? 'translateY(-6px) scale(1.018)' : 'translateY(0) scale(1)',
+    transition: 'all 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
+    transformStyle: 'preserve-3d',
+    perspective: '1000px'
+  };
 
   return (
     <div
       onClick={() => onSelectCase(c)}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      className={`relative cursor-pointer rounded-[2rem] border-2 overflow-hidden transition-all duration-300 flex flex-col ${cardBg} ${c.archived ? 'opacity-70 grayscale-[0.3]' : ''} ${isKeyboardFocused ? 'ring-4 ring-amber-500 ring-offset-2 z-10 scale-[1.02]' : ''} ${searchHighlight ? 'ring-2 ring-emerald-400' : ''}`}
+      className={`relative cursor-pointer rounded-[2rem] border overflow-hidden cases-module-card-item transition-all ${
+        c.archived ? 'opacity-65 grayscale-[0.2]' : ''
+      } ${isKeyboardFocused ? 'ring-4 ring-[#D4AF37] ring-offset-4 ring-offset-transparent scale-[1.03] z-10' : ''} ${searchHighlight ? 'ring-2 ring-amber-400 ring-offset-2 ring-offset-transparent' : ''} ${
+        isHighContrast ? 'border-slate-200 text-slate-800' : 'border-[#D4AF37]/20 text-white'
+      }`}
+      style={cardStyle}
       id={`case-card-${c.id}`}
-      style={{ transform: isHovered && !isKeyboardFocused ? 'translateY(-4px)' : 'none' }}
-      dir="rtl"
     >
-      {/* Decorative Top Accent Bar */}
-      <div className={`h-1.5 w-full ${isHighContrast ? 'bg-amber-600' : 'bg-amber-500'} absolute top-0 inset-x-0`} />
+      {/* Subtle gold ambient gradient overlay at top of dark luxury option */}
+      {!isHighContrast && (
+        <div className="absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-amber-500/15 via-transparent to-transparent pointer-events-none z-0" />
+      )}
 
-      <div className="p-5 flex-1 flex flex-col pt-6">
-        
-        {/* Header Actions */}
-        <div className="flex justify-between items-start mb-4">
-          <div className="flex gap-2">
-             <button
-               type="button"
-               onClick={(e) => { e.stopPropagation(); setActivityLogCaseId(c.id); }}
-               className={`p-2.5 rounded-xl border transition-all ${isHighContrast ? 'bg-amber-50 border-amber-200 text-amber-700 hover:bg-amber-100' : 'bg-amber-500/10 border-amber-500/30 text-amber-400 hover:bg-amber-500/20'}`}
-               title="سجل التعديلات"
-             >
-               <Clock className="w-4 h-4" />
-             </button>
-             <button
-               type="button"
-               onClick={(e) => { e.stopPropagation(); setIsNotePopoverOpen(true); }}
-               className={`p-2.5 rounded-xl border transition-all ${isHighContrast ? 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100' : 'bg-slate-800/50 border-slate-700 text-slate-300 hover:bg-slate-800'}`}
-               title="إضافة ملاحظة"
-             >
-               <Notebook className="w-4 h-4" />
-             </button>
-          </div>
-          <div className={`px-3 py-1.5 rounded-lg border font-black text-xs ${isHighContrast ? 'bg-slate-100 border-slate-300 text-slate-900' : 'bg-slate-800 border-slate-600 text-white'}`}>
-             #{c.caseNumber}
-          </div>
-        </div>
+      {/* Light mode luxury highlight overlay */}
+      {isHighContrast && isHovered && (
+         <div className="absolute inset-0 bg-gradient-to-tr from-amber-500/5 to-transparent pointer-events-none z-0 transition-opacity duration-300" />
+      )}
 
-        {/* Court & Category */}
-        <div className="grid grid-cols-2 gap-3 mb-3">
-          <div className={`rounded-2xl border p-3 flex flex-col justify-center items-center text-center transition-colors ${blockBg} ${blockHoverBg}`}>
-            <span className={`text-[10px] font-black uppercase mb-1 tracking-wider ${textMuted}`}>المحكمة المختصة</span>
-            <span className={`text-sm font-black truncate w-full ${textPrimary}`}>{c.courtName || 'غير محدد'}</span>
+      {/* MAIN LAYOUT STRUCTURE - UNIFIED LUXURY BENTO BOX */}
+      <div 
+        className={`relative z-10 w-full h-full p-5 flex flex-col justify-between cases-module-card-inner transition-colors duration-300 ${
+          isHighContrast ? 'bg-white/40' : 'bg-black/40 backdrop-blur-md'
+        }`}
+        dir="rtl"
+      >
+        {/* CSS GRID PANEL FOR ALL INNER CARD ELEMENTS */}
+        <div className="flex flex-col w-full h-full justify-between font-sans">
+          
+          {/* Top Actions (Row 0) */}
+          <div className="flex justify-between items-start mb-4">
+            <div className="flex gap-2">
+               <button
+                 type="button"
+                 onClick={(e) => { e.stopPropagation(); setActivityLogCaseId(c.id); }}
+                 className={`p-2 rounded-xl border transition-all shadow-sm ${
+                   isHighContrast 
+                     ? 'border-amber-400/50 bg-amber-50 text-amber-700 hover:bg-amber-100 hover:shadow-md' 
+                     : 'border-[#facc15] bg-black/40 text-[#facc15] hover:bg-black/60'
+                 }`}
+                 title="سجل تعديلات ونشاط القضية"
+               >
+                 <Clock className="w-4 h-4" />
+               </button>
+               <button
+                 type="button"
+                 onClick={(e) => { e.stopPropagation(); setIsNotePopoverOpen(true); }}
+                 className={`p-2 rounded-xl border transition-all shadow-sm ${
+                   isHighContrast 
+                     ? 'border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100 hover:shadow-md' 
+                     : 'border-white/20 bg-black/20 text-white/80 hover:bg-black/40'
+                 }`}
+                 title="إضافة ملاحظة سريعة للمكتب"
+               >
+                 <Notebook className="w-4 h-4" />
+               </button>
+            </div>
+            
+            <div className={`px-3 py-1.5 rounded-xl border text-[10px] font-black tracking-wider flex items-center gap-1.5 shadow-sm ${
+               isHighContrast 
+                 ? 'bg-emerald-50 border-emerald-200 text-emerald-700' 
+                 : 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400'
+            }`}>
+              <div className={`w-1.5 h-1.5 rounded-full ${isHighContrast ? 'bg-emerald-500' : 'bg-emerald-400 animate-pulse'}`}></div>
+              {c.status || arabicStatusName || 'نشطة'}
+            </div>
           </div>
-          <div className={`rounded-2xl border p-3 flex flex-col justify-center items-center text-center transition-colors ${blockBg} ${blockHoverBg}`}>
-            <span className={`text-[10px] font-black uppercase mb-1 tracking-wider ${textMuted}`}>نوع القضية</span>
-            <span className={`text-sm font-black truncate w-full flex items-center justify-center gap-1.5 ${textPrimary}`}>
-              <IconComponent className="w-3.5 h-3.5" />
-              {categoryNameAr}
+
+          {/* Row 1: Case Number, Court */}
+          <div className="grid grid-cols-2 gap-3 mb-3">
+            <div className={`border rounded-[1.25rem] p-3 shadow-sm text-center flex flex-col justify-center overflow-hidden transition-all duration-300 ${
+              isHighContrast 
+                ? 'bg-slate-50 border-slate-200 hover:bg-slate-100 hover:shadow-md' 
+                : 'bg-black/20 border-white/10 hover:bg-black/30'
+            }`}>
+              <span className={`text-[10px] font-bold block mb-1 tracking-wider uppercase ${isHighContrast ? 'text-slate-500' : 'text-white/60'}`}>المحكمة المختصة</span>
+              <span className={`font-black text-xs truncate block ${isHighContrast ? 'text-slate-900' : 'text-white'}`}>{c.courtName || 'غير محدد'}</span>
+            </div>
+            <div className={`border rounded-[1.25rem] p-3 shadow-sm text-center flex flex-col justify-center transition-all duration-300 ${
+              isHighContrast 
+                ? 'bg-amber-50 border-amber-200 hover:bg-amber-100 hover:shadow-md' 
+                : 'bg-black/20 border-amber-500/20 hover:bg-black/30'
+            }`}>
+              <span className={`text-[10px] font-bold block mb-1 tracking-wider uppercase ${isHighContrast ? 'text-amber-700' : 'text-amber-400/80'}`}>رقم القضية</span>
+              <span className={`font-black text-sm truncate ${isHighContrast ? 'text-amber-600' : 'text-amber-400'}`} dir="ltr">#{c.caseNumber}</span>
+            </div>
+          </div>
+
+          {/* Row 2: Circuit, Category */}
+          <div className="grid grid-cols-2 gap-3 mb-3">
+            <div className={`border rounded-[1.25rem] p-3 shadow-sm text-center flex flex-col justify-center overflow-hidden transition-all duration-300 ${
+              isHighContrast 
+                ? 'bg-slate-50 border-slate-200 hover:bg-slate-100 hover:shadow-md' 
+                : 'bg-black/20 border-white/10 hover:bg-black/30'
+            }`}>
+              <span className={`text-[10px] font-bold block mb-1 tracking-wider uppercase ${isHighContrast ? 'text-slate-500' : 'text-white/60'}`}>نوع القضية</span>
+              <span className={`font-black text-xs truncate block flex items-center justify-center gap-1.5 ${isHighContrast ? 'text-slate-900' : 'text-white'}`}>
+                {IconComponent && <IconComponent className="w-3.5 h-3.5" />}
+                {c.category || theme.nameAr || 'غير محدد'}
+              </span>
+            </div>
+            <div className={`border rounded-[1.25rem] p-3 shadow-sm text-center flex flex-col justify-center overflow-hidden transition-all duration-300 ${
+              isHighContrast 
+                ? 'bg-slate-50 border-slate-200 hover:bg-slate-100 hover:shadow-md' 
+                : 'bg-black/20 border-white/10 hover:bg-black/30'
+            }`}>
+              <span className={`text-[10px] font-bold block mb-1 tracking-wider uppercase ${isHighContrast ? 'text-slate-500' : 'text-white/60'}`}>الدائرة القضائية</span>
+              <span className={`font-black text-xs truncate block ${isHighContrast ? 'text-slate-900' : 'text-white'}`}>{c.circuitNumber || 'غير محدد'}</span>
+            </div>
+          </div>
+
+          {/* Row 3: Client */}
+          <div className={`border rounded-[1.25rem] p-3 shadow-sm text-center mb-3 flex flex-col justify-center overflow-hidden transition-all duration-300 ${
+            isHighContrast 
+              ? 'bg-slate-50 border-slate-200 hover:bg-slate-100 hover:shadow-md' 
+              : 'bg-black/20 border-white/10 hover:bg-black/30'
+          }`}>
+            <span className={`text-[10px] font-bold block mb-1 tracking-wider uppercase ${isHighContrast ? 'text-slate-500' : 'text-white/60'}`}>أطراف الدعوى / الموكل</span>
+            <span className={`font-black text-xs truncate block ${isHighContrast ? 'text-slate-900' : 'text-white'}`}>
+              {c.clientName || 'غير محدد'}
+              {c.opponentName ? ` ضد ${c.opponentName}` : ''}
             </span>
           </div>
-        </div>
 
-        {/* Client & Opponent */}
-        <div className={`rounded-2xl border p-3.5 mb-3 flex flex-col justify-center text-center transition-colors ${blockBg} ${blockHoverBg}`}>
-          <span className={`text-[10px] font-black uppercase mb-1 tracking-wider ${textMuted}`}>أطراف الدعوى</span>
-          <span className={`text-[15px] font-black truncate w-full ${textPrimary}`}>
-            {c.clientName || 'غير محدد'} <span className={textMuted}>ضد</span> {c.opponentName || 'غير محدد'}
-          </span>
-        </div>
-
-        {/* Subject */}
-        <div className={`rounded-2xl border p-3.5 mb-3 flex flex-col justify-center text-center transition-colors ${blockBg} ${blockHoverBg}`}>
-          <span className={`text-[10px] font-black uppercase mb-1 tracking-wider ${textMuted}`}>موضوع الدعوى</span>
-          <span className={`text-sm font-black line-clamp-2 w-full ${textAccent}`}>{c.caseName || 'غير محدد'}</span>
-        </div>
-
-        {/* Next Session */}
-        <div className={`rounded-2xl border p-3 mb-4 flex flex-col justify-center items-center text-center transition-colors ${isHighContrast ? 'bg-emerald-50 border-emerald-200 hover:bg-emerald-100' : 'bg-emerald-950/30 border-emerald-900/50 hover:bg-emerald-900/80'}`}>
-          <span className={`text-[10px] font-black uppercase mb-1 tracking-wider ${isHighContrast ? 'text-emerald-700' : 'text-emerald-500'}`}>الجلسة القادمة</span>
-          <span className={`text-sm font-black flex items-center gap-2 ${isHighContrast ? 'text-emerald-900' : 'text-emerald-400'}`}>
-            <Calendar className="w-4 h-4" />
-            {c.nextSessionDate || 'غير مجدول'}
-          </span>
-        </div>
-
-        {/* Stats Grid */}
-        <div className="grid grid-cols-4 gap-2 mb-4">
-          <div className={`flex flex-col items-center text-center border-l last:border-0 ${isHighContrast ? 'border-slate-300' : 'border-slate-700'}`}>
-            <span className={`text-[9px] font-black uppercase ${textMuted}`}>مذكرات</span>
-            <span className={`text-sm font-black ${textPrimary}`}>{c.notes?.length || (parseInt(c.caseNumber || '3') % 3 + 1)}</span>
+          {/* Row 4: Subject */}
+          <div className={`border rounded-[1.25rem] p-3.5 shadow-sm text-center mb-3 flex flex-col justify-center overflow-hidden transition-all duration-300 ${
+            isHighContrast 
+              ? 'bg-slate-100 border-slate-300 hover:bg-slate-200 hover:shadow-md' 
+              : 'bg-black/30 border-white/20 hover:bg-black/40'
+          }`}>
+            <span className={`text-[10px] font-bold block mb-1.5 tracking-wider uppercase ${isHighContrast ? 'text-slate-600' : 'text-white/70'}`}>موضوع الدعوى</span>
+            <span className={`font-black text-sm block truncate ${isHighContrast ? 'text-slate-950' : 'text-white drop-shadow-md'}`}>{c.caseName || 'غير محدد'}</span>
           </div>
-          <div className={`flex flex-col items-center text-center border-l last:border-0 ${isHighContrast ? 'border-slate-300' : 'border-slate-700'}`}>
-            <span className={`text-[9px] font-black uppercase ${textMuted}`}>جلسات</span>
-            <span className={`text-sm font-black ${textPrimary}`}>{c.hearings?.filter(h => h.status === 'completed').length || (parseInt(c.caseNumber || '5') % 2 + 1)}</span>
-          </div>
-          <div className={`flex flex-col items-center text-center border-l last:border-0 ${isHighContrast ? 'border-slate-300' : 'border-slate-700'}`}>
-            <span className={`text-[9px] font-black uppercase ${textMuted}`}>مستندات</span>
-            <span className={`text-sm font-black ${textPrimary}`}>{c.attachments_count || 0}</span>
-          </div>
-          <div className="flex flex-col items-center text-center justify-center">
-            <button
-              onClick={(e) => { e.stopPropagation(); onNajizSync(c); }}
-              className={`p-1.5 rounded-full ${isHighContrast ? 'bg-sky-100 text-sky-700 hover:bg-sky-200' : 'bg-sky-500/20 text-sky-400 hover:bg-sky-500/30'} transition-colors`}
-              title="مزامنة ناجز"
-            >
-              <Bot className={`w-4 h-4 ${isSyncing === c.id ? 'animate-spin' : ''}`} />
-            </button>
-          </div>
-        </div>
 
-        <div className="mt-auto space-y-2">
-          {/* Export Report */}
+          {/* Row 5: Next Session */}
+          <div className={`border rounded-[1.25rem] p-3.5 shadow-sm text-center mb-3 flex flex-col justify-center transition-all duration-300 ${
+            isHighContrast 
+              ? 'bg-[#064e3b]/5 border-[#064e3b]/20 hover:bg-[#064e3b]/10 hover:shadow-md' 
+              : 'bg-black/20 border-[#00ff88]/20 hover:bg-black/30'
+          }`}>
+            <span className={`text-[10px] font-bold block mb-1.5 tracking-wider uppercase ${isHighContrast ? 'text-[#064e3b]/70' : 'text-[#00ff88]/60'}`}>تاريخ الجلسة القادمة</span>
+            <span className={`font-black text-sm flex items-center justify-center gap-2 ${isHighContrast ? 'text-[#064e3b]' : 'text-[#00ff88] drop-shadow-[0_0_5px_rgba(0,255,136,0.3)]'}`}>
+              <Calendar className="w-4 h-4" />
+              {c.nextSessionDate || 'غير مجدول'}
+            </span>
+          </div>
+
+          {/* Row 6: Status & Counts & Najiz Sync */}
+          <div className="flex gap-2 mb-4">
+             <div className={`flex-[3] border rounded-[1.25rem] p-2 shadow-sm grid grid-cols-3 divide-x divide-x-reverse text-center items-center ${
+               isHighContrast ? 'bg-slate-50 border-slate-200 divide-slate-200' : 'bg-black/20 border-white/10 divide-white/10'
+             }`}>
+                <div className="flex flex-col">
+                  <span className={`text-[9px] font-bold block mb-0.5 tracking-wider ${isHighContrast ? 'text-slate-500' : 'text-white/60'}`}>مذكرات</span>
+                  <span className={`font-black text-xs font-mono ${isHighContrast ? 'text-slate-900' : 'text-white'}`}>{c.notes?.length || (parseInt(c.caseNumber || '3') % 3 + 1)}</span>
+                </div>
+                <div className="flex flex-col">
+                  <span className={`text-[9px] font-bold block mb-0.5 tracking-wider ${isHighContrast ? 'text-slate-500' : 'text-white/60'}`}>جلسات</span>
+                  <span className={`font-black text-xs font-mono ${isHighContrast ? 'text-slate-900' : 'text-white'}`}>{c.hearings?.filter(h => h.status === 'completed').length || (parseInt(c.caseNumber || '5') % 2 + 1)}</span>
+                </div>
+                <div className="flex flex-col">
+                  <span className={`text-[9px] font-bold block mb-0.5 tracking-wider ${isHighContrast ? 'text-slate-500' : 'text-white/60'}`}>مستندات</span>
+                  <span className={`font-black text-xs font-mono ${isHighContrast ? 'text-slate-900' : 'text-white'}`}>{c.attachments_count || 0}</span>
+                </div>
+             </div>
+             <div className={`flex-[2] border rounded-[1.25rem] p-2 shadow-sm flex flex-col items-center justify-center cursor-pointer transition-colors ${
+               isHighContrast 
+                 ? 'bg-emerald-50 border-emerald-200 hover:bg-emerald-100 hover:shadow-md' 
+                 : 'bg-emerald-500/10 border-emerald-500/30 hover:bg-emerald-500/20'
+             }`}
+                  onClick={(e) => { e.stopPropagation(); onNajizSync(c); }}>
+                <Bot className={`w-4 h-4 mb-1 ${isHighContrast ? 'text-emerald-600' : 'text-emerald-400'} ${isSyncing === c.id ? 'animate-spin' : ''}`} />
+                <span className={`text-[9px] font-black text-center tracking-wider ${isHighContrast ? 'text-emerald-700' : 'text-emerald-400'}`}>{c.isNajizSync || c.is_najiz_sync ? 'مرتبط بـ ناجز' : 'مزامنة ناجز'}</span>
+             </div>
+          </div>
+
+          {/* Export Report (PDF) - Saudi Court Standard */}
           <button
             type="button"
             disabled={isExporting}
             onClick={handleExportReport}
-            className={`w-full py-3 rounded-xl border-2 transition-all flex items-center justify-center gap-2 font-black text-sm shadow-sm ${
-              isHighContrast 
-                ? 'bg-amber-50 border-amber-500 text-amber-700 hover:bg-amber-100' 
-                : 'bg-amber-500/10 border-amber-500/50 text-amber-400 hover:bg-amber-500/20'
-            } ${isExporting ? 'opacity-50 cursor-not-allowed' : ''}`}
+            className={`w-full mb-3 py-3 rounded-xl border transition-all flex items-center justify-center gap-2 font-black text-xs shadow-sm ${
+              isExporting ? 'opacity-50 cursor-not-allowed animate-pulse' : ''
+            } ${
+              isHighContrast
+                ? 'bg-gradient-to-r from-amber-50 to-yellow-100 border-amber-300 text-amber-800 hover:from-amber-100 hover:to-yellow-200 hover:border-amber-400 hover:shadow-md'
+                : 'bg-gradient-to-r from-amber-500/10 to-yellow-500/10 border-[#D4AF37]/40 text-amber-400 hover:from-amber-500/20 hover:to-yellow-500/20 hover:border-[#D4AF37]'
+            }`}
           >
-            {isExporting ? <span className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" /> : <span>📋</span>}
-            تصدير التقرير
+            {isExporting ? (
+              <span className={`w-3.5 h-3.5 border-2 border-t-transparent rounded-full animate-spin ${isHighContrast ? 'border-amber-600' : 'border-amber-400'}`} />
+            ) : (
+              <span className="text-base">📋</span>
+            )}
+            {isExporting ? 'جاري تصدير التقرير الفاخر...' : 'تصدير التقرير الرسمي (PDF)'}
           </button>
 
-          {/* Delete/Archive Actions */}
+          {/* Row 7: Archive & Delete */}
           {(onArchiveToggle || onDeleteCase) && (selectedRole === 'admin' || selectedRole === 'lawyer') && (
-            <div className="flex gap-2">
-              {onArchiveToggle && (
-                <button 
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setConfirmDialog({
-                      isOpen: true,
-                      type: 'archive',
-                      title: c.archived ? 'استعادة ملف الدعوى' : 'نقل للأرشيف',
-                      message: c.archived ? 'هل أنت متأكد من رغبتك في استعادة هذا الملف؟' : 'هل تريد نقل هذا الملف إلى الأرشيف؟',
-                      onConfirm: () => onArchiveToggle(c)
-                    });
-                  }} 
-                  className={`flex-1 py-2.5 rounded-xl border transition-all text-xs font-black text-center ${isHighContrast ? 'bg-slate-100 border-slate-300 text-slate-700 hover:bg-slate-200' : 'bg-slate-800/50 border-slate-600/50 text-slate-300 hover:bg-slate-700/50'}`}
-                >
-                  {c.archived ? 'استعادة' : 'أرشفة'}
-                </button>
-              )}
-              {onDeleteCase && (
-                <button 
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setConfirmDialog({
-                      isOpen: true,
-                      type: 'delete',
-                      title: 'حذف القضية نهائياً',
-                      message: 'هل أنت متأكد من حذف هذه القضية؟ سيتم إزالة كافة السجلات نهائياً ولا يمكن التراجع.',
-                      onConfirm: () => onDeleteCase(c.id)
-                    });
-                  }} 
-                  className={`flex-[0.6] py-2.5 rounded-xl border flex items-center justify-center transition-all ${isHighContrast ? 'bg-rose-50 border-rose-200 text-rose-600 hover:bg-rose-100' : 'bg-rose-950/40 border-rose-900 text-rose-500 hover:bg-rose-900/60'}`}
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
-              )}
+            <div className="flex justify-between items-center gap-2 mt-auto">
+              {/* Archive - Right */}
+              {onArchiveToggle ? (
+                  <button 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (!onArchiveToggle) return;
+                      setConfirmDialog({
+                        isOpen: true,
+                        type: 'archive',
+                        title: c.archived ? 'استعادة ملف الدعوى 📦' : 'نقل القضية للأرشيف 📦',
+                        message: c.archived 
+                          ? 'هل أنت متأكد من رغبتك في استعادة هذا الملف من الأرشيف وإعادته لقائمة القضايا النشطة؟'
+                          : 'هل تريد نقل هذا الملف إلى أرشيف النظام؟ لن تظهر القضية في القائمة الرئيسية النشطة بعد الآن.',
+                        onConfirm: () => onArchiveToggle(c)
+                      });
+                    }} 
+                    className={`flex-[1] border px-3 py-2.5 rounded-xl text-[11px] font-bold transition-all flex items-center justify-center gap-1.5 shadow-sm ${
+                      isHighContrast 
+                        ? 'bg-slate-100 border-slate-300 text-slate-700 hover:bg-slate-200 hover:text-slate-900 hover:shadow-md' 
+                        : 'bg-black/20 border-white/10 text-white/80 hover:bg-black/40 hover:text-white'
+                    }`}
+                  >
+                    {c.archived ? 'استعادة ملف الدعوى' : 'نقل القضية للأرشيف'}
+                  </button>
+              ) : <div className="flex-[1]"></div>}
+              {/* Delete - Left */}
+              {onDeleteCase ? (
+                  <button 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (!onDeleteCase) return;
+                      setConfirmDialog({
+                        isOpen: true,
+                        type: 'delete',
+                        title: 'تأكيد حذف ملف القضية نهائياً ⚠️',
+                        message: 'هل أنت متأكد من حذف هذه القضية؟ سيتم إزالة كافة السجلات المرتبطة والمستندات نهائياً من الخادم ولا يمكن التراجع عن هذا الإجراء.',
+                        onConfirm: () => onDeleteCase(c.id)
+                      });
+                    }} 
+                    className={`flex-[1] border px-3 py-2.5 rounded-xl text-[11px] font-bold transition-all flex items-center justify-center gap-1.5 shadow-sm ${
+                      isHighContrast 
+                        ? 'bg-rose-50 border-rose-200 text-rose-700 hover:bg-rose-100 hover:text-rose-800 hover:shadow-md' 
+                        : 'bg-rose-500/10 border-rose-500/30 text-rose-400 hover:bg-rose-500/20'
+                    }`}
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                    حذف القضية
+                  </button>
+              ) : <div className="flex-[1]"></div>}
             </div>
           )}
-        </div>
-      </div>
 
-      {/* Confirmation Dialog Overlay */}
-      {confirmDialog && confirmDialog.isOpen && (
-        <div 
-          className={`absolute inset-0 z-50 p-6 flex flex-col justify-center items-center text-center transition-all backdrop-blur-md ${isHighContrast ? 'bg-white/95' : 'bg-black/95'}`}
-          onClick={(e) => e.stopPropagation()}
-        >
-          <div className={`w-16 h-16 rounded-full flex items-center justify-center text-3xl mb-4 border-2 ${isHighContrast ? 'bg-slate-100 border-slate-200' : 'bg-slate-800 border-slate-700'}`}>
-            {confirmDialog.type === 'delete' ? '⚠️' : '📦'}
-          </div>
-          <h4 className={`text-lg font-black mb-2 ${isHighContrast ? 'text-slate-900' : 'text-white'}`}>{confirmDialog.title}</h4>
-          <p className={`text-sm mb-6 ${isHighContrast ? 'text-slate-600' : 'text-slate-400'}`}>{confirmDialog.message}</p>
-          <div className="flex gap-3 w-full">
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                confirmDialog.onConfirm();
-                setConfirmDialog(null);
-              }}
-              className={`flex-1 py-3 rounded-xl font-black text-white ${confirmDialog.type === 'delete' ? 'bg-rose-600 hover:bg-rose-700' : 'bg-amber-600 hover:bg-amber-700'}`}
+          {/* Custom confirmation dialog inside CaseCard */}
+          {confirmDialog && confirmDialog.isOpen && (
+            <div 
+              className={`absolute inset-0 z-50 p-6 flex flex-col justify-between transition-all duration-300 rounded-[1.8rem] backdrop-blur-md border-2 shadow-[0_0_30px_rgba(212,175,55,0.3)] animate-in fade-in ${
+                isHighContrast ? 'bg-white/95 border-amber-400 text-slate-900' : 'bg-black/95 border-amber-500/50 text-white'
+              }`}
+              onClick={(e) => e.stopPropagation()}
             >
-              موافق
-            </button>
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                setConfirmDialog(null);
-              }}
-              className={`flex-1 py-3 rounded-xl font-black ${isHighContrast ? 'bg-slate-200 hover:bg-slate-300 text-slate-800' : 'bg-slate-800 hover:bg-slate-700 text-white'}`}
-            >
-              إلغاء
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Quick Note Popover Overlay */}
-      {isNotePopoverOpen && (
-        <div 
-          className={`absolute inset-0 z-50 p-6 flex flex-col transition-all ${isHighContrast ? 'bg-white/95' : 'bg-slate-900/95'} backdrop-blur-sm`}
-          onClick={(e) => e.stopPropagation()}
-          dir="rtl"
-        >
-          <div className="flex justify-between items-center mb-4">
-            <span className={`font-black text-lg ${isHighContrast ? 'text-amber-600' : 'text-amber-500'}`}>📝 ملاحظة سريعة</span>
-            <span className={`text-xs font-black ${isHighContrast ? 'text-slate-500' : 'text-slate-400'}`}>#{c.caseNumber}</span>
-          </div>
-          
-          {noteSavedSuccessfully ? (
-            <div className="flex-1 flex flex-col items-center justify-center">
-              <div className="w-16 h-16 rounded-full border-4 border-emerald-500 text-emerald-500 flex items-center justify-center text-3xl font-black mb-4 animate-bounce">
-                ✓
+              <div className="flex-1 flex flex-col justify-center items-center text-center space-y-4">
+                <div className={`w-14 h-14 rounded-full flex items-center justify-center text-2xl ${
+                  confirmDialog.type === 'delete' 
+                    ? (isHighContrast ? 'bg-rose-100 text-rose-600 border-2 border-rose-300' : 'bg-rose-500/10 text-rose-500 border-2 border-rose-500/30') 
+                    : (isHighContrast ? 'bg-amber-100 text-amber-600 border-2 border-amber-300' : 'bg-amber-500/10 text-amber-500 border-2 border-amber-500/30')
+                }`}>
+                  {confirmDialog.type === 'delete' ? '⚠️' : '📦'}
+                </div>
+                <div className="space-y-2">
+                  <h4 className={`text-base font-black ${isHighContrast ? 'text-amber-600' : 'text-amber-400'}`}>{confirmDialog.title}</h4>
+                  <p className={`text-xs leading-relaxed max-w-[240px] ${isHighContrast ? 'text-slate-600' : 'text-white/80'}`}>{confirmDialog.message}</p>
+                </div>
               </div>
-              <span className={`text-lg font-black ${isHighContrast ? 'text-emerald-700' : 'text-emerald-500'}`}>تم الحفظ بنجاح</span>
-            </div>
-          ) : (
-            <div className="flex-1 flex flex-col">
-              <textarea
-                className={`flex-1 p-4 rounded-2xl border-2 font-bold resize-none focus:outline-none focus:border-amber-500 ${isHighContrast ? 'border-slate-300 bg-slate-50 text-slate-900' : 'border-slate-700 bg-slate-800 text-white'}`}
-                placeholder="اكتب ملاحظتك هنا..."
-                value={quickNoteText}
-                onChange={(e) => setQuickNoteText(e.target.value)}
-                disabled={isSavingNote}
-              />
-              <div className="flex gap-3 mt-4">
+              <div className="flex items-center gap-3 mt-4">
                 <button
-                  onClick={handleSaveQuickNote}
-                  disabled={isSavingNote || !quickNoteText.trim()}
-                  className="flex-1 py-3 rounded-xl font-black text-white bg-amber-500 hover:bg-amber-600 disabled:opacity-50"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    confirmDialog.onConfirm();
+                    setConfirmDialog(null);
+                  }}
+                  className={`flex-1 py-2.5 text-xs font-black rounded-xl text-white transition-all shadow-md ${
+                    confirmDialog.type === 'delete' ? 'bg-rose-600 hover:bg-rose-700' : 'bg-amber-500 hover:bg-amber-600'
+                  }`}
                 >
-                  {isSavingNote ? 'جاري الحفظ...' : 'حفظ'}
+                  موافق، استمر
                 </button>
                 <button
-                  onClick={() => setIsNotePopoverOpen(false)}
-                  disabled={isSavingNote}
-                  className={`px-6 py-3 rounded-xl font-black ${isHighContrast ? 'bg-slate-200 text-slate-800 hover:bg-slate-300' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'}`}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setConfirmDialog(null);
+                  }}
+                  className={`px-4 py-2.5 text-xs font-black rounded-xl border transition-all ${
+                    isHighContrast ? 'bg-slate-100 hover:bg-slate-200 text-slate-700 border-slate-300' : 'bg-white/10 hover:bg-white/15 text-white/90 border-white/20'
+                  }`}
                 >
                   إلغاء
                 </button>
               </div>
             </div>
           )}
-        </div>
-      )}
 
-      {/* Hidden high-quality Arabic printable PDF Template */}
-      <div
-        id={`pdf-report-template-${c.id}`}
-        className="fixed -left-[9999px] top-0 bg-white text-slate-900 p-10 font-sans"
-        style={{ width: '800px', direction: 'rtl' }}
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="border-[6px] border-[#D4AF37] p-6 rounded-2xl relative bg-white">
+          {/* Hidden high-quality Arabic printable PDF Template */}
+          <div
+            id={`pdf-report-template-${c.id}`}
+            className="fixed -left-[9999px] top-0 bg-white text-slate-900 p-10 font-sans"
+            style={{ width: '800px', direction: 'rtl' }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="border-[6px] border-[#D4AF37] p-6 rounded-2xl relative bg-white">
               <div className="border border-[#111827] p-6 rounded-xl relative">
                 
                 {/* Header with National/Government Emblem Style */}
@@ -810,6 +881,79 @@ export default function CaseCard({
               </div>
             </div>
           </div>
+
         </div>
+
+        {/* --- QUICK NOTE FLOATING POPOVER (OVERLAY HUD) --- */}
+        {isNotePopoverOpen && (
+          <div 
+            className="absolute inset-0 z-50 p-6 flex flex-col justify-between transition-all duration-300 text-slate-900 rounded-[1.8rem] bg-white/95 backdrop-blur-md"
+            style={{
+              border: '2px solid #f59e0b',
+              boxShadow: '0 25px 55px rgba(0, 0, 0, 0.15)'
+            }}
+            onClick={(e) => e.stopPropagation()} // Prevent card selection click trigger
+            dir="rtl"
+          >
+            <div className="space-y-3 flex-1 flex flex-col justify-between">
+              <div>
+                <div className="flex items-center justify-between border-b border-slate-200 pb-1.5 mb-2">
+                  <span className="text-[13px] font-black text-amber-600 flex items-center gap-1.5">
+                    📝 ملاحظة سريعة جديدة
+                  </span>
+                  <span className="text-[11px] font-mono font-black text-slate-500">
+                    #{c.caseNumber}
+                  </span>
+                </div>
+                
+                <p className="text-[11px] text-slate-600 text-right mb-1">
+                  سجل ملحوظة وسيتم الحفظ الفوري بجدول الملاحظات (Notes):
+                </p>
+              </div>
+
+              {noteSavedSuccessfully ? (
+                <div className="flex-1 flex flex-col items-center justify-center text-center space-y-2 py-3">
+                  <div className="w-10 h-10 rounded-full border-2 border-emerald-500 text-emerald-500 flex items-center justify-center animate-bounce text-lg font-bold">
+                    ✓
+                  </div>
+                  <span className="text-sm font-black text-emerald-600">تم حفظ الملاحظة بنجاح!</span>
+                </div>
+              ) : (
+                <textarea
+                  className="w-full flex-1 p-2.5 text-xs bg-slate-50 border border-slate-300 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 text-right font-extrabold resize-none"
+                  placeholder="مثال: تم مراجعة الجلسة اليوم وسنقدم المذكرة غداً مرافعة..."
+                  value={quickNoteText}
+                  onChange={(e) => setQuickNoteText(e.target.value)}
+                  disabled={isSavingNote}
+                  rows={4}
+                />
+              )}
+            </div>
+
+            {!noteSavedSuccessfully && (
+              <div className="border-t border-slate-200 pt-2 flex items-center justify-between gap-3 mt-2">
+                <button
+                  type="button"
+                  onClick={handleSaveQuickNote}
+                  disabled={isSavingNote || !quickNoteText.trim()}
+                  className="flex-1 py-2 text-sm font-black rounded-xl bg-amber-500 border border-amber-600 text-white hover:bg-amber-600 transition-all outline-none shadow-md"
+                >
+                  {isSavingNote ? 'جاري الحفظ...' : 'حفظ الآن 💾'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setIsNotePopoverOpen(false)}
+                  disabled={isSavingNote}
+                  className="px-4 py-2 text-sm font-black rounded-xl bg-white border border-slate-300 text-slate-600 hover:bg-slate-50 transition-all outline-none"
+                >
+                  إلغاء
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+
+      </div>
+    </div>
   );
 }
