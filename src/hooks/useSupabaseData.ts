@@ -399,6 +399,7 @@ const mapPOAFromDB = (db: any) => ({
   issueDate: db.issue_date || '',
   expiryDate: db.expiry_date || '',
   principalName: db.principal_name || '',
+  agentName: db.agent_name || '',
   isNajizSync: db.is_najiz_sync || false,
   createdAt: db.created_at || new Date().toISOString()
 });
@@ -589,7 +590,7 @@ export function useSupabaseData() {
         supabase.from('tasks').select('id, title, description, status, priority, assigned_to, due_date, case_number, timer_active, timer_duration, target_completion_time, created_at').order('created_at', { ascending: false }),
         supabase.from('hearings').select('id, case_number, case_name, date, time, court_name, status, judge_name, notes, hall_number, decision, created_at').order('date', { ascending: true }),
         supabase.from('documents').select('id, name, category, uploaded_at, size, content_text, tags, color_code, file_url, storage_path, created_at').order('uploaded_at', { ascending: false }),
-        supabase.from('powers_of_attorney').select('id, raw_poa_number, case_number, issue_date, expiry_date, status, agent_name, created_at').order('issue_date', { ascending: false }),
+        supabase.from('powers_of_attorney').select('id, poa_number, issue_date, expiry_date, status, agent_name, principal_name, type, is_najiz_sync, created_at').order('issue_date', { ascending: false }),
         supabase.from('invoices').select('id, client_id, client_name, amount, vat_amount, total_amount, status, issue_date, due_date, payment_method, description, client_vat, is_zatca_submitted, zatca_timestamp, created_at').order('created_at', { ascending: false }),
         supabase.from('employees').select('id, name, nationality, national_id, phone, job_title, manager, qualification, start_date, end_date, email, branch, notes, avatar_url, employee_code, role, department, salary, created_at, username, permissions').order('created_at', { ascending: false }),
         supabase.from('expenses').select('id, description, amount, category, date, case_number, created_at').order('created_at', { ascending: false }),

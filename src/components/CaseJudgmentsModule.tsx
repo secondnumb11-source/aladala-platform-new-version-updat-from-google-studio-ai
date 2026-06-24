@@ -996,10 +996,10 @@ ${
                     >
                       <Scale className="w-5 h-5 text-amber-700" />
                     </div>
-                    <div className="min-w-0">
+                    <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-3 mb-1.5">
                         <span className="text-amber-800 font-mono text-sm font-black">
-                          #{caseNum}
+                          {caseNum ? `رقم الدعوى: ${caseNum}` : 'رقم الدعوى غير متوفر'}
                         </span>
                         {c.status && (
                           <span
@@ -1010,11 +1010,14 @@ ${
                           </span>
                         )}
                       </div>
-                      <h3 className="text-[#0f172a] font-black text-base truncate">
-                        {caseName}
+                      <h3 className="text-[#0f172a] font-black text-base truncate mb-1">
+                        موضوع الدعوى: {caseName || 'غير محدد'}
                       </h3>
+                      <p className="text-slate-600 text-xs font-black">
+                        أطراف الدعوى: {(c.clientName || c.client_name) || 'غير محدد'} {(c.opponentName || c.opponent_name) ? `ضد ${c.opponentName || c.opponent_name}` : ''}
+                      </p>
                       {c.courtName || c.court_name ? (
-                        <p className="text-slate-600 text-xs font-black mt-1">
+                        <p className="text-slate-500 text-[10px] font-bold mt-1">
                           {c.courtName || c.court_name}
                         </p>
                       ) : null}

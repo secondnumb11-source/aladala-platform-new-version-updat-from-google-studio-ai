@@ -436,7 +436,7 @@ export default function AgenciesModule({ clients, onUpdateState }: AgenciesModul
 
               <div className="p-6 space-y-5 overflow-y-auto max-h-[500px]">
                 
-                {/* Beautifully Structured Boxes in Exact Order: رقم الوكالة, ثم تاريخ إصدار الوكالة , ثم تاريخ انتهاء الوكالة , ثم إسم الوكيل, ثم حالة الوكالة */}
+                {/* Beautifully Structured Boxes in Exact Order: رقم الوكالة, ثم تاريخ إصدار الوكالة , ثم تاريخ إنتهاء الوكالة , ثم أسم الوكيل, ثم حالة الوكالة */}
                 <div className="space-y-3.5">
                   
                   {/* 1. رقم الوكالة */}
@@ -465,14 +465,14 @@ export default function AgenciesModule({ clients, onUpdateState }: AgenciesModul
                     </div>
                   </div>
 
-                  {/* 3. تاريخ انتهاء الوكالة */}
+                  {/* 3. تاريخ إنتهاء الوكالة */}
                   <div className="p-4 bg-slate-50 border border-slate-200/80 rounded-2xl flex items-center justify-between shadow-sm relative overflow-hidden">
                     <div className="flex items-center gap-3">
                       <div className="w-9 h-9 rounded-xl bg-indigo-100/70 border border-indigo-200/60 flex items-center justify-center text-indigo-900 font-bold shrink-0">
                         <Clock className="w-4.5 h-4.5" />
                       </div>
                       <div>
-                        <span className="text-[10px] text-slate-400 font-[800] block mb-0.5">تاريخ انتهاء الوكالة</span>
+                        <span className="text-[10px] text-slate-400 font-[800] block mb-0.5">تاريخ إنتهاء الوكالة</span>
                         <span className="text-sm font-mono font-black text-[#0B2545]">{selectedAgency.expiryDate}</span>
                       </div>
                     </div>
@@ -483,27 +483,14 @@ export default function AgenciesModule({ clients, onUpdateState }: AgenciesModul
                     )}
                   </div>
 
-                  {/* 4. إسم الموكل */}
-                  <div className="p-4 bg-slate-50 border border-slate-200/80 rounded-2xl flex items-center justify-between shadow-sm">
-                    <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-xl bg-purple-100/70 border border-purple-200/60 flex items-center justify-center text-purple-950 font-bold shrink-0">
-                        <User className="w-4.5 h-4.5" />
-                      </div>
-                      <div>
-                        <span className="text-[10px] text-slate-400 font-[800] block mb-0.5">اسم الموكل</span>
-                        <span className="text-sm font-black text-[#0B2545]">{selectedAgency.principalName || selectedAgency.clientName || 'غير محدد'}</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* 4. إسم الوكيل */}
+                  {/* 4. أسم الوكيل */}
                   <div className="p-4 bg-slate-50 border border-slate-200/80 rounded-2xl flex items-center justify-between shadow-sm">
                     <div className="flex items-center gap-3">
                       <div className="w-9 h-9 rounded-xl bg-amber-100/70 border border-amber-200/60 flex items-center justify-center text-amber-950 font-bold shrink-0">
                         <User className="w-4.5 h-4.5" />
                       </div>
                       <div>
-                        <span className="text-[10px] text-slate-400 font-[800] block mb-0.5">اسم الوكيل المعتمد</span>
+                        <span className="text-[10px] text-slate-400 font-[800] block mb-0.5">أسم الوكيل</span>
                         <span className="text-sm font-black text-[#0B2545]">{selectedAgency.agentName || selectedAgency.lawyerName || 'غير محدد'}</span>
                       </div>
                     </div>
@@ -712,8 +699,8 @@ export default function AgenciesModule({ clients, onUpdateState }: AgenciesModul
                       <tr className="bg-[#0B2545]/5 border-b border-slate-200 text-[#0B2545] font-[800] text-xs">
                         <th className="px-6 py-4 font-black">رقم الوكالة</th>
                         <th className="px-6 py-4 font-black">تاريخ إصدار الوكالة</th>
-                        <th className="px-6 py-4 font-black">تاريخ انتهاء الوكالة</th>
-                        <th className="px-6 py-4 font-black">اسم الوكيل</th>
+                        <th className="px-6 py-4 font-black">تاريخ إنتهاء الوكالة</th>
+                        <th className="px-6 py-4 font-black">أسم الوكيل</th>
                         <th className="px-6 py-4 font-black">حالة الوكالة</th>
                         <th className="px-6 py-4 font-black text-left">إجراءات</th>
                       </tr>
@@ -747,7 +734,7 @@ export default function AgenciesModule({ clients, onUpdateState }: AgenciesModul
                               {poa.expiryDate || 'غير محدد'}
                             </td>
 
-                            {/* 4. اسم الوكيل */}
+                            {/* 4. أسم الوكيل */}
                             <td className="px-6 py-4.5 font-black text-[#0B2545] text-xs">
                               {poa.lawyerName || poa.agentName || 'غير محدد'}
                             </td>
@@ -809,13 +796,8 @@ export default function AgenciesModule({ clients, onUpdateState }: AgenciesModul
                       <div className={`absolute top-0 right-0 left-0 h-1.5 ${isFinished ? 'bg-rose-500' : isDanger ? 'bg-rose-400 animate-pulse' : daysRemaining <= 60 ? 'bg-amber-400' : 'bg-emerald-500'}`} />
 
                       <div className="space-y-4">
-                        <div className="flex items-start justify-between">
+                        <div className="flex items-start justify-between mb-2">
                           <div className="space-y-1.5">
-                              <div className="flex items-center gap-2">
-                                <span className="agency-text text-xs font-mono font-[800] bg-blue-50 text-[#0B2545] px-2 py-0.5 rounded border border-blue-100 shadow-sm">
-                                  رقم: {poa.poaNumber}
-                                </span>
-                              </div>
                              {poa.is_najiz_sync && (
                                <span className="block w-fit bg-[#D4AF37]/10 text-slate-900 text-[9px] font-[800] border border-[#D4AF37]/30 px-1.5 py-0.5 rounded flex items-center gap-1 shadow-sm">
                                  <Clock className="w-2.5 h-2.5 text-amber-600" /> 
@@ -843,38 +825,47 @@ export default function AgenciesModule({ clients, onUpdateState }: AgenciesModul
                           </div>
                         </div>
 
-                        <div>
-                          <h3 className="agency-text text-lg font-[800] text-[#0B2545] line-clamp-1">{poa.principalName || poa.clientName || 'غير متوفر'}</h3>
-                          <div className="agency-text flex items-center gap-1.5 text-xs text-[#0B2545] font-[800] mt-1 opacity-80">
-                            <Scale className="w-3.5 h-3.5" /> الممثل: {poa.agentName || poa.lawyerName || 'غير متوفر'}
-                          </div>
+                        {/* 1. رقم الوكالة */}
+                        <div className="flex items-center justify-between p-3 bg-slate-50 border border-slate-100 rounded-xl shadow-sm">
+                          <span className="text-[10px] text-slate-500 font-black tracking-wider">رقم الوكالة</span>
+                          <span className="text-sm font-mono font-black text-[#0B2545]">{poa.poaNumber}</span>
                         </div>
 
-                        <p className="agency-text text-xs text-[#0B2545] font-[800] line-clamp-2 bg-blue-50/30 p-2.5 rounded-xl border border-blue-100/50 leading-relaxed">
-                          {poa.scope || 'لم يتم تخصيص نطاق. الوكالة عامة.'}
-                        </p>
-                        {(() => {
-                          const statusBadge = getExpiryStatus(poa.expiryDate);
-                          if (!statusBadge) return null;
-                          return (
-                            <div className={`mt-2 px-3 py-1.5 rounded-lg text-[10px] font-[800] flex items-center gap-1 shadow-sm
-                              ${statusBadge.color === 'red' ? 'bg-red-500/10 text-red-700 border border-red-500/20' :
-                                statusBadge.color === 'orange' ? 'bg-orange-500/10 text-orange-700 border border-orange-500/20' :
-                                statusBadge.color === 'yellow' ? 'bg-yellow-500/10 text-yellow-700 border border-yellow-500/20' :
-                                'bg-green-500/10 text-green-700 border border-green-500/20'}`}>
-                              {statusBadge.urgent ? '⚠️' : '📅'} {statusBadge.label}
-                            </div>
-                          );
-                        })()}
+                        {/* 2. تاريخ إصدار الوكالة */}
+                        <div className="flex items-center justify-between p-3 bg-slate-50 border border-slate-100 rounded-xl shadow-sm">
+                          <span className="text-[10px] text-slate-500 font-black tracking-wider">تاريخ إصدار الوكالة</span>
+                          <span className="text-sm font-mono font-black text-[#0B2545]">{poa.issueDate || 'غير محدد'}</span>
+                        </div>
+
+                        {/* 3. تاريخ إنتهاء الوكالة */}
+                        <div className="flex items-center justify-between p-3 bg-slate-50 border border-slate-100 rounded-xl shadow-sm">
+                          <span className="text-[10px] text-slate-500 font-black tracking-wider">تاريخ إنتهاء الوكالة</span>
+                          <span className={`text-sm font-mono font-black ${isFinished ? 'text-rose-600' : 'text-[#0B2545]'}`}>{poa.expiryDate || 'غير محدد'}</span>
+                        </div>
+
+                        {/* 4. أسم الوكيل */}
+                        <div className="flex items-center justify-between p-3 bg-slate-50 border border-slate-100 rounded-xl shadow-sm">
+                          <span className="text-[10px] text-slate-500 font-black tracking-wider">أسم الوكيل</span>
+                          <span className="text-sm font-black text-[#0B2545]">{poa.agentName || poa.lawyerName || 'غير محدد'}</span>
+                        </div>
+
+                        {/* 5. حالة الوكالة */}
+                        <div className="flex items-center justify-between p-3 bg-slate-50 border border-slate-100 rounded-xl shadow-sm">
+                          <span className="text-[10px] text-slate-500 font-black tracking-wider">حالة الوكالة</span>
+                          <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-black shadow-sm ${
+                            isFinished 
+                              ? 'bg-rose-50 text-rose-700 border border-rose-200' 
+                              : isDanger
+                              ? 'bg-amber-50 text-amber-700 border border-amber-200'
+                              : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                          }`}>
+                            <span className={`w-1.5 h-1.5 rounded-full ${
+                              isFinished ? 'bg-rose-500 animate-pulse' : isDanger ? 'bg-amber-500 animate-pulse' : 'bg-emerald-500'
+                            }`} />
+                            {isFinished ? 'منتهية' : 'نشطة'}
+                          </span>
+                        </div>
                       </div>
-
-                        <div className="pt-3 border-t border-slate-100 flex items-center justify-between mt-3">
-                          <div className="space-y-0.5">
-                            <p className="agency-text text-[9px] text-[#0B2545] opacity-50 font-[800] uppercase tracking-wider">تاريخ الانتهاء</p>
-                            <p className={`agency-text text-xs font-mono font-[800] ${isFinished ? 'text-rose-600' : 'text-[#0B2545]'}`}>{poa.expiryDate}</p>
-                          </div>
-                          <div>{getUrgencyBadge(daysRemaining)}</div>
-                        </div>
                     </motion.div>
                   );
                 })}

@@ -519,16 +519,18 @@ export default function NajizExtensionHub({ currentUser, onUpdateState }: NajizE
         };
       } else if (category === 'agencies') {
         const poaNo = item.poa_number || extractedNumber || `POA-${Math.floor(Math.random()*100000) + 50000}`;
-        const agentStr = item.agent || 'مكتب العدالة للمحاماة';
-        const principalStr = item.principal || targetClientName;
+        const agentStr = item.agent_name || item.agent || item.lawyerName || 'مكتب العدالة للمحاماة';
+        const principalStr = item.principal || item.clientName || targetClientName;
 
         const resPoa = await createRecord('powers_of_attorney', {
           clientId: targetClientId,
           poaNumber: poaNo,
-          issueDate: item.rawDate || new Date().toISOString().split('T')[0],
-          expiryDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+          issueDate: item.issue_date || item.rawDate || new Date().toISOString().split('T')[0],
+          expiryDate: item.expiry_date || new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
           type: 'عامة في المرافعة والمدافعة',
-          status: 'سارية',
+          status: item.status || item.poa_status || 'سارية',
+          agentName: agentStr,
+          principalName: principalStr,
           is_najiz_sync: true,
           last_sync_at: new Date().toISOString()
         });
