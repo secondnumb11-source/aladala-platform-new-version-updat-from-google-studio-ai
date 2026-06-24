@@ -875,7 +875,7 @@ export default function NajizExtensionHub({ currentUser, onUpdateState }: NajizE
     try {
       setDownloading(true);
       const currentHost = window.location.origin;
-      const downloadUrl = `${currentHost}/api/extension/download?apiKey=${encodeURIComponent(apiKeys[0]?.key_value || 'DEMO_KEY')}`;
+      const downloadUrl = `${currentHost}/api/extension/download?apiKey=DEMO_KEY`;
       const res = await fetch(downloadUrl);
       if (!res.ok) throw new Error('Failed to fetch extension zip from server');
       

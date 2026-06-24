@@ -280,14 +280,14 @@ export default function CasesList({
 
                 {/* 3. تاريخ القضية */}
                 <div className={`flex-[1.2] min-w-[110px] h-full px-4 flex items-center font-mono text-xs text-right border-l ${
-                  isHighContrast ? 'border-slate-200 text-slate-600' : 'border-slate-800/50 text-slate-300'
+                  isHighContrast ? 'border-slate-200 text-slate-600' : 'border-slate-800/50 text-white font-bold'
                 }`}>
                   {formatCaseDate(c.startDate || c.createdAt)}
                 </div>
 
                 {/* 4. نوع القضية */}
                 <div className={`flex-[1.5] min-w-[130px] h-full px-4 flex items-center text-xs text-right font-[850] border-l ${
-                  isHighContrast ? 'border-slate-200 text-slate-700' : 'border-slate-800/50 text-slate-200'
+                  isHighContrast ? 'border-slate-200 text-slate-700' : 'border-slate-800/50 text-white'
                 }`}>
                   <span className="flex items-center gap-1.5">
                     <CategoryIcon className="w-3.5 h-3.5 opacity-75 shrink-0" />
@@ -297,14 +297,14 @@ export default function CasesList({
 
                 {/* 5. المدعي */}
                 <div className={`flex-[2] min-w-[150px] h-full px-4 flex items-center text-xs font-[800] text-right border-l truncate ${
-                  isHighContrast ? 'border-slate-200 text-slate-800' : 'border-slate-800/50 text-indigo-300'
+                  isHighContrast ? 'border-slate-200 text-slate-800' : 'border-slate-800/50 text-orange-400'
                 }`} title={c.clientName}>
                   {c.clientName || 'غير محدد'}
                 </div>
 
                 {/* 6. المدعى عليه */}
                 <div className={`flex-[2] min-w-[150px] h-full px-4 flex items-center text-xs font-[800] text-right border-l truncate ${
-                  isHighContrast ? 'border-slate-200 text-slate-800' : 'border-slate-800/50 text-rose-300'
+                  isHighContrast ? 'border-slate-200 text-slate-800' : 'border-slate-800/50 text-yellow-400'
                 }`} title={c.opponentName}>
                   {c.opponentName || 'غير محدد'}
                 </div>

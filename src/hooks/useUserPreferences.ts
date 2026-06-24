@@ -2,7 +2,11 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 
 export function useUserPreferences() {
-  const [preferences, setPreferences] = useState<any>({});
+  const [preferences, setPreferences] = useState<any>(() => {
+    // Initialize with local storage if available
+    const localPrefs = localStorage.getItem('user_preferences');
+    return localPrefs ? JSON.parse(localPrefs) : {};
+  });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -24,7 +28,10 @@ export function useUserPreferences() {
   async function fetchPreferences() {
     try {
       const { data, error } = await supabase.from('user_preferences').select('settings').single();
-      if (data) setPreferences(data.settings);
+      if (data && data.settings) {
+        setPreferences(data.settings);
+        localStorage.setItem('user_preferences', JSON.stringify(data.settings));
+      }
     } catch (e) {
       console.error('Error fetching preferences:', e);
     } finally {
@@ -35,8 +42,18 @@ export function useUserPreferences() {
   async function updatePreference(key: string, value: any) {
     const newPrefs = { ...preferences, [key]: value };
     setPreferences(newPrefs);
-    await supabase.from('user_preferences').upsert({ settings: newPrefs });
+    localStorage.setItem('user_preferences', JSON.stringify(newPrefs));
+    try {
+      await supabase.from('user_preferences').upsert({ settings: newPrefs });
+    } catch (err) {
+      console.error('Failed to update preferences in Supabase', err);
+    }
   }
 
-  return { preferences, updatePreference, loading };
+  // الدالة الجديدة لحفظ طريقة العرض (قائمة أو كروت)
+  async function updateViewMode(viewMode: 'grid' | 'table') {
+    await updatePreference('cases_view_mode', viewMode);
+  }
+
+  return { preferences, updatePreference, updateViewMode, loading };
 }

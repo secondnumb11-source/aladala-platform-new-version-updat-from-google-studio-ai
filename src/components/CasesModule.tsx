@@ -1061,8 +1061,24 @@ export default React.memo(function CasesModule({
   const [lawyerFilter, setLawyerFilter] = useState('all');
   const { preferences, updatePreference, loading } = useUserPreferences();
   const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
+  const [isSwitchingView, setIsSwitchingView] = useState(false);
   const [cardScale, setCardScale] = useState(1);
   const [gridDensity, setGridDensity] = useState<'compact' | 'relaxed'>('relaxed');
+
+  const handleViewModeSwitch = (newMode: 'grid' | 'table') => {
+    if (viewMode === newMode) return;
+    setIsSwitchingView(true);
+    // Force DOM detach, cleanup memory, and trigger garbage collection indirectly
+    if (window.gc) {
+      try { (window as any).gc(); } catch (e) {}
+    }
+    setTimeout(() => {
+      setViewMode(newMode);
+      setTimeout(() => {
+        setIsSwitchingView(false);
+      }, 50);
+    }, 10);
+  };
 
   useEffect(() => {
     if (!loading && preferences) {
@@ -2149,14 +2165,14 @@ export default React.memo(function CasesModule({
             <div className="flex items-center gap-4 w-full lg:w-auto">
               <div className="flex bg-[#040e21] border border-slate-800 p-1 rounded-2xl">
                 <button 
-                  onClick={() => setViewMode('grid')}
+                  onClick={() => handleViewModeSwitch('grid')}
                   className={`flex items-center gap-2 px-4 py-2 rounded-xl text-[10px] font-black uppercase transition-all ${viewMode === 'grid' ? 'bg-[#ff7f00] text-slate-950 shadow-lg font-black' : 'text-slate-300 hover:text-white'}`}
                 >
                   <Layers className="w-4 h-4" />
                   <span>عرض المربعات</span>
                 </button>
                 <button 
-                  onClick={() => setViewMode('table')}
+                  onClick={() => handleViewModeSwitch('table')}
                   className={`flex items-center gap-2 px-4 py-2 rounded-xl text-[10px] font-black uppercase transition-all ${viewMode === 'table' ? 'bg-[#ff7f00] text-slate-950 shadow-lg font-black' : 'text-slate-300 hover:text-white'}`}
                 >
                   <FileText className="w-4 h-4" />
@@ -2460,36 +2476,42 @@ export default React.memo(function CasesModule({
                   <DashboardStatistics cases={cases} isHighContrast={isHighContrast} />
                 )}
 
-                <CasesList
-                  filteredCases={filteredCases}
-                  viewMode={viewMode}
-                  isHighContrast={isHighContrast}
-                  onSelectCase={onSelectCase}
-                  isSyncing={isSyncing}
-                  onNajizSync={handleNajizSync}
-                  setActivityLogCaseId={setActivityLogCaseId}
-                  isCaseOverdue={isCaseOverdue}
-                  getInteractiveCaseStyles={getInteractiveCaseStyles}
-                  getStatusKineticStyles={getStatusKineticStyles}
-                  getCaseDocumentTags={getCaseDocumentTags}
-                  gridDensity={gridDensity}
-                  visibleCount={visibleCount}
-                  onArchiveToggle={(c) => {
-                    if (c.archived) {
-                      onUpdateState('cases', { ...c, archived: false });
-                    } else {
-                      onUpdateState('cases', { ...c, archived: true });
-                    }
-                  }}
-                  selectedRole={selectedRole}
-                  onUpdateCaseStatus={(c, newStatus) => {
-                    onUpdateState('cases', { ...c, status: newStatus });
-                  }}
-                  onDeleteCase={onDeleteCase}
-                  searchActive={searchTerm !== '' || advFilters.opponent !== '' || advFilters.circuit !== '' || advFilters.judgmentCategory !== ''}
-                  focusedIdx={focusedIdx}
-                  setFocusedIdx={setFocusedIdx}
-                />
+                {!isSwitchingView ? (
+                  <CasesList
+                    filteredCases={filteredCases}
+                    viewMode={viewMode}
+                    isHighContrast={isHighContrast}
+                    onSelectCase={onSelectCase}
+                    isSyncing={isSyncing}
+                    onNajizSync={handleNajizSync}
+                    setActivityLogCaseId={setActivityLogCaseId}
+                    isCaseOverdue={isCaseOverdue}
+                    getInteractiveCaseStyles={getInteractiveCaseStyles}
+                    getStatusKineticStyles={getStatusKineticStyles}
+                    getCaseDocumentTags={getCaseDocumentTags}
+                    gridDensity={gridDensity}
+                    visibleCount={visibleCount}
+                    onArchiveToggle={(c) => {
+                      if (c.archived) {
+                        onUpdateState('cases', { ...c, archived: false });
+                      } else {
+                        onUpdateState('cases', { ...c, archived: true });
+                      }
+                    }}
+                    selectedRole={selectedRole}
+                    onUpdateCaseStatus={(c, newStatus) => {
+                      onUpdateState('cases', { ...c, status: newStatus });
+                    }}
+                    onDeleteCase={onDeleteCase}
+                    searchActive={searchTerm !== '' || advFilters.opponent !== '' || advFilters.circuit !== '' || advFilters.judgmentCategory !== ''}
+                    focusedIdx={focusedIdx}
+                    setFocusedIdx={setFocusedIdx}
+                  />
+                ) : (
+                  <div className="flex items-center justify-center py-20">
+                    <div className="w-12 h-12 rounded-full border-4 border-slate-800 border-t-[#ff7f00] animate-spin"></div>
+                  </div>
+                )}
               </div>
             )}
 
