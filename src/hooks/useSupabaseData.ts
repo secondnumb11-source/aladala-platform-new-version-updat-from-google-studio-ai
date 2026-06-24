@@ -648,7 +648,59 @@ export function useSupabaseData() {
     }
   }, []);
 
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_OUT') {
+        // Clear all states
+        setCases([]);
+        setClients([]);
+        setTasks([]);
+        setHearings([]);
+        setDocuments([]);
+        setPowersOfAttorney([]);
+        setInvoices([]);
+        setEmployees([]);
+        setExecutions([]);
+        setExpenses([]);
+        setMessages([]);
+        setContracts([]);
+        setAuditTrails([]);
+        setAttachments([]);
+        setClientPortal([]);
+        setEmployeePortal([]);
+        setAttendance([]);
+        setLeaveRequests([]);
+        setPayments([]);
+        setNotifications([]);
+        setSystemErrors([]);
+        
+        // Clear local storage backups
+        const allKeys = Object.keys(localStorage);
+        allKeys.forEach(k => {
+          if (k.endsWith('_backup') || k.includes('failed_persistence')) {
+            localStorage.removeItem(k);
+          }
+        });
+        
+        localStorage.removeItem('adala_current_user');
+        localStorage.removeItem('adala_current_email');
+      } else if (event === 'SIGNED_IN') {
+        const userId = session?.user?.id;
+        if (userId) {
+          localStorage.setItem('adala_current_user', userId);
+          if (session?.user?.email) localStorage.setItem('adala_current_email', session.user.email);
+        }
+        fetchData();
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [fetchData]);
+
   const refreshAllData = useCallback(async () => {
+
     try {
       const [
         casesRes, hearingsRes, poaRes,

@@ -1050,16 +1050,71 @@ export default function EmployeePortal({
     } catch (e) {}
   };
 
-  const checkPortalConfigured = async (employeeId: string) => {
-    const { data } = await supabase
-      .from("portal_configurations")
-      .select("*")
-      .eq("entity_type", "employee")
-      .eq("entity_id", employeeId)
-      .eq("is_active", true)
+  const completeLogin = async (employee: any) => {
+    // جلب إعدادات البوابة المحفوظة
+    const { data: config } = await supabase
+      .from('portal_configurations')
+      .select('*')
+      .eq('entity_type', 'employee')
+      .eq('entity_id', employee.id)
+      .eq('is_active', true)
       .maybeSingle();
 
-    return data !== null;
+    // تعيين بيانات الموظف
+    const empObj = {
+      id: employee.id,
+      name: employee.name,
+      role: employee.role,
+      jobTitle: employee.job_title || employee.role,
+      email: employee.email,
+      phone: employee.phone,
+      username: employee.username,
+      permissions: employee.permissions || ['dashboard','cases','tasks'],
+      portalConfigured: employee.portal_configured || !!config,
+      activePortal: employee.active_portal || true,
+      assignedCaseIds: employee.assigned_case_ids || [],
+      assignedClientIds: employee.assigned_client_ids || [],
+      sidebarModules: employee.sidebar_modules || ['dashboard','cases','tasks'],
+      loginCount: (employee.loginCount || 0) + 1,
+      najizApiKey: employee.najizApiKey || "",
+    };
+
+    if (!config && !employee.portal_configured) {
+      // أول مرة فقط — اطلب التهيئة
+      setNeedsConfig(true);
+      setPendingEmployee(empObj as any);
+    } else {
+      // ادخل مباشرة بدون إعادة تهيئة
+      setNeedsConfig(false);
+      
+      sessionStorage.setItem("employee-portal-token", "bypass-token-" + empObj.id);
+
+      try {
+        await supabase
+          .from("employees")
+          .update({
+            loginCount: empObj.loginCount,
+            lastLoginAt: new Date().toISOString(),
+          })
+          .eq("id", empObj.id);
+      } catch (dbErr) {}
+
+      setLoggedInEmployee(empObj as any);
+      setSimulatedNajizKey(empObj.najizApiKey || "");
+      sessionStorage.setItem("active-logged-in-employee-v2", JSON.stringify(empObj));
+
+      if (empObj.sidebarModules && empObj.sidebarModules.length > 0) {
+        setActivePortalTab(empObj.sidebarModules[0]);
+      } else {
+        setActivePortalTab("dashboard");
+      }
+      
+      await writeAuditLog(
+        "تسجيل دخول",
+        "دخل الموظف إلى البوابة الفرعية المخصصة بمصادقة آمنة",
+        empObj as any
+      );
+    }
   };
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -1069,70 +1124,50 @@ export default function EmployeePortal({
     setLoginError("");
 
     try {
-      const result = await verifyEmployeeCredentials(
-        loginUsername,
-        loginPassword,
-      );
+      // البحث في Supabase أولاً بدلاً من الـ State
+      const { data: empData, error } = await supabase
+        .from('employees')
+        .select('*')
+        .eq('username', loginUsername.trim())
+        .eq('status', 'active')
+        .maybeSingle();
 
-      if (!result.success || !result.data) {
-        setLoginError(result.error || "اسم المستخدم أو كلمة المرور غير صحيحة.");
+      if (error || !empData) {
+        // محاولة بالـ email أو الاسم
+        const { data: empData2 } = await supabase
+          .from('employees')
+          .select('*')
+          .or(`email.eq.${loginUsername.trim()},name.eq.${loginUsername.trim()}`)
+          .maybeSingle();
+
+        if (!empData2) {
+          setLoginError('اسم المستخدم غير موجود');
+          setIsLoading(false);
+          return;
+        }
+
+        // التحقق من كلمة السر
+        if (empData2.password !== loginPassword) {
+          setLoginError('كلمة المرور غير صحيحة');
+          setIsLoading(false);
+          return;
+        }
+
+        await completeLogin(empData2);
+        return;
+      }
+
+      if (empData.password !== loginPassword) {
+        setLoginError('كلمة المرور غير صحيحة');
         setIsLoading(false);
         return;
       }
 
-      const empData = result.data;
+      await completeLogin(empData);
 
-      // تحقق من وجود الإعدادات
-      const isConfigured = await checkPortalConfigured(empData.id);
-
-      if (isConfigured) {
-        // حفظ التوكن في sessionStorage
-        sessionStorage.setItem(
-          "employee-portal-token",
-          "bypass-token-" + empData.id,
-        );
-
-        const currentLoginCount = (empData as any).loginCount || 0;
-        // تحديث عدد تسجيلات الدخول بمرونة
-        try {
-          await supabase
-            .from("employees")
-            .update({
-              loginCount: currentLoginCount + 1,
-              lastLoginAt: new Date().toISOString(),
-            })
-            .eq("id", empData.id);
-        } catch (dbErr) {}
-
-        (empData as any).loginCount = currentLoginCount + 1;
-
-        setLoggedInEmployee(empData);
-        setSimulatedNajizKey(empData.najizApiKey || "");
-        sessionStorage.setItem(
-          "active-logged-in-employee-v2",
-          JSON.stringify(empData),
-        );
-
-        if (empData.sidebarConfig && empData.sidebarConfig.length > 0) {
-          setActivePortalTab(empData.sidebarConfig[0]);
-        } else {
-          setActivePortalTab("dashboard");
-        }
-        await writeAuditLog(
-          "تسجيل دخول",
-          "دخل الموظف إلى البوابة الفرعية المخصصة بمصادقة آمنة",
-          empData,
-        );
-      } else {
-        // أول مرة فقط — اطلب التهيئة
-        setNeedsConfig(true);
-        setPendingEmployee(empData);
-      }
     } catch (err: any) {
       console.error("[EmployeePortal Login Exception]", err);
-      setLoginError(
-        "فشل الاتصال الآمن بالخادم الموحد للعدالة. يرجى إعادة المحاولة.",
-      );
+      setLoginError("فشل الاتصال الآمن بالخادم الموحد للعدالة. يرجى إعادة المحاولة.");
     } finally {
       setIsLoading(false);
     }
@@ -1870,7 +1905,89 @@ export default function EmployeePortal({
   // INDEPENDENT EMPLOYEE PORTAL VIEW: Login Screen or Logged-In User Interface
   // ------------------------------------------------------------------------------------
 
+  const handleSavePortalConfig = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!pendingEmployee?.id) return;
+    setIsLoading(true);
+
+    try {
+      // 1. تحديث جدول employees
+      await supabase.from('employees').update({
+        username: loginUsername,
+        password: loginPassword,
+        portal_configured: true,
+        active_portal: true,
+        portal_config_date: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      }).eq('id', pendingEmployee.id);
+
+      // 2. حفظ في portal_configurations
+      await supabase.from('portal_configurations').upsert({
+        entity_type: 'employee',
+        entity_id: pendingEmployee.id,
+        username: loginUsername,
+        password: loginPassword,
+        is_active: true,
+        configured_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      }, { onConflict: 'entity_type,entity_id' });
+
+      // 3. دخول مباشر
+      const updatedEmployee = {
+        ...pendingEmployee,
+        username: loginUsername,
+        portalConfigured: true,
+      };
+      
+      setNeedsConfig(false);
+      setLoggedInEmployee(updatedEmployee as any);
+      sessionStorage.setItem("employee-portal-token", "bypass-token-" + updatedEmployee.id);
+      sessionStorage.setItem("active-logged-in-employee-v2", JSON.stringify(updatedEmployee));
+      
+      if (updatedEmployee.sidebarModules && updatedEmployee.sidebarModules.length > 0) {
+        setActivePortalTab(updatedEmployee.sidebarModules[0]);
+      } else {
+        setActivePortalTab("dashboard");
+      }
+
+      alert('✅ تم حفظ إعدادات البوابة بنجاح — لن تحتاج لإعادة التهيئة مرة أخرى');
+
+    } catch (err: any) {
+      alert('فشل الحفظ: ' + err.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   if (!loggedInEmployee) {
+    if (needsConfig && pendingEmployee) {
+      return (
+        <div className="min-h-screen flex items-center justify-center p-8 bg-[#F8FAFC] font-sans relative overflow-hidden" dir="rtl">
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-lg relative z-10">
+            <div className="bg-white border border-slate-200 rounded-[3rem] p-12 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.05)] space-y-8 text-center">
+              <div className="w-20 h-20 bg-blue-600 text-white rounded-3xl flex items-center justify-center mx-auto shadow-xl shadow-blue-600/20 mb-4">
+                <CheckCircle className="w-10 h-10" />
+              </div>
+              <h2 className="text-3xl font-black text-slate-900 leading-tight">تهيئة البوابة لأول مرة</h2>
+              <p className="text-slate-600 font-bold text-sm">
+                مرحباً {pendingEmployee.name}! يرجى تأكيد إعدادات الدخول لمرة واحدة فقط ليتم حفظها نهائياً.
+              </p>
+              <form onSubmit={handleSavePortalConfig} className="space-y-6 text-right mt-6">
+                <button
+                  type="submit"
+                  disabled={isLoading}
+                  className="w-full bg-blue-600 hover:bg-slate-900 text-white font-black py-5 rounded-2xl text-lg shadow-2xl shadow-blue-600/10 active:scale-95 transition-all flex items-center justify-center gap-4"
+                >
+                  {isLoading ? <Loader2 className="w-6 h-6 animate-spin" /> : <Save className="w-6 h-6" />}
+                  تأكيد وحفظ الإعدادات
+                </button>
+              </form>
+            </div>
+          </motion.div>
+        </div>
+      );
+    }
+
     // Elegant Light-Themed Login Screen
     return (
       <div

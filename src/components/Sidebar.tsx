@@ -221,7 +221,7 @@ export default function Sidebar({
     
     { id: 'clients', name: 'سجل العملاء والموكلين', icon: Users },
     { id: 'client-portal', name: 'بوابة العملاء', icon: UserCheck },
-    { id: 'agencies', name: 'الوكالات (PoA)', icon: FileSpreadsheet },
+    { id: 'agencies', name: 'الوكالات القضائية', icon: FileSpreadsheet },
     { id: 'whatsapp', name: 'إشعارات ومراسلات العملاء', icon: MessageSquare },
     
     { id: 'employees-data', name: 'بيانات الموظفين', icon: Users },
