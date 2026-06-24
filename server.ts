@@ -2914,35 +2914,54 @@ app.get('/api/extension/download', async (req, res) => {
   try {
     const JSZip = require('jszip');
     const zip = new JSZip();
+    const fs = require('fs');
     const path = require('path');
     const extDir = path.join(process.cwd(), 'extension');
     
-    const filesToZip = [
-      'manifest.json', 'popup.html', 'popup.js', 'content.js', 'content.css', 'background.js',
-      'icons/icon16.png', 'icons/icon48.png', 'icons/icon128.png'
-    ];
-
-    for (const file of filesToZip) {
-      const filePath = path.join(extDir, file);
-      if (fs.existsSync(filePath)) {
-        const fileContent = fs.readFileSync(filePath);
-        if (file.includes('/')) {
-           const [folderName, fileName] = file.split('/');
-           const folder = zip.folder(folderName);
-           if (folder) folder.file(fileName, fileContent);
+    function addFilesToZip(dirPath, currentZip) {
+      const files = fs.readdirSync(dirPath);
+      for (const file of files) {
+        const filePath = path.join(dirPath, file);
+        const stat = fs.statSync(filePath);
+        if (stat.isDirectory()) {
+          const newZip = currentZip.folder(file);
+          addFilesToZip(filePath, newZip);
         } else {
-           zip.file(file, fileContent);
+          const fileContent = fs.readFileSync(filePath);
+          currentZip.file(file, fileContent);
         }
       }
+    }
+
+    if (fs.existsSync(extDir)) {
+      addFilesToZip(extDir, zip);
     }
     
     const zipBuffer = await zip.generateAsync({ type: 'nodebuffer', compression: 'STORE' });
     res.setHeader('Content-Type', 'application/zip');
     res.setHeader('Content-Disposition', 'attachment; filename="Adalah-Sync-Extension.zip"');
     res.end(zipBuffer);
-  } catch (err) {
+  } catch (err: any) {
     console.error('Error generating ZIP:', err);
     res.status(500).send({ error: err.message });
+  }
+});
+
+app.get('/api/extension/file/:filename', (req, res) => {
+  const path = require('path');
+  const fs = require('fs');
+  const filename = req.params.filename;
+  
+  // Basic security check to prevent directory traversal
+  if (filename.includes('/') || filename.includes('..')) {
+    return res.status(400).send('Invalid filename');
+  }
+
+  const filePath = path.join(process.cwd(), 'extension', filename);
+  if (fs.existsSync(filePath)) {
+    res.sendFile(filePath);
+  } else {
+    res.status(404).send('File not found');
   }
 });
 

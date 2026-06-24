@@ -131,212 +131,16 @@ export default function ExtensionDownloadSection({
     }
   };
 
-  // Helper to generate content of each file dynamically for immediate copy or individual download
-  const getFileContent = (fileName: string): string => {
+  // Helper to fetch content of each file dynamically
+  const getFileContent = async (fileName: string): Promise<string> => {
     const currentHost = window.location.origin;
-    switch (fileName) {
-      case "manifest.json":
-        return `{
-  "manifest_version": 3,
-  "name": "منصة العدالة — مزامنة ناجز",
-  "version": "4.0",
-  "description": "سحب القضايا والوكالات والتنفيذ والجلسات من ناجز ومزامنتها مع النظام",
-  "permissions": ["activeTab", "scripting", "storage", "tabs"],
-  "host_permissions": [
-    "https://www.najiz.sa/*",
-    "https://najiz.sa/*",
-    "https://*.najiz.sa/*",
-    "https://aladala-platform-rnuz.onrender.com/*"
-  ],
-  "content_scripts": [
-    {
-      "matches": [
-        "https://www.najiz.sa/*",
-        "https://najiz.sa/*",
-        "https://*.najiz.sa/*"
-      ],
-      "js": ["content.js"],
-      "run_at": "document_idle",
-      "all_frames": false
-    }
-  ],
-  "action": {
-    "default_popup": "popup.html",
-    "default_title": "العدالة — سحب ناجز v4.0"
-  },
-  "background": {
-    "service_worker": "background.js"
-  }
-}`;
-
-      case "background.js":
-        return `// background.js - منصة العدالة v3.0
-const APP_SERVER = 'https://aladala-platform-rnuz.onrender.com';
-
-chrome.runtime.onInstalled.addListener(() => {
-  chrome.storage.local.set({ serverUrl: APP_SERVER });
-  console.log('[العدالة] تم تثبيت الإضافة بنجاح');
-});
-
-chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-  if (message.action === 'contentScriptReady') {
-    console.log('[العدالة] Script جاهز:', message.url);
-  }
-  if (message.action === 'setServerUrl') {
-    chrome.storage.local.set({ serverUrl: message.url });
-  }
-  sendResponse({ received: true });
-  return true;
-});`;
-
-      case "content.js":
-        return `(function () {
-  'use strict';
-
-  async function extractByPageType() {
-    const url = window.location.href;
-    const data = {
-      cases: [], hearings: [], powers_of_attorney: [],
-      executions: [], clients: [], pageUrl: url,
-      scrapedAt: new Date().toISOString()
-    };
-    await new Promise(r => setTimeout(r, 1000));
-    if (url.includes('/lawsuit')) {
-      document.querySelectorAll('table tbody tr').forEach(row => {
-        const cells = Array.from(row.querySelectorAll('td')).map(c => c.innerText.trim());
-        if (cells.length >= 3) {
-          data.cases.push({
-            caseNumber: cells.find(c => /\\d{4}\\//.test(c)) || cells[0],
-            caseName: cells[1] || '',
-            status: cells.find(c => ['قيد', 'منتهي', 'نشط', 'محكوم'].some(k => c.includes(k))) || '',
-            court: cells.find(c => c.includes('محكمة')) || '',
-            category: 'civil'
-          });
-        }
-      });
-    }
-    const nameEl = document.querySelector('.user-name, [class*="userName"]');
-    if (nameEl) data.clients.push({ name: nameEl.innerText.trim() });
-    data.summary = { totalCases: data.cases.length, totalHearings: data.hearings.length, hasData: (data.cases.length + data.hearings.length) > 0 };
-    return data;
-  }
-
-  chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-    if (request.action === 'extractData') { extractByPageType().then(d => sendResponse({ success: true, data: d })); return true; }
-  });
-
-  function createFloatingWidget() {
-    if (document.getElementById('adala-widget')) return;
-    const SERVER = 'https://aladala-platform-rnuz.onrender.com';
-    const style = document.createElement('style');
-    style.textContent = \`
-      #adala-widget { position: fixed; bottom: 24px; left: 24px; z-index: 999999; font-family: sans-serif; direction: rtl; }
-      #adala-toggle-btn { width: 56px; height: 56px; border-radius: 50%; background: linear-gradient(135deg, #f59e0b, #d97706); border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 20px rgba(0,0,0,0.3); font-size: 24px; }
-      #adala-panel { display: none; position: absolute; bottom: 70px; left: 0; width: 280px; background: #050e21; border: 1px solid #1e3a5f; border-radius: 16px; overflow: hidden; }
-      #adala-panel.open { display: block; }
-      .adala-header { background: #0a1628; padding: 14px; border-bottom: 1px solid #1e3a5f; color: #f59e0b; font-weight: bold; }
-      .adala-btn { width: 100%; padding: 12px; background: #0a1628; color: #fff; border: none; border-bottom: 1px solid #1e3a5f; cursor: pointer; text-align: right; }
-      .adala-btn:hover { background: #1e3a5f; }
-    \`;
-    document.head.appendChild(style);
-    const w = document.createElement('div');
-    w.id = 'adala-widget';
-    w.innerHTML = \`
-      <div id="adala-panel">
-        <div class="adala-header">⚖️ منصة العدالة</div>
-        <button class="adala-btn" data-action="all">🔄 مزامنة جميع البيانات</button>
-        <button class="adala-btn" data-action="cases">📁 مزامنة القضايا</button>
-        <button class="adala-btn" data-action="hearings">📅 مزامنة الجلسات</button>
-      </div>
-      <button id="adala-toggle-btn">⚖️</button>
-    \`;
-    document.body.appendChild(w);
-    const p = document.getElementById('adala-panel');
-    const b = document.getElementById('adala-toggle-btn');
-    b.onclick = () => p.classList.toggle('open');
-    w.querySelectorAll('.adala-btn').forEach(btn => {
-      btn.onclick = async () => {
-        const d = await extractByPageType();
-        await fetch(\`\${SERVER}/api/najiz-sync\`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ scrapedData: d, source: 'widget_v4' }) });
-        alert('تمت المزامنة');
-      };
-    });
-  }
-  if (document.readyState === 'complete') { createFloatingWidget(); } else { window.addEventListener('load', createFloatingWidget); }
-})();`;
-
-      case "content.css":
-        return `.aladalah-sync-btn {
-  position: fixed;
-  bottom: 24px;
-  right: 24px;
-  background: linear-gradient(135deg, #d4af37, #aa8c2c);
-  color: #0b1e33;
-  border: 1px solid #ffe38f;
-  padding: 12px 24px;
-  border-radius: 9999px;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  font-weight: 800;
-  font-size: 14px;
-  cursor: pointer;
-  box-shadow: 0 4px 15px rgba(212, 175, 55, 0.4);
-  z-index: 999999;
-  transition: all 0.3s ease;
-}
-.aladalah-sync-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(212, 175, 55, 0.5);
-}
-.aladalah-sync-btn:disabled {
-  opacity: 0.7;
-  cursor: not-allowed;
-  transform: none;
-}`;
-
-      case "popup.html":
-        return `<!DOCTYPE html>
-<html dir="rtl" lang="ar">
-<head>
-<meta charset="UTF-8">
-<title>العدالة - ناجز</title>
-<style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { width: 340px; min-height: 200px; padding: 14px; background: #050e21; color: white; font-family: sans-serif; }
-  .header { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; border-bottom: 1px solid #1e3a5f; padding-bottom: 10px; }
-  .title { font-size: 15px; font-weight: bold; color: #f59e0b; }
-  #status { font-size: 12px; padding: 8px; background: #0a1628; border-radius: 8px; text-align: center; color: #94a3b8; }
-  #extractBtn { width: 100%; padding: 11px; background: #f59e0b; color: #000; font-weight: bold; border: none; border-radius: 10px; cursor: pointer; }
-</style>
-</head>
-<body>
-  <div class="header"><div class="title">⚖️ منصة العدالة</div></div>
-  <div id="status">جاهز للمزامنة</div>
-  <button id="extractBtn">📥 سحب ومزامنة البيانات الآن</button>
-  <script src="popup.js"></script>
-</body>
-</html>`;
-
-      case "popup.js":
-        return `document.addEventListener('DOMContentLoaded', async () => {
-  const statusEl = document.getElementById('status');
-  const extractBtn = document.getElementById('extractBtn');
-  const SERVER = 'https://aladala-platform-rnuz.onrender.com';
-  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-  extractBtn.onclick = async () => {
-    statusEl.textContent = '⏳ جاري السحب...';
     try {
-      const res = await chrome.tabs.sendMessage(tab.id, { action: 'extractData' });
-      await fetch(\`\${SERVER}/api/najiz-sync\`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ scrapedData: res.data, source: 'popup_v4' }) });
-      statusEl.textContent = '✅ تمت المزامنة';
-    } catch (e) { statusEl.textContent = '❌ خطأ في السحب'; }
-  };
-});`;
-
-      case "icon.png":
-        return "صورة أيقونة الإضافة (أيقونة ميزان العدالة - يتم إنشاؤها ورسمها تلقائياً عند النقر لضمان كفاءة التحميل).";
-
-      default:
-        return "";
+      const res = await fetch(`${currentHost}/api/extension/file/${fileName}`);
+      if (!res.ok) throw new Error('Failed to fetch file content');
+      return await res.text();
+    } catch (err) {
+      console.error(err);
+      return '';
     }
   };
 
@@ -351,7 +155,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   ];
 
   // Triggers immediate download of a single unpacked text file client-side (extremely secure/bypass ZIP blocks!)
-  const handleDownloadIndividualFile = (fileName: string) => {
+  const handleDownloadIndividualFile = async (fileName: string) => {
     if (fileName === "icon.png") {
       // Draw static icon to canvas and download as PNG
       const canvas = document.createElement("canvas");
@@ -387,7 +191,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       return;
     }
 
-    const content = getFileContent(fileName);
+    const content = await getFileContent(fileName);
     const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
@@ -399,8 +203,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     URL.revokeObjectURL(url);
   };
 
-  const handleCopyFileContent = (fileName: string) => {
-    const content = getFileContent(fileName);
+  const handleCopyFileContent = async (fileName: string) => {
+    const content = await getFileContent(fileName);
     navigator.clipboard.writeText(content).catch(e => console.error(e));
     setCopiedFile(true);
     setTimeout(() => setCopiedFile(false), 2000);

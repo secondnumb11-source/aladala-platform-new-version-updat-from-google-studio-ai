@@ -3,7 +3,6 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { List } from 'react-window';
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useAppState } from '@/hooks/useAppState';

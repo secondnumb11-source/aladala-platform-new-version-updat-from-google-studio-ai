@@ -4,8 +4,8 @@
  */
 
 import React from 'react';
-import { List } from 'react-window';
-const VirtualList = List as any;
+import { FixedSizeList } from 'react-window';
+const VirtualList = FixedSizeList as any;
 import { ChevronLeft, Trash2, MoreVertical, ChevronDown } from 'lucide-react';
 import { Case } from '@/types';
 import CaseCard from './CaseCard';

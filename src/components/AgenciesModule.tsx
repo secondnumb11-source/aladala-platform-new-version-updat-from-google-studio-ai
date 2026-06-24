@@ -505,7 +505,7 @@ export default function AgenciesModule({ clients, onUpdateState }: AgenciesModul
                       <div>
                         <span className="text-[10px] text-slate-400 font-[800] block mb-0.5">حالة الوكالة</span>
                         <span className="text-xs font-black text-[#0B2545]">
-                          {getRemainingDays(selectedAgency.expiryDate) <= 0 ? 'منتهية الصلاحية باطلة' : 'نشطة وسارية قانونياً'}
+                          {selectedAgency.status || (getRemainingDays(selectedAgency.expiryDate) <= 0 ? 'منتهية الصلاحية باطلة' : 'نشطة وسارية قانونياً')}
                         </span>
                       </div>
                     </div>
@@ -519,7 +519,7 @@ export default function AgenciesModule({ clients, onUpdateState }: AgenciesModul
                       <span className={`w-1.5 h-1.5 rounded-full ${
                         getRemainingDays(selectedAgency.expiryDate) <= 0 ? 'bg-rose-500 animate-pulse' : getRemainingDays(selectedAgency.expiryDate) <= 30 ? 'bg-amber-500 animate-pulse' : 'bg-emerald-500'
                       }`} />
-                      {getRemainingDays(selectedAgency.expiryDate) <= 0 ? 'منتهية' : 'نشطة'}
+                      {selectedAgency.status || (getRemainingDays(selectedAgency.expiryDate) <= 0 ? 'منتهية' : 'نشطة')}
                     </span>
                   </div>
 
@@ -751,7 +751,7 @@ export default function AgenciesModule({ clients, onUpdateState }: AgenciesModul
                                 <span className={`w-1.5 h-1.5 rounded-full ${
                                   isFinished ? 'bg-rose-500 animate-pulse' : isDanger ? 'bg-amber-500 animate-pulse' : 'bg-emerald-500'
                                 }`} />
-                                {isFinished ? 'منتهية' : 'نشطة'}
+                                {poa.status || (isFinished ? 'منتهية' : 'نشطة')}
                               </span>
                             </td>
 
@@ -862,7 +862,7 @@ export default function AgenciesModule({ clients, onUpdateState }: AgenciesModul
                             <span className={`w-1.5 h-1.5 rounded-full ${
                               isFinished ? 'bg-rose-500 animate-pulse' : isDanger ? 'bg-amber-500 animate-pulse' : 'bg-emerald-500'
                             }`} />
-                            {isFinished ? 'منتهية' : 'نشطة'}
+                            {poa.status || (isFinished ? 'منتهية' : 'نشطة')}
                           </span>
                         </div>
                       </div>
