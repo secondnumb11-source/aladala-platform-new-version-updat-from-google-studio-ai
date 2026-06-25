@@ -3735,11 +3735,12 @@ button.btn-secondary:hover {
   font-weight: 900 !important;
 }
 
-/* Gold text with high-intensity blue glow for premium legal dashboard branding */
+/* Gold text with high-intensity blue solid outline for premium legal dashboard branding */
 .gold-text-blue-glow,
 .gold-text-blue-glow * {
-  color: #A27B1E !important;
-  text-shadow: 0 0 8px rgba(30, 58, 138, 0.95), 0 0 16px rgba(30, 58, 138, 0.8), 0 0 24px rgba(30, 58, 138, 0.6) !important;
+  color: #fbbf24 !important; /* Brighter gold for better contrast */
+  -webkit-text-stroke: 1px #1e3a8a; /* Solid blue outline */
+  text-shadow: none !important;
   font-weight: 900 !important;
 }
 
@@ -3773,17 +3774,19 @@ button.btn-secondary:hover {
   filter: drop-shadow(0 0 4px rgba(30, 58, 138, 0.65)) !important;
 }
 
-/* Elegant dark blue text with vibrant orange glow for outside landing page interactive cards */
+/* Elegant dark blue text with vibrant orange solid outline for outside landing page interactive cards */
 .darkblue-text-orange-glow,
 .darkblue-text-orange-glow * {
   color: #0c2461 !important;
-  text-shadow: 0 0 8px rgba(249, 115, 22, 0.95), 0 0 16px rgba(234, 88, 12, 0.85), 0 0 24px rgba(251, 146, 60, 0.6) !important;
+  -webkit-text-stroke: 1px #ff7f00; /* Solid orange outline */
+  text-shadow: none !important;
   font-weight: 900 !important;
 }
 
 .darkblue-orange-glow {
   color: #0c2461 !important;
-  text-shadow: 0 0 8px rgba(249, 115, 22, 0.95), 0 0 16px rgba(234, 88, 12, 0.85), 0 0 24px rgba(251, 146, 60, 0.6) !important;
+  -webkit-text-stroke: 1px #ff7f00; /* Solid orange outline */
+  text-shadow: none !important;
   font-weight: 900 !important;
 }
 

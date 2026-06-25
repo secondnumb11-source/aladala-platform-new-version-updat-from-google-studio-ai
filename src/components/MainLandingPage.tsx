@@ -357,9 +357,9 @@ export default function MainLandingPage({ onSignInSelect, onTrialSelect }: MainL
             {/* Title, pitch and main trial incentive */}
             <div className="lg:col-span-12 space-y-8 text-right">
               
-              <div className="inline-flex items-center gap-2.5 px-4 py-2 rounded-full border border-[#D4AF37] bg-[#D3AF37]/20 !text-[#0c2461] font-black text-xs sm:text-sm uppercase tracking-wide shadow-[0_4px_12px_rgba(212,175,55,0.25)]">
-                <Trophy className="w-4 h-4 !text-[#0c2461] animate-bounce" style={{ filter: 'drop-shadow(0 0 3px rgba(59,130,246,0.35))' }} />
-                <span className="font-black" style={{ color: '#0c2461', fontWeight: 900, textShadow: '0 0 8px rgba(59,100,246,0.45), 0 0 15px rgba(59,100,246,0.2)' }}>
+              <div className="inline-flex items-center gap-2.5 px-4 py-2 rounded-full border-2 border-[#D4AF37] bg-[#D4AF37] !text-[#050E21] font-black text-xs sm:text-sm uppercase tracking-wide shadow-lg">
+                <Trophy className="w-4 h-4 !text-[#050E21]" />
+                <span className="font-black text-[#050E21] [text-shadow:none]">
                   ⭐ {isEn ? "The Supreme #1 Integrated Legal Workspace Platform in Saudi Arabia" : "المنظومة القانونية المتكاملة والذكاء القضائي الأعلى اعتماداً بالسعودية"}
                 </span>
               </div>
@@ -381,11 +381,11 @@ export default function MainLandingPage({ onSignInSelect, onTrialSelect }: MainL
                   <span className="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
                 </div>
                 <div>
-                  <h4 className="text-sm md:text-base font-black flex items-center gap-1.5" style={{ color: '#FFF200', textShadow: '0 0 15px rgba(255, 242, 0, 0.95), 0 0 30px rgba(255, 242, 0, 0.5)' }}>
+                  <h4 className="text-sm md:text-base font-black flex items-center gap-1.5" style={{ color: '#FFF200', textShadow: '1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000' }}>
                     <span>🔥</span>
-                    <span className="!text-[#FFF200] font-black" style={{ color: '#FFF200' }}>{isEn ? "Try Al-Adalah Free Trial Version (No Payment Needed)" : "احصل مجاناً على النسخة التجريبية الشاملة لكافة الخصائص"}</span>
+                    <span className="!text-[#FFF200] font-black">{isEn ? "Try Al-Adalah Free Trial Version (No Payment Needed)" : "احصل مجاناً على النسخة التجريبية الشاملة لكافة الخصائص"}</span>
                   </h4>
-                  <p className="text-xs md:text-sm leading-relaxed mt-2 !text-[#FFFFFF] font-black font-bold" style={{ color: '#FFFFFF', textShadow: '0 0 8px rgba(255, 255, 255, 0.35)' }}>
+                  <p className="text-xs md:text-sm leading-relaxed mt-2 !text-[#FFFFFF] font-black font-bold" style={{ color: '#FFFFFF', textShadow: '1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000' }}>
                     {isEn 
                       ? "Get full unconstrained 48-Hour premium access to the Lawyers suite, WhatsApp mock dispatch parameters, Najiz simulation logs, and customized legal AI draft generators to witness the massive lift in firm coordination."
                       : "امنح مكتبك فرصة تجربة التزامن الذاتي، إسناد المهام، صياغة المذكرات بالـ AI، ومراسلة عملائك بنسخة تجريبية مبسطة وسهلة الاستخدام بالكامل وبشاشات تفاعلية."}
