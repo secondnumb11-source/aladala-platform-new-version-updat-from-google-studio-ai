@@ -71,6 +71,7 @@ import AddCaseModal from './cases/AddCaseModal';
 import EnhancedCaseDetail from './cases/EnhancedCaseDetail';
 import DashboardStatistics from './cases/DashboardStatistics';
 import { jsPDF } from 'jspdf';
+import { verifyDataIsolation } from '@/lib/officeManager';
 
 const CaseAnalyticsDashboard = React.lazy(() => import('./cases/CaseAnalyticsDashboard'));
 const TimelineD3 = React.lazy(() => import('./TimelineD3'));
@@ -465,6 +466,12 @@ export default React.memo(function CasesModule({
         const officeId = typeof window !== 'undefined' ? localStorage.getItem('adala_office_id') : null;
         if (!officeId) return;
 
+        // التحقق من عزل البيانات وضمان مطابقتها للمكتب الحالي المخزن في localStorage
+        if (!verifyDataIsolation(officeId)) {
+          console.warn('[CasesModule] Office isolation verification failed. Data load aborted for security.');
+          return;
+        }
+
         const { data, error } = await supabase
           .from('cases')
           .select('*')
@@ -528,7 +535,7 @@ export default React.memo(function CasesModule({
     return () => {
       window.removeEventListener('najiz_sync_complete', handleSyncComplete);
     };
-  }, [cases.length]); // إعادة التحميل عند تغير الطول لضمان المزامنة
+  }, []); // تشغيل آمن عند تحميل المكون فقط (وعند أحداث المزامنة) لمنع حلقات التكرار اللانهائية
 
   const getInteractiveCaseStyles = (category: string, status: string) => {
     let arabicCategoryName = 'أخرى أو عامة';
@@ -840,6 +847,10 @@ export default React.memo(function CasesModule({
         const officeId = typeof window !== 'undefined' ? localStorage.getItem('adala_office_id') : null;
         let query = supabase.from('cases').select('*').eq('archived', false);
         if (officeId) {
+          if (!verifyDataIsolation(officeId)) {
+            console.warn('[CasesModule] Next Session Filter: Office isolation verification failed.');
+            return;
+          }
           query = query.eq('office_id', officeId);
         }
         

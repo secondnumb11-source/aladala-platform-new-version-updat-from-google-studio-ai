@@ -116,17 +116,27 @@ export function verifyAndEnforceSessionIntegrity(expectedUserId: string, expecte
 }
 
 // دالة اختبار للتحقق من عزل البيانات ومطابقتها للمكتب الحالي
-export function verifyDataIsolation(items: any[], currentOfficeId: string | null): boolean {
-  if (!currentOfficeId) {
+export function verifyDataIsolation(itemsOrOfficeId: any, currentOfficeId?: string | null): boolean {
+  const storedOfficeId = localStorage.getItem(OFFICE_KEY);
+  
+  // إذا تم تمرير معرف مكتب منفرد يمثل الحالة الحالية، نقارنه مباشرة بالمعرف المخزن في localStorage
+  if (typeof itemsOrOfficeId === 'string') {
+    if (!storedOfficeId) return true;
+    return storedOfficeId === itemsOrOfficeId;
+  }
+  
+  const activeOfficeId = currentOfficeId || storedOfficeId;
+  if (!activeOfficeId) {
     return true;
   }
   
-  const mismatchedItem = items.find(item => item && item.officeId && item.officeId !== currentOfficeId);
-  const mismatchedItemSnake = items.find(item => item && item.office_id && item.office_id !== currentOfficeId);
+  const items = Array.isArray(itemsOrOfficeId) ? itemsOrOfficeId : [];
+  const mismatchedItem = items.find(item => item && item.officeId && item.officeId !== activeOfficeId);
+  const mismatchedItemSnake = items.find(item => item && item.office_id && item.office_id !== activeOfficeId);
   
   if (mismatchedItem || mismatchedItemSnake) {
     const badId = mismatchedItem?.officeId || mismatchedItemSnake?.office_id;
-    console.warn(`🚨 [Data Isolation Mismatch] Detected item with office_id: ${badId} instead of active office_id: ${currentOfficeId}`);
+    console.warn(`🚨 [Data Isolation Mismatch] Detected item with office_id: ${badId} instead of active office_id: ${activeOfficeId}`);
     return false;
   }
   

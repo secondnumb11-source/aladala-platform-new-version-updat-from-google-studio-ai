@@ -508,118 +508,125 @@ export function getLuxuryCardTheme(category: string, isDark: boolean): CardTheme
   }
 }
 
-const CaseCard = React.memo(function CaseCard({
-  c,
-  onSelectCase,
-  isHighContrast,
-  isSyncing,
-  onNajizSync,
-  setActivityLogCaseId,
-  getInteractiveCaseStyles,
-  daysLeft = 999,
-  onArchiveToggle,
-  selectedRole,
-  onDeleteCase
-}: CaseCardProps) {
-  const [isHovered, setIsHovered] = useState(false);
-  const [isNotePopoverOpen, setIsNotePopoverOpen] = useState(false);
-  const [quickNoteText, setQuickNoteText] = useState('');
-  const [isSavingNote, setIsSavingNote] = useState(false);
-  const [noteSavedSuccessfully, setNoteSavedSuccessfully] = useState(false);
-  const [isExporting, setIsExporting] = useState(false);
-  const [confirmDialog, setConfirmDialog] = useState<{
-    isOpen: boolean;
-    type: 'delete' | 'archive';
-    title: string;
-    message: string;
-    onConfirm: () => void;
-  } | null>(null);
+const CaseCard = React.memo(function CaseCard(props: CaseCardProps) {
+  try {
+    const {
+      c,
+      onSelectCase,
+      isHighContrast,
+      isSyncing,
+      onNajizSync,
+      setActivityLogCaseId,
+      getInteractiveCaseStyles,
+      daysLeft = 999,
+      onArchiveToggle,
+      selectedRole,
+      onDeleteCase
+    } = props;
+    const [isHovered, setIsHovered] = useState(false);
+    const [isNotePopoverOpen, setIsNotePopoverOpen] = useState(false);
+    const [quickNoteText, setQuickNoteText] = useState('');
+    const [isSavingNote, setIsSavingNote] = useState(false);
+    const [noteSavedSuccessfully, setNoteSavedSuccessfully] = useState(false);
+    const [isExporting, setIsExporting] = useState(false);
+    const [confirmDialog, setConfirmDialog] = useState<{
+      isOpen: boolean;
+      type: 'delete' | 'archive';
+      title: string;
+      message: string;
+      onConfirm: () => void;
+    } | null>(null);
 
-  const handleExportReport = async (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setIsExporting(true);
-    try {
-      const element = document.getElementById(`pdf-report-template-${c.id}`);
-      if (!element) throw new Error("ملخص التقرير غير متوفر");
-      const canvas = await html2canvas(element, { scale: 2, useCORS: true });
-      const imgData = canvas.toDataURL('image/jpeg', 0.95);
-      const pdf = new jsPDF();
-      pdf.addImage(imgData, 'JPEG', 0, 0, 210, (canvas.height * 210) * Math.pow(canvas.width, -1));
-      pdf.save(`تقرير_${c.caseNumber || c.id}.pdf`);
-    } catch (err: any) {
-      alert("خطأ: " + err.message);
-    } finally {
-      setIsExporting(false);
-    }
-  };
+    const handleExportReport = async (e: React.MouseEvent) => {
+      e.stopPropagation();
+      setIsExporting(true);
+      try {
+        const element = document.getElementById(`pdf-report-template-${c.id}`);
+        if (!element) throw new Error("ملخص التقرير غير متوفر");
+        const canvas = await html2canvas(element, { scale: 2, useCORS: true });
+        const imgData = canvas.toDataURL('image/jpeg', 0.95);
+        const pdf = new jsPDF();
+        pdf.addImage(imgData, 'JPEG', 0, 0, 210, (canvas.height * 210) * Math.pow(canvas.width, -1));
+        pdf.save(`تقرير_${c.caseNumber || c.id}.pdf`);
+      } catch (err: any) {
+        alert("خطأ: " + err.message);
+      } finally {
+        setIsExporting(false);
+      }
+    };
 
-  const handleSaveQuickNote = async (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (!quickNoteText.trim()) return;
-    setIsSavingNote(true);
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-      await supabase.from('notes').insert({ user_id: user.id, note_text: quickNoteText });
-      setNoteSavedSuccessfully(true);
-      setQuickNoteText('');
-      setTimeout(() => { setNoteSavedSuccessfully(false); setIsNotePopoverOpen(false); }, 1500);
-    } finally {
-      setIsSavingNote(false);
-    }
-  };
+    const handleSaveQuickNote = async (e: React.MouseEvent) => {
+      e.stopPropagation();
+      if (!quickNoteText.trim()) return;
+      setIsSavingNote(true);
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+        await supabase.from('notes').insert({ user_id: user.id, note_text: quickNoteText });
+        setNoteSavedSuccessfully(true);
+        setQuickNoteText('');
+        setTimeout(() => { setNoteSavedSuccessfully(false); setIsNotePopoverOpen(false); }, 1500);
+      } finally {
+        setIsSavingNote(false);
+      }
+    };
 
-  const [isDark, setIsDark] = useState(true);
-  const { arabicStatusName } = getInteractiveCaseStyles(c.category, c.status);
+    const [isDark, setIsDark] = useState(true);
+    const styles = getInteractiveCaseStyles(c?.category || 'general', c?.status || 'new');
+    const arabicStatusName = styles?.arabicStatusName || 'غير محدد';
 
-  return (
-    <div
-      onClick={() => onSelectCase(c)}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-      className="relative cursor-pointer bg-white rounded-[2rem] border border-slate-200 border-opacity-80 p-7 shadow-sm transition-all"
-    >
-      <div className="flex flex-col gap-4">
-        <div className="flex justify-between items-start">
-           <span className="bg-[#FFFBEB] border border-amber-200 text-[#B45309] px-3 py-1 rounded-full text-xs font-black">
-            {c.caseNumber || 'رقم القضية'}
-          </span>
-          <div className="flex gap-2">
-            <span className="bg-[#1E3A8A] text-white px-3 py-1 rounded-full text-xs font-black">
-              {c.category === 'commercial' ? 'تجارية' : 'عامة'}
+    return (
+      <div
+        onClick={() => onSelectCase(c)}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+        className="relative cursor-pointer bg-white rounded-[2rem] border border-slate-200 border-opacity-80 p-7 shadow-sm transition-all"
+      >
+        <div className="flex flex-col gap-4">
+          <div className="flex justify-between items-start">
+             <span className="bg-[#FFFBEB] border border-amber-200 text-[#B45309] px-3 py-1 rounded-full text-xs font-black">
+              {c?.caseNumber || 'رقم القضية'}
             </span>
+            <div className="flex gap-2">
+              <span className="bg-[#1E3A8A] text-white px-3 py-1 rounded-full text-xs font-black">
+                {c?.category === 'commercial' ? 'تجارية' : 'عامة'}
+              </span>
+            </div>
           </div>
-        </div>
-        
-        <h3 className="text-[#050E21] font-black text-xl text-right [text-shadow:0.5px_0.5px_0_rgba(0,0,0,0.1)]">{c.caseName}</h3>
-        
-        <div className="grid grid-cols-2 gap-4 text-right">
-          <div className="flex items-center gap-2 justify-end text-xs font-black text-slate-800 [text-shadow:0.3px_0.3px_0_rgba(0,0,0,0.05)]">
-            <span>{c.clientName}</span>
-            <User className="w-4 h-4 text-amber-600" />
+          
+          <h3 className="text-[#050E21] font-black text-xl text-right [text-shadow:0.5px_0.5px_0_rgba(0,0,0,0.1)]">{c?.caseName || 'بدون اسم'}</h3>
+          
+          <div className="grid grid-cols-2 gap-4 text-right">
+            <div className="flex items-center gap-2 justify-end text-xs font-black text-slate-800 [text-shadow:0.3px_0.3px_0_rgba(0,0,0,0.05)]">
+              <span>{c?.clientName || 'غير محدد'}</span>
+              <User className="w-4 h-4 text-amber-600" />
+            </div>
+            <div className="flex items-center gap-2 justify-end text-xs font-black text-slate-800 [text-shadow:0.3px_0.3px_0_rgba(0,0,0,0.05)]">
+              <span>{c?.nextSessionDate || 'غير محدد'}</span>
+              <Calendar className="w-4 h-4 text-amber-600" />
+            </div>
           </div>
-          <div className="flex items-center gap-2 justify-end text-xs font-black text-slate-800 [text-shadow:0.3px_0.3px_0_rgba(0,0,0,0.05)]">
-            <span>{c.nextSessionDate || 'غير محدد'}</span>
-            <Calendar className="w-4 h-4 text-amber-600" />
-          </div>
-        </div>
 
-        <div className="flex gap-2">
-           <button onClick={handleExportReport} className="flex-1 py-2 rounded-xl bg-slate-50 border text-xs font-black">تصدير PDF</button>
-           <button onClick={(e) => { e.stopPropagation(); onNajizSync(c); }} className="flex-1 py-2 rounded-xl bg-amber-50 border text-xs font-black">مزامنة ناجز</button>
+          <div className="flex gap-2">
+             <button onClick={handleExportReport} className="flex-1 py-2 rounded-xl bg-slate-50 border text-xs font-black">تصدير PDF</button>
+             <button onClick={(e) => { e.stopPropagation(); onNajizSync(c); }} className="flex-1 py-2 rounded-xl bg-amber-50 border text-xs font-black">مزامنة ناجز</button>
+          </div>
+        </div>
+        
+        {/* Offscreen Template for PDF */}
+        <div id={`pdf-report-template-${c?.id}`} className="fixed -left-[9999px] p-10 bg-white text-black w-[800px]" dir="rtl">
+          <h1 className="text-2xl font-black mb-4">تقرير قضية</h1>
+          <p>رقم القضية: {c?.caseNumber}</p>
+          <p>الموضوع: {c?.caseName}</p>
+          <p>الموكل: {c?.clientName}</p>
+          <p>التفاصيل: {c?.details}</p>
         </div>
       </div>
-      
-      {/* Offscreen Template for PDF */}
-      <div id={`pdf-report-template-${c.id}`} className="fixed -left-[9999px] p-10 bg-white text-black w-[800px]" dir="rtl">
-        <h1 className="text-2xl font-black mb-4">تقرير قضية</h1>
-        <p>رقم القضية: {c.caseNumber}</p>
-        <p>الموضوع: {c.caseName}</p>
-        <p>الموكل: {c.clientName}</p>
-        <p>التفاصيل: {c.details}</p>
-      </div>
-    </div>
-  );
+    );
+  } catch (error: any) {
+    console.error("CaseCard error:", error);
+    return <div className="p-4 bg-red-100 text-red-800">Error rendering case: {error.message}</div>;
+  }
 });
 
 export default CaseCard;

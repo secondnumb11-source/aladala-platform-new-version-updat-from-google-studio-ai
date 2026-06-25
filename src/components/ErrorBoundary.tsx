@@ -83,6 +83,12 @@ class ErrorBoundary extends Component<Props, State> {
                 <p className="text-slate-200 font-bold text-sm font-medium leading-relaxed">
                   حدث تعارض في معالجة واجهة المستخدم. يمكنك العودة للوحة التحكم أو تصدير سجل الخطأ للدعم الفني.
                 </p>
+                {this.state.error && (
+                  <div className="mt-4 p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-left font-mono text-xs text-red-200 overflow-auto max-h-40">
+                    <p className="font-bold mb-1">تفاصيل الخطأ:</p>
+                    <p>{this.state.error.toString()}</p>
+                  </div>
+                )}
               </div>
 
               <div className="grid grid-cols-2 gap-4 w-full">

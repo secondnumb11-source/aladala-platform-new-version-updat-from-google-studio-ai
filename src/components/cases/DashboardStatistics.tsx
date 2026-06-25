@@ -23,7 +23,7 @@ export const DashboardStatistics: React.FC<DashboardStatisticsProps> = ({
   isHighContrast = false 
 }) => {
   // Filter and count active, unarchived cases
-  const activeCases = cases.filter(c => !c.archived);
+  const activeCases = (cases || []).filter(c => c && !c.archived);
 
   const underReviewCount = activeCases.filter(
     c => c.status === 'under_review'

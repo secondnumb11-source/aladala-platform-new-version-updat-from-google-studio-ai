@@ -649,7 +649,7 @@ const CasesList = React.memo(function CasesList({
 
   // Grid/Bento layout view with memoized cards to optimize rendering
   const memoizedGridCards = React.useMemo(() => {
-    return filteredCases.slice(0, visibleCount).map((c, idx) => (
+    return (filteredCases || []).filter(Boolean).slice(0, visibleCount).map((c, idx) => (
       <CaseCard
         key={c.id || idx}
         c={c}

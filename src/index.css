@@ -3738,8 +3738,8 @@ button.btn-secondary:hover {
 /* Gold text with high-intensity blue solid outline for premium legal dashboard branding */
 .gold-text-blue-glow,
 .gold-text-blue-glow * {
-  color: #fbbf24 !important; /* Brighter gold for better contrast */
-  -webkit-text-stroke: 1px #1e3a8a; /* Solid blue outline */
+  color: #1d4ed8 !important; /* Vibrant and bright royal blue */
+  -webkit-text-stroke: 0 !important; /* Remove the outline entirely */
   text-shadow: none !important;
   font-weight: 900 !important;
 }
@@ -3777,15 +3777,16 @@ button.btn-secondary:hover {
 /* Elegant dark blue text with vibrant orange solid outline for outside landing page interactive cards */
 .darkblue-text-orange-glow,
 .darkblue-text-orange-glow * {
-  color: #0c2461 !important;
-  -webkit-text-stroke: 1px #ff7f00; /* Solid orange outline */
+  color: #ea580c !important; /* Vibrant bright orange */
+  -webkit-text-stroke: 0 !important; /* Remove outline entirely */
   text-shadow: none !important;
   font-weight: 900 !important;
 }
 
-.darkblue-orange-glow {
-  color: #0c2461 !important;
-  -webkit-text-stroke: 1px #ff7f00; /* Solid orange outline */
+.darkblue-orange-glow,
+.darkblue-orange-glow * {
+  color: #ea580c !important; /* Vibrant bright orange */
+  -webkit-text-stroke: 0 !important; /* Remove outline entirely */
   text-shadow: none !important;
   font-weight: 900 !important;
 }

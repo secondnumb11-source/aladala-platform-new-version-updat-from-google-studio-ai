@@ -9,44 +9,72 @@ const client = new Client({
 
 const sql = `
   -- Enable RLS for all listed tables
-  ALTER TABLE IF EXISTS clients ENABLE ROW LEVEL SECURITY;
-  ALTER TABLE IF EXISTS employees ENABLE ROW LEVEL SECURITY;
-  ALTER TABLE IF EXISTS cases ENABLE ROW LEVEL SECURITY;
-  ALTER TABLE IF EXISTS tasks ENABLE ROW LEVEL SECURITY;
-  ALTER TABLE IF EXISTS hearings ENABLE ROW LEVEL SECURITY;
-  ALTER TABLE IF EXISTS powers_of_attorney ENABLE ROW LEVEL SECURITY;
-  ALTER TABLE IF EXISTS invoices ENABLE ROW LEVEL SECURITY;
+  DO $$
+  DECLARE
+    tab RECORD;
+  BEGIN
+    FOR tab IN 
+      SELECT tablename 
+      FROM pg_tables 
+      WHERE schemaname = 'public' 
+      AND tablename NOT LIKE 'pg_%' 
+      AND tablename NOT LIKE 'sql_%'
+    LOOP
+      EXECUTE format('ALTER TABLE public.%I ENABLE ROW LEVEL SECURITY', tab.tablename);
+    END LOOP;
+  END $$;
 
-  -- Create generic permissive policies for anon/authenticated roles or service_role 
-  -- since they are accessed securely via the server
+  -- Ensure anon and authenticated roles have access to the schema and tables
+  GRANT USAGE ON SCHEMA public TO anon;
+  GRANT USAGE ON SCHEMA public TO authenticated;
+  GRANT USAGE ON SCHEMA public TO service_role;
   
-  -- Policy for clients
-  DROP POLICY IF EXISTS "Service role can do all on clients" ON clients;
-  CREATE POLICY "Service role can do all on clients" ON clients FOR ALL USING (true) WITH CHECK (true);
+  GRANT ALL ON ALL TABLES IN SCHEMA public TO anon;
+  GRANT ALL ON ALL TABLES IN SCHEMA public TO authenticated;
+  GRANT ALL ON ALL TABLES IN SCHEMA public TO service_role;
   
-  -- Policy for employees
-  DROP POLICY IF EXISTS "Service role can do all on employees" ON employees;
-  CREATE POLICY "Service role can do all on employees" ON employees FOR ALL USING (true) WITH CHECK (true);
+  GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO anon;
+  GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO authenticated;
+  GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO service_role;
   
-  -- Policy for cases
-  DROP POLICY IF EXISTS "Service role can do all on cases" ON cases;
-  CREATE POLICY "Service role can do all on cases" ON cases FOR ALL USING (true) WITH CHECK (true);
-  
-  -- Policy for tasks
-  DROP POLICY IF EXISTS "Service role can do all on tasks" ON tasks;
-  CREATE POLICY "Service role can do all on tasks" ON tasks FOR ALL USING (true) WITH CHECK (true);
-  
-  -- Policy for hearings
-  DROP POLICY IF EXISTS "Service role can do all on hearings" ON hearings;
-  CREATE POLICY "Service role can do all on hearings" ON hearings FOR ALL USING (true) WITH CHECK (true);
-  
-  -- Policy for powers_of_attorney
-  DROP POLICY IF EXISTS "Service role can do all on powers_of_attorney" ON powers_of_attorney;
-  CREATE POLICY "Service role can do all on powers_of_attorney" ON powers_of_attorney FOR ALL USING (true) WITH CHECK (true);
-  
-  -- Policy for invoices
-  DROP POLICY IF EXISTS "Service role can do all on invoices" ON invoices;
-  CREATE POLICY "Service role can do all on invoices" ON invoices FOR ALL USING (true) WITH CHECK (true);
+  GRANT ALL ON ALL FUNCTIONS IN SCHEMA public TO anon;
+  GRANT ALL ON ALL FUNCTIONS IN SCHEMA public TO authenticated;
+  GRANT ALL ON ALL FUNCTIONS IN SCHEMA public TO service_role;
+
+  -- Cover api schema as well if it exists
+  DO $$
+  BEGIN
+    IF EXISTS (SELECT 1 FROM information_schema.schemata WHERE schema_name = 'api') THEN
+      GRANT USAGE ON SCHEMA api TO anon;
+      GRANT USAGE ON SCHEMA api TO authenticated;
+      GRANT USAGE ON SCHEMA api TO service_role;
+      GRANT ALL ON ALL TABLES IN SCHEMA api TO anon;
+      GRANT ALL ON ALL TABLES IN SCHEMA api TO authenticated;
+      GRANT ALL ON ALL TABLES IN SCHEMA api TO service_role;
+    END IF;
+  END $$;
+
+  -- Default privileges for future tables
+  ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO anon;
+  ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO authenticated;
+  ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO service_role;
+
+  -- Create generic permissive policies for all roles
+  DO $$
+  DECLARE
+    tab RECORD;
+  BEGIN
+    FOR tab IN 
+      SELECT tablename 
+      FROM pg_tables 
+      WHERE schemaname = 'public' 
+      AND tablename NOT LIKE 'pg_%' 
+      AND tablename NOT LIKE 'sql_%'
+    LOOP
+      EXECUTE format('DROP POLICY IF EXISTS "Public can do all on %I" ON public.%I', tab.tablename, tab.tablename);
+      EXECUTE format('CREATE POLICY "Public can do all on %I" ON public.%I FOR ALL USING (true) WITH CHECK (true)', tab.tablename, tab.tablename);
+    END LOOP;
+  END $$;
 `;
 
 async function applyRLS() {
