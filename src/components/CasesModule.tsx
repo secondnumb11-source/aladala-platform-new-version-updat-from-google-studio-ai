@@ -143,7 +143,7 @@ interface CaseClassificationTagsProps {
 
 export const CaseClassificationTags: React.FC<CaseClassificationTagsProps> = ({ category, status, isHighContrast }) => {
   let categoryLabel = 'استشارات عامة';
-  let categoryColor = 'bg-[#0a1628] border-[#1e3a5f] text-[#94a3b8] dark:bg-[#0a1628] dark:border-[#1e3a5f] dark:text-white font-bold';
+  let categoryColor = 'bg-slate-100 border-slate-900 text-slate-950 dark:bg-slate-800 dark:border-slate-700 dark:text-white font-bold';
   
   if (category === 'commercial') {
     categoryLabel = 'تجاري';
@@ -170,7 +170,7 @@ export const CaseClassificationTags: React.FC<CaseClassificationTagsProps> = ({ 
 
   // Emerald for Active, Amber for Review
   let statusLabel = 'تحت الدراسة';
-  let statusColor = 'bg-[#0a1628] border-[#1e3a5f] text-[#94a3b8] dark:bg-[#0a1628]/80';
+  let statusColor = 'bg-slate-100 border-slate-900 text-slate-950 dark:bg-slate-800/80';
   
   if (status === 'active' || status === 'judgment_issued') {
     statusLabel = 'نشط جاري';
@@ -180,15 +180,15 @@ export const CaseClassificationTags: React.FC<CaseClassificationTagsProps> = ({ 
     statusColor = 'bg-amber-100 border-amber-500 text-amber-950 font-black shadow-sm';
   } else if (status === 'closed' || status === 'archived') {
     statusLabel = 'مؤرشف ومغلق';
-    statusColor = 'bg-[#0a1628] border-[#1e3a5f] text-[#94a3b8]';
+    statusColor = 'bg-gray-100 border-gray-400 text-gray-900';
   }
 
   return (
     <div className="flex flex-wrap items-center gap-2 mt-1.5 font-sans" dir="rtl">
-      <span className={`text-[10px] font-black px-2.5 py-1 rounded-2xl border transition-all inline-flex items-center gap-1 shrink-0 ${categoryColor}`}>
+      <span className={`text-[10px] font-black px-2.5 py-1 rounded-xl border transition-all inline-flex items-center gap-1 shrink-0 ${categoryColor}`}>
         🏷️ {categoryLabel}
       </span>
-      <span className={`text-[10px] font-black px-2.5 py-1 rounded-2xl border transition-all inline-flex items-center gap-1 shrink-0 ${statusColor}`}>
+      <span className={`text-[10px] font-black px-2.5 py-1 rounded-xl border transition-all inline-flex items-center gap-1 shrink-0 ${statusColor}`}>
         ⚖️ {statusLabel}
       </span>
     </div>
@@ -221,11 +221,11 @@ export const getLeadLawyerName = (c: Case): string => {
 
         return (
           <div className="space-y-2 mt-4 px-2">
-            <div className="flex justify-between items-center text-[11px] font-extrabold uppercase tracking-widest text-[#94a3b8] transition-colors">
+            <div className="flex justify-between items-center text-[11px] font-extrabold uppercase tracking-widest text-slate-100 transition-colors">
               <span>المرحلة الحالية: {stages[currentIdx]?.label || 'قيد المراجعة'}</span>
               <span className="text-yellow-300 font-black">{Math.round(progress)}%</span>
             </div>
-            <div className="h-3 w-full bg-[#0a1628] border border-[#1e3a5f] rounded-full overflow-hidden transition-all shadow-inner">
+            <div className="h-3 w-full bg-slate-900 border border-slate-700 rounded-full overflow-hidden transition-all shadow-inner">
               <motion.div 
                 initial={{ width: 0 }}
                 animate={{ width: `${progress}%` }}
@@ -343,14 +343,14 @@ export const getLeadLawyerName = (c: Case): string => {
     return (
       <div className="space-y-4 mb-8">
         {/* User Control Bar */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 p-3 bg-[#0a1628] rounded-2xl border border-[#1e3a5f] text-xs text-[#94a3b8] font-bold shadow-xl relative z-25">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 p-3 bg-white rounded-2xl border border-slate-200 text-xs text-slate-800 font-bold shadow-xl relative z-25">
           <div className="flex flex-wrap items-center gap-3 lg:col-span-2">
             <div className="flex items-center gap-1.5">
               <span className="font-sans font-black text-white text-[10px]">مظهر ولون البيانات:</span>
               <div className="flex gap-1 bg-black/40 p-0.5 rounded border border-slate-750">
-                <button type="button" onClick={() => setChartColorTheme('gold')} className={`px-2 py-0.5 rounded text-[9.5px] font-black cursor-pointer transition-all ${chartColorTheme === 'gold' ? 'bg-[#ffff00] text-[#94a3b8]' : 'text-white font-bold'}`}>ذهبي</button>
+                <button type="button" onClick={() => setChartColorTheme('gold')} className={`px-2 py-0.5 rounded text-[9.5px] font-black cursor-pointer transition-all ${chartColorTheme === 'gold' ? 'bg-[#ffff00] text-slate-950' : 'text-white font-bold'}`}>ذهبي</button>
                 <button type="button" onClick={() => setChartColorTheme('classic')} className={`px-2 py-0.5 rounded text-[9.5px] font-black cursor-pointer transition-all ${chartColorTheme === 'classic' ? 'bg-[#b8860b] text-white' : 'text-white font-bold'}`}>كلاسيك</button>
-                <button type="button" onClick={() => setChartColorTheme('emerald')} className={`px-2 py-0.5 rounded text-[9.5px] font-black cursor-pointer transition-all ${chartColorTheme === 'emerald' ? 'bg-emerald-500 text-[#94a3b8]' : 'text-white font-bold'}`}>زمردي</button>
+                <button type="button" onClick={() => setChartColorTheme('emerald')} className={`px-2 py-0.5 rounded text-[9.5px] font-black cursor-pointer transition-all ${chartColorTheme === 'emerald' ? 'bg-emerald-500 text-slate-950' : 'text-white font-bold'}`}>زمردي</button>
               </div>
             </div>
 
@@ -368,7 +368,7 @@ export const getLeadLawyerName = (c: Case): string => {
             <button
               type="button"
               onClick={() => setChartOrder(prev => prev === 'donut-first' ? 'bar-first' : 'donut-first')}
-              className="px-2 py-1 bg-gradient-to-r from-[#c9a84c] to-[#a67c30]/10 text-[#ffff00] border border-amber-500/20 rounded text-[9.5px] font-black flex items-center gap-1 cursor-pointer transition-all"
+              className="px-2 py-1 bg-amber-500/10 text-[#ffff00] border border-amber-500/20 rounded text-[9.5px] font-black flex items-center gap-1 cursor-pointer transition-all"
             >
               <span>⇆</span>
               <span>تبديل الموضع</span>
@@ -377,15 +377,15 @@ export const getLeadLawyerName = (c: Case): string => {
             <div className="flex items-center gap-1.5">
               <span className="font-sans font-black text-white text-[10px]">حجم الكارت:</span>
               <div className="flex gap-1 bg-black/40 p-0.5 rounded border border-slate-750">
-                <button type="button" onClick={() => setChartSize('tiny')} className={`px-1.5 py-0.5 rounded text-[9.5px] font-black cursor-pointer transition-all ${chartSize === 'tiny' ? 'bg-[#0a1628] text-white' : 'text-white font-black font-bold'}`}>صغير جداً</button>
-                <button type="button" onClick={() => setChartSize('shrunk')} className={`px-1.5 py-0.5 rounded text-[9.5px] font-black cursor-pointer transition-all ${chartSize === 'shrunk' ? 'bg-[#0a1628] text-white' : 'text-white font-black font-bold'}`}>صغير</button>
-                <button type="button" onClick={() => setChartSize('regular')} className={`px-1.5 py-0.5 rounded text-[9.5px] font-black cursor-pointer transition-all ${chartSize === 'regular' ? 'bg-[#0a1628] text-white' : 'text-white font-black font-bold'}`}>افتراضي</button>
+                <button type="button" onClick={() => setChartSize('tiny')} className={`px-1.5 py-0.5 rounded text-[9.5px] font-black cursor-pointer transition-all ${chartSize === 'tiny' ? 'bg-slate-700 text-white' : 'text-white font-black font-bold'}`}>صغير جداً</button>
+                <button type="button" onClick={() => setChartSize('shrunk')} className={`px-1.5 py-0.5 rounded text-[9.5px] font-black cursor-pointer transition-all ${chartSize === 'shrunk' ? 'bg-slate-700 text-white' : 'text-white font-black font-bold'}`}>صغير</button>
+                <button type="button" onClick={() => setChartSize('regular')} className={`px-1.5 py-0.5 rounded text-[9.5px] font-black cursor-pointer transition-all ${chartSize === 'regular' ? 'bg-slate-700 text-white' : 'text-white font-black font-bold'}`}>افتراضي</button>
               </div>
             </div>
 
             <button 
               onClick={handleExportPDF}
-              className="px-3 py-1 bg-gradient-to-r from-[#c9a84c] to-[#a67c30] text-[#94a3b8] font-black rounded-2xl text-[10px] transition-all flex items-center gap-2 shadow-lg cursor-pointer"
+              className="px-3 py-1 bg-amber-500 text-slate-950 font-black rounded-lg text-[10px] transition-all flex items-center gap-2 shadow-lg cursor-pointer"
             >
               <FileDown className="w-3 h-3" />
               <span>تصدير PDF 🖨️</span>
@@ -545,14 +545,14 @@ export default React.memo(function CasesModule({
     }
 
     let arabicStatusName = 'قيد الدراسة';
-    let statusColorClass = 'text-yellow-400 bg-[#0a1628] border-yellow-500/40'; // Default Golden
+    let statusColorClass = 'text-yellow-400 bg-slate-900 border-yellow-500/40'; // Default Golden
     let IconComponent = FileText;
     let iconAnimation = '';
 
     switch (status) {
       case 'under_study':
         arabicStatusName = 'قيد الدراسة 🖋️';
-        statusColorClass = 'text-white font-black font-bold border-[#1e3a5f]0/20 bg-[#0a1628]/5';
+        statusColorClass = 'text-white font-black font-bold border-slate-500/20 bg-slate-600/5';
         IconComponent = FileText;
         break;
       case 'under_review':
@@ -562,7 +562,7 @@ export default React.memo(function CasesModule({
         break;
       case 'struck_off':
         arabicStatusName = 'شطبت 🗑️';
-        statusColorClass = 'text-[#94a3b8] font-bold border-[#1e3a5f]0/20 bg-[#0a1628]0/5';
+        statusColorClass = 'text-gray-100 font-bold border-gray-500/20 bg-gray-500/5';
         IconComponent = Trash2;
         break;
       case 'appeal':
@@ -592,7 +592,7 @@ export default React.memo(function CasesModule({
         break;
       case 'closed':
         arabicStatusName = 'ملف مقفل منتهي 🔒';
-        statusColorClass = 'text-white font-black font-bold border-[#1e3a5f]0/20 bg-[#0a1628]0/5';
+        statusColorClass = 'text-white font-black font-bold border-slate-500/20 bg-slate-500/5';
         IconComponent = Archive;
         break;
       case 'active':
@@ -602,11 +602,11 @@ export default React.memo(function CasesModule({
         break;
       default:
         arabicStatusName = 'قيد المراجعة';
-        statusColorClass = 'text-[#facc15] bg-[#0a1628] border-[#facc15]/40';
+        statusColorClass = 'text-[#facc15] bg-slate-900 border-[#facc15]/40';
         IconComponent = FileText;
     }
 
-    let categoryBadgeColor = 'bg-[#0a1628] border-[#1e3a5f] text-white font-black font-bold';
+    let categoryBadgeColor = 'bg-slate-900 border-slate-800 text-white font-black font-bold';
     let hoverBorderAccent = 'group-hover/card:border-[#facc15]/50 duration-500';
     let gradientBg = 'from-[#facc15]/5 to-transparent';
     let sidebarColor = 'bg-[#facc15]'; // Default sidebar color
@@ -622,7 +622,7 @@ export default React.memo(function CasesModule({
 
     if (category === 'commercial') {
       CategoryIcon = Building2;
-      categoryBadgeColor = 'bg-gradient-to-r from-[#c9a84c] to-[#a67c30]/10 border border-amber-500/30 text-amber-400 font-bold border-amber-500/20';
+      categoryBadgeColor = 'bg-amber-500/10 border border-amber-500/30 text-amber-400 font-bold border-amber-500/20';
       gradientBg = 'from-amber-600/10 via-transparent to-transparent';
     } else if (category === 'criminal') {
       CategoryIcon = ShieldAlert;
@@ -682,7 +682,7 @@ export default React.memo(function CasesModule({
           title: entry.field === 'status' ? `تحديث حالة القضية: ${entry.newValue}` : entry.field === 'nextSessionDate' ? 'تعديل موعد الجلسة' : entry.notes || 'تعديل في ملف القضية',
           desc: `${entry.notes || ''} (بواسطة: ${entry.userName})${entry.isAiAssisted ? ' [تم بمساعدة الذكاء الاصطناعي] 🧠' : ''}`,
           badge: entry.isAiAssisted ? 'ذكاء اصطناعي' : 'تحديث بشري',
-          color: entry.isAiAssisted ? 'border-amber-500/30 text-amber-400 bg-gradient-to-r from-[#c9a84c] to-[#a67c30]/10' : 'border-emerald-500/30 text-emerald-400 bg-emerald-500/10'
+          color: entry.isAiAssisted ? 'border-amber-500/30 text-amber-400 bg-amber-500/10' : 'border-emerald-500/30 text-emerald-400 bg-emerald-500/10'
         });
       });
     }
@@ -694,7 +694,7 @@ export default React.memo(function CasesModule({
       title: 'إيداع الوكالة القانونية والتمثيل ⚖️',
       desc: `تم توثيق الرقم الموحد للقرارات والوكالات واستكمال مطابقة الهيئة العامة للمنافسة. الوكيل الممارس: مكتب المحاسبة والاستشارات.`,
       badge: 'التحقق العدلي',
-      color: 'border-yellow-500/30 text-yellow-400 bg-[#c9a84c]/10'
+      color: 'border-yellow-500/30 text-yellow-400 bg-yellow-500/10'
     });
 
     // 3. Status changes
@@ -705,7 +705,7 @@ export default React.memo(function CasesModule({
         title: 'تفعيل الترافع المكتوب وإخطار الخصوم 🔍',
         desc: `توجيه إشعار رسمي آلي عبر بوابة أبشر للرمز الثاني: ${c.opponentName || 'طرف الخصومة المتجاوز'}.`,
         badge: 'مستوى الترافع',
-        color: 'border-amber-500/30 text-[#fbbf24] bg-gradient-to-r from-[#c9a84c] to-[#a67c30]/10'
+        color: 'border-amber-500/30 text-[#fbbf24] bg-amber-500/10'
       });
     }
 
@@ -750,7 +750,7 @@ export default React.memo(function CasesModule({
         title: 'أرشفة الملف وإغلاق القضية نهائياً 🔒',
         desc: 'اكتملت جميع الدفعات وتحديثات بوابة ناجز وتصفية الحسابات والاتعاب بنجاح تام والمباشرة بإقفال وسجل الأثر المالي.',
         badge: 'الأرشفة والإنهاء',
-        color: 'border-[#1e3a5f]0/30 text-white font-black font-bold bg-[#0a1628]0/10'
+        color: 'border-slate-500/30 text-white font-black font-bold bg-slate-500/10'
       });
     }
 
@@ -945,23 +945,23 @@ export default React.memo(function CasesModule({
           exit={{ opacity: 0 }}
           className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-10"
         >
-          <div className="absolute inset-0 bg-[#0a1628]/80 backdrop-blur-md" onClick={() => setIsArchiveModalOpen(false)}></div>
+          <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-md" onClick={() => setIsArchiveModalOpen(false)}></div>
           <motion.div 
             initial={{ scale: 0.95, y: 20 }}
             animate={{ scale: 1, y: 0 }}
             exit={{ scale: 0.95, y: 20 }}
-            className="relative w-full max-w-6xl h-full max-h-[85vh] bg-[#0a1628] rounded-[2.5rem] shadow-2xl overflow-hidden flex flex-col"
+            className="relative w-full max-w-6xl h-full max-h-[85vh] bg-white rounded-[2.5rem] shadow-2xl overflow-hidden flex flex-col"
             dir="rtl"
           >
             {/* Header */}
-            <div className="p-6 md:p-8 border-b border-[#1e3a5f] flex flex-col md:flex-row justify-between items-start md:items-center gap-6 bg-[#0a1628]/50">
+            <div className="p-6 md:p-8 border-b border-slate-100 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 bg-slate-50/50">
               <div className="flex items-center gap-4">
-                <div className="p-3 bg-[#0a1628] text-amber-500 rounded-2xl shadow-lg">
+                <div className="p-3 bg-slate-900 text-amber-500 rounded-2xl shadow-lg">
                   <Archive className="w-6 h-6" />
                 </div>
                 <div>
                   <h2 className="text-xl font-black text-white tracking-tight">الأرشيف السحابي والأرشفة الإلكترونية</h2>
-                  <p className="text-xs text-[#94a3b8] font-bold mt-1">إدارة مركزية لكافة المذكرات، اللوائح، والأحكام القضائية الصادرة.</p>
+                  <p className="text-xs text-slate-300 font-bold mt-1">إدارة مركزية لكافة المذكرات، اللوائح، والأحكام القضائية الصادرة.</p>
                 </div>
               </div>
               <button 
@@ -973,19 +973,19 @@ export default React.memo(function CasesModule({
             </div>
 
             {/* Search & Filters */}
-            <div className="p-6 bg-[#0a1628] border-b border-[#1e3a5f] grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="p-6 bg-white border-b border-slate-100 grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="relative md:col-span-2">
                 <Search className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white font-black font-bold" />
                 <input 
                   type="text" 
                   placeholder="البحث في الأرشيف (برقم القضية، اسم الموكل، أو مسمى المستند)..."
-                  className="w-full bg-[#0a1628] border border-[#1e3a5f] rounded-2xl py-3.5 pr-12 pl-4 text-sm font-bold text-white focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-3.5 pr-12 pl-4 text-sm font-bold text-white focus:ring-2 focus:ring-primary/20 outline-none transition-all"
                   value={archiveSearchTerm}
                   onChange={(e) => setArchiveSearchTerm(e.target.value)}
                 />
               </div>
               <select 
-                className="bg-[#0a1628] border border-[#1e3a5f] rounded-2xl py-3.5 px-4 text-sm font-bold text-white focus:ring-2 focus:ring-primary/20 outline-none"
+                className="bg-slate-50 border border-slate-200 rounded-2xl py-3.5 px-4 text-sm font-bold text-white focus:ring-2 focus:ring-primary/20 outline-none"
                 value={archiveTypeFilter}
                 onChange={(e) => setArchiveTypeFilter(e.target.value)}
               >
@@ -1000,15 +1000,15 @@ export default React.memo(function CasesModule({
             <div className="flex-1 overflow-y-auto p-6 md:p-8 custom-scrollbar">
               {filteredArchiveDocuments.length === 0 ? (
                 <div className="flex flex-col items-center justify-center h-64 text-center">
-                  <div className="w-16 h-16 bg-[#0a1628] rounded-full flex items-center justify-center mb-4">
+                  <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mb-4">
                     <Search className="w-8 h-8 text-white font-bold" />
                   </div>
-                  <p className="text-[#94a3b8] font-bold">لا توجد نتائج مطابقة لبحثك في الأرشيف.</p>
+                  <p className="text-slate-300 font-bold">لا توجد نتائج مطابقة لبحثك في الأرشيف.</p>
                 </div>
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                   {filteredArchiveDocuments.map((doc, idx) => (
-                    <div key={idx} className="group bg-[#0a1628] border border-[#1e3a5f] p-6 rounded-3xl transition-all duration-300 cursor-pointer relative overflow-hidden shadow-sm hover:shadow-md">
+                    <div key={idx} className="group bg-slate-50 border border-slate-300 p-6 rounded-3xl transition-all duration-300 cursor-pointer relative overflow-hidden shadow-sm hover:shadow-md">
                       <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 blur-2xl rounded-full -mr-12 -mt-12 transition-colors"></div>
                       
                       <div className="flex items-start justify-between mb-4 relative z-10">
@@ -1019,22 +1019,22 @@ export default React.memo(function CasesModule({
                         }`}>
                           <FileText className="w-6 h-6 stroke-[2.5px]" />
                         </div>
-                        <button className="p-2 text-[#94a3b8] hover:text-[#94a3b8] font-black transition-colors">
+                        <button className="p-2 text-slate-800 hover:text-slate-950 font-black transition-colors">
                           <Download className="w-5 h-5 stroke-[2.5px]" />
                         </button>
                       </div>
 
                       <div className="space-y-2.5 relative z-10">
-                        <h4 className="font-extrabold text-[#94a3b8] text-sm leading-relaxed">{doc.name}</h4>
+                        <h4 className="font-extrabold text-slate-950 text-sm leading-relaxed">{doc.name}</h4>
                         <div className="flex flex-wrap gap-2 pt-2">
-                          <span className="text-[10px] font-black px-2.5 py-1 rounded-2xl bg-[#0a1628] text-[#94a3b8] border border-[#1e3a5f]">
+                          <span className="text-[10px] font-black px-2.5 py-1 rounded-xl bg-slate-200 text-slate-950 border border-slate-400">
                             {doc.size}
                           </span>
-                          <span className="text-[10px] font-black px-2.5 py-1 rounded-2xl bg-amber-100 text-amber-950 border border-amber-300 shadow-sm">
+                          <span className="text-[10px] font-black px-2.5 py-1 rounded-xl bg-amber-100 text-amber-950 border border-amber-300 shadow-sm">
                             #{doc.caseNumber}
                           </span>
                         </div>
-                        <p className="text-[11px] text-[#94a3b8] font-extrabold mt-2.5 truncate">القضية: {doc.caseName}</p>
+                        <p className="text-[11px] text-slate-900 font-extrabold mt-2.5 truncate">القضية: {doc.caseName}</p>
                       </div>
                     </div>
                   ))}
@@ -1043,10 +1043,10 @@ export default React.memo(function CasesModule({
             </div>
 
             {/* Footer */}
-            <div className="p-6 bg-[#0a1628]/50 border-t border-[#1e3a5f] flex items-center justify-between">
-              <span className="text-xs text-[#94a3b8] font-bold">إجمالي المستندات المكتشفة: {filteredArchiveDocuments.length} مستند</span>
+            <div className="p-6 bg-slate-50/50 border-t border-slate-100 flex items-center justify-between">
+              <span className="text-xs text-slate-700 font-bold">إجمالي المستندات المكتشفة: {filteredArchiveDocuments.length} مستند</span>
               <button 
-                className="bg-[#0a1628] text-white px-6 py-3 rounded-2xl text-xs font-black transition-opacity flex items-center gap-2"
+                className="bg-slate-900 text-white px-6 py-3 rounded-2xl text-xs font-black transition-opacity flex items-center gap-2"
                 onClick={() => window.print()}
               >
                 <Printer className="w-4 h-4" />
@@ -2285,7 +2285,7 @@ export default React.memo(function CasesModule({
   ]);
 
       const filterBarMarkup = (
-        <div className="bg-[#0b1329] p-8 rounded-[2.5rem] border border-[#1e3a5f]/80 shadow-2xl mb-10 relative z-20 space-y-6">
+        <div className="bg-[#0b1329] p-8 rounded-[2.5rem] border border-slate-800/80 shadow-2xl mb-10 relative z-20 space-y-6">
           <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
             <div className="flex-1 min-w-[320px] w-full flex items-center gap-3">
               <div className="relative flex-1">
@@ -2295,13 +2295,13 @@ export default React.memo(function CasesModule({
                   placeholder="البحث الشامل (اسم، خصم، محكمة، رقم الصك)..." 
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full bg-[#040e21] border border-[#1e3a5f] rounded-2xl py-4 pr-14 pl-6 text-sm font-bold text-[#0c2461] dark:text-white placeholder-slate-500 focus:outline-none focus:border-[#ff7f00]/60 transition-all shadow-inner"
+                  className="w-full bg-[#040e21] border border-slate-800 rounded-2xl py-4 pr-14 pl-6 text-sm font-bold text-[#0c2461] dark:text-white placeholder-slate-500 focus:outline-none focus:border-[#ff7f00]/60 transition-all shadow-inner"
                 />
               </div>
               <button
                 type="button"
                 onClick={() => setIsAdvancedSearchOpen(!isAdvancedSearchOpen)}
-                className={`p-4 rounded-2xl border transition-all shrink-0 ${isAdvancedSearchOpen ? 'bg-[#ff7f00]/25 border-[#ff7f00]/40 text-[#ff7f00] shadow-inner' : 'bg-[#030a16] border-slate-850 text-[#94a3b8] hover:text-[#facc15] hover:bg-[#0b1329]/60 shadow-sm'}`}
+                className={`p-4 rounded-2xl border transition-all shrink-0 ${isAdvancedSearchOpen ? 'bg-[#ff7f00]/25 border-[#ff7f00]/40 text-[#ff7f00] shadow-inner' : 'bg-[#030a16] border-slate-850 text-slate-300 hover:text-[#facc15] hover:bg-[#0b1329]/60 shadow-sm'}`}
                 title="فلاتر البحث المتقدمة في البيانات الوصفية (Metadata)"
               >
                 <Filter className="w-5 h-5" />
@@ -2311,17 +2311,17 @@ export default React.memo(function CasesModule({
             </div>
             
             <div className="flex items-center gap-4 w-full lg:w-auto">
-              <div className="flex bg-[#040e21] border border-[#1e3a5f] p-1 rounded-2xl">
+              <div className="flex bg-[#040e21] border border-slate-800 p-1 rounded-2xl">
                 <button 
                   onClick={() => handleViewModeSwitch('grid')}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-2xl text-[10px] font-black uppercase transition-all ${viewMode === 'grid' ? 'bg-[#ff7f00] text-[#94a3b8] shadow-lg font-black' : 'text-[#94a3b8] hover:text-white'}`}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-xl text-[10px] font-black uppercase transition-all ${viewMode === 'grid' ? 'bg-[#ff7f00] text-slate-950 shadow-lg font-black' : 'text-slate-300 hover:text-white'}`}
                 >
                   <Layers className="w-4 h-4" />
                   <span>عرض المربعات</span>
                 </button>
                 <button 
                   onClick={() => handleViewModeSwitch('table')}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-2xl text-[10px] font-black uppercase transition-all ${viewMode === 'table' ? 'bg-[#ff7f00] text-[#94a3b8] shadow-lg font-black' : 'text-[#94a3b8] hover:text-white'}`}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-xl text-[10px] font-black uppercase transition-all ${viewMode === 'table' ? 'bg-[#ff7f00] text-slate-950 shadow-lg font-black' : 'text-slate-300 hover:text-white'}`}
                 >
                   <FileText className="w-4 h-4" />
                   <span>عرض القائمة</span>
@@ -2329,13 +2329,13 @@ export default React.memo(function CasesModule({
               </div>
 
               {/* Card 5: Total Cases Indicator */}
-              <div className="bg-[#030a16] border border-[#1e3a5f] px-5 py-3 rounded-2xl flex items-center gap-3">
+              <div className="bg-[#030a16] border border-slate-800 px-5 py-3 rounded-2xl flex items-center gap-3">
                 <span className="text-[10px] text-white font-black uppercase tracking-widest">إجمالي القضايا:</span>
                 <span className="text-lg font-mono text-[#facc15] font-black leading-none">{(cases || []).length}</span>
               </div>
               <button 
                 onClick={() => setIsGraphsOpen(!isGraphsOpen)}
-                className="p-3.5 bg-[#030a16] border border-[#1e3a5f] rounded-2xl text-[#facc15] hover:text-white transition-all cursor-pointer"
+                className="p-3.5 bg-[#030a16] border border-slate-800 rounded-2xl text-[#facc15] hover:text-white transition-all cursor-pointer"
               >
                 <TrendingUp className="w-5 h-5" />
               </button>
@@ -2350,13 +2350,13 @@ export default React.memo(function CasesModule({
                 exit={{ opacity: 0, height: 0 }}
                 className="overflow-hidden"
               >
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4 border-t border-[#1e3a5f]">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4 border-t border-slate-100">
                   <div className="space-y-2">
-                    <label className="text-[11px] font-black text-[#94a3b8]0 uppercase tracking-widest px-1">اسم الخصم (الطرف الآخر)</label>
+                    <label className="text-[11px] font-black text-slate-500 uppercase tracking-widest px-1">اسم الخصم (الطرف الآخر)</label>
                     <select 
                       value={advFilters.opponent}
                       onChange={(e) => setAdvFilters({ ...advFilters, opponent: e.target.value })}
-                      className="w-full bg-[#0a1628] border border-[#1e3a5f] rounded-2xl py-3 px-4 text-xs font-bold text-[#94a3b8] outline-none focus:ring-2 focus:ring-amber-500/20 cursor-pointer"
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-xs font-bold text-slate-900 outline-none focus:ring-2 focus:ring-amber-500/20 cursor-pointer"
                     >
                       <option value="">كل الخصوم</option>
                       {uniqueOpponents.map((opponent) => (
@@ -2367,11 +2367,11 @@ export default React.memo(function CasesModule({
                     </select>
                   </div>
                   <div className="space-y-2">
-                    <label className="text-[11px] font-black text-[#94a3b8]0 uppercase tracking-widest px-1">رقم الدائرة القضائية</label>
+                    <label className="text-[11px] font-black text-slate-500 uppercase tracking-widest px-1">رقم الدائرة القضائية</label>
                     <select 
                       value={advFilters.circuit}
                       onChange={(e) => setAdvFilters({ ...advFilters, circuit: e.target.value })}
-                      className="w-full bg-[#0a1628] border border-[#1e3a5f] rounded-2xl py-3 px-4 text-xs font-bold text-[#94a3b8] outline-none focus:ring-2 focus:ring-amber-500/20 cursor-pointer"
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-xs font-bold text-slate-900 outline-none focus:ring-2 focus:ring-amber-500/20 cursor-pointer"
                     >
                       <option value="">كل الدوائر</option>
                       {uniqueCircuits.map((circuit) => (
@@ -2382,11 +2382,11 @@ export default React.memo(function CasesModule({
                     </select>
                   </div>
                   <div className="space-y-2">
-                    <label className="text-[11px] font-black text-[#94a3b8]0 uppercase tracking-widest px-1">نوع الحكم / تصنيف القضية</label>
+                    <label className="text-[11px] font-black text-slate-500 uppercase tracking-widest px-1">نوع الحكم / تصنيف القضية</label>
                     <select 
                       value={advFilters.judgmentCategory}
                       onChange={(e) => setAdvFilters({ ...advFilters, judgmentCategory: e.target.value })}
-                      className="w-full bg-[#0a1628] border border-[#1e3a5f] rounded-2xl py-3 px-4 text-xs font-bold text-[#94a3b8] outline-none focus:ring-2 focus:ring-amber-500/20 cursor-pointer"
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-xs font-bold text-slate-900 outline-none focus:ring-2 focus:ring-amber-500/20 cursor-pointer"
                     >
                       <option value="">كل الأنواع والتصنيفات</option>
                       <optgroup label="حالة ونوع الحكم">
@@ -2421,7 +2421,7 @@ export default React.memo(function CasesModule({
               
               // Set custom glowing text color scheme when not active
               let textColor = 'text-white';
-              let borderColor = 'border-[#1e3a5f]/80';
+              let borderColor = 'border-slate-700/80';
               let iconColor = 'text-white';
               
               if (cat.id === 'all') {
@@ -2430,7 +2430,7 @@ export default React.memo(function CasesModule({
                 iconColor = 'text-[#FF7F00]';
               } else if (cat.id === 'civil' || cat.id === 'personal_status' || cat.id === 'archived') {
                 textColor = 'text-white';
-                borderColor = 'border-[#1e3a5f]/60';
+                borderColor = 'border-slate-700/60';
                 iconColor = 'text-white';
               } else if (cat.id === 'commercial' || cat.id === 'criminal') {
                 textColor = 'text-[#FACC15]';
@@ -2454,13 +2454,13 @@ export default React.memo(function CasesModule({
                   }}
                   className={`flex items-center gap-3 px-5 py-3 rounded-2xl text-xs font-black transition-all border shrink-0 relative group ${
                     isActive 
-                      ? 'bg-gradient-to-br from-[#FF7F00] to-[#E65100] text-[#94a3b8] border-2 border-amber-300 font-black shadow-[0_0_15px_rgba(255,127,0,0.4)]' 
+                      ? 'bg-gradient-to-br from-[#FF7F00] to-[#E65100] text-slate-950 border-2 border-amber-300 font-black shadow-[0_0_15px_rgba(255,127,0,0.4)]' 
                       : `bg-gradient-to-br from-[#0b1329] to-[#122244] ${borderColor} ${textColor} font-black hover:border-amber-400 hover:shadow-[0_0_12px_rgba(250,204,21,0.2)]`
                   }`}
                 >
-                  <Icon className={`w-4 h-4 ${isActive ? 'text-[#94a3b8]' : iconColor}`} />
+                  <Icon className={`w-4 h-4 ${isActive ? 'text-slate-950' : iconColor}`} />
                   <span className="drop-shadow-[0_1.5px_3px_rgba(0,0,0,0.7)]">{cat.label}</span>
-                  <span className={`text-[10px] px-2 py-0.5 rounded-2xl font-mono font-[900] ${isActive ? 'bg-[#0a1628]/20 text-[#94a3b8]' : 'bg-[#0a1628] text-amber-400 border border-[#1e3a5f]'}`}>
+                  <span className={`text-[10px] px-2 py-0.5 rounded-lg font-mono font-[900] ${isActive ? 'bg-white/20 text-slate-900' : 'bg-slate-950 text-amber-400 border border-slate-800'}`}>
                     {count}
                   </span>
                 </button>
@@ -2480,7 +2480,7 @@ export default React.memo(function CasesModule({
               {/* Headline + Add Button */}
               <div className="mb-4 animate-fade-in">
              
-                <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-8 bg-[#0b1329] p-6 md:p-8 rounded-[2rem] border border-[#1e3a5f]/80 shadow-2xl shadow-black/30 relative overflow-hidden">
+                <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-8 bg-[#0b1329] p-6 md:p-8 rounded-[2rem] border border-slate-700/80 shadow-2xl shadow-black/30 relative overflow-hidden">
                   <div className="absolute inset-0 bg-gradient-to-r from-blue-900/10 to-[#ff7f00]/5 mix-blend-overlay"></div>
                   <div className="space-y-4 relative z-10 w-full lg:w-auto">
                     <div className="flex items-center gap-4">
@@ -2515,14 +2515,14 @@ export default React.memo(function CasesModule({
                     </button>
                     <button
                       onClick={() => setIsGraphsOpen(!isGraphsOpen)}
-                      className="bg-[#040e21] text-white hover:text-[#facc15] font-bold font-black py-3.5 px-5 rounded-2xl text-[11px] flex items-center justify-center gap-3 border border-[#1e3a5f] transition-all w-full md:w-auto shadow-md cursor-pointer"
+                      className="bg-[#040e21] text-white hover:text-[#facc15] font-bold font-black py-3.5 px-5 rounded-2xl text-[11px] flex items-center justify-center gap-3 border border-slate-700 transition-all w-full md:w-auto shadow-md cursor-pointer"
                     >
                       {isGraphsOpen ? <TrendingDown className="w-4 h-4 text-[#ff7f00]" /> : <TrendingUp className="w-4 h-4 text-[#ff7f00]" />}
                       <span>{isGraphsOpen ? 'إخفاء الإحصائيات' : 'عرض الإحصائيات'}</span>
                     </button>
                     <button
                       onClick={() => setIsFocusMode(!isFocusMode)}
-                      className={`bg-[#040e21] text-white font-bold font-black py-3.5 px-5 rounded-2xl text-[11px] flex items-center justify-center gap-3 border transition-all w-full md:w-auto shadow-md cursor-pointer ${isFocusMode ? 'border-emerald-500 text-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.3)]' : 'border-[#1e3a5f] hover:text-[#ff7f00]'}`}
+                      className={`bg-[#040e21] text-white font-bold font-black py-3.5 px-5 rounded-2xl text-[11px] flex items-center justify-center gap-3 border transition-all w-full md:w-auto shadow-md cursor-pointer ${isFocusMode ? 'border-emerald-500 text-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.3)]' : 'border-slate-700 hover:text-[#ff7f00]'}`}
                     >
                       {isFocusMode ? <Maximize2 className="w-4 h-4" /> : <Minimize2 className="w-4 h-4 text-emerald-500" />}
                       <span>{isFocusMode ? 'إيقاف وضع التركيز' : 'وضع التركيز (Focus Mode)'}</span>
@@ -2557,29 +2557,29 @@ export default React.memo(function CasesModule({
                 initial={{ opacity: 0, height: 0, y: -20 }}
                 animate={{ opacity: 1, height: 'auto', y: 0 }}
                 exit={{ opacity: 0, height: 0, y: -20 }}
-                className="bg-gradient-to-r from-[#c9a84c] to-[#a67c30]/10 border border-amber-500/30 rounded-[2rem] p-6 mb-8 flex items-center justify-between group overflow-hidden relative"
+                className="bg-amber-500/10 border border-amber-500/30 rounded-[2rem] p-6 mb-8 flex items-center justify-between group overflow-hidden relative"
               >
                 <div className="absolute inset-0 bg-gradient-to-r from-amber-500/5 to-transparent opacity-0 transition-opacity"></div>
                 <div className="flex items-center gap-6 relative z-10">
-                  <div className="w-12 h-12 rounded-2xl bg-gradient-to-r from-[#c9a84c] to-[#a67c30] text-blue-950 flex items-center justify-center shadow-lg shadow-amber-500/20">
+                  <div className="w-12 h-12 rounded-2xl bg-amber-500 text-blue-950 flex items-center justify-center shadow-lg shadow-amber-500/20">
                     <Archive className="w-6 h-6" />
                   </div>
                   <div>
-                    <h4 className="text-[#94a3b8] font-black text-sm">تم أرشفة {archivedNotice.count} قضايا تلقائياً</h4>
+                    <h4 className="text-slate-900 font-black text-sm">تم أرشفة {archivedNotice.count} قضايا تلقائياً</h4>
                     <p className="text-amber-500/70 text-xs font-bold mt-0.5">بسبب عدم النشاط لأكثر من 30 يوماً وتصنيف القضايا كمغلقة.</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-4 relative z-10">
                   <button 
                     onClick={archivedNotice.onRestore}
-                    className="bg-gradient-to-r from-[#c9a84c] to-[#a67c30] text-blue-950 px-6 py-2.5 rounded-2xl text-xs font-black transition-all active:scale-95 flex items-center gap-2"
+                    className="bg-amber-500 text-blue-950 px-6 py-2.5 rounded-xl text-xs font-black transition-all active:scale-95 flex items-center gap-2"
                   >
                     <History className="w-4 h-4" />
                     استعادة القضايا
                   </button>
                   <button 
                     onClick={archivedNotice.onClose}
-                    className="p-2.5 text-[#94a3b8]0 transition-colors"
+                    className="p-2.5 text-slate-500 transition-colors"
                   >
                     <X className="w-5 h-5" />
                   </button>
@@ -2633,18 +2633,18 @@ export default React.memo(function CasesModule({
                       <div ref={loadMoreRef} className="h-20 flex items-center justify-center mt-6">
                         {isVirtualLoading ? (
                           <div className="flex items-center gap-3 text-[#ff7f00]">
-                            <div className="w-6 h-6 rounded-full border-2 border-[#1e3a5f] border-t-[#ff7f00] animate-spin"></div>
+                            <div className="w-6 h-6 rounded-full border-2 border-slate-800 border-t-[#ff7f00] animate-spin"></div>
                             <span className="text-xs font-black">جاري تحميل المزيد من القضايا...</span>
                           </div>
                         ) : (
-                          <span className="text-[#94a3b8]0 text-xs font-bold">اسحب أو مرر للأسفل لعرض المزيد</span>
+                          <span className="text-slate-500 text-xs font-bold">اسحب أو مرر للأسفل لعرض المزيد</span>
                         )}
                       </div>
                     )}
                   </>
                 ) : (
                   <div className="flex items-center justify-center py-20">
-                    <div className="w-12 h-12 rounded-full border-4 border-[#1e3a5f] border-t-[#ff7f00] animate-spin"></div>
+                    <div className="w-12 h-12 rounded-full border-4 border-slate-800 border-t-[#ff7f00] animate-spin"></div>
                   </div>
                 )}
               </div>
@@ -2661,10 +2661,10 @@ export default React.memo(function CasesModule({
 
       {/* Scanned Document Attachments Upload Modal */}
       {isUploadOpen && selectedCase && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#0a1628]/40 backdrop-blur-xl p-6 animate-in fade-in duration-500">
-          <div className="bg-[#0a1628]  border border-[#1e3a5f]  rounded-[3rem] w-full max-w-xl p-0 overflow-hidden shadow-2xl animate-in zoom-in-95 duration-500">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-xl p-6 animate-in fade-in duration-500">
+          <div className="bg-white  border border-slate-200  rounded-[3rem] w-full max-w-xl p-0 overflow-hidden shadow-2xl animate-in zoom-in-95 duration-500">
             
-            <div className="bg-gradient-to-br from-[#050e21] to-[#0c1a35] p-10 flex items-center justify-between text-[#94a3b8] border-b border-primary/20">
+            <div className="bg-gradient-to-br from-[#050e21] to-[#0c1a35] p-10 flex items-center justify-between text-slate-900 border-b border-primary/20">
               <div className="flex items-center gap-6">
                 <div className="p-4 bg-primary/10 text-amber-600 rounded-2xl border border-primary/20">
                   <Paperclip className="w-8 h-8" />
@@ -2680,7 +2680,7 @@ export default React.memo(function CasesModule({
                   setUploadingState('idle');
                   setAttachFileName('');
                 }}
-                className="w-12 h-12 bg-[#0a1628][#050e21] text-[#94a3b8] rounded-2xl flex items-center justify-center transition-all cursor-pointer border border-white"
+                className="w-12 h-12 bg-white[#050e21] text-slate-900 rounded-2xl flex items-center justify-center transition-all cursor-pointer border border-white"
               >
                 ×
               </button>
@@ -2692,7 +2692,7 @@ export default React.memo(function CasesModule({
                 onDragOver={(e) => e.preventDefault()}
                 onDrop={handleFileDropInCases}
                 onClick={() => fileInputRef.current?.click()}
-                className="border-4 border-dashed border-primary/10 transition-colors rounded-[2.5rem] p-12 bg-[#0a1628]  text-center flex flex-col items-center justify-center space-y-6 group cursor-pointer shadow-inner"
+                className="border-4 border-dashed border-primary/10 transition-colors rounded-[2.5rem] p-12 bg-slate-50  text-center flex flex-col items-center justify-center space-y-6 group cursor-pointer shadow-inner"
               >
                 <input 
                   type="file" 
@@ -2705,31 +2705,31 @@ export default React.memo(function CasesModule({
                    <Download className="w-10 h-10 text-amber-600 animate-bounce" />
                 </div>
                 <div>
-                  <span className="text-sm  text-[#94a3b8] drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]   font-black block mb-2">إسقاط وثائق الـ PDF أو الـ Word هنا أو انقر لاختيار ملف</span>
-                  <span className="text-xs  text-[#94a3b8] drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]   font-bold uppercase tracking-[0.2em]">encrypted protocol material v4.0.1</span>
+                  <span className="text-sm  text-slate-900 drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]   font-black block mb-2">إسقاط وثائق الـ PDF أو الـ Word هنا أو انقر لاختيار ملف</span>
+                  <span className="text-xs  text-slate-900 drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]   font-bold uppercase tracking-[0.2em]">encrypted protocol material v4.0.1</span>
                 </div>
               </div>
 
               <div className="space-y-8">
                 <div className="space-y-3">
-                  <label className="text-xs font-black  text-[#94a3b8] drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]   uppercase tracking-widest block">مسمى الوثيقة القانونية</label>
+                  <label className="text-xs font-black  text-slate-900 drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]   uppercase tracking-widest block">مسمى الوثيقة القانونية</label>
                   <input 
                     type="text"
                     value={attachFileName}
                     onChange={(e) => setAttachFileName(e.target.value)}
                     placeholder="مذكرة_الرد_على_بينة_المدعي"
                     required
-                    className="w-full bg-[#0a1628]  border border-[#1e3a5f]  rounded-2xl py-5 px-6 text-sm font-black  text-[#94a3b8] drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]   focus:outline-none focus:border-primary shadow-inner"
+                    className="w-full bg-slate-50  border border-slate-200  rounded-2xl py-5 px-6 text-sm font-black  text-slate-900 drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]   focus:outline-none focus:border-primary shadow-inner"
                   />
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8 font-sans">
                   <div className="space-y-3">
-                    <label className="text-xs font-black  text-[#94a3b8] drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]   uppercase tracking-widest block">صيغة الملف الاحترافية</label>
+                    <label className="text-xs font-black  text-slate-900 drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]   uppercase tracking-widest block">صيغة الملف الاحترافية</label>
                     <select
                       value={attachFileType}
                       onChange={(e: any) => setAttachFileType(e.target.value)}
-                      className="w-full bg-[#0a1628]  border border-[#1e3a5f]  rounded-2xl py-5 px-5 text-xs font-black  text-[#94a3b8] drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]   focus:outline-none focus:border-primary"
+                      className="w-full bg-slate-50  border border-slate-200  rounded-2xl py-5 px-5 text-xs font-black  text-slate-900 drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]   focus:outline-none focus:border-primary"
                     >
                       <option value="pdf">Protected PDF (Highly Secure)</option>
                       <option value="docx">Word Document (Editable)</option>
@@ -2737,11 +2737,11 @@ export default React.memo(function CasesModule({
                   </div>
 
                   <div className="space-y-3">
-                    <label className="text-xs font-black  text-[#94a3b8] drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]   uppercase tracking-widest block">معيار الجودة والدقة</label>
+                    <label className="text-xs font-black  text-slate-900 drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]   uppercase tracking-widest block">معيار الجودة والدقة</label>
                     <select
                       value={attachFileSize}
                       onChange={(e) => setAttachFileSize(e.target.value)}
-                      className="w-full bg-[#0a1628]  border border-[#1e3a5f]  rounded-2xl py-5 px-5 text-xs font-black  text-[#94a3b8] drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]   focus:outline-none focus:border-primary"
+                      className="w-full bg-slate-50  border border-slate-200  rounded-2xl py-5 px-5 text-xs font-black  text-slate-900 drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]   focus:outline-none focus:border-primary"
                     >
                       <option value="1.5 MB">Optimal (1.5 MB)</option>
                       <option value="4.2 MB">High-Res Scanner (4.2 MB)</option>
@@ -2753,12 +2753,12 @@ export default React.memo(function CasesModule({
 
               {/* Progress Bar Simulation */}
               {uploadingState === 'uploading' && (
-                <div className="space-y-3 bg-[#0a1628]  p-6 rounded-3xl border border-[#1e3a5f]  shadow-inner">
-                  <div className="flex justify-between text-xs font-black  text-[#94a3b8] drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]   uppercase tracking-widest font-sans">
+                <div className="space-y-3 bg-slate-50  p-6 rounded-3xl border border-slate-200  shadow-inner">
+                  <div className="flex justify-between text-xs font-black  text-slate-900 drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]   uppercase tracking-widest font-sans">
                     <span>{uploadProgress}% جاري التشفير والمزامنة</span>
                     <span className="text-amber-600">Processing Assets...</span>
                   </div>
-                  <div className="w-full bg-[#0a1628]  rounded-full h-2.5 overflow-hidden border border-[#1e3a5f] ">
+                  <div className="w-full bg-white  rounded-full h-2.5 overflow-hidden border border-slate-200 ">
                     <motion.div 
                       className="bg-gradient-to-r from-primary to-primary-light h-full rounded-full transition-all shadow-[0_0_15px_rgba(184,134,11,0.4)]" 
                       style={{ width: `${uploadProgress}%` }}
@@ -2769,7 +2769,7 @@ export default React.memo(function CasesModule({
 
               {uploadingState === 'completed' && (
                 <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="bg-emerald-500 border border-emerald-500 py-5 px-6 rounded-2xl text-center text-xs text-emerald-500 font-extrabold flex items-center justify-center gap-3">
-                  <div className="w-8 h-8 bg-emerald-500 text-[#94a3b8] rounded-full flex items-center justify-center">✓</div>
+                  <div className="w-8 h-8 bg-emerald-500 text-slate-900 rounded-full flex items-center justify-center">✓</div>
                   <span className="uppercase tracking-widest">Protocol Success: Asset Secured and Synced</span>
                 </motion.div>
               )}
@@ -2782,14 +2782,14 @@ export default React.memo(function CasesModule({
                     setUploadingState('idle');
                     setAttachFileName('');
                   }}
-                  className="flex-1 bg-[#0a1628]   text-[#94a3b8] drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]   font-black py-5 rounded-[1.5rem] text-xs uppercase tracking-widest"
+                  className="flex-1 bg-slate-100   text-slate-900 drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]   font-black py-5 rounded-[1.5rem] text-xs uppercase tracking-widest"
                 >
                   إلغاء التراجع
                 </button>
                 <button 
                   type="submit"
                   disabled={uploadingState === 'uploading' || uploadingState === 'completed'}
-                  className="flex-[2] bg-primary text-[#94a3b8] font-black py-5 rounded-[1.5rem] text-xs shadow-xl shadow-primary/20 active:scale-95 transition-all border border-primary-light/20 uppercase tracking-widest disabled:opacity-50"
+                  className="flex-[2] bg-primary text-slate-900 font-black py-5 rounded-[1.5rem] text-xs shadow-xl shadow-primary/20 active:scale-95 transition-all border border-primary-light/20 uppercase tracking-widest disabled:opacity-50"
                 >
                   بدء الرفع والترميز الاحترافي 📎
                 </button>
@@ -2813,7 +2813,7 @@ export default React.memo(function CasesModule({
                 animate={{ opacity: 0.7 }}
                 exit={{ opacity: 0 }}
                 onClick={() => setActivityLogCaseId(null)}
-                className="absolute inset-0 bg-[#0a1628]/80 backdrop-blur-sm"
+                className="absolute inset-0 bg-slate-100/80 backdrop-blur-sm"
               />
               {/* Drawer Container */}
               <motion.div 
@@ -2821,54 +2821,54 @@ export default React.memo(function CasesModule({
                 animate={{ x: 0 }}
                 exit={{ x: '100%' }}
                 transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-                className="absolute inset-y-0 right-0 w-full max-w-lg bg-[#0a1628] border-l border-[#1e3a5f] shadow-2xl flex flex-col justify-between"
+                className="absolute inset-y-0 right-0 w-full max-w-lg bg-white border-l border-slate-200 shadow-2xl flex flex-col justify-between"
               >
                 <div className="flex-1 flex flex-col overflow-y-auto">
-                  <div className="p-6 border-b border-[#1e3a5f] flex justify-between items-center bg-[#0a1628] backdrop-blur-md sticky top-0 z-20">
+                  <div className="p-6 border-b border-slate-200 flex justify-between items-center bg-slate-100 backdrop-blur-md sticky top-0 z-20">
                     <div className="flex items-center gap-3">
-                      <div className="p-2.5 bg-gradient-to-r from-[#c9a84c] to-[#a67c30]/10 text-amber-500 rounded-2xl border border-amber-500/20">
+                      <div className="p-2.5 bg-amber-500/10 text-amber-500 rounded-xl border border-amber-500/20">
                         <Clock className="w-5 h-5" />
                       </div>
                       <div className="text-right">
-                        <h3 className="font-display font-black text-[#94a3b8] text-base">سجل النشاط والتعديلات العدلية</h3>
+                        <h3 className="font-display font-black text-slate-900 text-base">سجل النشاط والتعديلات العدلية</h3>
                         <p className="text-[10px] font-mono text-amber-500 tracking-wider">Activity History: #{activeC.caseNumber}</p>
                       </div>
                     </div>
                     <button 
                       onClick={() => setActivityLogCaseId(null)}
-                      className="p-1.5 rounded-2xl text-[#94a3b8] font-black font-bold transition-colors cursor-pointer"
+                      className="p-1.5 rounded-lg text-slate-900 font-black font-bold transition-colors cursor-pointer"
                     >
                       <X className="w-5 h-5" />
                     </button>
                   </div>
 
                   <div className="p-6 space-y-6">
-                    <div className="bg-[#0a1628] p-5 rounded-2xl border border-[#1e3a5f] space-y-2 text-right">
+                    <div className="bg-slate-50 p-5 rounded-2xl border border-slate-200 space-y-2 text-right">
                       <span className="text-[10px] text-amber-500 font-extrabold uppercase tracking-widest block">الدعوى المستهدفة</span>
-                      <h4 className="text-sm font-black text-[#94a3b8] leading-snug">{activeC.caseName}</h4>
-                      <div className="flex justify-between items-center text-xs text-[#94a3b8] font-black font-bold pt-3 border-t border-[#1e3a5f]/65">
-                        <span>العميل: <strong className="text-[#94a3b8] font-bold">{activeC.clientName}</strong></span>
-                        <span>رقم القضية: <strong className="text-[#94a3b8] font-bold font-mono">#{activeC.caseNumber}</strong></span>
+                      <h4 className="text-sm font-black text-slate-900 leading-snug">{activeC.caseName}</h4>
+                      <div className="flex justify-between items-center text-xs text-slate-900 font-black font-bold pt-3 border-t border-slate-200/65">
+                        <span>العميل: <strong className="text-slate-900 font-bold">{activeC.clientName}</strong></span>
+                        <span>رقم القضية: <strong className="text-slate-900 font-bold font-mono">#{activeC.caseNumber}</strong></span>
                       </div>
                     </div>
 
-                    <div className="relative border-r-2 border-[#1e3a5f] mr-3 pr-6 space-y-8 py-3 text-right">
+                    <div className="relative border-r-2 border-slate-200 mr-3 pr-6 space-y-8 py-3 text-right">
                       {timelineData.map((t, tIdx) => (
                         <div key={tIdx} className="relative">
                           {/* Timeline dot */}
-                          <span className="absolute -right-[31px] top-1.5 w-3 h-3 rounded-full border-4 border-[#050e21] bg-gradient-to-r from-[#c9a84c] to-[#a67c30] ring-4 ring-amber-500/10 shadow-lg" />
+                          <span className="absolute -right-[31px] top-1.5 w-3 h-3 rounded-full border-4 border-[#050e21] bg-amber-500 ring-4 ring-amber-500/10 shadow-lg" />
                           
                           <div className="space-y-2">
                             <div className="flex flex-wrap items-center justify-between gap-2.5">
-                              <span className="text-[10px] font-mono bg-[#0a1628] text-[#94a3b8] font-bold border border-slate-850 px-2 py-0.5 rounded-2xl font-bold direction-ltr">
+                              <span className="text-[10px] font-mono bg-slate-100 text-slate-900 font-bold border border-slate-850 px-2 py-0.5 rounded-md font-bold direction-ltr">
                                 {t.date} • {t.time}
                               </span>
-                              <span className={`text-[9.5px] font-black px-2 py-0.5 rounded bg-gradient-to-r from-[#c9a84c] to-[#a67c30]/10 text-amber-500 border border-amber-500/20`}>
+                              <span className={`text-[9.5px] font-black px-2 py-0.5 rounded bg-amber-500/10 text-amber-500 border border-amber-500/20`}>
                                 {t.badge}
                               </span>
                             </div>
-                            <h5 className="text-xs font-black text-[#94a3b8]">{t.title}</h5>
-                            <p className="text-[11px] text-[#94a3b8] font-bold leading-relaxed font-bold">{t.desc}</p>
+                            <h5 className="text-xs font-black text-slate-900">{t.title}</h5>
+                            <p className="text-[11px] text-slate-900 font-bold leading-relaxed font-bold">{t.desc}</p>
                           </div>
                         </div>
                       ))}
@@ -2876,10 +2876,10 @@ export default React.memo(function CasesModule({
                   </div>
                 </div>
 
-                <div className="p-6 border-t border-[#1e3a5f] bg-[#0a1628] text-center">
+                <div className="p-6 border-t border-slate-200 bg-slate-100 text-center">
                   <button 
                     onClick={() => setActivityLogCaseId(null)}
-                    className="w-full bg-[#0a1628][#0c1a35] text-[#94a3b8] border border-[#1e3a5f] text-xs font-black py-4 rounded-2xl transition-all cursor-pointer"
+                    className="w-full bg-white[#0c1a35] text-slate-900 border border-slate-200 text-xs font-black py-4 rounded-xl transition-all cursor-pointer"
                   >
                     إغلاق سجل النشاط عدليّاً
                   </button>
@@ -2899,34 +2899,34 @@ export default React.memo(function CasesModule({
             className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-10"
             dir="rtl"
           >
-            <div className="absolute inset-0 bg-[#0a1628]/80 backdrop-blur-md" onClick={() => setReportModalCase(null)}></div>
+            <div className="absolute inset-0 bg-slate-100/80 backdrop-blur-md" onClick={() => setReportModalCase(null)}></div>
             <motion.div 
               initial={{ scale: 0.95, y: 20 }}
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.95, y: 20 }}
-              className="relative w-full max-w-lg bg-[#0a1628] rounded-[2rem] shadow-2xl overflow-hidden flex flex-col"
+              className="relative w-full max-w-lg bg-white rounded-[2rem] shadow-2xl overflow-hidden flex flex-col"
             >
-              <div className="p-6 border-b border-[#1e3a5f] flex justify-between items-center bg-[#0a1628]/50">
+              <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
                 <div className="flex items-center gap-3">
                   <Printer className="w-5 h-5 text-emerald-600" />
-                  <h3 className="font-black text-[#94a3b8] text-lg">تقرير حالة القضية</h3>
+                  <h3 className="font-black text-slate-900 text-lg">تقرير حالة القضية</h3>
                 </div>
-                <button onClick={() => setReportModalCase(null)} className="p-2 text-[#94a3b8] font-black font-bold hover:text-[#94a3b8] font-black font-bold cursor-pointer transition-colors">
+                <button onClick={() => setReportModalCase(null)} className="p-2 text-slate-900 font-black font-bold hover:text-slate-900 font-black font-bold cursor-pointer transition-colors">
                   <X className="w-5 h-5" />
                 </button>
               </div>
               <div className="p-8 space-y-6">
-                <div className="bg-[#0a1628] p-6 flex flex-col items-center justify-center border-2 border-dashed border-[#1e3a5f] rounded-2xl mb-6">
-                   <div className="w-12 h-12 bg-[#0a1628] rounded-2xl shadow-sm border border-[#1e3a5f] flex items-center justify-center mb-3">
-                     <FileText className="w-6 h-6 text-[#94a3b8] font-black font-bold" />
+                <div className="bg-slate-50 p-6 flex flex-col items-center justify-center border-2 border-dashed border-slate-200 rounded-2xl mb-6">
+                   <div className="w-12 h-12 bg-white rounded-xl shadow-sm border border-slate-100 flex items-center justify-center mb-3">
+                     <FileText className="w-6 h-6 text-slate-900 font-black font-bold" />
                    </div>
-                   <h4 className="text-sm font-black text-[#94a3b8]">توليد تقرير وملخص للقضية</h4>
-                   <p className="text-xs text-center text-[#94a3b8] font-bold mt-2">
+                   <h4 className="text-sm font-black text-slate-800">توليد تقرير وملخص للقضية</h4>
+                   <p className="text-xs text-center text-slate-700 font-bold mt-2">
                       تم تجهيز ملخص جاهز للطباعة يحتوي على رقم القضية واسم الموكل وتاريخ الجلسة القادمة.
                    </p>
                 </div>
               </div>
-              <div className="p-6 border-t border-[#1e3a5f] bg-[#0a1628] flex gap-3">
+              <div className="p-6 border-t border-slate-100 bg-slate-50 flex gap-3">
                 <button 
                   onClick={() => {
                     const printWindow = window.open('', '_blank');
@@ -2965,13 +2965,13 @@ export default React.memo(function CasesModule({
                     }
                     setReportModalCase(null);
                   }}
-                  className="flex-[2] bg-[#0a1628] border border-[#1e3a5f] text-[#94a3b8] font-black py-3 rounded-2xl hover:bg-[#0a1628] transition-colors shadow-lg shadow-slate-900/10"
+                  className="flex-[2] bg-slate-900 border border-slate-900 text-slate-900 font-black py-3 rounded-xl hover:bg-slate-800 transition-colors shadow-lg shadow-slate-900/10"
                 >
                   صياغة وطباعة
                 </button>
                 <button 
                   onClick={() => setReportModalCase(null)}
-                  className="flex-[1] bg-[#0a1628] border border-[#1e3a5f] text-[#94a3b8] font-black py-3 rounded-2xl hover:bg-[#0a1628] transition-colors shadow-sm"
+                  className="flex-[1] bg-white border border-slate-200 text-slate-700 font-black py-3 rounded-xl hover:bg-slate-50 transition-colors shadow-sm"
                 >
                   إلغاء
                 </button>

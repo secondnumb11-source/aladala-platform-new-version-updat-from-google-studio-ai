@@ -130,7 +130,7 @@ export default function CaseStatisticsBar({ casesTrigger, onCountsCalculated }: 
         <button
           onClick={fetchRealTimeStats}
           disabled={loading}
-          className="text-xs font-bold text-slate-500 hover:text-amber-500 flex items-center gap-1.5 transition-colors cursor-pointer bg-slate-50 hover:bg-amber-50 px-3 py-1.5 rounded-xl border border-[#1e3a5f]"
+          className="text-xs font-bold text-slate-500 hover:text-amber-500 flex items-center gap-1.5 transition-colors cursor-pointer bg-slate-50 hover:bg-amber-50 px-3 py-1.5 rounded-xl border border-slate-200"
           title="تحديث البيانات يدوياً"
         >
           <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin text-amber-500' : ''}`} />

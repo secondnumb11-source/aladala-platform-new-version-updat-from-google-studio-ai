@@ -196,7 +196,7 @@ export default function DocumentPreviewModal({ viewerDoc, onClose }: DocumentPre
               isPdf ? (
                 <iframe
                   src={`${viewerDoc.file_url}#toolbar=1`}
-                  className="w-full h-full max-w-[95%] rounded-2xl border border-slate-700 bg-[#0a1628] shadow-xl"
+                  className="w-full h-full max-w-[95%] rounded-2xl border border-slate-700 bg-white shadow-xl"
                   title={viewerDoc.document_name}
                 />
               ) : isImage ? (

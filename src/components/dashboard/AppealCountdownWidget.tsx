@@ -178,7 +178,7 @@ export default function AppealCountdownWidget() {
           <ShieldCheck className="w-3.5 h-3.5" />
           <span>مطابق لنظام المرافعات</span>
         </div>
-        <div className="h-5 w-px bg-[#0a1628]/5 mx-2"></div>
+        <div className="h-5 w-px bg-white/5 mx-2"></div>
         <div className="text-[10px] font-bold text-slate-500">حدث في: {new Date().toLocaleTimeString('ar-SA')}</div>
       </div>
     </div>

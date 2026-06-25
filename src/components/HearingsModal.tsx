@@ -110,7 +110,7 @@ export const HearingsModal: React.FC<HearingsModalProps> = ({ hearings = [], onC
   return (
     <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center z-[9999] p-4 font-sans" dir="rtl">
       <div className={`${modalBg} rounded-[2.5rem] w-full max-w-lg overflow-hidden border border-white/10 shadow-[0_0_80px_rgba(30,58,138,0.4)] animate-in zoom-in-95 duration-300`}>
-        <div className="flex justify-between items-center p-8 border-b border-white/5 bg-[#0a1628]/5">
+        <div className="flex justify-between items-center p-8 border-b border-white/5 bg-white/5">
           <div className="flex items-center gap-4">
             <div className="p-3 bg-amber-500/20 rounded-2xl border border-amber-500/30">
               <Clock className="w-6 h-6 text-amber-500" />
@@ -122,7 +122,7 @@ export const HearingsModal: React.FC<HearingsModalProps> = ({ hearings = [], onC
           </div>
           <button 
             onClick={onClose} 
-            className="p-3 bg-[#0a1628]/5 hover:bg-[#0a1628]/10 rounded-2xl text-white transition-all active:scale-95"
+            className="p-3 bg-white/5 hover:bg-white/10 rounded-2xl text-white transition-all active:scale-95"
           >
             <X size={24} />
           </button>
@@ -141,7 +141,7 @@ export const HearingsModal: React.FC<HearingsModalProps> = ({ hearings = [], onC
             safeHearings.map(hearing => (
               <HighContrastWrapper key={hearing.id}>
                 <div 
-                  className="bg-[#0a1628]/5 p-6 rounded-[1.5rem] border border-white/5 hover:border-amber-500/40 transition-all group relative overflow-hidden"
+                  className="bg-white/5 p-6 rounded-[1.5rem] border border-white/5 hover:border-amber-500/40 transition-all group relative overflow-hidden"
                 >
                   <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/5 blur-3xl -z-10" />
                   
@@ -150,7 +150,7 @@ export const HearingsModal: React.FC<HearingsModalProps> = ({ hearings = [], onC
                       {hearing.caseName || 'جلسة قضائية غير محددة'}
                     </h3>
                     <div className="flex items-center gap-2">
-                       <button onClick={() => onEdit?.(hearing)} className="p-2 hover:bg-[#0a1628]/10 rounded-xl text-slate-400 hover:text-white transition-colors">
+                       <button onClick={() => onEdit?.(hearing)} className="p-2 hover:bg-white/10 rounded-xl text-slate-400 hover:text-white transition-colors">
                           <Edit3 size={16} />
                        </button>
                        <button onClick={() => onDelete?.(hearing.id)} className="p-2 hover:bg-red-500/20 rounded-xl text-slate-400 hover:text-red-400 transition-colors">
@@ -176,7 +176,7 @@ export const HearingsModal: React.FC<HearingsModalProps> = ({ hearings = [], onC
 
                   <button
                     onClick={() => addToCalendar(hearing)}
-                    className="w-full flex items-center justify-center gap-3 py-4 bg-amber-500 hover:bg-amber-400 text-white font-black text-sm rounded-2xl shadow-xl shadow-amber-500/20 transition-all active:scale-95 group"
+                    className="w-full flex items-center justify-center gap-3 py-4 bg-amber-500 hover:bg-amber-400 text-black font-black text-sm rounded-2xl shadow-xl shadow-amber-500/20 transition-all active:scale-95 group"
                   >
                     <Download size={18} className="group-hover:bounce" />
                     <span>تثبيت في تقويم الجهاز</span>

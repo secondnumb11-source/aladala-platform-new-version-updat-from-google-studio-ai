@@ -90,7 +90,7 @@ export default function CourtMapAndServices({
       <div className={`${hideHub ? "w-full space-y-4" : "xl:col-span-2 space-y-4"}`}>
         <div className={`border rounded-2xl p-5 shadow-sm space-y-4 relative ${
           theme === "light" 
-            ? "bg-[#0a1628] border-[#1e3a5f] text-slate-900" 
+            ? "bg-white border-slate-300 text-slate-900" 
             : "bg-gradient-to-br from-[#9A7D2C]/90 via-[#0C1425] to-[#0284C7]/85 border-2 border-[#9A7D2C] text-white shadow-2xl dark"
         }`}>
           <div>
@@ -104,7 +104,7 @@ export default function CourtMapAndServices({
 
           <div className={`text-center py-1.5 text-xs font-sans font-bold border rounded-lg ${
             theme === "light" 
-              ? "bg-slate-50 border-[#1e3a5f] text-slate-900" 
+              ? "bg-slate-50 border-slate-300 text-slate-900" 
               : "text-yellow-300 bg-slate-950/60 border-yellow-400/30"
           }`}>
             🔊 {t.hoverHint}
@@ -214,12 +214,12 @@ export default function CourtMapAndServices({
                 exit={{ opacity: 0, height: 0 }}
                 className={`border rounded-xl p-4 space-y-3 ${
                   theme === "light" 
-                    ? "bg-slate-50 border-[#1e3a5f] text-slate-900 shadow-sm" 
+                    ? "bg-slate-50 border-slate-300 text-slate-900 shadow-sm" 
                     : "bg-[#1E3A8A]/95 border-2 border-yellow-400 text-white"
                 }`}
               >
                 <div className={`flex justify-between items-center border-b pb-2 ${
-                  theme === "light" ? "border-[#1e3a5f]" : "border-white/20"
+                  theme === "light" ? "border-slate-300" : "border-white/20"
                 }`}>
                   <span className={`text-xs font-black flex items-center gap-1 ${
                     theme === "light" ? "text-amber-800" : "text-yellow-300 animate-pulse"
@@ -247,7 +247,7 @@ export default function CourtMapAndServices({
                         key={idx} 
                         className={`p-2.5 rounded-lg flex justify-between items-center text-xs border ${
                           theme === "light" 
-                            ? "bg-[#0a1628] border-[#1e3a5f] text-slate-950 shadow-sm" 
+                            ? "bg-white border-slate-300 text-slate-950 shadow-sm" 
                             : "bg-slate-950/60 border-white/10 text-white"
                         }`}
                       >
@@ -283,7 +283,7 @@ export default function CourtMapAndServices({
         <div className="space-y-4 text-right">
           <div className={`border rounded-2xl p-5 shadow-sm space-y-4 relative ${
             theme === "light" 
-              ? "bg-[#0a1628] border-[#1e3a5f] text-slate-900" 
+              ? "bg-white border-slate-300 text-slate-900" 
               : "bg-gradient-to-br from-[#9A7D2C]/90 via-[#0C121E] to-[#1E3A8A]/90 border-2 border-[#9A7D2C] text-white shadow-2xl dark"
           }`}>
             <div>

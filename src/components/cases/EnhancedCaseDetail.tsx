@@ -363,8 +363,8 @@ export const EnhancedCaseDetail: React.FC<EnhancedCaseDetailProps> = ({
 
           {/* Second Section: Client and Opponent Info */}
           <div className="grid grid-cols-2 gap-6 mb-8 relative z-10 page-break-avoid">
-            <div className="p-5 rounded-2xl border border-[#1e3a5f] bg-slate-50/40">
-              <h4 className="text-xs font-black text-amber-800 border-b border-[#1e3a5f] pb-2 mb-3">
+            <div className="p-5 rounded-2xl border border-slate-200 bg-slate-50/40">
+              <h4 className="text-xs font-black text-amber-800 border-b border-slate-200 pb-2 mb-3">
                 بيانات موكل المكتب (الطرف الأول)
               </h4>
               <div className="space-y-2 text-xs">
@@ -379,8 +379,8 @@ export const EnhancedCaseDetail: React.FC<EnhancedCaseDetailProps> = ({
               </div>
             </div>
             
-            <div className="p-5 rounded-2xl border border-[#1e3a5f] bg-slate-50/40">
-              <h4 className="text-xs font-black text-rose-800 border-b border-[#1e3a5f] pb-2 mb-3">
+            <div className="p-5 rounded-2xl border border-slate-200 bg-slate-50/40">
+              <h4 className="text-xs font-black text-rose-800 border-b border-slate-200 pb-2 mb-3">
                 بيانات الخصم (الطرف الثاني)
               </h4>
               <div className="space-y-2 text-xs">
@@ -397,8 +397,8 @@ export const EnhancedCaseDetail: React.FC<EnhancedCaseDetailProps> = ({
           </div>
 
           {/* Third Section: Litigation Subject and Summary */}
-          <div className="mb-8 p-6 rounded-2xl border border-[#1e3a5f] bg-[#0a1628] relative z-10 page-break-avoid">
-            <h3 className="text-xs font-black text-slate-900 border-b border-[#1e3a5f] pb-2 mb-3">
+          <div className="mb-8 p-6 rounded-2xl border border-slate-200 bg-white relative z-10 page-break-avoid">
+            <h3 className="text-xs font-black text-slate-900 border-b border-slate-200 pb-2 mb-3">
               ثالثاً: وقائع موضوع النزاع وتفاصيله القضائية
             </h3>
             <p className="text-xs text-slate-800 leading-relaxed text-justify mb-4">
@@ -412,32 +412,32 @@ export const EnhancedCaseDetail: React.FC<EnhancedCaseDetailProps> = ({
           {/* Fourth Section: Financial Transactions */}
           {selectedCase.financialRecords && selectedCase.financialRecords.length > 0 && (
             <div className="mb-8 relative z-10 page-break-avoid">
-              <h3 className="text-xs font-black text-slate-900 border-b border-[#1e3a5f] pb-2 mb-3">
+              <h3 className="text-xs font-black text-slate-900 border-b border-slate-200 pb-2 mb-3">
                 رابعاً: كشف الحساب المالي والرسوم الموثقة بالملف
               </h3>
-              <table className="w-full text-right text-[10px] border border-[#1e3a5f] border-collapse">
+              <table className="w-full text-right text-[10px] border border-slate-200 border-collapse">
                 <thead>
-                  <tr className="bg-slate-50 text-slate-700 font-bold border-b border-[#1e3a5f]">
-                    <th className="p-2 border-r border-[#1e3a5f]">البيان / رسم المودع</th>
-                    <th className="p-2 border-r border-[#1e3a5f] text-center">التاريخ</th>
-                    <th className="p-2 border-r border-[#1e3a5f]">نوع النفقة</th>
-                    <th className="p-2 border-r border-[#1e3a5f] text-left">المبلغ الإجمالي (ر.س)</th>
+                  <tr className="bg-slate-50 text-slate-700 font-bold border-b border-slate-200">
+                    <th className="p-2 border-r border-slate-200">البيان / رسم المودع</th>
+                    <th className="p-2 border-r border-slate-200 text-center">التاريخ</th>
+                    <th className="p-2 border-r border-slate-200">نوع النفقة</th>
+                    <th className="p-2 border-r border-slate-200 text-left">المبلغ الإجمالي (ر.س)</th>
                   </tr>
                 </thead>
                 <tbody>
                   {selectedCase.financialRecords.map((rec: any, index: number) => (
                     <tr key={index} className="border-b border-slate-100">
-                      <td className="p-2 border-r border-[#1e3a5f] font-bold text-slate-900">{rec.description}</td>
-                      <td className="p-2 border-r border-[#1e3a5f] text-center font-mono">{rec.date}</td>
-                      <td className="p-2 border-r border-[#1e3a5f]">
+                      <td className="p-2 border-r border-slate-200 font-bold text-slate-900">{rec.description}</td>
+                      <td className="p-2 border-r border-slate-200 text-center font-mono">{rec.date}</td>
+                      <td className="p-2 border-r border-slate-200">
                         {rec.type === 'expense' ? 'مصاريف قضائية خارجية' : rec.type === 'fee' ? 'رسوم قضائية حكومية' : 'أتعاب المحاماة والاستشارة'}
                       </td>
-                      <td className="p-2 border-r border-[#1e3a5f] text-left font-mono font-bold text-slate-900">
+                      <td className="p-2 border-r border-slate-200 text-left font-mono font-bold text-slate-900">
                         {parseFloat(rec.amount || '0').toLocaleString()} ر.س
                       </td>
                     </tr>
                   ))}
-                  <tr className="bg-slate-100/50 font-black border-t-2 border-[#1e3a5f]">
+                  <tr className="bg-slate-100/50 font-black border-t-2 border-slate-300">
                     <td colSpan={3} className="p-2 text-slate-900 text-left">إجمالي المبالغ والرسوم القضائية الموثقة:</td>
                     <td className="p-2 text-amber-800 text-left font-mono text-xs">
                       {selectedCase.financialRecords.reduce((acc: number, r: any) => acc + (r.amount ? parseFloat(r.amount) : 0), 0).toLocaleString()} ر.س
@@ -449,7 +449,7 @@ export const EnhancedCaseDetail: React.FC<EnhancedCaseDetailProps> = ({
           )}
 
           {/* Signatures & Certification block */}
-          <div className="mt-16 border-t border-[#1e3a5f] pt-8 relative z-10 flex justify-between items-center text-[10px] px-8 page-break-avoid">
+          <div className="mt-16 border-t border-slate-200 pt-8 relative z-10 flex justify-between items-center text-[10px] px-8 page-break-avoid">
             <div className="text-center space-y-4">
               <span className="font-bold text-slate-500 block">توقيع المستشار القانوني والمحامي المباشر</span>
               <div className="h-10"></div>
@@ -485,14 +485,14 @@ export const EnhancedCaseDetail: React.FC<EnhancedCaseDetailProps> = ({
         }}
         className="flex items-center gap-3 text-sm text-slate-500 font-bold hover:text-amber-600 transition-all group w-fit"
       >
-        <div className="p-2 rounded-xl bg-[#0a1628] border border-[#1e3a5f] shadow-sm group-hover:border-amber-200 transition-all">
+        <div className="p-2 rounded-xl bg-white border border-slate-200 shadow-sm group-hover:border-amber-200 transition-all">
           <ChevronLeft className="w-5 h-5 rotate-180" />
         </div>
         <span>العودة لقائمة جميع الدعاوى والنزاعات</span>
       </button>
 
       {/* Main Hero Header Section */}
-      <div className="bg-[#0a1628] border border-[#1e3a5f] rounded-[2.5rem] p-8 md:p-12 shadow-sm relative overflow-hidden">
+      <div className="bg-white border border-slate-200 rounded-[2.5rem] p-8 md:p-12 shadow-sm relative overflow-hidden">
         {/* Decorative elements */}
         <div className="absolute top-0 right-0 w-64 h-64 bg-amber-500/5 blur-[80px] -mr-32 -mt-32"></div>
         <div className="absolute bottom-0 left-0 w-48 h-48 bg-blue-500/5 blur-[60px] -ml-24 -mb-24"></div>
@@ -505,7 +505,7 @@ export const EnhancedCaseDetail: React.FC<EnhancedCaseDetailProps> = ({
                 ? 'bg-rose-50 text-rose-600 border-rose-100' 
                 : selectedCase.priority === 'medium' 
                 ? 'bg-amber-50 text-amber-600 border-amber-100' 
-                : 'bg-slate-100 text-slate-400 border-[#1e3a5f]'
+                : 'bg-slate-100 text-slate-400 border-slate-200'
               }`}>
                 <ShieldAlert className="w-3 h-3" />
                 أولوية {selectedCase.priority === 'high' ? 'قصوى عاجلة' : selectedCase.priority === 'medium' ? 'متوسطة' : 'عادية'}
@@ -528,7 +528,7 @@ export const EnhancedCaseDetail: React.FC<EnhancedCaseDetailProps> = ({
               <button
                 type="button"
                 onClick={() => setActivityLogCaseId(selectedCase.id)}
-                className="p-3 rounded-2xl bg-slate-50 border border-[#1e3a5f] text-slate-400 hover:text-amber-600 hover:bg-amber-50 hover:border-amber-100 transition-all"
+                className="p-3 rounded-2xl bg-slate-50 border border-slate-200 text-slate-400 hover:text-amber-600 hover:bg-amber-50 hover:border-amber-100 transition-all"
                 title="سجل النشاط والتعديلات"
               >
                 <Clock className="w-6 h-6" />
@@ -565,7 +565,7 @@ export const EnhancedCaseDetail: React.FC<EnhancedCaseDetailProps> = ({
                 const phone = clientObj.phone.replace(/[^0-9]/g, '');
                 window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank');
               }}
-              className="w-full bg-[#0a1628] border border-[#1e3a5f] text-slate-300 font-black px-6 py-4 rounded-2xl text-xs flex items-center justify-center gap-3 transition-all hover:bg-emerald-50 hover:border-emerald-100 hover:text-emerald-700 active:scale-95 shadow-sm"
+              className="w-full bg-white border border-slate-200 text-slate-300 font-black px-6 py-4 rounded-2xl text-xs flex items-center justify-center gap-3 transition-all hover:bg-emerald-50 hover:border-emerald-100 hover:text-emerald-700 active:scale-95 shadow-sm"
             >
               <Share2 className="w-5 h-5 text-emerald-500" />
               <span>إرسال تعميد العميل</span>
@@ -1029,7 +1029,7 @@ export const EnhancedCaseDetail: React.FC<EnhancedCaseDetailProps> = ({
                     (selectedCase as any).whatsappNotificationsEnabled !== false ? 'bg-emerald-500' : 'bg-slate-700'
                 }`}
               >
-                <span className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-[#0a1628] shadow-lg transition duration-300 ease-in-out ${
+                <span className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-lg transition duration-300 ease-in-out ${
                    (selectedCase as any).whatsappNotificationsEnabled !== false ? '-translate-x-5' : 'translate-x-0'
                 }`} />
               </button>
@@ -1119,7 +1119,7 @@ export const EnhancedCaseDetail: React.FC<EnhancedCaseDetailProps> = ({
     {/* Magnificent Legal Document Viewer Modal */}
     {viewingAttachment && (
       <div className="fixed inset-0 z-[100] bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4" dir="rtl">
-        <div className="bg-[#0a1628] border border-[#1e3a5f] rounded-[2.5rem] max-w-4xl w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden animate-scale-in">
+        <div className="bg-white border border-slate-200 rounded-[2.5rem] max-w-4xl w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden animate-scale-in">
           {/* Header of Viewer */}
           <div className="flex justify-between items-center px-8 py-6 border-b border-slate-100 bg-slate-50">
             <div className="flex items-center gap-3">
@@ -1138,7 +1138,7 @@ export const EnhancedCaseDetail: React.FC<EnhancedCaseDetailProps> = ({
             </div>
             <button 
               onClick={() => setViewingAttachment(null)}
-              className="p-2 rounded-xl bg-[#0a1628] border border-[#1e3a5f] text-slate-400 hover:text-rose-500 hover:border-rose-200 transition-all cursor-pointer"
+              className="p-2 rounded-xl bg-white border border-slate-200 text-slate-400 hover:text-rose-500 hover:border-rose-200 transition-all cursor-pointer"
             >
               <X className="w-5 h-5" />
             </button>
@@ -1155,9 +1155,9 @@ export const EnhancedCaseDetail: React.FC<EnhancedCaseDetailProps> = ({
               />
             ) : (
               /* Professional Simulated Legal Document Sheet */
-              <div className="bg-[#0a1628] max-w-2xl w-full border border-[#1e3a5f] p-12 rounded-xl shadow-md min-h-[70vh] flex flex-col justify-between font-sans relative overflow-hidden text-right leading-loose">
+              <div className="bg-white max-w-2xl w-full border border-slate-300 p-12 rounded-xl shadow-md min-h-[70vh] flex flex-col justify-between font-sans relative overflow-hidden text-right leading-loose">
                 {/* Corner Watermarks */}
-                <div className="absolute top-0 left-0 w-24 h-24 bg-slate-50 rounded-br-full flex items-center justify-center border-r border-b border-[#1e3a5f]/50">
+                <div className="absolute top-0 left-0 w-24 h-24 bg-slate-50 rounded-br-full flex items-center justify-center border-r border-b border-slate-200/50">
                   <span className="text-[10px] font-black text-slate-400 tracking-wider rotate-[-45deg]">شعار المكتب</span>
                 </div>
                 <div className="absolute inset-0 bg-contain bg-center opacity-[0.03] pointer-events-none" style={{ backgroundImage: `url('https://images.unsplash.com/photo-1589829545856-d10d557cf95f?q=80&w=1000')` }}></div>
@@ -1177,11 +1177,11 @@ export const EnhancedCaseDetail: React.FC<EnhancedCaseDetailProps> = ({
 
                 {/* Document Text Body */}
                 <div className="flex-1 space-y-6 pt-2 pb-6 text-right">
-                  <h4 className="text-center font-black text-base text-slate-950 border-b border-dashed border-[#1e3a5f] pb-4 mb-4">{viewingAttachment.fileName}</h4>
+                  <h4 className="text-center font-black text-base text-slate-950 border-b border-dashed border-slate-200 pb-4 mb-4">{viewingAttachment.fileName}</h4>
                   <div className="text-sm font-bold text-slate-800 leading-relaxed text-justify space-y-4">
                     <p>إلى فضيلة رئيس الدائرة القضائية الموقر، وبصفتنا وكلاء المستدعى في الدعوى المقيدة أعلاه، يطيب لنا تقديم هذا المستند تلبية لمتطلبات المرافعة العادلة وحفظاً لحقوق موكلنا في النزاع المنظور أمام فضيلتكم الموقرة.</p>
                     
-                    <div className="p-4 bg-slate-50 border border-[#1e3a5f] rounded-xl space-y-2 mt-4 text-right">
+                    <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-2 mt-4 text-right">
                       <div className="text-amber-700 tracking-wider font-black">تفاصيل ملف الدعوى الفني:</div>
                       <div className="grid grid-cols-2 gap-4 text-xs font-bold text-slate-600">
                         <div>الموكل: {clients.find(cl => cl.id === selectedCase.clientId)?.name || '---'}</div>
@@ -1229,7 +1229,7 @@ export const EnhancedCaseDetail: React.FC<EnhancedCaseDetailProps> = ({
             </button>
             <button 
               onClick={() => setViewingAttachment(null)}
-              className="px-6 py-2.5 rounded-xl bg-[#0a1628] border border-[#1e3a5f] hover:bg-slate-100 text-slate-700 font-black text-xs transition-colors cursor-pointer"
+              className="px-6 py-2.5 rounded-xl bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 font-black text-xs transition-colors cursor-pointer"
             >
               إغلاق نافذة العرض
             </button>
@@ -1263,7 +1263,7 @@ export const EnhancedCaseDetail: React.FC<EnhancedCaseDetailProps> = ({
 
       {/* Main Core Case Frame */}
       <div className="official-print-border space-y-6">
-        <div className="border-b border-[#1e3a5f] pb-3 mb-4">
+        <div className="border-b border-slate-200 pb-3 mb-4">
           <h2 className="text-sm font-black text-amber-800 uppercase tracking-widest flex items-center gap-2">
             <span>◆ البيانات الأساسية لملف الدعوى القضائية</span>
           </h2>
@@ -1299,14 +1299,14 @@ export const EnhancedCaseDetail: React.FC<EnhancedCaseDetailProps> = ({
 
       {/* Litigants */}
       <div className="official-print-border space-y-6 mt-6">
-        <div className="border-b border-[#1e3a5f] pb-3 mb-4">
+        <div className="border-b border-slate-200 pb-3 mb-4">
           <h2 className="text-sm font-black text-amber-800 uppercase tracking-widest">
             <span>◆ أطراف النزاع والخصومة والتمثيل القانوني</span>
           </h2>
         </div>
         <div className="grid grid-cols-2 gap-6 text-xs">
           <div className="p-4 bg-slate-50 rounded-xl space-y-2 border border-slate-100">
-            <div className="font-black text-slate-700 pb-1 border-b border-[#1e3a5f]">الطرف الأول (المدعي / الموكل):</div>
+            <div className="font-black text-slate-700 pb-1 border-b border-slate-200">الطرف الأول (المدعي / الموكل):</div>
             <div>
               <span className="text-slate-500">الاسم الكريم:</span> <strong className="text-slate-900">{selectedCase.clientName}</strong>
             </div>
@@ -1316,7 +1316,7 @@ export const EnhancedCaseDetail: React.FC<EnhancedCaseDetailProps> = ({
           </div>
 
           <div className="p-4 bg-slate-50 rounded-xl space-y-2 border border-slate-100">
-            <div className="font-black text-slate-700 pb-1 border-b border-[#1e3a5f]">الطرف الثاني (المدعى عليه / الخصم):</div>
+            <div className="font-black text-slate-700 pb-1 border-b border-slate-200">الطرف الثاني (المدعى عليه / الخصم):</div>
             <div>
               <span className="text-slate-500">اسم الخصم المقيد:</span> <strong className="text-slate-900">{selectedCase.opponentName || 'غير مقيد بالملف'}</strong>
             </div>
@@ -1329,7 +1329,7 @@ export const EnhancedCaseDetail: React.FC<EnhancedCaseDetailProps> = ({
 
       {/* Case Details / Facts */}
       <div className="page-break-avoid official-print-border space-y-4 mt-6">
-        <div className="border-b border-[#1e3a5f] pb-2">
+        <div className="border-b border-slate-200 pb-2">
           <h2 className="text-sm font-black text-amber-800">◆ تفاصيل موضوع الدعوى ومذكرات ومطالبات الموضوع</h2>
         </div>
         <p className="text-xs leading-relaxed text-slate-800 whitespace-pre-wrap font-sans">
@@ -1339,7 +1339,7 @@ export const EnhancedCaseDetail: React.FC<EnhancedCaseDetailProps> = ({
 
       {/* Scheduled Sessions Log */}
       <div className="page-break-avoid official-print-border space-y-4 mt-6">
-        <div className="border-b border-[#1e3a5f] pb-2">
+        <div className="border-b border-slate-200 pb-2">
           <h2 className="text-sm font-black text-amber-800">◆ مواعيد الجلسات وسجل الاستحقاق القضائي القادم</h2>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
@@ -1358,7 +1358,7 @@ export const EnhancedCaseDetail: React.FC<EnhancedCaseDetailProps> = ({
       {/* AI Summary and Strategy */}
       {(aiAnalysis || selectedCase.aiRecommendations) && (
         <div className="page-break-avoid official-print-border space-y-4 mt-6">
-          <div className="border-b border-[#1e3a5f] pb-2">
+          <div className="border-b border-slate-200 pb-2">
             <h2 className="text-sm font-black text-amber-800 flex items-center gap-1.5">
               <span>🧠 التحليل القضائي الاستراتيجي التلقائي (الذكاء الاصطناعي)</span>
             </h2>
@@ -1372,12 +1372,12 @@ export const EnhancedCaseDetail: React.FC<EnhancedCaseDetailProps> = ({
       {/* Financial Statement */}
       {selectedCase.financialRecords && selectedCase.financialRecords.length > 0 && (
         <div className="page-break-avoid official-print-border space-y-4 mt-6">
-          <div className="border-b border-[#1e3a5f] pb-2">
+          <div className="border-b border-slate-200 pb-2">
             <h2 className="text-sm font-black text-amber-800">◆ كشف الحساب المالي للقضية والمصاريف والرسوم المودعة</h2>
           </div>
           <table className="w-full text-right text-xs border-collapse">
             <thead>
-              <tr className="bg-slate-100 border-b border-[#1e3a5f]">
+              <tr className="bg-slate-100 border-b border-slate-200">
                 <th className="p-2 font-black text-slate-700">البيان / الوصف</th>
                 <th className="p-2 font-black text-slate-700 text-center">التاريخ</th>
                 <th className="p-2 font-black text-slate-700">النوع</th>
@@ -1393,7 +1393,7 @@ export const EnhancedCaseDetail: React.FC<EnhancedCaseDetailProps> = ({
                   <td className="p-2 text-slate-900 font-sans text-left font-bold">{rec.amount} ر.س</td>
                 </tr>
               ))}
-              <tr className="bg-slate-50 border-t border-[#1e3a5f] font-black">
+              <tr className="bg-slate-50 border-t border-slate-300 font-black">
                 <td colSpan={3} className="p-2 text-slate-900">إجمالي النفقات والرسوم الموثقة بالملف:</td>
                 <td className="p-2 text-amber-700 text-left font-sans">
                   {selectedCase.financialRecords.reduce((acc: number, r: any) => acc + (r.amount ? parseFloat(r.amount) : 0), 0).toLocaleString()} ر.س
@@ -1405,7 +1405,7 @@ export const EnhancedCaseDetail: React.FC<EnhancedCaseDetailProps> = ({
       )}
 
       {/* Authentications Seals & Signatures */}
-      <div className="page-break-avoid mt-12 border-t border-[#1e3a5f] pt-8 flex justify-between items-start text-xs text-slate-600">
+      <div className="page-break-avoid mt-12 border-t border-slate-300 pt-8 flex justify-between items-start text-xs text-slate-600">
         <div className="text-right space-y-2">
           <div className="font-black text-slate-850">مكتب المحامي والمستشار القانوني المعتمد</div>
           <div className="text-[10px] text-emerald-600">✓ تم التوثيق إلكترونياً بالتوافق مع المعايير العدلية الرقمية</div>

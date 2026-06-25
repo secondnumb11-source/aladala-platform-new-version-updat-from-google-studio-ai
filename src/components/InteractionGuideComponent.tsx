@@ -44,7 +44,7 @@ export default function InteractionGuideComponent({ onResetLayout }: Interaction
         initial={{ opacity: 0, scale: 0.9, y: 20 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.9, y: 20 }}
-        className="fixed bottom-10 right-10 z-[100] w-full max-w-sm bg-[#0a1628] border border-[#1e3a5f] rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.2)] overflow-hidden"
+        className="fixed bottom-10 right-10 z-[100] w-full max-w-sm bg-white border border-slate-200 rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.2)] overflow-hidden"
         dir="rtl"
       >
         <div className="bg-slate-900 p-6 flex justify-between items-center text-white">
@@ -52,7 +52,7 @@ export default function InteractionGuideComponent({ onResetLayout }: Interaction
             <MousePointer2 className="w-4 h-4 text-amber-500" />
             <span className="text-xs font-black uppercase tracking-widest">تلميحات تفاعلية</span>
           </div>
-          <button onClick={() => setIsOpen(false)} className="hover:bg-[#0a1628]/10 p-1.5 rounded-lg transition-colors">
+          <button onClick={() => setIsOpen(false)} className="hover:bg-white/10 p-1.5 rounded-lg transition-colors">
             <X className="w-4 h-4" />
           </button>
         </div>

@@ -349,13 +349,13 @@ export default function AgenciesModule({ clients, onUpdateState }: AgenciesModul
   }).length;
 
   return (
-    <div className="agencies-module min-h-screen bg-[#0a1628] text-[#94a3b8] p-6 lg:p-10 space-y-8 font-sans" dir="rtl">
+    <div className="agencies-module min-h-screen bg-slate-50 text-slate-900 p-6 lg:p-10 space-y-8 font-sans" dir="rtl">
       
       {/* Notifications */}
       <AnimatePresence>
         {notification && (
           <motion.div initial={{ opacity: 0, y: -20, scale: 0.9 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: -20, scale: 0.9 }}
-            className={`fixed top-8 right-8 z-[100] px-4 py-3 rounded-2xl shadow-lg border flex items-center gap-3 font-semibold text-sm ${
+            className={`fixed top-8 right-8 z-[100] px-4 py-3 rounded-xl shadow-lg border flex items-center gap-3 font-semibold text-sm ${
               notification.type === 'success' ? 'bg-emerald-50 border-emerald-200 text-emerald-800' :
               notification.type === 'error' ? 'bg-rose-50 border-rose-200 text-rose-800' : 'bg-blue-50 border-blue-200 text-blue-800'
             }`}>
@@ -366,7 +366,7 @@ export default function AgenciesModule({ clients, onUpdateState }: AgenciesModul
       </AnimatePresence>
 
       {/* Header Banner */}
-      <div className="bg-[#0a1628] border text-[#94a3b8] border-[#1e3a5f] rounded-[2rem] p-8 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-6 relative overflow-hidden">
+      <div className="bg-white border text-slate-900 border-slate-200 rounded-[2rem] p-8 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-6 relative overflow-hidden">
         <div className="space-y-3 relative z-10 flex items-center gap-4">
           <div className="p-4 bg-indigo-50 border border-indigo-100 rounded-2xl flex-shrink-0">
             <FileKey className="w-8 h-8 text-indigo-600" />
@@ -378,11 +378,11 @@ export default function AgenciesModule({ clients, onUpdateState }: AgenciesModul
         </div>
 
         <div className="flex flex-wrap gap-3 relative z-10">
-          <button onClick={handleNajizSync} disabled={isSyncing} className={`px-5 py-3.5 bg-blue-50 hover:bg-blue-100 border border-blue-200 text-blue-600 rounded-2xl text-sm font-bold flex items-center gap-2 transition-all disabled:opacity-50`}>
+          <button onClick={handleNajizSync} disabled={isSyncing} className={`px-5 py-3.5 bg-blue-50 hover:bg-blue-100 border border-blue-200 text-blue-600 rounded-xl text-sm font-bold flex items-center gap-2 transition-all disabled:opacity-50`}>
             <RefreshCw className={`w-4 h-4 ${isSyncing ? 'animate-spin' : ''}`} />
             {isSyncing ? 'جاري السحب...' : 'سحب بيانات الوكالات (ناجز)'}
           </button>
-          <button onClick={() => { setEditingAgency(null); setShowAddModal(true); }} className="px-5 py-3.5 bg-[#0a1628] hover:bg-[#0a1628] text-white rounded-2xl text-sm font-bold flex items-center gap-2 transition-all shadow-md hover:shadow-lg">
+          <button onClick={() => { setEditingAgency(null); setShowAddModal(true); }} className="px-5 py-3.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-sm font-bold flex items-center gap-2 transition-all shadow-md hover:shadow-lg">
             <Plus className="w-4 h-4" />
             توثيق وكالة جديدة
           </button>
@@ -423,8 +423,8 @@ export default function AgenciesModule({ clients, onUpdateState }: AgenciesModul
           <div className="w-full lg:w-[450px] shrink-0 space-y-6 lg:sticky lg:top-6">
             
             {/* Inline Detailed Card */}
-            <div className="bg-[#0a1628] border border-[#1e3a5f] rounded-[2rem] shadow-md overflow-hidden flex flex-col">
-              <div className="p-6 border-b border-[#1e3a5f] bg-[#0a1628] flex items-center justify-between">
+            <div className="bg-white border border-slate-200 rounded-[2rem] shadow-md overflow-hidden flex flex-col">
+              <div className="p-6 border-b border-slate-100 bg-slate-50 flex items-center justify-between">
                 <div>
                   <h2 className="text-lg font-[800] text-[#0B2545]">وكالة رقم: {selectedAgency.poaNumber}</h2>
                   <p className="text-blue-500 font-[800] text-xs">تفاصيل الوكالة ومستنداتها</p>
@@ -440,70 +440,70 @@ export default function AgenciesModule({ clients, onUpdateState }: AgenciesModul
                 <div className="space-y-3.5">
                   
                   {/* 1. رقم الوكالة */}
-                  <div className="p-4 bg-[#0a1628] border border-[#1e3a5f]/80 rounded-2xl flex items-center justify-between shadow-sm">
+                  <div className="p-4 bg-slate-50 border border-slate-200/80 rounded-2xl flex items-center justify-between shadow-sm">
                     <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-2xl bg-blue-100/70 border border-blue-200/60 flex items-center justify-center text-blue-900 font-bold shrink-0">
+                      <div className="w-9 h-9 rounded-xl bg-blue-100/70 border border-blue-200/60 flex items-center justify-center text-blue-900 font-bold shrink-0">
                         <FileSpreadsheet className="w-4.5 h-4.5" />
                       </div>
                       <div>
-                        <span className="text-[10px] text-[#94a3b8] font-[800] block mb-0.5">رقم الوكالة</span>
+                        <span className="text-[10px] text-slate-400 font-[800] block mb-0.5">رقم الوكالة</span>
                         <span className="text-sm font-mono font-black text-[#0B2545]">{selectedAgency.poaNumber}</span>
                       </div>
                     </div>
                   </div>
 
                   {/* 2. تاريخ إصدار الوكالة */}
-                  <div className="p-4 bg-[#0a1628] border border-[#1e3a5f]/80 rounded-2xl flex items-center justify-between shadow-sm">
+                  <div className="p-4 bg-slate-50 border border-slate-200/80 rounded-2xl flex items-center justify-between shadow-sm">
                     <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-2xl bg-emerald-100/70 border border-emerald-200/60 flex items-center justify-center text-emerald-900 font-bold shrink-0">
+                      <div className="w-9 h-9 rounded-xl bg-emerald-100/70 border border-emerald-200/60 flex items-center justify-center text-emerald-900 font-bold shrink-0">
                         <Clock className="w-4.5 h-4.5" />
                       </div>
                       <div>
-                        <span className="text-[10px] text-[#94a3b8] font-[800] block mb-0.5">تاريخ إصدار الوكالة</span>
+                        <span className="text-[10px] text-slate-400 font-[800] block mb-0.5">تاريخ إصدار الوكالة</span>
                         <span className="text-sm font-mono font-black text-[#0B2545]">{selectedAgency.issueDate}</span>
                       </div>
                     </div>
                   </div>
 
                   {/* 3. تاريخ إنتهاء الوكالة */}
-                  <div className="p-4 bg-[#0a1628] border border-[#1e3a5f]/80 rounded-2xl flex items-center justify-between shadow-sm relative overflow-hidden">
+                  <div className="p-4 bg-slate-50 border border-slate-200/80 rounded-2xl flex items-center justify-between shadow-sm relative overflow-hidden">
                     <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-2xl bg-indigo-100/70 border border-indigo-200/60 flex items-center justify-center text-indigo-900 font-bold shrink-0">
+                      <div className="w-9 h-9 rounded-xl bg-indigo-100/70 border border-indigo-200/60 flex items-center justify-center text-indigo-900 font-bold shrink-0">
                         <Clock className="w-4.5 h-4.5" />
                       </div>
                       <div>
-                        <span className="text-[10px] text-[#94a3b8] font-[800] block mb-0.5">تاريخ إنتهاء الوكالة</span>
+                        <span className="text-[10px] text-slate-400 font-[800] block mb-0.5">تاريخ إنتهاء الوكالة</span>
                         <span className="text-sm font-mono font-black text-[#0B2545]">{selectedAgency.expiryDate}</span>
                       </div>
                     </div>
                     {getRemainingDays(selectedAgency.expiryDate) > 0 && (
-                      <div className="bg-indigo-50 border border-indigo-150 px-2.5 py-1 rounded-2xl text-[10.5px] font-black text-indigo-800">
+                      <div className="bg-indigo-50 border border-indigo-150 px-2.5 py-1 rounded-xl text-[10.5px] font-black text-indigo-800">
                         متبقي {getRemainingDays(selectedAgency.expiryDate)} يوم
                       </div>
                     )}
                   </div>
 
                   {/* 4. أسم الوكيل */}
-                  <div className="p-4 bg-[#0a1628] border border-[#1e3a5f]/80 rounded-2xl flex items-center justify-between shadow-sm">
+                  <div className="p-4 bg-slate-50 border border-slate-200/80 rounded-2xl flex items-center justify-between shadow-sm">
                     <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-2xl bg-amber-100/70 border border-amber-200/60 flex items-center justify-center text-amber-950 font-bold shrink-0">
+                      <div className="w-9 h-9 rounded-xl bg-amber-100/70 border border-amber-200/60 flex items-center justify-center text-amber-950 font-bold shrink-0">
                         <User className="w-4.5 h-4.5" />
                       </div>
                       <div>
-                        <span className="text-[10px] text-[#94a3b8] font-[800] block mb-0.5">أسم الوكيل</span>
+                        <span className="text-[10px] text-slate-400 font-[800] block mb-0.5">أسم الوكيل</span>
                         <span className="text-sm font-black text-[#0B2545]">{selectedAgency.agentName || selectedAgency.lawyerName || 'غير محدد'}</span>
                       </div>
                     </div>
                   </div>
 
                   {/* 5. حالة الوكالة */}
-                  <div className="p-4 bg-[#0a1628] border border-[#1e3a5f]/80 rounded-2xl flex items-center justify-between shadow-sm">
+                  <div className="p-4 bg-slate-50 border border-slate-200/80 rounded-2xl flex items-center justify-between shadow-sm">
                     <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-2xl bg-purple-100/70 border border-purple-200/60 flex items-center justify-center text-purple-900 font-bold shrink-0">
+                      <div className="w-9 h-9 rounded-xl bg-purple-100/70 border border-purple-200/60 flex items-center justify-center text-purple-900 font-bold shrink-0">
                         <Scale className="w-4.5 h-4.5" />
                       </div>
                       <div>
-                        <span className="text-[10px] text-[#94a3b8] font-[800] block mb-0.5">حالة الوكالة</span>
+                        <span className="text-[10px] text-slate-400 font-[800] block mb-0.5">حالة الوكالة</span>
                         <span className="text-xs font-black text-[#0B2545]">
                           {selectedAgency.status || (getRemainingDays(selectedAgency.expiryDate) <= 0 ? 'منتهية الصلاحية باطلة' : 'نشطة وسارية قانونياً')}
                         </span>
@@ -517,7 +517,7 @@ export default function AgenciesModule({ clients, onUpdateState }: AgenciesModul
                         : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
                     }`}>
                       <span className={`w-1.5 h-1.5 rounded-full ${
-                        getRemainingDays(selectedAgency.expiryDate) <= 0 ? 'bg-rose-500 animate-pulse' : getRemainingDays(selectedAgency.expiryDate) <= 30 ? 'bg-gradient-to-r from-[#c9a84c] to-[#a67c30] animate-pulse' : 'bg-emerald-500'
+                        getRemainingDays(selectedAgency.expiryDate) <= 0 ? 'bg-rose-500 animate-pulse' : getRemainingDays(selectedAgency.expiryDate) <= 30 ? 'bg-amber-500 animate-pulse' : 'bg-emerald-500'
                       }`} />
                       {selectedAgency.status || (getRemainingDays(selectedAgency.expiryDate) <= 0 ? 'منتهية' : 'نشطة')}
                     </span>
@@ -527,16 +527,16 @@ export default function AgenciesModule({ clients, onUpdateState }: AgenciesModul
 
                 {/* Additional Parties Section if any */}
                 {selectedAgency.parties && selectedAgency.parties.length > 0 && (
-                  <div className="space-y-2 pt-2 border-t border-[#1e3a5f]">
+                  <div className="space-y-2 pt-2 border-t border-slate-100">
                     <h4 className="text-xs font-[800] text-[#0B2545] flex items-center gap-1">
                       <User className="w-3.5 h-3.5" /> بقية الأطراف بالوكالة
                     </h4>
                     <div className="space-y-2">
                       {selectedAgency.parties.map((part, index) => (
-                        <div key={index} className="flex items-center justify-between p-2.5 bg-[#0a1628] border border-[#1e3a5f] rounded-2xl">
+                        <div key={index} className="flex items-center justify-between p-2.5 bg-slate-50 border border-slate-100 rounded-xl">
                           <div>
                             <p className="text-xs font-[800] text-[#0B2545]">{part.name}</p>
-                            {part.identity && <p className="text-[10px] font-mono text-[#94a3b8] mt-0.5 font-[800]">هوية: {part.identity}</p>}
+                            {part.identity && <p className="text-[10px] font-mono text-slate-400 mt-0.5 font-[800]">هوية: {part.identity}</p>}
                           </div>
                           <span className="text-[10px] font-[800] text-blue-800 px-2 py-0.5 rounded bg-blue-50 border border-blue-100">{part.role}</span>
                         </div>
@@ -547,14 +547,14 @@ export default function AgenciesModule({ clients, onUpdateState }: AgenciesModul
 
                 <div className="space-y-2">
                   <h4 className="text-xs font-[800] text-[#0B2545] border-b pb-1.5">نطاق العمل العام</h4>
-                  <p className="text-xs font-[800] text-[#0B2545] bg-blue-50/50 p-3 rounded-2xl border border-blue-100 leading-relaxed">{selectedAgency.scope}</p>
+                  <p className="text-xs font-[800] text-[#0B2545] bg-blue-50/50 p-3 rounded-lg border border-blue-100 leading-relaxed">{selectedAgency.scope}</p>
                 </div>
 
                 <div className="space-y-2">
                   <h4 className="text-xs font-[800] text-[#0B2545] border-b pb-1.5">تفاصيل بنود الصلاحيات</h4>
                   <div className="space-y-1.5 max-h-[150px] overflow-y-auto">
                     {selectedAgency.clauses && selectedAgency.clauses.map((clause, idx) => (
-                      <div key={idx} className="p-2.5 bg-[#0a1628] border border-[#1e3a5f] rounded-2xl flex items-start gap-2">
+                      <div key={idx} className="p-2.5 bg-slate-50 border border-slate-100 rounded-lg flex items-start gap-2">
                         <span className="w-5 h-5 rounded bg-blue-50 text-blue-700 flex items-center justify-center text-[10px] font-[800] shrink-0 border border-blue-200">
                           {idx + 1}
                         </span>
@@ -567,8 +567,8 @@ export default function AgenciesModule({ clients, onUpdateState }: AgenciesModul
             </div>
 
             {/* DOCUMENT PREVIEW CARD (كارت عرض المستندات) */}
-            <div className="bg-[#0a1628] border border-[#1e3a5f] rounded-[2rem] shadow-md p-6 space-y-4">
-              <div className="flex items-center gap-2 border-b pb-2.5 border-[#1e3a5f]">
+            <div className="bg-white border border-slate-200 rounded-[2rem] shadow-md p-6 space-y-4">
+              <div className="flex items-center gap-2 border-b pb-2.5 border-slate-100">
                 <FileText className="w-4.5 h-4.5 text-indigo-600" />
                 <h3 className="font-[800] text-[#0B2545] text-sm">كارت عرض المستندات والمرفقات</h3>
               </div>
@@ -593,13 +593,13 @@ export default function AgenciesModule({ clients, onUpdateState }: AgenciesModul
                 ].map((doc) => {
                   const isOpened = activePreviewDocId === doc.id;
                   return (
-                    <div key={doc.id} className="border border-[#1e3a5f] rounded-2xl p-3 space-y-2 bg-[#0a1628]/60 hover:bg-[#0a1628] transition-all">
+                    <div key={doc.id} className="border border-slate-100 rounded-xl p-3 space-y-2 bg-slate-50/60 hover:bg-slate-50 transition-all">
                       <div className="flex items-center justify-between gap-3">
                         <div className="flex items-center gap-2 max-w-[70%]">
                           <FileText className="w-4 h-4 text-indigo-500 shrink-0" />
                           <div className="min-w-0">
                             <p className="text-[11px] font-[800] text-[#0B2545] truncate">{doc.name}</p>
-                            <p className="text-[9px] text-[#94a3b8] font-mono font-[800]">{doc.size}</p>
+                            <p className="text-[9px] text-slate-400 font-mono font-[800]">{doc.size}</p>
                           </div>
                         </div>
                         <button
@@ -607,7 +607,7 @@ export default function AgenciesModule({ clients, onUpdateState }: AgenciesModul
                           className={`px-2.5 py-1 rounded text-[10px] font-[800] transition-all ${
                             isOpened 
                               ? 'bg-indigo-600 text-white shadow-sm' 
-                              : 'bg-[#0a1628] border border-[#1e3a5f] text-indigo-600 hover:bg-[#0a1628]'
+                              : 'bg-white border border-slate-200 text-indigo-600 hover:bg-slate-100'
                           }`}
                         >
                           {isOpened ? 'إخفاء' : 'معاينة'}
@@ -620,9 +620,9 @@ export default function AgenciesModule({ clients, onUpdateState }: AgenciesModul
                           initial={{ opacity: 0, height: 0 }} 
                           animate={{ opacity: 1, height: 'auto' }} 
                           exit={{ opacity: 0, height: 0 }}
-                          className="pt-2 border-t border-[#1e3a5f]/60 mt-1"
+                          className="pt-2 border-t border-slate-200/60 mt-1"
                         >
-                          <div className="bg-[#0a1628] text-emerald-400 font-mono text-[10px] p-2.5 rounded-2xl overflow-x-auto whitespace-pre-wrap max-h-[140px] leading-relaxed border border-[#1e3a5f] shadow-inner">
+                          <div className="bg-slate-900 text-emerald-400 font-mono text-[10px] p-2.5 rounded-lg overflow-x-auto whitespace-pre-wrap max-h-[140px] leading-relaxed border border-slate-800 shadow-inner">
                             {docContents[doc.id]}
                           </div>
                         </motion.div>
@@ -635,7 +635,7 @@ export default function AgenciesModule({ clients, onUpdateState }: AgenciesModul
 
           </div>
         ) : (
-          <div className="w-full lg:w-[450px] shrink-0 bg-[#0a1628] border border-dashed border-blue-200 rounded-[2rem] p-8 text-center text-blue-900 space-y-3 lg:sticky lg:top-6">
+          <div className="w-full lg:w-[450px] shrink-0 bg-white border border-dashed border-blue-200 rounded-[2rem] p-8 text-center text-blue-900 space-y-3 lg:sticky lg:top-6">
             <FileKey className="w-10 h-10 text-blue-400 mx-auto" />
             <h4 className="font-[800] text-sm text-[#0B2545]">تفاصيل الوكالة والقراءة الضوئية</h4>
             <p className="text-xs leading-relaxed font-[800]">حدد أي وكالة من قائمة السجلات لعرض مؤشر سريانها الزمني، مع معاينة المستندات المرفقة ضوئياً والموثقة بالسجلات الرسمية.</p>
@@ -646,12 +646,12 @@ export default function AgenciesModule({ clients, onUpdateState }: AgenciesModul
         <div className="flex-1 w-full space-y-6">
           
           {/* Filter and Search */}
-          <div className="bg-[#0a1628] border border-[#1e3a5f] rounded-2xl p-4 flex flex-col xl:flex-row gap-4 items-center justify-between shadow-sm">
+          <div className="bg-white border border-slate-200 rounded-2xl p-4 flex flex-col xl:flex-row gap-4 items-center justify-between shadow-sm">
             <div className="relative w-full xl:w-96">
               <Search className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-blue-300 font-[800]" />
               <input 
                 type="text" placeholder="البحث برقم الوكالة، الموكل..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-4 pr-11 py-2.5 bg-blue-50/50 border border-blue-100 rounded-2xl text-sm font-[800] text-[#0B2545] placeholder:text-blue-300 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                className="w-full pl-4 pr-11 py-2.5 bg-blue-50/50 border border-blue-100 rounded-xl text-sm font-[800] text-[#0B2545] placeholder:text-blue-300 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
               />
             </div>
             <div className="flex flex-wrap items-center gap-4 w-full xl:w-auto justify-between xl:justify-end">
@@ -663,24 +663,24 @@ export default function AgenciesModule({ clients, onUpdateState }: AgenciesModul
                   { id: 'expired', label: 'المنتهية' }
                 ].map(tab => (
                   <button key={tab.id} onClick={() => setStatusFilter(tab.id as any)}
-                    className={`px-4 py-2 rounded-2xl text-xs font-[800] transition-all ${statusFilter === tab.id ? 'bg-[#0B2545] text-white shadow-md' : 'bg-[#0a1628] text-[#94a3b8] hover:bg-[#0a1628]'}`}>
+                    className={`px-4 py-2 rounded-lg text-xs font-[800] transition-all ${statusFilter === tab.id ? 'bg-[#0B2545] text-white shadow-md' : 'bg-slate-50 text-slate-400 hover:bg-slate-100'}`}>
                     {tab.label}
                   </button>
                 ))}
               </div>
 
               {/* Grid vs Table View Mode Switcher */}
-              <div className="flex bg-[#0a1628] p-1 rounded-2xl border border-[#1e3a5f] shadow-inner shrink-0">
+              <div className="flex bg-slate-100 p-1 rounded-xl border border-slate-200 shadow-inner shrink-0">
                 <button
                   onClick={() => setViewMode('table')}
-                  className={`p-2 rounded-2xl transition-all ${viewMode === 'table' ? 'bg-[#0B2545] text-white shadow-md' : 'text-[#94a3b8] hover:bg-[#0a1628]'}`}
+                  className={`p-2 rounded-lg transition-all ${viewMode === 'table' ? 'bg-[#0B2545] text-white shadow-md' : 'text-slate-400 hover:bg-slate-200'}`}
                   title="عرض الجدول المعتمد"
                 >
                   <Table className="w-4 h-4" />
                 </button>
                 <button
                   onClick={() => setViewMode('grid')}
-                  className={`p-2 rounded-2xl transition-all ${viewMode === 'grid' ? 'bg-[#0B2545] text-white shadow-md' : 'text-[#94a3b8] hover:bg-[#0a1628]'}`}
+                  className={`p-2 rounded-lg transition-all ${viewMode === 'grid' ? 'bg-[#0B2545] text-white shadow-md' : 'text-slate-400 hover:bg-slate-200'}`}
                   title="عرض كروت البيانات"
                 >
                   <LayoutGrid className="w-4 h-4" />
@@ -692,11 +692,11 @@ export default function AgenciesModule({ clients, onUpdateState }: AgenciesModul
           {/* List Layout with Grid/Table Switcher */}
           {filteredAgencies.length > 0 ? (
             viewMode === 'table' ? (
-              <div className="overflow-hidden bg-[#0a1628] border border-[#1e3a5f] rounded-3xl shadow-sm">
+              <div className="overflow-hidden bg-white border border-slate-200 rounded-3xl shadow-sm">
                 <div className="overflow-x-auto">
                   <table className="w-full text-right border-collapse min-w-[800px]">
                     <thead>
-                      <tr className="bg-[#0B2545]/5 border-b border-[#1e3a5f] text-[#0B2545] font-[800] text-xs">
+                      <tr className="bg-[#0B2545]/5 border-b border-slate-200 text-[#0B2545] font-[800] text-xs">
                         <th className="px-6 py-4 font-black">رقم الوكالة</th>
                         <th className="px-6 py-4 font-black">تاريخ إصدار الوكالة</th>
                         <th className="px-6 py-4 font-black">تاريخ إنتهاء الوكالة</th>
@@ -715,22 +715,22 @@ export default function AgenciesModule({ clients, onUpdateState }: AgenciesModul
                           <tr 
                             key={poa.id} 
                             onClick={() => setSelectedAgency(poa)}
-                            className={`hover:bg-[#0a1628]/50 cursor-pointer transition-colors ${selectedAgency?.id === poa.id ? 'bg-blue-50/40' : ''}`}
+                            className={`hover:bg-slate-50/50 cursor-pointer transition-colors ${selectedAgency?.id === poa.id ? 'bg-blue-50/40' : ''}`}
                           >
                             {/* 1. رقم الوكالة */}
                             <td className="px-6 py-4.5 font-mono font-black text-[#0B2545] text-xs">
-                              <span className="bg-blue-50/80 px-2.5 py-1 rounded-2xl border border-blue-100 text-[#0B2545] font-black">
+                              <span className="bg-blue-50/80 px-2.5 py-1 rounded-lg border border-blue-100 text-[#0B2545] font-black">
                                 {poa.poaNumber}
                               </span>
                             </td>
 
                             {/* 2. تاريخ إصدار الوكالة */}
-                            <td className="px-6 py-4.5 font-mono text-[#94a3b8] text-xs font-[800]">
+                            <td className="px-6 py-4.5 font-mono text-slate-600 text-xs font-[800]">
                               {poa.issueDate || 'غير محدد'}
                             </td>
 
                             {/* 3. تاريخ انتهاء الوكالة */}
-                            <td className={`px-6 py-4.5 font-mono text-xs font-[800] ${isFinished ? 'text-rose-600' : 'text-[#94a3b8]'}`}>
+                            <td className={`px-6 py-4.5 font-mono text-xs font-[800] ${isFinished ? 'text-rose-600' : 'text-slate-600'}`}>
                               {poa.expiryDate || 'غير محدد'}
                             </td>
 
@@ -749,7 +749,7 @@ export default function AgenciesModule({ clients, onUpdateState }: AgenciesModul
                                   : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
                               }`}>
                                 <span className={`w-1.5 h-1.5 rounded-full ${
-                                  isFinished ? 'bg-rose-500 animate-pulse' : isDanger ? 'bg-gradient-to-r from-[#c9a84c] to-[#a67c30] animate-pulse' : 'bg-emerald-500'
+                                  isFinished ? 'bg-rose-500 animate-pulse' : isDanger ? 'bg-amber-500 animate-pulse' : 'bg-emerald-500'
                                 }`} />
                                 {poa.status || (isFinished ? 'منتهية' : 'نشطة')}
                               </span>
@@ -760,14 +760,14 @@ export default function AgenciesModule({ clients, onUpdateState }: AgenciesModul
                               <div className="flex items-center gap-2 justify-end">
                                 <button 
                                   onClick={(e) => handleStartEdit(poa, e)} 
-                                  className="p-1.5 bg-blue-50 hover:bg-blue-100 text-[#0B2545] rounded-2xl transition-colors border border-blue-200 shadow-sm"
+                                  className="p-1.5 bg-blue-50 hover:bg-blue-100 text-[#0B2545] rounded-lg transition-colors border border-blue-200 shadow-sm"
                                   title="تعديل الوكالة"
                                 >
                                   <Edit3 className="w-4 h-4" />
                                 </button>
                                 <button 
                                   onClick={(e) => { e.stopPropagation(); setDeletingId(poa.id); }} 
-                                  className="p-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-2xl transition-colors border border-rose-200 shadow-sm"
+                                  className="p-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-lg transition-colors border border-rose-200 shadow-sm"
                                   title="حذف الوكالة"
                                 >
                                   <Trash2 className="w-4 h-4" />
@@ -790,16 +790,16 @@ export default function AgenciesModule({ clients, onUpdateState }: AgenciesModul
 
                   return (
                     <motion.div key={poa.id} layout onClick={() => setSelectedAgency(poa)} whileHover={{ y: -4 }}
-                      className={`agency-card cursor-pointer bg-[#0a1628] rounded-2xl p-6 border shadow-sm hover:shadow-md transition-all flex flex-col justify-between min-h-[300px] relative overflow-hidden ${isFinished ? 'border-rose-200 bg-rose-50/30' : isDanger ? 'border-rose-300' : 'border-[#1e3a5f]'}`}>
+                      className={`agency-card cursor-pointer bg-white rounded-2xl p-6 border shadow-sm hover:shadow-md transition-all flex flex-col justify-between min-h-[300px] relative overflow-hidden ${isFinished ? 'border-rose-200 bg-rose-50/30' : isDanger ? 'border-rose-300' : 'border-slate-200'}`}>
                       
                       {/* Accent Top Line */}
-                      <div className={`absolute top-0 right-0 left-0 h-1.5 ${isFinished ? 'bg-rose-500' : isDanger ? 'bg-rose-400 animate-pulse' : daysRemaining <= 60 ? 'bg-gradient-to-r from-[#c9a84c] to-[#a67c30]' : 'bg-emerald-500'}`} />
+                      <div className={`absolute top-0 right-0 left-0 h-1.5 ${isFinished ? 'bg-rose-500' : isDanger ? 'bg-rose-400 animate-pulse' : daysRemaining <= 60 ? 'bg-amber-400' : 'bg-emerald-500'}`} />
 
                       <div className="space-y-4">
                         <div className="flex items-start justify-between mb-2">
                           <div className="space-y-1.5">
                              {poa.is_najiz_sync && (
-                               <span className="block w-fit bg-[#D4AF37]/10 text-[#94a3b8] text-[9px] font-[800] border border-[#D4AF37]/30 px-1.5 py-0.5 rounded flex items-center gap-1 shadow-sm">
+                               <span className="block w-fit bg-[#D4AF37]/10 text-slate-900 text-[9px] font-[800] border border-[#D4AF37]/30 px-1.5 py-0.5 rounded flex items-center gap-1 shadow-sm">
                                  <Clock className="w-2.5 h-2.5 text-amber-600" /> 
                                  مستورد من ناجز ({poa.last_sync_at ? new Date(poa.last_sync_at).toLocaleDateString('ar-SA') : 'تاريخ غير معروف'})
                                </span>
@@ -809,7 +809,7 @@ export default function AgenciesModule({ clients, onUpdateState }: AgenciesModul
                             {/* Edit button in the card */}
                             <button 
                               onClick={(e) => handleStartEdit(poa, e)} 
-                              className="p-1.5 bg-blue-50 hover:bg-blue-100 text-[#0B2545] rounded-2xl transition-colors border border-blue-200 shadow-sm"
+                              className="p-1.5 bg-blue-50 hover:bg-blue-100 text-[#0B2545] rounded-lg transition-colors border border-blue-200 shadow-sm"
                               title="تعديل الوكالة"
                             >
                               <Edit3 className="w-4 h-4" />
@@ -817,7 +817,7 @@ export default function AgenciesModule({ clients, onUpdateState }: AgenciesModul
                             {/* Delete button in the card */}
                             <button 
                               onClick={(e) => { e.stopPropagation(); setDeletingId(poa.id); }} 
-                              className="p-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-2xl transition-colors border border-rose-200 shadow-sm"
+                              className="p-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-lg transition-colors border border-rose-200 shadow-sm"
                               title="حذف الوكالة"
                             >
                               <Trash2 className="w-4 h-4" />
@@ -826,32 +826,32 @@ export default function AgenciesModule({ clients, onUpdateState }: AgenciesModul
                         </div>
 
                         {/* 1. رقم الوكالة */}
-                        <div className="flex items-center justify-between p-3 bg-[#0a1628] border border-[#1e3a5f] rounded-2xl shadow-sm">
-                          <span className="text-[10px] text-[#94a3b8]0 font-black tracking-wider">رقم الوكالة</span>
+                        <div className="flex items-center justify-between p-3 bg-slate-50 border border-slate-100 rounded-xl shadow-sm">
+                          <span className="text-[10px] text-slate-500 font-black tracking-wider">رقم الوكالة</span>
                           <span className="text-sm font-mono font-black text-[#0B2545]">{poa.poaNumber}</span>
                         </div>
 
                         {/* 2. تاريخ إصدار الوكالة */}
-                        <div className="flex items-center justify-between p-3 bg-[#0a1628] border border-[#1e3a5f] rounded-2xl shadow-sm">
-                          <span className="text-[10px] text-[#94a3b8]0 font-black tracking-wider">تاريخ إصدار الوكالة</span>
+                        <div className="flex items-center justify-between p-3 bg-slate-50 border border-slate-100 rounded-xl shadow-sm">
+                          <span className="text-[10px] text-slate-500 font-black tracking-wider">تاريخ إصدار الوكالة</span>
                           <span className="text-sm font-mono font-black text-[#0B2545]">{poa.issueDate || 'غير محدد'}</span>
                         </div>
 
                         {/* 3. تاريخ إنتهاء الوكالة */}
-                        <div className="flex items-center justify-between p-3 bg-[#0a1628] border border-[#1e3a5f] rounded-2xl shadow-sm">
-                          <span className="text-[10px] text-[#94a3b8]0 font-black tracking-wider">تاريخ إنتهاء الوكالة</span>
+                        <div className="flex items-center justify-between p-3 bg-slate-50 border border-slate-100 rounded-xl shadow-sm">
+                          <span className="text-[10px] text-slate-500 font-black tracking-wider">تاريخ إنتهاء الوكالة</span>
                           <span className={`text-sm font-mono font-black ${isFinished ? 'text-rose-600' : 'text-[#0B2545]'}`}>{poa.expiryDate || 'غير محدد'}</span>
                         </div>
 
                         {/* 4. أسم الوكيل */}
-                        <div className="flex items-center justify-between p-3 bg-[#0a1628] border border-[#1e3a5f] rounded-2xl shadow-sm">
-                          <span className="text-[10px] text-[#94a3b8]0 font-black tracking-wider">أسم الوكيل</span>
+                        <div className="flex items-center justify-between p-3 bg-slate-50 border border-slate-100 rounded-xl shadow-sm">
+                          <span className="text-[10px] text-slate-500 font-black tracking-wider">أسم الوكيل</span>
                           <span className="text-sm font-black text-[#0B2545]">{poa.agentName || poa.lawyerName || 'غير محدد'}</span>
                         </div>
 
                         {/* 5. حالة الوكالة */}
-                        <div className="flex items-center justify-between p-3 bg-[#0a1628] border border-[#1e3a5f] rounded-2xl shadow-sm">
-                          <span className="text-[10px] text-[#94a3b8]0 font-black tracking-wider">حالة الوكالة</span>
+                        <div className="flex items-center justify-between p-3 bg-slate-50 border border-slate-100 rounded-xl shadow-sm">
+                          <span className="text-[10px] text-slate-500 font-black tracking-wider">حالة الوكالة</span>
                           <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-black shadow-sm ${
                             isFinished 
                               ? 'bg-rose-50 text-rose-700 border border-rose-200' 
@@ -860,7 +860,7 @@ export default function AgenciesModule({ clients, onUpdateState }: AgenciesModul
                               : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
                           }`}>
                             <span className={`w-1.5 h-1.5 rounded-full ${
-                              isFinished ? 'bg-rose-500 animate-pulse' : isDanger ? 'bg-gradient-to-r from-[#c9a84c] to-[#a67c30] animate-pulse' : 'bg-emerald-500'
+                              isFinished ? 'bg-rose-500 animate-pulse' : isDanger ? 'bg-amber-500 animate-pulse' : 'bg-emerald-500'
                             }`} />
                             {poa.status || (isFinished ? 'منتهية' : 'نشطة')}
                           </span>
@@ -872,7 +872,7 @@ export default function AgenciesModule({ clients, onUpdateState }: AgenciesModul
               </div>
             )
           ) : (
-            <div className="bg-[#0a1628] border border-blue-100 p-16 rounded-[2rem] text-center space-y-4 max-w-xl mx-auto shadow-inner">
+            <div className="bg-white border border-blue-100 p-16 rounded-[2rem] text-center space-y-4 max-w-xl mx-auto shadow-inner">
               <div className="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center mx-auto border border-blue-100">
                 <FileKey className="w-8 h-8 text-blue-800" />
               </div>
@@ -889,23 +889,23 @@ export default function AgenciesModule({ clients, onUpdateState }: AgenciesModul
       <AnimatePresence>
         {deletingId && (
           <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setDeletingId(null)} className="absolute inset-0 bg-[#0a1628]/60 backdrop-blur-sm" />
-            <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} className="relative bg-[#0a1628] rounded-[2rem] shadow-2xl p-8 max-w-md w-full text-center space-y-6">
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setDeletingId(null)} className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" />
+            <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} className="relative bg-white rounded-[2rem] shadow-2xl p-8 max-w-md w-full text-center space-y-6">
               <div className="w-16 h-16 bg-rose-50 rounded-full flex items-center justify-center mx-auto">
                 <Trash2 className="w-8 h-8 text-rose-600" />
               </div>
               <div className="space-y-2">
                 <h3 className="text-xl font-[800] text-[#0B2545]">تأكيد الحذف النهائي</h3>
-                <p className="text-sm text-[#94a3b8]0 font-[800]">هل أنت متأكد من رغبتك في حذف هذه الوكالة؟ سيتم مسح كافة البيانات والمستندات المرتبطة بها من قاعدة بيانات Supabase بشكل دائم.</p>
+                <p className="text-sm text-slate-500 font-[800]">هل أنت متأكد من رغبتك في حذف هذه الوكالة؟ سيتم مسح كافة البيانات والمستندات المرتبطة بها من قاعدة بيانات Supabase بشكل دائم.</p>
               </div>
               <div className="grid grid-cols-2 gap-4 pt-2">
-                <button onClick={() => setDeletingId(null)} className="px-6 py-3 bg-[#0a1628] hover:bg-[#0a1628] text-[#94a3b8] rounded-2xl font-[800] transition-colors">إلغاء</button>
+                <button onClick={() => setDeletingId(null)} className="px-6 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-[800] transition-colors">إلغاء</button>
                 <button 
                   onClick={(e) => {
                     handleDeleteAgency(deletingId, e as any);
                     setDeletingId(null);
                   }} 
-                  className="px-6 py-3 bg-rose-600 hover:bg-rose-700 text-white rounded-2xl font-[800] shadow-lg shadow-rose-200 transition-colors"
+                  className="px-6 py-3 bg-rose-600 hover:bg-rose-700 text-white rounded-xl font-[800] shadow-lg shadow-rose-200 transition-colors"
                 >
                   نعم، حذف الآن
                 </button>
@@ -918,17 +918,17 @@ export default function AgenciesModule({ clients, onUpdateState }: AgenciesModul
       {/* Add New Poa Modal (Light Theme) */}
       <AnimatePresence>
         {showAddModal && (
-          <div className="fixed inset-0 bg-[#0a1628]/60 backdrop-blur-sm z-[110] flex items-center justify-center p-4 overflow-y-auto">
+          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[110] flex items-center justify-center p-4 overflow-y-auto">
             <motion.div initial={{ scale: 0.95, opacity: 0, y: 30 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.95, opacity: 0, y: 30 }}
-              className="bg-[#0b1329] border border-[#1e3a5f]/80 rounded-[2rem] shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col">
+              className="bg-[#0b1329] border border-slate-700/80 rounded-[2rem] shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col">
               
-              <div className="p-6 border-b border-[#1e3a5f] bg-[#040e21] flex items-center justify-between">
+              <div className="p-6 border-b border-slate-800 bg-[#040e21] flex items-center justify-between">
                 <div>
                   <h2 className="text-xl font-black text-white flex items-center gap-2">
                     <FileSpreadsheet className="w-6 h-6 text-[#ff7f00]" /> إضافة توثيق وكالة للعميل
                   </h2>
                 </div>
-                <button onClick={() => setShowAddModal(false)} className="p-2 hover:bg-[#0a1628] rounded-full bg-[#0b1329] text-white border border-[#1e3a5f] transition-colors cursor-pointer">
+                <button onClick={() => setShowAddModal(false)} className="p-2 hover:bg-slate-800 rounded-full bg-[#0b1329] text-white border border-slate-700 transition-colors cursor-pointer">
                   <X className="w-5 h-5" />
                 </button>
               </div>
@@ -938,12 +938,12 @@ export default function AgenciesModule({ clients, onUpdateState }: AgenciesModul
                   <div className="space-y-1.5">
                     <label className="text-xs text-[#facc15] font-black block">رقم الوكالة العدلية *</label>
                     <input type="text" required placeholder="45802144" value={poaNumber} onChange={(e) => setPoaNumber(e.target.value)}
-                      className="w-full px-4 py-3 bg-[#040e21] border border-[#1e3a5f] rounded-2xl text-sm font-black focus:outline-none focus:ring-2 focus:ring-[#ff7f00]/40 focus:border-[#ff7f00] text-white shadow-inner placeholder-slate-500" />
+                      className="w-full px-4 py-3 bg-[#040e21] border border-slate-700 rounded-xl text-sm font-black focus:outline-none focus:ring-2 focus:ring-[#ff7f00]/40 focus:border-[#ff7f00] text-white shadow-inner placeholder-slate-500" />
                   </div>
                   <div className="space-y-1.5">
                     <label className="text-xs text-[#facc15] font-black block">اسم العميل المرتبط (مسجل بالنظام)</label>
                     <select value={clientId} onChange={(e) => setClientId(e.target.value)}
-                      className="w-full px-4 py-3 bg-[#040e21] border border-[#1e3a5f] rounded-2xl text-sm font-black focus:outline-none focus:ring-2 focus:ring-[#ff7f00]/40 focus:border-[#ff7f00] text-white shadow-inner">
+                      className="w-full px-4 py-3 bg-[#040e21] border border-slate-700 rounded-xl text-sm font-black focus:outline-none focus:ring-2 focus:ring-[#ff7f00]/40 focus:border-[#ff7f00] text-white shadow-inner">
                       <option value="">-- ربط بعميل خارجي غير مسجل --</option>
                       {clients.map(c => (
                         <option key={c.id} value={String(c.id)}>{c.name}</option>
@@ -956,7 +956,7 @@ export default function AgenciesModule({ clients, onUpdateState }: AgenciesModul
                   <div className="space-y-1.5">
                     <label className="text-xs text-[#facc15] font-black block">اسم العميل الخارجي *</label>
                     <input type="text" placeholder="الشركة أو الشخص" value={clientName} onChange={(e) => setClientName(e.target.value)}
-                      className="w-full px-4 py-3 bg-[#040e21] border border-[#1e3a5f] rounded-2xl text-sm font-black focus:outline-none focus:ring-2 focus:ring-[#ff7f00]/40 focus:border-[#ff7f00] text-white shadow-inner placeholder-slate-500" />
+                      className="w-full px-4 py-3 bg-[#040e21] border border-slate-700 rounded-xl text-sm font-black focus:outline-none focus:ring-2 focus:ring-[#ff7f00]/40 focus:border-[#ff7f00] text-white shadow-inner placeholder-slate-500" />
                   </div>
                 )}
 
@@ -964,12 +964,12 @@ export default function AgenciesModule({ clients, onUpdateState }: AgenciesModul
                   <div className="space-y-1.5">
                     <label className="text-xs text-[#facc15] font-black block">الموكِّل (Principal) *</label>
                     <input type="text" required placeholder="أطراف الوكالة الموكل" value={principalName} onChange={(e) => setPrincipalName(e.target.value)}
-                      className="w-full px-4 py-3 bg-[#040e21] border border-[#1e3a5f] rounded-2xl text-sm font-black focus:outline-none focus:ring-2 focus:ring-[#ff7f00]/40 focus:border-[#ff7f00] text-white shadow-inner placeholder-slate-500" />
+                      className="w-full px-4 py-3 bg-[#040e21] border border-slate-700 rounded-xl text-sm font-black focus:outline-none focus:ring-2 focus:ring-[#ff7f00]/40 focus:border-[#ff7f00] text-white shadow-inner placeholder-slate-500" />
                   </div>
                   <div className="space-y-1.5">
                     <label className="text-xs text-[#facc15] font-black block">الموكَّل له (Agent) *</label>
                     <input type="text" required placeholder="المحامي الوكيل" value={agentName} onChange={(e) => setAgentName(e.target.value)}
-                      className="w-full px-4 py-3 bg-[#040e21] border border-[#1e3a5f] rounded-2xl text-sm font-black focus:outline-none focus:ring-2 focus:ring-[#ff7f00]/40 focus:border-[#ff7f00] text-white shadow-inner placeholder-slate-500" />
+                      className="w-full px-4 py-3 bg-[#040e21] border border-slate-700 rounded-xl text-sm font-black focus:outline-none focus:ring-2 focus:ring-[#ff7f00]/40 focus:border-[#ff7f00] text-white shadow-inner placeholder-slate-500" />
                   </div>
                 </div>
 
@@ -977,7 +977,7 @@ export default function AgenciesModule({ clients, onUpdateState }: AgenciesModul
                   <div className="space-y-1.5">
                     <label className="text-xs text-[#facc15] font-black block">حالة الوكالة</label>
                     <select value={status} onChange={(e) => setStatus(e.target.value)}
-                      className="w-full px-4 py-3 bg-[#040e21] border border-[#1e3a5f] rounded-2xl text-sm font-black focus:outline-none focus:ring-2 focus:ring-[#ff7f00]/40 focus:border-[#ff7f00] text-white shadow-inner">
+                      className="w-full px-4 py-3 bg-[#040e21] border border-slate-700 rounded-xl text-sm font-black focus:outline-none focus:ring-2 focus:ring-[#ff7f00]/40 focus:border-[#ff7f00] text-white shadow-inner">
                       <option value="نشطة">نشطة / سارية</option>
                       <option value="ملغاة">ملغاة</option>
                       <option value="منتهية">منتهية المدة</option>
@@ -989,12 +989,12 @@ export default function AgenciesModule({ clients, onUpdateState }: AgenciesModul
                   <div className="space-y-1.5">
                     <label className="text-xs text-[#facc15] font-black block">تاريخ الإصدار *</label>
                     <input type="date" required value={issueDate} onChange={(e) => setIssueDate(e.target.value)}
-                      className="w-full px-4 py-3 bg-[#040e21] border border-[#1e3a5f] rounded-2xl text-sm font-black focus:outline-none focus:ring-2 focus:ring-[#ff7f00]/40 focus:border-[#ff7f00] text-white shadow-inner [color-scheme:dark]" />
+                      className="w-full px-4 py-3 bg-[#040e21] border border-slate-700 rounded-xl text-sm font-black focus:outline-none focus:ring-2 focus:ring-[#ff7f00]/40 focus:border-[#ff7f00] text-white shadow-inner [color-scheme:dark]" />
                   </div>
                   <div className="space-y-1.5">
                     <label className="text-xs text-[#facc15] font-black block">تاريخ الانتهاء *</label>
                     <input type="date" required value={expiryDate} onChange={(e) => setExpiryDate(e.target.value)}
-                      className="w-full px-4 py-3 bg-[#040e21] border border-[#1e3a5f] rounded-2xl text-sm font-black focus:outline-none focus:ring-2 focus:ring-[#ff7f00]/40 focus:border-[#ff7f00] text-white shadow-inner [color-scheme:dark]" />
+                      className="w-full px-4 py-3 bg-[#040e21] border border-slate-700 rounded-xl text-sm font-black focus:outline-none focus:ring-2 focus:ring-[#ff7f00]/40 focus:border-[#ff7f00] text-white shadow-inner [color-scheme:dark]" />
                   </div>
                 </div>
 
@@ -1010,7 +1010,7 @@ export default function AgenciesModule({ clients, onUpdateState }: AgenciesModul
                   </div>
                 )}
 
-                <div className="bg-blue-500/10 border border-blue-500/30 p-4 rounded-2xl flex gap-3 text-white text-xs font-black mt-2">
+                <div className="bg-blue-500/10 border border-blue-500/30 p-4 rounded-xl flex gap-3 text-white text-xs font-black mt-2">
                   <div className="shrink-0"><ShieldCheck className="w-5 h-5 text-[#facc15]" /></div>
                   <p className="leading-relaxed">
                     التأكيد: الإضافة اليدوية مخصصة للحالات الطارئة. لضمان دقة مواعيد الانتهاء للوكالات، نؤكد على ضرورة استخدام <span className="text-[#ff7f00] font-black">"سحب بيانات الوكالات (ناجز)"</span> ليتم مزامنة حالة الوكالة الفورية والصلاحيات آلياً من وزارة العدل وتحديث المؤقت الزمني تلقائياً.
@@ -1020,22 +1020,22 @@ export default function AgenciesModule({ clients, onUpdateState }: AgenciesModul
                 <div className="space-y-1.5">
                   <label className="text-xs text-[#facc15] font-black block">موضوع أو نطاق الوكالة</label>
                   <textarea rows={2} placeholder="المرافعة والمدافعة في القضايا..." value={scope} onChange={(e) => setScope(e.target.value)}
-                    className="w-full px-4 py-3 bg-[#040e21] border border-[#1e3a5f] rounded-2xl text-sm font-black focus:outline-none focus:ring-2 focus:ring-[#ff7f00]/40 focus:border-[#ff7f00] text-white shadow-inner placeholder-slate-500" />
+                    className="w-full px-4 py-3 bg-[#040e21] border border-slate-700 rounded-xl text-sm font-black focus:outline-none focus:ring-2 focus:ring-[#ff7f00]/40 focus:border-[#ff7f00] text-white shadow-inner placeholder-slate-500" />
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-xs text-[#facc15] font-black flex justify-between"><span>البنود والصلاحيات</span><span className="text-[#94a3b8] font-black font-medium">(كل بند في سطر)</span></label>
+                  <label className="text-xs text-[#facc15] font-black flex justify-between"><span>البنود والصلاحيات</span><span className="text-slate-400 font-black font-medium">(كل بند في سطر)</span></label>
                   <textarea rows={3} placeholder="المراجعة في الإدارات الحكومية&#10;حق الإقرار والصلح" value={clausesText} onChange={(e) => setClausesText(e.target.value)}
-                    className="w-full px-4 py-3 bg-[#040e21] border border-[#1e3a5f] rounded-2xl text-sm font-black focus:outline-none focus:ring-2 focus:ring-[#ff7f00]/40 focus:border-[#ff7f00] text-white shadow-inner placeholder-slate-500" />
+                    className="w-full px-4 py-3 bg-[#040e21] border border-slate-700 rounded-xl text-sm font-black focus:outline-none focus:ring-2 focus:ring-[#ff7f00]/40 focus:border-[#ff7f00] text-white shadow-inner placeholder-slate-500" />
                 </div>
 
-                <div className="pt-4 border-t border-[#1e3a5f] flex gap-3 justify-end mt-6">
+                <div className="pt-4 border-t border-slate-800 flex gap-3 justify-end mt-6">
                   <button type="button" onClick={() => setShowAddModal(false)}
-                    className="px-5 py-2.5 bg-[#0b1329] border border-[#1e3a5f] hover:bg-[#040e21] text-white hover:text-[#facc15] rounded-2xl text-sm font-black transition-all cursor-pointer">
+                    className="px-5 py-2.5 bg-[#0b1329] border border-slate-700 hover:bg-[#040e21] text-white hover:text-[#facc15] rounded-xl text-sm font-black transition-all cursor-pointer">
                     إلغاء
                   </button>
                   <button type="submit"
-                    className="px-6 py-2.5 bg-[#ff7f00] hover:bg-orange-600 text-[#94a3b8] rounded-2xl text-sm font-black shadow-lg shadow-[#ff7f00]/20 transition-all cursor-pointer">
+                    className="px-6 py-2.5 bg-[#ff7f00] hover:bg-orange-600 text-slate-950 rounded-xl text-sm font-black shadow-lg shadow-[#ff7f00]/20 transition-all cursor-pointer">
                     حفظ وإضافة الوكالة
                   </button>
                 </div>
@@ -1048,17 +1048,17 @@ export default function AgenciesModule({ clients, onUpdateState }: AgenciesModul
       {/* Edit/Update Poa Modal (Light Theme) */}
       <AnimatePresence>
         {editingAgency && (
-          <div className="fixed inset-0 bg-[#0a1628]/60 backdrop-blur-sm z-[110] flex items-center justify-center p-4 overflow-y-auto">
+          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[110] flex items-center justify-center p-4 overflow-y-auto">
             <motion.div initial={{ scale: 0.95, opacity: 0, y: 30 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.95, opacity: 0, y: 30 }}
-              className="bg-[#0b1329] border border-[#1e3a5f]/80 rounded-[2rem] shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col">
+              className="bg-[#0b1329] border border-slate-700/80 rounded-[2rem] shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col">
               
-              <div className="p-6 border-b border-[#1e3a5f] bg-[#040e21] flex items-center justify-between">
+              <div className="p-6 border-b border-slate-800 bg-[#040e21] flex items-center justify-between">
                 <div>
                   <h2 className="text-xl font-black text-white flex items-center gap-2">
                     <FileSpreadsheet className="w-6 h-6 text-[#ff7f00]" /> تعديل وتحديث بيانات الوكالة
                   </h2>
                 </div>
-                <button onClick={() => setEditingAgency(null)} className="p-2 hover:bg-[#0a1628] rounded-full bg-[#0b1329] text-white border border-[#1e3a5f] transition-colors cursor-pointer">
+                <button onClick={() => setEditingAgency(null)} className="p-2 hover:bg-slate-800 rounded-full bg-[#0b1329] text-white border border-slate-700 transition-colors cursor-pointer">
                   <X className="w-5 h-5" />
                 </button>
               </div>
@@ -1068,12 +1068,12 @@ export default function AgenciesModule({ clients, onUpdateState }: AgenciesModul
                   <div className="space-y-1.5">
                     <label className="text-xs text-[#facc15] font-black block">رقم الوكالة العدلية *</label>
                     <input type="text" required placeholder="45802144" value={poaNumber} onChange={(e) => setPoaNumber(e.target.value)}
-                      className="w-full px-4 py-3 bg-[#040e21] border border-[#1e3a5f] rounded-2xl text-sm font-black focus:outline-none focus:ring-2 focus:ring-[#facc15]/40 focus:border-[#facc15] text-white shadow-inner placeholder-slate-500" />
+                      className="w-full px-4 py-3 bg-[#040e21] border border-slate-700 rounded-xl text-sm font-black focus:outline-none focus:ring-2 focus:ring-[#facc15]/40 focus:border-[#facc15] text-white shadow-inner placeholder-slate-500" />
                   </div>
                   <div className="space-y-1.5">
                     <label className="text-xs text-[#facc15] font-black block">اسم العميل المرتبط (مسجل بالنظام)</label>
                     <select value={clientId} onChange={(e) => setClientId(e.target.value)}
-                      className="w-full px-4 py-3 bg-[#040e21] border border-[#1e3a5f] rounded-2xl text-sm font-black focus:outline-none focus:ring-2 focus:ring-[#facc15]/40 focus:border-[#facc15] text-white shadow-inner">
+                      className="w-full px-4 py-3 bg-[#040e21] border border-slate-700 rounded-xl text-sm font-black focus:outline-none focus:ring-2 focus:ring-[#facc15]/40 focus:border-[#facc15] text-white shadow-inner">
                       <option value="">-- ربط بعميل خارجي غير مسجل --</option>
                       {clients.map(c => (
                         <option key={c.id} value={String(c.id)}>{c.name}</option>
@@ -1086,7 +1086,7 @@ export default function AgenciesModule({ clients, onUpdateState }: AgenciesModul
                   <div className="space-y-1.5">
                     <label className="text-xs text-[#facc15] font-black block">اسم العميل الخارجي *</label>
                     <input type="text" placeholder="الشركة أو الشخص" value={clientName} onChange={(e) => setClientName(e.target.value)}
-                      className="w-full px-4 py-3 bg-[#040e21] border border-[#1e3a5f] rounded-2xl text-sm font-black focus:outline-none focus:ring-2 focus:ring-[#facc15]/40 focus:border-[#facc15] text-white shadow-inner placeholder-slate-500" />
+                      className="w-full px-4 py-3 bg-[#040e21] border border-slate-700 rounded-xl text-sm font-black focus:outline-none focus:ring-2 focus:ring-[#facc15]/40 focus:border-[#facc15] text-white shadow-inner placeholder-slate-500" />
                   </div>
                 )}
 
@@ -1094,12 +1094,12 @@ export default function AgenciesModule({ clients, onUpdateState }: AgenciesModul
                   <div className="space-y-1.5">
                     <label className="text-xs text-[#facc15] font-black block">الموكِّل (Principal) *</label>
                     <input type="text" required placeholder="أطراف الوكالة الموكل" value={principalName} onChange={(e) => setPrincipalName(e.target.value)}
-                      className="w-full px-4 py-3 bg-[#040e21] border border-[#1e3a5f] rounded-2xl text-sm font-black focus:outline-none focus:ring-2 focus:ring-[#facc15]/40 focus:border-[#facc15] text-white shadow-inner placeholder-slate-500" />
+                      className="w-full px-4 py-3 bg-[#040e21] border border-slate-700 rounded-xl text-sm font-black focus:outline-none focus:ring-2 focus:ring-[#facc15]/40 focus:border-[#facc15] text-white shadow-inner placeholder-slate-500" />
                   </div>
                   <div className="space-y-1.5">
                     <label className="text-xs text-[#facc15] font-black block">الموكَّل له (Agent) *</label>
                     <input type="text" required placeholder="المحامي الوكيل" value={agentName} onChange={(e) => setAgentName(e.target.value)}
-                      className="w-full px-4 py-3 bg-[#040e21] border border-[#1e3a5f] rounded-2xl text-sm font-black focus:outline-none focus:ring-2 focus:ring-[#facc15]/40 focus:border-[#facc15] text-white shadow-inner placeholder-slate-500" />
+                      className="w-full px-4 py-3 bg-[#040e21] border border-slate-700 rounded-xl text-sm font-black focus:outline-none focus:ring-2 focus:ring-[#facc15]/40 focus:border-[#facc15] text-white shadow-inner placeholder-slate-500" />
                   </div>
                 </div>
 
@@ -1107,7 +1107,7 @@ export default function AgenciesModule({ clients, onUpdateState }: AgenciesModul
                   <div className="space-y-1.5">
                     <label className="text-xs text-[#facc15] font-black block">حالة الوكالة</label>
                     <select value={status} onChange={(e) => setStatus(e.target.value)}
-                      className="w-full px-4 py-3 bg-[#040e21] border border-[#1e3a5f] rounded-2xl text-sm font-black focus:outline-none focus:ring-2 focus:ring-[#facc15]/40 focus:border-[#facc15] text-white shadow-inner">
+                      className="w-full px-4 py-3 bg-[#040e21] border border-slate-700 rounded-xl text-sm font-black focus:outline-none focus:ring-2 focus:ring-[#facc15]/40 focus:border-[#facc15] text-white shadow-inner">
                       <option value="نشطة">نشطة / سارية</option>
                       <option value="ملغاة">ملغاة</option>
                       <option value="منتهية">منتهية المدة</option>
@@ -1119,34 +1119,34 @@ export default function AgenciesModule({ clients, onUpdateState }: AgenciesModul
                   <div className="space-y-1.5">
                     <label className="text-xs text-[#facc15] font-black block">تاريخ الإصدار *</label>
                     <input type="date" required value={issueDate} onChange={(e) => setIssueDate(e.target.value)}
-                      className="w-full px-4 py-3 bg-[#040e21] border border-[#1e3a5f] rounded-2xl text-sm font-black focus:outline-none focus:ring-2 focus:ring-[#facc15]/40 focus:border-[#facc15] text-white shadow-inner [color-scheme:dark]" />
+                      className="w-full px-4 py-3 bg-[#040e21] border border-slate-700 rounded-xl text-sm font-black focus:outline-none focus:ring-2 focus:ring-[#facc15]/40 focus:border-[#facc15] text-white shadow-inner [color-scheme:dark]" />
                   </div>
                   <div className="space-y-1.5">
                     <label className="text-xs text-[#facc15] font-black block">تاريخ الانتهاء *</label>
                     <input type="date" required value={expiryDate} onChange={(e) => setExpiryDate(e.target.value)}
-                      className="w-full px-4 py-3 bg-[#040e21] border border-[#1e3a5f] rounded-2xl text-sm font-black focus:outline-none focus:ring-2 focus:ring-[#facc15]/40 focus:border-[#facc15] text-white shadow-inner [color-scheme:dark]" />
+                      className="w-full px-4 py-3 bg-[#040e21] border border-slate-700 rounded-xl text-sm font-black focus:outline-none focus:ring-2 focus:ring-[#facc15]/40 focus:border-[#facc15] text-white shadow-inner [color-scheme:dark]" />
                   </div>
                 </div>
 
                 <div className="space-y-1.5">
                   <label className="text-xs text-[#facc15] font-black block">موضوع أو نطاق الوكالة</label>
                   <textarea rows={2} placeholder="المرافعة والمدافعة في القضايا..." value={scope} onChange={(e) => setScope(e.target.value)}
-                    className="w-full px-4 py-3 bg-[#040e21] border border-[#1e3a5f] rounded-2xl text-sm font-black focus:outline-none focus:ring-2 focus:ring-[#facc15]/40 focus:border-[#facc15] text-white shadow-inner placeholder-slate-500" />
+                    className="w-full px-4 py-3 bg-[#040e21] border border-slate-700 rounded-xl text-sm font-black focus:outline-none focus:ring-2 focus:ring-[#facc15]/40 focus:border-[#facc15] text-white shadow-inner placeholder-slate-500" />
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-xs text-[#facc15] font-black flex justify-between"><span>البنود والصلاحيات</span><span className="text-[#94a3b8] font-black font-medium">(كل بند في سطر)</span></label>
+                  <label className="text-xs text-[#facc15] font-black flex justify-between"><span>البنود والصلاحيات</span><span className="text-slate-400 font-black font-medium">(كل بند في سطر)</span></label>
                   <textarea rows={3} placeholder="المراجعة في الإدارات الحكومية&#10;حق الإقرار والصلح" value={clausesText} onChange={(e) => setClausesText(e.target.value)}
-                    className="w-full px-4 py-3 bg-[#040e21] border border-[#1e3a5f] rounded-2xl text-sm font-black focus:outline-none focus:ring-2 focus:ring-[#facc15]/40 focus:border-[#facc15] text-white shadow-inner placeholder-slate-500" />
+                    className="w-full px-4 py-3 bg-[#040e21] border border-slate-700 rounded-xl text-sm font-black focus:outline-none focus:ring-2 focus:ring-[#facc15]/40 focus:border-[#facc15] text-white shadow-inner placeholder-slate-500" />
                 </div>
 
-                <div className="pt-4 border-t border-[#1e3a5f] flex gap-3 justify-end mt-6">
+                <div className="pt-4 border-t border-slate-800 flex gap-3 justify-end mt-6">
                   <button type="button" onClick={() => setEditingAgency(null)}
-                    className="px-5 py-2.5 bg-[#0b1329] border border-[#1e3a5f] hover:bg-[#040e21] text-white hover:text-[#ff7f00] rounded-2xl text-sm font-black transition-all cursor-pointer">
+                    className="px-5 py-2.5 bg-[#0b1329] border border-slate-700 hover:bg-[#040e21] text-white hover:text-[#ff7f00] rounded-xl text-sm font-black transition-all cursor-pointer">
                     إلغاء التعديل
                   </button>
                   <button type="submit"
-                    className="px-6 py-2.5 bg-[#facc15] hover:bg-[#c9a84c] text-[#94a3b8] rounded-2xl text-sm font-black shadow-lg shadow-[#facc15]/20 transition-all cursor-pointer">
+                    className="px-6 py-2.5 bg-[#facc15] hover:bg-yellow-500 text-slate-950 rounded-xl text-sm font-black shadow-lg shadow-[#facc15]/20 transition-all cursor-pointer">
                     تحديث وحفظ التغييرات
                   </button>
                 </div>

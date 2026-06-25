@@ -42,7 +42,7 @@ export default function GCalSyncSettings() {
             
             <div className="space-y-6">
               <div className="flex items-center gap-4 border-b border-white/20 pb-6">
-                <div className="bg-[#0a1628] p-3 rounded-2xl shadow-lg">
+                <div className="bg-white p-3 rounded-2xl shadow-lg">
                   <svg className="w-10 h-10" viewBox="0 0 24 24">
                     <path fill="#4285F4" d="M21.53 12.082c0-.833-.075-1.636-.214-2.418H12v4.576h5.342c-.23 1.482-.89 2.738-1.928 3.593v2.983h3.125c1.83-1.685 2.991-4.168 2.991-7.14Z"/>
                     <path fill="#34A853" d="M12 21.782c2.682 0 4.93-.89 6.574-2.417l-3.125-2.983c-.89.597-2.03.95-3.449.95-2.651 0-4.895-1.79-5.698-4.198H3.067v3.082c1.644 3.266 5.067 5.566 8.933 5.566Z"/>
@@ -80,7 +80,7 @@ export default function GCalSyncSettings() {
             <div className="bg-slate-950/75 backdrop-blur-md border border-white/20 rounded-2xl p-6 lg:p-8 space-y-6 text-white shadow-2xl">
               {!isConnected ? (
                 <div className="text-center space-y-5 py-6">
-                  <div className="w-16 h-16 bg-[#0a1628]/10 border border-white/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <div className="w-16 h-16 bg-white/10 border border-white/20 rounded-full flex items-center justify-center mx-auto mb-4">
                     <Link2 className="w-8 h-8 text-yellow-350" />
                   </div>
                   <div>

@@ -114,7 +114,7 @@ export default function TimelineView({ cases, hearings, tasks }: TimelineViewPro
   const events = getTimelineEvents();
 
   return (
-    <div className="bg-[#0a1628] border border-[#1e3a5f] rounded-[2.5rem] p-8 shadow-sm space-y-8">
+    <div className="bg-white border border-slate-200 rounded-[2.5rem] p-8 shadow-sm space-y-8">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
         <div className="flex items-center gap-4">
           <div className="p-3 bg-indigo-500/10 text-indigo-600 rounded-2xl">
@@ -129,7 +129,7 @@ export default function TimelineView({ cases, hearings, tasks }: TimelineViewPro
         <select 
           value={selectedCaseId}
           onChange={(e) => setSelectedCaseId(e.target.value)}
-          className="bg-slate-50 border border-[#1e3a5f] text-slate-900 text-xs font-black px-4 py-2.5 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500/20 transition-all font-sans"
+          className="bg-slate-50 border border-slate-200 text-slate-900 text-xs font-black px-4 py-2.5 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500/20 transition-all font-sans"
         >
           <option value="all">جميع القضايا</option>
           {cases.map(c => (

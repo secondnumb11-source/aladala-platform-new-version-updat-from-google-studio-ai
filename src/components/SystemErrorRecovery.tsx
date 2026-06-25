@@ -88,7 +88,7 @@ export const SystemErrorRecovery: React.FC<SystemErrorRecoveryProps> = ({
         
         <button
           onClick={() => window.location.reload()}
-          className="flex items-center gap-2 px-8 py-4 rounded-2xl font-black text-xs bg-[#0a1628]/5 text-white border border-white/10 transition-all shadow-lg"
+          className="flex items-center gap-2 px-8 py-4 rounded-2xl font-black text-xs bg-white/5 text-white border border-white/10 transition-all shadow-lg"
         >
           <ShieldCheck className="w-4 h-4" />
           <span>تحديث المتصفح</span>

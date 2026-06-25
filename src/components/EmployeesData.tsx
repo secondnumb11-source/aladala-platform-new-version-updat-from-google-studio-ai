@@ -743,7 +743,7 @@ export default function EmployeesData({
           className="max-w-5xl mx-auto"
         >
           {/* Header Controls */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-4 border-b border-[#1e3a5f] pb-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-4 border-b border-slate-200 pb-6">
             <div className="flex items-center gap-5">
               <div className="w-16 h-16 bg-[#0f172a] rounded-[1.5rem] flex items-center justify-center text-white shadow-xl">
                 {selectedConfigEmployee ? (
@@ -753,12 +753,12 @@ export default function EmployeesData({
                 )}
               </div>
               <div>
-                <h1 className="text-3xl font-black text-[#94a3b8] leading-tight mb-1">
+                <h1 className="text-3xl font-black text-slate-900 leading-tight mb-1">
                   {selectedConfigEmployee
                     ? "تعديل بيانات الموظف"
                     : "إضافة موظف جديد"}
                 </h1>
-                <p className="text-[#94a3b8] font-bold text-sm">
+                <p className="text-slate-700 font-bold text-sm">
                   أدخل البيانات بنظام الموارد البشرية المركزي
                 </p>
               </div>
@@ -768,7 +768,7 @@ export default function EmployeesData({
               <button
                 type="button"
                 onClick={() => window.print()}
-                className="px-5 py-3.5 bg-[#0a1628] border border-[#1e3a5f] hover:border-[#1e3a5f] hover:bg-[#0a1628] text-[#94a3b8] font-black rounded-2xl flex items-center gap-2 transition-all shadow-sm"
+                className="px-5 py-3.5 bg-white border border-slate-200 hover:border-slate-300 hover:bg-slate-50 text-slate-700 font-black rounded-2xl flex items-center gap-2 transition-all shadow-sm"
               >
                 <FileText className="w-4 h-4" />
                 تصدير (PDF)
@@ -778,19 +778,19 @@ export default function EmployeesData({
 
           <form
             onSubmit={handleFormSubmit}
-            className="bg-[#0a1628] border border-[#1e3a5f] rounded-[2.5rem] shadow-sm p-8 md:p-12 space-y-10"
+            className="bg-white border border-slate-200 rounded-[2.5rem] shadow-sm p-8 md:p-12 space-y-10"
           >
             {/* National & Job Info */}
             <section className="space-y-6">
-              <div className="flex items-center gap-3 pb-4 border-b border-[#1e3a5f]">
-                <div className="w-10 h-10 bg-[#0a1628] text-[#94a3b8] rounded-2xl flex items-center justify-center shadow-sm border border-[#1e3a5f]">
+              <div className="flex items-center gap-3 pb-4 border-b border-slate-100">
+                <div className="w-10 h-10 bg-slate-50 text-slate-900 rounded-xl flex items-center justify-center shadow-sm border border-slate-100">
                   <UserCheck className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-black text-[#94a3b8]">
+                  <h3 className="text-lg font-black text-slate-900">
                     البيانات الشخصية والوظيفية
                   </h3>
-                  <p className="text-[11px] text-[#94a3b8] font-bold">
+                  <p className="text-[11px] text-slate-700 font-bold">
                     المعلومات المرجعية للهوية والوظيفة
                   </p>
                 </div>
@@ -798,19 +798,19 @@ export default function EmployeesData({
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
                 <div className="space-y-2">
-                  <label className="text-xs font-black text-[#94a3b8] pr-1 block">
+                  <label className="text-xs font-black text-slate-700 pr-1 block">
                     اسم الموظف الكامل
                   </label>
                   <input
                     name="name"
                     value={formData.name || ""}
                     onChange={handleInputChange}
-                    className="w-full bg-[#0a1628] border border-[#1e3a5f] rounded-2xl px-5 py-4 text-sm font-bold focus:bg-[#0a1628] focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all outline-none text-right text-[#94a3b8]"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-4 text-sm font-bold focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all outline-none text-right text-slate-900"
                     placeholder="الاسم الرباعي الرسمي"
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-xs font-black text-[#94a3b8] pr-1 block">
+                  <label className="text-xs font-black text-slate-700 pr-1 block">
                     رقم الهوية / الإقامة
                   </label>
                   <input
@@ -818,12 +818,12 @@ export default function EmployeesData({
                     maxLength={10}
                     value={formData.nationalId || ""}
                     onChange={handleInputChange}
-                    className="w-full bg-[#0a1628] border border-[#1e3a5f] rounded-2xl px-5 py-4 text-sm font-mono font-bold focus:bg-[#0a1628] focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all outline-none text-left text-[#94a3b8]"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-4 text-sm font-mono font-bold focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all outline-none text-left text-slate-900"
                     placeholder="10XXXXXXXX"
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-xs font-black text-[#94a3b8] pr-1 block">
+                  <label className="text-xs font-black text-slate-700 pr-1 block">
                     تاريخ انتهاء الهوية / الإقامة
                   </label>
                   <input
@@ -831,35 +831,35 @@ export default function EmployeesData({
                     name="nationalIdExpiry"
                     value={formData.nationalIdExpiry || ""}
                     onChange={handleInputChange}
-                    className="w-full bg-[#0a1628] border border-[#1e3a5f] rounded-2xl px-5 py-4 text-sm font-bold focus:bg-[#0a1628] focus:border-blue-500 transition-all outline-none text-right text-[#94a3b8]"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-4 text-sm font-bold focus:bg-white focus:border-blue-500 transition-all outline-none text-right text-slate-900"
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-xs font-black text-[#94a3b8] pr-1 block">
+                  <label className="text-xs font-black text-slate-700 pr-1 block">
                     الجنسية
                   </label>
                   <input
                     name="nationality"
                     value={formData.nationality || ""}
                     onChange={handleInputChange}
-                    className="w-full bg-[#0a1628] border border-[#1e3a5f] rounded-2xl px-5 py-4 text-sm font-bold focus:bg-[#0a1628] focus:border-blue-500 transition-all outline-none text-right text-[#94a3b8]"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-4 text-sm font-bold focus:bg-white focus:border-blue-500 transition-all outline-none text-right text-slate-900"
                     placeholder="سعودي / مقيم"
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-xs font-black text-[#94a3b8] pr-1 block">
+                  <label className="text-xs font-black text-slate-700 pr-1 block">
                     المسمى الوظيفي
                   </label>
                   <input
                     name="jobTitle"
                     value={formData.jobTitle || ""}
                     onChange={handleInputChange}
-                    className="w-full bg-[#0a1628] border border-[#1e3a5f] rounded-2xl px-5 py-4 text-sm font-bold focus:bg-[#0a1628] focus:border-blue-500 transition-all outline-none text-right text-[#94a3b8]"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-4 text-sm font-bold focus:bg-white focus:border-blue-500 transition-all outline-none text-right text-slate-900"
                     placeholder="مثال: محامي استئناف"
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-xs font-black text-[#94a3b8] pr-1 block">
+                  <label className="text-xs font-black text-slate-700 pr-1 block">
                     تاريخ الميلاد
                   </label>
                   <input
@@ -867,18 +867,18 @@ export default function EmployeesData({
                     name="birthDate"
                     value={formData.birthDate || ""}
                     onChange={handleInputChange}
-                    className="w-full bg-[#0a1628] border border-[#1e3a5f] rounded-2xl px-5 py-4 text-sm font-bold focus:bg-[#0a1628] focus:border-blue-500 transition-all outline-none text-[#94a3b8]"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-4 text-sm font-bold focus:bg-white focus:border-blue-500 transition-all outline-none text-slate-900"
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-xs font-black text-[#94a3b8] pr-1 block">
+                  <label className="text-xs font-black text-slate-700 pr-1 block">
                     المؤهل الدراسي
                   </label>
                   <input
                     name="qualification"
                     value={formData.qualification || ""}
                     onChange={handleInputChange}
-                    className="w-full bg-[#0a1628] border border-[#1e3a5f] rounded-2xl px-5 py-4 text-sm font-bold focus:bg-[#0a1628] focus:border-blue-500 transition-all outline-none text-right text-[#94a3b8]"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-4 text-sm font-bold focus:bg-white focus:border-blue-500 transition-all outline-none text-right text-slate-900"
                     placeholder="بكالوريوس قانون / ماجستير"
                   />
                 </div>
@@ -887,15 +887,15 @@ export default function EmployeesData({
 
             {/* Communication details */}
             <section className="space-y-6">
-              <div className="flex items-center gap-3 pb-4 border-b border-[#1e3a5f]">
-                <div className="w-10 h-10 bg-[#0a1628] text-[#94a3b8] rounded-2xl flex items-center justify-center shadow-sm border border-[#1e3a5f]">
+              <div className="flex items-center gap-3 pb-4 border-b border-slate-100">
+                <div className="w-10 h-10 bg-slate-50 text-slate-900 rounded-xl flex items-center justify-center shadow-sm border border-slate-100">
                   <AtSign className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-black text-[#94a3b8]">
+                  <h3 className="text-lg font-black text-slate-900">
                     بيانات الاتصال والتواصل
                   </h3>
-                  <p className="text-[11px] text-[#94a3b8] font-bold">
+                  <p className="text-[11px] text-slate-700 font-bold">
                     تأمين قنوات التواصل الرسمية للموظف
                   </p>
                 </div>
@@ -903,19 +903,19 @@ export default function EmployeesData({
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
                 <div className="space-y-2">
-                  <label className="text-xs font-black text-[#94a3b8] pr-1 block">
+                  <label className="text-xs font-black text-slate-700 pr-1 block">
                     رقم الجوال
                   </label>
                   <input
                     name="phone"
                     value={formData.phone || ""}
                     onChange={handleInputChange}
-                    className="w-full bg-[#0a1628] border border-[#1e3a5f] rounded-2xl px-5 py-4 text-sm font-mono font-bold focus:bg-[#0a1628] focus:border-blue-500 transition-all outline-none text-left text-[#94a3b8]"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-4 text-sm font-mono font-bold focus:bg-white focus:border-blue-500 transition-all outline-none text-left text-slate-900"
                     placeholder="05XXXXXXXX"
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-xs font-black text-[#94a3b8] pr-1 block">
+                  <label className="text-xs font-black text-slate-700 pr-1 block">
                     البريد الإلكتروني
                   </label>
                   <input
@@ -923,31 +923,31 @@ export default function EmployeesData({
                     name="email"
                     value={formData.email || ""}
                     onChange={handleInputChange}
-                    className="w-full bg-[#0a1628] border border-[#1e3a5f] rounded-2xl px-5 py-4 text-sm font-mono font-bold focus:bg-[#0a1628] focus:border-blue-500 transition-all outline-none text-left text-[#94a3b8]"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-4 text-sm font-mono font-bold focus:bg-white focus:border-blue-500 transition-all outline-none text-left text-slate-900"
                     placeholder="employee@firm.com"
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-xs font-black text-[#94a3b8] pr-1 block">
+                  <label className="text-xs font-black text-slate-700 pr-1 block">
                     المدير المباشر
                   </label>
                   <input
                     name="manager"
                     value={formData.manager || ""}
                     onChange={handleInputChange}
-                    className="w-full bg-[#0a1628] border border-[#1e3a5f] rounded-2xl px-5 py-4 text-sm font-bold focus:bg-[#0a1628] focus:border-blue-500 transition-all outline-none text-right text-[#94a3b8]"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-4 text-sm font-bold focus:bg-white focus:border-blue-500 transition-all outline-none text-right text-slate-900"
                     placeholder="اسم المدير المسؤول"
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-xs font-black text-[#94a3b8] pr-1 block">
+                  <label className="text-xs font-black text-slate-700 pr-1 block">
                     حالة العمل الحالية
                   </label>
                   <select
                     name="status"
                     value={formData.status || "نشط"}
                     onChange={handleInputChange}
-                    className="w-full bg-[#0a1628] border border-[#1e3a5f] rounded-2xl px-5 py-4 text-sm font-black focus:bg-[#0a1628] focus:border-blue-500 transition-all outline-none cursor-pointer text-[#94a3b8]"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-4 text-sm font-black focus:bg-white focus:border-blue-500 transition-all outline-none cursor-pointer text-slate-900"
                   >
                     <option value="نشط">نشط (على رأس العمل)</option>
                     <option value="إجازة">في إجازة</option>
@@ -959,15 +959,15 @@ export default function EmployeesData({
 
             {/* Employment Record */}
             <section className="space-y-6">
-              <div className="flex items-center gap-3 pb-4 border-b border-[#1e3a5f]">
-                <div className="w-10 h-10 bg-[#0a1628] text-[#94a3b8] rounded-2xl flex items-center justify-center shadow-sm border border-[#1e3a5f]">
+              <div className="flex items-center gap-3 pb-4 border-b border-slate-100">
+                <div className="w-10 h-10 bg-slate-50 text-slate-900 rounded-xl flex items-center justify-center shadow-sm border border-slate-100">
                   <CalendarDays className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-black text-[#94a3b8]">
+                  <h3 className="text-lg font-black text-slate-900">
                     سجل التوظيف والخدمة
                   </h3>
-                  <p className="text-[11px] text-[#94a3b8] font-bold">
+                  <p className="text-[11px] text-slate-700 font-bold">
                     توثيق تواريخ المباشرة وفترات العمل
                   </p>
                 </div>
@@ -975,7 +975,7 @@ export default function EmployeesData({
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
                 <div className="space-y-2">
-                  <label className="text-xs font-black text-[#94a3b8] pr-1 block">
+                  <label className="text-xs font-black text-slate-700 pr-1 block">
                     تاريخ بدء العمل (المباشرة)
                   </label>
                   <input
@@ -983,11 +983,11 @@ export default function EmployeesData({
                     name="startDate"
                     value={formData.startDate || ""}
                     onChange={handleInputChange}
-                    className="w-full bg-[#0a1628] border border-[#1e3a5f] rounded-2xl px-5 py-4 text-sm font-bold focus:bg-[#0a1628] focus:border-blue-500 transition-all outline-none text-[#94a3b8]"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-4 text-sm font-bold focus:bg-white focus:border-blue-500 transition-all outline-none text-slate-900"
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-xs font-black text-[#94a3b8] pr-1 block">
+                  <label className="text-xs font-black text-slate-700 pr-1 block">
                     تاريخ ترك العمل (إن وُجد)
                   </label>
                   <input
@@ -995,27 +995,27 @@ export default function EmployeesData({
                     name="endDate"
                     value={formData.endDate || ""}
                     onChange={handleInputChange}
-                    className="w-full bg-[#0a1628] border border-[#1e3a5f] rounded-2xl px-5 py-4 text-sm font-bold focus:bg-[#0a1628] focus:border-blue-500 transition-all outline-none text-[#94a3b8]"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-4 text-sm font-bold focus:bg-white focus:border-blue-500 transition-all outline-none text-slate-900"
                   />
                 </div>
               </div>
             </section>
 
-            <div className="pt-8 border-t border-[#1e3a5f] flex flex-col sm:flex-row gap-4 justify-end">
+            <div className="pt-8 border-t border-slate-100 flex flex-col sm:flex-row gap-4 justify-end">
               <button
                 type="button"
                 onClick={() => {
                   setView("list");
                   setSelectedConfigEmployee(null);
                 }}
-                className="px-8 py-4 bg-[#0a1628] hover:bg-[#0a1628] text-[#94a3b8] border border-[#1e3a5f] font-black rounded-2xl flex items-center justify-center gap-2 transition-all active:scale-[0.98] shadow-sm"
+                className="px-8 py-4 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 font-black rounded-2xl flex items-center justify-center gap-2 transition-all active:scale-[0.98] shadow-sm"
               >
                 <ChevronRight className="w-5 h-5" />
                 إلغاء والعودة
               </button>
               <button
                 type="submit"
-                className="px-8 py-4 bg-[#0f172a] hover:bg-[#0a1628] text-white font-black rounded-2xl flex items-center justify-center gap-2 transition-all shadow-md active:scale-[0.98]"
+                className="px-8 py-4 bg-[#0f172a] hover:bg-slate-800 text-white font-black rounded-2xl flex items-center justify-center gap-2 transition-all shadow-md active:scale-[0.98]"
               >
                 <Save className="w-5 h-5" />
                 حفظ بيانات الموظف
@@ -1033,17 +1033,17 @@ export default function EmployeesData({
       dir="rtl"
     >
       {/* Top Professional Header */}
-      <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-8 pb-10 border-b border-[#1e3a5f]">
+      <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-8 pb-10 border-b border-slate-200">
         <div className="space-y-2">
           <div className="flex items-center gap-4">
             <div className="w-16 h-16 bg-[#0f172a] text-white rounded-[1.5rem] flex items-center justify-center shadow-xl shrink-0">
               <Users className="w-8 h-8" />
             </div>
             <div>
-              <h1 className="text-3xl font-black text-[#94a3b8] tracking-tight leading-tight">
+              <h1 className="text-3xl font-black text-slate-900 tracking-tight leading-tight">
                 قاعدة بيانات الموظفين
               </h1>
-              <p className="text-[#94a3b8] font-bold text-sm mt-1">
+              <p className="text-slate-700 font-bold text-sm mt-1">
                 البوابة المركزية لإدارة الكادر الوظيفي وموازنة الصلاحيات والوصول
                 الرقمي
               </p>
@@ -1062,8 +1062,8 @@ export default function EmployeesData({
             onClick={() => setIsArranging(!isArranging)}
             className={`font-black px-6 py-4 rounded-2xl flex items-center justify-center gap-2.5 transition-all shadow-md active:scale-95 text-sm ${
               isArranging
-                ? "bg-amber-505 bg-gradient-to-r from-[#c9a84c] to-[#a67c30] text-white border-transparent"
-                : "bg-[#0a1628] text-[#94a3b8] border border-[#1e3a5f] hover:bg-[#0a1628]"
+                ? "bg-amber-505 bg-amber-500 text-white border-transparent"
+                : "bg-white text-slate-300 border border-slate-200 hover:bg-slate-50"
             }`}
           >
             <SlidersHorizontal className="w-5 h-5 text-amber-500" />
@@ -1076,7 +1076,7 @@ export default function EmployeesData({
               setView("form");
               setSelectedConfigEmployee(null);
             }}
-            className="bg-[#0f172a] hover:bg-[#0a1628] text-white font-black px-6 py-4 rounded-2xl flex items-center justify-center gap-2.5 transition-all shadow-md active:scale-95 text-sm group"
+            className="bg-[#0f172a] hover:bg-slate-800 text-white font-black px-6 py-4 rounded-2xl flex items-center justify-center gap-2.5 transition-all shadow-md active:scale-95 text-sm group"
           >
             <Plus className="w-5 h-5 group-hover:rotate-90 transition-transform duration-300" />
             <span>اضافة بيانات موظف</span>
@@ -1091,29 +1091,29 @@ export default function EmployeesData({
           animate={{ opacity: 1, y: 0 }}
           className="mt-8 bg-amber-50 border border-amber-200 rounded-[2rem] p-6 shadow-sm flex items-start gap-4 relative overflow-hidden"
         >
-          <div className="absolute top-0 left-0 w-32 h-32 bg-gradient-to-r from-[#c9a84c] to-[#a67c30]/5 rounded-full blur-2xl" />
-          <div className="w-12 h-12 bg-gradient-to-r from-[#c9a84c] to-[#a67c30] text-white rounded-2xl flex items-center justify-center shrink-0 shadow-md">
+          <div className="absolute top-0 left-0 w-32 h-32 bg-amber-500/5 rounded-full blur-2xl" />
+          <div className="w-12 h-12 bg-amber-500 text-white rounded-2xl flex items-center justify-center shrink-0 shadow-md">
             <AlertTriangle className="w-6 h-6 animate-pulse" />
           </div>
           <div className="space-y-1">
             <h3 className="text-base font-black text-white">
               ⚠️ تنبيه إداري نشط: وثائق رسمية تقترب من الانتهاء خلال 30 يوماً!
             </h3>
-            <p className="text-xs text-[#94a3b8] font-bold font-bold">
+            <p className="text-xs text-slate-200 font-bold font-bold">
               يقوم النظام تلقائياً بتذكير المدير والإدارة القانونية بالمكتب قبل
               30 يوماً لبدء إجراءات تجديد هويات الموظفين المذكورين أدناه لتلافي
               غرامات النظام ودعم الاستقرار الوظيفي:
             </p>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mt-4 pt-4 border-t border-[#1e3a5f]">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mt-4 pt-4 border-t border-slate-200">
               {expiringEmployeesList.map((emp: any) => (
                 <div
                   key={emp.id}
-                  className="bg-[#0a1628]/80 border border-[#1e3a5f] p-3 rounded-2xl flex items-center justify-between text-xs shadow-sm"
+                  className="bg-white/80 border border-slate-100 p-3 rounded-xl flex items-center justify-between text-xs shadow-sm"
                 >
                   <div className="flex items-center gap-2">
                     <span className="w-2.5 h-2.5 rounded-full bg-rose-500 shrink-0" />
-                    <span className="font-extrabold text-[#94a3b8] truncate max-w-[120px]">
+                    <span className="font-extrabold text-slate-200 truncate max-w-[120px]">
                       {emp.name}
                     </span>
                   </div>
@@ -1128,12 +1128,12 @@ export default function EmployeesData({
       )}
 
       {/* Control Utility Toolbar */}
-      <div className="mt-8 bg-[#0a1628] border border-[#1e3a5f] p-6 rounded-[2rem] shadow-sm flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4">
+      <div className="mt-8 bg-white border border-slate-200 p-6 rounded-[2rem] shadow-sm flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4">
         <div className="relative flex-1 group">
-          <Search className="absolute right-5 top-1/2 -translate-y-1/2 w-5 h-5 text-[#94a3b8] font-bold group-focus-within:text-blue-600 transition-colors" />
+          <Search className="absolute right-5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-200 font-bold group-focus-within:text-blue-600 transition-colors" />
           <input
             placeholder="البحث عن موظف (بالاسم، المسمى الوظيفي، رقم الهوية)..."
-            className="w-full bg-[#0a1628] border border-[#1e3a5f] rounded-2xl pr-12 pl-6 py-4 text-sm font-bold outline-none focus:bg-[#0a1628] focus:border-blue-500 transition-all text-white placeholder:text-[#94a3b8] font-bold"
+            className="w-full bg-slate-50 border border-slate-200 rounded-2xl pr-12 pl-6 py-4 text-sm font-bold outline-none focus:bg-white focus:border-blue-500 transition-all text-white placeholder:text-slate-200 font-bold"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
@@ -1143,7 +1143,7 @@ export default function EmployeesData({
             <select
               value={selectedBranchFilter}
               onChange={(e) => setSelectedBranchFilter(e.target.value)}
-              className="w-full bg-[#0a1628] hover:bg-[#0a1628] border border-[#1e3a5f] rounded-2xl px-4 py-4 text-xs font-black text-[#94a3b8] transition-all outline-none"
+              className="w-full bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-2xl px-4 py-4 text-xs font-black text-slate-300 transition-all outline-none"
             >
               <option value="الكل">بطبيعة الفرع: الكل</option>
               {uniqueBranches
@@ -1159,7 +1159,7 @@ export default function EmployeesData({
             <select
               value={selectedJobTitleFilter}
               onChange={(e) => setSelectedJobTitleFilter(e.target.value)}
-              className="w-full bg-[#0a1628] hover:bg-[#0a1628] border border-[#1e3a5f] rounded-2xl px-4 py-4 text-xs font-black text-[#94a3b8] transition-all outline-none"
+              className="w-full bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-2xl px-4 py-4 text-xs font-black text-slate-300 transition-all outline-none"
             >
               <option value="الكل">بالمسمى الوظيفي: الكل</option>
               {uniqueJobTitles
@@ -1188,20 +1188,20 @@ export default function EmployeesData({
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="mt-10 py-32 bg-[#0a1628] border border-[#1e3a5f] rounded-[2.5rem] flex flex-col items-center justify-center gap-6 text-white font-bold shadow-sm"
+          className="mt-10 py-32 bg-white border border-slate-200 rounded-[2.5rem] flex flex-col items-center justify-center gap-6 text-white font-bold shadow-sm"
         >
           <Users className="w-20 h-20 opacity-10" />
           <div className="text-center">
             <p className="font-black text-xl text-white">
               لا توجد سجلات مطابقة
             </p>
-            <p className="font-bold text-[#94a3b8] font-bold text-sm mt-2">
+            <p className="font-bold text-slate-200 font-bold text-sm mt-2">
               ابدأ بإثراء سجلات مكتبك بإضافة موظف جديد
             </p>
           </div>
           <button
             onClick={() => setView("form")}
-            className="px-8 py-3.5 bg-[#0f172a] text-white rounded-2xl font-black text-sm hover:bg-[#0a1628] transition-all shadow-sm active:scale-95"
+            className="px-8 py-3.5 bg-[#0f172a] text-white rounded-xl font-black text-sm hover:bg-slate-800 transition-all shadow-sm active:scale-95"
           >
             إضافة كادر وظيفي
           </button>
@@ -1222,18 +1222,18 @@ export default function EmployeesData({
                 initial={{ opacity: 0, y: 15 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3 }}
-                className={`bg-[#0a1628] border border-[#1e3a5f] rounded-[2.5rem] p-8 shadow-sm flex flex-col relative group hover:border-[#0f172a]/20 transition-all ${cardWidthClass}`}
+                className={`bg-white border border-slate-200 rounded-[2.5rem] p-8 shadow-sm flex flex-col relative group hover:border-[#0f172a]/20 transition-all ${cardWidthClass}`}
               >
                 {/* Arrangement Toolbar element when customization is active */}
                 {isArranging && (
                   <div
-                    className="absolute top-4 left-4 z-40 flex items-center gap-1.5 bg-[#0a1628] text-white border border-[#1e3a5f] p-2 rounded-2xl shadow-xl"
+                    className="absolute top-4 left-4 z-40 flex items-center gap-1.5 bg-slate-900 text-white border border-slate-800 p-2 rounded-2xl shadow-xl"
                     onClick={(e) => e.stopPropagation()}
                   >
                     <button
                       onClick={() => moveEmployeeCard(idx, "prev")}
                       disabled={idx === 0}
-                      className="p-1.5 bg-[#0a1628] hover:bg-[#0a1628] text-[10px] font-black rounded-2xl disabled:opacity-30 active:scale-90"
+                      className="p-1.5 bg-slate-800 hover:bg-slate-700 text-[10px] font-black rounded-lg disabled:opacity-30 active:scale-90"
                       title="تحريك للخلف"
                     >
                       ⬅️
@@ -1241,27 +1241,27 @@ export default function EmployeesData({
                     <button
                       onClick={() => moveEmployeeCard(idx, "next")}
                       disabled={idx === filteredAndSortedList.length - 1}
-                      className="p-1.5 bg-[#0a1628] hover:bg-[#0a1628] text-[10px] font-black rounded-2xl disabled:opacity-30 active:scale-90"
+                      className="p-1.5 bg-slate-800 hover:bg-slate-700 text-[10px] font-black rounded-lg disabled:opacity-30 active:scale-90"
                       title="تحريك للأمام"
                     >
                       ➡️
                     </button>
-                    <div className="h-4 w-[1px] bg-[#0a1628] mx-1" />
+                    <div className="h-4 w-[1px] bg-slate-700 mx-1" />
                     <button
                       onClick={() => handleResizeCard(emp.id, "small")}
-                      className={`px-2.5 py-1 text-[10px] font-black rounded-2xl transition-colors ${!cardSizes[emp.id] || cardSizes[emp.id] === "small" ? "bg-gradient-to-r from-[#c9a84c] to-[#a67c30] text-white" : "bg-[#0a1628] text-white font-bold"}`}
+                      className={`px-2.5 py-1 text-[10px] font-black rounded-lg transition-colors ${!cardSizes[emp.id] || cardSizes[emp.id] === "small" ? "bg-amber-500 text-white" : "bg-slate-800 text-white font-bold"}`}
                     >
                       صغير
                     </button>
                     <button
                       onClick={() => handleResizeCard(emp.id, "medium")}
-                      className={`px-2.5 py-1 text-[10px] font-black rounded-2xl transition-colors ${cardSizes[emp.id] === "medium" ? "bg-gradient-to-r from-[#c9a84c] to-[#a67c30] text-white" : "bg-[#0a1628] text-white font-bold"}`}
+                      className={`px-2.5 py-1 text-[10px] font-black rounded-lg transition-colors ${cardSizes[emp.id] === "medium" ? "bg-amber-500 text-white" : "bg-slate-800 text-white font-bold"}`}
                     >
                       متوسط
                     </button>
                     <button
                       onClick={() => handleResizeCard(emp.id, "large")}
-                      className={`px-2.5 py-1 text-[10px] font-black rounded-2xl transition-colors ${cardSizes[emp.id] === "large" ? "bg-gradient-to-r from-[#c9a84c] to-[#a67c30] text-white" : "bg-[#0a1628] text-white font-bold"}`}
+                      className={`px-2.5 py-1 text-[10px] font-black rounded-lg transition-colors ${cardSizes[emp.id] === "large" ? "bg-amber-500 text-white" : "bg-slate-800 text-white font-bold"}`}
                     >
                       عريض
                     </button>
@@ -1270,7 +1270,7 @@ export default function EmployeesData({
 
                 <div className="flex items-start justify-between mb-8">
                   <div className="flex items-center gap-4">
-                    <div className="w-16 h-16 bg-[#0a1628] rounded-2xl flex items-center justify-center text-[#0f172a] font-black text-xl border border-[#1e3a5f] shadow-sm overflow-hidden">
+                    <div className="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center text-[#0f172a] font-black text-xl border border-slate-100 shadow-sm overflow-hidden">
                       {emp.avatarUrl ? (
                         <img
                           src={emp.avatarUrl}
@@ -1286,15 +1286,15 @@ export default function EmployeesData({
                         {emp.name}
                       </h3>
                       <div className="flex items-center gap-2 mt-1">
-                        <Briefcase className="w-3.5 h-3.5 text-[#94a3b8]" />
-                        <p className="text-[#94a3b8] font-bold text-[11px] uppercase">
+                        <Briefcase className="w-3.5 h-3.5 text-slate-300" />
+                        <p className="text-slate-300 font-bold text-[11px] uppercase">
                           {emp.jobTitle}
                         </p>
                       </div>
                     </div>
                   </div>
                   <div
-                    className={`px-4 py-2 rounded-2xl text-[10px] font-black tracking-wide shadow-sm flex items-center justify-center shrink-0 ${
+                    className={`px-4 py-2 rounded-xl text-[10px] font-black tracking-wide shadow-sm flex items-center justify-center shrink-0 ${
                       (emp.status === "active" || emp.status === "نشط")
                         ? "bg-emerald-50 text-emerald-700"
                         : "bg-amber-50 text-amber-400 font-black"
@@ -1304,7 +1304,7 @@ export default function EmployeesData({
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-y-6 gap-x-4 border-t border-[#1e3a5f] pt-6">
+                <div className="grid grid-cols-2 gap-y-6 gap-x-4 border-t border-slate-100 pt-6">
                   {(() => {
                     const empTasks = (tasks || []).filter(
                       (t) =>
@@ -1318,9 +1318,9 @@ export default function EmployeesData({
                     )[0];
 
                     return mostUrgentTask ? (
-                      <div className="col-span-2 space-y-2 mb-2 p-3 bg-[#0a1628] rounded-2xl border border-[#1e3a5f]">
+                      <div className="col-span-2 space-y-2 mb-2 p-3 bg-slate-50 rounded-2xl border border-slate-100">
                         <div className="flex items-center justify-between">
-                          <span className="text-[11px] font-black text-[#94a3b8] font-bold">
+                          <span className="text-[11px] font-black text-slate-200 font-bold">
                             أكثر مهمة إلحاحاً:
                           </span>
                           <TaskCountdown
@@ -1328,29 +1328,29 @@ export default function EmployeesData({
                             status={mostUrgentTask.status}
                           />
                         </div>
-                        <p className="text-[11px] font-black text-[#94a3b8] truncate">
+                        <p className="text-[11px] font-black text-slate-700 truncate">
                           {mostUrgentTask.title}
                         </p>
                       </div>
                     ) : null;
                   })()}
                   <div className="space-y-1.5 flex flex-col">
-                    <div className="flex items-center gap-1.5 text-[10px] font-black text-[#94a3b8] font-bold">
+                    <div className="flex items-center gap-1.5 text-[10px] font-black text-slate-200 font-bold">
                       <CheckCircle2 className="w-3.5 h-3.5" />
                       رقم الهوية
                     </div>
-                    <p className="text-[#94a3b8] font-mono font-black text-sm">
+                    <p className="text-slate-900 font-mono font-black text-sm">
                       {emp.nationalId || "---"}
                     </p>
                   </div>
                   <div className="space-y-1.5 flex flex-col">
-                    <div className="flex items-center gap-1.5 text-[10px] font-black text-[#94a3b8] font-bold">
+                    <div className="flex items-center gap-1.5 text-[10px] font-black text-slate-200 font-bold">
                       <CalendarDays className="w-3.5 h-3.5" />
                       انتهاء الوثيقة
                     </div>
                     {emp.nationalIdExpiry ? (
                       <div className="flex items-center gap-1.5">
-                        <span className="text-[#94a3b8] font-mono font-black text-sm">
+                        <span className="text-slate-900 font-mono font-black text-sm">
                           {emp.nationalIdExpiry}
                         </span>
                         {(() => {
@@ -1358,7 +1358,7 @@ export default function EmployeesData({
                           if (status?.isExpiringSoon) {
                             return (
                               <span
-                                className="w-2 h-2 rounded-full bg-gradient-to-r from-[#c9a84c] to-[#a67c30] animate-pulse"
+                                className="w-2 h-2 rounded-full bg-amber-500 animate-pulse"
                                 title={`ينتهي خلال ${status.daysLeft} يوماً!`}
                               />
                             );
@@ -1379,78 +1379,78 @@ export default function EmployeesData({
                         })()}
                       </div>
                     ) : (
-                      <p className="text-[#94a3b8] font-bold font-bold text-sm">
+                      <p className="text-slate-200 font-bold font-bold text-sm">
                         غير محدد
                       </p>
                     )}
                   </div>
                   <div className="space-y-1.5 flex flex-col">
-                    <div className="flex items-center gap-1.5 text-[10px] font-black text-[#94a3b8] font-bold">
+                    <div className="flex items-center gap-1.5 text-[10px] font-black text-slate-200 font-bold">
                       <Building2 className="w-3.5 h-3.5" />
                       الجنسية
                     </div>
-                    <p className="text-[#94a3b8] font-black text-sm">
+                    <p className="text-slate-900 font-black text-sm">
                       {emp.nationality || "---"}
                     </p>
                   </div>
                   <div className="space-y-1.5 flex flex-col">
-                    <div className="flex items-center gap-1.5 text-[10px] font-black text-[#94a3b8] font-bold">
+                    <div className="flex items-center gap-1.5 text-[10px] font-black text-slate-200 font-bold">
                       <Calendar className="w-3.5 h-3.5" />
                       بدء العمل
                     </div>
-                    <p className="text-[#94a3b8] font-mono font-black text-sm">
+                    <p className="text-slate-900 font-mono font-black text-sm">
                       {emp.startDate || "---"}
                     </p>
                   </div>
                   <div className="space-y-1.5 flex flex-col overflow-hidden">
-                    <div className="flex items-center gap-1.5 text-[10px] font-black text-[#94a3b8] font-bold">
+                    <div className="flex items-center gap-1.5 text-[10px] font-black text-slate-200 font-bold">
                       <GraduationCap className="w-3.5 h-3.5" />
                       المؤهل
                     </div>
-                    <p className="text-[#94a3b8] font-black text-sm truncate">
+                    <p className="text-slate-900 font-black text-sm truncate">
                       {emp.qualification || "---"}
                     </p>
                   </div>
                   <div className="space-y-1.5 flex flex-col">
-                    <div className="flex items-center gap-1.5 text-[10px] font-black text-[#94a3b8] font-bold">
+                    <div className="flex items-center gap-1.5 text-[10px] font-black text-slate-200 font-bold">
                       <AtSign className="w-3.5 h-3.5" />
                       تواصل
                     </div>
-                    <p className="text-[#94a3b8] font-mono font-black text-[13px] truncate">
+                    <p className="text-slate-900 font-mono font-black text-[13px] truncate">
                       {emp.phone || emp.email || "---"}
                     </p>
                   </div>
                   <div className="space-y-1.5 flex flex-col">
-                    <div className="flex items-center gap-1.5 text-[10px] font-black text-[#94a3b8] font-bold">
+                    <div className="flex items-center gap-1.5 text-[10px] font-black text-slate-200 font-bold">
                       <Users className="w-3.5 h-3.5" />
                       المدير المباشر
                     </div>
-                    <p className="text-[#94a3b8] font-black text-sm truncate">
+                    <p className="text-slate-900 font-black text-sm truncate">
                       {emp.manager || "---"}
                     </p>
                   </div>
                 </div>
 
-                <div className="mt-8 pt-6 border-t border-[#1e3a5f] flex items-center justify-between">
+                <div className="mt-8 pt-6 border-t border-slate-100 flex items-center justify-between">
                   <div className="flex gap-2.5">
                     <button
                       onClick={() => {
                         setSelectedConfigEmployee(emp);
                         setView("form");
                       }}
-                      className="px-6 py-3 bg-[#0f172a] text-white rounded-2xl font-black text-xs hover:bg-[#0a1628] transition-all shadow-md"
+                      className="px-6 py-3 bg-[#0f172a] text-white rounded-xl font-black text-xs hover:bg-slate-800 transition-all shadow-md"
                     >
                       تحرير بيانات الموظف
                     </button>
                     <button
                       onClick={() => handleGenerateEmployeeCredentials(emp)}
-                      className="px-4 py-3 bg-[#0a1628] text-[#94a3b8] border border-[#1e3a5f] rounded-2xl font-black text-xs hover:bg-[#0a1628] transition-all shadow-sm"
+                      className="px-4 py-3 bg-white text-slate-700 border border-slate-200 rounded-xl font-black text-xs hover:bg-slate-50 transition-all shadow-sm"
                     >
                       توليد بيانات الدخول
                     </button>
                     <button
                       onClick={() => handleDeleteEmployee(emp.id)}
-                      className="w-10 h-10 bg-[#0a1628] text-rose-500 border border-[#1e3a5f] rounded-2xl flex items-center justify-center hover:bg-rose-50 hover:border-rose-200 transition-colors shadow-sm"
+                      className="w-10 h-10 bg-white text-rose-500 border border-slate-200 rounded-xl flex items-center justify-center hover:bg-rose-50 hover:border-rose-200 transition-colors shadow-sm"
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
@@ -1498,7 +1498,7 @@ export default function EmployeesData({
                        `);
                       win.document.close();
                     }}
-                    className="w-10 h-10 bg-[#0a1628] border border-[#1e3a5f] text-[#94a3b8] font-bold rounded-2xl flex items-center justify-center hover:bg-[#0a1628] transition-all shadow-sm"
+                    className="w-10 h-10 bg-white border border-slate-200 text-slate-200 font-bold rounded-xl flex items-center justify-center hover:bg-slate-50 transition-all shadow-sm"
                     title="مسير الراتب"
                   >
                     <FileText className="w-4 h-4" />
@@ -1512,53 +1512,53 @@ export default function EmployeesData({
 
       {/* Monthly Report Wizard Dialog overlay/modal */}
       {showReportWizard && (
-        <div className="fixed inset-0 bg-[#0a1628]/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="bg-[#0a1628] rounded-[2.5rem] border border-[#1e3a5f] shadow-2xl w-full max-w-4xl p-8 max-h-[90vh] overflow-y-auto"
+            className="bg-white rounded-[2.5rem] border border-slate-200 shadow-2xl w-full max-w-4xl p-8 max-h-[90vh] overflow-y-auto"
           >
-            <div className="flex items-start justify-between pb-6 border-b border-[#1e3a5f]">
+            <div className="flex items-start justify-between pb-6 border-b border-slate-100">
               <div className="space-y-1 text-right">
-                <h3 className="text-xl font-black text-[#94a3b8]">
+                <h3 className="text-xl font-black text-slate-900">
                   📊 منشئ تقارير الأداء والأجور الشهري
                 </h3>
-                <p className="text-xs text-[#94a3b8] font-bold font-bold">
+                <p className="text-xs text-slate-200 font-bold font-bold">
                   تصدير الفواتير ومستندات الأداء لأعضاء المكتب والمحامين بصيغ
                   ورقية أو رقمية
                 </p>
               </div>
               <button
                 onClick={() => setShowReportWizard(false)}
-                className="p-3 bg-[#0a1628] hover:bg-[#0a1628] rounded-2xl text-[#94a3b8] font-bold hover:text-[#94a3b8] transition-colors cursor-pointer"
+                className="p-3 bg-slate-50 hover:bg-slate-100 rounded-xl text-slate-200 font-bold hover:text-slate-800 transition-colors cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <div className="my-6 grid grid-cols-1 md:grid-cols-2 gap-6 bg-[#0a1628] p-6 rounded-2xl border border-[#1e3a5f]">
+            <div className="my-6 grid grid-cols-1 md:grid-cols-2 gap-6 bg-slate-50 p-6 rounded-2xl border border-slate-100">
               <div className="space-y-1.5 text-right">
-                <label className="text-xs font-black text-[#94a3b8] font-bold block">
+                <label className="text-xs font-black text-slate-200 font-bold block">
                   حدد شهر التصدير
                 </label>
                 <input
                   type="month"
                   value={reportMonth}
                   onChange={(e) => setReportMonth(e.target.value)}
-                  className="w-full bg-[#0a1628] border border-[#1e3a5f] rounded-2xl px-4 py-3 text-sm font-bold focus:border-emerald-500 transition-all text-[#94a3b8] outline-none"
+                  className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold focus:border-emerald-500 transition-all text-slate-800 outline-none"
                 />
               </div>
               <div className="flex items-end justify-end gap-3 pt-6 sm:pt-0">
                 <button
                   onClick={handleExportCSV}
-                  className="px-6 py-3 bg-[#0a1628] text-[#94a3b8] hover:bg-[#0a1628] border border-[#1e3a5f] rounded-2xl text-xs font-black transition-all flex items-center gap-2 cursor-pointer"
+                  className="px-6 py-3 bg-white text-slate-700 hover:bg-slate-50 border border-slate-200 rounded-xl text-xs font-black transition-all flex items-center gap-2 cursor-pointer"
                 >
                   <Download className="w-4 h-4 text-[#0f172a]" />
                   تصدير كملف Excel (CSV)
                 </button>
                 <button
                   onClick={handleExportPDF}
-                  className="px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl text-xs font-black transition-all flex items-center gap-2 shadow-md shadow-emerald-100 cursor-pointer"
+                  className="px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-black transition-all flex items-center gap-2 shadow-md shadow-emerald-100 cursor-pointer"
                 >
                   <FileText className="w-4 h-4" />
                   طباعة وتصدير PDF الملون
@@ -1568,12 +1568,12 @@ export default function EmployeesData({
 
             {/* Editable performance hour list */}
             <div className="space-y-4">
-              <h4 className="text-xs font-black text-[#94a3b8] text-right">
+              <h4 className="text-xs font-black text-slate-900 text-right">
                 مراجعة وتعديل ساعات عمل الموظفين لشهر ({reportMonth}):
               </h4>
-              <div className="border border-[#1e3a5f] rounded-2xl overflow-hidden shadow-sm">
+              <div className="border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
                 <table className="w-full text-right text-xs">
-                  <thead className="bg-[#f8fafc] text-[#475569] border-b border-[#1e3a5f]">
+                  <thead className="bg-[#f8fafc] text-[#475569] border-b border-slate-100">
                     <tr>
                       <th className="p-4 font-black text-right">
                         اسم الموظف كلياً
@@ -1591,11 +1591,11 @@ export default function EmployeesData({
                   </thead>
                   <tbody className="divide-y divide-slate-100">
                     {reportData.map((row) => (
-                      <tr key={row.id} className="hover:bg-[#0a1628]/50">
+                      <tr key={row.id} className="hover:bg-slate-50/50">
                         <td className="p-4 font-extrabold text-[#0f172a]">
                           {row.name}
                         </td>
-                        <td className="p-4 font-bold text-[#94a3b8]">
+                        <td className="p-4 font-bold text-slate-700">
                           {row.jobTitle}
                         </td>
                         <td className="p-4 text-center font-black text-emerald-600 font-mono">
@@ -1612,7 +1612,7 @@ export default function EmployeesData({
                                 [row.id]: Number(e.target.value) || 0,
                               })
                             }
-                            className="bg-[#0a1628] border border-[#1e3a5f] rounded-2xl px-3 py-2 text-xs font-black font-mono w-24 text-center outline-none focus:bg-[#0a1628] focus:border-emerald-600"
+                            className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-black font-mono w-24 text-center outline-none focus:bg-white focus:border-emerald-600"
                           />
                         </td>
                       </tr>

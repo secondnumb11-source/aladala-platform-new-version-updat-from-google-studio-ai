@@ -950,7 +950,7 @@ export default function WscatModule() {
                         disabled={pieSocketStatus === 'connected' || pieSocketStatus === 'connecting'}
                         className="sr-only peer" 
                       />
-                      <div className="w-9 h-5 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:left-[2px] after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-[#0a1628] after:border-[#1e3a5f] after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-indigo-600"></div>
+                      <div className="w-9 h-5 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:left-[2px] after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-indigo-600"></div>
                     </label>
                   </div>
 

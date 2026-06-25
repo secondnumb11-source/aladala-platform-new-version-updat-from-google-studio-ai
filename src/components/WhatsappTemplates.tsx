@@ -536,7 +536,7 @@ export default function WhatsappTemplates() {
   });
 
   return (
-    <div className="space-y-6 text-right animate-fade-in font-sans pb-12 bg-[#0a1628] min-h-screen" dir="rtl">
+    <div className="space-y-6 text-right animate-fade-in font-sans pb-12 bg-white min-h-screen" dir="rtl">
       
       {/* Toast Alert */}
       <AnimatePresence>
@@ -545,14 +545,14 @@ export default function WhatsappTemplates() {
             initial={{ opacity: 0, y: -20, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -10, scale: 0.95 }}
-            className="fixed top-6 left-6 right-6 md:left-auto md:right-12 md:w-[420px] bg-[#0a1628] border-r-4 border-emerald-600 shadow-2xl p-4 rounded-xl z-50 flex items-start gap-3 border border-[#1e3a5f]"
+            className="fixed top-6 left-6 right-6 md:left-auto md:right-12 md:w-[420px] bg-white border-r-4 border-emerald-600 shadow-2xl p-4 rounded-xl z-50 flex items-start gap-3 border border-slate-200"
           >
             <div className="p-2 bg-emerald-50 rounded-lg text-emerald-900 shrink-0">
               <CheckCircle2 className="w-5 h-5" />
             </div>
             <div className="flex-1">
               <p className="text-sm font-black text-slate-950 leading-relaxed mb-0.5">منصة العدالة الرقمية</p>
-              <p className={`text-xs font-bold ${getDynamicTextColor('bg-[#0a1628]')} leading-relaxed`}>{toastMessage}</p>
+              <p className={`text-xs font-bold ${getDynamicTextColor('bg-white')} leading-relaxed`}>{toastMessage}</p>
             </div>
           </motion.div>
         )}
@@ -562,7 +562,7 @@ export default function WhatsappTemplates() {
       <motion.div 
         initial={{ opacity: 0, y: 10 }} 
         animate={{ opacity: 1, y: 0 }}
-        className="p-8 relative bg-[#0a1628] border border-[#1e3a5f] rounded-3xl shadow-xl overflow-hidden overflow-hidden"
+        className="p-8 relative bg-white border border-slate-200 rounded-3xl shadow-xl overflow-hidden overflow-hidden"
       >
         {/* Luminous background accents */}
         <div className="absolute top-0 right-0 w-96 h-96 bg-emerald-100/40 rounded-full blur-3xl pointer-events-none"></div>
@@ -582,7 +582,7 @@ export default function WhatsappTemplates() {
               أتمتة ذكية ومراسلات وقائية للعملاء لجميع المناسبات والتذكيرات القضائية مع تباين فائق وعرض مريح يدعم الهوية البصرية الرسمية.
             </p>
           </div>
-          <div className="flex gap-4 bg-[#0a1628] border border-[#1e3a5f] p-4 rounded-2xl shadow-sm shrink-0">
+          <div className="flex gap-4 bg-white border border-slate-200 p-4 rounded-2xl shadow-sm shrink-0">
             <div className="text-center px-4">
               <span className={`block text-2xl font-black ${TEXT_COLORS.onLight}`}>{templates.length}</span>
               <span className={`text-[10px] ${TEXT_COLORS.onLightMuted} font-bold uppercase tracking-wider`}>صياغات الأتمتة</span>
@@ -597,7 +597,7 @@ export default function WhatsappTemplates() {
       </motion.div>
 
       {/* Navigation Tabs - Gilded Contrasts */}
-      <div className="bg-[#0a1628] border border-[#1e3a5f] rounded-2xl p-2.5 flex items-center justify-between flex-wrap gap-2 shadow-sm">
+      <div className="bg-white border border-slate-200 rounded-2xl p-2.5 flex items-center justify-between flex-wrap gap-2 shadow-sm">
         <div className="flex items-center gap-2 overflow-x-auto w-full md:w-auto p-1">
           {[
             { id: 'new_notification', label: 'إرسال وجدولة الرسائل 📨', icon: Send },
@@ -613,7 +613,7 @@ export default function WhatsappTemplates() {
                 className={`flex items-center gap-2.5 px-6 py-3.5 rounded-xl text-xs md:text-sm font-black transition-all whitespace-nowrap border-2 ${
                   isActive 
                     ? 'bg-slate-950 text-white shadow-lg border-slate-950 scale-[1.02]' 
-                    : 'bg-[#0a1628] text-slate-800 hover:bg-slate-50 border-slate-100 hover:border-[#1e3a5f] font-bold'
+                    : 'bg-white text-slate-800 hover:bg-slate-50 border-slate-100 hover:border-slate-200 font-bold'
                 }`}
               >
                 <span>{tab.label}</span>
@@ -649,7 +649,7 @@ export default function WhatsappTemplates() {
           
           {/* Main message editor panel */}
           <div className="lg:col-span-8 flex flex-col gap-6">
-             <div className="bg-[#0a1628] border border-[#1e3a5f]/90 rounded-3xl p-6 md:p-8 shadow-sm relative">
+             <div className="bg-white border border-slate-200/90 rounded-3xl p-6 md:p-8 shadow-sm relative">
                 <h2 className="text-xl font-black text-slate-950 border-b border-slate-100 pb-4 mb-6 flex items-center gap-2.5">
                   <FileText className="w-5.5 h-5.5 text-emerald-600" /> 
                   <span>تجهيز وصياغة رسالة الموكل الفورية</span>
@@ -665,7 +665,7 @@ export default function WhatsappTemplates() {
                       <select 
                         value={selectedClient?.id || ''} 
                         onChange={handleClientChange}
-                        className={`w-full bg-[#0a1628] border border-[#1e3a5f] hover:border-emerald-500 rounded-xl py-3 px-4 ${getDynamicTextColor('bg-slate-50')} font-extrabold appearance-none outline-none focus:bg-[#0a1628] focus:ring-1 focus:ring-emerald-500 transition-all text-sm shadow-sm`}
+                        className={`w-full bg-white border border-slate-200 hover:border-emerald-500 rounded-xl py-3 px-4 ${getDynamicTextColor('bg-slate-50')} font-extrabold appearance-none outline-none focus:bg-white focus:ring-1 focus:ring-emerald-500 transition-all text-sm shadow-sm`}
                       >
                         <option value="">-- اضغط لتحديد العميل --</option>
                         {realClients.map(c => <option key={c.id} value={c.id}>{c.name} {c.phone ? `- ${c.phone}` : ''}</option>)}
@@ -673,7 +673,7 @@ export default function WhatsappTemplates() {
                       <ChevronDown className={`absolute left-4 top-1/2 -translate-y-1/2 w-4.5 h-4.5 ${getDynamicTextColor('bg-slate-50')} pointer-events-none`} />
                     </div>
                     {selectedClient && (
-                      <div className="p-3 bg-slate-50 border border-[#1e3a5f] rounded-xl text-xs space-y-1 mt-2">
+                      <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs space-y-1 mt-2">
                         <p className={`${getDynamicTextColor('bg-slate-50')} font-bold`}>📋 {selectedClient?.name || 'غير محدد'}</p>
                         {selectedClient?.phone && (
                           <p className="text-slate-500">📱 {selectedClient.phone}</p>
@@ -697,7 +697,7 @@ export default function WhatsappTemplates() {
                       <select 
                         value={selectedCase} 
                         onChange={handleCaseChange}
-                        className={`w-full bg-[#0a1628] border border-[#1e3a5f] hover:border-emerald-500 rounded-xl py-3 px-4 ${getDynamicTextColor('bg-slate-50')} font-extrabold appearance-none outline-none focus:bg-[#0a1628] focus:ring-1 focus:ring-emerald-500 transition-all text-sm shadow-sm`}
+                        className={`w-full bg-white border border-slate-200 hover:border-emerald-500 rounded-xl py-3 px-4 ${getDynamicTextColor('bg-slate-50')} font-extrabold appearance-none outline-none focus:bg-white focus:ring-1 focus:ring-emerald-500 transition-all text-sm shadow-sm`}
                       >
                         <option value="">-- اضغط للاختيار أو دعها كاستشارة --</option>
                         {cases.map(c => <option key={c} value={c}>{c}</option>)}
@@ -715,7 +715,7 @@ export default function WhatsappTemplates() {
                       <select 
                         value={selectedTemplate} 
                         onChange={handleTemplateChange}
-                        className="w-full bg-emerald-50/30 border border-emerald-500/40 rounded-xl py-3.5 px-4 text-emerald-900 font-extrabold appearance-none outline-none focus:bg-[#0a1628] focus:ring-2 focus:ring-emerald-600 transition-all text-sm shadow-sm"
+                        className="w-full bg-emerald-50/30 border border-emerald-500/40 rounded-xl py-3.5 px-4 text-emerald-900 font-extrabold appearance-none outline-none focus:bg-white focus:ring-2 focus:ring-emerald-600 transition-all text-sm shadow-sm"
                       >
                         {templates.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
                       </select>
@@ -746,7 +746,7 @@ export default function WhatsappTemplates() {
                         <Sparkles className={`w-3.5 h-3.5 ${isDrafting ? 'animate-spin' : ''}`} />
                         <span>{isDrafting ? 'جاري الصياغة...' : 'تحسين بالذكاء الاصطناعي ✨'}</span>
                       </button>
-                      <span className="text-[10px] bg-slate-100 text-slate-950 px-2 py-0.5 rounded font-black border border-[#1e3a5f]">
+                      <span className="text-[10px] bg-slate-100 text-slate-950 px-2 py-0.5 rounded font-black border border-slate-200">
                         {editorText.length} حرف
                       </span>
                     </div>
@@ -755,7 +755,7 @@ export default function WhatsappTemplates() {
                     rows={6}
                     value={editorText}
                     onChange={(e) => setEditorText(e.target.value)}
-                    className="w-full bg-[#0a1628] border border-[#1e3a5f] focus:border-emerald-600 rounded-2xl p-4.5 text-slate-950 text-[15px] font-bold outline-none ring-offset-2 focus:ring-2 focus:ring-emerald-500/25 leading-relaxed shadow-sm"
+                    className="w-full bg-white border border-slate-200 focus:border-emerald-600 rounded-2xl p-4.5 text-slate-950 text-[15px] font-bold outline-none ring-offset-2 focus:ring-2 focus:ring-emerald-500/25 leading-relaxed shadow-sm"
                     placeholder="اكتب نص الرسالة هنا..."
                   />
                   {editorText.includes('{ClientName}') && (
@@ -767,7 +767,7 @@ export default function WhatsappTemplates() {
                 </div>
 
                 {/* Automation Scheduling Inputs */}
-                <div className="bg-slate-50/50 p-5 rounded-2xl border border-[#1e3a5f] mb-6">
+                <div className="bg-slate-50/50 p-5 rounded-2xl border border-slate-200 mb-6">
                    <div className={`${TEXT_COLORS.onLight} font-black text-xs flex items-center gap-2 mb-4`}>
                      <Clock className={`w-4 h-4 ${TEXT_COLORS.onLight}`} />
                      <span>جدولة موعد بث المراسلة التلقائي (اختياري تماماً)</span>
@@ -779,7 +779,7 @@ export default function WhatsappTemplates() {
                          type="date" 
                          value={scheduleDate} 
                          onChange={e => setScheduleDate(e.target.value)} 
-                         className="w-full bg-[#0a1628] p-3 rounded-xl border border-[#1e3a5f] text-slate-950 font-bold text-xs outline-none focus:border-emerald-500 shadow-sm" 
+                         className="w-full bg-white p-3 rounded-xl border border-slate-200 text-slate-950 font-bold text-xs outline-none focus:border-emerald-500 shadow-sm" 
                        />
                      </div>
                      <div className="space-y-1.5">
@@ -788,7 +788,7 @@ export default function WhatsappTemplates() {
                          type="time" 
                          value={scheduleTime} 
                          onChange={e => setScheduleTime(e.target.value)} 
-                         className="w-full bg-[#0a1628] p-3 rounded-xl border border-[#1e3a5f] text-slate-950 font-bold text-xs outline-none focus:border-emerald-500 shadow-sm" 
+                         className="w-full bg-white p-3 rounded-xl border border-slate-200 text-slate-950 font-bold text-xs outline-none focus:border-emerald-500 shadow-sm" 
                        />
                      </div>
                    </div>
@@ -798,7 +798,7 @@ export default function WhatsappTemplates() {
                 <div className="flex flex-wrap gap-3 items-center justify-end border-t border-slate-100 pt-5">
                   <button 
                     onClick={handleNotifyEmployee} 
-                    className="px-5 py-3 rounded-xl border border-[#1e3a5f] bg-[#0a1628] hover:bg-slate-50 text-slate-950 font-black text-xs transition-all shadow-sm"
+                    className="px-5 py-3 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-950 font-black text-xs transition-all shadow-sm"
                   >
                     تنبيه المستشار المسئول ⚖️
                   </button>
@@ -815,14 +815,14 @@ export default function WhatsappTemplates() {
 
           {/* Right sidebar info panel */}
           <div className="lg:col-span-4 flex flex-col gap-6">
-            <div className="bg-[#0a1628] border border-[#1e3a5f] rounded-3xl p-5 shadow-sm">
+            <div className="bg-white border border-slate-200 rounded-3xl p-5 shadow-sm">
               <h3 className={`text-sm font-extrabold ${TEXT_COLORS.onLight} border-b border-slate-100 pb-3 mb-4 flex items-center gap-2`}>
                 <History className={`w-4.5 h-4.5 ${TEXT_COLORS.onLight}`} />
                 <span>سجل المراسلات للعميل النشط</span>
               </h3>
               
               {!selectedClient ? (
-                <div className="text-center py-10 px-4 bg-slate-50 rounded-2xl border border-dashed border-[#1e3a5f]">
+                <div className="text-center py-10 px-4 bg-slate-50 rounded-2xl border border-dashed border-slate-200">
                   <Users className="w-10 h-10 text-slate-400 mx-auto mb-2" />
                   <p className={`text-xs font-black ${getDynamicTextColor('bg-slate-50')}`}>تتبع السجل والمكالمات الصادرة</p>
                   <p className="text-[10px] text-slate-500 mt-1">يرجى تحديد اسم العميل من القائمة المنسدلة لعرض أرشيف المراسلات الخاصة به مباشرة.</p>
@@ -840,7 +840,7 @@ export default function WhatsappTemplates() {
                     </div>
                   ) : (
                     clientHistory.filter(h => h.client === selectedClient?.name).map((history) => (
-                      <div key={history.id} className="bg-slate-50 p-4 rounded-xl border border-[#1e3a5f] hover:border-[#1e3a5f] transition-all">
+                      <div key={history.id} className="bg-slate-50 p-4 rounded-xl border border-slate-200 hover:border-slate-300 transition-all">
                          <div className="flex justify-between items-center mb-2">
                            <span className={`text-[10px] bg-slate-200 ${getDynamicTextColor('bg-slate-50')} font-extrabold px-2 py-0.5 rounded`}>
                              {history.date}
@@ -864,7 +864,7 @@ export default function WhatsappTemplates() {
             </div>
 
             {/* Quick tips */}
-            <div className="bg-[#0a1628] border border-[#1e3a5f] rounded-3xl p-5 shadow-sm text-right">
+            <div className="bg-white border border-slate-200 rounded-3xl p-5 shadow-sm text-right">
               <h4 className={`text-xs font-black ${TEXT_COLORS.onLight} mb-3 flex items-center gap-2`}>
                 <Bookmark className={`w-4 h-4 ${TEXT_COLORS.onLight}`} />
                 <span>تعليمات الصياغة الآمنة والموثوقية</span>
@@ -889,7 +889,7 @@ export default function WhatsappTemplates() {
       )}
 
       {activeTab === 'upcoming' && (
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="bg-[#0a1628] border border-[#1e3a5f] rounded-3xl p-6 md:p-8 shadow-sm">
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="bg-white border border-slate-200 rounded-3xl p-6 md:p-8 shadow-sm">
            <h2 className={`text-xl font-black ${TEXT_COLORS.onLight} tracking-tight mb-6 flex items-center gap-3`}>
               <CalendarDays className="w-6 h-6 text-emerald-600" />
               <span>رسائل أسبوعية وشهرية مجدولة للعملاء آلياً</span>
@@ -899,7 +899,7 @@ export default function WhatsappTemplates() {
            </p>
 
            {upcomingReminders.length === 0 ? (
-             <div className="text-center py-12 bg-slate-50 rounded-2xl border-2 border-dashed border-[#1e3a5f]">
+             <div className="text-center py-12 bg-slate-50 rounded-2xl border-2 border-dashed border-slate-200">
                <Calendar className="w-12 h-12 text-slate-400 mx-auto mb-2" />
                <p className="text-sm font-black text-slate-950">لا توجد رسائل مجدولة قريباً</p>
                <p className={`text-xs ${getDynamicTextColor('bg-slate-50')} mt-1 font-bold`}>تستطيع جدولة أي إشعار أو رسالة جديدة من خلال تبويب (إرسال وجدولة الرسائل).</p>
@@ -907,7 +907,7 @@ export default function WhatsappTemplates() {
            ) : (
              <div className="grid gap-4">
                {upcomingReminders.map((reminder) => (
-                 <div key={reminder.id} className="bg-slate-50 border border-[#1e3a5f] p-5 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-6 hover:shadow-sm transition-all">
+                 <div key={reminder.id} className="bg-slate-50 border border-slate-200 p-5 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-6 hover:shadow-sm transition-all">
                     <div className="space-y-1.5 shrink-0">
                        <span className="bg-emerald-100 text-emerald-900 px-3.5 py-1 rounded-full text-[10px] font-black border border-emerald-200">
                          {reminder.due}
@@ -916,11 +916,11 @@ export default function WhatsappTemplates() {
                        <span className={`text-[11px] ${getDynamicTextColor('bg-slate-50')} block font-bold`}>{reminder.case}</span>
                     </div>
                     
-                    <div className={`bg-[#0a1628] p-3.5 rounded-xl border border-[#1e3a5f] flex-1 ${getDynamicTextColor('bg-slate-50')} text-xs font-bold leading-relaxed text-right md:mx-4 shadow-inner`}>
+                    <div className={`bg-white p-3.5 rounded-xl border border-slate-200 flex-1 ${getDynamicTextColor('bg-slate-50')} text-xs font-bold leading-relaxed text-right md:mx-4 shadow-inner`}>
                       {reminder.msg}
                     </div>
                     
-                    <div className="text-xs text-slate-950 flex flex-col items-start md:items-end gap-1 shrink-0 font-black bg-slate-200/50 p-2.5 rounded-lg border border-[#1e3a5f]/40">
+                    <div className="text-xs text-slate-950 flex flex-col items-start md:items-end gap-1 shrink-0 font-black bg-slate-200/50 p-2.5 rounded-lg border border-slate-200/40">
                       <span>📆 تاريخ البث: {reminder.date}</span>
                       <span>⏰ توقيت دقيق: {reminder.time}</span>
                     </div>
@@ -932,7 +932,7 @@ export default function WhatsappTemplates() {
       )}
 
       {activeTab === 'outbox' && (
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="bg-[#0a1628] border border-[#1e3a5f] rounded-3xl p-6 md:p-8 shadow-sm">
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="bg-white border border-slate-200 rounded-3xl p-6 md:p-8 shadow-sm">
            <h2 className="text-xl font-black text-slate-950 mb-4 flex items-center gap-2">
              <History className="w-6 h-6 text-emerald-600" />
              <span>سجلات المراسلات الصادرة والأكثر طلباً</span>
@@ -943,7 +943,7 @@ export default function WhatsappTemplates() {
 
            <div className="space-y-3.5">
              {clientHistory.map((history) => (
-                <div key={history.id} className="bg-[#0a1628] p-5 rounded-2xl border border-[#1e3a5f] hover:border-[#1e3a5f] transition-all flex justify-between items-center gap-4 flex-wrap md:flex-nowrap shadow-sm">
+                <div key={history.id} className="bg-white p-5 rounded-2xl border border-slate-200 hover:border-slate-300 transition-all flex justify-between items-center gap-4 flex-wrap md:flex-nowrap shadow-sm">
                    <div className="space-y-1">
                      <h4 className="font-black text-sm text-slate-950">{history.client}</h4>
                      <p className={`text-xs ${getDynamicTextColor('bg-slate-50')} font-bold leading-relaxed`}>{history.msg}</p>
@@ -963,7 +963,7 @@ export default function WhatsappTemplates() {
       )}
 
       {activeTab === 'templates' && (
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="bg-[#0a1628] border border-[#1e3a5f] rounded-3xl p-6 md:p-8 shadow-sm">
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="bg-white border border-slate-200 rounded-3xl p-6 md:p-8 shadow-sm">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 pb-4 border-b border-slate-100">
             <div>
               <h2 className="text-xl font-black text-slate-950">إدارة قوالب المراسلة الجاهزة لجميع المناسبات</h2>
@@ -990,7 +990,7 @@ export default function WhatsappTemplates() {
                 className={`px-4 py-2 rounded-lg text-xs font-black transition-all border-2 ${
                   categoryFilter === cat.id
                     ? 'bg-slate-950 text-white border-slate-950'
-                    : 'bg-[#0a1628] text-slate-800 hover:bg-slate-50 border-slate-100'
+                    : 'bg-white text-slate-800 hover:bg-slate-50 border-slate-100'
                 }`}
               >
                 {cat.label}
@@ -1003,7 +1003,7 @@ export default function WhatsappTemplates() {
                 placeholder="ابحث في نص القالب..."
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
-                className="w-full bg-[#0a1628] border border-[#1e3a5f] rounded-lg py-2 px-3.5 pr-9 text-xs font-bold text-slate-950 outline-none focus:border-slate-400 placeholder:text-slate-500 shadow-sm"
+                className="w-full bg-white border border-slate-200 rounded-lg py-2 px-3.5 pr-9 text-xs font-bold text-slate-950 outline-none focus:border-slate-400 placeholder:text-slate-500 shadow-sm"
               />
               <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
             </div>
@@ -1011,7 +1011,7 @@ export default function WhatsappTemplates() {
 
           {/* Cards list */}
           {filteredTemplates.length === 0 ? (
-            <div className={`text-center py-10 bg-slate-50 rounded-2xl ${getDynamicTextColor('bg-slate-50')} font-bold text-xs border border-dashed border-[#1e3a5f]`}>
+            <div className={`text-center py-10 bg-slate-50 rounded-2xl ${getDynamicTextColor('bg-slate-50')} font-bold text-xs border border-dashed border-slate-200`}>
                🤷‍♂️ لا تتوفر أي نتائج مطابقة للتصفية الحالية.
             </div>
           ) : (
@@ -1019,7 +1019,7 @@ export default function WhatsappTemplates() {
               {filteredTemplates.map((t) => (
                 <div 
                   key={t.id} 
-                  className="bg-[#0a1628] p-5 rounded-2xl border border-[#1e3a5f] hover:border-slate-400 transition-all flex flex-col justify-between gap-4 hover:shadow-md"
+                  className="bg-white p-5 rounded-2xl border border-slate-200 hover:border-slate-400 transition-all flex flex-col justify-between gap-4 hover:shadow-md"
                 >
                   <div className="space-y-3">
                     <div className="flex justify-between items-start gap-4">
@@ -1037,12 +1037,12 @@ export default function WhatsappTemplates() {
                       )}
                     </div>
                     <h3 className="font-black text-slate-950 text-sm leading-snug">{t.name}</h3>
-                    <div className={`bg-slate-50 p-4.5 rounded-xl border border-[#1e3a5f] ${getDynamicTextColor('bg-slate-50')} font-bold text-xs leading-relaxed max-h-[140px] overflow-y-auto select-all text-right shadow-inner`}>
+                    <div className={`bg-slate-50 p-4.5 rounded-xl border border-slate-200 ${getDynamicTextColor('bg-slate-50')} font-bold text-xs leading-relaxed max-h-[140px] overflow-y-auto select-all text-right shadow-inner`}>
                       {t.messageText}
                     </div>
                   </div>
                   
-                  <div className="flex justify-between items-center bg-slate-50 p-2.5 rounded-xl border border-[#1e3a5f] mt-1 shrink-0">
+                  <div className="flex justify-between items-center bg-slate-50 p-2.5 rounded-xl border border-slate-200 mt-1 shrink-0">
                     <div className={`text-[10px] ${getDynamicTextColor('bg-slate-50')} font-bold`}>
                       الفئة: {t.category === 'court' ? 'قسم القضاء المتكامل' : t.category === 'social' ? 'العلاقات والمناسبات' : t.category === 'finance' ? 'الإدارة المالية' : t.category === 'onboarding' ? 'تسكين الموكلين' : 'الحالات العاجلة'}
                     </div>

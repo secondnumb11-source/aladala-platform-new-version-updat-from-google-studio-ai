@@ -220,21 +220,21 @@ export default function HearingsModule({ onUpdateState }: HearingsModuleProps) {
             <h1 className="text-xl md:text-2xl font-black text-white mt-1">
               إدارة مواعيد الجلسات والدوائر القضائية
             </h1>
-            <p className="text-[#94a3b8] text-xs mt-1 font-bold leading-relaxed">
+            <p className="text-slate-400 text-xs mt-1 font-bold leading-relaxed">
               شاشة متكاملة تتيح مراقبة الجلسات وتعديل التفاصيل، الغرف القضائية، الحالة، وحذف المواعيد وإلغائها آلياً من قاعدة البيانات.
             </p>
           </div>
           
-          <div className="flex bg-[#0a1220] p-1 border border-[#1e3a5f] rounded-2xl shrink-0">
+          <div className="flex bg-[#0a1220] p-1 border border-slate-800 rounded-2xl shrink-0">
             <button 
               onClick={() => setActiveTab('list')}
-              className={`px-4 py-2 text-xs font-black rounded-2xl transition-all cursor-pointer ${activeTab === 'list' ? 'bg-gradient-to-r from-[#c9a84c] to-[#a67c30] text-[#94a3b8] shadow-md' : 'text-[#94a3b8] hover:text-white'}`}
+              className={`px-4 py-2 text-xs font-black rounded-xl transition-all cursor-pointer ${activeTab === 'list' ? 'bg-amber-500 text-slate-950 shadow-md' : 'text-slate-400 hover:text-white'}`}
             >
               عرض القائمة ومحكم السجلات
             </button>
             <button 
               onClick={() => setActiveTab('calendar')}
-              className={`px-4 py-2 text-xs font-black rounded-2xl transition-all cursor-pointer ${activeTab === 'calendar' ? 'bg-gradient-to-r from-[#c9a84c] to-[#a67c30] text-[#94a3b8] shadow-md' : 'text-[#94a3b8] hover:text-white'}`}
+              className={`px-4 py-2 text-xs font-black rounded-xl transition-all cursor-pointer ${activeTab === 'calendar' ? 'bg-amber-500 text-slate-950 shadow-md' : 'text-slate-400 hover:text-white'}`}
             >
               عرض التقويم الجدولي لـ 2026
             </button>
@@ -243,12 +243,12 @@ export default function HearingsModule({ onUpdateState }: HearingsModuleProps) {
       </div>
 
       {/* Filters bar */}
-      <div className="bg-[#0f172a] border border-[#1e3a5f] rounded-2xl p-4 flex flex-col md:flex-row gap-4 items-center justify-between shadow-lg">
+      <div className="bg-[#0f172a] border border-slate-800 rounded-2xl p-4 flex flex-col md:flex-row gap-4 items-center justify-between shadow-lg">
         <div className="relative w-full md:max-w-xs">
-          <Search className="absolute right-3.5 top-3 w-4 h-4 text-[#94a3b8]0" />
+          <Search className="absolute right-3.5 top-3 w-4 h-4 text-slate-500" />
           <input 
             type="text"
-            className="w-full bg-[#050e1e] border border-[#1e3a5f]/60 rounded-2xl pr-10 pl-4 py-2 text-xs font-black text-white outline-none focus:border-amber-500 transition-colors"
+            className="w-full bg-[#050e1e] border border-slate-700/60 rounded-xl pr-10 pl-4 py-2 text-xs font-black text-white outline-none focus:border-amber-500 transition-colors"
             placeholder="البحث برقم القضية، المحكمة، أو الموضوع..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
@@ -256,7 +256,7 @@ export default function HearingsModule({ onUpdateState }: HearingsModuleProps) {
         </div>
 
         <div className="flex items-center gap-2.5 w-full md:w-auto overflow-x-auto py-1">
-          <Filter className="w-4 h-4 text-[#94a3b8] shrink-0" />
+          <Filter className="w-4 h-4 text-slate-400 shrink-0" />
           {['all', 'upcoming', 'postponed', 'done', 'cancelled'].map((status) => {
             const labels: Record<string, string> = {
               all: 'جميع الحالات',
@@ -269,10 +269,10 @@ export default function HearingsModule({ onUpdateState }: HearingsModuleProps) {
               <button
                 key={status}
                 onClick={() => setStatusFilter(status)}
-                className={`px-3 py-1.5 text-xs font-extrabold rounded-2xl border whitespace-nowrap cursor-pointer transition-all ${
+                className={`px-3 py-1.5 text-xs font-extrabold rounded-xl border whitespace-nowrap cursor-pointer transition-all ${
                   statusFilter === status 
-                    ? 'bg-gradient-to-r from-[#c9a84c] to-[#a67c30]/10 border-amber-500 text-amber-400 font-extrabold' 
-                    : 'bg-[#050e1e] border-[#1e3a5f] text-[#94a3b8] hover:text-white hover:border-[#1e3a5f]'
+                    ? 'bg-amber-500/10 border-amber-500 text-amber-400 font-extrabold' 
+                    : 'bg-[#050e1e] border-slate-800 text-slate-400 hover:text-white hover:border-slate-700'
                 }`}
               >
                 {labels[status]}
@@ -286,16 +286,16 @@ export default function HearingsModule({ onUpdateState }: HearingsModuleProps) {
       {isLoading ? (
         <div className="py-20 text-center flex flex-col items-center justify-center gap-3">
           <Loader2 className="w-10 h-10 text-amber-500 animate-spin" />
-          <p className="text-[#94a3b8] text-sm font-black">جاري مـزامنة وجلب سجلات مواعيد الجلسات فورياً...</p>
+          <p className="text-slate-400 text-sm font-black">جاري مـزامنة وجلب سجلات مواعيد الجلسات فورياً...</p>
         </div>
       ) : activeTab === 'list' ? (
         // ================= عرض قائمة المواعيد (List View) =================
         <div className="space-y-4">
           {filteredHearings.length === 0 ? (
-            <div className="bg-[#0f172a] border border-[#1e3a5f] p-12 text-center rounded-3xl space-y-4">
-              <ShieldAlert className="w-12 h-12 text-[#94a3b8]0 mx-auto" />
+            <div className="bg-[#0f172a] border border-slate-800 p-12 text-center rounded-3xl space-y-4">
+              <ShieldAlert className="w-12 h-12 text-slate-500 mx-auto" />
               <h3 className="text-white text-lg font-black">لا توجد مواعيد جلسات تطابق خيارات التصفية</h3>
-              <p className="text-[#94a3b8]0 text-xs font-bold">يرجى تعديل محددات الفوترة والبحث أو إضافة قضايا ومواعيد جلسات جديدة.</p>
+              <p className="text-slate-500 text-xs font-bold">يرجى تعديل محددات الفوترة والبحث أو إضافة قضايا ومواعيد جلسات جديدة.</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -313,7 +313,7 @@ export default function HearingsModule({ onUpdateState }: HearingsModuleProps) {
                     className={`flex items-start justify-between p-4 border rounded-2xl transition-all group
                       ${fromDashboard 
                         ? 'bg-[#0f2441] border-blue-500/40 shadow-[0_0_15px_rgba(59,130,246,0.15)]' 
-                        : 'bg-[#0a1628] border-[#1e3a5f]/50 hover:border-amber-500/30'
+                        : 'bg-[#0a1628] border-slate-700/50 hover:border-amber-500/30'
                       }`}>
 
                     {/* بيانات الموعد */}
@@ -323,7 +323,7 @@ export default function HearingsModule({ onUpdateState }: HearingsModuleProps) {
                         <span className="text-amber-400 font-bold text-sm">
                           {hearing.date}
                         </span>
-                        <span className="text-[#94a3b8]0 text-xs">
+                        <span className="text-slate-500 text-xs">
                           {hearing.time || '09:00'}
                         </span>
                         {fromDashboard && (
@@ -339,23 +339,23 @@ export default function HearingsModule({ onUpdateState }: HearingsModuleProps) {
                       #{hearing.caseNumber || '—'}
                     </p>
                     {hearing.courtName && (
-                      <p className="text-[#94a3b8] text-xs mt-0.5">
+                      <p className="text-slate-400 text-xs mt-0.5">
                         🏛️ {hearing.courtName}
                         {hearing.hall ? ` — القاعة أو الدائرة: ${hearing.hall}` : ''}
                       </p>
                     )}
                     {hearing.notes && (
-                      <p className="text-[#94a3b8]0 text-xs mt-1 italic line-clamp-1 border-r border-[#1e3a5f] pr-2">
+                      <p className="text-slate-500 text-xs mt-1 italic line-clamp-1 border-r border-slate-700 pr-2">
                         {hearing.notes}
                       </p>
                     )}
                     <span className={`inline-block mt-2 text-[10px] px-2 py-0.5
-                      rounded-2xl font-bold border ${
+                      rounded-lg font-bold border ${
                       hearing.status === 'upcoming' || hearing.status === 'قادمة'
                         ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
                         : hearing.status === 'postponed' || hearing.status === 'مؤجلة'
-                        ? 'bg-gradient-to-r from-[#c9a84c] to-[#a67c30]/10 text-amber-400 border-amber-500/20'
-                        : 'bg-[#0a1628] text-[#94a3b8] border-[#1e3a5f]'
+                        ? 'bg-amber-500/10 text-amber-400 border-amber-500/20'
+                        : 'bg-slate-700 text-slate-400 border-slate-600'
                     }`}>
                       {hearing.status === 'upcoming' ? 'قادمة' :
                        hearing.status === 'postponed' ? 'مؤجلة' :
@@ -373,7 +373,7 @@ export default function HearingsModule({ onUpdateState }: HearingsModuleProps) {
                         bg-blue-500/15 hover:bg-blue-500/30
                         text-blue-400 hover:text-blue-300
                         border border-blue-500/20 hover:border-blue-400/40
-                        rounded-2xl text-xs font-bold transition-all cursor-pointer"
+                        rounded-xl text-xs font-bold transition-all cursor-pointer"
                       title="تعديل الموعد"
                     >
                       <Pencil className="w-3 h-3" />
@@ -387,7 +387,7 @@ export default function HearingsModule({ onUpdateState }: HearingsModuleProps) {
                         bg-red-500/15 hover:bg-red-500/30
                         text-red-400 hover:text-red-300
                         border border-red-500/20 hover:border-red-400/40
-                        rounded-2xl text-xs font-bold transition-all
+                        rounded-xl text-xs font-bold transition-all
                         disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                       title="حذف الموعد"
                     >
@@ -405,13 +405,13 @@ export default function HearingsModule({ onUpdateState }: HearingsModuleProps) {
         </div>
       ) : (
         // ================= عرض التقويم الجدولي (Calendar View) =================
-        <div className="bg-[#07132c] border border-[#1e3a5f] rounded-3xl p-6 shadow-xl space-y-6">
-          <div className="flex items-center justify-between border-b border-[#1e3a5f] pb-4">
+        <div className="bg-[#07132c] border border-slate-800 rounded-3xl p-6 shadow-xl space-y-6">
+          <div className="flex items-center justify-between border-b border-slate-800 pb-4">
             <div className="flex items-center gap-2">
               <CalendarIcon className="w-5 h-5 text-amber-500" />
               <h2 className="text-sm font-black text-white">التقويم الذكي لشهر يونيو 2026</h2>
             </div>
-            <span className="text-xs bg-[#0a1628] text-amber-400 border border-[#1e3a5f] px-3 py-1 rounded-2xl font-bold">
+            <span className="text-xs bg-slate-800 text-amber-400 border border-slate-700 px-3 py-1 rounded-xl font-bold">
               مجموع الأحداث المصفاة: {filteredHearings.length}
             </span>
           </div>
@@ -428,13 +428,13 @@ export default function HearingsModule({ onUpdateState }: HearingsModuleProps) {
 
           <div className="grid grid-cols-7 gap-2 font-mono">
             {/* Pad with white space is not needed as Jun 1st 2026 is Monday. Monday is column 2. Let's pad 1 day for Sunday before */}
-            <div className="bg-[#0a1628]/30 border border-[#1e3a5f]/40 rounded-2xl p-2 h-20 opacity-20 text-[10px] flex items-start justify-end text-[#94a3b8]0">31 مايو</div>
+            <div className="bg-slate-900/30 border border-slate-800/40 rounded-xl p-2 h-20 opacity-20 text-[10px] flex items-start justify-end text-slate-500">31 مايو</div>
             
             {juneDays.map((day) => {
               return (
                 <div
                   key={day.dateStr}
-                  className="bg-[#0c1830] border border-[#1e3a5f]/80 rounded-2xl p-2 min-h-[140px] flex flex-col justify-between"
+                  className="bg-[#0c1830] border border-slate-800/80 rounded-2xl p-2 min-h-[140px] flex flex-col justify-between"
                 >
                   <span className="text-xs font-extrabold text-white/50 block mb-2">{day.dayNum}</span>
                   
@@ -451,10 +451,10 @@ export default function HearingsModule({ onUpdateState }: HearingsModuleProps) {
                       return (
                         <div
                           key={hearing.id}
-                          className={`relative group border rounded-2xl p-2 mb-1 cursor-pointer transition-all text-right
+                          className={`relative group border rounded-lg p-2 mb-1 cursor-pointer transition-all text-right
                             ${fromDashboard 
                               ? 'bg-blue-600/20 border-blue-400 hover:bg-blue-600/30' 
-                              : 'bg-gradient-to-r from-[#c9a84c] to-[#a67c30]/20 border-amber-500/40 hover:bg-gradient-to-r from-[#c9a84c] to-[#a67c30]/30'
+                              : 'bg-amber-600/20 border-amber-500/40 hover:bg-amber-600/30'
                             }`}
                         >
                           {/* محتوى الموعد */}
@@ -464,7 +464,7 @@ export default function HearingsModule({ onUpdateState }: HearingsModuleProps) {
                           <p className="text-white text-[10px] font-bold truncate">
                             {sessionTitle || ''}
                           </p>
-                          <p className="text-[#94a3b8] text-[9px] truncate">
+                          <p className="text-slate-300 text-[9px] truncate">
                             {hearing.courtName || ''}
                           </p>
 
@@ -479,7 +479,7 @@ export default function HearingsModule({ onUpdateState }: HearingsModuleProps) {
                               handleOpenEdit(hearing);
                             }}
                             className="p-1 bg-blue-500/30 hover:bg-blue-500/60
-                              rounded-2xl transition-colors cursor-pointer"
+                              rounded-md transition-colors cursor-pointer"
                             title="تعديل الموعد"
                           >
                             <Pencil className="w-3 h-3 text-blue-300" />
@@ -493,7 +493,7 @@ export default function HearingsModule({ onUpdateState }: HearingsModuleProps) {
                             }}
                             disabled={isDeleting === hearing.id}
                             className="p-1 bg-red-500/30 hover:bg-red-500/60
-                              rounded-2xl transition-colors disabled:opacity-50 cursor-pointer"
+                              rounded-md transition-colors disabled:opacity-50 cursor-pointer"
                             title="حذف الموعد"
                           >
                             {isDeleting === hearing.id
@@ -517,14 +517,14 @@ export default function HearingsModule({ onUpdateState }: HearingsModuleProps) {
         <div className="fixed inset-0 z-[9999] flex items-center
           justify-center p-4 bg-black/70 backdrop-blur-sm"
           dir="rtl">
-          <div className="bg-[#0a1628] border border-[#1e3a5f]
+          <div className="bg-[#0a1628] border border-slate-700
             rounded-2xl w-full max-w-md shadow-2xl overflow-hidden font-sans">
 
             {/* رأس النافذة */}
             <div className="flex items-center justify-between
-              p-5 border-b border-[#1e3a5f]">
+              p-5 border-b border-slate-700">
               <div className="flex items-center gap-3">
-                <div className="p-2 bg-blue-500/10 rounded-2xl
+                <div className="p-2 bg-blue-500/10 rounded-xl
                   border border-blue-500/20">
                   <Pencil className="w-5 h-5 text-blue-400" />
                 </div>
@@ -543,8 +543,8 @@ export default function HearingsModule({ onUpdateState }: HearingsModuleProps) {
                   setIsEditModalOpen(false);
                   setEditingHearing(null);
                 }}
-                className="p-2 text-[#94a3b8] hover:text-white
-                  hover:bg-[#0a1628] rounded-2xl transition-colors cursor-pointer"
+                className="p-2 text-slate-400 hover:text-white
+                  hover:bg-slate-700 rounded-xl transition-colors cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -556,7 +556,7 @@ export default function HearingsModule({ onUpdateState }: HearingsModuleProps) {
               {/* التاريخ والوقت */}
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-[#94a3b8] text-xs
+                  <label className="block text-slate-400 text-xs
                     font-bold mb-1.5">
                     📅 تاريخ الجلسة *
                   </label>
@@ -564,13 +564,13 @@ export default function HearingsModule({ onUpdateState }: HearingsModuleProps) {
                     type="date"
                     value={editDate}
                     onChange={e => setEditDate(e.target.value)}
-                    className="w-full bg-[#050e21] border border-[#1e3a5f]
-                      text-white rounded-2xl px-3 py-2.5 text-sm
+                    className="w-full bg-[#050e21] border border-slate-700
+                      text-white rounded-xl px-3 py-2.5 text-sm
                       focus:outline-none focus:border-amber-500 font-bold"
                   />
                 </div>
                 <div>
-                  <label className="block text-[#94a3b8] text-xs
+                  <label className="block text-slate-400 text-xs
                     font-bold mb-1.5">
                     ⏰ وقت الجلسة
                   </label>
@@ -578,8 +578,8 @@ export default function HearingsModule({ onUpdateState }: HearingsModuleProps) {
                     type="time"
                     value={editTime}
                     onChange={e => setEditTime(e.target.value)}
-                    className="w-full bg-[#050e21] border border-[#1e3a5f]
-                      text-white rounded-2xl px-3 py-2.5 text-sm
+                    className="w-full bg-[#050e21] border border-slate-700
+                      text-white rounded-xl px-3 py-2.5 text-sm
                       focus:outline-none focus:border-amber-500 font-bold"
                   />
                 </div>
@@ -588,7 +588,7 @@ export default function HearingsModule({ onUpdateState }: HearingsModuleProps) {
               {/* المحكمة والقاعة */}
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-[#94a3b8] text-xs
+                  <label className="block text-slate-400 text-xs
                     font-bold mb-1.5">
                     🏛️ المحكمة
                   </label>
@@ -597,14 +597,14 @@ export default function HearingsModule({ onUpdateState }: HearingsModuleProps) {
                     value={editCourt}
                     onChange={e => setEditCourt(e.target.value)}
                     placeholder="اسم المحكمة"
-                    className="w-full bg-[#050e21] border border-[#1e3a5f]
-                      text-white rounded-2xl px-3 py-2.5 text-sm
+                    className="w-full bg-[#050e21] border border-slate-700
+                      text-white rounded-xl px-3 py-2.5 text-sm
                       placeholder-slate-655 font-bold
                       focus:outline-none focus:border-amber-500"
                   />
                 </div>
                 <div>
-                  <label className="block text-[#94a3b8] text-xs
+                  <label className="block text-slate-400 text-xs
                     font-bold mb-1.5">
                     🚪 القاعة / الدائرة
                   </label>
@@ -613,8 +613,8 @@ export default function HearingsModule({ onUpdateState }: HearingsModuleProps) {
                     value={editHall}
                     onChange={e => setEditHall(e.target.value)}
                     placeholder="رقم القاعة"
-                    className="w-full bg-[#050e21] border border-[#1e3a5f]
-                      text-white rounded-2xl px-3 py-2.5 text-sm
+                    className="w-full bg-[#050e21] border border-slate-700
+                      text-white rounded-xl px-3 py-2.5 text-sm
                       placeholder-slate-655 font-bold
                       focus:outline-none focus:border-amber-500"
                   />
@@ -623,15 +623,15 @@ export default function HearingsModule({ onUpdateState }: HearingsModuleProps) {
 
               {/* الحالة */}
               <div>
-                <label className="block text-[#94a3b8] text-xs
+                <label className="block text-slate-400 text-xs
                   font-bold mb-1.5">
                   📊 حالة الجلسة
                 </label>
                 <select
                   value={editStatus}
                   onChange={e => setEditStatus(e.target.value)}
-                  className="w-full bg-[#050e21] border border-[#1e3a5f]
-                    text-white rounded-2xl px-3 py-2.5 text-sm font-bold
+                  className="w-full bg-[#050e21] border border-slate-700
+                    text-white rounded-xl px-3 py-2.5 text-sm font-bold
                     focus:outline-none focus:border-amber-500"
                 >
                   <option value="upcoming">قادمة</option>
@@ -643,7 +643,7 @@ export default function HearingsModule({ onUpdateState }: HearingsModuleProps) {
 
               {/* ملاحظات */}
               <div>
-                <label className="block text-[#94a3b8] text-xs
+                <label className="block text-slate-400 text-xs
                   font-bold mb-1.5">
                   📝 ملاحظات
                 </label>
@@ -652,20 +652,20 @@ export default function HearingsModule({ onUpdateState }: HearingsModuleProps) {
                   onChange={e => setEditNotes(e.target.value)}
                   rows={2}
                   placeholder="ملاحظات إضافية..."
-                  className="w-full bg-[#050e21] border border-[#1e3a5f]
-                    text-white rounded-2xl px-3 py-2.5 text-sm
+                  className="w-full bg-[#050e21] border border-slate-700
+                    text-white rounded-xl px-3 py-2.5 text-sm
                     resize-none placeholder-slate-655 font-bold
                     focus:outline-none focus:border-amber-500"
                 />
               </div>
 
               {/* أزرار */}
-              <div className="flex gap-3 pt-4 border-t border-[#1e3a5f]">
+              <div className="flex gap-3 pt-4 border-t border-slate-700">
                 <button
                   onClick={handleSaveEdit}
                   className="flex-1 flex items-center justify-center
                     gap-2 bg-blue-600 hover:bg-blue-500 text-white
-                    font-black py-3 rounded-2xl transition-all cursor-pointer shadow-lg active:scale-95 text-xs"
+                    font-black py-3 rounded-xl transition-all cursor-pointer shadow-lg active:scale-95 text-xs"
                 >
                   <CheckCircle2 className="w-4 h-4" />
                   حفظ التعديلات
@@ -675,9 +675,9 @@ export default function HearingsModule({ onUpdateState }: HearingsModuleProps) {
                     setIsEditModalOpen(false);
                     setEditingHearing(null);
                   }}
-                  className="px-5 py-3 border border-[#1e3a5f]
-                    text-[#94a3b8] hover:text-white
-                    hover:border-[#1e3a5f]0 rounded-2xl transition-colors cursor-pointer text-xs font-bold"
+                  className="px-5 py-3 border border-slate-600
+                    text-slate-400 hover:text-white
+                    hover:border-slate-500 rounded-xl transition-colors cursor-pointer text-xs font-bold"
                 >
                   إلغاء
                 </button>

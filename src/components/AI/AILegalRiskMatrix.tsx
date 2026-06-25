@@ -80,7 +80,7 @@ export default function AILegalRiskMatrix({ cases }: AILegalRiskMatrixProps) {
 
   if (!cases || cases.length === 0) {
     return (
-      <div className="p-12 text-center text-slate-700 font-bold border-2 border-dashed border-[#1e3a5f] rounded-3xl" dir="rtl">
+      <div className="p-12 text-center text-slate-700 font-bold border-2 border-dashed border-slate-200 rounded-3xl" dir="rtl">
         لا توجد قضايا حالية لتحليل مخاطرها.
       </div>
     );
@@ -115,7 +115,7 @@ export default function AILegalRiskMatrix({ cases }: AILegalRiskMatrixProps) {
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         {/* Win Probability Circular Display */}
-        <div className="lg:col-span-4 bg-[#0a1628] border border-[#1e3a5f] p-8 rounded-[2.5rem] shadow-xl flex flex-col items-center justify-center space-y-6">
+        <div className="lg:col-span-4 bg-white border border-slate-200 p-8 rounded-[2.5rem] shadow-xl flex flex-col items-center justify-center space-y-6">
           <div className="text-center">
             <h3 className="text-slate-200 font-bold text-[10px] font-black uppercase tracking-[0.2em] mb-2">احتمالية النجاح التقريبية</h3>
             <p className="text-slate-900 text-xs font-black">Win Probability Index</p>
@@ -163,7 +163,7 @@ export default function AILegalRiskMatrix({ cases }: AILegalRiskMatrixProps) {
           <div className="w-full space-y-3">
              <div className="flex justify-between items-center text-[11px] font-bold text-slate-700 bg-slate-50 p-4 rounded-2xl border border-slate-100">
                 <span>الحالة المكتشفة:</span>
-                <span className={`font-black ${getStatusColor(winProbability)} px-3 py-1 rounded-lg bg-[#0a1628] shadow-sm border border-slate-100`}>
+                <span className={`font-black ${getStatusColor(winProbability)} px-3 py-1 rounded-lg bg-white shadow-sm border border-slate-100`}>
                   {winProbability > 70 ? 'موقف قانوني قوي' : winProbability > 40 ? 'موقف قانوني متوسط' : 'موقف محفوف بالمخاطر'}
                 </span>
              </div>
@@ -172,7 +172,7 @@ export default function AILegalRiskMatrix({ cases }: AILegalRiskMatrixProps) {
 
         {/* Detailed Risk Factors */}
         <div className="lg:col-span-8 space-y-6">
-          <div className="bg-[#0a1628] border border-[#1e3a5f] p-8 rounded-[2.5rem] shadow-xl">
+          <div className="bg-white border border-slate-200 p-8 rounded-[2.5rem] shadow-xl">
              <div className="flex items-center justify-between mb-8 pb-4 border-b border-slate-100">
                 <div className="flex items-center gap-3">
                   <div className="p-2.5 bg-slate-950 text-amber-500 rounded-xl">
@@ -206,7 +206,7 @@ export default function AILegalRiskMatrix({ cases }: AILegalRiskMatrixProps) {
                          {factor.impact === 'positive' ? <TrendingUp className="w-4 h-4 text-emerald-500" /> : factor.impact === 'negative' ? <TrendingDown className="w-4 h-4 text-rose-500" /> : <Info className="w-4 h-4 text-slate-200 font-bold" />}
                          <span className="text-[11px] font-black text-slate-800">{factor.label}</span>
                        </div>
-                       <span className="text-[10px] font-black text-slate-900 bg-[#0a1628] px-2 py-1 rounded-lg border border-[#1e3a5f]">{factor.weight}%</span>
+                       <span className="text-[10px] font-black text-slate-900 bg-white px-2 py-1 rounded-lg border border-slate-200">{factor.weight}%</span>
                      </div>
                      <p className="text-[10px] text-slate-700 font-bold leading-relaxed">{factor.description}</p>
                    </motion.div>
@@ -219,7 +219,7 @@ export default function AILegalRiskMatrix({ cases }: AILegalRiskMatrixProps) {
                   <Gavel className="w-4 h-4 text-amber-500" />
                   تصحيح الموقف القانوني الموصى به
                 </button>
-                <button className="flex items-center gap-2 border border-[#1e3a5f] text-slate-200 font-bold px-6 py-3 rounded-2xl text-[11px] font-black transition-all">
+                <button className="flex items-center gap-2 border border-slate-300 text-slate-200 font-bold px-6 py-3 rounded-2xl text-[11px] font-black transition-all">
                   عرض السوابق المشابهة بالكامل
                 </button>
              </div>

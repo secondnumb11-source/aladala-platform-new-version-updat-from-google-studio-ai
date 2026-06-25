@@ -700,7 +700,7 @@ injectAlAdalahBtn();
   };
 
   return (
-    <div className="bg-[#0a1628] min-h-screen p-6 md:p-8 space-y-8 text-right animate-fade-in font-display" dir="rtl">
+    <div className="bg-white min-h-screen p-6 md:p-8 space-y-8 text-right animate-fade-in font-display" dir="rtl">
       
       {/* Platform Sleek Header Design */}
       <div className="flex flex-col md:flex-row md:items-center justify-between border-b border-slate-100 pb-6 gap-4">
@@ -729,7 +729,7 @@ injectAlAdalahBtn();
       </div>
 
       {/* Internal Subtabs Navigation */}
-      <div className="flex flex-wrap items-center gap-2 bg-slate-100 p-1.5 rounded-2xl max-w-2xl border border-[#1e3a5f]">
+      <div className="flex flex-wrap items-center gap-2 bg-slate-100 p-1.5 rounded-2xl max-w-2xl border border-slate-200">
         <button
           onClick={() => setActiveSubTab('simulator')}
           className={`px-4 py-2.5 rounded-xl text-xs font-black transition-all flex items-center gap-1.5 cursor-pointer ${

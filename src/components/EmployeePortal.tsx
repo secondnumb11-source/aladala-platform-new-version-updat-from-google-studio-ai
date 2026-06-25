@@ -156,7 +156,7 @@ function CustomMultiSelectDropdown({
 
       <div
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full bg-slate-50 border border-[#1e3a5f] rounded-2xl px-5 py-3.5 text-sm font-black text-slate-900 cursor-pointer hover:border-[#1e3a5f] transition-all flex items-center justify-between select-none shadow-sm"
+        className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-3.5 text-sm font-black text-slate-900 cursor-pointer hover:border-slate-300 transition-all flex items-center justify-between select-none shadow-sm"
       >
         <div className="flex flex-wrap gap-1.5 max-w-[90%] overflow-hidden truncate">
           {selectedNames.length === 0 ? (
@@ -185,7 +185,7 @@ function CustomMultiSelectDropdown({
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            className="absolute z-50 w-full mt-2 bg-[#0a1628] border border-[#1e3a5f] rounded-2xl shadow-xl overflow-hidden max-h-72 flex flex-col"
+            className="absolute z-50 w-full mt-2 bg-white border border-slate-200 rounded-2xl shadow-xl overflow-hidden max-h-72 flex flex-col"
           >
             <div className="p-3 bg-slate-50 border-b border-slate-100 flex items-center gap-2">
               <Search className="w-4 h-4 text-slate-200 font-bold shrink-0" />
@@ -234,7 +234,7 @@ function CustomMultiSelectDropdown({
                         className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 ${
                           isChecked
                             ? `bg-${themeColor}-600 border-${themeColor}-600 text-white`
-                            : "border-[#1e3a5f]"
+                            : "border-slate-200"
                         }`}
                       >
                         {isChecked && <Check className="w-3 h-3 stroke-[3]" />}
@@ -1250,7 +1250,7 @@ export default function EmployeePortal({
       >
         <div className="max-w-6xl mx-auto w-full space-y-10">
           {/* Top Header Card */}
-          <header className="bg-[#0a1628] border border-[#1e3a5f] rounded-[2.5rem] p-10 shadow-[0_10px_40px_-15px_rgba(30,58,138,0.06)] relative overflow-hidden group">
+          <header className="bg-white border border-slate-200 rounded-[2.5rem] p-10 shadow-[0_10px_40px_-15px_rgba(30,58,138,0.06)] relative overflow-hidden group">
             <div className="absolute top-0 right-0 w-full h-2 bg-gradient-to-r from-blue-600 via-indigo-400 to-blue-500" />
 
             <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-10">
@@ -1277,7 +1277,7 @@ export default function EmployeePortal({
                 <select
                   value={selectedConfigEmployee?.id || ""}
                   onChange={(e) => handleSelectEmployee(e.target.value)}
-                  className="w-full bg-slate-50 text-slate-900 rounded-2xl px-6 py-5 font-black text-sm appearance-none outline-none focus:ring-4 focus:ring-blue-600/5 cursor-pointer shadow-sm transition-all border border-[#1e3a5f] focus:border-blue-500"
+                  className="w-full bg-slate-50 text-slate-900 rounded-2xl px-6 py-5 font-black text-sm appearance-none outline-none focus:ring-4 focus:ring-blue-600/5 cursor-pointer shadow-sm transition-all border border-slate-200 focus:border-blue-500"
                 >
                   <option value="">-- اختر موظف من النظام المركزي --</option>
                   {employees.map((e) => (
@@ -1305,7 +1305,7 @@ export default function EmployeePortal({
                       return (
                         <div
                           key={e.id}
-                          className="bg-[#0a1628] border border-[#1e3a5f] p-6 rounded-[2.5rem] shadow-sm flex flex-col gap-4 relative overflow-hidden group hover:border-blue-300 hover:shadow-md transition-all duration-300"
+                          className="bg-white border border-slate-200 p-6 rounded-[2.5rem] shadow-sm flex flex-col gap-4 relative overflow-hidden group hover:border-blue-300 hover:shadow-md transition-all duration-300"
                         >
                           <div
                             className={`absolute top-0 right-0 w-1.5 h-full ${hasAccount ? "bg-emerald-500" : "bg-amber-400"}`}
@@ -1390,7 +1390,7 @@ export default function EmployeePortal({
                     })}
                   </div>
                 ) : (
-                  <div className="py-32 bg-[#0a1628] border-2 border-dashed border-[#1e3a5f] rounded-[3rem] flex flex-col items-center justify-center text-center gap-8 shadow-sm">
+                  <div className="py-32 bg-white border-2 border-dashed border-slate-200 rounded-[3rem] flex flex-col items-center justify-center text-center gap-8 shadow-sm">
                     <div className="w-28 h-28 bg-blue-50 border border-blue-100 rounded-full flex items-center justify-center text-blue-600">
                       <Users className="w-14 h-14" />
                     </div>
@@ -1420,7 +1420,7 @@ export default function EmployeePortal({
                   {/* Left Column: Credentials & Access */}
                   <div className="lg:col-span-4 space-y-8">
                     {/* Credentials Card */}
-                    <div className="bg-[#0a1628] border border-[#1e3a5f] rounded-[3rem] p-10 shadow-[0_20px_50px_-15px_rgba(30,58,138,0.06)] space-y-8 relative overflow-hidden group hover:border-blue-200 transition-all duration-500">
+                    <div className="bg-white border border-slate-200 rounded-[3rem] p-10 shadow-[0_20px_50px_-15px_rgba(30,58,138,0.06)] space-y-8 relative overflow-hidden group hover:border-blue-200 transition-all duration-500">
                       <div className="absolute top-0 right-0 w-3 h-full bg-gradient-to-b from-blue-600 to-indigo-600" />
 
                       <div className="flex items-center gap-4 border-b border-slate-100 pb-6">
@@ -1446,7 +1446,7 @@ export default function EmployeePortal({
                             name="username"
                             type="text"
                             required
-                            className="w-full bg-slate-50 border border-[#1e3a5f] rounded-2xl px-6 py-4 text-sm font-black text-slate-900 focus:bg-[#0a1628] focus:border-blue-500 focus:ring-4 focus:ring-blue-600/5 outline-none transition-all"
+                            className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-6 py-4 text-sm font-black text-slate-900 focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-600/5 outline-none transition-all"
                             defaultValue={
                               selectedConfigEmployee.username ||
                               selectedConfigEmployee.name.split(" ")[0] + "_law"
@@ -1463,7 +1463,7 @@ export default function EmployeePortal({
                               name="password"
                               type={showPass ? "text" : "password"}
                               required
-                              className="w-full bg-slate-50 border border-[#1e3a5f] rounded-2xl px-6 py-4 text-sm font-bold text-slate-900 focus:bg-[#0a1628] focus:border-blue-500 focus:ring-4 focus:ring-blue-600/5 outline-none transition-all pl-14"
+                              className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-6 py-4 text-sm font-bold text-slate-900 focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-600/5 outline-none transition-all pl-14"
                               defaultValue={
                                 selectedConfigEmployee.password ||
                                 "LawyerPass2026!"
@@ -1490,7 +1490,7 @@ export default function EmployeePortal({
                           <input
                             name="employeeCode"
                             type="text"
-                            className="w-full bg-slate-50 border border-[#1e3a5f] rounded-2xl px-6 py-4 text-xs font-black text-slate-900 focus:bg-[#0a1628] focus:border-blue-500 focus:ring-4 focus:ring-blue-600/5 outline-none transition-all"
+                            className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-6 py-4 text-xs font-black text-slate-900 focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-600/5 outline-none transition-all"
                             defaultValue={
                               selectedConfigEmployee.employeeCode ||
                               `EMP-${selectedConfigEmployee.id.slice(-4)}`
@@ -1505,7 +1505,7 @@ export default function EmployeePortal({
                           <input
                             name="jobTitle"
                             type="text"
-                            className="w-full bg-slate-50 border border-[#1e3a5f] rounded-2xl px-6 py-4 text-xs font-black text-slate-900 focus:bg-[#0a1628] focus:border-blue-500 focus:ring-4 focus:ring-blue-600/5 outline-none transition-all"
+                            className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-6 py-4 text-xs font-black text-slate-900 focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-600/5 outline-none transition-all"
                             defaultValue={selectedConfigEmployee.jobTitle || ""}
                           />
                         </div>
@@ -1517,7 +1517,7 @@ export default function EmployeePortal({
                           <input
                             name="branch"
                             type="text"
-                            className="w-full bg-slate-50 border border-[#1e3a5f] rounded-2xl px-6 py-4 text-xs font-black text-slate-900 focus:bg-[#0a1628] focus:border-blue-500 focus:ring-4 focus:ring-blue-600/5 outline-none transition-all"
+                            className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-6 py-4 text-xs font-black text-slate-900 focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-600/5 outline-none transition-all"
                             defaultValue={selectedConfigEmployee.branch || ""}
                           />
                         </div>
@@ -1529,7 +1529,7 @@ export default function EmployeePortal({
                           <input
                             name="startDate"
                             type="date"
-                            className="w-full bg-slate-50 border border-[#1e3a5f] rounded-2xl px-6 py-4 text-xs font-black text-slate-900 focus:bg-[#0a1628] focus:border-blue-500 focus:ring-4 focus:ring-blue-600/5 outline-none transition-all"
+                            className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-6 py-4 text-xs font-black text-slate-900 focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-600/5 outline-none transition-all"
                             defaultValue={
                               selectedConfigEmployee.startDate ||
                               new Date().toISOString().split("T")[0]
@@ -1543,7 +1543,7 @@ export default function EmployeePortal({
                           </label>
                           <select
                             name="status"
-                            className="w-full bg-slate-50 border border-[#1e3a5f] rounded-2xl px-6 py-4 text-xs font-black text-slate-900 focus:bg-[#0a1628] focus:border-blue-500 focus:ring-4 focus:ring-blue-600/5 outline-none transition-all cursor-pointer appearance-none"
+                            className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-6 py-4 text-xs font-black text-slate-900 focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-600/5 outline-none transition-all cursor-pointer appearance-none"
                             defaultValue={
                               selectedConfigEmployee.status || "نشط"
                             }
@@ -1556,7 +1556,7 @@ export default function EmployeePortal({
                     </div>
 
                     {/* Najiz custom key Card */}
-                    <div className="bg-[#0a1628] border border-[#1e3a5f] rounded-[3rem] p-10 shadow-sm space-y-6">
+                    <div className="bg-white border border-slate-200 rounded-[3rem] p-10 shadow-sm space-y-6">
                       <div className="flex items-center gap-4 border-b border-slate-100 pb-6">
                         <div className="w-12 h-12 bg-amber-50 rounded-2xl flex items-center justify-center text-amber-400 font-black">
                           <Database className="w-6 h-6" />
@@ -1581,7 +1581,7 @@ export default function EmployeePortal({
                           name="najizApiKey"
                           type="text"
                           placeholder="مثال: NAJIZ_EMPLOYEE_KEY_SA..."
-                          className="w-full bg-slate-50 border border-[#1e3a5f] text-amber-400 font-black font-mono text-xs rounded-2xl px-6 py-4 focus:bg-[#0a1628] focus:border-amber-500 outline-none transition-all text-left"
+                          className="w-full bg-slate-50 border border-slate-200 text-amber-400 font-black font-mono text-xs rounded-2xl px-6 py-4 focus:bg-white focus:border-amber-500 outline-none transition-all text-left"
                           defaultValue={
                             selectedConfigEmployee.najizApiKey || ""
                           }
@@ -1590,7 +1590,7 @@ export default function EmployeePortal({
                     </div>
 
                     {/* Unified Link Card */}
-                    <div className="bg-[#0a1628] border border-[#1e3a5f] rounded-[3rem] p-10 text-slate-900 space-y-8 shadow-sm relative overflow-hidden group hover:border-blue-200 transition-all duration-500">
+                    <div className="bg-white border border-slate-200 rounded-[3rem] p-10 text-slate-900 space-y-8 shadow-sm relative overflow-hidden group hover:border-blue-200 transition-all duration-500">
                       <div className="absolute top-0 right-0 w-3 h-full bg-gradient-to-b from-emerald-500 to-teal-600" />
 
                       <div className="flex items-center gap-4 relative z-10 border-b border-slate-100 pb-6">
@@ -1612,7 +1612,7 @@ export default function EmployeePortal({
                           يمكن للموظف الدخول للبوابة عن طريق الرابط التالي
                           باستخدام بيانات الاعتماد التي قمت بتعيينها أعلاه:
                         </p>
-                        <div className="bg-slate-50 p-5 rounded-2xl border border-[#1e3a5f] font-mono text-[10px] text-blue-600 break-all leading-relaxed ltr text-left">
+                        <div className="bg-slate-50 p-5 rounded-2xl border border-slate-200 font-mono text-[10px] text-blue-600 break-all leading-relaxed ltr text-left">
                           {window.location.origin}/employee-portal?user=
                           {selectedConfigEmployee.username ||
                             selectedConfigEmployee.name.split(" ")[0] + "_law"}
@@ -1626,7 +1626,7 @@ export default function EmployeePortal({
                               navigator.clipboard.writeText(sharedLink);
                               alert("تم نسخ رابط الدخول المباشر بنجاح 📋");
                             }}
-                            className="bg-slate-50 text-slate-900 border border-[#1e3a5f] hover:bg-blue-600 hover:text-white py-4 rounded-2xl text-[11px] font-black transition-all"
+                            className="bg-slate-50 text-slate-900 border border-slate-200 hover:bg-blue-600 hover:text-white py-4 rounded-2xl text-[11px] font-black transition-all"
                           >
                             نسخ الرابط
                           </button>
@@ -1646,7 +1646,7 @@ export default function EmployeePortal({
 
                   {/* Right Column: Custom Interactive Dropdowns inside a 3D grid layout */}
                   <div className="lg:col-span-8 space-y-8">
-                    <div className="bg-[#0a1628] border border-[#1e3a5f] rounded-[3rem] p-10 shadow-sm space-y-8">
+                    <div className="bg-white border border-slate-200 rounded-[3rem] p-10 shadow-sm space-y-8">
                       <div className="flex items-center gap-4 border-b border-slate-100 pb-6">
                         <div className="w-12 h-12 bg-indigo-50 rounded-2xl flex items-center justify-center text-indigo-600">
                           <Settings2 className="w-6 h-6" />
@@ -1768,14 +1768,14 @@ export default function EmployeePortal({
                             <Briefcase className="w-4 h-4 text-indigo-600" />
                             📁 القضايا المخصصة للموظف
                           </label>
-                          <div className="max-h-48 overflow-y-auto space-y-2 bg-slate-50 rounded-2xl p-4 border border-[#1e3a5f]">
+                          <div className="max-h-48 overflow-y-auto space-y-2 bg-slate-50 rounded-2xl p-4 border border-slate-200">
                             {(availableCases.length > 0
                               ? availableCases
                               : cases
                             ).map((c) => (
                               <label
                                 key={c.id}
-                                className="flex items-center gap-3 cursor-pointer bg-[#0a1628] p-2.5 rounded-xl border border-slate-100 hover:border-indigo-300 transition-colors"
+                                className="flex items-center gap-3 cursor-pointer bg-white p-2.5 rounded-xl border border-slate-100 hover:border-indigo-300 transition-colors"
                               >
                                 <input
                                   type="checkbox"
@@ -1794,7 +1794,7 @@ export default function EmployeePortal({
                                     };
                                     setSelectedConfigEmployee(updatedEmp);
                                   }}
-                                  className="w-4 h-4 text-indigo-600 rounded border-[#1e3a5f] focus:ring-indigo-600 focus:ring-2"
+                                  className="w-4 h-4 text-indigo-600 rounded border-slate-300 focus:ring-indigo-600 focus:ring-2"
                                 />
                                 <span className="text-slate-800 text-xs font-bold">
                                   #{c.case_number || c.caseNumber} —{" "}
@@ -1820,14 +1820,14 @@ export default function EmployeePortal({
                             <Users className="w-4 h-4 text-emerald-600" />
                             👥 إسناد العملاء المرتبطين
                           </label>
-                          <div className="max-h-48 overflow-y-auto space-y-2 bg-slate-50 rounded-2xl p-4 border border-[#1e3a5f]">
+                          <div className="max-h-48 overflow-y-auto space-y-2 bg-slate-50 rounded-2xl p-4 border border-slate-200">
                             {(availableClients.length > 0
                               ? availableClients
                               : clients
                             ).map((cl) => (
                               <label
                                 key={cl.id}
-                                className="flex items-center gap-3 cursor-pointer bg-[#0a1628] p-2.5 rounded-xl border border-slate-100 hover:border-emerald-300 transition-colors"
+                                className="flex items-center gap-3 cursor-pointer bg-white p-2.5 rounded-xl border border-slate-100 hover:border-emerald-300 transition-colors"
                               >
                                 <input
                                   type="checkbox"
@@ -1846,7 +1846,7 @@ export default function EmployeePortal({
                                     };
                                     setSelectedConfigEmployee(updatedEmp);
                                   }}
-                                  className="w-4 h-4 text-emerald-600 rounded border-[#1e3a5f] focus:ring-emerald-600 focus:ring-2"
+                                  className="w-4 h-4 text-emerald-600 rounded border-slate-300 focus:ring-emerald-600 focus:ring-2"
                                 />
                                 <span className="text-slate-800 text-xs font-bold">
                                   {cl.name}{" "}
@@ -1964,7 +1964,7 @@ export default function EmployeePortal({
       return (
         <div className="min-h-screen flex items-center justify-center p-8 bg-[#F8FAFC] font-sans relative overflow-hidden" dir="rtl">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-lg relative z-10">
-            <div className="bg-[#0a1628] border border-[#1e3a5f] rounded-[3rem] p-12 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.05)] space-y-8 text-center">
+            <div className="bg-white border border-slate-200 rounded-[3rem] p-12 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.05)] space-y-8 text-center">
               <div className="w-20 h-20 bg-blue-600 text-white rounded-3xl flex items-center justify-center mx-auto shadow-xl shadow-blue-600/20 mb-4">
                 <CheckCircle className="w-10 h-10" />
               </div>
@@ -2005,7 +2005,7 @@ export default function EmployeePortal({
           animate={{ opacity: 1, scale: 1 }}
           className="w-full max-w-lg relative z-10"
         >
-          <div className="bg-[#0a1628] border border-[#1e3a5f] rounded-[3rem] p-12 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.05)] space-y-10 relative overflow-hidden">
+          <div className="bg-white border border-slate-200 rounded-[3rem] p-12 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.05)] space-y-10 relative overflow-hidden">
             <div className="absolute top-0 right-0 w-full h-2 bg-[#0f172a]" />
 
             <div className="text-center space-y-4">
@@ -2032,7 +2032,7 @@ export default function EmployeePortal({
                       required
                       value={loginUsername}
                       onChange={(e) => setLoginUsername(e.target.value)}
-                      className="w-full bg-slate-50 border border-[#1e3a5f] rounded-2xl px-6 py-5 text-sm font-bold text-slate-900 focus:bg-[#0a1628] focus:border-blue-500 focus:ring-4 focus:ring-blue-600/5 transition-all outline-none pl-12"
+                      className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-6 py-5 text-sm font-bold text-slate-900 focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-600/5 transition-all outline-none pl-12"
                       placeholder="أدخل اسم المستخدم..."
                     />
                     <Users className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-white font-bold" />
@@ -2049,7 +2049,7 @@ export default function EmployeePortal({
                       required
                       value={loginPassword}
                       onChange={(e) => setLoginPassword(e.target.value)}
-                      className="w-full bg-slate-50 border border-[#1e3a5f] rounded-2xl px-6 py-5 text-sm font-bold text-slate-900 focus:bg-[#0a1628] focus:border-blue-500 focus:ring-4 focus:ring-blue-600/5 transition-all outline-none pl-14"
+                      className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-6 py-5 text-sm font-bold text-slate-900 focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-600/5 transition-all outline-none pl-14"
                       placeholder="••••••••••••"
                     />
                     <button
@@ -2407,7 +2407,7 @@ export default function EmployeePortal({
       dir="rtl"
     >
       {/* Modern Employee Portal Navigation / Sidebar */}
-      <aside className="w-72 border-l border-[#1e3a5f] bg-[#0a1628] hidden lg:flex flex-col p-6 space-y-8 overflow-y-auto shadow-sm">
+      <aside className="w-72 border-l border-slate-200 bg-white hidden lg:flex flex-col p-6 space-y-8 overflow-y-auto shadow-sm">
         <div className="flex flex-col items-center gap-4 pb-8 border-b border-slate-100">
           <div className="w-20 h-20 bg-[#0f172a] rounded-[1.5rem] flex items-center justify-center text-white text-3xl font-black shadow-xl">
             {loggedInEmployee.name.charAt(0)}
@@ -2417,7 +2417,7 @@ export default function EmployeePortal({
               {loggedInEmployee.name}
             </h2>
             <div className="flex items-center justify-center gap-2 mt-1.5">
-              <span className="text-[10px] bg-slate-100 text-slate-200 font-bold px-2.5 py-1 rounded-full font-black border border-[#1e3a5f] uppercase">
+              <span className="text-[10px] bg-slate-100 text-slate-200 font-bold px-2.5 py-1 rounded-full font-black border border-slate-200 uppercase">
                 {loggedInEmployee.employeeCode ||
                   `EMP-${loggedInEmployee.id.slice(-4).toUpperCase()}`}
               </span>
@@ -2498,10 +2498,10 @@ export default function EmployeePortal({
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-w-0 bg-[#F8FAFC] relative">
         {/* Header / Welcome Section */}
-        <header className="p-6 md:p-8 border-b border-[#1e3a5f] flex flex-col md:flex-row md:items-center justify-between gap-6 bg-[#0a1628] relative overflow-hidden">
+        <header className="p-6 md:p-8 border-b border-slate-200 flex flex-col md:flex-row md:items-center justify-between gap-6 bg-white relative overflow-hidden">
           <div className="z-10 flex items-center gap-5">
             <div
-              className="hidden md:flex flex-col gap-1 pr-6 border-r border-[#1e3a5f] py-1 text-right"
+              className="hidden md:flex flex-col gap-1 pr-6 border-r border-slate-200 py-1 text-right"
               dir="rtl"
             >
               <h1 className="text-2xl font-black text-white tracking-tight">
@@ -2523,7 +2523,7 @@ export default function EmployeePortal({
                   {vacationBalance.remaining} يوماً
                 </p>
               </div>
-              <div className="w-10 h-10 bg-[#0a1628] rounded-[0.75rem] shadow-sm border border-slate-100 flex items-center justify-center text-[#0f172a]">
+              <div className="w-10 h-10 bg-white rounded-[0.75rem] shadow-sm border border-slate-100 flex items-center justify-center text-[#0f172a]">
                 <Calendar className="w-5 h-5" />
               </div>
             </div>
@@ -2540,7 +2540,7 @@ export default function EmployeePortal({
               <button
                 onClick={() => handleCheckIn("location")}
                 disabled={isCheckingIn}
-                className="bg-[#0a1628] hover:bg-slate-50 text-slate-300 font-black px-5 py-2.5 rounded-xl text-xs flex items-center gap-2 transition-all active:scale-95 disabled:opacity-50 border border-[#1e3a5f] shadow-sm"
+                className="bg-white hover:bg-slate-50 text-slate-300 font-black px-5 py-2.5 rounded-xl text-xs flex items-center gap-2 transition-all active:scale-95 disabled:opacity-50 border border-slate-200 shadow-sm"
               >
                 <MapPin className="w-4 h-4 text-emerald-600" />
                 <span>إثبات (موقع)</span>
@@ -2555,7 +2555,7 @@ export default function EmployeePortal({
                 className={`p-3 rounded-xl border transition-all relative cursor-pointer shadow-sm ${
                   urgentTasks.length > 0
                     ? "bg-rose-50 text-rose-600 border-rose-200"
-                    : "bg-[#0a1628] text-slate-200 font-bold border-[#1e3a5f] hover:text-slate-200 font-bold hover:border-[#1e3a5f]"
+                    : "bg-white text-slate-200 font-bold border-slate-200 hover:text-slate-200 font-bold hover:border-slate-300"
                 }`}
               >
                 <Bell
@@ -2589,7 +2589,7 @@ export default function EmployeePortal({
                   initial={{ opacity: 0, y: -20, scale: 0.95 }}
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: -10, scale: 0.95 }}
-                  className="bg-[#0a1628] border border-rose-200 rounded-[2.5rem] p-6 shadow-sm flex flex-col md:flex-row items-center justify-between gap-6 relative overflow-hidden group"
+                  className="bg-white border border-rose-200 rounded-[2.5rem] p-6 shadow-sm flex flex-col md:flex-row items-center justify-between gap-6 relative overflow-hidden group"
                 >
                   <div className="absolute top-0 right-0 w-2 h-full bg-rose-600" />
                   <div className="flex items-center gap-5 text-right w-full">
@@ -2625,7 +2625,7 @@ export default function EmployeePortal({
                       onClick={() =>
                         setDismissedAlerts((prev) => [...prev, task.id])
                       }
-                      className="text-[11px] bg-slate-100 hover:bg-slate-200 text-slate-200 font-bold border border-[#1e3a5f] px-6 py-3 rounded-2xl font-black transition-all"
+                      className="text-[11px] bg-slate-100 hover:bg-slate-200 text-slate-200 font-bold border border-slate-200 px-6 py-3 rounded-2xl font-black transition-all"
                     >
                       تجاهل مؤقتاً
                     </button>
@@ -2666,7 +2666,7 @@ export default function EmployeePortal({
                   </div>
 
                   <div className="space-y-4 relative z-10 mt-8">
-                    <div className="flex items-center justify-between text-xs p-4 bg-[#0a1628]/5 border border-white/5 rounded-2xl">
+                    <div className="flex items-center justify-between text-xs p-4 bg-white/5 border border-white/5 rounded-2xl">
                       <span className="font-bold text-slate-200 font-bold">
                         اسم المستخدم (بوابة)
                       </span>
@@ -2674,7 +2674,7 @@ export default function EmployeePortal({
                         {loggedInEmployee?.username}
                       </span>
                     </div>
-                    <div className="flex items-center justify-between text-xs p-4 bg-[#0a1628]/5 border border-white/5 rounded-2xl">
+                    <div className="flex items-center justify-between text-xs p-4 bg-white/5 border border-white/5 rounded-2xl">
                       <span className="font-bold text-slate-200 font-bold">
                         كلمة المرور
                       </span>
@@ -2700,7 +2700,7 @@ export default function EmployeePortal({
                       label: "إجمالي المهام المسندة",
                       value: myTasks.length,
                       color: "text-slate-900",
-                      bg: "bg-[#0a1628]",
+                      bg: "bg-white",
                       accent: "bg-slate-100",
                       icon: Briefcase,
                     },
@@ -2761,7 +2761,7 @@ export default function EmployeePortal({
                     </div>
                   ))}
 
-                  <div className="col-span-2 md:col-span-4 bg-[#0a1628] border border-[#1e3a5f] p-8 rounded-[2.5rem] flex items-center justify-between shadow-sm hover:border-[#1e3a5f] transition-colors">
+                  <div className="col-span-2 md:col-span-4 bg-white border border-slate-200 p-8 rounded-[2.5rem] flex items-center justify-between shadow-sm hover:border-slate-300 transition-colors">
                     <div className="space-y-1">
                       <h4 className="text-sm font-black text-slate-900 flex items-center gap-2">
                         <Award className="w-5 h-5 text-indigo-500" />
@@ -2800,7 +2800,7 @@ export default function EmployeePortal({
                   </div>
 
                   {/* Interactive Professional Monthly Calendar Integration Widget */}
-                  <div className="bg-[#0a1628] border border-[#1e3a5f] rounded-[2.5rem] p-8 shadow-sm">
+                  <div className="bg-white border border-slate-200 rounded-[2.5rem] p-8 shadow-sm">
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8 pb-6 border-b border-slate-100">
                       <div className="space-y-1 text-right">
                         <h3 className="font-black text-slate-900 text-lg flex items-center gap-2">
@@ -2824,7 +2824,7 @@ export default function EmployeePortal({
                               setCalendarMonth(calendarMonth - 1);
                             }
                           }}
-                          className="p-2.5 bg-slate-50 hover:bg-slate-100 border border-[#1e3a5f] text-slate-700 rounded-xl transition-all font-black text-xs cursor-pointer"
+                          className="p-2.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 rounded-xl transition-all font-black text-xs cursor-pointer"
                         >
                           السابق ◀
                         </button>
@@ -2846,7 +2846,7 @@ export default function EmployeePortal({
                               setCalendarMonth(calendarMonth + 1);
                             }
                           }}
-                          className="p-2.5 bg-slate-50 hover:bg-slate-100 border border-[#1e3a5f] text-slate-700 rounded-xl transition-all font-black text-xs cursor-pointer"
+                          className="p-2.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 rounded-xl transition-all font-black text-xs cursor-pointer"
                         >
                           ▶ التالي
                         </button>
@@ -2936,8 +2936,8 @@ export default function EmployeePortal({
                               isTodayStr
                                 ? "bg-indigo-50/40 border-indigo-300 ring-2 ring-indigo-500/20 shadow-md shadow-indigo-55"
                                 : hasActivity
-                                  ? "bg-[#0a1628] border-[#1e3a5f] hover:border-indigo-400 hover:shadow-md"
-                                  : "bg-[#0a1628] border-slate-100 hover:bg-slate-50/50"
+                                  ? "bg-white border-slate-200 hover:border-indigo-400 hover:shadow-md"
+                                  : "bg-white border-slate-100 hover:bg-slate-50/50"
                             }`}
                           >
                             <div className="flex items-center justify-between">
@@ -3041,7 +3041,7 @@ export default function EmployeePortal({
                                     {dayHearings.map((h, hIdx) => (
                                       <div
                                         key={hIdx}
-                                        className="bg-[#0a1628]/5 border border-white/5 p-2 rounded-xl text-[10px]"
+                                        className="bg-white/5 border border-white/5 p-2 rounded-xl text-[10px]"
                                       >
                                         <div className="font-extrabold text-white">
                                           {h.caseName}
@@ -3064,7 +3064,7 @@ export default function EmployeePortal({
                                     {dayLeaves.map((l, lIdx) => (
                                       <div
                                         key={lIdx}
-                                        className="bg-[#0a1628]/5 border border-white/5 p-2 rounded-xl text-[10px] flex justify-between items-center bg-slate-800/20"
+                                        className="bg-white/5 border border-white/5 p-2 rounded-xl text-[10px] flex justify-between items-center bg-slate-800/20"
                                       >
                                         <span className="text-white font-bold">
                                           {l.type === "vacation"
@@ -3096,7 +3096,7 @@ export default function EmployeePortal({
                                     {dayTasks.map((t, tIdx) => (
                                       <div
                                         key={tIdx}
-                                        className="bg-[#0a1628]/5 border border-white/5 p-2 rounded-xl text-[10px]"
+                                        className="bg-white/5 border border-white/5 p-2 rounded-xl text-[10px]"
                                       >
                                         <div className="font-extrabold text-white font-bold">
                                           {t.title}
@@ -3139,7 +3139,7 @@ export default function EmployeePortal({
 
               {/* Quick Summary Stats */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <div className="bg-[#0a1628] border border-[#1e3a5f] p-8 rounded-[3rem] hover:border-blue-300 transition-all group relative overflow-hidden shadow-sm">
+                <div className="bg-white border border-slate-200 p-8 rounded-[3rem] hover:border-blue-300 transition-all group relative overflow-hidden shadow-sm">
                   <div className="absolute -top-12 -right-12 w-24 h-24 bg-blue-50 rounded-full blur-3xl opacity-50" />
                   <div className="flex items-center justify-between mb-6">
                     <span className="text-[10px] font-black text-slate-200 font-bold uppercase tracking-widest">
@@ -3157,7 +3157,7 @@ export default function EmployeePortal({
                   </div>
                 </div>
 
-                <div className="bg-[#0a1628] border border-[#1e3a5f] p-8 rounded-[3rem] hover:border-emerald-300 transition-all group relative overflow-hidden shadow-sm">
+                <div className="bg-white border border-slate-200 p-8 rounded-[3rem] hover:border-emerald-300 transition-all group relative overflow-hidden shadow-sm">
                   <div className="absolute -top-12 -right-12 w-24 h-24 bg-emerald-50 rounded-full blur-3xl opacity-50" />
                   <div className="flex items-center justify-between mb-6">
                     <span className="text-[10px] font-black text-slate-200 font-bold uppercase tracking-widest">
@@ -3175,7 +3175,7 @@ export default function EmployeePortal({
                   </div>
                 </div>
 
-                <div className="bg-[#0a1628] border border-[#1e3a5f] p-8 rounded-[3rem] hover:border-amber-300 transition-all group relative overflow-hidden shadow-sm">
+                <div className="bg-white border border-slate-200 p-8 rounded-[3rem] hover:border-amber-300 transition-all group relative overflow-hidden shadow-sm">
                   <div className="absolute -top-12 -right-12 w-24 h-24 bg-amber-50 rounded-full blur-3xl opacity-50" />
                   <div className="flex items-center justify-between mb-6">
                     <span className="text-[10px] font-black text-slate-200 font-bold uppercase tracking-widest">
@@ -3198,7 +3198,7 @@ export default function EmployeePortal({
                   </div>
                 </div>
 
-                <div className="bg-[#0a1628] border border-[#1e3a5f] p-8 rounded-[3rem] hover:border-purple-300 transition-all group relative overflow-hidden shadow-sm">
+                <div className="bg-white border border-slate-200 p-8 rounded-[3rem] hover:border-purple-300 transition-all group relative overflow-hidden shadow-sm">
                   <div className="absolute -top-12 -right-12 w-24 h-24 bg-purple-50 rounded-full blur-3xl opacity-50" />
                   <div className="flex items-center justify-between mb-6">
                     <span className="text-[10px] font-black text-slate-200 font-bold uppercase tracking-widest">
@@ -3220,7 +3220,7 @@ export default function EmployeePortal({
               {/* Middle Row: Judicial Calendar & Agenda */}
               <div className="grid grid-cols-1 xl:grid-cols-12 gap-10">
                 {/* Calendar Section */}
-                <div className="xl:col-span-8 bg-[#0a1628] border border-[#1e3a5f] rounded-[3.5rem] p-10 space-y-10 relative overflow-hidden shadow-sm">
+                <div className="xl:col-span-8 bg-white border border-slate-200 rounded-[3.5rem] p-10 space-y-10 relative overflow-hidden shadow-sm">
                   <div className="flex items-center justify-between">
                     <div>
                       <h3 className="text-xl font-black text-slate-900 flex items-center gap-4">
@@ -3231,10 +3231,10 @@ export default function EmployeePortal({
                         مزامنة فاعلة مع أرشيف ناجز الوطني
                       </p>
                     </div>
-                    <div className="flex items-center gap-3 bg-slate-50 p-2 rounded-2xl border border-[#1e3a5f]">
+                    <div className="flex items-center gap-3 bg-slate-50 p-2 rounded-2xl border border-slate-200">
                       <button
                         onClick={prevMonth}
-                        className="p-2 hover:bg-[#0a1628] rounded-xl transition-all shadow-sm"
+                        className="p-2 hover:bg-white rounded-xl transition-all shadow-sm"
                       >
                         <ChevronRight className="w-4 h-4 rotate-180" />
                       </button>
@@ -3246,7 +3246,7 @@ export default function EmployeePortal({
                       </span>
                       <button
                         onClick={nextMonth}
-                        className="p-2 hover:bg-[#0a1628] rounded-xl transition-all shadow-sm"
+                        className="p-2 hover:bg-white rounded-xl transition-all shadow-sm"
                       >
                         <ChevronRight className="w-4 h-4" />
                       </button>
@@ -3293,7 +3293,7 @@ export default function EmployeePortal({
                 </div>
 
                 {/* Selected Day Agenda Section */}
-                <div className="xl:col-span-4 bg-[#0a1628] border border-[#1e3a5f] rounded-[3.5rem] p-8 flex flex-col relative overflow-hidden shadow-sm">
+                <div className="xl:col-span-4 bg-white border border-slate-200 rounded-[3.5rem] p-8 flex flex-col relative overflow-hidden shadow-sm">
                   <div className="absolute top-0 right-0 w-full h-[1px] bg-gradient-to-r from-blue-600/50 to-transparent" />
                   <h4 className="text-[11px] font-black text-blue-600 uppercase tracking-widest mb-6">
                     أجندة اليوم المختار
@@ -3323,8 +3323,8 @@ export default function EmployeePortal({
                           <h5 className="text-sm font-black text-slate-900 leading-snug">
                             {s.caseName}
                           </h5>
-                          <div className="flex items-center gap-3 pt-4 border-t border-[#1e3a5f]">
-                            <div className="w-8 h-8 bg-[#0a1628] border border-[#1e3a5f] rounded-lg flex items-center justify-center text-slate-200 font-bold shadow-sm">
+                          <div className="flex items-center gap-3 pt-4 border-t border-slate-200">
+                            <div className="w-8 h-8 bg-white border border-slate-200 rounded-lg flex items-center justify-center text-slate-200 font-bold shadow-sm">
                               <MapPin className="w-4 h-4" />
                             </div>
                             <div className="text-right">
@@ -3354,7 +3354,7 @@ export default function EmployeePortal({
               {/* Leave Overview Context & HR */}
               <div className="grid grid-cols-1 xl:grid-cols-2 gap-10 mt-10">
                 {/* Overall Progress & Quick Actions */}
-                <div className="bg-[#0a1628] border border-[#1e3a5f] rounded-[3.5rem] p-10 flex flex-col justify-between shadow-sm relative overflow-hidden">
+                <div className="bg-white border border-slate-200 rounded-[3.5rem] p-10 flex flex-col justify-between shadow-sm relative overflow-hidden">
                   <div className="absolute top-0 left-0 w-40 h-40 bg-amber-50 rounded-br-[5rem] -ml-8 -mt-8 pointer-events-none transition-colors" />
                   <div className="relative z-10 space-y-8">
                     <div className="flex items-center justify-between">
@@ -3417,7 +3417,7 @@ export default function EmployeePortal({
                 </div>
 
                 {/* Leave Requests HR Interactive Calendar */}
-                <div className="bg-[#0a1628] border border-[#1e3a5f] rounded-[3.5rem] p-8 shadow-sm">
+                <div className="bg-white border border-slate-200 rounded-[3.5rem] p-8 shadow-sm">
                   <div className="flex items-center justify-between mb-8">
                     <h3 className="text-lg font-black text-slate-900 flex items-center gap-3">
                       <Calendar className="w-5 h-5 text-blue-600" />
@@ -3434,7 +3434,7 @@ export default function EmployeePortal({
                             ),
                           )
                         }
-                        className="p-2 border border-[#1e3a5f] rounded-xl hover:bg-slate-50"
+                        className="p-2 border border-slate-200 rounded-xl hover:bg-slate-50"
                       >
                         <ChevronRight className="w-4 h-4 rotate-180" />
                       </button>
@@ -3454,7 +3454,7 @@ export default function EmployeePortal({
                             ),
                           )
                         }
-                        className="p-2 border border-[#1e3a5f] rounded-xl hover:bg-slate-50"
+                        className="p-2 border border-slate-200 rounded-xl hover:bg-slate-50"
                       >
                         <ChevronRight className="w-4 h-4" />
                       </button>
@@ -3494,7 +3494,7 @@ export default function EmployeePortal({
                               ? "bg-emerald-50 text-emerald-600 border-emerald-200 shadow-sm"
                               : isPending
                                 ? "bg-amber-50 text-amber-400 font-black border-amber-200 shadow-sm"
-                                : "bg-slate-50/50 text-slate-700 border-transparent hover:border-[#1e3a5f]"
+                                : "bg-slate-50/50 text-slate-700 border-transparent hover:border-slate-200"
                           }`}
                         >
                           {dNum}
@@ -3508,7 +3508,7 @@ export default function EmployeePortal({
               {/* Bottom Row: Active Cases & Operational Tasks */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
                 {/* Assigned Cases Brief */}
-                <div className="bg-[#0a1628] border border-[#1e3a5f] rounded-[3.5rem] p-10 space-y-8 shadow-sm">
+                <div className="bg-white border border-slate-200 rounded-[3.5rem] p-10 space-y-8 shadow-sm">
                   <div className="flex items-center justify-between border-b border-slate-100 pb-6">
                     <h3 className="text-lg font-black text-slate-900 flex items-center gap-4">
                       <Briefcase className="w-6 h-6 text-blue-600" />
@@ -3530,7 +3530,7 @@ export default function EmployeePortal({
                       myCases.slice(0, 5).map((c) => (
                         <div
                           key={c.id}
-                          className="p-6 bg-slate-50 border border-slate-100 rounded-[2.5rem] flex items-center justify-between hover:bg-[#0a1628] hover:border-blue-200 transition-all shadow-sm"
+                          className="p-6 bg-slate-50 border border-slate-100 rounded-[2.5rem] flex items-center justify-between hover:bg-white hover:border-blue-200 transition-all shadow-sm"
                         >
                           <div className="flex items-center gap-5 text-right w-full">
                             <div
@@ -3555,7 +3555,7 @@ export default function EmployeePortal({
                           </div>
                           <button
                             onClick={() => setActivePortalTab("cases")}
-                            className="w-10 h-10 bg-[#0a1628] border border-[#1e3a5f] text-slate-200 font-bold rounded-xl flex items-center justify-center hover:bg-blue-600 hover:text-white hover:border-blue-600 transition-all shrink-0 shadow-sm"
+                            className="w-10 h-10 bg-white border border-slate-200 text-slate-200 font-bold rounded-xl flex items-center justify-center hover:bg-blue-600 hover:text-white hover:border-blue-600 transition-all shrink-0 shadow-sm"
                           >
                             <ChevronRight className="w-5 h-5 rotate-180" />
                           </button>
@@ -3566,7 +3566,7 @@ export default function EmployeePortal({
                 </div>
 
                 {/* Operational Tasks Brief */}
-                <div className="bg-[#0a1628] border border-[#1e3a5f] rounded-[3.5rem] p-10 space-y-8 shadow-sm">
+                <div className="bg-white border border-slate-200 rounded-[3.5rem] p-10 space-y-8 shadow-sm">
                   <div className="flex items-center justify-between border-b border-slate-100 pb-6">
                     <h3 className="text-lg font-black text-slate-900 flex items-center gap-4">
                       <CheckSquare className="w-6 h-6 text-amber-400 font-black" />
@@ -3588,7 +3588,7 @@ export default function EmployeePortal({
                       myTasks.slice(0, 5).map((t) => (
                         <div
                           key={t.id}
-                          className="p-6 bg-slate-50 border border-slate-100 rounded-[2.5rem] space-y-4 hover:bg-[#0a1628] hover:border-amber-200 transition-all shadow-sm"
+                          className="p-6 bg-slate-50 border border-slate-100 rounded-[2.5rem] space-y-4 hover:bg-white hover:border-amber-200 transition-all shadow-sm"
                         >
                           <div className="flex items-center justify-between">
                             <div className="flex-1 min-w-0">
@@ -3610,7 +3610,7 @@ export default function EmployeePortal({
                                 : "جارية للمتابعة ⏳"}
                             </span>
                           </div>
-                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-4 border-t border-[#1e3a5f]">
+                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-4 border-t border-slate-200">
                             <div className="flex items-center gap-2">
                               <span className="text-[10px] text-slate-200 font-bold font-black">
                                 المده المتبقية:
@@ -3622,7 +3622,7 @@ export default function EmployeePortal({
                               onChange={(e) =>
                                 handleToggleTaskStatus(t.id, e.target.value)
                               }
-                              className="bg-[#0a1628] border border-[#1e3a5f] rounded-xl px-4 py-2.5 text-[10px] font-black text-slate-700 outline-none cursor-pointer focus:border-blue-500 hover:border-[#1e3a5f] transition-all shadow-sm"
+                              className="bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-[10px] font-black text-slate-700 outline-none cursor-pointer focus:border-blue-500 hover:border-slate-300 transition-all shadow-sm"
                             >
                               <option value="todo">تحت التنفيذ</option>
                               <option value="completed">تم الإنجاز</option>
@@ -3640,7 +3640,7 @@ export default function EmployeePortal({
           {/* HR & LEAVES TAB */}
           {activePortalTab === "hr" && (
             <div className="space-y-8 animate-in fade-in duration-500">
-              <div className="flex flex-col md:flex-row justify-between items-center bg-[#0a1628] p-8 rounded-[2.5rem] border border-blue-100 shadow-sm gap-6">
+              <div className="flex flex-col md:flex-row justify-between items-center bg-white p-8 rounded-[2.5rem] border border-blue-100 shadow-sm gap-6">
                 <div>
                   <h2 className="text-2xl font-black text-blue-950 flex items-center gap-3">
                     <Coffee className="w-6 h-6 text-amber-500" />
@@ -3660,7 +3660,7 @@ export default function EmployeePortal({
                         18 / 30 يوم
                       </span>
                     </div>
-                    <div className="w-12 h-12 bg-[#0a1628] rounded-xl flex items-center justify-center text-blue-600 border border-blue-100 shadow-sm">
+                    <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center text-blue-600 border border-blue-100 shadow-sm">
                       <span className="font-black text-sm">60%</span>
                     </div>
                   </div>
@@ -3675,7 +3675,7 @@ export default function EmployeePortal({
               </div>
 
               {/* Leave Progress Visualizer */}
-              <div className="bg-[#0a1628] border border-blue-100 rounded-[2.5rem] p-8 shadow-sm">
+              <div className="bg-white border border-blue-100 rounded-[2.5rem] p-8 shadow-sm">
                 <div className="flex flex-col md:flex-row items-center gap-10">
                   <div className="w-full md:w-1/3">
                     <h3 className="text-sm font-black text-blue-950 mb-4">
@@ -3738,7 +3738,7 @@ export default function EmployeePortal({
 
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
                 {/* Attendance Log - 4 cols */}
-                <div className="lg:col-span-4 bg-[#0a1628] border border-blue-100 rounded-[2.5rem] p-8 shadow-sm flex flex-col">
+                <div className="lg:col-span-4 bg-white border border-blue-100 rounded-[2.5rem] p-8 shadow-sm flex flex-col">
                   <h3 className="text-sm font-black text-blue-950 border-b border-blue-50 pb-4 mb-6 flex items-center gap-2">
                     <Clock className="w-4 h-4 text-blue-600" />
                     سجل الحضور الأخير
@@ -3787,7 +3787,7 @@ export default function EmployeePortal({
                 </div>
 
                 {/* Leave Calendar - 4 cols */}
-                <div className="lg:col-span-4 bg-[#0a1628] border border-blue-100 rounded-[2.5rem] p-8 shadow-sm flex flex-col">
+                <div className="lg:col-span-4 bg-white border border-blue-100 rounded-[2.5rem] p-8 shadow-sm flex flex-col">
                   <div className="flex items-center justify-between mb-6 border-b border-blue-50 pb-4">
                     <h3 className="text-sm font-black text-blue-950 flex items-center gap-2">
                       <Calendar className="w-4 h-4 text-blue-600" />
@@ -3866,7 +3866,7 @@ export default function EmployeePortal({
                         >
                           {day}
                           {hasLeave && (
-                            <div className="absolute top-1 right-1 w-1 h-1 bg-[#0a1628] rounded-full"></div>
+                            <div className="absolute top-1 right-1 w-1 h-1 bg-white rounded-full"></div>
                           )}
                         </div>
                       );
@@ -3890,7 +3890,7 @@ export default function EmployeePortal({
                 </div>
 
                 {/* Leave Requests List - 4 cols */}
-                <div className="lg:col-span-4 bg-[#0a1628] border border-blue-100 rounded-[2.5rem] p-8 shadow-sm flex flex-col h-full">
+                <div className="lg:col-span-4 bg-white border border-blue-100 rounded-[2.5rem] p-8 shadow-sm flex flex-col h-full">
                   <h3 className="text-sm font-black text-blue-950 border-b border-blue-50 pb-4 mb-6 flex items-center gap-2">
                     <FileText className="w-4 h-4 text-blue-600" />
                     قائمة الطلبات الجارية
@@ -3938,7 +3938,7 @@ export default function EmployeePortal({
           {/* PERFORMANCE TAB */}
           {activePortalTab === "performance" && (
             <div className="space-y-8 animate-in fade-in duration-500">
-              <div className="bg-[#0a1628] p-10 rounded-[2.5rem] border border-blue-100 shadow-sm relative overflow-hidden text-slate-900">
+              <div className="bg-white p-10 rounded-[2.5rem] border border-blue-100 shadow-sm relative overflow-hidden text-slate-900">
                 <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-600 to-indigo-400"></div>
                 <div className="flex justify-between items-center">
                   <div>
@@ -3963,7 +3963,7 @@ export default function EmployeePortal({
               </div>
 
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <div className="bg-[#0a1628] border border-blue-100 rounded-[2.5rem] p-8 shadow-sm">
+                <div className="bg-white border border-blue-100 rounded-[2.5rem] p-8 shadow-sm">
                   <h3 className="text-sm font-black text-blue-950 mb-8 flex items-center gap-2">
                     <TrendingUp className="w-4 h-4 text-blue-600" />
                     تتبع حجم العمل والدقة الأسبوعية
@@ -4061,7 +4061,7 @@ export default function EmployeePortal({
                   </div>
                 </div>
 
-                <div className="bg-[#0a1628] border border-blue-100 rounded-[2.5rem] p-8 shadow-sm">
+                <div className="bg-white border border-blue-100 rounded-[2.5rem] p-8 shadow-sm">
                   <h3 className="text-sm font-black text-blue-950 mb-8 flex items-center gap-2">
                     <Clock className="w-4 h-4 text-blue-600" />
                     الالتزام بالمواعيد (تسليم المهام)
@@ -4116,7 +4116,7 @@ export default function EmployeePortal({
           {activePortalTab === "najiz" && (
             <div className="space-y-8 animate-in fade-in duration-500">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <div className="bg-[#0a1628] border-2 border-cyan-100 rounded-[2.5rem] p-10 space-y-6 shadow-sm">
+                <div className="bg-white border-2 border-cyan-100 rounded-[2.5rem] p-10 space-y-6 shadow-sm">
                   <div className="flex items-center gap-4">
                     <div className="w-16 h-16 bg-cyan-600/10 text-cyan-700 rounded-3xl flex items-center justify-center">
                       <Globe className="w-8 h-8" />
@@ -4158,7 +4158,7 @@ export default function EmployeePortal({
                   </div>
 
                   {/* Scraper Log execution displays */}
-                  <div className="bg-[#0a1628] rounded-2xl p-6 border border-[#1e3a5f] space-y-4">
+                  <div className="bg-white rounded-2xl p-6 border border-slate-200 space-y-4">
                     <h4 className="text-[11px] font-black text-slate-200 font-bold uppercase tracking-wide">
                       سجل معالجة خادم سحب البيانات:
                     </h4>
@@ -4191,7 +4191,7 @@ export default function EmployeePortal({
 
           {/* AI SERVICES AND ASSISTANT TAB */}
           {activePortalTab === "ai" && (
-            <div className="max-w-4xl mx-auto bg-[#0a1628] border border-[#1e3a5f] rounded-[2.5rem] p-8 shadow-sm space-y-8">
+            <div className="max-w-4xl mx-auto bg-white border border-slate-200 rounded-[2.5rem] p-8 shadow-sm space-y-8">
               <div className="flex items-center gap-4 border-b border-slate-100 pb-4">
                 <div className="w-12 h-12 bg-blue-50 border border-blue-100 rounded-xl flex items-center justify-center text-blue-600">
                   <Zap className="w-5 h-5 animate-pulse" />
@@ -4238,7 +4238,7 @@ export default function EmployeePortal({
                         ? "مثال: صغ لي رداً دفاعياً في قضية تجارية متعلقة بالتأخر عن التسليم بري لمورد خدمات..."
                         : "مثال: لخص شروط وتداعيات دعاوى الإخلاء والمطالبة بالأجرة المستحقة..."
                   }
-                  className="w-full bg-slate-50 border border-[#1e3a5f] rounded-2xl p-5 text-sm font-bold text-slate-900 outline-none focus:bg-[#0a1628] focus:border-blue-500 transition-all h-36 resize-none custom-scrollbar"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-2xl p-5 text-sm font-bold text-slate-900 outline-none focus:bg-white focus:border-blue-500 transition-all h-36 resize-none custom-scrollbar"
                 />
 
                 <div className="flex justify-end">
@@ -4263,7 +4263,7 @@ export default function EmployeePortal({
               </div>
 
               {aiResponse && (
-                <div className="bg-slate-50 border border-[#1e3a5f] p-6 rounded-2xl space-y-3">
+                <div className="bg-slate-50 border border-slate-200 p-6 rounded-2xl space-y-3">
                   <h4 className="text-xs font-black text-blue-600">
                     النتيجة والجواب القانوني الصادر:
                   </h4>
@@ -4289,7 +4289,7 @@ export default function EmployeePortal({
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {myCases.length === 0 ? (
-                  <div className="col-span-full py-20 bg-[#0a1628] rounded-[2.5rem] text-center border border-[#1e3a5f] text-slate-200 font-bold font-bold text-xs shadow-sm">
+                  <div className="col-span-full py-20 bg-white rounded-[2.5rem] text-center border border-slate-200 text-slate-200 font-bold font-bold text-xs shadow-sm">
                     لا توجد قضايا حالية مسندة إلى اسمك. يمكنك مزامنتها من ناجز
                     أو طلب تعيينها من لوحة المدير.
                   </div>
@@ -4297,7 +4297,7 @@ export default function EmployeePortal({
                   myCases.map((c) => (
                     <motion.div
                       key={c.id}
-                      className="bg-[#0a1628] border border-[#1e3a5f] p-8 rounded-[2.5rem] flex flex-col justify-between group text-right hover:border-blue-400 transition-all duration-300 relative overflow-hidden shadow-sm"
+                      className="bg-white border border-slate-200 p-8 rounded-[2.5rem] flex flex-col justify-between group text-right hover:border-blue-400 transition-all duration-300 relative overflow-hidden shadow-sm"
                     >
                       <div className="absolute top-0 right-0 w-1.5 h-full bg-blue-600/10" />
                       <div>
@@ -4310,7 +4310,7 @@ export default function EmployeePortal({
                               c.status === "active" ||
                               c.status === "pending_session"
                                 ? "bg-emerald-50 text-emerald-600 border border-emerald-100"
-                                : "bg-slate-50 text-slate-300 border border-[#1e3a5f]"
+                                : "bg-slate-50 text-slate-300 border border-slate-200"
                             }`}
                           >
                             {c.status === "active"
@@ -4523,14 +4523,14 @@ export default function EmployeePortal({
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {myClients.length === 0 ? (
-                  <div className="col-span-full py-20 bg-[#0a1628] rounded-[2.5rem] text-center border border-[#1e3a5f] text-slate-200 font-bold font-bold text-xs shadow-sm">
+                  <div className="col-span-full py-20 bg-white rounded-[2.5rem] text-center border border-slate-200 text-slate-200 font-bold font-bold text-xs shadow-sm">
                     لا يوجد موكلين مسندين حالياً.
                   </div>
                 ) : (
                   myClients.map((client) => (
                     <div
                       key={client.id}
-                      className="bg-[#0a1628] border border-[#1e3a5f] p-8 rounded-[2.5rem] shadow-sm flex flex-col justify-between hover:border-emerald-400 transition-all duration-300 relative"
+                      className="bg-white border border-slate-200 p-8 rounded-[2.5rem] shadow-sm flex flex-col justify-between hover:border-emerald-400 transition-all duration-300 relative"
                     >
                       <div className="absolute top-0 right-0 w-1.5 h-full bg-emerald-600/10" />
                       <div>
@@ -4581,12 +4581,12 @@ export default function EmployeePortal({
                 </p>
               </div>
 
-              <div className="bg-[#0a1628] p-8 rounded-[3rem] border border-blue-100 shadow-xl shadow-blue-600/5 space-y-6">
+              <div className="bg-white p-8 rounded-[3rem] border border-blue-100 shadow-xl shadow-blue-600/5 space-y-6">
                 <div className="relative">
                   <input
                     type="text"
                     placeholder="ابحث عن نظام، مادة قانونية، أو مبدأ قضائي..."
-                    className="w-full bg-slate-50 border border-[#1e3a5f] rounded-[2rem] px-10 py-6 text-slate-900 font-bold focus:bg-[#0a1628] focus:border-blue-500 outline-none pr-16"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-[2rem] px-10 py-6 text-slate-900 font-bold focus:bg-white focus:border-blue-500 outline-none pr-16"
                   />
                   <Search className="absolute right-6 top-1/2 -translate-y-1/2 w-6 h-6 text-blue-600" />
                 </div>
@@ -4617,7 +4617,7 @@ export default function EmployeePortal({
 
           {/* DOCUMENTS TAB */}
           {activePortalTab === "documents" && (
-            <div className="bg-[#0a1628] border border-[#1e3a5f] p-10 rounded-[2.5rem] shadow-sm space-y-8">
+            <div className="bg-white border border-slate-200 p-10 rounded-[2.5rem] shadow-sm space-y-8">
               <h3 className="text-2xl font-black text-slate-900 flex items-center gap-3">
                 <div className="p-3 bg-emerald-50 rounded-2xl text-emerald-600 border border-emerald-100">
                   <FileText className="w-6 h-6" />
@@ -4631,7 +4631,7 @@ export default function EmployeePortal({
                 المدير للحفاظ على المزامنة.
               </p>
 
-              <div className="dropzone border-2 border-dashed border-[#1e3a5f] bg-slate-50 hover:bg-[#0a1628] rounded-3xl p-12 text-center cursor-pointer transition-all hover:border-blue-400 flex flex-col items-center gap-4">
+              <div className="dropzone border-2 border-dashed border-slate-200 bg-slate-50 hover:bg-white rounded-3xl p-12 text-center cursor-pointer transition-all hover:border-blue-400 flex flex-col items-center gap-4">
                 <FileText className="w-12 h-12 text-blue-400 animate-bounce" />
                 <span className="text-sm font-black text-slate-900">
                   اسحب ملفات أو مذكرات للتوريد هنا
@@ -4658,7 +4658,7 @@ export default function EmployeePortal({
               initial={{ scale: 0.95, y: 20 }}
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.95, y: 20 }}
-              className="bg-[#0a1628] rounded-[2.5rem] shadow-2xl w-full max-w-xl overflow-hidden overflow-y-auto max-h-[90vh]"
+              className="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-xl overflow-hidden overflow-y-auto max-h-[90vh]"
             >
               <div className="p-8 border-b border-slate-100 flex justify-between items-center bg-slate-50">
                 <h3 className="text-xl font-black text-blue-950 flex items-center gap-3">
@@ -4682,7 +4682,7 @@ export default function EmployeePortal({
                     <select
                       name="type"
                       required
-                      className="w-full bg-slate-50 border border-[#1e3a5f] rounded-2xl px-4 py-3 text-slate-950 font-bold text-sm focus:border-blue-600 outline-none"
+                      className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3 text-slate-950 font-bold text-sm focus:border-blue-600 outline-none"
                     >
                       <option value="vacation">
                         إجازة اعتيادية (رصيد سنوي)
@@ -4700,7 +4700,7 @@ export default function EmployeePortal({
                       type="date"
                       name="startDate"
                       required
-                      className="w-full bg-slate-50 border border-[#1e3a5f] rounded-2xl px-4 py-3 text-slate-950 font-bold text-sm outline-none"
+                      className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3 text-slate-950 font-bold text-sm outline-none"
                     />
                   </div>
                   <div className="space-y-2">
@@ -4711,7 +4711,7 @@ export default function EmployeePortal({
                       type="date"
                       name="endDate"
                       required
-                      className="w-full bg-slate-50 border border-[#1e3a5f] rounded-2xl px-4 py-3 text-slate-950 font-bold text-sm outline-none"
+                      className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3 text-slate-950 font-bold text-sm outline-none"
                     />
                   </div>
                 </div>
@@ -4723,7 +4723,7 @@ export default function EmployeePortal({
                   <textarea
                     name="reason"
                     rows={4}
-                    className="w-full bg-slate-50 border border-[#1e3a5f] rounded-2xl px-4 py-3 text-slate-950 font-bold text-sm outline-none resize-none"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3 text-slate-950 font-bold text-sm outline-none resize-none"
                     placeholder="اكتب تفاصيل الطلب هنا..."
                   ></textarea>
                 </div>
@@ -4762,7 +4762,7 @@ export default function EmployeePortal({
               initial={{ scale: 0.95, y: 20 }}
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.95, y: 20 }}
-              className="bg-[#0a1628] rounded-[2.5rem] shadow-2xl w-full max-w-sm overflow-hidden flex flex-col items-center text-center p-10"
+              className="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-sm overflow-hidden flex flex-col items-center text-center p-10"
             >
               {geoLocating ? (
                 <>
@@ -4798,7 +4798,7 @@ export default function EmployeePortal({
                     قم بمسح هذا الرمز باستخدام جهاز البصمة أو بوابة التحقق
                     لإثبات حضورك.
                   </p>
-                  <div className="p-4 bg-[#0a1628] border-2 border-slate-100 rounded-3xl mb-8">
+                  <div className="p-4 bg-white border-2 border-slate-100 rounded-3xl mb-8">
                     <QRCodeSVG value={qrCodeData} size={180} />
                   </div>
                   <button

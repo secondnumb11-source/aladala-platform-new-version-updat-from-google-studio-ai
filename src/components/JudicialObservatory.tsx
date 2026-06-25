@@ -304,8 +304,8 @@ export default function JudicialObservatory() {
         
         {/* Right column: Search & systems selector (5 cols) */}
         <div className="lg:col-span-4 space-y-6">
-          <div className="bg-[#0a1628] border border-[#1e3a5f] rounded-2xl p-6 shadow-sm space-y-5">
-            <h3 className="text-sm font-black text-slate-950 flex items-center gap-2 border-b border-[#1e3a5f] pb-3">
+          <div className="bg-white border border-slate-300 rounded-2xl p-6 shadow-sm space-y-5">
+            <h3 className="text-sm font-black text-slate-950 flex items-center gap-2 border-b border-slate-200 pb-3">
               <BookOpen className="w-4 h-4 text-emerald-700" />
               البحث السريع والفهرسة
             </h3>
@@ -314,7 +314,7 @@ export default function JudicialObservatory() {
               <input
                 type="text"
                 placeholder="ابحث في الأنظمة أو أرقام المواد..."
-                className="w-full bg-slate-50 border border-[#1e3a5f] rounded-xl pr-11 pl-4 py-3 text-xs font-bold text-slate-950 focus:outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-600/10 transition-all placeholder:text-slate-900"
+                className="w-full bg-slate-50 border border-slate-300 rounded-xl pr-11 pl-4 py-3 text-xs font-bold text-slate-950 focus:outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-600/10 transition-all placeholder:text-slate-900"
                 value={searchTerm}
                 onChange={(e) => handleSearch(e.target.value)}
               />
@@ -333,14 +333,14 @@ export default function JudicialObservatory() {
                     className={`w-full text-right p-3.5 rounded-xl border transition-all flex flex-col gap-1.5 cursor-pointer ${
                       isSelected 
                         ? 'bg-emerald-500/[0.04] border-emerald-600 shadow-sm' 
-                        : 'bg-[#0a1628] border-[#1e3a5f]'
+                        : 'bg-white border-slate-200'
                     }`}
                   >
                     <div className="flex justify-between items-center w-full">
                       <span className={`text-xs font-black ${isSelected ? 'text-emerald-800' : 'text-slate-950'}`}>
                         {sys.name}
                       </span>
-                      <span className="text-[11px] bg-slate-100 border border-[#1e3a5f] text-slate-950 px-2 py-0.5 rounded-full font-bold">
+                      <span className="text-[11px] bg-slate-100 border border-slate-300 text-slate-950 px-2 py-0.5 rounded-full font-bold">
                         {sys.articleCount} مادة
                       </span>
                     </div>
@@ -387,8 +387,8 @@ export default function JudicialObservatory() {
         <div className="lg:col-span-8 space-y-6">
           
           {/* Selected Law Details */}
-          <div className="bg-[#0a1628] border border-[#1e3a5f] rounded-3xl p-7 shadow-sm space-y-5">
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-[#1e3a5f] pb-5">
+          <div className="bg-white border border-slate-300 rounded-3xl p-7 shadow-sm space-y-5">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-slate-200 pb-5">
               <div className="space-y-1">
                 <h2 className="text-xl font-black text-slate-950">
                   {selectedSystem.name}
@@ -424,7 +424,7 @@ export default function JudicialObservatory() {
                 <span className="text-xs bg-emerald-500/10 text-emerald-800 font-black px-3.5 py-1.5 rounded-xl border border-emerald-500/20 shadow-sm">
                   {selectedSystem.hijriDate}
                 </span>
-                <span className="text-xs bg-slate-100 text-slate-950 font-black px-3.5 py-1.5 rounded-xl border border-[#1e3a5f] shadow-sm">
+                <span className="text-xs bg-slate-100 text-slate-950 font-black px-3.5 py-1.5 rounded-xl border border-slate-300 shadow-sm">
                   {selectedSystem.articleCount} مادة منقحة
                 </span>
               </div>
@@ -442,7 +442,7 @@ export default function JudicialObservatory() {
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {selectedSystem.keyArticles.map((art) => (
-                  <div key={art.number} className="bg-slate-50 border border-[#1e3a5f] rounded-2xl p-5 space-y-3 shadow-none.5[1.025][0_15px_30px_rgba(16,185,129,0.08)] transition-all duration-300">
+                  <div key={art.number} className="bg-slate-50 border border-slate-300 rounded-2xl p-5 space-y-3 shadow-none.5[1.025][0_15px_30px_rgba(16,185,129,0.08)] transition-all duration-300">
                     <div className="flex justify-between items-center w-full">
                       <span className="text-xs font-black text-emerald-800 bg-emerald-100 border border-emerald-500/20 px-2.5 py-1 rounded-lg">
                         المادة {art.number}
@@ -454,7 +454,7 @@ export default function JudicialObservatory() {
                     </p>
                     <div className="flex flex-wrap gap-1.5 pt-1">
                       {art.keywords.map((kw, idx) => (
-                        <span key={idx} className="text-[11px] bg-[#0a1628] border border-[#1e3a5f] text-slate-950 px-2 py-0.5 rounded-full font-bold">
+                        <span key={idx} className="text-[11px] bg-white border border-slate-300 text-slate-950 px-2 py-0.5 rounded-full font-bold">
                           #{kw}
                         </span>
                       ))}
@@ -466,7 +466,7 @@ export default function JudicialObservatory() {
           </div>
 
           {/* AI Advisor Integrated Form */}
-          <div className="bg-[#0a1628] border border-[#1e3a5f] rounded-3xl p-7 shadow-sm space-y-6">
+          <div className="bg-white border border-slate-300 rounded-3xl p-7 shadow-sm space-y-6">
             <div className="space-y-2">
               <h3 className="text-sm font-black text-slate-950 flex items-center gap-2">
                 <Sparkles className="w-5 h-5 text-amber-500 animate-pulse" />
@@ -481,7 +481,7 @@ export default function JudicialObservatory() {
               <div className="relative">
                 <textarea
                   rows={3}
-                  className="w-full bg-slate-50 border border-[#1e3a5f] rounded-2xl p-5 text-xs font-bold text-slate-950 focus:outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-600/10 transition-all placeholder:text-slate-900 pr-4 pl-12"
+                  className="w-full bg-slate-50 border border-slate-300 rounded-2xl p-5 text-xs font-bold text-slate-950 focus:outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-600/10 transition-all placeholder:text-slate-900 pr-4 pl-12"
                   placeholder={`اكتب سؤالك القانوني هنا (مثال: ما تفنيد المادة 77 بفصل غير مشروع؟ أو ما عقوبات مادة 46 من نظام التنفيذ؟)`}
                   value={aiPrompt}
                   onChange={(e) => setAiPrompt(e.target.value)}
@@ -505,7 +505,7 @@ export default function JudicialObservatory() {
                       setAiPrompt(q);
                       handleAiAnalyze(q);
                     }}
-                    className="text-[10px] bg-slate-100 border border-[#1e3a5f] text-slate-950 px-3 py-1.5 rounded-xl font-bold cursor-pointer transition-all"
+                    className="text-[10px] bg-slate-100 border border-slate-300 text-slate-950 px-3 py-1.5 rounded-xl font-bold cursor-pointer transition-all"
                   >
                     💡 أثر المادة 77 من نظام العمل
                   </button>
@@ -515,7 +515,7 @@ export default function JudicialObservatory() {
                       setAiPrompt(q);
                       handleAiAnalyze(q);
                     }}
-                    className="text-[10px] bg-slate-100 border border-[#1e3a5f] text-slate-950 px-3 py-1.5 rounded-xl font-bold cursor-pointer transition-all"
+                    className="text-[10px] bg-slate-100 border border-slate-300 text-slate-950 px-3 py-1.5 rounded-xl font-bold cursor-pointer transition-all"
                   >
                     🔨 عقوبات المادة 46 تنفيذ
                   </button>
@@ -525,7 +525,7 @@ export default function JudicialObservatory() {
                       setAiPrompt(q);
                       handleAiAnalyze(q);
                     }}
-                    className="text-[10px] bg-slate-100 border border-[#1e3a5f] text-slate-950 px-3 py-1.5 rounded-xl font-bold cursor-pointer transition-all"
+                    className="text-[10px] bg-slate-100 border border-slate-300 text-slate-950 px-3 py-1.5 rounded-xl font-bold cursor-pointer transition-all"
                   >
                     📱 حجية رسائل واتساب في محاكم الإثبات
                   </button>

@@ -1,11 +1,10 @@
-import { verifyDataIsolation } from '@/lib/officeManager';
 /**
  * @license
  * SPDX-License-Identifier: Apache-2.0
  */
 
 import React, { useState, useEffect, useLayoutEffect, Suspense, useRef, useCallback } from 'react';
-import { Search, AlertCircle, X, Wifi, Activity, AlertTriangle, Server, LogOut, RefreshCw, Bell } from 'lucide-react';
+import { Search, AlertCircle, X, Wifi, Activity, AlertTriangle, Server, LogOut, RefreshCw } from 'lucide-react';
 import Sidebar from '@/components/Sidebar';
 import CommandPalette from '@/components/CommandPalette';
 import ExtensionDownloadSection from '@/components/ExtensionDownloadSection';
@@ -102,51 +101,19 @@ const PerformanceSuspense: React.FC<{ children: React.ReactNode; moduleName: str
 };
 
 export default function App() {
-  // Security: Monitor unauthorized changes to office_id
-  useEffect(() => {
-    const handleStorageChange = (e) => {
-      if (e.key === 'adala_office_id') {
-        console.error('[Adala Security] Unauthorized change to office ID detected! Purging session.');
-        try {
-           localStorage.clear();
-           sessionStorage.clear();
-        } catch(err) {
-           localStorage.clear();
-           sessionStorage.clear();
-        }
-        window.location.reload();
-      }
-    };
-    window.addEventListener('storage', handleStorageChange);
-    
-    // Initial verification
-    if (typeof verifyDataIsolation === 'function' && !verifyDataIsolation()) {
-        try {
-           localStorage.clear();
-           sessionStorage.clear();
-        } catch(err) {
-           localStorage.clear();
-           sessionStorage.clear();
-        }
-        window.location.reload();
-    }
-    
-    return () => window.removeEventListener('storage', handleStorageChange);
-  }, []);
-
   const { isValid, error } = useSupabaseConnection();
 
   if (isValid === false) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen p-8 text-center bg-red-50" style={{ direction: 'rtl' }}>
         <h1 className="text-3xl font-bold text-red-600 mb-4">⚠️ خطأ في الاتصال بقاعدة البيانات (Supabase)</h1>
-        <p className="text-[#94a3b8] max-w-2xl bg-[#0a1628] p-6 rounded-2xl shadow-sm border border-red-200">
+        <p className="text-gray-700 max-w-2xl bg-white p-6 rounded-xl shadow-sm border border-red-200">
            القيمة المطلوبة لمتغيرات البيئة للاتصال غير صحيحة أو مفقودة.
            <br /><br />
-           الرجاء التأكد من إضافة <code className="bg-[#0a1628] px-1 py-0.5 rounded text-red-500">VITE_SUPABASE_URL</code> و <code className="bg-[#0a1628] px-1 py-0.5 rounded text-red-500">VITE_SUPABASE_PUBLISHABLE_KEY</code> إلى ملف <code className="bg-[#0a1628] px-1 py-0.5 rounded">.env</code> لديك، وإعادة تشغيل التطبيق.
+           الرجاء التأكد من إضافة <code className="bg-gray-100 px-1 py-0.5 rounded text-red-500">VITE_SUPABASE_URL</code> و <code className="bg-gray-100 px-1 py-0.5 rounded text-red-500">VITE_SUPABASE_PUBLISHABLE_KEY</code> إلى ملف <code className="bg-gray-100 px-1 py-0.5 rounded">.env</code> لديك، وإعادة تشغيل التطبيق.
         </p>
         {error && (
-          <pre className="mt-6 p-4 bg-[#0a1628] text-red-400 text-left rounded-2xl w-full max-w-2xl overflow-x-auto text-sm">
+          <pre className="mt-6 p-4 bg-gray-900 text-red-400 text-left rounded-xl w-full max-w-2xl overflow-x-auto text-sm">
             {error}
           </pre>
         )}
@@ -268,24 +235,12 @@ function AppContent() {
     
     if (localStorage.getItem('has_cleaned_rls_test_cases') !== 'true') {
         fetch('/api/cases/rls-test', { method: 'DELETE' })
-            .then(res => {
-                if (!res.ok) {
-                    return { success: false, error: 'HTTP error ' + res.status };
-                }
-                return res.text().then(text => text ? JSON.parse(text) : { success: true });
-            })
+            .then(res => res.json())
             .then(data => {
                 console.log('Cleanup result:', data);
-                if (data && data.success) {
-                    localStorage.setItem('has_cleaned_rls_test_cases', 'true');
-                } else {
-                    // Mark as true to prevent repeat loops if endpoint fails
+                if (data.success) {
                     localStorage.setItem('has_cleaned_rls_test_cases', 'true');
                 }
-            })
-            .catch(err => {
-                console.error('Error cleaning RLS test cases:', err);
-                localStorage.setItem('has_cleaned_rls_test_cases', 'true');
             });
     }
 
@@ -640,8 +595,7 @@ useEffect(() => {
               nextSessionTime: c.nextSessionTime || '09:00 AM'
             })
           });
-          const text = await response.text();
-          const result = text ? JSON.parse(text) : { success: false };
+          const result = await response.json();
           if (result.success) {
             console.log(`[Scheduled Reminders] Successfully delivered reminder for case ${c.caseNumber} to ${email}`);
             sentKeys.push(`${c.id}_tomorrow`);
@@ -1060,7 +1014,7 @@ useEffect(() => {
     
     // Throttled scan to prevent overhead
     const targetContainers = document.querySelectorAll(
-      '.login-sidebar-panel, [class*="bg-[#0a1628]"], .bg-midnight, [class*="bg-midnight"], [class*="bg-[#050e21]"], [class*="bg-[#030712]"], [class*="bg-[#0b1e33]"], [class*="bg-[#11243f]"], [class*="bg-[#0b1a2d]"], [class*="bg-[#0c2461]"], [class*="bg-[#041a45]"], [class*="bg-[#0b1329]"], aside, .bg-gradient-to-br, .card-professional-stable, .card-professional-case, .customizable-card, [style*="background-color"], .motion-div, [style*="background"]'
+      '.login-sidebar-panel, .bg-slate-900, .bg-slate-950, .bg-midnight, [class*="bg-midnight"], [class*="bg-slate-9"], [class*="bg-[#050e21]"], [class*="bg-[#030712]"], [class*="bg-[#0b1e33]"], [class*="bg-[#11243f]"], [class*="bg-[#0b1a2d]"], [class*="bg-[#0c2461]"], [class*="bg-[#041a45]"], [class*="bg-[#0b1329]"], [class*="bg-slate-800"], aside, .bg-gradient-to-br, [class*="from-slate-9"], [class*="from-[#0C121E]"], .card-professional-stable, .card-professional-case, .customizable-card, [style*="background-color"], .motion-div, [style*="background"]'
     );
 
     targetContainers.forEach(container => {
@@ -1088,7 +1042,7 @@ useEffect(() => {
          svgElements.forEach(svgEl => {
             const htmlSvg = svgEl as unknown as HTMLElement;
             let isElementDarkBg = true;
-            const activeBgContainer = htmlSvg.closest('[class*="bg-[#0a1628]"], .bg-sky-50');
+            const activeBgContainer = htmlSvg.closest('.bg-white, .bg-slate-50, .bg-slate-100, .bg-gray-50, .bg-gray-100, .bg-sky-50');
             if (activeBgContainer) {
                isElementDarkBg = false;
             }
@@ -1146,7 +1100,7 @@ useEffect(() => {
         const insideSidebar = htmlEl.closest('.login-sidebar-panel');
         if (insideSidebar) {
            let isElementDarkBg = true;
-           const activeBgContainer = htmlEl.closest('[class*="bg-[#0a1628]"], .bg-sky-50');
+           const activeBgContainer = htmlEl.closest('.bg-white, .bg-slate-50, .bg-slate-100, .bg-gray-50, .bg-gray-100, .bg-sky-50');
            if (activeBgContainer) {
               isElementDarkBg = false;
            }
@@ -1870,23 +1824,23 @@ useEffect(() => {
         <div className="fixed inset-0 bg-black/50 z-[100] flex items-center justify-center p-4">
           <div className="bg-[#1e293b] p-6 rounded-3xl w-full max-w-sm text-white border border-[#D4AF37]/50">
             <h2 className="text-xl font-bold mb-4 text-[#FACC15]">تعديل موعد الجلسة</h2>
-            <label className="text-xs text-[#94a3b8] block mb-1">التاريخ</label>
+            <label className="text-xs text-slate-400 block mb-1">التاريخ</label>
             <input 
               type="date" 
               value={editingHearing.date} 
               onChange={e => setEditingHearing({...editingHearing, date: e.target.value})}
-              className="w-full bg-[#060b13] p-3 rounded-2xl mb-4 border border-[#1e3a5f] focus:border-[#FACC15] outline-none"
+              className="w-full bg-[#060b13] p-3 rounded-xl mb-4 border border-slate-700 focus:border-[#FACC15] outline-none"
             />
-            <label className="text-xs text-[#94a3b8] block mb-1">الوقت</label>
+            <label className="text-xs text-slate-400 block mb-1">الوقت</label>
             <input 
               type="time" 
               value={editingHearing.time} 
               onChange={e => setEditingHearing({...editingHearing, time: e.target.value})}
-              className="w-full bg-[#060b13] p-3 rounded-2xl mb-4 border border-[#1e3a5f] focus:border-[#FACC15] outline-none"
+              className="w-full bg-[#060b13] p-3 rounded-xl mb-4 border border-slate-700 focus:border-[#FACC15] outline-none"
             />
             <div className="flex gap-2">
-              <button className="flex-1 bg-[#FACC15] text-[#060b13] font-bold py-3 rounded-2xl hover:bg-[#c9a84c] transition-colors" onClick={saveHearingChanges}>حفظ</button>
-              <button className="flex-1 bg-[#0a1628] text-white py-3 rounded-2xl hover:bg-[#0a1628] transition-colors" onClick={() => setEditingHearing(null)}>إلغاء</button>
+              <button className="flex-1 bg-[#FACC15] text-[#060b13] font-bold py-3 rounded-xl hover:bg-yellow-400 transition-colors" onClick={saveHearingChanges}>حفظ</button>
+              <button className="flex-1 bg-slate-700 text-white py-3 rounded-xl hover:bg-slate-600 transition-colors" onClick={() => setEditingHearing(null)}>إلغاء</button>
             </div>
           </div>
         </div>
@@ -1903,7 +1857,7 @@ useEffect(() => {
         clients={clients}
         tasks={tasks}
       />
-      <div className="flex-1 flex flex-col lg:flex-row bg-[#0a1628] overflow-hidden" dir={language === 'ar' ? 'rtl' : 'ltr'}>
+      <div className="flex-1 flex flex-col lg:flex-row bg-white overflow-hidden" dir={language === 'ar' ? 'rtl' : 'ltr'}>
         
         {/* Sidebar navigation system overlay (fixed left/right) */}
       <Sidebar 
@@ -1919,65 +1873,186 @@ useEffect(() => {
       />
 
         {/* Main viewport frame layout */}
-        <main className="flex-1 min-h-screen bg-[#020c1a] overflow-y-auto relative">
+        <main className="flex-1 p-4 pt-24 lg:p-8 overflow-y-auto overflow-x-hidden space-y-8 relative min-h-0">
           
-          
-        <header className="
-          sticky top-0 z-40
-          bg-[rgba(5,14,33,0.95)]
-          backdrop-blur-xl
-          border-b border-[#1e3a5f]
-          px-6 py-3
-          flex items-center justify-between
-        " dir="rtl">
-          {/* بحث */}
-          <div className="relative">
-            <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#94a3b8]" />
-            <input
-              className="
-                w-72
-                bg-[#050e21]
-                border border-[#1e3a5f]
-                focus:border-[#c9a84c] focus:ring-1 focus:ring-[rgba(201,168,76,0.3)]
-                text-white placeholder-[#475569]
-                rounded-xl pr-9 pl-4 py-2.5 text-sm
-                transition-all duration-200
-                outline-none
-              "
-              placeholder="ابحث عن قضية، عميل، موظف..."
-            />
-          </div>
+          {/* Universal Notification Bell (Global scope) */}
+          <NotificationsBell />
 
-          {/* أيقونات اليمين */}
-          <div className="flex items-center gap-3">
-            <button className="relative p-2 rounded-xl hover:bg-[#1e3a5f] transition-colors">
-              <Bell className="w-5 h-5 text-[#94a3b8]" />
-              <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full text-white text-[9px] flex items-center justify-center font-bold">4</span>
-            </button>
-            <button className="p-2 rounded-xl hover:bg-[#1e3a5f] transition-colors">
-              <RefreshCw className="w-5 h-5 text-[#94a3b8]" />
-            </button>
-            
-            <div className="h-6 w-px bg-[#1e3a5f] mx-2"></div>
-            
-            <div className="flex items-center gap-3 bg-[rgba(255,255,255,0.03)] hover:bg-[rgba(255,255,255,0.06)] border border-[#1e3a5f] rounded-xl px-3 py-1.5 cursor-pointer transition-colors">
-              <div className="w-8 h-8 bg-gradient-to-br from-[#c9a84c] to-[#a67c30] rounded-lg flex items-center justify-center shadow-[0_2px_8px_rgba(201,168,76,0.3)]">
-                <span className="text-[#020c1a] text-xs font-black">{currentUser?.name?.charAt(0) || 'م'}</span>
-              </div>
+          {/* Notification bar area removed for clean UI */}
+
+          {/* Dedicated Header for Clients vs. Global Controls for Attorney and Staff */}
+          {currentUser?.role === 'client' ? (
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-6 border-b border-slate-205 pb-6" dir="rtl">
               <div>
-                <p className="text-white text-xs font-bold">{currentUser?.name || 'المستخدم'}</p>
-                <p className="text-[#c9a84c] text-[10px] font-medium">{selectedRole || 'مكتب محاماة'}</p>
+                <h1 className="text-lg font-display font-black text-slate-900 flex items-center gap-2">
+                  <span>منصة العدالة للعملاء والشركاء الأجلاء</span>
+                  <span className="text-[10px] bg-emerald-500/10 text-emerald-700 px-2.5 py-1 rounded-xl font-black">تم التحقق بالنفاذ الآمن الموحد 🔐</span>
+                </h1>
+                <p className="text-xs text-slate-800 font-bold mt-2">
+                  مرحباً بك العميل الكريم الأستاذ/الأستاذة: <strong className="text-primary font-black bg-amber-500/5 px-2 py-0.5 rounded-lg border border-primary/20">{currentUser.name}</strong> المحترم. طاب يومكم بكل خير وسعادة.
+                </p>
+              </div>
+              <div className="flex justify-end gap-3.5 items-center shrink-0">
+                {/* Display Mode Switcher */}
+                <div className="flex border border-slate-300 rounded-lg bg-white p-0.5 shadow-sm gap-0.5 items-center font-sans">
+                  <button
+                    onClick={() => setGlobalDisplayMode('light')}
+                    title={language === 'ar' ? 'الوضع المضيء' : 'Light Mode'}
+                    className={`flex items-center gap-1 px-1.5 py-1 rounded-md text-[10px] font-black transition-all cursor-pointer ${
+                      getGlobalDisplayMode() === 'light'
+                        ? 'bg-amber-100 text-amber-900 border border-amber-305/40'
+                        : 'text-slate-700'
+                    }`}
+                  >
+                    <span>☀️</span>
+                    <span className="hidden md:inline select-none leading-none">{language === 'ar' ? 'مضيء' : 'Light'}</span>
+                  </button>
+                  <button
+                    onClick={() => setGlobalDisplayMode('dark')}
+                    title={language === 'ar' ? 'الوضع الداكن' : 'Dark Mode'}
+                    className={`flex items-center gap-1 px-1.5 py-1 rounded-md text-[10px] font-black transition-all cursor-pointer ${
+                      getGlobalDisplayMode() === 'dark'
+                        ? 'bg-slate-900 text-white border border-slate-800'
+                        : 'text-slate-700'
+                    }`}
+                  >
+                    <span>🌙</span>
+                    <span className="hidden md:inline select-none leading-none">{language === 'ar' ? 'داكن' : 'Dark'}</span>
+                  </button>
+                  <button
+                    onClick={() => setGlobalDisplayMode('high-contrast')}
+                    title={language === 'ar' ? 'عالي التباين' : 'High Contrast'}
+                    className={`flex items-center gap-1 px-1.5 py-1 rounded-md text-[10px] font-black transition-all cursor-pointer ${
+                      getGlobalDisplayMode() === 'high-contrast'
+                        ? 'bg-[#ffe066]/20 text-[#2e180d] border border-[#ffe066]/60'
+                        : 'text-slate-700'
+                    }`}
+                  >
+                    <span>👁️</span>
+                    <span className="hidden md:inline select-none leading-none">{language === 'ar' ? 'تباين' : 'Contrast'}</span>
+                  </button>
+                </div>
+
+                <button
+                  onClick={toggleLanguage}
+                  className="flex items-center gap-1.5 px-3 py-2 text-[10px] font-black rounded-lg bg-white border border-slate-300 text-slate-900 transition-all shadow-sm cursor-pointer"
+                >
+                  <span>🌐</span>
+                  <span>{language === 'ar' ? 'EN' : 'AR'}</span>
+                </button>
+                <button
+                  onClick={handleLogout}
+                  className="flex items-center gap-2 px-5 py-3 text-xs font-black rounded-xl bg-rose-650 text-white transition-all shadow-md cursor-pointer"
+                >
+                  <span>🚪</span>
+                  <span>تسجيل الخروج الآمن</span>
+                </button>
               </div>
             </div>
-            
-            <button onClick={handleLogout} className="p-2 rounded-xl hover:bg-[rgba(239,68,68,0.1)] text-red-400 hover:text-red-300 transition-colors ml-2" title="تسجيل الخروج">
-              <LogOut className="w-5 h-5" />
-            </button>
-          </div>
-        </header>
-        
-        <div className="p-0 pb-12">
-{/* Module Router Multiplexer */}
+          ) : (
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-6">
+              <div className="flex-1 max-w-xl relative group">
+                <Search className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-900 w-5 h-5 group-focus-within:text-primary transition-colors" />
+                <input 
+                  type="text" 
+                  placeholder="البحث الشامل في ملفات القضايا، سجل العملاء، والمطالبات المالية لمنصة العدالة..." 
+                  className="w-full bg-white text-[#050e21] border border-slate-300 rounded-2xl pr-14 pl-6 py-4.5 text-sm font-bold focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all placeholder:text-slate-900 font-sans shadow-sm"
+                />
+              </div>
+
+              <div className="flex justify-end gap-3.5 items-center shrink-0">
+                {/* Display Mode Switcher */}
+                <div className="flex border border-slate-300 rounded-lg bg-white p-0.5 shadow-sm gap-0.5 items-center font-sans">
+                  <button
+                    onClick={() => setGlobalDisplayMode('light')}
+                    title={language === 'ar' ? 'الوضع المضيء' : 'Light Mode'}
+                    className={`flex items-center gap-1.5 px-2 py-1.5 rounded-md text-[10px] font-black transition-all cursor-pointer ${
+                      getGlobalDisplayMode() === 'light'
+                        ? 'bg-amber-100 text-amber-900 border border-amber-305/40'
+                        : 'text-slate-700'
+                    }`}
+                  >
+                    <span>☀️</span>
+                    <span className="hidden select-none leading-none md:inline">{language === 'ar' ? 'مضيء' : 'Light'}</span>
+                  </button>
+                  <button
+                    onClick={() => setGlobalDisplayMode('dark')}
+                    title={language === 'ar' ? 'الوضع الداكن' : 'Dark Mode'}
+                    className={`flex items-center gap-1.5 px-2 py-1.5 rounded-md text-[10px] font-black transition-all cursor-pointer ${
+                      getGlobalDisplayMode() === 'dark'
+                        ? 'bg-slate-900 text-white border border-slate-800'
+                        : 'text-slate-300'
+                    }`}
+                  >
+                    <span>🌙</span>
+                    <span className="hidden select-none leading-none md:inline">{language === 'ar' ? 'داكن' : 'Dark'}</span>
+                  </button>
+                  <button
+                    onClick={() => setGlobalDisplayMode('high-contrast')}
+                    title={language === 'ar' ? 'عالي التباين' : 'High Contrast'}
+                    className={`flex items-center gap-1.5 px-2 py-1.5 rounded-md text-[10px] font-black transition-all cursor-pointer ${
+                      getGlobalDisplayMode() === 'high-contrast'
+                        ? 'bg-[#ffe066]/20 text-[#2e180d] border border-[#ffe066]/60'
+                        : 'text-slate-700'
+                    }`}
+                  >
+                    <span>🕶️</span>
+                    <span className="hidden select-none leading-none md:inline">{language === 'ar' ? 'تباين' : 'Contrast'}</span>
+                  </button>
+                </div>
+
+                <button
+                  onClick={toggleLanguage}
+                  className="flex items-center gap-2 px-3 py-2.5 text-[10px] font-black rounded-lg bg-white border border-slate-300 text-[#050e21] transition-all shadow-sm cursor-pointer group"
+                >
+                   <span className="group-hover:rotate-12 transition-transform">🌐</span>
+                   <span className="uppercase tracking-widest">{language === 'ar' ? 'EN' : 'AR'}</span>
+                </button>
+
+                <button
+                   onClick={() => {
+                     if (window.confirm('هل أنت متأكد من رغبتك في إنهاء الجلسة بشكل نهائي والخروج من النظام؟')) {
+                       handleLogout();
+                     }
+                   }}
+                   title="إنهاء جلسة العمل وتسجيل الخروج من النظام"
+                   className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-black rounded-lg bg-slate-900 border border-transparent text-white font-bold transition-all shadow-sm cursor-pointer group shrink-0"
+                >
+                   <span className="group-hover:animate-spin">⏱️</span>
+                   <span>إنهاء الجلسة</span>
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Real-time Portal Welcome Card */}
+          {currentUser?.role === 'client' && (
+            <div className="bg-gradient-to-r from-primary/10 to-amber-500/5 border-r-4 border-primary p-5 rounded-2xl mb-8 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4 text-slate-800" dir="rtl">
+              <div>
+                <h2 className="text-lg font-black text-slate-900 leading-tight">مرحباً بك العميل الكريم: {currentUser.name} 👤</h2>
+                <p className="text-xs text-slate-700 mt-1 font-bold">أهلاً بك في منصتك التفاعلية لمتابعة مستجدات القضايا والدفوع القانونية وعمليات السداد الفوري.</p>
+              </div>
+              <div className="bg-white border border-slate-300 text-xs px-4 py-2 rounded-xl text-primary font-bold shadow-inner shrink-0">
+                بوابة الوصول الآمن للعميل
+              </div>
+            </div>
+          )}
+
+          {currentUser?.role === 'employee' && (
+            <div className="bg-[#0f172a] border-r-4 border-amber-500 p-5 rounded-2xl mb-8 shadow-md flex flex-col md:flex-row justify-between items-start md:items-center gap-4 text-white" dir="rtl">
+              <div>
+                <h2 className="text-lg font-black text-white leading-tight">المستشار الحالي: {currentUser.name} ⚖️</h2>
+                <p className="text-xs text-amber-500 mt-1 font-bold">
+                  المسمى الوظيفي: {currentUser.jobTitle || 'مستشار قانوني'} | الكود الوظيفي: {currentUser.employeeCode || 'EMP-11'}
+                </p>
+              </div>
+              <div className="bg-slate-900 border border-slate-800 text-xs px-4 py-3 rounded-xl text-amber-400 font-mono font-bold shadow-inner shrink-0">
+                لوحة المستشار المتكاملة
+              </div>
+            </div>
+          )}
+
+        {/* Module Router Multiplexer */}
         {currentTab !== 'landing' ? (
           <RouteGuard isAuthenticated={isAuthenticated} setCurrentTab={setCurrentTab}>
             <PerformanceSuspense moduleName={currentTab}>
@@ -2142,7 +2217,7 @@ useEffect(() => {
         )}
 
         {currentTab === 'najiz' && (
-          <ErrorBoundary fallback={<div className="text-red-400 p-10 text-center bg-[#0a1628] rounded-2xl border border-rose-500/30">خطأ في تحميل قسم ناجز</div>}>
+          <ErrorBoundary fallback={<div className="text-red-400 p-10 text-center bg-slate-900 rounded-2xl border border-rose-500/30">خطأ في تحميل قسم ناجز</div>}>
             <React.Suspense fallback={<div className="p-10 text-center text-amber-500 font-bold font-sans">جاري تحميل منصة ربط ناجز...</div>}>
               <NajizExtensionHub 
                 currentUser={currentUser}
@@ -2235,9 +2310,9 @@ useEffect(() => {
 
         {currentTab === 'supabase' && (
           <div className="max-w-4xl mx-auto space-y-6">
-            <div className="bg-[#0a1628] border border-[#1e3a5f] p-6 rounded-2xl">
+            <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl">
               <h1 className="text-xl font-bold text-white mb-2">تكامل قاعدة بيانات Supabase</h1>
-              <p className="text-[#94a3b8] font-bold text-sm">
+              <p className="text-slate-200 font-bold text-sm">
                 تم دمج Supabase SSR (Server-Side Rendering) بنظام الجلسات الموحد. 
                 تعمل هذه اللوحة على سحب البيانات مباشرة من Supabase.
               </p>
@@ -2300,7 +2375,7 @@ useEffect(() => {
         ) : (
           currentTab === 'landing' && <MainLandingPage onSignInSelect={() => setCurrentTab('dashboard')} onTrialSelect={() => setCurrentTab('dashboard')} />
         )}
-        </div>
+
       </main>
 
       <FeedbackModal 
@@ -2329,8 +2404,8 @@ useEffect(() => {
             background: linear-gradient(135deg, var(--theme-bg-to) 0%, var(--theme-bg-from) 100%) !important;
           }
 
-          .bg-[#0a1628], 
-          .bg-[#0a1628],
+          .bg-slate-900, 
+          .bg-slate-950,
           .bg-midnight,
           [class*="bg-midnight"],
           [class*="bg-slate-9"],
@@ -2359,8 +2434,8 @@ useEffect(() => {
             filter: drop-shadow(0 0 0 rgba(0,0,0,0)) !important;
           }
           
-          .border-[#1e3a5f],
-          [class*="border-[#1e3a5f]"],
+          .border-slate-800,
+          [class*="border-slate-800"],
           [class*="border-yellow-500/30"],
           [class*="border-yellow-400/10"],
           [class*="border-white/10"],
@@ -2375,13 +2450,13 @@ useEffect(() => {
       <style id="accessibility-contrast-layer">
         {`
           /* Text visibility in dark themes */
-          .dark .card-professional *, .dark .bg-[#0a1628] *:not(.text-primary) {
+          .dark .card-professional *, .dark .bg-slate-900 *:not(.text-primary) {
              text-shadow: 0 0 1px rgba(255,255,255,0.1);
           }
-          .dark .text-[#94a3b8], .dark .text-[#94a3b8] font-bold, .dark .text-[#94a3b8], .dark .text-[#94a3b8] {
+          .dark .text-slate-700, .dark .text-slate-200 font-bold, .dark .text-slate-700, .dark .text-slate-800 {
              color: #e2e8f0 !important;
           }
-          .dark .text-white font-bold, .dark .text-[#94a3b8] font-bold {
+          .dark .text-white font-bold, .dark .text-slate-200 font-bold {
              color: #f8fafc !important;
           }
           .dark .text-amber-500 {
@@ -2391,16 +2466,15 @@ useEffect(() => {
           .dark table td, .dark table th, .dark input, .dark select, .dark textarea {
              color: #f8fafc !important;
           }
-          .dark .high-contrast-mode .text-[#94a3b8] {
+          .dark .high-contrast-mode .text-slate-700 {
              color: #fbbf24 !important; /* Force high contrast yellow */
           }
           
           /* Light themes overrides */
           :root:not(.dark) .card-professional .text-white,
           :root:not(.dark) .card-professional .text-white font-bold,
-          :root:not(.dark) .card-professional .text-[#94a3b8] font-bold {
+          :root:not(.dark) .card-professional .text-slate-200 font-bold {
              color: #0f172a !important; 
-
           }
         `}
       </style>
@@ -2431,13 +2505,13 @@ useEffect(() => {
             {/* Pulsing Beacon / Scales emblem */}
             <div className="flex flex-col items-center text-center space-y-4">
               <div className="relative">
-                <div className="absolute inset-0 rounded-full bg-gradient-to-r from-[#c9a84c] to-[#a67c30]/20 animate-ping" />
-                <div className="w-16 h-16 rounded-full border-2 border-[#D4AF37] bg-gradient-to-r from-[#c9a84c] to-[#a67c30]/10 flex items-center justify-center text-3xl shadow-lg shadow-amber-500/10">
+                <div className="absolute inset-0 rounded-full bg-amber-500/20 animate-ping" />
+                <div className="w-16 h-16 rounded-full border-2 border-[#D4AF37] bg-amber-500/10 flex items-center justify-center text-3xl shadow-lg shadow-amber-500/10">
                   ⚖️
                 </div>
               </div>
               <div className="space-y-1">
-                <span className="px-3 py-1 rounded-full bg-gradient-to-r from-[#c9a84c] to-[#a67c30]/15 border border-amber-500/30 text-[#D4AF37] font-black text-[10px] tracking-widest uppercase">
+                <span className="px-3 py-1 rounded-full bg-amber-500/15 border border-amber-500/30 text-[#D4AF37] font-black text-[10px] tracking-widest uppercase">
                   تنبيه عاجل: جلسة قضائية قريبة جداً ⚡
                 </span>
                 <h3 className="text-xl font-black text-white">اقتراب موعد الجلسة القضائية</h3>
@@ -2457,11 +2531,11 @@ useEffect(() => {
               </div>
               
               <div className="grid grid-cols-2 gap-3 pt-2">
-                <div className="bg-[#0a1628]/5 border border-white/10 rounded-2xl p-3 text-center">
+                <div className="bg-white/5 border border-white/10 rounded-xl p-3 text-center">
                   <span className="text-white/50 text-[10px] block mb-1">تاريخ ووقت الجلسة</span>
                   <strong className="text-amber-400 text-xs font-mono block">{sessionAlertHearing.date} - {sessionAlertHearing.time || 'غير محدد'}</strong>
                 </div>
-                <div className="bg-[#0a1628]/5 border border-white/10 rounded-2xl p-3 text-center">
+                <div className="bg-white/5 border border-white/10 rounded-xl p-3 text-center">
                   <span className="text-white/50 text-[10px] block mb-1">المحكمة المختصة</span>
                   <strong className="text-white text-xs truncate block">{sessionAlertHearing.courtName || 'المحكمة العامة'}</strong>
                 </div>
@@ -2483,14 +2557,14 @@ useEffect(() => {
                   setCurrentTab('case-judgments');
                   setSessionAlertHearing(null);
                 }}
-                className="w-full sm:flex-1 py-3 px-4 rounded-2xl bg-gradient-to-r from-amber-500 to-yellow-500 text-[#94a3b8] font-black text-xs hover:opacity-95 transition-all shadow-lg shadow-amber-500/20 active:scale-[0.98] text-center"
+                className="w-full sm:flex-1 py-3 px-4 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-500 text-slate-950 font-black text-xs hover:opacity-95 transition-all shadow-lg shadow-amber-500/20 active:scale-[0.98] text-center"
               >
                 فتح تفاصيل الجلسة في قسم الأحكام 📂
               </button>
               <button
                 type="button"
                 onClick={() => setSessionAlertHearing(null)}
-                className="w-full sm:w-auto px-6 py-3 rounded-2xl bg-[#0a1628]/10 hover:bg-[#0a1628]/15 text-white/90 border border-white/15 font-bold text-xs transition-all text-center"
+                className="w-full sm:w-auto px-6 py-3 rounded-xl bg-white/10 hover:bg-white/15 text-white/90 border border-white/15 font-bold text-xs transition-all text-center"
               >
                 إغلاق التنبيه
               </button>

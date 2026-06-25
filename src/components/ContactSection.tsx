@@ -70,7 +70,7 @@ export default function ContactSection({ isEn }: ContactSectionProps) {
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="p-8 rounded-3xl border shadow-xl bg-[#0a1628] border-slate-800"
+          className="p-8 rounded-3xl border shadow-xl bg-white border-slate-800"
         >
           {success ? (
             <div className="flex flex-col items-center justify-center py-12 text-center space-y-4">

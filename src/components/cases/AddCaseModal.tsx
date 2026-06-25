@@ -229,12 +229,12 @@ export default function AddCaseModal({ isOpen, onClose, clients, onUpdateState }
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-[6px] p-6 overflow-y-auto" dir="rtl">
-      <div className="bg-[#0a1628] border border-[#1e3a5f] rounded-[2.5rem] w-full max-w-5xl p-0 overflow-hidden shadow-[0_20px_60px_-15px_rgba(0,0,0,0.3)] relative my-8 animate-in fade-in zoom-in-95 duration-300">
+      <div className="bg-white border border-slate-200 rounded-[2.5rem] w-full max-w-5xl p-0 overflow-hidden shadow-[0_20px_60px_-15px_rgba(0,0,0,0.3)] relative my-8 animate-in fade-in zoom-in-95 duration-300">
         
         {/* Animated Luxury Gradient Vertical Bar */}
         <div className="absolute top-0 right-0 w-6 h-full bg-gradient-to-b from-amber-400 via-amber-600 to-slate-900 animate-pulse"></div>
         
-        <div className="bg-slate-50 p-10 flex items-center justify-between text-slate-800 border-b border-[#1e3a5f] mr-6">
+        <div className="bg-slate-50 p-10 flex items-center justify-between text-slate-800 border-b border-slate-200 mr-6">
           <div className="flex items-center gap-6">
             <div className="p-4 bg-amber-50 text-amber-600 rounded-2xl border border-amber-200 shadow-sm">
               <ShieldAlert className="w-8 h-8" />
@@ -247,7 +247,7 @@ export default function AddCaseModal({ isOpen, onClose, clients, onUpdateState }
           <button 
             type="button"
             onClick={onClose}
-            className="w-12 h-12 bg-[#0a1628] text-slate-400 hover:text-rose-600 hover:border-rose-200 hover:bg-rose-50 rounded-2xl flex items-center justify-center transition-all cursor-pointer border border-[#1e3a5f] shadow-sm"
+            className="w-12 h-12 bg-white text-slate-400 hover:text-rose-600 hover:border-rose-200 hover:bg-rose-50 rounded-2xl flex items-center justify-center transition-all cursor-pointer border border-slate-200 shadow-sm"
           >
             ×
           </button>
@@ -262,29 +262,29 @@ export default function AddCaseModal({ isOpen, onClose, clients, onUpdateState }
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 font-sans">
             {/* Fieldset 1: الأساسيات */}
-            <fieldset className="border border-[#1e3a5f] rounded-3xl p-6 space-y-6 bg-[#0a1628] relative overflow-hidden shadow-sm">
-              <legend className="text-sm font-black text-amber-600 px-4 py-1.5 bg-slate-50 border border-[#1e3a5f] rounded-xl shadow-sm">البيانات الأساسية</legend>
+            <fieldset className="border border-slate-200 rounded-3xl p-6 space-y-6 bg-white relative overflow-hidden shadow-sm">
+              <legend className="text-sm font-black text-amber-600 px-4 py-1.5 bg-slate-50 border border-slate-200 rounded-xl shadow-sm">البيانات الأساسية</legend>
               
               <div className="space-y-2 relative">
                 <label className="text-sm font-black text-slate-700 uppercase tracking-wider block">رقم الدعوى</label>
                 <input type="text" value={newCaseNumber} onChange={(e) => setNewCaseNumber(e.target.value)} placeholder="مثال: 450123" required
-                  className="w-full bg-slate-50 border border-[#1e3a5f] hover:border-amber-400 focus:border-amber-500 text-slate-900 rounded-xl py-3 px-4 text-base md:text-lg font-black placeholder-slate-400 focus:outline-none transition-all shadow-inner" />
+                  className="w-full bg-slate-50 border border-slate-200 hover:border-amber-400 focus:border-amber-500 text-slate-900 rounded-xl py-3 px-4 text-base md:text-lg font-black placeholder-slate-400 focus:outline-none transition-all shadow-inner" />
               </div>
               <div className="space-y-2 relative">
                 <label className="text-sm font-black text-slate-700 uppercase tracking-wider block">مسمى الخصومة</label>
                 <input type="text" value={newCaseName} onChange={(e) => setNewCaseName(e.target.value)} placeholder="اسم الدعوى بالكامل" required
-                  className="w-full bg-slate-50 border border-[#1e3a5f] hover:border-amber-400 focus:border-amber-500 text-slate-900 rounded-xl py-3 px-4 text-base md:text-lg font-black placeholder-slate-400 focus:outline-none transition-all shadow-inner" />
+                  className="w-full bg-slate-50 border border-slate-200 hover:border-amber-400 focus:border-amber-500 text-slate-900 rounded-xl py-3 px-4 text-base md:text-lg font-black placeholder-slate-400 focus:outline-none transition-all shadow-inner" />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <label className="text-sm font-black text-slate-700 uppercase block">المحكمة</label>
                   <input type="text" value={newCourt} onChange={(e) => setNewCourt(e.target.value)} placeholder="اسم المحكمة"
-                    className="w-full bg-slate-50 border border-[#1e3a5f] rounded-xl py-2 px-3 text-sm font-bold text-slate-900 focus:outline-none" />
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-sm font-bold text-slate-900 focus:outline-none" />
                 </div>
                 <div className="space-y-2">
                   <label className="text-sm font-black text-slate-700 uppercase block">التصنيف</label>
                   <select value={newCategory} onChange={(e) => setNewCategory(e.target.value)}
-                    className="w-full bg-slate-50 border border-[#1e3a5f] rounded-xl py-2 px-3 text-sm font-bold text-slate-900 focus:outline-none"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-sm font-bold text-slate-900 focus:outline-none"
                   >
                     <option value="criminal">جزائية 🛡️</option>
                     <option value="labor">عمالية 💼</option>
@@ -300,8 +300,8 @@ export default function AddCaseModal({ isOpen, onClose, clients, onUpdateState }
             </fieldset>
 
             {/* Fieldset 2: الأطراف */}
-            <fieldset className="border border-[#1e3a5f] rounded-3xl p-6 space-y-6 bg-[#0a1628] relative overflow-hidden shadow-sm">
-              <legend className="text-sm font-black text-indigo-600 px-4 py-1.5 bg-slate-50 border border-[#1e3a5f] rounded-xl shadow-sm">بيانات الأطراف</legend>
+            <fieldset className="border border-slate-200 rounded-3xl p-6 space-y-6 bg-white relative overflow-hidden shadow-sm">
+              <legend className="text-sm font-black text-indigo-600 px-4 py-1.5 bg-slate-50 border border-slate-200 rounded-xl shadow-sm">بيانات الأطراف</legend>
               
               <div className="flex gap-6 mb-3">
                 <label className="flex items-center gap-2 text-base font-black text-slate-700 hover:text-indigo-600 transition-colors cursor-pointer">
@@ -320,15 +320,15 @@ export default function AddCaseModal({ isOpen, onClose, clients, onUpdateState }
                     <label className="text-sm font-black text-slate-700 uppercase block">العميل / المدعي (فرد)</label>
                     <div className="flex flex-col gap-3">
                       <input type="text" value={newClientName} onChange={(e) => setNewClientName(e.target.value)} placeholder="اسم المدعى بالكامل" required list="clients-list"
-                        className="w-full bg-slate-50 border border-[#1e3a5f] rounded-xl py-2 px-3 text-sm text-slate-900" 
+                        className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-sm text-slate-900" 
                       />
                       <datalist id="clients-list">
                         {clients.map(cl => ( <option key={cl.id} value={cl.name} /> ))}
                       </datalist>
                       <input type="text" value={newPlaintiffNationalId} onChange={(e) => setNewPlaintiffNationalId(e.target.value)} placeholder="رقم هوية المدعي"
-                        className="w-full bg-slate-50 border border-[#1e3a5f] rounded-xl py-2 px-3 text-sm text-slate-900" />
+                        className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-sm text-slate-900" />
                       <input type="text" value={newPlaintiffPhone} onChange={(e) => setNewPlaintiffPhone(e.target.value)} placeholder="رقم هاتف المدعي"
-                        className="w-full bg-slate-50 border border-[#1e3a5f] rounded-xl py-2 px-3 text-sm text-slate-900" />
+                        className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-sm text-slate-900" />
                     </div>
                   </div>
                   
@@ -336,9 +336,9 @@ export default function AddCaseModal({ isOpen, onClose, clients, onUpdateState }
                     <label className="text-sm font-black text-slate-700 uppercase block">الخصم / المدعى عليه (فرد)</label>
                     <div className="flex flex-col gap-3">
                       <input type="text" value={newOpponent} onChange={(e) => setNewOpponent(e.target.value)} placeholder="اسم المدعى عليه"
-                        className="w-full bg-slate-50 border border-[#1e3a5f] rounded-xl py-2 px-3 text-sm text-slate-900" />
+                        className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-sm text-slate-900" />
                       <input type="text" value={newOpponentNationalId} onChange={(e) => setNewOpponentNationalId(e.target.value)} placeholder="رقم هوية المدعى عليه"
-                        className="w-full bg-slate-50 border border-[#1e3a5f] rounded-xl py-2 px-3 text-sm text-slate-900" />
+                        className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-sm text-slate-900" />
                     </div>
                   </div>
                 </div>
@@ -348,9 +348,9 @@ export default function AddCaseModal({ isOpen, onClose, clients, onUpdateState }
                     <label className="text-sm font-black text-slate-700 uppercase block">بيانات الشركة (تجارية)</label>
                     <div className="flex flex-col gap-3">
                       <input type="text" value={newClientName} onChange={(e) => setNewClientName(e.target.value)} placeholder="اسم الشركة" required
-                        className="w-full bg-slate-50 border border-[#1e3a5f] rounded-xl py-2 px-3 text-sm text-slate-900" />
+                        className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-sm text-slate-900" />
                       <input type="text" value={newCompanyCR} onChange={(e) => setNewCompanyCR(e.target.value)} placeholder="رقم السجل التجاري أو الرقم الموحد"
-                        className="w-full bg-slate-50 border border-[#1e3a5f] rounded-xl py-2 px-3 text-sm text-slate-900" />
+                        className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-sm text-slate-900" />
                     </div>
                   </div>
                 </div>
@@ -358,20 +358,20 @@ export default function AddCaseModal({ isOpen, onClose, clients, onUpdateState }
 
               <div className="space-y-2 pt-3 border-t border-slate-100">
                 <input type="text" value={newPoANumber} onChange={(e) => setNewPoANumber(e.target.value)} placeholder="رقم الوكالة"
-                  className="w-full bg-slate-50 border border-[#1e3a5f] rounded-xl py-2 px-3 text-sm text-slate-900" />
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-sm text-slate-900" />
                 <input type="text" value={newNajizNumber} onChange={(e) => setNewNajizNumber(e.target.value)} placeholder="رقم الدعوى على ناجز (إن وجد)"
-                  className="w-full bg-slate-50 border border-[#1e3a5f] rounded-xl mt-2 py-2 px-3 text-sm text-slate-900" />
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl mt-2 py-2 px-3 text-sm text-slate-900" />
               </div>
             </fieldset>
 
             {/* Fieldset 3: التفاصيل وتاريخ الجلسة */}
-            <fieldset className="border border-[#1e3a5f] rounded-3xl p-6 space-y-6 bg-[#0a1628] flex flex-col relative overflow-hidden shadow-sm">
-              <legend className="text-sm font-black text-emerald-600 px-4 py-1.5 bg-slate-50 border border-[#1e3a5f] rounded-xl shadow-sm">الجدولة والملاحظات</legend>
+            <fieldset className="border border-slate-200 rounded-3xl p-6 space-y-6 bg-white flex flex-col relative overflow-hidden shadow-sm">
+              <legend className="text-sm font-black text-emerald-600 px-4 py-1.5 bg-slate-50 border border-slate-200 rounded-xl shadow-sm">الجدولة والملاحظات</legend>
               
               <div className="space-y-2">
                 <label className="text-sm font-black text-slate-700 block">تاريخ الجلسة القادمة</label>
                 <input type="date" value={newNextDate} onChange={(e) => setNewNextDate(e.target.value)}
-                  className="w-full bg-slate-50 border border-[#1e3a5f] rounded-xl py-2 px-3 text-sm text-slate-900" />
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-sm text-slate-900" />
               </div>
               <div className="space-y-2">
                 <label className="text-sm font-black text-slate-700 block font-sans">الأولوية</label>
@@ -393,24 +393,24 @@ export default function AddCaseModal({ isOpen, onClose, clients, onUpdateState }
               <div className="space-y-2 flex-grow flex flex-col">
                 <label className="text-sm font-black text-slate-700 block">مذكرة الملخص السريع</label>
                 <textarea value={newSummary} onChange={(e) => setNewSummary(e.target.value)} placeholder="اكتب ملخصاً هنا..."
-                  className="w-full bg-slate-50 border border-[#1e3a5f] rounded-xl py-2 px-3 text-sm text-slate-900 flex-grow min-h-[70px] resize-none"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-sm text-slate-900 flex-grow min-h-[70px] resize-none"
                 ></textarea>
               </div>
               <div className="space-y-2 flex-grow flex flex-col">
                 <label className="text-sm font-black text-slate-700 block">تفاصيل الدعوى</label>
                 <textarea value={newDetails} onChange={(e) => setNewDetails(e.target.value)} placeholder="اكتب التفاصيل الهامة..."
-                  className="w-full bg-slate-50 border border-[#1e3a5f] rounded-xl py-2 px-3 text-sm text-slate-900 flex-grow min-h-[70px] resize-none"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-sm text-slate-900 flex-grow min-h-[70px] resize-none"
                 ></textarea>
               </div>
             </fieldset>
           </div>
 
-          <div className="flex gap-4 pt-6 mt-6 border-t border-[#1e3a5f] w-full justify-end">
+          <div className="flex gap-4 pt-6 mt-6 border-t border-slate-200 w-full justify-end">
             <button 
               type="button" 
               onClick={onClose}
               disabled={isSubmitting}
-              className="bg-slate-100 text-slate-700 border border-[#1e3a5f] font-black py-3 px-8 rounded-xl text-xs uppercase hover:bg-slate-200 disabled:opacity-50"
+              className="bg-slate-100 text-slate-700 border border-slate-200 font-black py-3 px-8 rounded-xl text-xs uppercase hover:bg-slate-200 disabled:opacity-50"
             >
               إلغاء
             </button>

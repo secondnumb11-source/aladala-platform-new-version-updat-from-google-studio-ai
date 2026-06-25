@@ -82,13 +82,13 @@ export default function FeedbackModal({ isOpen, onClose, selectedRole }: Feedbac
         initial={{ opacity: 0, scale: 0.95, y: 15 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95, y: 15 }}
-        className="bg-[#0a1628] w-full max-w-xl rounded-[2.5rem] p-8 md:p-10 relative shadow-[0_50px_100px_rgba(0,0,0,0.3)] border border-[#1e3a5f] text-right"
+        className="bg-white w-full max-w-xl rounded-[2.5rem] p-8 md:p-10 relative shadow-[0_50px_100px_rgba(0,0,0,0.3)] border border-slate-200 text-right"
       >
         {/* Close Button */}
         {!isSuccess && (
           <button 
             onClick={onClose}
-            className="absolute top-8 left-8 p-3 rounded-2xl bg-slate-50 text-slate-200 font-bold transition-all border border-[#1e3a5f] shadow-sm"
+            className="absolute top-8 left-8 p-3 rounded-2xl bg-slate-50 text-slate-200 font-bold transition-all border border-slate-200 shadow-sm"
           >
             <X className="w-5 h-5" />
           </button>
@@ -128,7 +128,7 @@ export default function FeedbackModal({ isOpen, onClose, selectedRole }: Feedbac
             </div>
 
             {/* Inforative Card */}
-            <div className="p-4 bg-slate-50 border border-[#1e3a5f] rounded-2xl text-xs text-slate-700 leading-relaxed font-bold">
+            <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl text-xs text-slate-700 leading-relaxed font-bold">
               لقد أتممت جلسة عمل مثمرة وممتازة دامت لأكثر من <span className="text-primary font-black font-sans">{duration}</span> دقيقة بنظام مكتب العدالة والمساعد الذكي. نرجو منك التكرم بتقييم سريع لمستويات صياغة المذكرات وتنبيهات المهل لتطوير التميز القضائي.
             </div>
 
@@ -170,7 +170,7 @@ export default function FeedbackModal({ isOpen, onClose, selectedRole }: Feedbac
                 value={feedbackText}
                 onChange={(e) => setFeedbackText(e.target.value)}
                 placeholder="يرجى كتابة أي ملاحظات دقيقة حول جودة وصحة الصياغة، أو أي ميزات إضافية ترجو توافرها بالمساعد الذكي للعدالة..."
-                className="w-full bg-slate-50 border border-[#1e3a5f] text-xs font-bold text-slate-900 p-4 rounded-xl outline-none focus:border-primary focus:bg-[#0a1628] transition-all min-h-[100px] leading-relaxed resize-none placeholder:text-slate-200 font-bold"
+                className="w-full bg-slate-50 border border-slate-200 text-xs font-bold text-slate-900 p-4 rounded-xl outline-none focus:border-primary focus:bg-white transition-all min-h-[100px] leading-relaxed resize-none placeholder:text-slate-200 font-bold"
               />
             </div>
 
@@ -186,7 +186,7 @@ export default function FeedbackModal({ isOpen, onClose, selectedRole }: Feedbac
               <button
                 type="button"
                 onClick={onClose}
-                className="w-full bg-[#0a1628] border border-[#1e3a5f] text-slate-200 font-bold font-black py-3 rounded-2xl text-xs transition-all cursor-pointer"
+                className="w-full bg-white border border-slate-200 text-slate-200 font-bold font-black py-3 rounded-2xl text-xs transition-all cursor-pointer"
               >
                 تخطي ومتابعة العمل باللوحة
               </button>

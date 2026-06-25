@@ -128,9 +128,9 @@ export default function AIDeadlinesTool() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         {/* Settings Panel */}
         <div className="lg:col-span-5 space-y-6">
-          <div className="bg-[#0a1628] border border-[#1e3a5f] p-8 rounded-[2rem] shadow-lg space-y-8 relative">
+          <div className="bg-white border border-slate-200 p-8 rounded-[2rem] shadow-lg space-y-8 relative">
             {isFetchingJudgments && (
-               <div className="absolute inset-0 bg-[#0a1628]/70 backdrop-blur-sm z-50 rounded-[2rem] flex items-center justify-center">
+               <div className="absolute inset-0 bg-white/70 backdrop-blur-sm z-50 rounded-[2rem] flex items-center justify-center">
                  <Loader2 className="w-8 h-8 text-amber-500 animate-spin" />
                </div>
             )}
@@ -151,7 +151,7 @@ export default function AIDeadlinesTool() {
                         : 'bg-slate-50 text-white border-slate-100'
                     }`}
                   >
-                    <div className={`p-3 rounded-xl ${type === t.id ? 'bg-amber-500 text-slate-950' : 'bg-[#0a1628] text-slate-500 border border-[#1e3a5f]'}`}>
+                    <div className={`p-3 rounded-xl ${type === t.id ? 'bg-amber-500 text-slate-950' : 'bg-white text-slate-500 border border-slate-200'}`}>
                       <Timer className="w-5 h-5" />
                     </div>
                     <div>
@@ -191,7 +191,7 @@ export default function AIDeadlinesTool() {
 
         {/* Status Display */}
         <div className="lg:col-span-7 space-y-6">
-          <div className="bg-[#0a1628] border border-[#1e3a5f] rounded-[2.5rem] shadow-2xl p-10 flex flex-col items-center justify-center text-center space-y-8 relative overflow-hidden">
+          <div className="bg-white border border-slate-200 rounded-[2.5rem] shadow-2xl p-10 flex flex-col items-center justify-center text-center space-y-8 relative overflow-hidden">
             {/* Background elements */}
             <div className={`absolute top-0 right-0 w-64 h-64 blur-[80px] rounded-full opacity-10 -translate-x-12 -translate-y-12 ${isExpired ? 'bg-rose-500' : 'bg-emerald-500'}`}></div>
 
@@ -250,7 +250,7 @@ export default function AIDeadlinesTool() {
 
           <div className="bg-slate-900 p-8 rounded-[2rem] shadow-xl flex items-center justify-between">
             <div className="flex items-center gap-4">
-               <div className="w-12 h-12 bg-[#0a1628]/10 rounded-2xl flex items-center justify-center text-amber-500">
+               <div className="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center text-amber-500">
                   <ArrowUpRight className="w-6 h-6" />
                </div>
                <div>
@@ -258,7 +258,7 @@ export default function AIDeadlinesTool() {
                   <p className="text-slate-300 text-[10px] font-bold">انتقل مباشرة لبوابة الخدمات العدلية لتنفيذ الإجراء.</p>
                </div>
             </div>
-            <a href="https://najiz.sa/" target="_blank" rel="noopener noreferrer" className="bg-[#0a1628] text-slate-950 px-6 py-3 rounded-xl text-xs font-black shadow-lg hover:bg-slate-200 transition-all flex items-center gap-1.5 focus:outline-none focus:ring-2 focus:ring-amber-500">
+            <a href="https://najiz.sa/" target="_blank" rel="noopener noreferrer" className="bg-white text-slate-950 px-6 py-3 rounded-xl text-xs font-black shadow-lg hover:bg-slate-200 transition-all flex items-center gap-1.5 focus:outline-none focus:ring-2 focus:ring-amber-500">
                الذهاب لناجز <ArrowUpRight className="w-3 h-3" />
             </a>
           </div>

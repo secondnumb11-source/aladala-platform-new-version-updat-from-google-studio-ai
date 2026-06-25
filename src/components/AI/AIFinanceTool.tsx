@@ -112,14 +112,14 @@ export default function AIFinanceTool({ invoices: propInvoices }: { invoices?: I
              <p className="text-xs text-slate-200 font-bold font-bold mt-1 relative z-10">إجمالي الفواتير المسجلة</p>
           </div>
           
-          <div className="bg-slate-50 border border-[#1e3a5f] p-6 rounded-[2.5rem] shadow-sm">
+          <div className="bg-slate-50 border border-slate-200 p-6 rounded-[2.5rem] shadow-sm">
              <h4 className="font-black text-sm text-slate-900 mb-4 flex items-center gap-2">
                <FileText className="w-4 h-4 text-slate-700" />
                نماذج المحاسب الآلي
              </h4>
              <div className="flex flex-wrap gap-2">
                 {["حساب الإقرارات الضريبية", "المطابقات البنكية", "حركة الأتعاب للمحامين"].map((tag, i) => (
-                  <button key={i} onClick={() => setQuery(tag)} className="text-[11px] font-bold bg-[#0a1628] text-slate-700 hover:bg-slate-100 hover:text-slate-900 border border-[#1e3a5f] transition-all px-3 py-2 rounded-xl shadow-sm">
+                  <button key={i} onClick={() => setQuery(tag)} className="text-[11px] font-bold bg-white text-slate-700 hover:bg-slate-100 hover:text-slate-900 border border-slate-200 transition-all px-3 py-2 rounded-xl shadow-sm">
                     {tag}
                   </button>
                 ))}

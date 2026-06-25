@@ -1,112 +1,136 @@
-// officeManager.ts
-import { supabase } from '@/lib/supabase';
+import { supabase } from './supabase';
 
-/**
- * دالة تسجيل العمليات (Log) لمراقبة وتوثيق تبديل المستخدم وتحديث البيانات وعزلها للأغراض التحليلية.
- */
-export const logOfficeAction = (actionType: string, details: any = {}) => {
-  const currentOfficeId = localStorage.getItem('adala_office_id') || 'unspecified_office';
-  const timestamp = new Date().toISOString();
-  
-  const logMessage = `[Adala Monitor] [${timestamp}] [Action: ${actionType}] [Office ID: ${currentOfficeId}]`;
-  
-  if (details.failure || details.isBreached) {
-    console.error(`🚨 ${logMessage} - ISOLATION FAILURE DETECTED:`, details);
-  } else {
-    console.log(`ℹ️ ${logMessage}`, details);
+const OFFICE_KEY = 'adala_office_id';
+const USER_KEY = 'adala_user_id';
+const EMAIL_KEY = 'adala_user_email';
+
+// الحصول على office_id للمستخدم الحالي أو إنشاؤه
+export async function getOrCreateOffice(
+  userId: string,
+  email: string
+): Promise<string | null> {
+  try {
+    // البحث عن مكتب موجود
+    const { data: existing } = await supabase
+      .from('offices')
+      .select('id')
+      .eq('user_id', userId)
+      .maybeSingle();
+
+    if (existing?.id) {
+      saveLocally(existing.id, userId, email);
+      return existing.id;
+    }
+
+    // إنشاء مكتب جديد
+    const { data: newOffice, error } = await supabase
+      .from('offices')
+      .insert({
+        user_id: userId,
+        email: email,
+        office_name: 'مكتبي'
+      })
+      .select('id')
+      .single();
+
+    if (error || !newOffice) {
+      console.error('[Office] Create error:', error?.message);
+      return null;
+    }
+
+    saveLocally(newOffice.id, userId, email);
+    return newOffice.id;
+
+  } catch(err: any) {
+    console.error('[Office]', err.message);
+    return null;
   }
-};
+}
 
-export const getOrCreateOffice = async () => {
-  let officeId = localStorage.getItem('adala_office_id');
-  if (!officeId) {
-    officeId = `office_${Date.now()}`;
-    localStorage.setItem('adala_office_id', officeId);
-    logOfficeAction('CREATE_OFFICE', { officeId });
+// حفظ محلي
+function saveLocally(officeId: string, userId: string, email: string) {
+  localStorage.setItem(OFFICE_KEY, officeId);
+  localStorage.setItem(USER_KEY, userId);
+  localStorage.setItem(EMAIL_KEY, email);
+}
+
+// الحصول على office_id المحفوظ
+export function getCurrentOfficeId(): string | null {
+  return localStorage.getItem(OFFICE_KEY);
+}
+
+export function getCurrentUserId(): string | null {
+  return localStorage.getItem(USER_KEY);
+}
+
+export function getCurrentEmail(): string | null {
+  return localStorage.getItem(EMAIL_KEY);
+}
+
+// مسح بيانات الجلسة عند تسجيل الخروج
+export function clearSession() {
+  localStorage.removeItem(OFFICE_KEY);
+  localStorage.removeItem(USER_KEY);
+  localStorage.removeItem(EMAIL_KEY);
+  // مسح الـ cache
+  const cacheKeys = Object.keys(localStorage).filter(k =>
+    k.startsWith('adala_') ||
+    k.includes('_local') ||
+    k.includes('_cache')
+  );
+  cacheKeys.forEach(k => localStorage.removeItem(k));
+}
+
+// التحقق من تغيير المستخدم
+export function isUserChanged(newUserId: string): boolean {
+  const stored = getCurrentUserId();
+  return stored !== null && stored !== newUserId;
+}
+
+// أداة تسجيل والتحقق من سلامة الجلسة لمنع تداخل البيانات
+export function verifyAndEnforceSessionIntegrity(expectedUserId: string, expectedOfficeId: string) {
+  const storedUserId = getCurrentUserId();
+  const storedOfficeId = getCurrentOfficeId();
+
+  console.log('🛡️ [Security] Running Session Integrity Check:');
+  console.log(`  -> Expected: User(${expectedUserId}) | Office(${expectedOfficeId})`);
+  console.log(`  -> Stored:   User(${storedUserId}) | Office(${storedOfficeId})`);
+
+  let hasLeakageRisk = false;
+
+  if (storedUserId && storedUserId !== expectedUserId) {
+    console.error('🚨 [SECURITY ALERT] User ID mismatch detected! Possible cross-account data leakage.');
+    hasLeakageRisk = true;
   }
-  return officeId;
-};
 
-export const clearSession = () => {
-  const previousOfficeId = localStorage.getItem('adala_office_id');
-  localStorage.removeItem('adala_office_id');
-  sessionStorage.removeItem('last_verified_office_id');
-  logOfficeAction('CLEAR_SESSION', { previousOfficeId });
-};
+  if (storedOfficeId && storedOfficeId !== expectedOfficeId) {
+    console.error('🚨 [SECURITY ALERT] Office ID mismatch detected! Possible cross-account data leakage.');
+    hasLeakageRisk = true;
+  }
 
-export const isUserChanged = () => {
-  return false;
-};
+  if (hasLeakageRisk) {
+    console.warn('🔄 [Security] Forcing session clear and hard page reload to protect data.');
+    clearSession();
+    window.location.replace('/');
+  }
+}
 
-export const verifyAndEnforceSessionIntegrity = () => {
-  return true;
-};
-
-/**
- * دالة التحقق من عزل البيانات (verifyDataIsolation).
- * تقوم بمقارنة معرف المكتب (office_id) الحالي مع المعرف المحمل في الحالة (State) أو المخزن في الجلسة.
- * في حال اكتشاف عدم تطابق أو تداخل، تقوم بمسح الذاكرة وتطهير البيانات وفرض إعادة تحميل الصفحة لمنع أي تسريب.
- */
-export const verifyDataIsolation = (stateOfficeId?: string): boolean => {
-  const currentOfficeId = localStorage.getItem('adala_office_id');
-  const lastKnownOfficeId = sessionStorage.getItem('last_verified_office_id');
-  
-  // 1. تحقق من صحة المعرف الحالي
+// دالة اختبار للتحقق من عزل البيانات ومطابقتها للمكتب الحالي
+export function verifyDataIsolation(items: any[], currentOfficeId: string | null): boolean {
   if (!currentOfficeId) {
-    // إذا لم يكن متواجداً، لا نعتبره تسريباً بل مكتب غير مهيأ بعد
     return true;
   }
   
-  // 2. مقارنة مع معرف الحالة (State) إذا تم تمريره
-  if (stateOfficeId && stateOfficeId !== currentOfficeId) {
-    const errorDetails = {
-      failure: true,
-      isBreached: true,
-      currentOfficeId,
-      stateOfficeId,
-      reason: 'Mismatch between localStorage office_id and application state office_id'
-    };
-    logOfficeAction('VERIFICATION_FAILURE', errorDetails);
-    
-    // تطهير فوري لمنع التسريب وإعادة تحميل الصفحة
-    performEmergencyPurge();
+  const mismatchedItem = items.find(item => item && item.officeId && item.officeId !== currentOfficeId);
+  const mismatchedItemSnake = items.find(item => item && item.office_id && item.office_id !== currentOfficeId);
+  
+  if (mismatchedItem || mismatchedItemSnake) {
+    const badId = mismatchedItem?.officeId || mismatchedItemSnake?.office_id;
+    console.warn(`🚨 [Data Isolation Mismatch] Detected item with office_id: ${badId} instead of active office_id: ${currentOfficeId}`);
     return false;
   }
   
-  // 3. مقارنة مع آخر معرف تم التحقق منه في الجلسة (Session Storage)
-  if (lastKnownOfficeId && lastKnownOfficeId !== currentOfficeId) {
-    const errorDetails = {
-      failure: true,
-      isBreached: true,
-      currentOfficeId,
-      lastKnownOfficeId,
-      reason: 'Mismatch between localStorage office_id and session last_verified_office_id'
-    };
-    logOfficeAction('VERIFICATION_FAILURE', errorDetails);
-    
-    // تطهير فوري لمنع التسريب وإعادة تحميل الصفحة
-    performEmergencyPurge();
-    return false;
-  }
-  
-  // حفظ المعرف في الجلسة لضمان الاستمرارية الآمنة
-  sessionStorage.setItem('last_verified_office_id', currentOfficeId);
   return true;
-};
+}
 
-/**
- * دالة التطهير والإنقاذ الطارئ عند اكتشاف أي اختراق لعزل البيانات.
- */
-const performEmergencyPurge = () => {
-  try {
-    localStorage.clear();
-    sessionStorage.clear();
-    console.warn('[Adala Security] Emergency purge completed successfully. Purging state and reloading client window.');
-  } catch (err) {
-    console.error('[Adala Security] Failed during storage clearance:', err);
-  }
-  
-  if (typeof window !== 'undefined') {
-    window.location.reload();
-  }
-};
+

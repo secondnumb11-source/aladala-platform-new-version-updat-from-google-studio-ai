@@ -87,7 +87,7 @@ export default function AiGatewayTool() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
-          <div className="bg-[#0a1628] rounded-3xl border border-[#1e3a5f] shadow-sm overflow-hidden min-h-[500px] flex flex-col">
+          <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden min-h-[500px] flex flex-col">
             <div className="flex items-center border-b border-slate-100 bg-slate-50/50">
               {[
                 { id: 'request', label: 'إرسال طلب', icon: <Send className="w-4 h-4" /> },
@@ -99,7 +99,7 @@ export default function AiGatewayTool() {
                   onClick={() => setActiveTab(tab.id as any)}
                   className={`flex items-center gap-2 px-6 py-4 text-xs font-extrabold transition-all border-b-2 ${
                     activeTab === tab.id 
-                      ? 'border-indigo-600 text-indigo-600 bg-[#0a1628]' 
+                      ? 'border-indigo-600 text-indigo-600 bg-white' 
                       : 'border-transparent text-slate-200 font-bold'
                   }`}
                 >
@@ -122,7 +122,7 @@ export default function AiGatewayTool() {
                           value={baseURL}
                           onChange={(e) => setBaseURL(e.target.value)}
                           placeholder="https://your-ai-gateway.ngrok.app/v1"
-                          className="w-full bg-slate-50 border border-[#1e3a5f] py-3.5 pr-11 pl-4 rounded-xl text-xs font-bold text-slate-300 outline-none focus:ring-4 focus:ring-indigo-500/5 focus:border-indigo-500 transition-all font-sans ltr text-left"
+                          className="w-full bg-slate-50 border border-slate-200 py-3.5 pr-11 pl-4 rounded-xl text-xs font-bold text-slate-300 outline-none focus:ring-4 focus:ring-indigo-500/5 focus:border-indigo-500 transition-all font-sans ltr text-left"
                         />
                       </div>
                     </div>
@@ -135,7 +135,7 @@ export default function AiGatewayTool() {
                           value={apiKey}
                           onChange={(e) => setApiKey(e.target.value)}
                           placeholder="ng-xxxxx-g1-xxxxx"
-                          className="w-full bg-slate-50 border border-[#1e3a5f] py-3.5 pr-11 pl-4 rounded-xl text-xs font-bold text-slate-300 outline-none focus:ring-4 focus:ring-indigo-500/5 focus:border-indigo-500 transition-all font-sans ltr text-left"
+                          className="w-full bg-slate-50 border border-slate-200 py-3.5 pr-11 pl-4 rounded-xl text-xs font-bold text-slate-300 outline-none focus:ring-4 focus:ring-indigo-500/5 focus:border-indigo-500 transition-all font-sans ltr text-left"
                         />
                       </div>
                     </div>
@@ -147,7 +147,7 @@ export default function AiGatewayTool() {
                       rows={5}
                       value={query}
                       onChange={(e) => setQuery(e.target.value)}
-                      className="w-full bg-slate-50 border border-[#1e3a5f] py-4 px-4 rounded-2xl text-xs font-medium text-slate-300 outline-none focus:ring-4 focus:ring-indigo-500/5 focus:border-indigo-500 min-h-[120px] leading-relaxed"
+                      className="w-full bg-slate-50 border border-slate-200 py-4 px-4 rounded-2xl text-xs font-medium text-slate-300 outline-none focus:ring-4 focus:ring-indigo-500/5 focus:border-indigo-500 min-h-[120px] leading-relaxed"
                     />
                   </div>
 
@@ -208,7 +208,7 @@ export default function AiGatewayTool() {
                     <div className="space-y-2">
                        <div className="flex items-center justify-between p-3 bg-slate-50 rounded-xl border border-slate-100">
                           <div className="flex items-center gap-3">
-                             <div className="w-8 h-8 rounded-lg bg-[#0a1628] border border-[#1e3a5f] flex items-center justify-center text-xs">1</div>
+                             <div className="w-8 h-8 rounded-lg bg-white border border-slate-200 flex items-center justify-center text-xs">1</div>
                              <span className="text-xs font-bold text-slate-300">Google Gemini (gemini-3.5-flash)</span>
                           </div>
                           <span className="text-[11px] bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full font-black uppercase">Primary</span>
@@ -218,7 +218,7 @@ export default function AiGatewayTool() {
                        </div>
                        <div className="flex items-center justify-between p-3 bg-slate-50 rounded-xl border border-slate-100">
                           <div className="flex items-center gap-3 text-slate-200 font-bold">
-                             <div className="w-8 h-8 rounded-lg bg-[#0a1628] border border-[#1e3a5f] flex items-center justify-center text-xs">2</div>
+                             <div className="w-8 h-8 rounded-lg bg-white border border-slate-200 flex items-center justify-center text-xs">2</div>
                              <span className="text-xs font-bold">Anthropic (claude-3-5-sonnet)</span>
                           </div>
                           <span className="text-[11px] bg-slate-200 text-slate-300 px-2 py-0.5 rounded-full font-black uppercase">Backup</span>
@@ -238,7 +238,7 @@ export default function AiGatewayTool() {
         </div>
 
         <div className="space-y-6">
-          <div className="bg-[#0a1628] rounded-3xl border border-[#1e3a5f] p-8 shadow-sm space-y-6">
+          <div className="bg-white rounded-3xl border border-slate-200 p-8 shadow-sm space-y-6">
              <div className="flex items-center gap-3 border-b border-slate-100 pb-4">
                 <Database className="w-5 h-5 text-indigo-600" />
                 <h3 className="text-sm font-black text-white uppercase tracking-tight">إحصائيات البوابة</h3>

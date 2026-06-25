@@ -542,13 +542,13 @@ export default function ClientsModule({
       dir="rtl"
     >
       {/* Header Section */}
-      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 border-b border-[#1e3a5f] pb-8">
+      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 border-b border-slate-200 pb-8">
         <div>
-          <h1 className="text-3xl font-black text-[#94a3b8] tracking-tight flex items-center gap-3">
+          <h1 className="text-3xl font-black text-slate-900 tracking-tight flex items-center gap-3">
             <Users className="w-8 h-8 text-amber-400 font-black" />
             <span>إدارة الموكلين والمراسلات</span>
           </h1>
-          <p className="text-[#94a3b8] font-medium mt-2">
+          <p className="text-slate-700 font-medium mt-2">
             سجل شامل لكافة العملاء مع أدوات التواصل الفوري والتحكم في بوابات
             الوصول.
           </p>
@@ -556,23 +556,23 @@ export default function ClientsModule({
       </div>
 
       {/* Search and Quick Action Bar */}
-      <div className="bg-[#0a1628] p-4 rounded-2xl border border-[#1e3a5f] flex flex-col lg:flex-row items-center justify-between gap-4 shadow-sm">
+      <div className="bg-white p-4 rounded-2xl border border-slate-200 flex flex-col lg:flex-row items-center justify-between gap-4 shadow-sm">
         <div className="flex flex-col md:flex-row items-center gap-4 w-full lg:w-auto">
           <div className="relative w-full md:w-96">
-            <Search className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[#94a3b8] font-bold" />
+            <Search className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-200 font-bold" />
             <input
               type="text"
               placeholder="البحث بالاسم، الهوية، أو الجوال..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full bg-[#0a1628] border border-[#1e3a5f] rounded-2xl py-2.5 pr-11 pl-4 text-sm font-bold text-[#94a3b8] focus:outline-none focus:border-amber-500 transition-all"
+              className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 pr-11 pl-4 text-sm font-bold text-slate-900 focus:outline-none focus:border-amber-500 transition-all"
             />
           </div>
         </div>
 
         <button
           onClick={() => setIsAdding(true)}
-          className="w-full lg:w-auto bg-gradient-to-r from-[#c9a84c] to-[#a67c30] hover:bg-gradient-to-r from-[#c9a84c] to-[#a67c30] text-[#94a3b8] font-black text-xs py-2.5 px-6 rounded-2xl flex items-center justify-center gap-2 transition-all shadow-md active:scale-95"
+          className="w-full lg:w-auto bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs py-2.5 px-6 rounded-xl flex items-center justify-center gap-2 transition-all shadow-md active:scale-95"
         >
           <Plus className="w-4 h-4" />
           <span>إضافة موكل جديد</span>
@@ -580,7 +580,7 @@ export default function ClientsModule({
       </div>
 
       {syncError && (
-        <div className="bg-rose-50 border border-rose-200 p-3 rounded-2xl text-xs text-rose-900 font-bold flex justify-between items-center animate-in slide-in-from-top-2">
+        <div className="bg-rose-50 border border-rose-200 p-3 rounded-xl text-xs text-rose-900 font-bold flex justify-between items-center animate-in slide-in-from-top-2">
           <span>⚠️ {syncError}</span>
           <button
             onClick={() => setSyncError(null)}
@@ -603,10 +603,10 @@ export default function ClientsModule({
               return (
                 <div
                   key={cl.id}
-                  className="bg-[#0a1628] border border-[#1e3a5f] p-6 rounded-2xl shadow-sm hover:shadow-md transition-all group relative overflow-hidden"
+                  className="bg-white border border-slate-200 p-6 rounded-2xl shadow-sm hover:shadow-md transition-all group relative overflow-hidden"
                 >
                   <div className="flex justify-between items-start mb-4">
-                    <div className="p-3 bg-[#0a1628] rounded-2xl border border-[#1e3a5f] text-amber-400 font-black">
+                    <div className="p-3 bg-slate-50 rounded-xl border border-slate-100 text-amber-400 font-black">
                       {cl.isCompany ? (
                         <Globe className="w-5 h-5" />
                       ) : (
@@ -614,17 +614,17 @@ export default function ClientsModule({
                       )}
                     </div>
                     <span
-                      className={`text-[10px] font-black px-2.5 py-1 rounded-full border ${cl.isCompany ? "bg-amber-50 border-amber-200 text-amber-400 font-black" : "bg-[#0a1628] border-[#1e3a5f] text-[#94a3b8] font-bold"}`}
+                      className={`text-[10px] font-black px-2.5 py-1 rounded-full border ${cl.isCompany ? "bg-amber-50 border-amber-200 text-amber-400 font-black" : "bg-slate-50 border-slate-200 text-slate-200 font-bold"}`}
                     >
                       {cl.isCompany ? "مؤسسة / كيان" : "فرد موكل"}
                     </span>
                   </div>
 
                   <div className="space-y-1 mb-4">
-                    <h3 className="font-bold text-lg text-[#94a3b8]">
+                    <h3 className="font-bold text-lg text-slate-900">
                       {cl.name}
                     </h3>
-                    <div className="flex items-center gap-1.5 text-[#94a3b8]">
+                    <div className="flex items-center gap-1.5 text-slate-700">
                       <Lock className="w-3.5 h-3.5" />
                       <span className="text-xs font-mono">
                         ID: {cl.nationalId}
@@ -632,19 +632,19 @@ export default function ClientsModule({
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 gap-2 text-xs border-t border-[#1e3a5f] pt-4 mb-4">
+                  <div className="grid grid-cols-1 gap-2 text-xs border-t border-slate-100 pt-4 mb-4">
                     <div className="flex items-center justify-between">
-                      <span className="text-[#94a3b8]">الجوال:</span>
+                      <span className="text-slate-700">الجوال:</span>
                       <span
-                        className="font-sans font-bold text-[#94a3b8]"
+                        className="font-sans font-bold text-slate-900"
                         dir="ltr"
                       >
                         {cl.phone}
                       </span>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="text-[#94a3b8]">البريد:</span>
-                      <span className="text-[#94a3b8] font-bold truncate max-w-[150px]">
+                      <span className="text-slate-700">البريد:</span>
+                      <span className="text-slate-900 font-bold truncate max-w-[150px]">
                         {cl.email || "-"}
                       </span>
                     </div>
@@ -652,15 +652,15 @@ export default function ClientsModule({
 
                   {/* Display Related Cases */}
                   {clientCases.length > 0 && (
-                    <div className="mt-4 pt-4 border-t border-[#1e3a5f]">
-                      <p className="text-[10px] font-black uppercase text-[#94a3b8]0 mb-2">
+                    <div className="mt-4 pt-4 border-t border-slate-100">
+                      <p className="text-[10px] font-black uppercase text-slate-500 mb-2">
                         القضايا المرتبطة:
                       </p>
                       <div className="space-y-2">
                         {clientCases.map((c) => (
                           <div
                             key={c.id}
-                            className="bg-[#0a1628] p-2.5 rounded-2xl border border-[#1e3a5f] text-[10px] flex flex-col gap-1"
+                            className="bg-slate-50 p-2.5 rounded-lg border border-slate-200 text-[10px] flex flex-col gap-1"
                           >
                             <div className="flex items-center justify-between font-bold">
                               <span className="text-[#0B2545]">
@@ -670,7 +670,7 @@ export default function ClientsModule({
                                 {c.status}
                               </span>
                             </div>
-                            <span className="text-[#94a3b8] truncate">
+                            <span className="text-slate-600 truncate">
                               {c.caseName}
                             </span>
                           </div>
@@ -679,7 +679,7 @@ export default function ClientsModule({
                     </div>
                   )}
 
-                  <div className="flex flex-wrap items-center gap-2 pt-4 border-t border-[#1e3a5f] mt-4">
+                  <div className="flex flex-wrap items-center gap-2 pt-4 border-t border-slate-100 mt-4">
                     <button
                       onClick={() => {
                         setSelectedClientForWa(cl);
@@ -689,7 +689,7 @@ export default function ClientsModule({
                         if (t) setCustomMsg(formatTemplate(t.content, cl));
                         setSidebarTab("send");
                       }}
-                      className="flex-1 min-w-[70px] bg-emerald-600 hover:bg-emerald-500 text-white font-black text-[11px] py-2 px-2.5 rounded-2xl flex items-center justify-center gap-1 transition-all cursor-pointer shadow-sm"
+                      className="flex-1 min-w-[70px] bg-emerald-600 hover:bg-emerald-500 text-white font-black text-[11px] py-2 px-2.5 rounded-lg flex items-center justify-center gap-1 transition-all cursor-pointer shadow-sm"
                     >
                       <MessageSquare className="w-3.5 h-3.5" />
                       <span>واتساب</span>
@@ -697,7 +697,7 @@ export default function ClientsModule({
 
                     <button
                       onClick={() => setManagingPortalClientId(cl.id)}
-                      className="bg-gradient-to-r from-[#c9a84c] to-[#a67c30] hover:bg-gradient-to-r from-[#c9a84c] to-[#a67c30] text-[#94a3b8] font-black text-[11px] py-2 px-2 rounded-2xl flex items-center justify-center gap-1 transition-all cursor-pointer border-0 shadow-sm"
+                      className="bg-amber-500 hover:bg-amber-600 text-slate-950 font-black text-[11px] py-2 px-2 rounded-lg flex items-center justify-center gap-1 transition-all cursor-pointer border-0 shadow-sm"
                       title="بوابة العميل"
                     >
                       <Share2 className="w-3.5 h-3.5" />
@@ -706,7 +706,7 @@ export default function ClientsModule({
 
                     <button
                       onClick={() => setEditingClient(cl)}
-                      className="bg-blue-50 hover:bg-blue-100 text-[#0B2545] font-black text-[11px] py-2 px-2 rounded-2xl flex items-center justify-center gap-1 transition-all cursor-pointer border border-blue-200"
+                      className="bg-blue-50 hover:bg-blue-100 text-[#0B2545] font-black text-[11px] py-2 px-2 rounded-lg flex items-center justify-center gap-1 transition-all cursor-pointer border border-blue-200"
                       title="تعديل بيانات الموكل"
                     >
                       <Edit2 className="w-3.5 h-3.5" />
@@ -715,7 +715,7 @@ export default function ClientsModule({
 
                     <button
                       onClick={() => handleDeleteClient(cl)}
-                      className="bg-rose-50 hover:bg-rose-100 text-rose-700 font-black text-[11px] py-2 px-2 rounded-2xl flex items-center justify-center gap-1 transition-all cursor-pointer border border-rose-200"
+                      className="bg-rose-50 hover:bg-rose-100 text-rose-700 font-black text-[11px] py-2 px-2 rounded-lg flex items-center justify-center gap-1 transition-all cursor-pointer border border-rose-200"
                       title="حذف الموكل نهائياً"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
@@ -730,27 +730,27 @@ export default function ClientsModule({
 
         {/* Messaging & Template Sidebar */}
         <div className="xl:col-span-4 space-y-6">
-          <div className="bg-[#0a1628] p-1 rounded-2xl flex gap-1 border border-[#1e3a5f] shadow-inner">
+          <div className="bg-slate-100 p-1 rounded-2xl flex gap-1 border border-slate-200 shadow-inner">
             <button
               onClick={() => setSidebarTab("send")}
-              className={`flex-1 py-3 rounded-2xl text-xs font-black transition-all ${sidebarTab === "send" ? "bg-[#0a1628] text-[#94a3b8] shadow-sm border border-[#1e3a5f]" : "text-[#94a3b8]"}`}
+              className={`flex-1 py-3 rounded-xl text-xs font-black transition-all ${sidebarTab === "send" ? "bg-white text-slate-900 shadow-sm border border-slate-200" : "text-slate-700"}`}
             >
               مركز المراسلة
             </button>
             <button
               onClick={() => setSidebarTab("templates")}
-              className={`flex-1 py-3 rounded-2xl text-xs font-black transition-all ${sidebarTab === "templates" ? "bg-[#0a1628] text-[#94a3b8] shadow-sm border border-[#1e3a5f]" : "text-[#94a3b8]"}`}
+              className={`flex-1 py-3 rounded-xl text-xs font-black transition-all ${sidebarTab === "templates" ? "bg-white text-slate-900 shadow-sm border border-slate-200" : "text-slate-700"}`}
             >
               محرر القوالب
             </button>
           </div>
 
           {sidebarTab === "send" && (
-            <div className="bg-[#0a1628] border border-[#1e3a5f] rounded-2xl p-6 space-y-6 animate-in slide-in-from-right-4 duration-500">
+            <div className="bg-white border border-slate-200 rounded-2xl p-6 space-y-6 animate-in slide-in-from-right-4 duration-500">
               {selectedClientForWa ? (
                 <div className="space-y-6">
-                  <div className="flex items-center justify-between border-b border-[#1e3a5f] pb-4">
-                    <h3 className="font-bold text-[#94a3b8]">
+                  <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+                    <h3 className="font-bold text-slate-900">
                       إرسال إشعار فوري
                     </h3>
                     <button
@@ -761,7 +761,7 @@ export default function ClientsModule({
                     </button>
                   </div>
 
-                  <div className="bg-[#0a1628] rounded-2xl p-4 border border-[#1e3a5f] text-white">
+                  <div className="bg-slate-900 rounded-xl p-4 border border-slate-800 text-white">
                     <span className="text-[10px] text-amber-500 font-bold block mb-1">
                       المستلم المعتمد
                     </span>
@@ -769,14 +769,14 @@ export default function ClientsModule({
                       <span className="font-bold text-sm">
                         {selectedClientForWa.name}
                       </span>
-                      <span className="font-mono text-[10px] text-[#94a3b8] font-bold">
+                      <span className="font-mono text-[10px] text-slate-200 font-bold">
                         {selectedClientForWa.phone}
                       </span>
                     </div>
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-[11px] font-black text-[#94a3b8]">
+                    <label className="text-[11px] font-black text-slate-700">
                       القالب الذكي
                     </label>
                     <select
@@ -791,7 +791,7 @@ export default function ClientsModule({
                           );
                         else setCustomMsg("");
                       }}
-                      className="w-full bg-[#0a1628] border border-[#1e3a5f] rounded-2xl py-3 px-4 text-xs font-bold text-[#94a3b8] focus:outline-none focus:border-amber-500"
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-xs font-bold text-slate-900 focus:outline-none focus:border-amber-500"
                     >
                       {templates.map((t) => (
                         <option key={t.id} value={t.id}>
@@ -803,20 +803,20 @@ export default function ClientsModule({
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-[11px] font-black text-[#94a3b8]">
+                    <label className="text-[11px] font-black text-slate-700">
                       محتوى الإشعار
                     </label>
                     <textarea
                       rows={6}
                       value={customMsg}
                       onChange={(e) => setCustomMsg(e.target.value)}
-                      className="w-full bg-[#0a1628] border border-[#1e3a5f] rounded-2xl py-4 px-4 text-sm font-medium text-[#94a3b8] focus:outline-none focus:border-amber-500 leading-relaxed font-sans"
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl py-4 px-4 text-sm font-medium text-slate-900 focus:outline-none focus:border-amber-500 leading-relaxed font-sans"
                     />
                   </div>
 
                   <button
                     onClick={handleTriggerWhatsApp}
-                    className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black py-4 rounded-2xl text-xs flex items-center justify-center gap-3 shadow-lg shadow-emerald-600/20 transition-all border-0 cursor-pointer"
+                    className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black py-4 rounded-xl text-xs flex items-center justify-center gap-3 shadow-lg shadow-emerald-600/20 transition-all border-0 cursor-pointer"
                   >
                     <Send className="w-4 h-4" />
                     <span>بث الرسالة الآن WhatsApp</span>
@@ -824,10 +824,10 @@ export default function ClientsModule({
                 </div>
               ) : (
                 <div className="py-12 text-center space-y-4">
-                  <div className="w-16 h-16 bg-[#0a1628] rounded-full flex items-center justify-center mx-auto border border-[#1e3a5f] text-white font-bold">
+                  <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto border border-slate-100 text-white font-bold">
                     <MessageSquare className="w-8 h-8" />
                   </div>
-                  <p className="text-xs text-[#94a3b8] font-bold">
+                  <p className="text-xs text-slate-700 font-bold">
                     حدد موكلاً من القائمة لبدء مراسلتة الفورية.
                   </p>
                 </div>
@@ -909,7 +909,7 @@ export default function ClientsModule({
                         onClick={() =>
                           setEditedTemplateContent((prev) => prev + tag)
                         }
-                        className="px-3 py-1.5 bg-[#020617] hover:bg-[#0a1628] text-[10px] font-black border rounded-2xl transition-all cursor-pointer"
+                        className="px-3 py-1.5 bg-[#020617] hover:bg-slate-900 text-[10px] font-black border rounded-lg transition-all cursor-pointer"
                         style={{ color: "#FFEA00", borderColor: "#FFEA00/30" }}
                       >
                         + {tag}
@@ -940,11 +940,11 @@ export default function ClientsModule({
 
       {/* Add Client Modal */}
       {isAdding && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#0a1628]/60 backdrop-blur-sm p-4 animate-in fade-in duration-300">
-          <div className="bg-[#0a1628] border border-[#1e3a5f] w-full max-w-2xl rounded-3xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300">
-            <div className="bg-gradient-to-r from-[#c9a84c] to-[#a67c30] p-8 flex justify-between items-center text-[#94a3b8]">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 backdrop-blur-sm p-4 animate-in fade-in duration-300">
+          <div className="bg-white border border-slate-200 w-full max-w-2xl rounded-3xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300">
+            <div className="bg-amber-500 p-8 flex justify-between items-center text-slate-950">
               <div className="flex items-center gap-4">
-                <div className="p-3 bg-[#0a1628]/20 rounded-2xl">
+                <div className="p-3 bg-white/20 rounded-2xl">
                   <UserCheck className="w-8 h-8" />
                 </div>
                 <div>
@@ -958,7 +958,7 @@ export default function ClientsModule({
               </div>
               <button
                 onClick={() => setIsAdding(false)}
-                className="w-10 h-10 flex items-center justify-center bg-[#0a1628]/20 rounded-full hover:bg-[#0a1628]/30 transition-all font-black text-xl"
+                className="w-10 h-10 flex items-center justify-center bg-white/20 rounded-full hover:bg-white/30 transition-all font-black text-xl"
               >
                 ×
               </button>
@@ -967,8 +967,8 @@ export default function ClientsModule({
             <form onSubmit={handleCreateClient} className="p-8 space-y-8">
               <div className="space-y-6">
                 {/* تصنيف العميل: جديد أو حالي */}
-                <div className="bg-[#0a1628] border border-[#1e3a5f] p-5 rounded-2xl space-y-4">
-                  <label className="text-xs font-black text-[#94a3b8] block uppercase tracking-widest">
+                <div className="bg-slate-50 border border-slate-200 p-5 rounded-2xl space-y-4">
+                  <label className="text-xs font-black text-slate-700 block uppercase tracking-widest">
                     نوع ودرجة الموكل (جديد / حالي مرتبط بقضية)
                   </label>
                   <select
@@ -980,7 +980,7 @@ export default function ClientsModule({
                         setSelectedCaseId("");
                       }
                     }}
-                    className="w-full bg-[#0a1628] border border-[#1e3a5f] rounded-2xl py-3 px-4 text-xs font-bold text-[#94a3b8] focus:outline-none focus:border-amber-500 transition-all"
+                    className="w-full bg-white border border-slate-200 rounded-xl py-3 px-4 text-xs font-bold text-slate-900 focus:outline-none focus:border-amber-500 transition-all"
                   >
                     <option value="new">عميل جديد بالمنظومة</option>
                     <option value="existing">عميل حالي (ربط بقضية نشطة)</option>
@@ -988,14 +988,14 @@ export default function ClientsModule({
 
                   {clientType === "existing" && (
                     <div className="space-y-2 pt-2 animate-in slide-in-from-top-2 duration-200">
-                      <label className="text-[11px] font-black text-[#94a3b8] block">
+                      <label className="text-[11px] font-black text-slate-600 block">
                         اختر القضية النشطة لربطها بهذا العميل وتهيئة البوابة:
                       </label>
                       <select
                         value={selectedCaseId}
                         onChange={(e) => setSelectedCaseId(e.target.value)}
                         required={clientType === "existing"}
-                        className="w-full bg-[#0a1628] border border-[#1e3a5f] rounded-2xl py-3 px-4 text-xs font-bold text-[#94a3b8] focus:outline-none focus:border-amber-500 transition-all"
+                        className="w-full bg-white border border-slate-200 rounded-xl py-3 px-4 text-xs font-bold text-slate-900 focus:outline-none focus:border-amber-500 transition-all"
                       >
                         <option value="">-- اختر القضية من القائمة --</option>
                         {(cases || []).map((c) => (
@@ -1009,7 +1009,7 @@ export default function ClientsModule({
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-xs font-black text-[#94a3b8] uppercase tracking-widest">
+                  <label className="text-xs font-black text-slate-700 uppercase tracking-widest">
                     الاسم الكامل للموكل / الكيان
                   </label>
                   <input
@@ -1018,13 +1018,13 @@ export default function ClientsModule({
                     onChange={(e) => setNewName(e.target.value)}
                     placeholder="مثال: شركة النخبة للتطوير العقاري"
                     required
-                    className="w-full bg-[#0a1628] border border-[#1e3a5f] rounded-2xl py-4 px-5 text-sm font-bold text-[#94a3b8] focus:outline-none focus:border-amber-500 transition-all"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl py-4 px-5 text-sm font-bold text-slate-900 focus:outline-none focus:border-amber-500 transition-all"
                   />
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
-                    <label className="text-xs font-black text-[#94a3b8] uppercase tracking-widest">
+                    <label className="text-xs font-black text-slate-700 uppercase tracking-widest">
                       نوع الموكل
                     </label>
                     <select
@@ -1032,14 +1032,14 @@ export default function ClientsModule({
                       onChange={(e) =>
                         setNewIsCompany(e.target.value === "company")
                       }
-                      className="w-full bg-[#0a1628] border border-[#1e3a5f] rounded-2xl py-4 px-5 text-sm font-bold text-[#94a3b8] focus:outline-none transition-all cursor-pointer font-sans"
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl py-4 px-5 text-sm font-bold text-slate-900 focus:outline-none transition-all cursor-pointer font-sans"
                     >
                       <option value="company">شركة / كيان قانوني</option>
                       <option value="individual">فرد / موكل أصيل</option>
                     </select>
                   </div>
                   <div className="space-y-2">
-                    <label className="text-xs font-black text-[#94a3b8] uppercase tracking-widest">
+                    <label className="text-xs font-black text-slate-700 uppercase tracking-widest">
                       رقم الهوية / السجل
                     </label>
                     <input
@@ -1048,14 +1048,14 @@ export default function ClientsModule({
                       onChange={(e) => setNewNationalId(e.target.value)}
                       placeholder="10XXXXXXXX"
                       required
-                      className="w-full bg-[#0a1628] border border-[#1e3a5f] rounded-2xl py-4 px-5 text-sm font-bold text-[#94a3b8] focus:outline-none transition-all"
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl py-4 px-5 text-sm font-bold text-slate-900 focus:outline-none transition-all"
                     />
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
-                    <label className="text-xs font-black text-[#94a3b8] uppercase tracking-widest">
+                    <label className="text-xs font-black text-slate-700 uppercase tracking-widest">
                       رقم الجوال (WhatsApp)
                     </label>
                     <input
@@ -1064,11 +1064,11 @@ export default function ClientsModule({
                       onChange={(e) => setNewPhone(e.target.value)}
                       placeholder="+966"
                       required
-                      className="w-full bg-[#0a1628] border border-[#1e3a5f] rounded-2xl py-4 px-5 text-sm font-bold text-[#94a3b8] focus:outline-none transition-all font-sans"
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl py-4 px-5 text-sm font-bold text-slate-900 focus:outline-none transition-all font-sans"
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-xs font-black text-[#94a3b8] uppercase tracking-widest">
+                    <label className="text-xs font-black text-slate-700 uppercase tracking-widest">
                       البريد الإلكتروني
                     </label>
                     <input
@@ -1076,7 +1076,7 @@ export default function ClientsModule({
                       value={newEmail}
                       onChange={(e) => setNewEmail(e.target.value)}
                       placeholder="client@law.sa"
-                      className="w-full bg-[#0a1628] border border-[#1e3a5f] rounded-2xl py-4 px-5 text-sm font-bold text-[#94a3b8] focus:outline-none transition-all font-sans"
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl py-4 px-5 text-sm font-bold text-slate-900 focus:outline-none transition-all font-sans"
                     />
                   </div>
                 </div>
@@ -1086,13 +1086,13 @@ export default function ClientsModule({
                 <button
                   type="button"
                   onClick={() => setIsAdding(false)}
-                  className="flex-1 bg-[#0a1628] hover:bg-[#0a1628] text-[#94a3b8] font-bold font-black py-4 rounded-2xl text-xs transition-all"
+                  className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-200 font-bold font-black py-4 rounded-xl text-xs transition-all"
                 >
                   إلغاء التراجع
                 </button>
                 <button
                   type="submit"
-                  className="flex-[2] bg-gradient-to-r from-[#c9a84c] to-[#a67c30] hover:bg-gradient-to-r from-[#c9a84c] to-[#a67c30] text-[#94a3b8] font-black py-4 rounded-2xl text-xs shadow-lg shadow-amber-500/10 transition-all border-0 cursor-pointer"
+                  className="flex-[2] bg-amber-500 hover:bg-amber-400 text-slate-950 font-black py-4 rounded-xl text-xs shadow-lg shadow-amber-500/10 transition-all border-0 cursor-pointer"
                 >
                   حفظ وتسجيل الموكل بالنظام
                 </button>
@@ -1104,11 +1104,11 @@ export default function ClientsModule({
 
       {/* Edit Client Modal */}
       {editingClient && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#0a1628]/60 backdrop-blur-sm p-4 animate-in fade-in duration-300">
-          <div className="bg-[#0a1628] border border-[#1e3a5f] w-full max-w-2xl rounded-3xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 backdrop-blur-sm p-4 animate-in fade-in duration-300">
+          <div className="bg-white border border-slate-200 w-full max-w-2xl rounded-3xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300">
             <div className="bg-blue-600 p-8 flex justify-between items-center text-white">
               <div className="flex items-center gap-4">
-                <div className="p-3 bg-[#0a1628]/20 rounded-2xl">
+                <div className="p-3 bg-white/20 rounded-2xl">
                   <Edit2 className="w-8 h-8" />
                 </div>
                 <div>
@@ -1122,7 +1122,7 @@ export default function ClientsModule({
               </div>
               <button
                 onClick={() => setEditingClient(null)}
-                className="w-10 h-10 flex items-center justify-center bg-[#0a1628]/20 rounded-full hover:bg-[#0a1628]/30 transition-all font-black text-xl"
+                className="w-10 h-10 flex items-center justify-center bg-white/20 rounded-full hover:bg-white/30 transition-all font-black text-xl"
               >
                 ×
               </button>
@@ -1131,7 +1131,7 @@ export default function ClientsModule({
             <form onSubmit={handleUpdateClientSubmit} className="p-8 space-y-8">
               <div className="space-y-6">
                 <div className="space-y-2">
-                  <label className="text-xs font-black text-[#94a3b8] uppercase tracking-widest">
+                  <label className="text-xs font-black text-slate-700 uppercase tracking-widest">
                     الاسم الكامل للموكل / الكيان
                   </label>
                   <input
@@ -1144,13 +1144,13 @@ export default function ClientsModule({
                       })
                     }
                     required
-                    className="w-full bg-[#0a1628] border border-[#1e3a5f] rounded-2xl py-4 px-5 text-sm font-bold text-[#94a3b8] focus:outline-none focus:border-blue-600 transition-all"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl py-4 px-5 text-sm font-bold text-slate-900 focus:outline-none focus:border-blue-600 transition-all"
                   />
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
-                    <label className="text-xs font-black text-[#94a3b8] uppercase tracking-widest">
+                    <label className="text-xs font-black text-slate-700 uppercase tracking-widest">
                       رقم الهوية / السجل
                     </label>
                     <input
@@ -1163,11 +1163,11 @@ export default function ClientsModule({
                         })
                       }
                       required
-                      className="w-full bg-[#0a1628] border border-[#1e3a5f] rounded-2xl py-4 px-5 text-sm font-bold text-[#94a3b8] focus:outline-none transition-all"
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl py-4 px-5 text-sm font-bold text-slate-900 focus:outline-none transition-all"
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-xs font-black text-[#94a3b8] uppercase tracking-widest">
+                    <label className="text-xs font-black text-slate-700 uppercase tracking-widest">
                       رقم الجوال
                     </label>
                     <input
@@ -1180,13 +1180,13 @@ export default function ClientsModule({
                         })
                       }
                       required
-                      className="w-full bg-[#0a1628] border border-[#1e3a5f] rounded-2xl py-4 px-5 text-sm font-bold text-[#94a3b8] focus:outline-none transition-all font-sans"
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl py-4 px-5 text-sm font-bold text-slate-900 focus:outline-none transition-all font-sans"
                     />
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-xs font-black text-[#94a3b8] uppercase tracking-widest">
+                  <label className="text-xs font-black text-slate-700 uppercase tracking-widest">
                     البريد الإلكتروني
                   </label>
                   <input
@@ -1198,7 +1198,7 @@ export default function ClientsModule({
                         email: e.target.value,
                       })
                     }
-                    className="w-full bg-[#0a1628] border border-[#1e3a5f] rounded-2xl py-4 px-5 text-sm font-bold text-[#94a3b8] focus:outline-none transition-all font-sans"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl py-4 px-5 text-sm font-bold text-slate-900 focus:outline-none transition-all font-sans"
                   />
                 </div>
               </div>
@@ -1207,13 +1207,13 @@ export default function ClientsModule({
                 <button
                   type="button"
                   onClick={() => setEditingClient(null)}
-                  className="flex-1 bg-[#0a1628] hover:bg-[#0a1628] text-[#94a3b8]0 font-black py-4 rounded-2xl text-xs transition-all"
+                  className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-500 font-black py-4 rounded-xl text-xs transition-all"
                 >
                   إلغاء التراجع
                 </button>
                 <button
                   type="submit"
-                  className="flex-[2] bg-blue-600 hover:bg-blue-700 text-white font-black py-4 rounded-2xl text-xs shadow-lg shadow-blue-500/10 transition-all border-0 cursor-pointer"
+                  className="flex-[2] bg-blue-600 hover:bg-blue-700 text-white font-black py-4 rounded-xl text-xs shadow-lg shadow-blue-500/10 transition-all border-0 cursor-pointer"
                 >
                   حفظ التعديلات
                 </button>
@@ -1225,26 +1225,26 @@ export default function ClientsModule({
 
       {/* Portal Manager Minimalist Modal */}
       {managingPortalClientId && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#0a1628]/60 backdrop-blur-sm p-4 animate-in fade-in duration-300">
-          <div className="bg-[#0a1628] border border-[#1e3a5f] w-full max-w-lg rounded-3xl shadow-2xl p-8 relative overflow-hidden animate-in zoom-in-95 duration-300">
-            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#c9a84c] to-[#a67c30]"></div>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 backdrop-blur-sm p-4 animate-in fade-in duration-300">
+          <div className="bg-white border border-slate-200 w-full max-w-lg rounded-3xl shadow-2xl p-8 relative overflow-hidden animate-in zoom-in-95 duration-300">
+            <div className="absolute top-0 left-0 w-full h-1 bg-amber-500"></div>
             <div className="flex justify-between items-start mb-6">
               <div className="flex items-center gap-3">
-                <div className="p-2 bg-emerald-50 text-emerald-600 rounded-2xl">
+                <div className="p-2 bg-emerald-50 text-emerald-600 rounded-lg">
                   <ShieldCheck className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-black text-[#94a3b8]">
+                  <h3 className="text-lg font-black text-slate-900">
                     إدارة نفاذ البوابة
                   </h3>
-                  <p className="text-xs text-[#94a3b8] font-medium">
+                  <p className="text-xs text-slate-700 font-medium">
                     التحكم في بيانات الدخول والارتباط الرقمي.
                   </p>
                 </div>
               </div>
               <button
                 onClick={() => setManagingPortalClientId("")}
-                className="text-[#94a3b8] font-bold hover:text-[#94a3b8] font-bold transition-all"
+                className="text-slate-200 font-bold hover:text-slate-200 font-bold transition-all"
               >
                 ✕
               </button>
@@ -1255,17 +1255,17 @@ export default function ClientsModule({
               if (!c) return null;
               return (
                 <div className="space-y-6">
-                  <div className="bg-[#0a1628] border border-[#1e3a5f] rounded-2xl p-5 space-y-4">
+                  <div className="bg-slate-50 border border-slate-200 rounded-2xl p-5 space-y-4">
                     <div className="flex justify-between items-center text-xs">
-                      <span className="text-[#94a3b8] font-bold uppercase tracking-widest">
+                      <span className="text-slate-700 font-bold uppercase tracking-widest">
                         اسم المستخدم المعتمد:
                       </span>
-                      <span className="font-mono font-black text-[#94a3b8]">
+                      <span className="font-mono font-black text-slate-900">
                         {c.portalUsername || c.nationalId}
                       </span>
                     </div>
                     <div className="flex justify-between items-center text-xs">
-                      <span className="text-[#94a3b8] font-bold uppercase tracking-widest">
+                      <span className="text-slate-700 font-bold uppercase tracking-widest">
                         كلمة المرور الحالية:
                       </span>
                       <span className="font-mono font-black text-amber-400 font-black">
@@ -1273,10 +1273,10 @@ export default function ClientsModule({
                       </span>
                     </div>
                     <div className="pt-2">
-                      <span className="text-[10px] text-[#94a3b8] font-bold font-bold block mb-1">
+                      <span className="text-[10px] text-slate-200 font-bold font-bold block mb-1">
                         رابط النفاذ المباشر:
                       </span>
-                      <div className="bg-[#0a1628] border border-[#1e3a5f] p-2 rounded-2xl text-[10px] font-mono text-emerald-600 truncate">
+                      <div className="bg-white border border-slate-200 p-2 rounded-lg text-[10px] font-mono text-emerald-600 truncate">
                         {window.location.origin}
                         {c.portalLink}
                       </div>
@@ -1286,7 +1286,7 @@ export default function ClientsModule({
                   <div className="flex flex-col gap-3">
                     <button
                       onClick={() => handleGenerateClientPortal(c)}
-                      className="flex-1 bg-[#0a1628] text-white font-black py-3.5 rounded-2xl text-[11px] flex items-center justify-center gap-2 transition-all shadow-md active:scale-95"
+                      className="flex-1 bg-slate-800 text-white font-black py-3.5 rounded-xl text-[11px] flex items-center justify-center gap-2 transition-all shadow-md active:scale-95"
                     >
                       <ShieldCheck className="w-4 h-4" />
                       توليد وتفعيل بيانات الدخول
@@ -1300,7 +1300,7 @@ export default function ClientsModule({
                         );
                         setManagingPortalClientId("");
                       }}
-                      className="flex-1 bg-emerald-600 text-white font-black py-3.5 rounded-2xl text-[11px] flex items-center justify-center gap-2 transition-all shadow-md active:scale-95"
+                      className="flex-1 bg-emerald-600 text-white font-black py-3.5 rounded-xl text-[11px] flex items-center justify-center gap-2 transition-all shadow-md active:scale-95"
                     >
                       <Send className="w-4 h-4" />
                       بث البيانات عبر WhatsApp

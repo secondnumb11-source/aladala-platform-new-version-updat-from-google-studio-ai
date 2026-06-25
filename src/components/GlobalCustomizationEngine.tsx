@@ -148,7 +148,7 @@ export default function GlobalCustomizationEngine() {
     // Find all cards and boxes
     const scanAndAttach = () => {
       const targets = document.querySelectorAll(
-        '.card-professional, .bg-[#0a1628], .bg-slate-900, .inner-card-box, .bg-slate-50, section, [class*="rounded-xl"], [class*="rounded-2xl"], [class*="grid-cols-"] > div'
+        '.card-professional, .bg-white, .bg-slate-900, .inner-card-box, .bg-slate-50, section, [class*="rounded-xl"], [class*="rounded-2xl"], [class*="grid-cols-"] > div'
       );
 
       targets.forEach(el => {
@@ -337,7 +337,7 @@ export default function GlobalCustomizationEngine() {
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.9 }}
-            className="global-customization-engine-ui fixed z-[10000] bg-[#0a1628] dark:bg-slate-900 rounded-2xl shadow-2xl border border-[#1e3a5f] dark:border-slate-800 p-4 w-72"
+            className="global-customization-engine-ui fixed z-[10000] bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 p-4 w-72"
             style={{ 
               top: Math.min(pickerPosition.y, window.innerHeight - 250), 
               left: Math.min(pickerPosition.x, window.innerWidth - 300) 
@@ -364,7 +364,7 @@ export default function GlobalCustomizationEngine() {
                         const isLight = ['#ffffff', '#f8fafc', '#f1f5f9', '#fffbeb', '#f0fdf4', '#facc15'].includes(color.toLowerCase());
                         applyColor(color, isLight ? '#0f172a' : '#ffffff');
                       }}
-                      className="w-6 h-6 rounded-full border border-[#1e3a5f] shadow-sm focus:ring-2 focus:ring-[#D4AF37]"
+                      className="w-6 h-6 rounded-full border border-slate-300 shadow-sm focus:ring-2 focus:ring-[#D4AF37]"
                       style={{ backgroundColor: color }}
                     />
                   ))}

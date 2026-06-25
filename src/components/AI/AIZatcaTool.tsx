@@ -136,10 +136,10 @@ export default function AIZatcaTool({ invoices = [] }: { invoices?: Invoice[] })
       {/* Primary Forms Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Card 1: بوابات الدفع الإلكتروني الالي */}
-        <div className="bg-[#0a1628] border border-[#1e3a5f]/80 p-8 rounded-[2rem] shadow-sm hover:shadow-md transition-all space-y-6 flex flex-col justify-between">
+        <div className="bg-white border border-slate-200/80 p-8 rounded-[2rem] shadow-sm hover:shadow-md transition-all space-y-6 flex flex-col justify-between">
           <div className="space-y-6">
             <div className="flex items-center gap-4 border-b border-slate-100 pb-5">
-              <div className="p-3 bg-slate-50 border border-[#1e3a5f] text-slate-800 rounded-2xl">
+              <div className="p-3 bg-slate-50 border border-slate-200 text-slate-800 rounded-2xl">
                 <CreditCard className="w-6 h-6" />
               </div>
               <div>
@@ -160,7 +160,7 @@ export default function AIZatcaTool({ invoices = [] }: { invoices?: Invoice[] })
                     setSubmitLogs([]);
                     setSubmitSuccess(false);
                   }}
-                  className="w-full bg-slate-50 border border-[#1e3a5f] p-4 rounded-xl text-xs font-bold text-slate-900 outline-none focus:bg-[#0a1628] focus:border-slate-900 focus:ring-4 focus:ring-slate-950/5 transition-all cursor-pointer"
+                  className="w-full bg-slate-50 border border-slate-200 p-4 rounded-xl text-xs font-bold text-slate-900 outline-none focus:bg-white focus:border-slate-900 focus:ring-4 focus:ring-slate-950/5 transition-all cursor-pointer"
                 >
                   <option value="">-- اختر مطالبة موكل أو فاتورة معلقة للربط --</option>
                   {availableInvoices.map((inv) => (
@@ -186,7 +186,7 @@ export default function AIZatcaTool({ invoices = [] }: { invoices?: Invoice[] })
                       className={`p-3.5 rounded-xl text-xs font-black transition-all border text-center cursor-pointer ${
                         activeGateway === gateway.id 
                           ? 'bg-slate-950 text-white border-slate-950 shadow-md text-high-contrast-light-bg' 
-                          : 'bg-slate-50 text-slate-700 hover:bg-slate-100 border-[#1e3a5f]/60'
+                          : 'bg-slate-50 text-slate-700 hover:bg-slate-100 border-slate-200/60'
                       }`}
                     >
                       {gateway.label}
@@ -238,10 +238,10 @@ export default function AIZatcaTool({ invoices = [] }: { invoices?: Invoice[] })
         </div>
 
         {/* Card 2: زاتكا والربط الإلزامي */}
-        <div className="bg-[#0a1628] border border-[#1e3a5f]/80 p-8 rounded-[2rem] shadow-sm hover:shadow-md transition-all space-y-6 flex flex-col justify-between">
+        <div className="bg-white border border-slate-200/80 p-8 rounded-[2rem] shadow-sm hover:shadow-md transition-all space-y-6 flex flex-col justify-between">
           <div className="space-y-6">
             <div className="flex items-center gap-4 border-b border-slate-100 pb-5">
-              <div className="p-3 bg-slate-50 border border-[#1e3a5f] text-slate-800 rounded-2xl">
+              <div className="p-3 bg-slate-50 border border-slate-200 text-slate-800 rounded-2xl">
                 <QrCode className="w-6 h-6" />
               </div>
               <div>
@@ -250,17 +250,17 @@ export default function AIZatcaTool({ invoices = [] }: { invoices?: Invoice[] })
               </div>
             </div>
 
-            <div className="bg-slate-50 border border-[#1e3a5f]/60 p-5 rounded-2xl space-y-4">
+            <div className="bg-slate-50 border border-slate-200/60 p-5 rounded-2xl space-y-4">
               <div className="flex items-center gap-2 text-slate-900 font-extrabold text-xs">
                 <Cpu className="w-4 h-4 text-slate-700" />
                 <span>بيانات التشفير وخوارزميات الامتثال المعتمدة:</span>
               </div>
               <div className="grid grid-cols-2 gap-3.5 text-[10px] font-bold">
-                <div className="bg-[#0a1628] p-3 border border-[#1e3a5f]/60 rounded-xl shadow-xs">
+                <div className="bg-white p-3 border border-slate-200/60 rounded-xl shadow-xs">
                   <span className="text-slate-700 block font-bold mb-1">شهادة تشفير الربط (CCSID)</span>
                   <span className="text-slate-900 font-extrabold font-mono text-[11px] block">ZATCA Cryptographic ID</span>
                 </div>
-                <div className="bg-[#0a1628] p-3 border border-[#1e3a5f]/60 rounded-xl shadow-xs">
+                <div className="bg-white p-3 border border-slate-200/60 rounded-xl shadow-xs">
                   <span className="text-slate-700 block font-bold mb-1">إصدار الهيكل (Schema)</span>
                   <span className="text-slate-900 font-extrabold font-mono text-[11px] block">XML Schema Standard V2</span>
                 </div>
@@ -310,7 +310,7 @@ export default function AIZatcaTool({ invoices = [] }: { invoices?: Invoice[] })
       </div>
 
       {/* Audit Logs Table - Beautiful high contrast elegant list */}
-      <div className="bg-[#0a1628] border border-[#1e3a5f]/80 rounded-[2rem] shadow-sm overflow-hidden">
+      <div className="bg-white border border-slate-200/80 rounded-[2rem] shadow-sm overflow-hidden">
         <div className="p-6 md:p-8 border-b border-slate-100 flex flex-col md:flex-row md:items-center justify-between bg-slate-50/50 gap-4">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-slate-900 text-white rounded-xl">
@@ -326,7 +326,7 @@ export default function AIZatcaTool({ invoices = [] }: { invoices?: Invoice[] })
         <div className="overflow-x-auto">
           <table className="w-full text-right border-collapse">
             <thead>
-              <tr className="bg-slate-50 border-b border-[#1e3a5f] text-slate-700 text-xs font-black">
+              <tr className="bg-slate-50 border-b border-slate-200 text-slate-700 text-xs font-black">
                 <th className="py-4.5 px-6 font-semibold">الرقم المرجعي</th>
                 <th className="py-4.5 px-6 font-semibold">الموكل / العميل</th>
                 <th className="py-4.5 px-6 font-semibold">مبلغ الضريبة (15% VAT)</th>

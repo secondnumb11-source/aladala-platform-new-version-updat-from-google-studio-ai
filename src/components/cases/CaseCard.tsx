@@ -131,8 +131,8 @@ function getStrictWCAGAAAPalette(fromHex: string, toHex: string, isHighContrast:
       accentText: 'text-amber-800 font-black', 
       badgeBg: 'bg-slate-200/80 hover:bg-slate-200 border-slate-400 border-2',
       badgeText: 'text-slate-950 font-black',
-      accentBorder: 'border-[#1e3a5f]',
-      innerCardBg: 'bg-slate-100/95 border-2 border-[#1e3a5f]/90 shadow-sm',
+      accentBorder: 'border-slate-300',
+      innerCardBg: 'bg-slate-100/95 border-2 border-slate-200/90 shadow-sm',
       buttonBg: 'bg-amber-100 hover:bg-amber-200 text-amber-950 border-amber-600/40 font-black border',
       glowShadow: '0 8px 30px rgba(0, 0, 0, 0.05)',
       useOverlayMask: false,
@@ -160,7 +160,7 @@ function getStrictWCAGAAAPalette(fromHex: string, toHex: string, isHighContrast:
       secondaryText: 'text-slate-100 font-extrabold drop-shadow-md',
       mutedText: 'text-slate-300 font-bold drop-shadow-sm',
       accentText: 'text-amber-400 font-black drop-shadow-md', 
-      badgeBg: 'bg-[#0a1628]/10 hover:bg-[#0a1628]/15 border-white/30',
+      badgeBg: 'bg-white/10 hover:bg-white/15 border-white/30',
       badgeText: 'text-white font-black',
       accentBorder: 'border-[#f59e0b]/50',
       innerCardBg: 'bg-slate-900/50 border border-[#f59e0b]/30 backdrop-blur-md',
@@ -171,15 +171,15 @@ function getStrictWCAGAAAPalette(fromHex: string, toHex: string, isHighContrast:
     };
   } else {
     return {
-      primaryText: 'text-white font-black',
+      primaryText: 'text-black font-black',
       secondaryText: 'text-slate-900 font-extrabold',
       mutedText: 'text-slate-800 font-bold',
       accentText: 'text-amber-700 font-black', 
       badgeBg: 'bg-black/10 hover:bg-black/15 border-black/30',
-      badgeText: 'text-white font-black',
+      badgeText: 'text-black font-black',
       accentBorder: 'border-black/20',
       innerCardBg: 'bg-black/5 border border-black/15 backdrop-blur-md',
-      buttonBg: 'bg-black/10 hover:bg-black/20 text-white border-black/30 font-black',
+      buttonBg: 'bg-black/10 hover:bg-black/20 text-black border-black/30 font-black',
       glowShadow: '0 8px 30px rgba(0,0,0,0.1)',
       useOverlayMask,
       isLightThemeActive: true
@@ -385,13 +385,13 @@ export function getLuxuryCardTheme(category: string, isDark: boolean): CardTheme
           textPrimary: 'text-[#1c1917] font-black',
           textSecondary: 'text-[#44403c] font-extrabold',
           textMuted: 'text-[#78716c] font-bold',
-          innerCardBg: 'bg-[#0a1628]/95 border border-[#D4AF37]/35 shadow-sm',
+          innerCardBg: 'bg-white/95 border border-[#D4AF37]/35 shadow-sm',
           badgeBg: 'bg-amber-100 border border-amber-400',
           badgeText: 'text-amber-950 font-black',
           accentText: 'text-amber-800 font-black',
           accentBorder: 'border-amber-500/30',
           glowShadow: 'rgba(212, 175, 55, 0.12)',
-          tagBg: 'bg-[#0a1628] border border-[#1e3a5f]',
+          tagBg: 'bg-white border border-slate-200',
           tagText: 'text-slate-800 font-bold'
         };
       case 'labor':
@@ -401,13 +401,13 @@ export function getLuxuryCardTheme(category: string, isDark: boolean): CardTheme
           textPrimary: 'text-emerald-950 font-black',
           textSecondary: 'text-emerald-900 font-extrabold',
           textMuted: 'text-emerald-800 font-bold',
-          innerCardBg: 'bg-[#0a1628]/95 border border-emerald-300 shadow-sm',
+          innerCardBg: 'bg-white/95 border border-emerald-300 shadow-sm',
           badgeBg: 'bg-emerald-100 border border-emerald-400',
           badgeText: 'text-emerald-950 font-black',
           accentText: 'text-emerald-800 font-black',
           accentBorder: 'border-emerald-500/30',
           glowShadow: 'rgba(16, 185, 129, 0.12)',
-          tagBg: 'bg-[#0a1628] border border-[#1e3a5f]',
+          tagBg: 'bg-white border border-slate-200',
           tagText: 'text-emerald-800 font-bold'
         };
       case 'civil':
@@ -417,13 +417,13 @@ export function getLuxuryCardTheme(category: string, isDark: boolean): CardTheme
           textPrimary: 'text-blue-950 font-black',
           textSecondary: 'text-blue-900 font-extrabold',
           textMuted: 'text-blue-800 font-bold',
-          innerCardBg: 'bg-[#0a1628]/95 border border-blue-300 shadow-sm',
+          innerCardBg: 'bg-white/95 border border-blue-300 shadow-sm',
           badgeBg: 'bg-blue-100 border border-blue-400',
           badgeText: 'text-blue-950 font-black',
           accentText: 'text-blue-800 font-black',
           accentBorder: 'border-blue-500/30',
           glowShadow: 'rgba(59, 130, 246, 0.12)',
-          tagBg: 'bg-[#0a1628] border border-[#1e3a5f]',
+          tagBg: 'bg-white border border-slate-200',
           tagText: 'text-blue-800 font-bold'
         };
       case 'criminal':
@@ -433,13 +433,13 @@ export function getLuxuryCardTheme(category: string, isDark: boolean): CardTheme
           textPrimary: 'text-rose-950 font-black',
           textSecondary: 'text-rose-900 font-extrabold',
           textMuted: 'text-rose-800 font-bold',
-          innerCardBg: 'bg-[#0a1628]/95 border border-rose-300 shadow-sm',
+          innerCardBg: 'bg-white/95 border border-rose-300 shadow-sm',
           badgeBg: 'bg-rose-100 border border-rose-400',
           badgeText: 'text-rose-950 font-black',
           accentText: 'text-rose-800 font-black',
           accentBorder: 'border-rose-500/30',
           glowShadow: 'rgba(239, 68, 68, 0.12)',
-          tagBg: 'bg-[#0a1628] border border-[#1e3a5f]',
+          tagBg: 'bg-white border border-slate-200',
           tagText: 'text-rose-800 font-bold'
         };
       case 'personal_status':
@@ -449,13 +449,13 @@ export function getLuxuryCardTheme(category: string, isDark: boolean): CardTheme
           textPrimary: 'text-purple-950 font-black',
           textSecondary: 'text-purple-900 font-extrabold',
           textMuted: 'text-purple-800 font-bold',
-          innerCardBg: 'bg-[#0a1628]/95 border border-purple-300 shadow-sm',
+          innerCardBg: 'bg-white/95 border border-purple-300 shadow-sm',
           badgeBg: 'bg-purple-100 border border-purple-400',
           badgeText: 'text-purple-950 font-black',
           accentText: 'text-purple-800 font-black',
           accentBorder: 'border-purple-500/30',
           glowShadow: 'rgba(168, 85, 247, 0.12)',
-          tagBg: 'bg-[#0a1628] border border-[#1e3a5f]',
+          tagBg: 'bg-white border border-slate-200',
           tagText: 'text-purple-800 font-bold'
         };
       case 'administrative':
@@ -465,13 +465,13 @@ export function getLuxuryCardTheme(category: string, isDark: boolean): CardTheme
           textPrimary: 'text-stone-950 font-black',
           textSecondary: 'text-stone-900 font-extrabold',
           textMuted: 'text-[#57534e] font-bold',
-          innerCardBg: 'bg-[#0a1628]/95 border border-stone-300 shadow-sm',
+          innerCardBg: 'bg-white/95 border border-stone-300 shadow-sm',
           badgeBg: 'bg-[#f5f5f4] border border-stone-300',
           badgeText: 'text-stone-950 font-black',
           accentText: 'text-stone-800 font-black',
           accentBorder: 'border-stone-500/20',
           glowShadow: 'rgba(120, 113, 108, 0.08)',
-          tagBg: 'bg-[#0a1628] border border-[#1e3a5f]',
+          tagBg: 'bg-white border border-slate-200',
           tagText: 'text-stone-800 font-bold'
         };
       case 'execution':
@@ -481,29 +481,29 @@ export function getLuxuryCardTheme(category: string, isDark: boolean): CardTheme
           textPrimary: 'text-amber-950 font-black',
           textSecondary: 'text-[#78350f] font-extrabold',
           textMuted: 'text-[#92400e] font-bold',
-          innerCardBg: 'bg-[#0a1628]/95 border border-amber-300 shadow-sm',
+          innerCardBg: 'bg-white/95 border border-amber-300 shadow-sm',
           badgeBg: 'bg-amber-100 border border-amber-400',
           badgeText: 'text-amber-950 font-black',
           accentText: 'text-amber-900 font-black',
           accentBorder: 'border-amber-500/30',
           glowShadow: 'rgba(245, 158, 11, 0.12)',
-          tagBg: 'bg-[#0a1628] border border-[#1e3a5f]',
+          tagBg: 'bg-white border border-slate-200',
           tagText: 'text-amber-800 font-bold'
         };
       default:
         return {
           bg: 'linear-gradient(135deg, #F8FAF9 0%, #F1F5F4 100%)',
-          border: 'border-[#1e3a5f]',
+          border: 'border-slate-300',
           textPrimary: 'text-slate-950 font-black',
           textSecondary: 'text-slate-900 font-extrabold',
           textMuted: 'text-slate-800 font-bold',
-          innerCardBg: 'bg-[#0a1628]/95 border border-[#1e3a5f] shadow-sm',
-          badgeBg: 'bg-slate-100 border border-[#1e3a5f]',
+          innerCardBg: 'bg-white/95 border border-slate-200 shadow-sm',
+          badgeBg: 'bg-slate-100 border border-slate-300',
           badgeText: 'text-slate-950 font-black',
           accentText: 'text-slate-800 font-black',
-          accentBorder: 'border-[#1e3a5f]',
+          accentBorder: 'border-slate-300',
           glowShadow: 'rgba(148, 163, 184, 0.08)',
-          tagBg: 'bg-[#0a1628] border border-[#1e3a5f]',
+          tagBg: 'bg-white border border-slate-200',
           tagText: 'text-slate-800 font-bold'
         };
     }
@@ -732,7 +732,7 @@ const CaseCard = React.memo(function CaseCard({
         c.archived ? 'opacity-65 grayscale-[0.2]' : ''
       } ${isKeyboardFocused ? 'ring-4 ring-[#D4AF37] ring-offset-4 ring-offset-transparent z-10' : ''} ${searchHighlight ? 'ring-2 ring-amber-400 ring-offset-2 ring-offset-transparent' : ''} ${
         isHighContrast 
-          ? 'border-[#1e3a5f] text-slate-900 wcag-aaa-light-mode' 
+          ? 'border-slate-300 text-slate-900 wcag-aaa-light-mode' 
           : `${cardTheme.border} luxurious-dark-gradient-card ${
               c.status === 'active' || c.status === 'final_judgment' || c.status === 'primary_judgment' 
                 ? 'kinetic-glow-status-active kinetic-glow-status' 
@@ -764,7 +764,7 @@ const CaseCard = React.memo(function CaseCard({
       {/* MAIN CONTAINER */}
       <div 
         className={`relative z-10 w-full h-full p-6 flex flex-col justify-between transition-colors duration-300 ${
-          isHighContrast ? 'bg-[#0a1628]/40' : 'bg-black/15 backdrop-blur-[2px]'
+          isHighContrast ? 'bg-white/40' : 'bg-black/15 backdrop-blur-[2px]'
         }`}
         dir="rtl"
       >
@@ -790,7 +790,7 @@ const CaseCard = React.memo(function CaseCard({
                  onClick={(e) => { e.stopPropagation(); setIsNotePopoverOpen(true); }}
                  className={`p-2 rounded-xl border transition-all shadow-sm ${
                    isHighContrast 
-                     ? 'border-[#1e3a5f] bg-slate-50 text-slate-700 hover:bg-slate-100 hover:shadow-md' 
+                     ? 'border-slate-300 bg-slate-50 text-slate-700 hover:bg-slate-100 hover:shadow-md' 
                      : 'border-white/10 bg-black/30 text-white/90 hover:bg-black/50'
                  }`}
                  title="إضافة ملاحظة سريعة للمكتب"
@@ -816,7 +816,7 @@ const CaseCard = React.memo(function CaseCard({
           </div>
 
           {/* MAIN CARD HEADLINE: CASE SUBJECT */}
-          <div className={`border-b pb-3 mb-4 ${isHighContrast ? 'border-[#1e3a5f]' : 'border-white/5'}`}>
+          <div className={`border-b pb-3 mb-4 ${isHighContrast ? 'border-slate-200' : 'border-white/5'}`}>
             <span className={`text-[10px] font-black block mb-1 tracking-wider uppercase ${isHighContrast ? 'text-slate-500 text-muted-high-contrast' : `${cardTheme.textMuted}`}`}>موضوع الدعوى / ملف القضية</span>
             <span className={`text-base font-black tracking-tight leading-snug block line-clamp-2 ${isHighContrast ? 'text-slate-950 text-primary-high-contrast' : `${cardTheme.textPrimary} drop-shadow-md`}`}>
               {c.caseName || 'قضية عامة بدون عنوان'}
@@ -828,7 +828,7 @@ const CaseCard = React.memo(function CaseCard({
             {/* Court */}
             <div className={`border rounded-[1.4rem] p-3 shadow-sm text-right flex flex-col justify-between transition-all duration-300 ${
               isHighContrast 
-                ? 'bg-slate-50 border-[#1e3a5f] hover:bg-slate-100' 
+                ? 'bg-slate-50 border-slate-300 hover:bg-slate-100' 
                 : `${cardTheme.innerCardBg}`
             }`}>
               <span className={`text-[9px] font-black tracking-wider block mb-1 uppercase ${isHighContrast ? 'text-slate-500 text-muted-high-contrast' : `${cardTheme.textMuted}`}`}>المحكمة المختصة</span>
@@ -848,7 +848,7 @@ const CaseCard = React.memo(function CaseCard({
             {/* Category */}
             <div className={`border rounded-[1.4rem] p-3 shadow-sm text-right flex flex-col justify-between transition-all duration-300 ${
               isHighContrast 
-                ? 'bg-slate-50 border-[#1e3a5f] hover:bg-slate-100' 
+                ? 'bg-slate-50 border-slate-300 hover:bg-slate-100' 
                 : `${cardTheme.innerCardBg}`
             }`}>
               <span className={`text-[9px] font-black tracking-wider block mb-1 uppercase ${isHighContrast ? 'text-slate-500 text-muted-high-contrast' : `${cardTheme.textMuted}`}`}>تصنيف القضية</span>
@@ -861,7 +861,7 @@ const CaseCard = React.memo(function CaseCard({
             {/* Circuit Number */}
             <div className={`border rounded-[1.4rem] p-3 shadow-sm text-right flex flex-col justify-between transition-all duration-300 ${
               isHighContrast 
-                ? 'bg-slate-50 border-[#1e3a5f] hover:bg-slate-100' 
+                ? 'bg-slate-50 border-slate-300 hover:bg-slate-100' 
                 : `${cardTheme.innerCardBg}`
             }`}>
               <span className={`text-[9px] font-black tracking-wider block mb-1 uppercase ${isHighContrast ? 'text-slate-500 text-muted-high-contrast' : `${cardTheme.textMuted}`}`}>الدائرة القضائية</span>
@@ -872,7 +872,7 @@ const CaseCard = React.memo(function CaseCard({
           {/* Client & Opponent Block */}
           <div className={`border rounded-[1.4rem] p-3.5 shadow-sm text-right mb-4 flex flex-col justify-center transition-all duration-300 ${
             isHighContrast 
-              ? 'bg-slate-50 border-[#1e3a5f] hover:bg-slate-100' 
+              ? 'bg-slate-50 border-slate-300 hover:bg-slate-100' 
               : `${cardTheme.innerCardBg}`
           }`}>
             <span className={`text-[9px] font-black block mb-1 tracking-wider uppercase ${isHighContrast ? 'text-slate-500 text-muted-high-contrast' : `${cardTheme.textMuted}`}`}>أطراف الدعوى / الموكل والخصم</span>
@@ -898,7 +898,7 @@ const CaseCard = React.memo(function CaseCard({
           {/* Statistics and counts bar */}
           <div className="flex gap-2 mb-4">
              <div className={`flex-[3] border rounded-[1.4rem] p-2 shadow-sm grid grid-cols-3 divide-x divide-x-reverse text-center items-center ${
-               isHighContrast ? 'bg-slate-50 border-[#1e3a5f] divide-slate-300' : 'bg-black/30 border-white/5 divide-white/5'
+               isHighContrast ? 'bg-slate-50 border-slate-300 divide-slate-300' : 'bg-black/30 border-white/5 divide-white/5'
              }`}>
                 <div className="flex flex-col">
                   <span className={`text-[9px] font-bold block mb-0.5 tracking-wider ${isHighContrast ? 'text-slate-500' : `${cardTheme.textMuted}`}`}>مذكرات</span>
@@ -949,7 +949,7 @@ const CaseCard = React.memo(function CaseCard({
 
           {/* Row 7: Archive & Delete Actions */}
           {(onArchiveToggle || onDeleteCase) && (selectedRole === 'admin' || selectedRole === 'lawyer') && (
-            <div className="flex justify-between items-center gap-2 mt-auto pt-2 border-t border-dashed border-[#1e3a5f]/10">
+            <div className="flex justify-between items-center gap-2 mt-auto pt-2 border-t border-dashed border-slate-200/10">
               {/* Archive - Right */}
               {onArchiveToggle ? (
                   <button 
@@ -1007,7 +1007,7 @@ const CaseCard = React.memo(function CaseCard({
           {confirmDialog && confirmDialog.isOpen && (
             <div 
               className={`absolute inset-0 z-50 p-6 flex flex-col justify-between transition-all duration-300 rounded-[1.8rem] backdrop-blur-md border-2 shadow-[0_0_30px_rgba(212,175,55,0.3)] animate-in fade-in ${
-                isHighContrast ? 'bg-[#0a1628]/95 border-amber-400 text-slate-900' : 'bg-black/95 border-amber-500/50 text-white'
+                isHighContrast ? 'bg-white/95 border-amber-400 text-slate-900' : 'bg-black/95 border-amber-500/50 text-white'
               }`}
               onClick={(e) => e.stopPropagation()}
             >
@@ -1043,7 +1043,7 @@ const CaseCard = React.memo(function CaseCard({
                     setConfirmDialog(null);
                   }}
                   className={`px-4 py-2.5 text-xs font-black rounded-xl border transition-all ${
-                    isHighContrast ? 'bg-slate-100 hover:bg-slate-200 text-slate-700 border-[#1e3a5f]' : 'bg-[#0a1628]/10 hover:bg-[#0a1628]/15 text-white/90 border-white/20'
+                    isHighContrast ? 'bg-slate-100 hover:bg-slate-200 text-slate-700 border-slate-300' : 'bg-white/10 hover:bg-white/15 text-white/90 border-white/20'
                   }`}
                 >
                   إلغاء
@@ -1055,15 +1055,15 @@ const CaseCard = React.memo(function CaseCard({
           {/* Hidden high-quality Arabic printable PDF Template */}
           <div
             id={`pdf-report-template-${c.id}`}
-            className="fixed -left-[9999px] top-0 bg-[#0a1628] text-slate-900 p-10 font-sans"
+            className="fixed -left-[9999px] top-0 bg-white text-slate-900 p-10 font-sans"
             style={{ width: '800px', direction: 'rtl' }}
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="border-[6px] border-[#D4AF37] p-6 rounded-2xl relative bg-[#0a1628]">
+            <div className="border-[6px] border-[#D4AF37] p-6 rounded-2xl relative bg-white">
               <div className="border border-[#111827] p-6 rounded-xl relative">
                 
                 {/* Header with National/Government Emblem Style */}
-                <div className="flex justify-between items-start border-b-2 border-[#1e3a5f] pb-6 mb-6">
+                <div className="flex justify-between items-start border-b-2 border-slate-300 pb-6 mb-6">
                   {/* Right side: KSA Details */}
                   <div className="text-right space-y-1 text-xs font-bold text-slate-800">
                     <p className="text-sm font-black text-slate-950">المملكة العربية السعودية</p>
@@ -1100,27 +1100,27 @@ const CaseCard = React.memo(function CaseCard({
 
                 {/* Grid of Case Basic Metadata */}
                 <div className="grid grid-cols-2 gap-4 mb-6 text-sm text-right">
-                  <div className="bg-slate-50 border border-[#1e3a5f] p-3 rounded-xl">
+                  <div className="bg-slate-50 border border-slate-200 p-3 rounded-xl">
                     <span className="text-xs text-slate-500 font-bold block mb-1">رقم القضية</span>
                     <strong className="text-slate-900 font-black text-base">#{c.caseNumber}</strong>
                   </div>
-                  <div className="bg-slate-50 border border-[#1e3a5f] p-3 rounded-xl">
+                  <div className="bg-slate-50 border border-slate-200 p-3 rounded-xl">
                     <span className="text-xs text-slate-500 font-bold block mb-1">نوع القضية</span>
                     <strong className="text-slate-900 font-black text-base">{c.category || 'عامة'}</strong>
                   </div>
-                  <div className="bg-slate-50 border border-[#1e3a5f] p-3 rounded-xl">
+                  <div className="bg-slate-50 border border-slate-200 p-3 rounded-xl">
                     <span className="text-xs text-slate-500 font-bold block mb-1">المحكمة المختصة</span>
                     <strong className="text-slate-900 font-black text-base">{c.courtName || 'غير محدد'}</strong>
                   </div>
-                  <div className="bg-slate-50 border border-[#1e3a5f] p-3 rounded-xl">
+                  <div className="bg-slate-50 border border-slate-200 p-3 rounded-xl">
                     <span className="text-xs text-slate-500 font-bold block mb-1">الدائرة القضائية</span>
                     <strong className="text-slate-900 font-black text-base">{c.circuitNumber || 'غير محدد'}</strong>
                   </div>
                 </div>
 
                 {/* Litigating Parties Box */}
-                <div className="border border-[#1e3a5f] rounded-xl overflow-hidden mb-6 text-sm text-right">
-                  <div className="bg-slate-100 px-4 py-2 border-b border-[#1e3a5f]">
+                <div className="border border-slate-200 rounded-xl overflow-hidden mb-6 text-sm text-right">
+                  <div className="bg-slate-100 px-4 py-2 border-b border-slate-200">
                     <h3 className="font-black text-slate-900">أطراف الخصومة والدعوى</h3>
                   </div>
                   <div className="p-4 grid grid-cols-2 gap-4">
@@ -1136,8 +1136,8 @@ const CaseCard = React.memo(function CaseCard({
                 </div>
 
                 {/* Case Topic / Summary details */}
-                <div className="border border-[#1e3a5f] rounded-xl overflow-hidden mb-6 text-sm text-right">
-                  <div className="bg-slate-100 px-4 py-2 border-b border-[#1e3a5f]">
+                <div className="border border-slate-200 rounded-xl overflow-hidden mb-6 text-sm text-right">
+                  <div className="bg-slate-100 px-4 py-2 border-b border-slate-200">
                     <h3 className="font-black text-slate-900">موضوع ومضمون الدعوى</h3>
                   </div>
                   <div className="p-4 space-y-3">
@@ -1163,8 +1163,8 @@ const CaseCard = React.memo(function CaseCard({
                 </div>
 
                 {/* Upcoming & Past Hearings Section */}
-                <div className="border border-[#1e3a5f] rounded-xl overflow-hidden mb-6 text-sm text-right">
-                  <div className="bg-slate-100 px-4 py-2 border-b border-[#1e3a5f] flex justify-between items-center">
+                <div className="border border-slate-200 rounded-xl overflow-hidden mb-6 text-sm text-right">
+                  <div className="bg-slate-100 px-4 py-2 border-b border-slate-200 flex justify-between items-center">
                     <h3 className="font-black text-slate-900">جدول الجلسات القضائية</h3>
                     <span className="text-xs text-slate-500 font-bold">تاريخ الجلسة القادمة: {c.nextSessionDate || 'غير محدد'}</span>
                   </div>
@@ -1173,7 +1173,7 @@ const CaseCard = React.memo(function CaseCard({
                       <div className="overflow-x-auto">
                         <table className="w-full text-right border-collapse text-xs">
                           <thead>
-                            <tr className="border-b border-[#1e3a5f] text-slate-500 font-bold">
+                            <tr className="border-b border-slate-200 text-slate-500 font-bold">
                               <th className="pb-2">رقم الجلسة</th>
                               <th className="pb-2">تاريخ الجلسة</th>
                               <th className="pb-2">الوقت</th>
@@ -1191,7 +1191,7 @@ const CaseCard = React.memo(function CaseCard({
                                   <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
                                     h.status === 'upcoming' ? 'bg-amber-100 text-amber-800 border border-amber-200' :
                                     h.status === 'completed' ? 'bg-emerald-100 text-emerald-800 border border-emerald-200' :
-                                    'bg-slate-100 text-slate-600 border border-[#1e3a5f]'
+                                    'bg-slate-100 text-slate-600 border border-slate-200'
                                   }`}>
                                     {h.status === 'upcoming' ? 'مجدولة قادمة' :
                                      h.status === 'completed' ? 'منجزة' : 'ملغاة'}
@@ -1215,7 +1215,7 @@ const CaseCard = React.memo(function CaseCard({
                 </div>
 
                 {/* Official Stamp & Signatures Footer */}
-                <div className="flex justify-between items-center mt-12 pt-8 border-t border-[#1e3a5f] text-xs">
+                <div className="flex justify-between items-center mt-12 pt-8 border-t border-slate-200 text-xs">
                   <div className="text-right space-y-1">
                     <p className="text-slate-500 font-bold">المحامـي المسؤول:</p>
                     <p className="text-slate-900 font-black text-sm">{c.lead_lawyer_id || 'مستشار مكتب العدالة الرئيسي'}</p>
@@ -1245,7 +1245,7 @@ const CaseCard = React.memo(function CaseCard({
         {/* --- QUICK NOTE FLOATING POPOVER (OVERLAY HUD) --- */}
         {isNotePopoverOpen && (
           <div 
-            className="absolute inset-0 z-50 p-6 flex flex-col justify-between transition-all duration-300 text-slate-900 rounded-[1.8rem] bg-[#0a1628]/95 backdrop-blur-md"
+            className="absolute inset-0 z-50 p-6 flex flex-col justify-between transition-all duration-300 text-slate-900 rounded-[1.8rem] bg-white/95 backdrop-blur-md"
             style={{
               border: '2px solid #f59e0b',
               boxShadow: '0 25px 55px rgba(0, 0, 0, 0.15)'
@@ -1255,7 +1255,7 @@ const CaseCard = React.memo(function CaseCard({
           >
             <div className="space-y-3 flex-1 flex flex-col justify-between">
               <div>
-                <div className="flex items-center justify-between border-b border-[#1e3a5f] pb-1.5 mb-2">
+                <div className="flex items-center justify-between border-b border-slate-200 pb-1.5 mb-2">
                   <span className="text-[13px] font-black text-amber-600 flex items-center gap-1.5">
                     📝 ملاحظة سريعة جديدة
                   </span>
@@ -1278,7 +1278,7 @@ const CaseCard = React.memo(function CaseCard({
                 </div>
               ) : (
                 <textarea
-                  className="w-full flex-1 p-2.5 text-xs bg-slate-50 border border-[#1e3a5f] rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 text-right font-extrabold resize-none"
+                  className="w-full flex-1 p-2.5 text-xs bg-slate-50 border border-slate-300 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 text-right font-extrabold resize-none"
                   placeholder="مثال: تم مراجعة الجلسة اليوم وسنقدم المذكرة غداً مرافعة..."
                   value={quickNoteText}
                   onChange={(e) => setQuickNoteText(e.target.value)}
@@ -1289,7 +1289,7 @@ const CaseCard = React.memo(function CaseCard({
             </div>
 
             {!noteSavedSuccessfully && (
-              <div className="border-t border-[#1e3a5f] pt-2 flex items-center justify-between gap-3 mt-2">
+              <div className="border-t border-slate-200 pt-2 flex items-center justify-between gap-3 mt-2">
                 <button
                   type="button"
                   onClick={handleSaveQuickNote}
@@ -1302,7 +1302,7 @@ const CaseCard = React.memo(function CaseCard({
                   type="button"
                   onClick={() => setIsNotePopoverOpen(false)}
                   disabled={isSavingNote}
-                  className="px-4 py-2 text-sm font-black rounded-xl bg-[#0a1628] border border-[#1e3a5f] text-slate-600 hover:bg-slate-50 transition-all outline-none"
+                  className="px-4 py-2 text-sm font-black rounded-xl bg-white border border-slate-300 text-slate-600 hover:bg-slate-50 transition-all outline-none"
                 >
                   إلغاء
                 </button>

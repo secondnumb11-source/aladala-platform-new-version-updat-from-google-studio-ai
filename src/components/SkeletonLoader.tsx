@@ -28,7 +28,7 @@ export const SkeletonLoader = () => {
           <motion.div 
             key={i}
             initial={{ opacity: 0.5 }} animate={{ opacity: 1 }} transition={{ repeat: Infinity, duration: 1, repeatType: "reverse", delay: i * 0.1 }}
-            className="p-5 rounded-2xl bg-[#0a1628] dark:bg-slate-900 border border-slate-100 dark:border-slate-800 shadow-sm space-y-4"
+            className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 shadow-sm space-y-4"
           >
             <div className="flex justify-between items-start">
               <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-800" />
@@ -46,7 +46,7 @@ export const SkeletonLoader = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <motion.div 
           initial={{ opacity: 0.5 }} animate={{ opacity: 1 }} transition={{ repeat: Infinity, duration: 1.5, repeatType: "reverse" }}
-          className="lg:col-span-2 rounded-2xl bg-[#0a1628] dark:bg-slate-900 border border-slate-100 dark:border-slate-800 p-6 min-h-[300px] space-y-4"
+          className="lg:col-span-2 rounded-2xl bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 p-6 min-h-[300px] space-y-4"
         >
           <div className="w-1/3 h-6 bg-slate-200 dark:bg-slate-800 rounded-md mb-6" />
           {[...Array(5)].map((_, i) => (
@@ -62,7 +62,7 @@ export const SkeletonLoader = () => {
         
         <motion.div 
           initial={{ opacity: 0.5 }} animate={{ opacity: 1 }} transition={{ repeat: Infinity, duration: 1.5, repeatType: "reverse", delay: 0.3 }}
-          className="rounded-2xl bg-[#0a1628] dark:bg-slate-900 border border-slate-100 dark:border-slate-800 p-6 min-h-[300px] space-y-4"
+          className="rounded-2xl bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 p-6 min-h-[300px] space-y-4"
         >
           <div className="w-1/2 h-6 bg-slate-200 dark:bg-slate-800 rounded-md mb-6" />
           {[...Array(4)].map((_, i) => (
