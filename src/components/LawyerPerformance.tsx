@@ -473,7 +473,7 @@ export default function LawyerPerformance({ cases: propCases }: LawyerPerformanc
           </div>
           
           <div className="flex flex-wrap gap-3 items-center">
-            <div className="flex flex-col bg-white border border-slate-200 p-3 rounded-2xl shadow-sm min-w-[240px]">
+            <div className="flex flex-col bg-[#0a1628] border border-[#1e3a5f] p-3 rounded-2xl shadow-sm min-w-[240px]">
               <span className="text-[10px] text-slate-200 font-bold block mb-1 font-black uppercase">عرض تقرير:</span>
               <select
                 value={selectedEmployee}
@@ -502,7 +502,7 @@ export default function LawyerPerformance({ cases: propCases }: LawyerPerformanc
       {/* KPI Stats Banners */}
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-5">
         
-        <div className="bg-white border border-slate-200 p-6 rounded-3xl space-y-2 shadow-sm transition-shadow group">
+        <div className="bg-[#0a1628] border border-[#1e3a5f] p-6 rounded-3xl space-y-2 shadow-sm transition-shadow group">
           <div className="flex items-center justify-between">
             <span className="text-xs text-slate-700 font-black">القضايا المنجزة</span>
             <div className="p-2 bg-blue-50 text-blue-600 rounded-xl transition-all">
@@ -516,7 +516,7 @@ export default function LawyerPerformance({ cases: propCases }: LawyerPerformanc
           </div>
         </div>
 
-        <div className="bg-white border border-slate-200 p-6 rounded-3xl space-y-2 shadow-sm transition-shadow group">
+        <div className="bg-[#0a1628] border border-[#1e3a5f] p-6 rounded-3xl space-y-2 shadow-sm transition-shadow group">
           <div className="flex items-center justify-between">
             <span className="text-xs text-slate-700 font-black">إنجاز المهام</span>
             <div className="p-2 bg-emerald-50 text-emerald-600 rounded-xl transition-all">
@@ -527,7 +527,7 @@ export default function LawyerPerformance({ cases: propCases }: LawyerPerformanc
           <span className="text-[10px] text-slate-200 font-bold font-bold">مهام قانونية محققة</span>
         </div>
 
-        <div className="bg-white border border-slate-200 p-6 rounded-3xl space-y-2 shadow-sm transition-shadow group">
+        <div className="bg-[#0a1628] border border-[#1e3a5f] p-6 rounded-3xl space-y-2 shadow-sm transition-shadow group">
           <div className="flex items-center justify-between">
             <span className="text-xs text-slate-700 font-black">تقييم الخدمة</span>
             <div className="p-2 bg-amber-50 text-amber-400 font-black rounded-xl transition-all">
@@ -541,7 +541,7 @@ export default function LawyerPerformance({ cases: propCases }: LawyerPerformanc
           <span className="text-[10px] text-slate-200 font-bold font-bold">رضا الموكلين التراكمي</span>
         </div>
 
-        <div className="bg-white border border-slate-200 p-6 rounded-3xl space-y-2 shadow-sm transition-shadow group">
+        <div className="bg-[#0a1628] border border-[#1e3a5f] p-6 rounded-3xl space-y-2 shadow-sm transition-shadow group">
           <div className="flex items-center justify-between">
             <span className="text-xs text-slate-700 font-black">الفوترة المهنية</span>
             <div className="p-2 bg-indigo-50 text-indigo-600 rounded-xl transition-all">
@@ -552,7 +552,7 @@ export default function LawyerPerformance({ cases: propCases }: LawyerPerformanc
           <span className="text-[10px] text-slate-200 font-bold font-bold">ساعة استشارية معتمدة</span>
         </div>
 
-        <div className="bg-white border border-slate-200 p-6 rounded-3xl space-y-2 shadow-sm transition-shadow group">
+        <div className="bg-[#0a1628] border border-[#1e3a5f] p-6 rounded-3xl space-y-2 shadow-sm transition-shadow group">
           <div className="flex items-center justify-between">
             <span className="text-xs text-slate-700 font-black">الخلايا النشطة</span>
             <div className="p-2 bg-rose-50 text-rose-600 rounded-xl transition-all">
@@ -572,7 +572,7 @@ export default function LawyerPerformance({ cases: propCases }: LawyerPerformanc
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         
         {/* Performance Trend Chart - 8 Columns */}
-        <div className="lg:col-span-8 bg-white border border-slate-200 p-8 rounded-[2rem] space-y-6 shadow-sm">
+        <div className="lg:col-span-8 bg-[#0a1628] border border-[#1e3a5f] p-8 rounded-[2rem] space-y-6 shadow-sm">
           <div className="flex items-center justify-between border-b border-slate-50 pb-6">
             <div className="flex items-center gap-3">
               <div className="p-2.5 bg-slate-100 rounded-2xl">
@@ -668,7 +668,7 @@ export default function LawyerPerformance({ cases: propCases }: LawyerPerformanc
         </div>
 
         {/* Categories Breakdown - 4 Columns */}
-        <div className="lg:col-span-4 bg-white border border-slate-200 p-8 rounded-[2rem] space-y-6 shadow-sm flex flex-col items-center justify-center">
+        <div className="lg:col-span-4 bg-[#0a1628] border border-[#1e3a5f] p-8 rounded-[2rem] space-y-6 shadow-sm flex flex-col items-center justify-center">
           <div className="text-center w-full space-y-2 border-b border-slate-50 pb-6 mb-2">
             <h3 className="text-sm font-black text-slate-900 uppercase">توزيع دعاوى المكتب</h3>
             <p className="text-[10px] text-slate-200 font-bold font-bold">بناءً على التخصصات النشطة حالياً</p>
@@ -715,7 +715,7 @@ export default function LawyerPerformance({ cases: propCases }: LawyerPerformanc
         </div>
 
         {/* Appraisal Radar Section */}
-        <div className="lg:col-span-12 bg-white border border-blue-100 p-10 rounded-[3rem] shadow-xl shadow-blue-900/5 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center mt-8">
+        <div className="lg:col-span-12 bg-[#0a1628] border border-blue-100 p-10 rounded-[3rem] shadow-xl shadow-blue-900/5 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center mt-8">
           <div className="space-y-6">
             <div className="inline-flex items-center gap-2 bg-blue-50 px-4 py-2 rounded-2xl border border-blue-100">
                <Award className="w-5 h-5 text-blue-600" />
@@ -768,7 +768,7 @@ export default function LawyerPerformance({ cases: propCases }: LawyerPerformanc
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         
         {/* CHART 3: Workload Caseload Recharts Bar Chart */}
-        <div className="bg-white border border-slate-200 p-8 rounded-[2rem] space-y-6 shadow-sm">
+        <div className="bg-[#0a1628] border border-[#1e3a5f] p-8 rounded-[2rem] space-y-6 shadow-sm">
           <div className="flex items-center gap-3 border-b border-slate-50 pb-6">
             <div className="p-2.5 bg-slate-100 rounded-2xl">
                <Layers className="w-5 h-5 text-slate-900" />
@@ -818,7 +818,7 @@ export default function LawyerPerformance({ cases: propCases }: LawyerPerformanc
 
         {/* ROW 3: Monthly Efficiency Analysis & Closure Speed */}
         <div className="lg:col-span-12 grid grid-cols-1 md:grid-cols-2 gap-8">
-          <div className="bg-white border border-slate-200 p-8 rounded-[2rem] space-y-6 shadow-sm">
+          <div className="bg-[#0a1628] border border-[#1e3a5f] p-8 rounded-[2rem] space-y-6 shadow-sm">
             <div className="flex items-center justify-between border-b border-slate-50 pb-6">
               <div className="flex items-center gap-3">
                 <div className="p-2.5 bg-blue-50 rounded-2xl">
@@ -847,7 +847,7 @@ export default function LawyerPerformance({ cases: propCases }: LawyerPerformanc
             </div>
           </div>
 
-          <div className="bg-white border border-slate-200 p-8 rounded-[2rem] space-y-6 shadow-sm">
+          <div className="bg-[#0a1628] border border-[#1e3a5f] p-8 rounded-[2rem] space-y-6 shadow-sm">
             <div className="flex items-center justify-between border-b border-slate-50 pb-6">
               <div className="flex items-center gap-3">
                 <div className="p-2.5 bg-emerald-50 rounded-2xl">
@@ -885,7 +885,7 @@ export default function LawyerPerformance({ cases: propCases }: LawyerPerformanc
       {/* AI Success Predictor & Highlights Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* AI Success Predictor - New Feature based on JudicialObservatory precedents */}
-        <div className="bg-white border border-slate-200 p-8 rounded-[2rem] space-y-6 shadow-sm relative overflow-hidden">
+        <div className="bg-[#0a1628] border border-[#1e3a5f] p-8 rounded-[2rem] space-y-6 shadow-sm relative overflow-hidden">
           <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 blur-3xl pointer-events-none"></div>
           
           <div className="flex items-center gap-3 border-b border-slate-50 pb-6 relative z-10">
@@ -904,7 +904,7 @@ export default function LawyerPerformance({ cases: propCases }: LawyerPerformanc
               <select 
                 value={targetCaseCategory}
                 onChange={(e) => setTargetCaseCategory(e.target.value)}
-                className="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl text-xs font-black text-slate-900 outline-none focus:border-primary transition-all"
+                className="w-full bg-slate-50 border border-[#1e3a5f] p-3 rounded-xl text-xs font-black text-slate-900 outline-none focus:border-primary transition-all"
               >
                 <option value="commercial">نزاع تجاري (عقود وتوريد)</option>
                 <option value="labor">قضية عمالية (فصل أو مستحقات)</option>
@@ -932,7 +932,7 @@ export default function LawyerPerformance({ cases: propCases }: LawyerPerformanc
             </button>
 
             {predictionResult && (
-              <div className="bg-slate-50 border border-slate-200 p-5 rounded-2xl animate-fade-in space-y-4">
+              <div className="bg-slate-50 border border-[#1e3a5f] p-5 rounded-2xl animate-fade-in space-y-4">
                 <div className="flex justify-between items-center">
                   <span className="text-[10px] font-black text-slate-700 uppercase">احتمالية الفوز المقدرة:</span>
                   <span className={`text-xl font-black ${predictionResult.probability > 70 ? 'text-emerald-600' : 'text-amber-400 font-black'}`}>
@@ -952,7 +952,7 @@ export default function LawyerPerformance({ cases: propCases }: LawyerPerformanc
                   {predictionResult.reason}
                 </p>
                 
-                <div className="text-[11px] text-slate-200 font-bold font-bold border-t border-slate-200 pt-3">
+                <div className="text-[11px] text-slate-200 font-bold font-bold border-t border-[#1e3a5f] pt-3">
                   * هذا التقدير استرشادي بناءً على تحليل إحصائي للأنظمة واللوائح المسجلة بمرصد الأنظمة.
                 </div>
               </div>
@@ -1027,7 +1027,7 @@ export default function LawyerPerformance({ cases: propCases }: LawyerPerformanc
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {kpiData?.employeePerformance?.slice(0, 8).map((emp: any) => (
-            <div key={emp.id} className="bg-white border-2 border-slate-100 p-6 rounded-[2.5rem] shadow-sm hover:shadow-xl hover:border-indigo-200 transition-all group relative overflow-hidden">
+            <div key={emp.id} className="bg-[#0a1628] border-2 border-slate-100 p-6 rounded-[2.5rem] shadow-sm hover:shadow-xl hover:border-indigo-200 transition-all group relative overflow-hidden">
               <div className="absolute top-0 left-0 w-24 h-24 bg-indigo-500/5 blur-[40px] -ml-12 -mt-12 group-hover:bg-indigo-500/10 transition-all"></div>
               
               <div className="flex justify-between items-start mb-6 border-b border-slate-50 pb-4 relative z-10">
@@ -1091,12 +1091,12 @@ export default function LawyerPerformance({ cases: propCases }: LawyerPerformanc
       </div>
 
       {/* Lawyers List Grid */}
-      <div className="bg-sky-50 border border-slate-200 rounded-2xl p-6 shadow-sm">
-        <h3 className="text-sm font-black text-slate-900 border-b border-slate-200 pb-3 mb-4">قائمة المستشارين القانونيين النشطين بالمكتب</h3>
+      <div className="bg-sky-50 border border-[#1e3a5f] rounded-2xl p-6 shadow-sm">
+        <h3 className="text-sm font-black text-slate-900 border-b border-[#1e3a5f] pb-3 mb-4">قائمة المستشارين القانونيين النشطين بالمكتب</h3>
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {(kpiData?.employeePerformance || []).filter((l: any) => selectedEmployee === "all" || l.id === selectedEmployee).map((l: any) => (
-            <div key={l.id} className="bg-white border border-slate-200 p-4 rounded-xl space-y-4 shadow-sm relative">
+            <div key={l.id} className="bg-[#0a1628] border border-[#1e3a5f] p-4 rounded-xl space-y-4 shadow-sm relative">
               <div className="flex items-center gap-3">
                 <span className="text-2xl filter drop-shadow">👨‍⚖️</span>
                 <div className="text-right">
@@ -1130,7 +1130,7 @@ export default function LawyerPerformance({ cases: propCases }: LawyerPerformanc
       </div>
 
       {/* Employee Performance Narratives Section */}
-      <div className="bg-white border border-slate-200 p-8 rounded-[2rem] shadow-sm space-y-6 mt-8">
+      <div className="bg-[#0a1628] border border-[#1e3a5f] p-8 rounded-[2rem] shadow-sm space-y-6 mt-8">
         <div className="flex items-center gap-3 border-b border-slate-100 pb-5">
           <div className="p-2.5 bg-indigo-50 rounded-2xl text-indigo-600">
             <Sparkles className="w-5 h-5" />
@@ -1180,7 +1180,7 @@ function EmployeeNarrativeCard({ employee }: { employee: any }) {
   }, [employee]);
 
   return (
-    <div className="bg-slate-50 border border-slate-200 rounded-2xl p-5 hover:border-indigo-400 transition-all flex flex-col h-full group">
+    <div className="bg-slate-50 border border-[#1e3a5f] rounded-2xl p-5 hover:border-indigo-400 transition-all flex flex-col h-full group">
       <div className="flex items-center gap-3 mb-4">
         <div className="w-10 h-10 rounded-full bg-indigo-100 border border-indigo-200 flex items-center justify-center text-indigo-700 font-black shrink-0">
           {employee.name.charAt(0)}
@@ -1204,7 +1204,7 @@ function EmployeeNarrativeCard({ employee }: { employee: any }) {
         )}
       </div>
 
-      <div className="mt-4 pt-4 border-t border-slate-200 grid grid-cols-3 gap-2">
+      <div className="mt-4 pt-4 border-t border-[#1e3a5f] grid grid-cols-3 gap-2">
         <div className="text-center">
           <span className="block text-[10px] text-slate-500 font-bold">المهام</span>
           <span className="text-xs font-black text-slate-900">{employee.completedTasks}/{employee.totalTasks}</span>

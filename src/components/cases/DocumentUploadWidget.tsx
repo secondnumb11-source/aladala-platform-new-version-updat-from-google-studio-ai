@@ -114,7 +114,7 @@ export default function DocumentUploadWidget({ caseId, onUploadComplete }: Docum
   };
 
   return (
-    <div className="bg-white border-2 border-slate-100 rounded-3xl p-6 shadow-sm font-sans" dir="rtl">
+    <div className="bg-[#0a1628] border-2 border-slate-100 rounded-3xl p-6 shadow-sm font-sans" dir="rtl">
       <div className="flex items-center gap-3 mb-6">
         <div className="p-2.5 bg-emerald-50 text-emerald-600 rounded-xl">
           <Paperclip className="w-5 h-5" />
@@ -135,7 +135,7 @@ export default function DocumentUploadWidget({ caseId, onUploadComplete }: Docum
               className={`text-xs px-3 py-1.5 rounded-lg border font-black transition-all ${
                 fileCategory === cat.id
                   ? 'bg-emerald-50 text-emerald-700 border-emerald-300'
-                  : 'bg-white text-slate-500 border-slate-200 hover:bg-slate-50'
+                  : 'bg-[#0a1628] text-slate-500 border-[#1e3a5f] hover:bg-slate-50'
               }`}
             >
               {cat.label}
@@ -144,7 +144,7 @@ export default function DocumentUploadWidget({ caseId, onUploadComplete }: Docum
         </div>
 
         {/* File Dropzone / Selector */}
-        <div className="relative border-2 border-dashed border-slate-200 rounded-2xl p-6 hover:bg-slate-50 transition-colors flex flex-col items-center justify-center text-center group">
+        <div className="relative border-2 border-dashed border-[#1e3a5f] rounded-2xl p-6 hover:bg-slate-50 transition-colors flex flex-col items-center justify-center text-center group">
           <input
             type="file"
             onChange={handleFileChange}

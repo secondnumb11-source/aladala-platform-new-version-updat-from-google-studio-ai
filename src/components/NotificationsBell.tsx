@@ -10,7 +10,7 @@ const NotificationItem = ({ notif, handleMarkAsRead, setIsOpen, getTypeStyles }:
   if (notif.title.includes('فاتورة') || notif.action === 'finance') {
     categoryTag = { label: 'مالي', color: 'text-[#ff7f00] bg-[#ff7f00]/10 border-[#ff7f00]/30' };
   } else if (notif.title.includes('جلسة') || notif.title.includes('حكم') || notif.title.includes('قضية')) {
-    categoryTag = { label: 'قانوني', color: 'text-white bg-white/10 border-white/20' };
+    categoryTag = { label: 'قانوني', color: 'text-white bg-[#0a1628]/10 border-white/20' };
   }
 
   // Override type styles for ultimate high contrast: White, Yellow, Orange
@@ -18,7 +18,7 @@ const NotificationItem = ({ notif, handleMarkAsRead, setIsOpen, getTypeStyles }:
     switch (type) {
       case 'urgent': return 'bg-[#ff7f00] text-slate-950 border-[#ff7f00] font-black';
       case 'warning': return 'bg-[#facc15] text-slate-950 border-[#facc15] font-black';
-      case 'success': return 'bg-white text-slate-950 border-white font-black';
+      case 'success': return 'bg-[#0a1628] text-slate-950 border-white font-black';
       default: return 'bg-slate-800 text-white border-slate-700 font-bold';
     }
   };

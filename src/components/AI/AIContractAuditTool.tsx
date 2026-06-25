@@ -143,7 +143,7 @@ export default function AIContractAuditTool() {
       {activeTab === 'drafting' ? (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           <div className="lg:col-span-8 space-y-6">
-            <div className="bg-white border border-slate-200 p-8 rounded-[2.5rem] shadow-sm">
+            <div className="bg-[#0a1628] border border-[#1e3a5f] p-8 rounded-[2.5rem] shadow-sm">
               <div className="flex items-center gap-4 mb-8">
                 <div className="p-3 bg-amber-500/10 text-amber-500 rounded-2xl shadow-inner border border-amber-500/20">
                   <Wand2 className="w-6 h-6" />
@@ -161,7 +161,7 @@ export default function AIContractAuditTool() {
                     title="contract type"
                     value={contractType}
                     onChange={(e) => setContractType(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-xs font-bold text-slate-900 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-all font-sans"
+                    className="w-full bg-slate-50 border border-[#1e3a5f] rounded-xl px-4 py-3 text-xs font-bold text-slate-900 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-all font-sans"
                   >
                     {contractTypes.map(type => (
                       <option key={type} value={type}>{type}</option>
@@ -178,7 +178,7 @@ export default function AIContractAuditTool() {
                     value={contractFacts}
                     onChange={(e) => setContractFacts(e.target.value)}
                     placeholder="مثال: يرجى صياغة عقد عمل لموظف في تقنية المعلومات، الراتب الأساسي 10 آلاف، فترة تجربة 90 يوم، مع إضافة بند عدم منافسة لمدة سنتين في منطقة الرياض..."
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-xs font-bold leading-relaxed text-slate-900 h-32 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 custom-scrollbar resize-none"
+                    className="w-full bg-slate-50 border border-[#1e3a5f] rounded-xl px-4 py-3 text-xs font-bold leading-relaxed text-slate-900 h-32 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 custom-scrollbar resize-none"
                   ></textarea>
                 </div>
 
@@ -217,14 +217,14 @@ export default function AIContractAuditTool() {
           </div>
 
           <div className="lg:col-span-4 space-y-6">
-            <div className="bg-slate-50 border border-slate-200 p-6 rounded-[2.5rem] shadow-sm space-y-4">
+            <div className="bg-slate-50 border border-[#1e3a5f] p-6 rounded-[2.5rem] shadow-sm space-y-4">
               <div className="flex items-center gap-2 mb-4">
                 <BookOpen className="w-5 h-5 text-indigo-500" />
                 <h3 className="font-black text-slate-900 text-sm">مكتبة النماذج الجاهزة</h3>
               </div>
               <div className="space-y-3">
                 {contractTemplates.map((tpl, i) => (
-                  <button key={i} className="w-full text-right bg-white p-4 rounded-2xl border border-slate-100 shadow-sm transition-all group">
+                  <button key={i} className="w-full text-right bg-[#0a1628] p-4 rounded-2xl border border-slate-100 shadow-sm transition-all group">
                     <div className="flex justify-between items-start mb-1">
                       <h4 className="text-xs font-black text-slate-900 transition-colors">{tpl.title}</h4>
                       <span className="text-[11px] bg-slate-100 text-slate-700 px-2 py-0.5 rounded font-black">{tpl.type}</span>
@@ -238,9 +238,9 @@ export default function AIContractAuditTool() {
         </div>
       ) : (
         /* Audit Tool Formly the same */
-        <div className="bg-white border border-slate-200 p-8 rounded-[2.5rem] shadow-sm">
+        <div className="bg-[#0a1628] border border-[#1e3a5f] p-8 rounded-[2.5rem] shadow-sm">
           {!auditResult ? (
-            <div className="flex flex-col items-center justify-center p-12 border-2 border-dashed border-slate-200 rounded-[2.5rem] bg-slate-50 transition-all group cursor-pointer relative overflow-hidden h-[400px]">
+            <div className="flex flex-col items-center justify-center p-12 border-2 border-dashed border-[#1e3a5f] rounded-[2.5rem] bg-slate-50 transition-all group cursor-pointer relative overflow-hidden h-[400px]">
               {isAnalyzing ? (
                 <div className="flex flex-col items-center gap-6">
                   <div className="relative">
@@ -261,7 +261,7 @@ export default function AIContractAuditTool() {
                 </div>
               ) : (
                 <>
-                  <div className="p-6 bg-white rounded-full shadow-xl mb-6 transition-transform">
+                  <div className="p-6 bg-[#0a1628] rounded-full shadow-xl mb-6 transition-transform">
                     <Upload className="w-10 h-10 text-slate-200 font-bold transition-colors" />
                   </div>
                   <h3 className="text-lg font-black text-slate-900 mb-2">اسحب عقد العمل هنا (PDF/Image)</h3>
@@ -301,7 +301,7 @@ export default function AIContractAuditTool() {
                           {finding.severity === 'high' ? <ShieldAlert className="w-5 h-5" /> : <AlertTriangle className="w-5 h-5" />}
                           <span className="text-[11px] font-black uppercase tracking-widest">مستوى الخطر: {finding.severity === 'high' ? 'عالي جداً' : 'متوسط'}</span>
                         </div>
-                        <span className="text-[10px] bg-white/50 px-3 py-1 rounded-full font-bold border border-current opacity-70">{finding.lawReference}</span>
+                        <span className="text-[10px] bg-[#0a1628]/50 px-3 py-1 rounded-full font-bold border border-current opacity-70">{finding.lawReference}</span>
                       </div>
 
                       <div className="space-y-3">
@@ -309,7 +309,7 @@ export default function AIContractAuditTool() {
                           <p className="text-[10px] font-black opacity-60 mb-1">النص المكتشف في العقد:</p>
                           <p className="text-xs font-black leading-relaxed italic">"{finding.clause}"</p>
                         </div>
-                        <div className="bg-white/40 p-4 rounded-2xl border border-current/10">
+                        <div className="bg-[#0a1628]/40 p-4 rounded-2xl border border-current/10">
                           <p className="text-[11px] font-black mb-1 flex items-center gap-2">
                             <Info className="w-3.5 h-3.5" />
                             المشكلة القانونية:
@@ -317,7 +317,7 @@ export default function AIContractAuditTool() {
                           <p className="text-[11px] leading-relaxed font-bold opacity-90">{finding.issue}</p>
                         </div>
                         <div className="flex items-center gap-3">
-                          <div className="p-2 bg-white rounded-xl">
+                          <div className="p-2 bg-[#0a1628] rounded-xl">
                             <CheckCircle2 className="w-4 h-4" />
                           </div>
                           <div>
@@ -334,14 +334,14 @@ export default function AIContractAuditTool() {
               <div className="lg:col-span-4 space-y-6">
                 <div className="bg-slate-900 p-8 rounded-[2.5rem] shadow-2xl relative overflow-hidden">
                   <div className="relative z-10 space-y-6 text-center">
-                    <div className="w-24 h-24 mx-auto border-4 border-amber-500 rounded-full flex items-center justify-center bg-white/10">
+                    <div className="w-24 h-24 mx-auto border-4 border-amber-500 rounded-full flex items-center justify-center bg-[#0a1628]/10">
                       <span className="text-3xl font-black text-amber-500">% {auditResult.score}</span>
                     </div>
                     <div>
                       <h4 className="text-white font-black text-sm mb-2">مؤشر الامتثال النظامي</h4>
                       <p className="text-zinc-300 font-extrabold text-[11px] leading-relaxed">{auditResult.summary}</p>
                     </div>
-                    <button className="w-full bg-white text-slate-950 py-3 rounded-2xl text-xs font-black shadow-lg transition-all">تحميل تقرير التوافق (PDF)</button>
+                    <button className="w-full bg-[#0a1628] text-slate-950 py-3 rounded-2xl text-xs font-black shadow-lg transition-all">تحميل تقرير التوافق (PDF)</button>
                   </div>
                   <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/10 blur-3xl rounded-full -translate-y-16 translate-x-16"></div>
                 </div>

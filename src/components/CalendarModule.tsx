@@ -1017,9 +1017,9 @@ export default function CalendarModule({
 
 
           {/* Interactive Quick Add Commitment & Real-time Conflict Analyzer Form */}
-          <div className="bg-slate-50 border-2 border-slate-200 rounded-2xl p-6 space-y-6 text-slate-900 shadow-2xl relative overflow-hidden">
+          <div className="bg-slate-50 border-2 border-[#1e3a5f] rounded-2xl p-6 space-y-6 text-slate-900 shadow-2xl relative overflow-hidden">
             <div className="absolute top-0 left-0 w-1 h-full bg-amber-500"></div>
-            <div className="flex items-center gap-3 border-b border-slate-200 pb-4">
+            <div className="flex items-center gap-3 border-b border-[#1e3a5f] pb-4">
               <Sparkles className="w-5 h-5 text-amber-400 font-black animate-pulse" />
               <h2 className="text-sm font-black text-slate-900 uppercase tracking-tight">إضافة التزام قضائي وفحص التعارض الفوري</h2>
             </div>
@@ -1030,7 +1030,7 @@ export default function CalendarModule({
 
             <form onSubmit={handleAddNewCommitment} className="space-y-4">
               {/* Type selector */}
-              <div className="grid grid-cols-2 gap-2 bg-slate-200/50 p-1 rounded-xl border border-slate-200">
+              <div className="grid grid-cols-2 gap-2 bg-slate-200/50 p-1 rounded-xl border border-[#1e3a5f]">
                 <button
                   type="button"
                   onClick={() => setNewCommType("hearing")}
@@ -1066,7 +1066,7 @@ export default function CalendarModule({
                   placeholder={newCommType === "hearing" ? "مثال: مرافعة بطلان عقد توريد" : "مثال: اجتماع عمل استشاري"}
                   value={newTitle}
                   onChange={(e) => setNewTitle(e.target.value)}
-                  className="w-full bg-white border-2 border-slate-200 text-xs py-2.5 px-3.5 rounded-xl text-slate-900 outline-none focus:border-amber-500 transition-all font-sans text-right placeholder-slate-400 shadow-sm"
+                  className="w-full bg-[#0a1628] border-2 border-[#1e3a5f] text-xs py-2.5 px-3.5 rounded-xl text-slate-900 outline-none focus:border-amber-500 transition-all font-sans text-right placeholder-slate-400 shadow-sm"
                 />
               </div>
 
@@ -1079,7 +1079,7 @@ export default function CalendarModule({
                     placeholder="مثال: شركة سابك"
                     value={newClient}
                     onChange={(e) => setNewClient(e.target.value)}
-                    className="w-full bg-white border-2 border-slate-200 text-xs py-2.5 px-3 rounded-xl text-slate-900 outline-none focus:border-amber-500 transition-all font-sans text-right placeholder-slate-400 shadow-sm"
+                    className="w-full bg-[#0a1628] border-2 border-[#1e3a5f] text-xs py-2.5 px-3 rounded-xl text-slate-900 outline-none focus:border-amber-500 transition-all font-sans text-right placeholder-slate-400 shadow-sm"
                   />
                 </div>
                 <div className="space-y-1.5">
@@ -1089,7 +1089,7 @@ export default function CalendarModule({
                     placeholder="شريك أول"
                     value={newLawyer}
                     onChange={(e) => setNewLawyer(e.target.value)}
-                    className="w-full bg-white border-2 border-slate-200 text-xs py-2.5 px-3 rounded-xl text-slate-900 outline-none focus:border-amber-500 transition-all font-sans text-right placeholder-slate-400 shadow-sm"
+                    className="w-full bg-[#0a1628] border-2 border-[#1e3a5f] text-xs py-2.5 px-3 rounded-xl text-slate-900 outline-none focus:border-amber-500 transition-all font-sans text-right placeholder-slate-400 shadow-sm"
                   />
                 </div>
               </div>
@@ -1102,7 +1102,7 @@ export default function CalendarModule({
                   placeholder="المحكمة التجارية بالرياض - الدائرة الثالثة"
                   value={newCourt}
                   onChange={(e) => setNewCourt(e.target.value)}
-                  className="w-full bg-white border-2 border-slate-200 text-xs py-2.5 px-3.5 rounded-xl text-slate-900 outline-none focus:border-amber-500 transition-all font-sans text-right placeholder-slate-400 shadow-sm"
+                  className="w-full bg-[#0a1628] border-2 border-[#1e3a5f] text-xs py-2.5 px-3.5 rounded-xl text-slate-900 outline-none focus:border-amber-500 transition-all font-sans text-right placeholder-slate-400 shadow-sm"
                 />
               </div>
 
@@ -1115,7 +1115,7 @@ export default function CalendarModule({
                     required
                     value={newDate}
                     onChange={(e) => setNewDate(e.target.value)}
-                    className="w-full bg-white border-2 border-slate-200 text-xs py-2 px-2 rounded-xl text-slate-900 outline-none focus:border-amber-500 transition-all font-mono text-center shadow-sm"
+                    className="w-full bg-[#0a1628] border-2 border-[#1e3a5f] text-xs py-2 px-2 rounded-xl text-slate-900 outline-none focus:border-amber-500 transition-all font-mono text-center shadow-sm"
                   />
                 </div>
                 <div className="space-y-1.5">
@@ -1123,7 +1123,7 @@ export default function CalendarModule({
                   <select
                     value={newTime}
                     onChange={(e) => setNewTime(e.target.value)}
-                    className="w-full bg-white border-2 border-slate-200 text-xs py-2.5 px-2 rounded-xl text-slate-900 outline-none focus:border-amber-500 transition-all font-sans text-center shadow-sm"
+                    className="w-full bg-[#0a1628] border-2 border-[#1e3a5f] text-xs py-2.5 px-2 rounded-xl text-slate-900 outline-none focus:border-amber-500 transition-all font-sans text-center shadow-sm"
                   >
                     <option value="08:00 صباحاً">08:00 صباحاً</option>
                     <option value="09:00 صباحاً">09:00 صباحاً</option>
@@ -1188,7 +1188,7 @@ export default function CalendarModule({
               <h3 className="text-base font-black text-yellow-400">تعديل موعد الجلسة</h3>
               <button 
                 onClick={() => setEditingHearing(null)}
-                className="text-slate-400 hover:text-white font-bold p-1 hover:bg-white/10 rounded-lg transition-all cursor-pointer"
+                className="text-slate-400 hover:text-white font-bold p-1 hover:bg-[#0a1628]/10 rounded-lg transition-all cursor-pointer"
               >
                 ✕
               </button>

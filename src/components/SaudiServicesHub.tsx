@@ -325,13 +325,13 @@ export default function SaudiServicesHub({
 
       {/* Modern High-End Tab Navigation */}
       {!initialTab && (
-        <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4 border-b border-slate-200 pb-3">
-        <div className="flex p-1 bg-slate-100 rounded-2xl w-full xl:max-w-3xl border border-slate-200 overflow-x-auto hide-scrollbar">
+        <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4 border-b border-[#1e3a5f] pb-3">
+        <div className="flex p-1 bg-slate-100 rounded-2xl w-full xl:max-w-3xl border border-[#1e3a5f] overflow-x-auto hide-scrollbar">
           <button
             onClick={() => setActiveTab("internal")}
             className={`flex-1 min-w-[120px] whitespace-nowrap py-3 px-2 text-center rounded-xl text-xs font-black transition-all cursor-pointer ${
               activeTab === "internal"
-                ? "bg-white text-slate-950 shadow-md transform scale-102"
+                ? "bg-[#0a1628] text-slate-950 shadow-md transform scale-102"
                 : "text-slate-500 font-bold hover:text-slate-700"
             }`}
           >
@@ -341,7 +341,7 @@ export default function SaudiServicesHub({
             onClick={() => setActiveTab("portals")}
             className={`flex-1 min-w-[120px] whitespace-nowrap py-3 px-2 text-center rounded-xl text-xs font-black transition-all cursor-pointer ${
               activeTab === "portals"
-                ? "bg-white text-slate-950 shadow-md transform scale-102"
+                ? "bg-[#0a1628] text-slate-950 shadow-md transform scale-102"
                 : "text-slate-500 font-bold hover:text-slate-700"
             }`}
           >
@@ -351,7 +351,7 @@ export default function SaudiServicesHub({
             onClick={() => setActiveTab("watheeq")}
             className={`flex-1 min-w-[120px] whitespace-nowrap py-3 px-2 text-center rounded-xl text-xs font-black transition-all cursor-pointer ${
               activeTab === "watheeq"
-                ? "bg-white text-slate-950 shadow-md transform scale-102"
+                ? "bg-[#0a1628] text-slate-950 shadow-md transform scale-102"
                 : "text-slate-500 font-bold hover:text-slate-700"
             }`}
           >
@@ -361,7 +361,7 @@ export default function SaudiServicesHub({
             onClick={() => setActiveTab("tools")}
             className={`flex-1 min-w-[140px] whitespace-nowrap py-3 px-2 text-center rounded-xl text-xs font-black transition-all cursor-pointer ${
               activeTab === "tools"
-                ? "bg-white text-slate-950 shadow-md transform scale-102"
+                ? "bg-[#0a1628] text-slate-950 shadow-md transform scale-102"
                 : "text-slate-500 font-bold hover:text-slate-700"
             }`}
           >
@@ -377,7 +377,7 @@ export default function SaudiServicesHub({
               placeholder="ابحث عن منصة حكومية..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-slate-50 border border-slate-300 rounded-2xl pr-9 pl-4 py-2 text-xs font-bold text-slate-950 focus:outline-none focus:ring-2 focus:ring-amber-500/30 focus:border-amber-600"
+              className="w-full bg-slate-50 border border-[#1e3a5f] rounded-2xl pr-9 pl-4 py-2 text-xs font-bold text-slate-950 focus:outline-none focus:ring-2 focus:ring-amber-500/30 focus:border-amber-600"
             />
           </div>
         )}
@@ -402,13 +402,13 @@ export default function SaudiServicesHub({
               <InteractiveCard
                 key={idx}
                 themeColor="medium"
-                className="w-full bg-white p-5 border border-slate-200 rounded-3xl"
+                className="w-full bg-[#0a1628] p-5 border border-[#1e3a5f] rounded-3xl"
               >
                 <div className="space-y-4">
                   {/* Card Header with Logo Image */}
                   <div className="flex items-center gap-4">
                     {/* High-Fidelity Circle Container for the Official Logo */}
-                    <div className="relative w-12 h-12 rounded-2xl bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center shadow-inner border border-slate-200 overflow-hidden shrink-0 group-hover/card:scale-105 transition-transform duration-300">
+                    <div className="relative w-12 h-12 rounded-2xl bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center shadow-inner border border-[#1e3a5f] overflow-hidden shrink-0 group-hover/card:scale-105 transition-transform duration-300">
                       <img 
                         src={`https://www.google.com/s2/favicons?sz=128&domain=${portal.domain}`}
                         alt={portal.name}
@@ -478,7 +478,7 @@ export default function SaudiServicesHub({
           </div>
 
           {filteredPortals.length === 0 && (
-            <div className="p-12 text-center bg-white border border-slate-200 rounded-3xl space-y-3">
+            <div className="p-12 text-center bg-[#0a1628] border border-[#1e3a5f] rounded-3xl space-y-3">
               <HelpCircle className="w-12 h-12 text-slate-200 font-bold mx-auto" />
               <h4 className="text-xs font-black text-slate-950">لم نعثر على المنصة الحكومية المطلوبة</h4>
               <p className="text-slate-200 font-bold text-xs">يرجى التحقق من صياغة جملة البحث مسبقاً.</p>
@@ -490,7 +490,7 @@ export default function SaudiServicesHub({
       {/* Internal Search */}
       {activeTab === "internal" && (
         <div className="space-y-6 animate-fade-in text-right" dir="rtl">
-          <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm space-y-4">
+          <div className="bg-[#0a1628] border border-[#1e3a5f] rounded-3xl p-6 shadow-sm space-y-4">
             <div>
               <h3 className="text-sm font-black text-white border-r-4 border-amber-500 pr-3">البحث الشامل والموحد في قواعد البيانات</h3>
               <p className="text-xs text-slate-500 mt-2 font-medium">ابحث بالاسم، أو رقم الهوية، أو السجل التجاري، أو تصنيف القضية، وسيتم البحث في جداول العملاء والقضايا معاً.</p>
@@ -500,7 +500,7 @@ export default function SaudiServicesHub({
               <input 
                 type="text" 
                 placeholder="أدخل مفتاح البحث هنا..." 
-                className="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 pr-4 text-xs font-bold text-white focus:outline-none focus:border-amber-500"
+                className="w-full bg-slate-50 border border-[#1e3a5f] rounded-xl p-3 pr-4 text-xs font-bold text-white focus:outline-none focus:border-amber-500"
                 onKeyDown={(e) => {
                    if(e.key === 'Enter') searchInternalDatabase(e.currentTarget.value);
                 }}
@@ -533,7 +533,7 @@ export default function SaudiServicesHub({
                      <h4 className="flex items-center gap-2 text-xs font-black text-slate-200"><Users className="w-4 h-4 text-indigo-500"/> العملاء والشركات المطابقة ({internalResults.clients.length})</h4>
                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                        {internalResults.clients.map((c, i) => (
-                         <div key={i} className="p-3 border border-slate-200 rounded-xl bg-slate-50 hover:bg-white transition-colors">
+                         <div key={i} className="p-3 border border-[#1e3a5f] rounded-xl bg-slate-50 hover:bg-[#0a1628] transition-colors">
                            <p className="font-bold text-white text-xs mb-1">{c.name}</p>
                            {c.identity_number && <span className="text-[10px] text-slate-500 block font-mono">الهوية/السجل: {c.identity_number}</span>}
                          </div>
@@ -547,7 +547,7 @@ export default function SaudiServicesHub({
                      <h4 className="flex items-center gap-2 text-xs font-black text-slate-200"><Briefcase className="w-4 h-4 text-emerald-500"/> القضايا والملفات القانونية ({internalResults.cases.length})</h4>
                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                        {internalResults.cases.map((c, i) => (
-                         <div key={i} className="p-3 border border-slate-200 rounded-xl bg-slate-50 hover:bg-white transition-colors">
+                         <div key={i} className="p-3 border border-[#1e3a5f] rounded-xl bg-slate-50 hover:bg-[#0a1628] transition-colors">
                            <p className="font-bold text-white text-xs mb-1 truncate">{c.title || c.case_number}</p>
                            <div className="flex gap-2">
                              <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-100 text-emerald-700">{c.status}</span>
@@ -642,7 +642,7 @@ export default function SaudiServicesHub({
             return VERIFIED_SERVICES.map((srv, i) => {
               // Creating local state inside map is bad practice, so we will use simple inputs that call handleSearch with value
               return (
-                <div key={i} className="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm flex flex-col md:flex-row gap-6 items-start">
+                <div key={i} className="bg-[#0a1628] border border-[#1e3a5f] rounded-3xl p-6 shadow-sm flex flex-col md:flex-row gap-6 items-start">
                   <div className="shrink-0 w-16 h-16 bg-blue-50/50 rounded-2xl flex items-center justify-center border border-blue-100 text-3xl">
                     {srv.icon}
                   </div>
@@ -654,7 +654,7 @@ export default function SaudiServicesHub({
                         id={`input-service-${i}`}
                         type="text" 
                         placeholder="أدخل رقم الاستعلام..."
-                        className="flex-1 bg-slate-50 border border-slate-300 rounded-xl p-3 text-xs font-bold text-slate-900 focus:border-blue-500 focus:outline-none"
+                        className="flex-1 bg-slate-50 border border-[#1e3a5f] rounded-xl p-3 text-xs font-bold text-slate-900 focus:border-blue-500 focus:outline-none"
                         onKeyDown={(e: any) => {
                           if (e.key === 'Enter') handleServiceSearch(srv, e.target.value);
                         }}
@@ -681,7 +681,7 @@ export default function SaudiServicesHub({
       {activeTab === "tools" && (
         <div className="space-y-6 animate-fade-in">
           {/* Interactive Brightness & Readability Switcher */}
-          <div className="bg-slate-50 border border-slate-200/60 p-5 rounded-3xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div className="bg-slate-50 border border-[#1e3a5f]/60 p-5 rounded-3xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div>
               <h4 className="text-xs font-black text-slate-900">محاكي السطوع التفاعلي وألوان التباين الذكية (Adaptive Contrast Emulator)</h4>
               <p className="text-[10px] text-slate-700 font-bold mt-0.5">انقر على الزر لتبديل ألوان الخلفية لكروت الخدمات بالكامل. حيث ستقوم بطاقات motion.div بتحليل مستوى اللومينانس والمواءمة البصرية للنصوص لضمان أرقى معايير القراءة الاحترافية.</p>
@@ -691,7 +691,7 @@ export default function SaudiServicesHub({
               className={`px-4.5 py-2.5 rounded-xl text-[11px] font-black transition-all flex items-center gap-2 shrink-0 cursor-pointer ${
                 isDarkCards 
                   ? 'bg-slate-900 text-yellow-300 border border-slate-700 shadow-lg' 
-                  : 'bg-white text-slate-200 border border-slate-200 shadow-sm'
+                  : 'bg-[#0a1628] text-slate-200 border border-[#1e3a5f] shadow-sm'
               }`}
             >
               {isDarkCards ? <Sun className="w-3.5 h-3.5 text-yellow-400" /> : <Moon className="w-3.5 h-3.5 text-indigo-500" />}
@@ -732,7 +732,7 @@ export default function SaudiServicesHub({
                     className={`w-full text-right border rounded-[2rem] p-7 transition-all flex items-center gap-6 relative cursor-pointer group overflow-hidden ${
                       isDarkCards 
                         ? 'bg-[#0B1221] border-slate-700/50 shadow-[0_20px_50px_rgba(0,0,0,0.4)]' 
-                        : 'bg-white border-slate-200 shadow-[0_10px_30px_rgba(0,0,0,0.05)]'
+                        : 'bg-[#0a1628] border-[#1e3a5f] shadow-[0_10px_30px_rgba(0,0,0,0.05)]'
                     }`}
                   >
                     {/* Decorative side accent */}
@@ -880,7 +880,7 @@ export default function SaudiServicesHub({
                       <div className="p-6 rounded-[0.9rem] space-y-3 bg-slate-950/80 backdrop-blur-xl">
                         <h4 className="text-xs font-black text-amber-500 mb-4 border-b border-white/5 pb-2">نتائج توزيع التركة التقريبية:</h4>
                         {sharesResult.map((res: any, idx: number) => (
-                          <div key={idx} className="flex justify-between items-center bg-white/5 p-3 rounded-xl border border-white/5 hover:bg-white/10 transition-colors group">
+                          <div key={idx} className="flex justify-between items-center bg-[#0a1628]/5 p-3 rounded-xl border border-white/5 hover:bg-[#0a1628]/10 transition-colors group">
                             <div className="flex flex-col">
                               <span className="text-xs font-black text-white">{res.relation}</span>
                               <span className="text-[10px] font-bold text-slate-400">{res.fraction}</span>
@@ -977,11 +977,11 @@ export default function SaudiServicesHub({
                     >
                       <h4 className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest mb-2 border-b border-white/5 pb-2 italic">تقرير التحقق الأمني الرقمي</h4>
                       <div className="space-y-3">
-                        <div className="flex justify-between items-center p-2 rounded bg-white/5">
+                        <div className="flex justify-between items-center p-2 rounded bg-[#0a1628]/5">
                           <span className="text-[11px] font-bold text-slate-400">الحالة القانونية:</span>
                           <span className="text-emerald-400 font-black text-xs">{residentResult.status}</span>
                         </div>
-                        <div className="flex justify-between items-center p-2 rounded bg-white/5">
+                        <div className="flex justify-between items-center p-2 rounded bg-[#0a1628]/5">
                           <span className="text-[11px] font-bold text-slate-400">منفذ الدخول الأخير:</span>
                           <span className="text-white font-black text-xs">{residentResult.borderEntry}</span>
                         </div>
@@ -1040,7 +1040,7 @@ export default function SaudiServicesHub({
                           <span className="text-xs font-black text-slate-300 block mb-2">العقوبات والجزاءات التلقائية المسجلة:</span>
                           <div className="grid grid-cols-1 gap-2">
                             {executionResult.sanctionsApplied.map((s: string, i: number) => (
-                              <div key={i} className="flex items-center gap-3 bg-white/5 p-2.5 rounded-xl border border-white/5">
+                              <div key={i} className="flex items-center gap-3 bg-[#0a1628]/5 p-2.5 rounded-xl border border-white/5">
                                 <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse"></span>
                                 <span className="text-xs font-bold text-slate-200">{s}</span>
                               </div>

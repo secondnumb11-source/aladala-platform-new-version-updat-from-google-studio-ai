@@ -320,7 +320,7 @@ export default function TimelineD3({ hearings, tasks, cases = [] }: TimelineD3Pr
 
   return (
     <div 
-      className="bg-white border border-slate-200 rounded-3xl p-5 shadow-sm space-y-5 relative overflow-hidden font-sans" 
+      className="bg-[#0a1628] border border-[#1e3a5f] rounded-3xl p-5 shadow-sm space-y-5 relative overflow-hidden font-sans" 
       ref={containerRef}
       dir="rtl"
     >
@@ -356,7 +356,7 @@ export default function TimelineD3({ hearings, tasks, cases = [] }: TimelineD3Pr
           </div>
 
           {/* Action Filters Selection */}
-          <div className="flex bg-slate-100 p-0.5 rounded-lg border border-slate-200">
+          <div className="flex bg-slate-100 p-0.5 rounded-lg border border-[#1e3a5f]">
             <button
               onClick={() => { setFilterType('all'); setSelectedEventId(null); }}
               className={`px-2 py-1 text-[11px] font-black rounded-md transition-all ${filterType === 'all' ? 'bg-[#0B2545] text-white shadow-sm' : 'text-slate-200 hover:text-white'}`}
@@ -381,8 +381,8 @@ export default function TimelineD3({ hearings, tasks, cases = [] }: TimelineD3Pr
 
       {/* Empty State Handler */}
       {filteredEvents.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-12 text-center bg-slate-50 rounded-3xl border border-dashed border-slate-200 space-y-4">
-          <div className="p-4 bg-white rounded-full shadow-md text-slate-400">
+        <div className="flex flex-col items-center justify-center py-12 text-center bg-slate-50 rounded-3xl border border-dashed border-[#1e3a5f] space-y-4">
+          <div className="p-4 bg-[#0a1628] rounded-full shadow-md text-slate-400">
             <Inbox className="w-8 h-8" />
           </div>
           <div>
@@ -399,7 +399,7 @@ export default function TimelineD3({ hearings, tasks, cases = [] }: TimelineD3Pr
             <div className="absolute top-1/2 -translate-y-1/2 right-0 -mr-3 z-30">
               <button 
                 onClick={() => scrollAmount('right')}
-                className="w-10 h-10 rounded-full bg-white border border-slate-200 text-[#0B2545] hover:bg-slate-50 transition-all flex items-center justify-center shadow-lg active:scale-95 cursor-pointer"
+                className="w-10 h-10 rounded-full bg-[#0a1628] border border-[#1e3a5f] text-[#0B2545] hover:bg-slate-50 transition-all flex items-center justify-center shadow-lg active:scale-95 cursor-pointer"
               >
                 <ChevronRight className="w-5 h-5" />
               </button>
@@ -407,7 +407,7 @@ export default function TimelineD3({ hearings, tasks, cases = [] }: TimelineD3Pr
             <div className="absolute top-1/2 -translate-y-1/2 left-0 -ml-3 z-30">
               <button 
                 onClick={() => scrollAmount('left')}
-                className="w-10 h-10 rounded-full bg-white border border-slate-200 text-[#0B2545] hover:bg-slate-50 transition-all flex items-center justify-center shadow-lg active:scale-95 cursor-pointer"
+                className="w-10 h-10 rounded-full bg-[#0a1628] border border-[#1e3a5f] text-[#0B2545] hover:bg-slate-50 transition-all flex items-center justify-center shadow-lg active:scale-95 cursor-pointer"
               >
                 <ChevronLeft className="w-5 h-5" />
               </button>
@@ -439,7 +439,7 @@ export default function TimelineD3({ hearings, tasks, cases = [] }: TimelineD3Pr
                     className={`flex-shrink-0 w-[205px] rounded-2xl p-4 border transition-all duration-300 transform cursor-pointer relative z-10 select-none ${
                       isSelected 
                         ? 'bg-slate-900 border-slate-900 text-white shadow-xl scale-[1.02] -translate-y-1' 
-                        : 'bg-white hover:bg-slate-50 border-slate-200 text-slate-200 shadow-sm hover:shadow-md hover:border-slate-300'
+                        : 'bg-[#0a1628] hover:bg-slate-50 border-[#1e3a5f] text-slate-200 shadow-sm hover:shadow-md hover:border-[#1e3a5f]'
                     }`}
                     style={{ scrollSnapAlign: 'start' }}
                   >
@@ -521,7 +521,7 @@ export default function TimelineD3({ hearings, tasks, cases = [] }: TimelineD3Pr
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
-              className="bg-slate-50 border border-slate-200 rounded-2xl p-5 md:p-6 grid grid-cols-1 md:grid-cols-3 gap-6 relative"
+              className="bg-slate-50 border border-[#1e3a5f] rounded-2xl p-5 md:p-6 grid grid-cols-1 md:grid-cols-3 gap-6 relative"
             >
               <div className="md:col-span-2 space-y-4">
                 <div className="flex items-center gap-3">
@@ -533,22 +533,22 @@ export default function TimelineD3({ hearings, tasks, cases = [] }: TimelineD3Pr
                   <h4 className="text-base font-black text-slate-900 leading-tight">{selectedEvent.title}</h4>
                 </div>
 
-                <p className="text-sm text-slate-600 font-medium leading-relaxed max-w-2xl bg-white p-4 rounded-xl border border-slate-100 shadow-sm">
+                <p className="text-sm text-slate-600 font-medium leading-relaxed max-w-2xl bg-[#0a1628] p-4 rounded-xl border border-slate-100 shadow-sm">
                   {selectedEvent.notes || selectedEvent.hallNumber || 'لا توجد تفاصيل وملاحظات مدونة لهذا الإجراء حتى الآن.'}
                 </p>
 
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4 pt-2">
-                  <div className="bg-white p-3.5 rounded-xl border border-slate-100 shadow-sm">
+                  <div className="bg-[#0a1628] p-3.5 rounded-xl border border-slate-100 shadow-sm">
                     <span className="text-[10px] text-slate-500 font-bold block mb-1">رقم الدعوى المعنية</span>
                     <span className="text-sm font-black text-slate-900 font-mono tracking-tight">{selectedEvent.caseNumber}</span>
                   </div>
-                  <div className="bg-white p-3.5 rounded-xl border border-slate-100 shadow-sm">
+                  <div className="bg-[#0a1628] p-3.5 rounded-xl border border-slate-100 shadow-sm">
                     <span className="text-[10px] text-slate-500 font-bold block mb-1">وقت الاستحقاق</span>
                     <span className="text-sm font-black text-amber-600">
                       {selectedEvent.date.toLocaleDateString('ar-SA')} | {selectedEvent.time}
                     </span>
                   </div>
-                  <div className="bg-white p-3.5 rounded-xl border border-slate-100 shadow-sm col-span-2 md:col-span-1">
+                  <div className="bg-[#0a1628] p-3.5 rounded-xl border border-slate-100 shadow-sm col-span-2 md:col-span-1">
                     <span className="text-[10px] text-slate-500 font-bold block mb-1">المكان / المرجع</span>
                     <span className="text-sm font-black text-slate-900">{selectedEvent.courtName}</span>
                   </div>
@@ -594,7 +594,7 @@ export default function TimelineD3({ hearings, tasks, cases = [] }: TimelineD3Pr
               </div>
               <button 
                 onClick={handleResetZoom}
-                className="text-[11px] font-black text-[#0B2545] hover:text-[#826217] flex items-center gap-1.5 transition-colors cursor-pointer bg-slate-50 px-2.5 py-1 rounded-lg border border-slate-200"
+                className="text-[11px] font-black text-[#0B2545] hover:text-[#826217] flex items-center gap-1.5 transition-colors cursor-pointer bg-slate-50 px-2.5 py-1 rounded-lg border border-[#1e3a5f]"
               >
                 <RotateCcw className="w-3.5 h-3.5" />
                 <span>إعادة ضبط مخطط D3</span>

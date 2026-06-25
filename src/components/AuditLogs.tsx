@@ -139,7 +139,7 @@ export default function AuditLogs() {
       case 'BACKUP':
         return 'bg-purple-50 text-purple-800 border-purple-200/60';
       default:
-        return 'bg-slate-50 text-slate-800 border-slate-200/60';
+        return 'bg-slate-50 text-slate-800 border-[#1e3a5f]/60';
     }
   };
 
@@ -174,7 +174,7 @@ export default function AuditLogs() {
           <button
             onClick={handleRefresh}
             disabled={refreshing}
-            className="flex items-center justify-center gap-2.5 bg-white hover:bg-slate-100 text-slate-950 px-7 py-4 rounded-xl font-black shadow-md transition-all active:scale-95 text-xs shrink-0 cursor-pointer border border-slate-200"
+            className="flex items-center justify-center gap-2.5 bg-[#0a1628] hover:bg-slate-100 text-slate-950 px-7 py-4 rounded-xl font-black shadow-md transition-all active:scale-95 text-xs shrink-0 cursor-pointer border border-[#1e3a5f]"
           >
             <RefreshCw className={`w-4 h-4 text-slate-900 ${refreshing ? 'animate-spin' : ''}`} />
             <span>مزامنة وتحديث فوري</span>
@@ -186,7 +186,7 @@ export default function AuditLogs() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         
         {/* Card 1 */}
-        <div className="bg-white border border-slate-200/80 p-6 rounded-2xl relative overflow-hidden shadow-xs hover:border-slate-300 transition-all flex flex-col justify-between">
+        <div className="bg-[#0a1628] border border-[#1e3a5f]/80 p-6 rounded-2xl relative overflow-hidden shadow-xs hover:border-[#1e3a5f] transition-all flex flex-col justify-between">
           <div className="flex justify-between items-start mb-4">
             <div className="space-y-1">
               <span className={`text-[10px] ${getDynamicTextColor('bg-slate-50')} font-black uppercase tracking-wider block`}>إجمالي طلبات النظام</span>
@@ -201,7 +201,7 @@ export default function AuditLogs() {
         </div>
 
         {/* Card 2 */}
-        <div className="bg-white border border-slate-200/80 p-6 rounded-2xl relative overflow-hidden shadow-xs hover:border-slate-300 transition-all flex flex-col justify-between">
+        <div className="bg-[#0a1628] border border-[#1e3a5f]/80 p-6 rounded-2xl relative overflow-hidden shadow-xs hover:border-[#1e3a5f] transition-all flex flex-col justify-between">
           <div className="flex justify-between items-start mb-4">
             <div className="space-y-1">
               <span className={`text-[10px] ${getDynamicTextColor('bg-slate-50')} font-black uppercase tracking-wider block`}>التعديل ومنشئ السجلات</span>
@@ -218,7 +218,7 @@ export default function AuditLogs() {
         </div>
 
         {/* Card 3 */}
-        <div className="bg-white border border-slate-200/80 p-6 rounded-2xl relative overflow-hidden shadow-xs hover:border-slate-300 transition-all flex flex-col justify-between">
+        <div className="bg-[#0a1628] border border-[#1e3a5f]/80 p-6 rounded-2xl relative overflow-hidden shadow-xs hover:border-[#1e3a5f] transition-all flex flex-col justify-between">
           <div className="flex justify-between items-start mb-4">
             <div className="space-y-1">
               <span className={`text-[10px] ${getDynamicTextColor('bg-slate-50')} font-black uppercase tracking-wider block`}>أمان وسلامة الإخطارات</span>
@@ -233,7 +233,7 @@ export default function AuditLogs() {
         </div>
 
         {/* Card 4 - Backup Action integrated perfectly */}
-        <div className="bg-white border border-slate-200/80 p-6 rounded-2xl relative overflow-hidden shadow-xs hover:border-blue-300 transition-all flex flex-col justify-between">
+        <div className="bg-[#0a1628] border border-[#1e3a5f]/80 p-6 rounded-2xl relative overflow-hidden shadow-xs hover:border-blue-300 transition-all flex flex-col justify-between">
           <div>
             <div className="flex justify-between items-start mb-4">
               <div className="space-y-1">
@@ -262,7 +262,7 @@ export default function AuditLogs() {
       </div>
 
       {/* Scheduler Dashboard Backup History logs */}
-      <div className="bg-white border border-slate-200/80 p-8 rounded-[2rem] shadow-xs space-y-6">
+      <div className="bg-[#0a1628] border border-[#1e3a5f]/80 p-8 rounded-[2rem] shadow-xs space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-100 pb-5 gap-4">
           <div className="flex items-center gap-4.5">
             <div className={`w-11 h-11 bg-slate-100 rounded-2xl flex items-center justify-center ${getDynamicTextColor('bg-slate-50')}`}>
@@ -285,7 +285,7 @@ export default function AuditLogs() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pt-2">
             {backups.slice(0, 3).map((bk, idx) => (
-              <div key={bk.id || idx} className="bg-slate-50 border border-slate-200 p-5 rounded-2xl space-y-3.5 hover:border-slate-300 transition-all flex flex-col justify-between">
+              <div key={bk.id || idx} className="bg-slate-50 border border-[#1e3a5f] p-5 rounded-2xl space-y-3.5 hover:border-[#1e3a5f] transition-all flex flex-col justify-between">
                 <div className="flex justify-between items-center">
                   <span className="text-[11px] bg-emerald-50 border border-emerald-250/50 text-emerald-800 font-black px-2.5 py-1 rounded-full uppercase tracking-wider">
                     اكتمل بنجاح
@@ -320,7 +320,7 @@ export default function AuditLogs() {
       </div>
 
       {/* Main Logs Table and Filters Board - Unified Perfect Visual Identity */}
-      <div className="bg-white border border-slate-200/80 rounded-[2rem] shadow-sm overflow-hidden">
+      <div className="bg-[#0a1628] border border-[#1e3a5f]/80 rounded-[2rem] shadow-sm overflow-hidden">
         
         {/* Superior Filters Row with crisp titles */}
         <div className="p-6 md:p-8 border-b border-slate-100 bg-slate-50/50 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-6">
@@ -330,7 +330,7 @@ export default function AuditLogs() {
               <select
                 value={selectedUser}
                 onChange={(e) => setSelectedUser(e.target.value)}
-                className={`bg-white hover:bg-slate-50 ${getDynamicTextColor('bg-slate-50')} text-xs px-4 py-3 rounded-xl border border-slate-200 font-bold outline-none cursor-pointer`}
+                className={`bg-[#0a1628] hover:bg-slate-50 ${getDynamicTextColor('bg-slate-50')} text-xs px-4 py-3 rounded-xl border border-[#1e3a5f] font-bold outline-none cursor-pointer`}
               >
                 <option value="all">الكل (الهوية المفتوحة)</option>
                 <option value="admin">صلاحية المدير 👑</option>
@@ -343,7 +343,7 @@ export default function AuditLogs() {
               <select
                 value={selectedMethod}
                 onChange={(e) => setSelectedMethod(e.target.value)}
-                className={`bg-white hover:bg-slate-50 ${getDynamicTextColor('bg-slate-50')} text-xs px-4 py-3 rounded-xl border border-slate-200 font-bold outline-none cursor-pointer`}
+                className={`bg-[#0a1628] hover:bg-slate-50 ${getDynamicTextColor('bg-slate-50')} text-xs px-4 py-3 rounded-xl border border-[#1e3a5f] font-bold outline-none cursor-pointer`}
               >
                 <option value="all">كل الإجراءات التقنية</option>
                 <option value="GET">قراءة واستعلام (GET)</option>
@@ -360,7 +360,7 @@ export default function AuditLogs() {
               placeholder="البحث العميق في سجلات الجلسات..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className={`w-full bg-white ${getDynamicTextColor('bg-slate-50')} text-xs pr-11 pl-4 py-3.5 rounded-xl border border-slate-200 focus:border-slate-800 transition-all font-bold placeholder:text-slate-200 font-bold outline-none`}
+              className={`w-full bg-[#0a1628] ${getDynamicTextColor('bg-slate-50')} text-xs pr-11 pl-4 py-3.5 rounded-xl border border-[#1e3a5f] focus:border-slate-800 transition-all font-bold placeholder:text-slate-200 font-bold outline-none`}
             />
           </div>
         </div>
@@ -382,7 +382,7 @@ export default function AuditLogs() {
           <div className="overflow-x-auto">
             <table className="w-full text-right border-collapse">
               <thead>
-                <tr className={`bg-slate-50 text-[10px] font-black ${getDynamicTextColor('bg-slate-50')} uppercase tracking-widest border-b border-slate-200`}>
+                <tr className={`bg-slate-50 text-[10px] font-black ${getDynamicTextColor('bg-slate-50')} uppercase tracking-widest border-b border-[#1e3a5f]`}>
                   <th className="py-5 px-6 whitespace-nowrap">اسم المنفذ</th>
                   <th className="py-5 px-6 font-mono whitespace-nowrap">رمز الحالة (STATUS)</th>
                   <th className="py-5 px-6 whitespace-nowrap">الإجراء التقني</th>
@@ -418,7 +418,7 @@ export default function AuditLogs() {
                           {log.request_payload ? (
                             <button
                               onClick={() => setExpandedLogId(isExpanded ? null : log.id)}
-                              className={`${getDynamicTextColor('bg-slate-50')} hover:text-white transition-all bg-slate-50 hover:bg-slate-900 border border-slate-200/60 px-3.5 py-2 rounded-xl flex items-center gap-1.5 ml-0 mr-auto font-black text-[10px] uppercase tracking-wider whitespace-nowrap cursor-pointer`}
+                              className={`${getDynamicTextColor('bg-slate-50')} hover:text-white transition-all bg-slate-50 hover:bg-slate-900 border border-[#1e3a5f]/60 px-3.5 py-2 rounded-xl flex items-center gap-1.5 ml-0 mr-auto font-black text-[10px] uppercase tracking-wider whitespace-nowrap cursor-pointer`}
                             >
                               <span>{isExpanded ? 'طي الإفادة' : 'بيانات الحمولة (Payload)'}</span>
                               {isExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
@@ -431,7 +431,7 @@ export default function AuditLogs() {
                       {isExpanded && log.request_payload && (
                         <tr className="bg-slate-50/60">
                            <td colSpan={6} className="p-0">
-                               <div className="p-6 md:p-8 border-t border-b border-slate-200/60">
+                               <div className="p-6 md:p-8 border-t border-b border-[#1e3a5f]/60">
                                   <div className="bg-slate-950 border border-slate-800 rounded-2xl p-6 shadow-md relative overflow-hidden">
                                      <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/5 rounded-bl-full pointer-events-none" />
                                      <div className="relative z-10 flex justify-between items-center mb-4">
@@ -457,7 +457,7 @@ export default function AuditLogs() {
         )}
 
         {/* Table footer info */}
-        <div className={`p-6 bg-slate-50 flex flex-col sm:flex-row items-center justify-between text-[10px] font-black tracking-widest border-t border-slate-200 ${getDynamicTextColor('bg-slate-50')} gap-3`}>
+        <div className={`p-6 bg-slate-50 flex flex-col sm:flex-row items-center justify-between text-[10px] font-black tracking-widest border-t border-[#1e3a5f] ${getDynamicTextColor('bg-slate-50')} gap-3`}>
           <span>{new Date().toISOString().split('T')[0]} - المراقبة التقنية نشطة ويتم تدوين العمليات فورياً لمطابقة المعايير العامة</span>
           <span className={`font-mono ${getDynamicTextColor('bg-slate-50')} uppercase bg-slate-200/60 px-3 py-1.5 rounded-md`}>SYS_LOGS: {logs.length} SECURE RECORDS</span>
         </div>

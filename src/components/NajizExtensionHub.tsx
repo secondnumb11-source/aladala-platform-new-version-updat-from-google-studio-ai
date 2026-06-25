@@ -1430,21 +1430,21 @@ console.log('Aladala Najiz sync injected.');`);
       />
 
       {/* Royal Header Widget (Luminous Luxury with Dark Steps) */}
-      <section id="najiz-welcome" className="bg-[#FFFFFF] rounded-[3.5rem] p-12 lg:p-16 text-slate-900 shadow-2xl relative overflow-hidden border-4 border-yellow-400/10">
+      <section id="najiz-welcome" className="bg-[#FFFFFF] rounded-[3.5rem] p-12 lg:p-16 text-[#94a3b8] shadow-2xl relative overflow-hidden border-4 border-yellow-400/10">
         <div className="absolute top-0 right-0 w-full h-full bg-[radial-gradient(ellipse_at_top_right,rgba(250,204,21,0.05),transparent)] pointer-events-none" />
         
         <div className="relative z-10 space-y-12">
           <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-10">
             <div className="max-w-4xl space-y-6">
               <div className="flex flex-wrap items-center gap-6">
-                <div className="bg-yellow-400 p-5 rounded-[2rem] shadow-xl shadow-yellow-400/20 group hover:scale-110 transition-transform">
-                  <Bot className="w-12 h-12 text-black" />
+                <div className="bg-[#c9a84c] p-5 rounded-[2rem] shadow-xl shadow-yellow-400/20 group hover:scale-110 transition-transform">
+                  <Bot className="w-12 h-12 text-white" />
                 </div>
                 <div>
-                  <h1 className="text-4xl md:text-5xl font-black text-slate-900 tracking-tight leading-tight">
+                  <h1 className="text-4xl md:text-5xl font-black text-[#94a3b8] tracking-tight leading-tight">
                      الاستحواذ الرقمي الملكي على <span className="text-yellow-600 underline decoration-yellow-400/30 underline-offset-[12px]">بيانات ناجز</span>
                   </h1>
-                  <p className="text-lg text-slate-500 font-bold mt-4 max-w-2xl">
+                  <p className="text-lg text-[#94a3b8]0 font-bold mt-4 max-w-2xl">
                     المحرك الذكي الأكثر تطوراً لمزامنة وحقن ملفات القضايا والجلسات والوكلاء من البوابة الرسمية إلى صلب مكتبك بضغطة زر واحدة.
                   </p>
                 </div>
@@ -1455,7 +1455,7 @@ console.log('Aladala Najiz sync injected.');`);
               <button 
                 onClick={downloadNajizExtension}
                 disabled={downloading}
-                className="flex items-center gap-2 bg-amber-600 hover:bg-amber-500 text-white font-bold px-5 py-2.5 rounded-xl transition-colors disabled:opacity-50"
+                className="flex items-center gap-2 bg-gradient-to-r from-[#c9a84c] to-[#a67c30] hover:bg-gradient-to-r from-[#c9a84c] to-[#a67c30] text-white font-bold px-5 py-2.5 rounded-2xl transition-colors disabled:opacity-50"
               >
                 {downloading ? (
                    <><Loader2 className="w-4 h-4 animate-spin"/>جارٍ التجهيز...</>
@@ -1467,7 +1467,7 @@ console.log('Aladala Najiz sync injected.');`);
               <button
                  id="settings-btn"
                  onClick={() => setIsSettingsOpen(!isSettingsOpen)}
-                 className="p-6 bg-yellow-400 text-black rounded-3xl hover:bg-yellow-500 transition-all shadow-xl active:scale-95"
+                 className="p-6 bg-[#c9a84c] text-white rounded-3xl hover:bg-[#c9a84c] transition-all shadow-xl active:scale-95"
               >
                 <Settings className="w-7 h-7" />
               </button>
@@ -1482,13 +1482,13 @@ console.log('Aladala Najiz sync injected.');`);
               { step: 3, title: 'التدفق الملكي', desc: 'ضغطة زر واحدة كفيلة بنقل كل ما يهمك من سجلات إلى خوادم مكتبك بأمان تام.' }
             ].map((s) => (
               <div key={s.step} className="bg-[#0A0F1E] border-4 border-yellow-400/20 rounded-[2.5rem] p-10 flex flex-col space-y-4 hover:border-yellow-400/40 transition-all relative group overflow-hidden shadow-xl najiz-3d-card">
-                 <div className="absolute top-0 right-0 w-24 h-24 bg-yellow-400/[0.03] blur-3xl rounded-full" />
+                 <div className="absolute top-0 right-0 w-24 h-24 bg-[#c9a84c]/[0.03] blur-3xl rounded-full" />
                  <div className="flex items-center gap-5 relative z-10 font-bold">
-                   <div className="w-12 h-12 rounded-2xl bg-yellow-400 text-black flex items-center justify-center text-xl font-black shadow-lg shadow-yellow-400/20">{s.step}</div>
+                   <div className="w-12 h-12 rounded-2xl bg-[#c9a84c] text-white flex items-center justify-center text-xl font-black shadow-lg shadow-yellow-400/20">{s.step}</div>
                    <h4 className="najiz-wcag-aaa-gold font-extrabold text-xl">{s.title}</h4>
                  </div>
                  <p className="najiz-wcag-aaa-white font-semibold leading-relaxed relative z-10 pr-2">{s.desc}</p>
-                 <div className="absolute bottom-0 left-0 w-full h-1 bg-yellow-400/20 opacity-0 group-hover:opacity-100 transition-opacity" />
+                 <div className="absolute bottom-0 left-0 w-full h-1 bg-[#c9a84c]/20 opacity-0 group-hover:opacity-100 transition-opacity" />
               </div>
             ))}
           </div>
@@ -1521,11 +1521,11 @@ console.log('Aladala Najiz sync injected.');`);
                  <div className="flex items-center justify-between">
                     <div>
                       <h2 className="text-2xl font-black text-[#FACC15] mb-1">تقرير ذكاء المزامنة والمطابقة (Mapping)</h2>
-                      <p className="text-slate-300 text-xs font-bold italic">تحليل المطابقة الفوري لتجنب التكرار وتحديث السجلات القائمة.</p>
+                      <p className="text-[#94a3b8] text-xs font-bold italic">تحليل المطابقة الفوري لتجنب التكرار وتحديث السجلات القائمة.</p>
                     </div>
                     <button 
                       onClick={() => setSyncReport(null)}
-                      className="p-2 hover:bg-white/10 rounded-full text-slate-400 hover:text-white"
+                      className="p-2 hover:bg-[#0a1628]/10 rounded-full text-[#94a3b8] hover:text-white"
                     >
                       <X className="w-6 h-6" />
                     </button>
@@ -1536,7 +1536,7 @@ console.log('Aladala Najiz sync injected.');`);
                        <p className="text-[10px] font-black text-emerald-400 mb-1">بيانات جديدة ✅</p>
                        <p className="text-3xl font-black text-white">{syncReport.stats.newCount}</p>
                     </div>
-                    <div className="bg-amber-500/10 border border-amber-500/30 p-4 rounded-2xl text-center">
+                    <div className="bg-gradient-to-r from-[#c9a84c] to-[#a67c30]/10 border border-amber-500/30 p-4 rounded-2xl text-center">
                        <p className="text-[10px] font-black text-amber-400 mb-1">سجلات للدمج الذكي 🔁</p>
                        <p className="text-3xl font-black text-white">{syncReport.stats.duplicateCount}</p>
                     </div>
@@ -1551,15 +1551,15 @@ console.log('Aladala Najiz sync injected.');`);
                 {syncReport.details.map((item, idx) => (
                   <div key={idx} className="flex items-center justify-between p-4 bg-[#1e293b]/30 border border-white/5 rounded-2xl hover:bg-[#1e293b]/50 transition-all">
                     <div className="flex items-center gap-3">
-                       <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${item.status === 'new' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-amber-500/20 text-amber-400'}`}>
+                       <div className={`w-8 h-8 rounded-2xl flex items-center justify-center ${item.status === 'new' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-gradient-to-r from-[#c9a84c] to-[#a67c30]/20 text-amber-400'}`}>
                           {item.status === 'new' ? <Zap className="w-4 h-4" /> : <Rocket className="w-4 h-4" />}
                        </div>
                        <div>
                           <p className="text-xs font-black text-white">{item.title}</p>
-                          <p className="text-[10px] text-slate-400 font-bold">{item.category}</p>
+                          <p className="text-[10px] text-[#94a3b8] font-bold">{item.category}</p>
                        </div>
                     </div>
-                    <div className={`text-[10px] font-black px-3 py-1 rounded-full border ${item.status === 'new' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30' : 'bg-amber-500/10 text-[#FACC15] border-[#D4AF37]/50'}`}>
+                    <div className={`text-[10px] font-black px-3 py-1 rounded-full border ${item.status === 'new' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30' : 'bg-gradient-to-r from-[#c9a84c] to-[#a67c30]/10 text-[#FACC15] border-[#D4AF37]/50'}`}>
                        {item.status === 'new' ? 'بيانات جديدة' : 'معلق للدمج'}
                     </div>
                   </div>
@@ -1600,7 +1600,7 @@ console.log('Aladala Najiz sync injected.');`);
                  )}
                  <button 
                   onClick={() => setSyncReport(null)}
-                  className={`${syncReport.details.some(d => d.status === 'conflict') ? 'flex-[0.5] bg-white/5 border border-white/10 hover:bg-white/10 text-slate-300' : 'w-full bg-[#D4AF37] hover:bg-[#FACC15] text-[#060b13]'} font-black py-4 rounded-2xl transition-all`}
+                  className={`${syncReport.details.some(d => d.status === 'conflict') ? 'flex-[0.5] bg-[#0a1628]/5 border border-white/10 hover:bg-[#0a1628]/10 text-[#94a3b8]' : 'w-full bg-[#D4AF37] hover:bg-[#FACC15] text-[#060b13]'} font-black py-4 rounded-2xl transition-all`}
                  >
                    إغلاق
                  </button>
@@ -1615,16 +1615,16 @@ console.log('Aladala Najiz sync injected.');`);
       {/* Light Theme Settings Modal Overlay */}
       <AnimatePresence>
         {isSettingsOpen && (
-          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center z-50 p-4">
+          <div className="fixed inset-0 bg-[#0a1628]/60 backdrop-blur-md flex items-center justify-center z-50 p-4">
              <motion.div 
                initial={{ opacity: 0, scale: 0.95, y: 20 }}
                animate={{ opacity: 1, scale: 1, y: 0 }}
                exit={{ opacity: 0, scale: 0.95, y: 20 }}
-               className="najiz-luxury-light-card p-8 rounded-[2.5rem] w-full max-w-2xl relative shadow-2xl text-slate-900"
+               className="najiz-luxury-light-card p-8 rounded-[2.5rem] w-full max-w-2xl relative shadow-2xl text-[#94a3b8]"
              >
                 <button 
                   onClick={() => setIsSettingsOpen(false)}
-                  className="absolute top-6 left-6 text-slate-400 hover:text-slate-800 p-2 hover:bg-slate-100 rounded-full transition-all"
+                  className="absolute top-6 left-6 text-[#94a3b8] hover:text-[#94a3b8] p-2 hover:bg-[#0a1628] rounded-full transition-all"
                   aria-label="إغلاق نافذة الإعدادات"
                 >
                   <X className="w-6 h-6" />
@@ -1634,55 +1634,55 @@ console.log('Aladala Najiz sync injected.');`);
                    <Settings className="w-8 h-8 text-amber-500 animate-spin-slow" />
                    <div>
                      <h2 className="text-2xl font-black text-amber-600">ضبط بروتوكولات المزامنة المتقدمة</h2>
-                     <p className="text-slate-500 text-xs font-bold leading-relaxed mt-0.5">خصص واجهة الاتصال وأسلوب التحويل المباشر لنظام ناجز.</p>
+                     <p className="text-[#94a3b8]0 text-xs font-bold leading-relaxed mt-0.5">خصص واجهة الاتصال وأسلوب التحويل المباشر لنظام ناجز.</p>
                    </div>
                 </div>
 
                 {/* Theme Selection Section */}
-                <div className="bg-slate-50 p-6 rounded-3xl border border-slate-200 mb-8">
-                  <h3 className="text-lg font-black text-slate-800 mb-4 flex items-center gap-2">
+                <div className="bg-[#0a1628] p-6 rounded-3xl border border-[#1e3a5f] mb-8">
+                  <h3 className="text-lg font-black text-[#94a3b8] mb-4 flex items-center gap-2">
                     <Sparkles className="w-5 h-5 text-amber-500" />
                     هوية الكروت المستوردة
                   </h3>
                   <div className="grid grid-cols-2 gap-4">
                     <button 
                       onClick={() => setImportedCardTheme('dark')}
-                      className={`p-4 rounded-2xl border-2 transition-all flex flex-col items-center gap-2 ${importedCardTheme === 'dark' ? 'border-amber-500 bg-amber-50' : 'border-slate-200 hover:border-slate-300 bg-white'}`}
+                      className={`p-4 rounded-2xl border-2 transition-all flex flex-col items-center gap-2 ${importedCardTheme === 'dark' ? 'border-amber-500 bg-amber-50' : 'border-[#1e3a5f] hover:border-[#1e3a5f] bg-[#0a1628]'}`}
                     >
-                      <div className="w-full h-12 bg-[#0b1329] rounded-lg border border-slate-700 flex items-center justify-center">
-                        <div className="w-3/4 h-2 bg-white/20 rounded" />
+                      <div className="w-full h-12 bg-[#0b1329] rounded-2xl border border-[#1e3a5f] flex items-center justify-center">
+                        <div className="w-3/4 h-2 bg-[#0a1628]/20 rounded" />
                       </div>
-                      <span className="text-xs font-black text-slate-700 mt-1">النمط الداكن الفاخر</span>
+                      <span className="text-xs font-black text-[#94a3b8] mt-1">النمط الداكن الفاخر</span>
                     </button>
                     <button 
                       onClick={() => setImportedCardTheme('light')}
-                      className={`p-4 rounded-2xl border-2 transition-all flex flex-col items-center gap-2 ${importedCardTheme === 'light' ? 'border-amber-500 bg-amber-50' : 'border-slate-200 hover:border-slate-300 bg-white'}`}
+                      className={`p-4 rounded-2xl border-2 transition-all flex flex-col items-center gap-2 ${importedCardTheme === 'light' ? 'border-amber-500 bg-amber-50' : 'border-[#1e3a5f] hover:border-[#1e3a5f] bg-[#0a1628]'}`}
                     >
-                      <div className="w-full h-12 bg-white rounded-lg border border-slate-200 flex items-center justify-center shadow-sm">
-                        <div className="w-3/4 h-2 bg-slate-200 rounded" />
+                      <div className="w-full h-12 bg-[#0a1628] rounded-2xl border border-[#1e3a5f] flex items-center justify-center shadow-sm">
+                        <div className="w-3/4 h-2 bg-[#0a1628] rounded" />
                       </div>
-                      <span className="text-xs font-black text-slate-700 mt-1">النمط المضيء الصافي</span>
+                      <span className="text-xs font-black text-[#94a3b8] mt-1">النمط المضيء الصافي</span>
                     </button>
                   </div>
-                  <p className="text-[10px] text-slate-500 font-bold mt-4 italic">سيتم تطبيق هذا النمط على جميع الكروت المسحوبة من ناجز لضمان تباين عالٍ ومقروئية فائقة في كافة أقسام النظام.</p>
+                  <p className="text-[10px] text-[#94a3b8]0 font-bold mt-4 italic">سيتم تطبيق هذا النمط على جميع الكروت المسحوبة من ناجز لضمان تباين عالٍ ومقروئية فائقة في كافة أقسام النظام.</p>
                 </div>
 
                 {/* Sleek Switch for Connection Mode Option */}
                 <div className="space-y-6">
-                   <div className="bg-slate-50 p-5 rounded-2xl border border-amber-200">
+                   <div className="bg-[#0a1628] p-5 rounded-2xl border border-amber-200">
                       <label className="text-sm font-black text-amber-600 mb-3 block">شكل تفويض ومصادقة الاتصال للشركة والمحامي:</label>
-                      <div className="grid grid-cols-2 gap-4 p-1.5 bg-slate-200 rounded-xl border border-slate-300">
+                      <div className="grid grid-cols-2 gap-4 p-1.5 bg-[#0a1628] rounded-2xl border border-[#1e3a5f]">
                          <button
                            type="button"
                            onClick={() => setSyncMode('personal')}
-                           className={`py-3.5 px-4 rounded-lg font-black text-xs transition-all ${syncMode === 'personal' ? 'bg-amber-500 text-white shadow-md' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-800'}`}
+                           className={`py-3.5 px-4 rounded-2xl font-black text-xs transition-all ${syncMode === 'personal' ? 'bg-gradient-to-r from-[#c9a84c] to-[#a67c30] text-white shadow-md' : 'text-[#94a3b8] hover:bg-[#0a1628] hover:text-[#94a3b8]'}`}
                          >
                             الحساب الشخصي للغرفة (بدون مفتاح)
                          </button>
                          <button
                            type="button"
                            onClick={() => setSyncMode('apikey')}
-                           className={`py-3.5 px-4 rounded-lg font-black text-xs transition-all ${syncMode === 'apikey' ? 'bg-amber-500 text-white shadow-md' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-800'}`}
+                           className={`py-3.5 px-4 rounded-2xl font-black text-xs transition-all ${syncMode === 'apikey' ? 'bg-gradient-to-r from-[#c9a84c] to-[#a67c30] text-white shadow-md' : 'text-[#94a3b8] hover:bg-[#0a1628] hover:text-[#94a3b8]'}`}
                          >
                             الربط المطور للشركات (API KEY)
                          </button>
@@ -1714,7 +1714,7 @@ console.log('Aladala Najiz sync injected.');`);
                                setCustomApiUrl(e.target.value);
                                localStorage.setItem('adalah_custom_api_url', e.target.value);
                              }}
-                             className="w-full najiz-luxury-input najiz-luminous-input-text rounded-xl p-4 text-xs font-mono font-bold outline-none shadow-sm"
+                             className="w-full najiz-luxury-input najiz-luminous-input-text rounded-2xl p-4 text-xs font-mono font-bold outline-none shadow-sm"
                              placeholder="https://your-server.com/api/najiz-sync"
                            />
                         </div>
@@ -1730,24 +1730,24 @@ console.log('Aladala Najiz sync injected.');`);
                                setCustomApiKey(e.target.value);
                                localStorage.setItem('adalah_custom_api_key', e.target.value);
                              }}
-                             className="w-full najiz-luxury-input najiz-luminous-input-text rounded-xl p-4 text-xs font-mono font-bold outline-none shadow-sm"
+                             className="w-full najiz-luxury-input najiz-luminous-input-text rounded-2xl p-4 text-xs font-mono font-bold outline-none shadow-sm"
                              placeholder="ادخل المفتاح أو اتركه فارغاً"
                            />
-                           <p className="text-[10px] text-slate-500 font-semibold italic mt-1 leading-relaxed">عند ترك الحقل فارغاً، سيتم الاعتماد على وضع المزامنة التلقائية بدون مفتاح كخيار افتراضي.</p>
+                           <p className="text-[10px] text-[#94a3b8]0 font-semibold italic mt-1 leading-relaxed">عند ترك الحقل فارغاً، سيتم الاعتماد على وضع المزامنة التلقائية بدون مفتاح كخيار افتراضي.</p>
                         </div>
                      </div>
                    )}
 
-                   <div className="flex items-center gap-4 pt-4 border-t border-slate-200 mt-6 justify-end">
+                   <div className="flex items-center gap-4 pt-4 border-t border-[#1e3a5f] mt-6 justify-end">
                       <button 
                         onClick={() => setIsSettingsOpen(false)}
-                        className="bg-amber-600 hover:bg-amber-700 text-white font-black py-4 px-8 rounded-2xl shadow-lg transition-all text-sm"
+                        className="bg-gradient-to-r from-[#c9a84c] to-[#a67c30] hover:bg-gradient-to-r from-[#c9a84c] to-[#a67c30] text-white font-black py-4 px-8 rounded-2xl shadow-lg transition-all text-sm"
                       >
                         حفظ وضبط المعلمات للربط
                       </button>
                       <button 
                         onClick={() => setIsSettingsOpen(false)}
-                        className="bg-white hover:bg-slate-50 border border-slate-300 text-slate-700 font-bold py-4 px-6 rounded-2xl transition-all text-sm shadow-sm"
+                        className="bg-[#0a1628] hover:bg-[#0a1628] border border-[#1e3a5f] text-[#94a3b8] font-bold py-4 px-6 rounded-2xl transition-all text-sm shadow-sm"
                       >
                         إلغاء التعديل
                       </button>

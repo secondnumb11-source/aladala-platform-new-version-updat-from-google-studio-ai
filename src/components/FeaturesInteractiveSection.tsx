@@ -109,7 +109,7 @@ export default function FeaturesInteractiveSection({ isEn }: FeaturesInteractive
                     initial={{ y: 20, opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}
                     transition={{ delay: 0.2, type: 'spring' }}
-                    className="relative bg-white  border-8 border-slate-900 rounded-[2.5rem] h-[550px] shadow-2xl p-4 flex flex-col overflow-hidden"
+                    className="relative bg-[#0a1628]  border-8 border-slate-900 rounded-[2.5rem] h-[550px] shadow-2xl p-4 flex flex-col overflow-hidden"
                   >
                     {/* Notch */}
                     <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-6 bg-sky-50 rounded-b-2xl z-20" />
@@ -185,7 +185,7 @@ export default function FeaturesInteractiveSection({ isEn }: FeaturesInteractive
                     initial={{ y: 20, opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}
                     transition={{ delay: 0.2, type: 'spring' }}
-                    className="relative rounded-2xl overflow-hidden shadow-2xl border bg-white border-slate-800"
+                    className="relative rounded-2xl overflow-hidden shadow-2xl border bg-[#0a1628] border-slate-800"
                   >
                     {/* Editor Header */}
                     <div className="px-4 py-3 border-b flex items-center justify-between bg-slate-50 border-slate-800">

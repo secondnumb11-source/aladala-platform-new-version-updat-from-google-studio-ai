@@ -152,7 +152,7 @@ const CasesList = React.memo(function CasesList({
     switch (status) {
       case 'under_study':
         return isHighContrast 
-          ? 'border-slate-300 text-slate-800 bg-slate-100 hover:bg-slate-200' 
+          ? 'border-[#1e3a5f] text-slate-800 bg-slate-100 hover:bg-slate-200' 
           : 'border-slate-700/60 text-slate-300 bg-slate-800/60 hover:bg-slate-700/60';
       case 'under_review':
       case 'active':
@@ -161,7 +161,7 @@ const CasesList = React.memo(function CasesList({
           : 'border-amber-500/30 text-amber-400 bg-amber-500/10 hover:bg-amber-500/20';
       case 'struck_off':
         return isHighContrast 
-          ? 'border-gray-300 text-gray-800 bg-gray-100 hover:bg-gray-200' 
+          ? 'border-[#1e3a5f] text-white bg-gray-100 hover:bg-gray-200' 
           : 'border-gray-700 text-gray-400 bg-gray-800/60 hover:bg-gray-700/60';
       case 'appeal':
         return isHighContrast 
@@ -182,11 +182,11 @@ const CasesList = React.memo(function CasesList({
           : 'border-rose-500/30 text-rose-400 bg-rose-500/10 hover:bg-rose-500/20';
       case 'closed':
         return isHighContrast 
-          ? 'border-slate-300 text-slate-800 bg-slate-100 hover:bg-slate-200' 
+          ? 'border-[#1e3a5f] text-slate-800 bg-slate-100 hover:bg-slate-200' 
           : 'border-slate-700 text-slate-400 bg-slate-800/40 hover:bg-slate-700/40';
       default:
         return isHighContrast 
-          ? 'border-slate-200 text-slate-700 bg-slate-50' 
+          ? 'border-[#1e3a5f] text-slate-700 bg-slate-50' 
           : 'border-slate-800 text-slate-400 bg-slate-900/40';
     }
   };
@@ -256,7 +256,7 @@ const CasesList = React.memo(function CasesList({
     return (
       <div className={`overflow-x-auto shadow-2xl transition-all duration-300 border rounded-[2.5rem] w-full text-right ${
         isHighContrast 
-          ? 'bg-white border-slate-900 border-2 shadow-slate-200' 
+          ? 'bg-[#0a1628] border-slate-900 border-2 shadow-slate-200' 
           : 'bg-[#050e21] border-[#D4AF37]/35 shadow-[0_0_30px_rgba(212,175,55,0.08)]'
       }`} dir="rtl">
         <div className="min-w-[1200px]">
@@ -270,21 +270,21 @@ const CasesList = React.memo(function CasesList({
             </div>
             
             {/* Case Number (Golden text with border) */}
-            <div className={`flex-[1] min-w-[110px] h-full px-3 flex items-center justify-center font-black border-l ${isHighContrast ? 'border-slate-300' : 'border-[#D4AF37]/25 bg-[#D4AF37]/10'}`}>رقم القضية</div>
+            <div className={`flex-[1] min-w-[110px] h-full px-3 flex items-center justify-center font-black border-l ${isHighContrast ? 'border-[#1e3a5f]' : 'border-[#D4AF37]/25 bg-[#D4AF37]/10'}`}>رقم القضية</div>
             {/* Client Name (Plaintiff - Front Column with High Contrast) */}
-            <div className={`flex-[1.5] min-w-[150px] h-full px-3 flex items-center font-black border-l ${isHighContrast ? 'border-slate-300' : 'border-[#D4AF37]/25 bg-white/5 text-white'}`}>اسم العميل (المدعي)</div>
+            <div className={`flex-[1.5] min-w-[150px] h-full px-3 flex items-center font-black border-l ${isHighContrast ? 'border-[#1e3a5f]' : 'border-[#D4AF37]/25 bg-[#0a1628]/5 text-white'}`}>اسم العميل (المدعي)</div>
             {/* Opponent Name */}
-            <div className={`flex-[1.2] min-w-[120px] h-full px-3 flex items-center font-black border-l ${isHighContrast ? 'border-slate-300' : 'border-[#D4AF37]/25'}`}>المدعى عليه</div>
+            <div className={`flex-[1.2] min-w-[120px] h-full px-3 flex items-center font-black border-l ${isHighContrast ? 'border-[#1e3a5f]' : 'border-[#D4AF37]/25'}`}>المدعى عليه</div>
             {/* Case Subject */}
-            <div className={`flex-[1.8] min-w-[170px] h-full px-3 flex items-center font-black border-l ${isHighContrast ? 'border-slate-300' : 'border-[#D4AF37]/25'}`}>موضوع الدعوى</div>
+            <div className={`flex-[1.8] min-w-[170px] h-full px-3 flex items-center font-black border-l ${isHighContrast ? 'border-[#1e3a5f]' : 'border-[#D4AF37]/25'}`}>موضوع الدعوى</div>
             {/* Next Session */}
-            <div className={`flex-[1.2] min-w-[120px] h-full px-3 flex items-center justify-center font-black border-l ${isHighContrast ? 'border-slate-300' : 'border-[#D4AF37]/25'}`}>الجلسة القادمة</div>
+            <div className={`flex-[1.2] min-w-[120px] h-full px-3 flex items-center justify-center font-black border-l ${isHighContrast ? 'border-[#1e3a5f]' : 'border-[#D4AF37]/25'}`}>الجلسة القادمة</div>
             {/* Record / Counts */}
-            <div className={`flex-[1] min-w-[110px] h-full px-3 flex items-center justify-center font-black border-l ${isHighContrast ? 'border-slate-300' : 'border-[#D4AF37]/25'}`}>السجل (م/ج/و)</div>
+            <div className={`flex-[1] min-w-[110px] h-full px-3 flex items-center justify-center font-black border-l ${isHighContrast ? 'border-[#1e3a5f]' : 'border-[#D4AF37]/25'}`}>السجل (م/ج/و)</div>
             {/* Category */}
-            <div className={`flex-[1] min-w-[100px] h-full px-3 flex items-center justify-center font-black border-l ${isHighContrast ? 'border-slate-300' : 'border-[#D4AF37]/25'}`}>النوع</div>
+            <div className={`flex-[1] min-w-[100px] h-full px-3 flex items-center justify-center font-black border-l ${isHighContrast ? 'border-[#1e3a5f]' : 'border-[#D4AF37]/25'}`}>النوع</div>
             {/* Status */}
-            <div className={`flex-[1.2] min-w-[130px] h-full px-3 flex items-center justify-center font-black border-l ${isHighContrast ? 'border-slate-300' : 'border-[#D4AF37]/25'}`}>الحالة</div>
+            <div className={`flex-[1.2] min-w-[130px] h-full px-3 flex items-center justify-center font-black border-l ${isHighContrast ? 'border-[#1e3a5f]' : 'border-[#D4AF37]/25'}`}>الحالة</div>
             {/* Actions */}
             <div className="flex-[1.8] min-w-[200px] h-full px-3 flex items-center justify-center font-black">الإجراءات والتقرير</div>
           </div>
@@ -312,9 +312,9 @@ const CasesList = React.memo(function CasesList({
                     isRowFocused 
                       ? 'bg-amber-500/20 border-y-2 border-[#D4AF37] shadow-[0_0_15px_rgba(212,175,55,0.4)] scale-[1.005] z-10' 
                       : isHighContrast 
-                        ? (index % 2 === 0 ? 'bg-slate-50 hover:bg-slate-100' : 'bg-white hover:bg-slate-100') 
+                        ? (index % 2 === 0 ? 'bg-slate-50 hover:bg-slate-100' : 'bg-[#0a1628] hover:bg-slate-100') 
                         : (index % 2 === 0 ? 'bg-[#0a182f]/40 hover:bg-amber-500/10' : 'bg-transparent hover:bg-amber-500/10')
-                  } ${c.archived ? 'opacity-50 grayscale-[0.5]' : ''} ${isHighContrast ? 'border-slate-200' : 'border-[#D4AF37]/10'}`} 
+                  } ${c.archived ? 'opacity-50 grayscale-[0.5]' : ''} ${isHighContrast ? 'border-[#1e3a5f]' : 'border-[#D4AF37]/10'}`} 
                   onClick={() => {
                     setFocusedIdx(index);
                     onSelectCase(c);
@@ -322,14 +322,14 @@ const CasesList = React.memo(function CasesList({
                   dir="rtl"
                 >
                   {/* 1. Green stripe right-most */}
-                  <div className="w-12 self-stretch flex items-center justify-center bg-[#00b274] shrink-0 font-bold border-l border-slate-200/20">
+                  <div className="w-12 self-stretch flex items-center justify-center bg-[#00b274] shrink-0 font-bold border-l border-[#1e3a5f]/20">
                     <ChevronDown className="w-4 h-4 text-white" />
                   </div>
 
                   {/* 2. رقم القضية - Golden & Front-Facing */}
                   <div className={`flex-[1] min-w-[110px] h-full px-3 flex items-center justify-center font-mono font-black text-sm text-center border-l ${
                     isHighContrast 
-                      ? 'border-slate-200 bg-amber-100/90 border border-amber-500 shadow-sm wcag-aaa-gold-light' 
+                      ? 'border-[#1e3a5f] bg-amber-100/90 border border-amber-500 shadow-sm wcag-aaa-gold-light' 
                       : 'border-[#D4AF37]/25 bg-[#D4AF37]/5 drop-shadow-[0_0_8px_rgba(212,175,55,0.45)] wcag-aaa-gold-dark'
                   }`}>
                     #{c.caseNumber}
@@ -337,28 +337,28 @@ const CasesList = React.memo(function CasesList({
 
                   {/* 3. اسم العميل (المدعي) - High Contrast & Front-Facing */}
                   <div className={`flex-[1.5] min-w-[150px] h-full px-3 flex items-center text-xs font-[900] text-right border-l truncate ${
-                    isHighContrast ? 'border-slate-200 text-slate-950 bg-slate-50' : 'border-[#D4AF37]/25 text-white bg-white/5 font-extrabold'
+                    isHighContrast ? 'border-[#1e3a5f] text-slate-950 bg-slate-50' : 'border-[#D4AF37]/25 text-white bg-[#0a1628]/5 font-extrabold'
                   }`} title={c.clientName}>
                     {c.clientName || 'غيرحدد'}
                   </div>
 
                   {/* 4. المدعى عليه */}
                   <div className={`flex-[1.2] min-w-[120px] h-full px-3 flex items-center text-xs font-[800] text-right border-l truncate ${
-                    isHighContrast ? 'border-slate-200 text-slate-800' : 'border-[#D4AF37]/25 text-amber-100/90'
+                    isHighContrast ? 'border-[#1e3a5f] text-slate-800' : 'border-[#D4AF37]/25 text-amber-100/90'
                   }`} title={c.opponentName}>
                     {c.opponentName || 'غير محدد'}
                   </div>
 
                   {/* 5. موضوع الدعوى */}
                   <div className={`flex-[1.8] min-w-[170px] h-full px-3 flex items-center font-black text-xs text-right border-l truncate leading-relaxed ${
-                    isHighContrast ? 'border-slate-200 text-slate-800' : 'border-[#D4AF37]/25 text-slate-300'
+                    isHighContrast ? 'border-[#1e3a5f] text-slate-800' : 'border-[#D4AF37]/25 text-slate-300'
                   }`} title={c.caseName}>
                     {c.caseName || 'غير محدد'}
                   </div>
 
                   {/* 6. تاريخ الجلسة القادمة - Bright Green */}
                   <div className={`flex-[1.2] min-w-[120px] h-full px-3 flex flex-col items-center justify-center font-mono font-black text-xs text-center border-l ${
-                    isHighContrast ? 'border-slate-200' : 'border-[#D4AF37]/25'
+                    isHighContrast ? 'border-[#1e3a5f]' : 'border-[#D4AF37]/25'
                   }`}>
                     {c.nextSessionDate ? (
                       <>
@@ -374,7 +374,7 @@ const CasesList = React.memo(function CasesList({
 
                   {/* 7. سجل القضية (Counts) */}
                   <div className={`flex-[1] min-w-[110px] h-full px-3 flex items-center justify-center text-[11px] font-black border-l ${
-                    isHighContrast ? 'border-slate-200 text-slate-600' : 'border-[#D4AF37]/25 text-slate-300'
+                    isHighContrast ? 'border-[#1e3a5f] text-slate-600' : 'border-[#D4AF37]/25 text-slate-300'
                   }`}>
                     <div className="flex gap-2.5 bg-black/25 dark:bg-black/50 px-3 py-1.5 rounded-xl border border-[#D4AF37]/15">
                       <span title="الجلسات" className="text-emerald-400">⚖️{c.hearings?.length || 0}</span>
@@ -385,7 +385,7 @@ const CasesList = React.memo(function CasesList({
 
                   {/* 8. النوع */}
                   <div className={`flex-[1] min-w-[100px] h-full px-3 flex items-center justify-center text-xs font-[850] border-l ${
-                    isHighContrast ? 'border-slate-200 text-slate-700' : 'border-[#D4AF37]/25 text-white'
+                    isHighContrast ? 'border-[#1e3a5f] text-slate-700' : 'border-[#D4AF37]/25 text-white'
                   }`}>
                     <span className="flex items-center gap-1.5">
                       {CategoryIcon && <CategoryIcon className="w-3.5 h-3.5 opacity-75 shrink-0 text-[#D4AF37]" />}
@@ -395,7 +395,7 @@ const CasesList = React.memo(function CasesList({
 
                   {/* 9. الحالة */}
                   <div className={`flex-[1.2] min-w-[130px] h-full px-3 flex items-center justify-center border-l ${
-                    isHighContrast ? 'border-slate-200' : 'border-[#D4AF37]/25'
+                    isHighContrast ? 'border-[#1e3a5f]' : 'border-[#D4AF37]/25'
                   }`} onClick={(e) => e.stopPropagation()}>
                     <select
                       value={c.status || 'under_study'}
@@ -454,15 +454,15 @@ const CasesList = React.memo(function CasesList({
                   {/* Hidden high-quality Arabic printable PDF Template */}
                   <div
                     id={`pdf-report-template-list-${c.id}`}
-                    className="fixed -left-[9999px] top-0 bg-white text-slate-900 p-10 font-sans"
+                    className="fixed -left-[9999px] top-0 bg-[#0a1628] text-slate-900 p-10 font-sans"
                     style={{ width: '800px', direction: 'rtl' }}
                     onClick={(e) => e.stopPropagation()}
                   >
-                    <div className="border-[6px] border-[#D4AF37] p-6 rounded-2xl relative bg-white">
+                    <div className="border-[6px] border-[#D4AF37] p-6 rounded-2xl relative bg-[#0a1628]">
                       <div className="border border-[#111827] p-6 rounded-xl relative">
                         
                         {/* Header with National/Government Emblem Style */}
-                        <div className="flex justify-between items-start border-b-2 border-slate-300 pb-6 mb-6">
+                        <div className="flex justify-between items-start border-b-2 border-[#1e3a5f] pb-6 mb-6">
                           {/* Right side: KSA Details */}
                           <div className="text-right space-y-1 text-xs font-bold text-slate-800">
                             <p className="text-sm font-black text-slate-950">المملكة العربية السعودية</p>
@@ -499,27 +499,27 @@ const CasesList = React.memo(function CasesList({
 
                         {/* Grid of Case Basic Metadata */}
                         <div className="grid grid-cols-2 gap-4 mb-6 text-sm text-right">
-                          <div className="bg-slate-50 border border-slate-200 p-3 rounded-xl">
+                          <div className="bg-slate-50 border border-[#1e3a5f] p-3 rounded-xl">
                             <span className="text-xs text-slate-500 font-bold block mb-1">رقم القضية</span>
                             <strong className="text-slate-900 font-black text-base">#{c.caseNumber}</strong>
                           </div>
-                          <div className="bg-slate-50 border border-slate-200 p-3 rounded-xl">
+                          <div className="bg-slate-50 border border-[#1e3a5f] p-3 rounded-xl">
                             <span className="text-xs text-slate-500 font-bold block mb-1">نوع القضية</span>
                             <strong className="text-slate-900 font-black text-base">{getArabicCategoryName(c.category)}</strong>
                           </div>
-                          <div className="bg-slate-50 border border-slate-200 p-3 rounded-xl">
+                          <div className="bg-slate-50 border border-[#1e3a5f] p-3 rounded-xl">
                             <span className="text-xs text-slate-500 font-bold block mb-1">المحكمة المختصة</span>
                             <strong className="text-slate-900 font-black text-base">{c.courtName || 'غير محدد'}</strong>
                           </div>
-                          <div className="bg-slate-50 border border-slate-200 p-3 rounded-xl">
+                          <div className="bg-slate-50 border border-[#1e3a5f] p-3 rounded-xl">
                             <span className="text-xs text-slate-500 font-bold block mb-1">الدائرة القضائية</span>
                             <strong className="text-slate-900 font-black text-base">{c.circuitNumber || 'غير محدد'}</strong>
                           </div>
                         </div>
 
                         {/* Litigating Parties Box */}
-                        <div className="border border-slate-200 rounded-xl overflow-hidden mb-6 text-sm text-right">
-                          <div className="bg-slate-100 px-4 py-2 border-b border-slate-200">
+                        <div className="border border-[#1e3a5f] rounded-xl overflow-hidden mb-6 text-sm text-right">
+                          <div className="bg-slate-100 px-4 py-2 border-b border-[#1e3a5f]">
                             <h3 className="font-black text-slate-900">أطراف الخصومة والدعوى</h3>
                           </div>
                           <div className="p-4 grid grid-cols-2 gap-4">
@@ -535,8 +535,8 @@ const CasesList = React.memo(function CasesList({
                         </div>
 
                         {/* Case Topic / Summary details */}
-                        <div className="border border-slate-200 rounded-xl overflow-hidden mb-6 text-sm text-right">
-                          <div className="bg-slate-100 px-4 py-2 border-b border-slate-200">
+                        <div className="border border-[#1e3a5f] rounded-xl overflow-hidden mb-6 text-sm text-right">
+                          <div className="bg-slate-100 px-4 py-2 border-b border-[#1e3a5f]">
                             <h3 className="font-black text-slate-900">موضوع ومضمون الدعوى</h3>
                           </div>
                           <div className="p-4 space-y-3">
@@ -562,8 +562,8 @@ const CasesList = React.memo(function CasesList({
                         </div>
 
                         {/* Upcoming & Past Hearings Section */}
-                        <div className="border border-slate-200 rounded-xl overflow-hidden mb-6 text-sm text-right">
-                          <div className="bg-slate-100 px-4 py-2 border-b border-slate-200 flex justify-between items-center">
+                        <div className="border border-[#1e3a5f] rounded-xl overflow-hidden mb-6 text-sm text-right">
+                          <div className="bg-slate-100 px-4 py-2 border-b border-[#1e3a5f] flex justify-between items-center">
                             <h3 className="font-black text-slate-900">جدول الجلسات القضائية</h3>
                             <span className="text-xs text-slate-500 font-bold">تاريخ الجلسة القادمة: {c.nextSessionDate || 'غير محدد'}</span>
                           </div>
@@ -572,7 +572,7 @@ const CasesList = React.memo(function CasesList({
                               <div className="overflow-x-auto">
                                 <table className="w-full text-right border-collapse text-xs">
                                   <thead>
-                                    <tr className="border-b border-slate-200 text-slate-500 font-bold">
+                                    <tr className="border-b border-[#1e3a5f] text-slate-500 font-bold">
                                       <th className="pb-2">رقم الجلسة</th>
                                       <th className="pb-2">تاريخ الجلسة</th>
                                       <th className="pb-2">الوقت</th>
@@ -590,7 +590,7 @@ const CasesList = React.memo(function CasesList({
                                           <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
                                             h.status === 'upcoming' ? 'bg-amber-100 text-amber-800 border border-amber-200' :
                                             h.status === 'completed' ? 'bg-emerald-100 text-emerald-800 border border-emerald-200' :
-                                            'bg-slate-100 text-slate-600 border border-slate-200'
+                                            'bg-slate-100 text-slate-600 border border-[#1e3a5f]'
                                           }`}>
                                             {h.status === 'upcoming' ? 'مجدولة قادمة' :
                                              h.status === 'completed' ? 'منجزة' : 'ملغاة'}
@@ -614,7 +614,7 @@ const CasesList = React.memo(function CasesList({
                         </div>
 
                         {/* Official Stamp & Signatures Footer */}
-                        <div className="flex justify-between items-center mt-12 pt-8 border-t border-slate-200 text-xs">
+                        <div className="flex justify-between items-center mt-12 pt-8 border-t border-[#1e3a5f] text-xs">
                           <div className="text-right space-y-1">
                             <p className="text-slate-500 font-bold">المحامـي المسؤول:</p>
                             <p className="text-slate-900 font-black text-sm">{c.lead_lawyer_id || 'مستشار مكتب العدالة الرئيسي'}</p>

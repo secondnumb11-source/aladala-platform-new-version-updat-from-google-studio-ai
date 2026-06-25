@@ -857,7 +857,7 @@ ${
   };
 
   const inputClass =
-    "w-full bg-white border border-slate-300 hover:border-slate-400 text-slate-900 font-bold rounded-xl px-4 py-3 text-sm placeholder-slate-400 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500/50 transition-all duration-200 shadow-sm";
+    "w-full bg-[#0a1628] border border-[#1e3a5f] hover:border-slate-400 text-slate-900 font-bold rounded-xl px-4 py-3 text-sm placeholder-slate-400 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500/50 transition-all duration-200 shadow-sm";
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 p-6" dir="rtl">
@@ -917,7 +917,7 @@ ${
                 className={`rounded-3xl border-2 p-5 text-right transition-all duration-300 transform hover:-translate-y-1 cursor-pointer ${
                   isSelected
                     ? `${getSelectedBg()} scale-[1.03] shadow-[0_8px_30px_rgba(217,119,6,0.15)]`
-                    : "bg-white border-slate-150 hover:border-slate-350 shadow-[0_4px_15px_rgba(0,0,0,0.05)] hover:shadow-[0_10px_25px_rgba(0,0,0,0.15)]"
+                    : "bg-[#0a1628] border-slate-150 hover:border-slate-350 shadow-[0_4px_15px_rgba(0,0,0,0.05)] hover:shadow-[0_10px_25px_rgba(0,0,0,0.15)]"
                 }`}
               >
                 <div className="flex items-center gap-2 mb-3">
@@ -943,7 +943,7 @@ ${
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="بحث برقم القضية أو الموكل..."
-              className="w-full bg-white border border-slate-300 text-slate-900 font-extrabold
+              className="w-full bg-[#0a1628] border border-[#1e3a5f] text-slate-900 font-extrabold
                 rounded-2xl pr-11 pl-4 py-3 text-sm placeholder-slate-400 shadow-sm
                 focus:outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/25 transition-all"
             />
@@ -969,7 +969,7 @@ ${
       ) : filteredCases.length === 0 ? (
         <div
           className="flex flex-col items-center justify-center py-20
-          border border-dashed border-slate-300 bg-white rounded-3xl shadow-sm"
+          border border-dashed border-[#1e3a5f] bg-[#0a1628] rounded-3xl shadow-sm"
         >
           <FolderOpen className="w-16 h-16 text-amber-500 mb-4 animate-bounce" />
           <p className="text-slate-900 font-black text-base">لا توجد قضايا مسجلة</p>
@@ -989,7 +989,7 @@ ${
             return (
               <div
                 key={caseId}
-                className="bg-white border-2 border-slate-150/90
+                className="bg-[#0a1628] border-2 border-slate-150/90
                   hover:border-amber-500/50 rounded-3xl overflow-hidden
                   transition-all duration-300 shadow-[0_4px_15px_rgba(0,0,0,0.02)] hover:shadow-[0_8px_30px_rgba(217,119,6,0.08)]"
               >
@@ -1014,7 +1014,7 @@ ${
                         {c.status && (
                           <span
                             className="text-[10px] px-2.5 py-0.5 rounded-lg
-                            bg-[#e2e8f0] text-slate-800 border border-slate-300 font-black"
+                            bg-[#e2e8f0] text-slate-800 border border-[#1e3a5f] font-black"
                           >
                             {c.status}
                           </span>
@@ -1046,7 +1046,7 @@ ${
                         ).length;
                         if (cnt === 0) return null;
                         
-                        let badgeColor = "bg-slate-100 text-slate-800 border-slate-200";
+                        let badgeColor = "bg-slate-100 text-slate-800 border-[#1e3a5f]";
                         if (type.value === "lawsuit_sheet") badgeColor = "bg-blue-50 text-blue-800 border-blue-200";
                         else if (type.value === "judgment") badgeColor = "bg-amber-50 text-amber-800 border-amber-200";
                         else if (type.value === "session_record") badgeColor = "bg-emerald-50 text-emerald-800 border-emerald-200";
@@ -1164,7 +1164,7 @@ ${
                       {caseDocs.length === 0 ? (
                         <div
                           className="flex flex-col items-center justify-center
-                          py-12 border-2 border-dashed border-slate-300 bg-slate-50/50 rounded-2xl"
+                          py-12 border-2 border-dashed border-[#1e3a5f] bg-slate-50/50 rounded-2xl"
                         >
                           <FileText className="w-12 h-12 text-slate-400 mb-3 animate-pulse" />
                           <p className="text-slate-800 font-extrabold text-sm">
@@ -1183,10 +1183,10 @@ ${
                       ) : (
                         <>
                           {/* خيارات الفرز والتصفية الزمنية (حديثاً وقديماً) للمستندات - النمط المضيء */}
-                          <div className="flex flex-col md:flex-row gap-4 items-stretch md:items-center justify-between mb-5 pb-4 border-b border-slate-200 font-sans">
+                          <div className="flex flex-col md:flex-row gap-4 items-stretch md:items-center justify-between mb-5 pb-4 border-b border-[#1e3a5f] font-sans">
                             <div className="flex flex-wrap items-center gap-2">
                               <span className="text-slate-700 text-xs font-black">الترتيب الزمني:</span>
-                              <div className="inline-flex rounded-xl bg-slate-100 p-1 border border-slate-200/80">
+                              <div className="inline-flex rounded-xl bg-slate-100 p-1 border border-[#1e3a5f]/80">
                                 <button
                                   type="button"
                                   onClick={() => setDocSortOrder("recent")}
@@ -1214,7 +1214,7 @@ ${
 
                             <div className="flex flex-wrap items-center gap-2">
                               <span className="text-slate-700 text-xs font-black">تصنيف رفع المستندات:</span>
-                              <div className="inline-flex rounded-xl bg-slate-100 p-1 border border-slate-200/80">
+                              <div className="inline-flex rounded-xl bg-slate-100 p-1 border border-[#1e3a5f]/80">
                                 <button
                                   type="button"
                                   onClick={() => setDocAgeFilter("all")}
@@ -1255,7 +1255,7 @@ ${
                           </div>
 
                           {processedDocs.length === 0 ? (
-                            <div className="flex flex-col items-center justify-center py-12 border-2 border-dashed border-slate-200 bg-[#fbfbfb] rounded-2xl">
+                            <div className="flex flex-col items-center justify-center py-12 border-2 border-dashed border-[#1e3a5f] bg-[#fbfbfb] rounded-2xl">
                               <FileText className="w-10 h-10 text-slate-400 mb-2" />
                               <p className="text-slate-600 text-xs font-black">
                                 {docAgeFilter === "recent"
@@ -1523,7 +1523,7 @@ ${
           dir="rtl"
         >
           <div
-            className="bg-white border text-slate-900 border-slate-200 rounded-2xl
+            className="bg-[#0a1628] border text-slate-900 border-[#1e3a5f] rounded-2xl
             w-full max-w-xl max-h-[90vh] overflow-y-auto shadow-2xl animate-in fade-in zoom-in-95 duration-200"
           >
             <div
@@ -1575,7 +1575,7 @@ ${
                           border-2 transition-all text-right cursor-pointer ${
                             docType === type.value
                               ? `${type.bg} ${type.border} ${type.color} ring-1 ring-amber-400/30 bg-slate-50`
-                              : "bg-white border-slate-300 text-slate-700 hover:border-slate-400 hover:text-slate-900 hover:bg-slate-50"
+                              : "bg-[#0a1628] border-[#1e3a5f] text-slate-700 hover:border-slate-400 hover:text-slate-900 hover:bg-slate-50"
                           }`}
                       >
                         <Icon className="w-4.5 h-4.5 shrink-0" />
@@ -1732,7 +1732,7 @@ ${
                     {selectedFiles.map((f, i) => (
                       <div
                         key={i}
-                        className="p-3 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between"
+                        className="p-3 bg-slate-50 border border-[#1e3a5f] rounded-xl flex items-center justify-between"
                       >
                         <div className="flex items-center gap-2 min-w-0">
                           <LucideFile className="w-4 h-4 text-amber-500 shrink-0" />
@@ -1761,7 +1761,7 @@ ${
 
               {/* شريط التقدم */}
               {isUploading && (
-                <div className="space-y-1 bg-slate-50 p-3 rounded-xl border border-slate-200">
+                <div className="space-y-1 bg-slate-50 p-3 rounded-xl border border-[#1e3a5f]">
                   <div className="flex justify-between items-center text-xs mb-1">
                     <span className="text-amber-600 font-black animate-pulse">
                       جاري رفع وتأمين المستندات...
@@ -1876,7 +1876,7 @@ ${
                (viewerDoc.file_type?.toLowerCase().includes("pdf") || viewerDoc.file_url?.toLowerCase().split("?")[0].endsWith(".pdf")) ? (
                  <iframe
                    src={viewerDoc.file_url + "#toolbar=1"}
-                   className="w-full h-full max-w-5xl rounded-3xl border-2 border-slate-700 bg-white"
+                   className="w-full h-full max-w-5xl rounded-3xl border-2 border-slate-700 bg-[#0a1628]"
                    title={viewerDoc.document_name}
                  />
                ) : (viewerDoc.file_type?.toLowerCase().startsWith("image/") || /\.(jpg|jpeg|png|gif|webp|svg|bmp)(\?.*)?$/i.test(viewerDoc.file_url)) ? (
@@ -1944,11 +1944,11 @@ ${
         >
           {/* ===== الشريط الجانبي ===== */}
           <div
-            className="w-72 bg-slate-50 border-l border-slate-200
+            className="w-72 bg-slate-50 border-l border-[#1e3a5f]
             flex flex-col shrink-0 shadow-2xl"
           >
             {/* رأس الشريط */}
-            <div className="p-5 border-b border-slate-200">
+            <div className="p-5 border-b border-[#1e3a5f]">
               <div className="flex items-center gap-3 mb-3">
                 <div
                   className="p-2 bg-purple-100 rounded-xl
@@ -1968,8 +1968,8 @@ ${
 
               {/* معلومات القضية */}
               <div
-                className="bg-white rounded-xl p-3 border
-                border-slate-200"
+                className="bg-[#0a1628] rounded-xl p-3 border
+                border-[#1e3a5f]"
               >
                 <div className="flex items-center gap-2 mb-1">
                   <Scale className="w-3 h-3 text-amber-600" />
@@ -2075,7 +2075,7 @@ ${
               {/* تنبيه الأنظمة */}
               <div
                 className="mt-4 p-3 bg-slate-100 rounded-xl
-                border border-slate-200"
+                border border-[#1e3a5f]"
               >
                 <p className="text-slate-600 text-[10px] leading-relaxed">
                   🇸🇦 الوثائق مصاغة وفق الأنظمة السعودية: نظام المرافعات الشرعية،
@@ -2085,7 +2085,7 @@ ${
             </div>
 
             {/* أزرار التشغيل */}
-            <div className="p-4 border-t border-slate-200 space-y-2">
+            <div className="p-4 border-t border-[#1e3a5f] space-y-2">
               <button
                 onClick={() => callLegalAI(aiPanel.doc, aiPanel.mode)}
                 disabled={isAiLoading}
@@ -2129,7 +2129,7 @@ ${
             {/* رأس منطقة النتائج */}
             <div
               className="flex items-center justify-between px-6 py-4
-              border-b border-slate-200 shrink-0 bg-white"
+              border-b border-[#1e3a5f] shrink-0 bg-[#0a1628]"
             >
               <div className="flex items-center gap-3 min-w-0">
                 <div
@@ -2171,7 +2171,7 @@ ${
                     className="flex items-center gap-2 px-4 py-2
                       bg-slate-100 hover:bg-slate-200 text-slate-700
                       hover:text-slate-900 text-sm font-bold rounded-xl
-                      transition-colors border border-slate-300"
+                      transition-colors border border-[#1e3a5f]"
                   >
                     {copySuccess ? (
                       <>
@@ -2303,7 +2303,7 @@ ${
                 >
                   <div className="relative mb-6">
                     <div
-                      className="w-20 h-20 border-4 border-slate-200
+                      className="w-20 h-20 border-4 border-[#1e3a5f]
                       border-t-purple-600 rounded-full animate-spin"
                     />
                     <div
@@ -2372,7 +2372,7 @@ ${
                   {/* شارة النجاح */}
                   <div
                     className="flex items-center gap-3 mb-6 pb-4
-                    border-b border-slate-200"
+                    border-b border-[#1e3a5f]"
                   >
                     <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
                     <div>
@@ -2388,7 +2388,7 @@ ${
 
                   {/* النص المولّد */}
                   <div
-                    className="bg-white border border-slate-200 shadow-sm
+                    className="bg-[#0a1628] border border-[#1e3a5f] shadow-sm
                       rounded-2xl p-6 leading-loose text-slate-800 text-sm
                       whitespace-pre-wrap"
                     style={{
@@ -2420,7 +2420,7 @@ ${
                       }
                       // السطور الفاصلة
                       if (/^─{3,}/.test(line) || /^={3,}/.test(line)) {
-                        return <hr key={i} className="border-slate-200 my-4" />;
+                        return <hr key={i} className="border-[#1e3a5f] my-4" />;
                       }
                       // نقاط القوائم
                       if (/^[-•*]\s/.test(line) || /^\d+\.\s/.test(line)) {

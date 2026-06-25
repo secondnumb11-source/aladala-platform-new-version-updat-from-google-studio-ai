@@ -72,9 +72,9 @@ export const getDocColorStyles = (doc: Document) => {
   if (code === 'amber') {
     return {
       border: 'border-amber-500 shadow-lg shadow-amber-500/[0.02]',
-      badge: 'bg-amber-500 text-amber-400 font-black  border border-amber-500',
-      dot: 'bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.6)]',
-      bg: 'bg-amber-500/[0.01]'
+      badge: 'bg-gradient-to-r from-[#c9a84c] to-[#a67c30] text-amber-400 font-black  border border-amber-500',
+      dot: 'bg-gradient-to-r from-[#c9a84c] to-[#a67c30] shadow-[0_0_8px_rgba(245,158,11,0.6)]',
+      bg: 'bg-gradient-to-r from-[#c9a84c] to-[#a67c30]/[0.01]'
     };
   }
   if (code === 'purple') {
@@ -87,8 +87,8 @@ export const getDocColorStyles = (doc: Document) => {
   }
   return {
     border: 'border-border',
-    badge: 'bg-slate-100  text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]    border border-border/40',
-    dot: 'bg-slate-300 ',
+    badge: 'bg-[#0a1628]  text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]    border border-border/40',
+    dot: 'bg-[#0a1628] ',
     bg: ''
   };
 };
@@ -408,25 +408,25 @@ export default function DocumentsModule({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-slate-950/80 backdrop-blur-md"
+          className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-[#0a1628]/80 backdrop-blur-md"
         >
           <div className="absolute inset-0" onClick={() => setSelectedQRCodeDoc(null)}></div>
           <motion.div 
             initial={{ scale: 0.9, y: 20 }}
             animate={{ scale: 1, y: 0 }}
             exit={{ scale: 0.9, y: 20 }}
-            className="bg-white rounded-[2.5rem] p-10 max-w-sm w-full relative z-10 shadow-2xl text-center space-y-8"
+            className="bg-[#0a1628] rounded-[2.5rem] p-10 max-w-sm w-full relative z-10 shadow-2xl text-center space-y-8"
             dir="rtl"
           >
             <div className="flex justify-between items-center mb-2">
-              <h3 className="text-xl font-black text-slate-900 tracking-tight">رمز الدخول السريع (QR)</h3>
-              <button onClick={() => setSelectedQRCodeDoc(null)} className="p-2 rounded-full text-slate-200 font-bold transition-colors">
+              <h3 className="text-xl font-black text-[#94a3b8] tracking-tight">رمز الدخول السريع (QR)</h3>
+              <button onClick={() => setSelectedQRCodeDoc(null)} className="p-2 rounded-full text-[#94a3b8] font-bold transition-colors">
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <div className="bg-slate-50 p-8 rounded-3xl border border-slate-100 flex flex-col items-center justify-center shadow-inner">
-               <div className="bg-white p-4 rounded-2xl shadow-xl border border-white">
+            <div className="bg-[#0a1628] p-8 rounded-3xl border border-[#1e3a5f] flex flex-col items-center justify-center shadow-inner">
+               <div className="bg-[#0a1628] p-4 rounded-2xl shadow-xl border border-white">
                  <QRCodeSVG 
                    value={`${window.location.origin}/portal/document/${selectedQRCodeDoc.id}`}
                    size={200}
@@ -434,24 +434,24 @@ export default function DocumentsModule({
                    includeMargin={true}
                  />
                </div>
-               <p className="text-[10px] text-slate-200 font-bold font-bold mt-6 uppercase tracking-widest">Document Security Protocol Enabled</p>
+               <p className="text-[10px] text-[#94a3b8] font-bold font-bold mt-6 uppercase tracking-widest">Document Security Protocol Enabled</p>
             </div>
 
             <div className="space-y-3">
-              <h4 className="font-black text-slate-900 leading-tight">{selectedQRCodeDoc.name}</h4>
-              <p className="text-xs text-slate-700 font-bold">امسح الرمز أعلاه للوصول الآمن للمستند عبر بوابة العميل.</p>
+              <h4 className="font-black text-[#94a3b8] leading-tight">{selectedQRCodeDoc.name}</h4>
+              <p className="text-xs text-[#94a3b8] font-bold">امسح الرمز أعلاه للوصول الآمن للمستند عبر بوابة العميل.</p>
             </div>
 
             <div className="flex gap-3">
                <button 
-                 className="flex-1 bg-slate-900 text-white py-4 rounded-2xl text-xs font-black shadow-lg shadow-slate-900/20 flex items-center justify-center gap-2"
+                 className="flex-1 bg-[#0a1628] text-white py-4 rounded-2xl text-xs font-black shadow-lg shadow-slate-900/20 flex items-center justify-center gap-2"
                  onClick={() => window.print()}
                >
                  <Download className="w-4 h-4" />
                  طباعة الرمز
                </button>
                <button 
-                 className="flex-1 bg-slate-100 text-slate-900 py-4 rounded-2xl text-xs font-black flex items-center justify-center gap-2"
+                 className="flex-1 bg-[#0a1628] text-[#94a3b8] py-4 rounded-2xl text-xs font-black flex items-center justify-center gap-2"
                  onClick={() => window.open(`/portal/document/${selectedQRCodeDoc.id}`, '_blank')}
                >
                  <ExternalLink className="w-4 h-4" />
@@ -590,27 +590,27 @@ export default function DocumentsModule({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md"
+          className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-[#0a1628]/80 backdrop-blur-md"
         >
           <div className="absolute inset-0" onClick={() => setShowTemplateFiller(false)}></div>
           <motion.div 
             initial={{ scale: 0.95, y: 15 }}
             animate={{ scale: 1, y: 0 }}
             exit={{ scale: 0.95, y: 15 }}
-            className="bg-slate-900 border border-slate-800 rounded-[2.5rem] p-8 max-w-4xl w-full relative z-10 shadow-2xl flex flex-col max-h-[90vh] overflow-hidden text-right text-white text-high-contrast-light-bg"
+            className="bg-[#0a1628] border border-[#1e3a5f] rounded-[2.5rem] p-8 max-w-4xl w-full relative z-10 shadow-2xl flex flex-col max-h-[90vh] overflow-hidden text-right text-white text-high-contrast-light-bg"
             dir="rtl"
           >
-            <div className="flex justify-between items-center mb-6 border-b border-slate-800 pb-4">
+            <div className="flex justify-between items-center mb-6 border-b border-[#1e3a5f] pb-4">
               <div className="flex items-center gap-3">
-                <div className="p-3 bg-amber-500/10 text-amber-500 rounded-2xl shadow-lg shadow-amber-500/5">
+                <div className="p-3 bg-gradient-to-r from-[#c9a84c] to-[#a67c30]/10 text-amber-500 rounded-2xl shadow-lg shadow-amber-500/5">
                   <Sparkles className="w-5 h-5" />
                 </div>
                 <div>
                   <h3 className="text-xl font-black text-white tracking-tight">التعبئة الذكية للمستندات (Smart Template Filler) 🧠</h3>
-                  <p className="text-xs text-slate-200 font-bold mt-1">تقوم الأداة باستخراج تفاصيل القضية والعملاء ثم تعبئتها مباشرة وصياغتها وتوفير المعاينة.</p>
+                  <p className="text-xs text-[#94a3b8] font-bold mt-1">تقوم الأداة باستخراج تفاصيل القضية والعملاء ثم تعبئتها مباشرة وصياغتها وتوفير المعاينة.</p>
                 </div>
               </div>
-              <button onClick={() => setShowTemplateFiller(false)} className="p-2 rounded-full text-slate-200 font-bold transition-colors cursor-pointer">
+              <button onClick={() => setShowTemplateFiller(false)} className="p-2 rounded-full text-[#94a3b8] font-bold transition-colors cursor-pointer">
                 <X className="w-5 h-5" />
               </button>
             </div>
@@ -621,7 +621,7 @@ export default function DocumentsModule({
                 <div>
                   <label className="block text-xs font-black text-[#facc15] mb-2">١. اختر النموذج القانوني (Template)</label>
                   <select 
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-amber-500 transition-all font-black cursor-pointer"
+                    className="w-full bg-[#0a1628] border border-[#1e3a5f] rounded-2xl px-4 py-3 text-xs text-white focus:outline-none focus:border-amber-500 transition-all font-black cursor-pointer"
                     value={selectedTemplateId}
                     onChange={(e) => {
                       const tid = e.target.value;
@@ -631,7 +631,7 @@ export default function DocumentsModule({
                   >
                     <option value="">-- اختر النموذج --</option>
                     {templates.map(t => (
-                      <option key={t.id} value={t.id} className="bg-slate-900 text-white">{t.name}</option>
+                      <option key={t.id} value={t.id} className="bg-[#0a1628] text-white">{t.name}</option>
                     ))}
                   </select>
                 </div>
@@ -639,7 +639,7 @@ export default function DocumentsModule({
                 <div>
                   <label className="block text-xs font-black text-[#facc15] mb-2">٢. اربط بالقضية (CasesModule)</label>
                   <select 
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-amber-500 transition-all cursor-pointer"
+                    className="w-full bg-[#0a1628] border border-[#1e3a5f] rounded-2xl px-4 py-3 text-xs text-white focus:outline-none focus:border-amber-500 transition-all cursor-pointer"
                     value={selectedCaseId}
                     disabled={!selectedTemplateId}
                     onChange={(e) => {
@@ -653,17 +653,17 @@ export default function DocumentsModule({
                   >
                     <option value="">-- اختر القضية لاستخراج البيانات --</option>
                     {cases.map(c => (
-                      <option key={c.id} value={c.id} className="bg-slate-900 text-white">{c.caseName} (#{c.caseNumber})</option>
+                      <option key={c.id} value={c.id} className="bg-[#0a1628] text-white">{c.caseName} (#{c.caseNumber})</option>
                     ))}
                   </select>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-black text-slate-200 font-bold mb-2">المحكمة (تعبئة تلقائية / مخصصة)</label>
+                  <label className="block text-xs font-black text-[#94a3b8] font-bold mb-2">المحكمة (تعبئة تلقائية / مخصصة)</label>
                   <input 
                     type="text" 
                     placeholder="المحكمة العامة بالرياض" 
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-amber-500 transition-all"
+                    className="w-full bg-[#0a1628] border border-[#1e3a5f] rounded-2xl px-4 py-3 text-xs text-white focus:outline-none focus:border-amber-500 transition-all"
                     value={customCourt}
                     disabled={!selectedTemplateId}
                     onChange={(e) => {
@@ -674,11 +674,11 @@ export default function DocumentsModule({
                 </div>
 
                 <div>
-                  <label className="block text-xs font-black text-slate-200 font-bold mb-2">اسم الخصم/المدعى عليه</label>
+                  <label className="block text-xs font-black text-[#94a3b8] font-bold mb-2">اسم الخصم/المدعى عليه</label>
                   <input 
                     type="text" 
                     placeholder="الطرف الآخر لملف النزاع" 
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-amber-500 transition-all"
+                    className="w-full bg-[#0a1628] border border-[#1e3a5f] rounded-2xl px-4 py-3 text-xs text-white focus:outline-none focus:border-amber-500 transition-all"
                     value={customOpponent}
                     disabled={!selectedTemplateId}
                     onChange={(e) => {
@@ -688,28 +688,28 @@ export default function DocumentsModule({
                   />
                 </div>
 
-                <div className="pt-4 border-t border-slate-800">
-                  <div className="bg-slate-950/60 p-4 rounded-2xl border border-slate-800/85 space-y-2">
+                <div className="pt-4 border-t border-[#1e3a5f]">
+                  <div className="bg-[#0a1628]/60 p-4 rounded-2xl border border-[#1e3a5f]/85 space-y-2">
                     <span className="text-[10px] text-amber-500 font-extrabold uppercase tracking-widest block">الذكاء التوليدي والامتثال</span>
-                    <p className="text-[11px] text-slate-200 font-bold leading-relaxed font-sans">تقوم نماذج NLP باستخلاص وقائع القضية بصورة متوافقة مع مواد نظام المرافعات الشرعية السعودي.</p>
+                    <p className="text-[11px] text-[#94a3b8] font-bold leading-relaxed font-sans">تقوم نماذج NLP باستخلاص وقائع القضية بصورة متوافقة مع مواد نظام المرافعات الشرعية السعودي.</p>
                   </div>
                 </div>
               </div>
 
               {/* Editor + Official Preview Panel */}
               <div className="md:col-span-8 flex flex-col space-y-4">
-                <div className="flex justify-between items-center bg-slate-950/80 p-3 rounded-2xl border border-slate-805">
+                <div className="flex justify-between items-center bg-[#0a1628]/80 p-3 rounded-2xl border border-slate-805">
                   <div className="flex gap-2">
                     <button 
                       onClick={() => setIsPreviewMode(false)}
-                      className={`px-4 py-1.5 rounded-xl text-xs font-black transition-all cursor-pointer ${!isPreviewMode ? 'bg-amber-500 text-slate-950 shadow-md' : 'text-slate-200 font-bold'}`}
+                      className={`px-4 py-1.5 rounded-2xl text-xs font-black transition-all cursor-pointer ${!isPreviewMode ? 'bg-gradient-to-r from-[#c9a84c] to-[#a67c30] text-[#94a3b8] shadow-md' : 'text-[#94a3b8] font-bold'}`}
                     >
                       محرر صياغة النص 🖋️
                     </button>
                     <button 
                       onClick={() => setIsPreviewMode(true)}
                       disabled={!editedDocContent}
-                      className={`px-4 py-1.5 rounded-xl text-xs font-black transition-all cursor-pointer ${isPreviewMode ? 'bg-amber-500 text-slate-950 shadow-md' : 'disabled:opacity-40 text-slate-200 font-bold'}`}
+                      className={`px-4 py-1.5 rounded-2xl text-xs font-black transition-all cursor-pointer ${isPreviewMode ? 'bg-gradient-to-r from-[#c9a84c] to-[#a67c30] text-[#94a3b8] shadow-md' : 'disabled:opacity-40 text-[#94a3b8] font-bold'}`}
                     >
                       معاينة التعديلات 👁️
                     </button>
@@ -718,7 +718,7 @@ export default function DocumentsModule({
 
                 {isPreviewMode ? (
                   /* Creamy Saudi Paper Layout style */
-                  <div className="flex-1 bg-[#FAF6EE] text-slate-900 border-2 border-[#D4AF37] rounded-3xl p-8 shadow-inner font-sans relative overflow-y-auto min-h-[350px]">
+                  <div className="flex-1 bg-[#FAF6EE] text-[#94a3b8] border-2 border-[#D4AF37] rounded-3xl p-8 shadow-inner font-sans relative overflow-y-auto min-h-[350px]">
                     {/* Watermark */}
                     <div className="absolute inset-0 flex items-center justify-center opacity-5 pointer-events-none">
                       <div className="border-[20px] border-[#D4AF37] rounded-full p-20 scale-150">
@@ -729,26 +729,26 @@ export default function DocumentsModule({
                     {/* Golden traditional top stamps */}
                     <div className="flex justify-between items-start text-xs border-b border-[#D4AF37]/30 pb-4 mb-6" dir="rtl">
                       <div className="text-right space-y-1">
-                        <span className="block font-black text-slate-900 text-sm">مكتب المحاماة والعدالة بالرياض</span>
-                        <span className="block text-slate-700">مستند معتمد مرجعي فوري</span>
+                        <span className="block font-black text-[#94a3b8] text-sm">مكتب المحاماة والعدالة بالرياض</span>
+                        <span className="block text-[#94a3b8]">مستند معتمد مرجعي فوري</span>
                       </div>
-                      <div className="text-center p-1.5 border border-[#D4AF37] rounded-xl flex items-center justify-center bg-white/50 text-[11px] font-black tracking-widest text-amber-400 font-black">
+                      <div className="text-center p-1.5 border border-[#D4AF37] rounded-2xl flex items-center justify-center bg-[#0a1628]/50 text-[11px] font-black tracking-widest text-amber-400 font-black">
                         مسودة نموذج ذكي
                       </div>
                       <div className="text-left space-y-1">
-                        <span className="block text-slate-700">التاريخ: {new Date().toLocaleDateString('ar-SA')}</span>
+                        <span className="block text-[#94a3b8]">التاريخ: {new Date().toLocaleDateString('ar-SA')}</span>
                         <span className="block text-[#FACC15] font-black font-bold">بوابة الامتثال الذكي</span>
                       </div>
                     </div>
 
-                    <div className="whitespace-pre-line text-sm leading-relaxed text-right font-sans text-slate-800 pr-1 select-text">
+                    <div className="whitespace-pre-line text-sm leading-relaxed text-right font-sans text-[#94a3b8] pr-1 select-text">
                       {editedDocContent}
                     </div>
 
                     {/* Checkmark Stamp */}
                     <div className="mt-8 pt-4 border-t border-[#D4AF37]/20 flex justify-between items-center" dir="rtl">
                       <div className="text-right space-y-1">
-                        <span className="text-xs text-slate-200 font-bold font-bold block">مستشار الصياغة الرقمية</span>
+                        <span className="text-xs text-[#94a3b8] font-bold font-bold block">مستشار الصياغة الرقمية</span>
                         <span className="text-xs font-black text-amber-400 font-black block font-mono">ADALAH SMART FILLER</span>
                       </div>
                       <div className="bg-emerald-500/10 border border-emerald-500/35 rounded-2xl px-4 py-2 flex items-center gap-2 transform -rotate-2 shrink-0">
@@ -759,7 +759,7 @@ export default function DocumentsModule({
                   </div>
                 ) : (
                   <textarea 
-                    className="flex-1 bg-slate-950 border border-slate-800 rounded-3xl p-6 text-sm text-white font-bold leading-relaxed text-right font-sans min-h-[350px] focus:outline-none focus:border-amber-500/50 transition-all font-medium"
+                    className="flex-1 bg-[#0a1628] border border-[#1e3a5f] rounded-3xl p-6 text-sm text-white font-bold leading-relaxed text-right font-sans min-h-[350px] focus:outline-none focus:border-amber-500/50 transition-all font-medium"
                     value={editedDocContent}
                     onChange={(e) => setEditedDocContent(e.target.value)}
                     placeholder="اختر نموذج وقضية لتوليد المستند هنا وتعديله..."
@@ -770,16 +770,16 @@ export default function DocumentsModule({
                 <div className="flex justify-end gap-3 pt-3">
                   <button 
                     onClick={() => setShowTemplateFiller(false)}
-                    className="px-6 py-3.5 bg-slate-850 text-white font-bold rounded-xl text-xs font-black transition cursor-pointer"
+                    className="px-6 py-3.5 bg-slate-850 text-white font-bold rounded-2xl text-xs font-black transition cursor-pointer"
                   >
                     إلغاء الصياغة
                   </button>
                   <button 
                     onClick={handleSaveFilledTemplate}
                     disabled={!editedDocContent}
-                    className="px-8 py-3.5 bg-gradient-to-r from-amber-600 to-amber-500 text-slate-950 font-black rounded-xl text-xs transition flex items-center justify-center gap-2 disabled:opacity-40 cursor-pointer"
+                    className="px-8 py-3.5 bg-gradient-to-r from-amber-600 to-amber-500 text-[#94a3b8] font-black rounded-2xl text-xs transition flex items-center justify-center gap-2 disabled:opacity-40 cursor-pointer"
                   >
-                    <CheckCircle className="w-4 h-4 text-slate-950" />
+                    <CheckCircle className="w-4 h-4 text-[#94a3b8]" />
                     اعتماد الصياغة وحفظ بالأرشيف 💾
                   </button>
                 </div>
@@ -1326,7 +1326,7 @@ export default function DocumentsModule({
         }
 
         return (
-          <mark key={idx} className={`${colorClasses} px-1.5 py-0.5 rounded-md font-black shadow-sm mx-0.5 transition-colors duration-150`}>
+          <mark key={idx} className={`${colorClasses} px-1.5 py-0.5 rounded-2xl font-black shadow-sm mx-0.5 transition-colors duration-150`}>
             {part}
           </mark>
         );
@@ -1356,9 +1356,9 @@ export default function DocumentsModule({
             setCustomOpponent('');
             setEditedDocContent('');
           }}
-          className="bg-gradient-to-r from-amber-500 via-amber-400 to-yellow-500 text-slate-950 font-black py-3 px-6 rounded-2xl text-xs flex items-center gap-2 shadow-lg transition-all cursor-pointer active:scale-95 shrink-0"
+          className="bg-gradient-to-r from-amber-500 via-amber-400 to-yellow-500 text-[#94a3b8] font-black py-3 px-6 rounded-2xl text-xs flex items-center gap-2 shadow-lg transition-all cursor-pointer active:scale-95 shrink-0"
         >
-          <Sparkles className="w-4 h-4 text-slate-950 animate-pulse" />
+          <Sparkles className="w-4 h-4 text-[#94a3b8] animate-pulse" />
           <span>التعبئة الذكية للمستندات (Smart Filler) 🧠</span>
         </button>
       </div>
@@ -1367,26 +1367,26 @@ export default function DocumentsModule({
         
         {/* Right Side: Smart OCR Scanned text result / Quick Document Previewer (Moved to Left) */}
         <div className={`${isFocusedRead ? 'lg:col-span-12' : 'lg:col-span-6'} space-y-6 transition-all duration-300 items-stretch flex flex-col order-2 lg:order-2`}>
-          <div className={`area-secondary border-2 border-slate-200 rounded-[2.5rem] p-8 space-y-6 ${isFocusedRead ? 'min-h-[850px] lg:h-[900px]' : 'min-h-[750px]'} flex flex-col justify-between shadow-2xl shadow-slate-200/50 transition-all duration-300 bg-white/60 backdrop-blur-md`}>
+          <div className={`area-secondary border-2 border-[#1e3a5f] rounded-[2.5rem] p-8 space-y-6 ${isFocusedRead ? 'min-h-[850px] lg:h-[900px]' : 'min-h-[750px]'} flex flex-col justify-between shadow-2xl shadow-slate-200/50 transition-all duration-300 bg-[#0a1628]/60 backdrop-blur-md`}>
             
              {/* Tab selector menu */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 bg-slate-100/80 p-2 rounded-2xl border border-slate-200 gap-1.5 shrink-0" dir="rtl">
+            <div className="grid grid-cols-2 sm:grid-cols-4 bg-[#0a1628]/80 p-2 rounded-2xl border border-[#1e3a5f] gap-1.5 shrink-0" dir="rtl">
               <button
                 onClick={() => setRightPanelTab('preview')}
-                className={`py-2 px-2 text-[10px] sm:text-[11px] font-black rounded-xl transition-all cursor-pointer text-center flex items-center justify-center gap-1 ${
+                className={`py-2 px-2 text-[10px] sm:text-[11px] font-black rounded-2xl transition-all cursor-pointer text-center flex items-center justify-center gap-1 ${
                   rightPanelTab === 'preview'
                     ? 'bg-blue-600 text-white shadow-md shadow-blue-200'
-                    : 'text-slate-700 bg-white/40 hover:bg-white/60 border border-slate-200 font-bold'
+                    : 'text-[#94a3b8] bg-[#0a1628]/40 hover:bg-[#0a1628]/60 border border-[#1e3a5f] font-bold'
                 }`}
               >
                 <span>🔍 المعاينة السريعة</span>
               </button>
               <button
                 onClick={() => setRightPanelTab('ocr')}
-                className={`py-2 px-2 text-[10px] sm:text-[11px] font-black rounded-xl transition-all cursor-pointer text-center flex items-center justify-center gap-1 ${
+                className={`py-2 px-2 text-[10px] sm:text-[11px] font-black rounded-2xl transition-all cursor-pointer text-center flex items-center justify-center gap-1 ${
                   rightPanelTab === 'ocr'
                     ? 'bg-blue-600 text-white shadow-md shadow-blue-200'
-                    : 'text-slate-705 bg-white/40 hover:bg-white/60 border border-slate-200 font-bold'
+                    : 'text-slate-705 bg-[#0a1628]/40 hover:bg-[#0a1628]/60 border border-[#1e3a5f] font-bold'
                 }`}
               >
                 <Cpu className="w-3.5 h-3.5" />
@@ -1394,19 +1394,19 @@ export default function DocumentsModule({
               </button>
               <button
                 onClick={() => setRightPanelTab('versions')}
-                className={`py-2 px-2 text-[10px] sm:text-[11px] font-black rounded-xl transition-all cursor-pointer text-center flex items-center justify-center gap-1 ${
+                className={`py-2 px-2 text-[10px] sm:text-[11px] font-black rounded-2xl transition-all cursor-pointer text-center flex items-center justify-center gap-1 ${
                   rightPanelTab === 'versions'
                     ? 'bg-blue-600 text-white shadow-md shadow-blue-200'
-                    : 'text-slate-705 bg-white/40 hover:bg-white/60 border border-slate-200 font-bold'
+                    : 'text-slate-705 bg-[#0a1628]/40 hover:bg-[#0a1628]/60 border border-[#1e3a5f] font-bold'
                 }`}
               >
                 <span>⏱️ سجل التعديلات</span>
               </button>
               <button
                 onClick={() => setRightPanelTab('memo')}
-                className={`py-2 px-2 text-[10px] sm:text-[11px] font-black rounded-xl transition-all cursor-pointer text-center flex items-center justify-center gap-1 ${
+                className={`py-2 px-2 text-[10px] sm:text-[11px] font-black rounded-2xl transition-all cursor-pointer text-center flex items-center justify-center gap-1 ${
                   rightPanelTab === 'memo'
-                    ? 'bg-amber-600 text-white shadow-md shadow-amber-200'
+                    ? 'bg-gradient-to-r from-[#c9a84c] to-[#a67c30] text-white shadow-md shadow-amber-200'
                     : 'text-amber-800 bg-amber-50 hover:bg-amber-100 border border-amber-200 font-black'
                 }`}
               >
@@ -1415,7 +1415,7 @@ export default function DocumentsModule({
               </button>
               <button
                 onClick={() => setRightPanelTab('camera-scan')}
-                className={`py-2 px-2 text-[10px] sm:text-[11px] font-black rounded-xl transition-all cursor-pointer text-center flex items-center justify-center gap-1 col-span-2 sm:col-span-4 ${
+                className={`py-2 px-2 text-[10px] sm:text-[11px] font-black rounded-2xl transition-all cursor-pointer text-center flex items-center justify-center gap-1 col-span-2 sm:col-span-4 ${
                   rightPanelTab === 'camera-scan'
                     ? 'bg-emerald-600 text-white shadow-md shadow-emerald-200'
                     : 'text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 font-black'
@@ -1433,7 +1433,7 @@ export default function DocumentsModule({
                   <div className="flex items-center justify-between">
                     <h3 className="font-black text-xs text-main ">سجل إصدارات المستند والتعديلات</h3>
                     {selectedDocForOcr && (
-                      <span className="text-[11px] bg-amber-500 text-[#d97706] border border-amber-500 px-2 py-0.5 rounded-full font-mono font-bold">
+                      <span className="text-[11px] bg-gradient-to-r from-[#c9a84c] to-[#a67c30] text-[#d97706] border border-amber-500 px-2 py-0.5 rounded-full font-mono font-bold">
                         إصدار: {selectedDocForOcr.currentVersion || 1}
                       </span>
                     )}
@@ -1458,7 +1458,7 @@ export default function DocumentsModule({
                               className={`p-2.5 rounded-2xl border text-right transition-all flex flex-col space-y-1 ${
                                 isActive 
                                 ? 'bg-amber-100/50 border-amber-500/30 ring-1 ring-amber-500/20' 
-                                : 'bg-slate-50/50 border-slate-200'
+                                : 'bg-[#0a1628]/50 border-[#1e3a5f]'
                               }`}
                             >
                               <div className="flex items-center justify-between">
@@ -1466,16 +1466,16 @@ export default function DocumentsModule({
                                   {isActive && <CheckCircle className="w-3 h-3 text-emerald-500" />}
                                   الإصدار {v.version} ({v.label})
                                 </span>
-                                <span className="text-[10px] text-slate-200 font-bold">{v.timestamp}</span>
+                                <span className="text-[10px] text-[#94a3b8] font-bold">{v.timestamp}</span>
                               </div>
-                              <p className="text-[10px] text-slate-700 leading-relaxed font-bold italic line-clamp-1">
+                              <p className="text-[10px] text-[#94a3b8] leading-relaxed font-bold italic line-clamp-1">
                                 {v.summary || 'تم قيد الوثيقة وفهرستها في النظام الأساسي.'}
                               </p>
                               <div className="flex gap-2 mt-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
                                 {!isActive && (
-                                  <button className="text-[9px] bg-amber-500 text-white px-2 py-0.5 rounded-md font-black hover:bg-amber-600">استعادة ⟲</button>
+                                  <button className="text-[9px] bg-gradient-to-r from-[#c9a84c] to-[#a67c30] text-white px-2 py-0.5 rounded-2xl font-black hover:bg-gradient-to-r from-[#c9a84c] to-[#a67c30]">استعادة ⟲</button>
                                 )}
-                                <button className="text-[9px] bg-slate-200 text-slate-700 px-2 py-0.5 rounded-md font-bold">معاينة</button>
+                                <button className="text-[9px] bg-[#0a1628] text-[#94a3b8] px-2 py-0.5 rounded-2xl font-bold">معاينة</button>
                               </div>
                             </div>
                           );
@@ -1491,9 +1491,9 @@ export default function DocumentsModule({
                       </div>
                       <textarea 
                         placeholder="دون هنا ملاحظات التعديل أو ملخص التغييرات التي طرأت على المستند حالياً..."
-                        className="w-full h-16 bg-slate-100/80 border border-slate-200 rounded-xl p-3 text-[10px] font-bold text-slate-800 outline-none focus:border-amber-500 transition-colors placeholder:text-slate-200 font-bold"
+                        className="w-full h-16 bg-[#0a1628]/80 border border-[#1e3a5f] rounded-2xl p-3 text-[10px] font-bold text-[#94a3b8] outline-none focus:border-amber-500 transition-colors placeholder:text-[#94a3b8] font-bold"
                       />
-                      <button className="w-full bg-slate-900 border border-slate-800 text-amber-100 font-black py-2.5 rounded-2xl text-[11px] hover:bg-slate-850 flex items-center justify-center gap-2 shadow-lg transition-transform active:scale-[0.98]">
+                      <button className="w-full bg-[#0a1628] border border-[#1e3a5f] text-amber-100 font-black py-2.5 rounded-2xl text-[11px] hover:bg-slate-850 flex items-center justify-center gap-2 shadow-lg transition-transform active:scale-[0.98]">
                         <RefreshCw className="w-3.5 h-3.5" />
                         حفظ الإصدار الجديد وتحديث الفهرس
                       </button>
@@ -1501,8 +1501,8 @@ export default function DocumentsModule({
                   </div>
                 ) : (
                   <div className="flex flex-col items-center justify-center flex-1 space-y-3 opacity-40">
-                    <HistoryIcon className="w-16 h-16 text-slate-200" strokeWidth={1} />
-                    <p className="text-sm font-bold text-slate-200 font-bold">يرجى تحديد مستند لعرض تتبع الإصدارات</p>
+                    <HistoryIcon className="w-16 h-16 text-[#94a3b8]" strokeWidth={1} />
+                    <p className="text-sm font-bold text-[#94a3b8] font-bold">يرجى تحديد مستند لعرض تتبع الإصدارات</p>
                   </div>
                 )}
               </div>
@@ -1513,12 +1513,12 @@ export default function DocumentsModule({
               <div className="flex-1 flex flex-col min-h-0 space-y-3">
                 
                 {/* Embedded Reader Toolbar with Zoom / Rotation / Toggle controls */}
-                <div className="flex items-center justify-between bg-slate-100  px-3 py-1.5 rounded-xl border border-border text-sm shrink-0 font-bold">
+                <div className="flex items-center justify-between bg-[#0a1628]  px-3 py-1.5 rounded-2xl border border-border text-sm shrink-0 font-bold">
                   {/* Tool actions */}
                   <div className="flex items-center gap-2">
                     <button 
                       onClick={() => setZoomLevel(prev => Math.max(50, prev - 15))}
-                      className="text-slate-700 font-mono h-6 w-6 rounded flex items-center justify-center cursor-pointer transition-colors"
+                      className="text-[#94a3b8] font-mono h-6 w-6 rounded flex items-center justify-center cursor-pointer transition-colors"
                       title="تصغير"
                     >
                       -
@@ -1526,7 +1526,7 @@ export default function DocumentsModule({
                     <span className="text-xs text-main font-mono">{zoomLevel}%</span>
                     <button 
                       onClick={() => setZoomLevel(prev => Math.min(180, prev + 15))}
-                      className="text-slate-700 font-mono h-6 w-6 rounded flex items-center justify-center cursor-pointer transition-colors"
+                      className="text-[#94a3b8] font-mono h-6 w-6 rounded flex items-center justify-center cursor-pointer transition-colors"
                       title="تكبير"
                     >
                       +
@@ -1534,7 +1534,7 @@ export default function DocumentsModule({
                     <span className="text-slate-350 text-xs">|</span>
                     <button 
                       onClick={() => setRotation(prev => (prev + 90) % 360)}
-                      className="text-slate-700 text-xs px-1.5 py-0.5 rounded flex items-center gap-1 cursor-pointer transition-colors"
+                      className="text-[#94a3b8] text-xs px-1.5 py-0.5 rounded flex items-center gap-1 cursor-pointer transition-colors"
                       title="تدوير الصفحة"
                     >
                       🔄 تدوير
@@ -1550,10 +1550,10 @@ export default function DocumentsModule({
                           setReadMode(true);
                         }
                       }}
-                      className={`text-xs px-2.5 py-1 rounded-lg font-black flex items-center gap-1.5 transition-all active:scale-95 duration-200 ${
+                      className={`text-xs px-2.5 py-1 rounded-2xl font-black flex items-center gap-1.5 transition-all active:scale-95 duration-200 ${
                         isFocusedRead 
-                          ? 'bg-amber-500 text-slate-950 shadow-md shadow-amber-500/20' 
-                          : 'bg-amber-500 text-amber-400 font-black'
+                          ? 'bg-gradient-to-r from-[#c9a84c] to-[#a67c30] text-[#94a3b8] shadow-md shadow-amber-500/20' 
+                          : 'bg-gradient-to-r from-[#c9a84c] to-[#a67c30] text-amber-400 font-black'
                       }`}
                       title="القراءة المركزة: إخفاء القوائم وتوسيع مساحة عرض النص وتفعيل مبرز الألوان الذكي"
                     >
@@ -1567,7 +1567,7 @@ export default function DocumentsModule({
                           setReadMode(true);
                         }
                       }}
-                      className={`text-xs px-2.5 py-1 rounded-lg font-black flex items-center gap-1.5 transition-all active:scale-95 duration-200 ${
+                      className={`text-xs px-2.5 py-1 rounded-2xl font-black flex items-center gap-1.5 transition-all active:scale-95 duration-200 ${
                         isReaderMode 
                           ? 'bg-emerald-600 text-white shadow-md shadow-emerald-500/20' 
                           : 'bg-emerald-100 text-emerald-800'
@@ -1579,7 +1579,7 @@ export default function DocumentsModule({
                     <span className="text-slate-350 ">|</span>
                       <button
                         onClick={() => setReadMode(!readMode)}
-                        className={`text-xs px-2.5 py-1 rounded-lg font-black flex items-center gap-1.5 transition-all active:scale-95 duration-200 ${readMode ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20' : 'bg-blue-50 text-blue-800'}`}
+                        className={`text-xs px-2.5 py-1 rounded-2xl font-black flex items-center gap-1.5 transition-all active:scale-95 duration-200 ${readMode ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20' : 'bg-blue-50 text-blue-800'}`}
                         title="تكبير الخط وتظليل النصوص القانونية الهامة تلقائياً"
                       >
                         <span>📖 وضع القراءة</span>
@@ -1587,9 +1587,9 @@ export default function DocumentsModule({
                     <span className="text-slate-350">|</span>
                     <button
                       onClick={() => setIsDocNightMode(!isDocNightMode)}
-                      className={`text-xs px-2.5 py-1 rounded-lg font-black flex items-center gap-1.5 transition-all duration-200 active:scale-95 ${
+                      className={`text-xs px-2.5 py-1 rounded-2xl font-black flex items-center gap-1.5 transition-all duration-200 active:scale-95 ${
                         isDocNightMode 
-                          ? 'bg-slate-950 border border-yellow-500/50 text-yellow-300 shadow-lg' 
+                          ? 'bg-[#0a1628] border border-yellow-500/50 text-yellow-300 shadow-lg' 
                           : 'bg-amber-100 text-amber-900 border border-amber-300/30'
                       }`}
                       title="قفل القراءة الليلية لتقليل إجهاد الأعين عند رصد المستندات الطويلة"
@@ -1599,19 +1599,19 @@ export default function DocumentsModule({
                     <span className=" text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]  ">|</span>
                     <button
                       onClick={() => setPreviewMode('simulated')}
-                      className={`text-xs px-2.5 py-1 rounded font-black transition-all ${previewMode === 'simulated' ? 'bg-amber-500 text-white border border-amber-600 font-extrabold shadow-sm' : 'text-white border border-transparent hover:bg-slate-800'}`}
+                      className={`text-xs px-2.5 py-1 rounded font-black transition-all ${previewMode === 'simulated' ? 'bg-gradient-to-r from-[#c9a84c] to-[#a67c30] text-white border border-amber-600 font-extrabold shadow-sm' : 'text-white border border-transparent hover:bg-[#0a1628]'}`}
                     >
                       المنظر الذكي 📜
                     </button>
                     <button
                       onClick={() => setPreviewMode('actual')}
-                      className={`text-xs px-2.5 py-1 rounded font-black transition-all ${previewMode === 'actual' ? 'bg-emerald-600 text-white border border-emerald-500 font-extrabold shadow-sm' : 'text-white border border-transparent hover:bg-slate-800'}`}
+                      className={`text-xs px-2.5 py-1 rounded font-black transition-all ${previewMode === 'actual' ? 'bg-emerald-600 text-white border border-emerald-500 font-extrabold shadow-sm' : 'text-white border border-transparent hover:bg-[#0a1628]'}`}
                     >
                       المستند الحقيقي المرفوع 📄
                     </button>
                     <button
                       onClick={() => setPreviewMode('iframe')}
-                      className={`text-xs px-2.5 py-1 rounded font-black transition-all ${previewMode === 'iframe' ? 'bg-indigo-600 text-white border border-indigo-500 font-extrabold shadow-sm' : 'text-white border border-transparent hover:bg-slate-800'}`}
+                      className={`text-xs px-2.5 py-1 rounded font-black transition-all ${previewMode === 'iframe' ? 'bg-indigo-600 text-white border border-indigo-500 font-extrabold shadow-sm' : 'text-white border border-transparent hover:bg-[#0a1628]'}`}
                     >
                       المعالج العام 🌐
                     </button>
@@ -1621,7 +1621,7 @@ export default function DocumentsModule({
                 {/* شريط أدوات مصغر لتصنيف المستند وترميزه اللوني بقوة */}
                 {isFocusedRead && selectedDocForOcr && (
                   <div className="space-y-2 shrink-0 animate-fade-in">
-                    <div className="bg-slate-50 border border-border px-4 py-3 rounded-2xl flex flex-col md:flex-row items-center justify-between gap-4 text-right shadow-sm" dir="rtl">
+                    <div className="bg-[#0a1628] border border-border px-4 py-3 rounded-2xl flex flex-col md:flex-row items-center justify-between gap-4 text-right shadow-sm" dir="rtl">
                       <div className="flex flex-wrap items-center gap-2.5">
                         <span className="text-xs font-black text-slate-750 flex items-center gap-1">
                           ✍️ خط القراءة:
@@ -1636,10 +1636,10 @@ export default function DocumentsModule({
                               key={font.id}
                               type="button"
                               onClick={() => setReadingFont(font.id as any)}
-                              className={`text-xs px-3 py-1.5 rounded-xl font-bold transition-all active:scale-95 cursor-pointer border ${
+                              className={`text-xs px-3 py-1.5 rounded-2xl font-bold transition-all active:scale-95 cursor-pointer border ${
                                 readingFont === font.id 
-                                  ? 'bg-amber-500 text-slate-950 border-amber-600 shadow-sm font-black' 
-                                  : 'bg-white border-slate-200 text-slate-200 font-bold'
+                                  ? 'bg-gradient-to-r from-[#c9a84c] to-[#a67c30] text-[#94a3b8] border-amber-600 shadow-sm font-black' 
+                                  : 'bg-[#0a1628] border-[#1e3a5f] text-[#94a3b8] font-bold'
                               }`}
                             >
                               {font.name}
@@ -1648,7 +1648,7 @@ export default function DocumentsModule({
                         </div>
                       </div>
                     </div>
-                  <div className="bg-slate-50  border border-border px-4 py-3 rounded-2xl flex flex-col md:flex-row items-center justify-between gap-4 text-right shadow-sm" dir="rtl">
+                  <div className="bg-[#0a1628]  border border-border px-4 py-3 rounded-2xl flex flex-col md:flex-row items-center justify-between gap-4 text-right shadow-sm" dir="rtl">
                     {/* Classification section */}
                     <div className="flex flex-wrap items-center gap-2.5">
                       <span className="text-xs font-black text-slate-750  flex items-center gap-1">
@@ -1669,7 +1669,7 @@ export default function DocumentsModule({
                                 onUpdateState('documents', updatedDoc);
                                 setSelectedDocForOcr(updatedDoc);
                               }}
-                              className={`text-xs px-3 py-1.5 rounded-xl font-bold transition-all active:scale-95 cursor-pointer border ${
+                              className={`text-xs px-3 py-1.5 rounded-2xl font-bold transition-all active:scale-95 cursor-pointer border ${
                                 isSelected 
                                   ? 'bg-accent/15 text-accent border-accent/45 shadow-sm font-black' 
                                   : 'bg-gradient-to-br from-[#050e21] to-[#0c1a35]  border-border text-slate-750 '
@@ -1687,12 +1687,12 @@ export default function DocumentsModule({
                       <span className="text-xs font-black text-slate-750 ">
                         🏷️ ترميز بصري ملون:
                       </span>
-                      <div className="flex items-center gap-2 bg-gradient-to-br from-[#050e21] to-[#0c1a35]  px-2.5 py-1.5 rounded-xl border border-border">
+                      <div className="flex items-center gap-2 bg-gradient-to-br from-[#050e21] to-[#0c1a35]  px-2.5 py-1.5 rounded-2xl border border-border">
                         {[
                           { code: 'red', name: 'أحمر', label: 'مراجعة', dot: 'bg-rose-500' },
                           { code: 'green', name: 'أخضر', label: 'معتمد', dot: 'bg-emerald-500' },
                           { code: 'blue', name: 'أزرق', label: 'عاجل', dot: 'bg-indigo-500' },
-                          { code: 'amber', name: 'أصفر', label: 'دراسة', dot: 'bg-amber-500' },
+                          { code: 'amber', name: 'أصفر', label: 'دراسة', dot: 'bg-gradient-to-r from-[#c9a84c] to-[#a67c30]' },
                           { code: 'purple', name: 'أرجواني', label: 'سري', dot: 'bg-purple-500' },
                         ].map(({ code, name, label, dot }) => {
                           const isSelected = selectedDocForOcr.colorCode === code;
@@ -1745,7 +1745,7 @@ export default function DocumentsModule({
 
                 {/* Interactive Dynamic Highlighting Controls Panel in Focused Mode */}
                 {isFocusedRead && (
-                  <div className="bg-amber-500/[0.04]  border border-amber-500 p-3.5 rounded-2xl space-y-3 shrink-0 animate-fade-in text-right" dir="rtl">
+                  <div className="bg-gradient-to-r from-[#c9a84c] to-[#a67c30]/[0.04]  border border-amber-500 p-3.5 rounded-2xl space-y-3 shrink-0 animate-fade-in text-right" dir="rtl">
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-amber-500 pb-2">
                       <div className="flex items-center gap-2">
                         <span className="text-sm">🎨</span>
@@ -1756,21 +1756,21 @@ export default function DocumentsModule({
                       </div>
                       
                       {/* Font and Spacing Controls */}
-                      <div className="flex flex-wrap items-center gap-4 bg-[#0c1830]/50 p-2 rounded-xl border border-amber-500/20">
+                      <div className="flex flex-wrap items-center gap-4 bg-[#0c1830]/50 p-2 rounded-2xl border border-amber-500/20">
                          <div className="flex items-center gap-2">
                             <span className="text-[10px] font-black text-white">حجم الخط:</span>
                             <div className="flex gap-1">
-                               <button onClick={() => setFontSize(prev => Math.max(12, prev - 2))} className="w-6 h-6 rounded bg-amber-500/20 border border-amber-500/40 text-white text-xs transition-all">-</button>
+                               <button onClick={() => setFontSize(prev => Math.max(12, prev - 2))} className="w-6 h-6 rounded bg-gradient-to-r from-[#c9a84c] to-[#a67c30]/20 border border-amber-500/40 text-white text-xs transition-all">-</button>
                                <span className="text-[10px] font-mono text-white w-6 text-center">{fontSize}</span>
-                               <button onClick={() => setFontSize(prev => Math.min(24, prev + 2))} className="w-6 h-6 rounded bg-amber-500/20 border border-amber-500/40 text-white text-xs transition-all">+</button>
+                               <button onClick={() => setFontSize(prev => Math.min(24, prev + 2))} className="w-6 h-6 rounded bg-gradient-to-r from-[#c9a84c] to-[#a67c30]/20 border border-amber-500/40 text-white text-xs transition-all">+</button>
                             </div>
                          </div>
                          <div className="flex items-center gap-2">
                             <span className="text-[10px] font-black text-white">تباعد الأسطر:</span>
                             <div className="flex gap-1">
-                               <button onClick={() => setLineSpacing(prev => Math.max(1, prev - 0.2))} className="w-6 h-6 rounded bg-amber-500/20 border border-amber-500/40 text-white text-xs transition-all">-</button>
+                               <button onClick={() => setLineSpacing(prev => Math.max(1, prev - 0.2))} className="w-6 h-6 rounded bg-gradient-to-r from-[#c9a84c] to-[#a67c30]/20 border border-amber-500/40 text-white text-xs transition-all">-</button>
                                <span className="text-[10px] font-mono text-white w-8 text-center">{lineSpacing.toFixed(1)}</span>
-                               <button onClick={() => setLineSpacing(prev => Math.min(3, prev + 0.2))} className="w-6 h-6 rounded bg-amber-500/20 border border-amber-500/40 text-white text-xs transition-all">+</button>
+                               <button onClick={() => setLineSpacing(prev => Math.min(3, prev + 0.2))} className="w-6 h-6 rounded bg-gradient-to-r from-[#c9a84c] to-[#a67c30]/20 border border-amber-500/40 text-white text-xs transition-all">+</button>
                             </div>
                          </div>
                       </div>
@@ -1781,7 +1781,7 @@ export default function DocumentsModule({
                         <div className="flex gap-1.5">
                           {(['amber', 'emerald', 'rose', 'sky'] as const).map((color) => {
                             const bgStyle = {
-                              amber: 'bg-amber-400 border-amber-500',
+                              amber: 'bg-gradient-to-r from-[#c9a84c] to-[#a67c30] border-amber-500',
                               emerald: 'bg-emerald-400 border-emerald-500',
                               rose: 'bg-rose-400 border-rose-500',
                               sky: 'bg-sky-400 border-sky-500'
@@ -1819,7 +1819,7 @@ export default function DocumentsModule({
                           }
                         }}
                         placeholder="أدخل كلمة أو جملة كاملة تريد تمييزها داخل المستند..."
-                        className="flex-1 bg-gradient-to-br from-[#050e21] to-[#0c1a35]  border border-border px-3.5 py-2 rounded-xl text-xs text-main  font-bold focus:outline-none focus:border-accent placeholder: text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.8)] "
+                        className="flex-1 bg-gradient-to-br from-[#050e21] to-[#0c1a35]  border border-border px-3.5 py-2 rounded-2xl text-xs text-main  font-bold focus:outline-none focus:border-accent placeholder: text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.8)] "
                       />
                       <button
                         onClick={() => {
@@ -1828,7 +1828,7 @@ export default function DocumentsModule({
                             setHighlightInput('');
                           }
                         }}
-                        className="bg-[#ca8a04][#b45309] text-white font-black px-4 py-2 rounded-xl text-xs shadow-sm transition-all active:scale-[0.98] cursor-pointer shrink-0"
+                        className="bg-[#ca8a04][#b45309] text-white font-black px-4 py-2 rounded-2xl text-xs shadow-sm transition-all active:scale-[0.98] cursor-pointer shrink-0"
                       >
                         إضافة تمييز 🎨
                       </button>
@@ -1854,9 +1854,9 @@ export default function DocumentsModule({
                                   addHighlightKeyword(term, activeHighlightColor);
                                 }
                               }}
-                              className={`text-[10px] px-2.5 py-1 rounded-lg font-bold border transition-all active:scale-95 cursor-pointer ${
+                              className={`text-[10px] px-2.5 py-1 rounded-2xl font-bold border transition-all active:scale-95 cursor-pointer ${
                                 isAlreadyHighlighted
-                                  ? 'bg-amber-500 border-amber-500 text-amber-400 font-black '
+                                  ? 'bg-gradient-to-r from-[#c9a84c] to-[#a67c30] border-amber-500 text-amber-400 font-black '
                                   : 'bg-gradient-to-br from-[#050e21] to-[#0c1a35]  border-border  text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.8)] '
                               }`}
                             >
@@ -1869,7 +1869,7 @@ export default function DocumentsModule({
 
                     {/* Custom highlights list */}
                     {Object.keys(highlightedKeywords).length > 0 && (
-                      <div className="bg-gradient-to-br from-[#050e21] to-[#0c1a35]  p-2.5 rounded-xl border border-dashed border-border flex flex-wrap justify-between items-center gap-2">
+                      <div className="bg-gradient-to-br from-[#050e21] to-[#0c1a35]  p-2.5 rounded-2xl border border-dashed border-border flex flex-wrap justify-between items-center gap-2">
                         <div className="flex flex-wrap gap-1.5 min-w-0">
                           {Object.entries(highlightedKeywords).map(([term, color]) => {
                             const badgeColor = {
@@ -1881,7 +1881,7 @@ export default function DocumentsModule({
                             return (
                               <span
                                 key={term}
-                                className={`text-[10px] font-black px-2 py-0.5 rounded-md border flex items-center gap-1 shrink-0 ${badgeColor}`}
+                                className={`text-[10px] font-black px-2 py-0.5 rounded-2xl border flex items-center gap-1 shrink-0 ${badgeColor}`}
                               >
                                 <span>{term}</span>
                                 <button
@@ -1921,12 +1921,12 @@ export default function DocumentsModule({
                                       ? 'bg-[#fbf7f0] text-[#3c2f2f] border-[#e6d8be] shadow-[0_15px_40px_rgba(44,31,23,0.08)]' 
                                       : readerTheme === 'dark'
                                         ? 'bg-[#0a0d14] text-[#cbd5e1] border-[#1e293b] shadow-[0_15px_40px_rgba(0,0,0,0.5)]'
-                                        : 'bg-white text-[#1e293b] border-[#e2e8f0] shadow-[0_15px_40px_rgba(148,163,184,0.08)]'
+                                        : 'bg-[#0a1628] text-[#1e293b] border-[#e2e8f0] shadow-[0_15px_40px_rgba(148,163,184,0.08)]'
                                   }`}
                                 >
                                   {/* Inside customization bar */}
                                   <div className={`px-4 py-3 border-b flex flex-wrap items-center justify-between gap-3 shrink-0 ${
-                                    readerTheme === 'sepia' ? 'border-[#e6d8be] bg-[#f5ebd6]/60' : readerTheme === 'dark' ? 'border-[#1e293b] bg-[#111622]/60' : 'border-[#e2e8f0] bg-slate-50/85'
+                                    readerTheme === 'sepia' ? 'border-[#e6d8be] bg-[#f5ebd6]/60' : readerTheme === 'dark' ? 'border-[#1e293b] bg-[#111622]/60' : 'border-[#e2e8f0] bg-[#0a1628]/85'
                                   }`}>
                                     {/* Font & Spacing controls */}
                                     <div className="flex items-center gap-4 flex-wrap">
@@ -1936,8 +1936,8 @@ export default function DocumentsModule({
                                           <button 
                                             type="button"
                                             onClick={() => setFontSize(prev => Math.max(12, prev - 1))}
-                                            className={`w-7 h-7 rounded-lg text-xs font-bold flex items-center justify-center transition-colors border ${
-                                              readerTheme === 'sepia' ? 'bg-[#dfd3bc] border-[#d8c9a8]' : readerTheme === 'dark' ? 'bg-[#334155] border-[#314155]' : 'bg-slate-100 border-slate-200'
+                                            className={`w-7 h-7 rounded-2xl text-xs font-bold flex items-center justify-center transition-colors border ${
+                                              readerTheme === 'sepia' ? 'bg-[#dfd3bc] border-[#d8c9a8]' : readerTheme === 'dark' ? 'bg-[#334155] border-[#314155]' : 'bg-[#0a1628] border-[#1e3a5f]'
                                             }`}
                                           >
                                             أ-
@@ -1946,8 +1946,8 @@ export default function DocumentsModule({
                                           <button 
                                             type="button"
                                             onClick={() => setFontSize(prev => Math.min(32, prev + 1))}
-                                            className={`w-7 h-7 rounded-lg text-xs font-bold flex items-center justify-center transition-colors border ${
-                                              readerTheme === 'sepia' ? 'bg-[#dfd3bc] border-[#d8c9a8]' : readerTheme === 'dark' ? 'bg-[#334155] border-[#314155]' : 'bg-slate-100 border-slate-200'
+                                            className={`w-7 h-7 rounded-2xl text-xs font-bold flex items-center justify-center transition-colors border ${
+                                              readerTheme === 'sepia' ? 'bg-[#dfd3bc] border-[#d8c9a8]' : readerTheme === 'dark' ? 'bg-[#334155] border-[#314155]' : 'bg-[#0a1628] border-[#1e3a5f]'
                                             }`}
                                           >
                                             أ+
@@ -1961,8 +1961,8 @@ export default function DocumentsModule({
                                           <button 
                                             type="button"
                                             onClick={() => setLineSpacing(prev => Math.max(1.2, prev - 0.2))}
-                                            className={`w-7 h-7 rounded-lg text-xs font-bold flex items-center justify-center transition-colors border ${
-                                              readerTheme === 'sepia' ? 'bg-[#dfd3bc] border-[#d8c9a8]' : readerTheme === 'dark' ? 'bg-[#334155] border-[#314155]' : 'bg-slate-100 border-slate-200'
+                                            className={`w-7 h-7 rounded-2xl text-xs font-bold flex items-center justify-center transition-colors border ${
+                                              readerTheme === 'sepia' ? 'bg-[#dfd3bc] border-[#d8c9a8]' : readerTheme === 'dark' ? 'bg-[#334155] border-[#314155]' : 'bg-[#0a1628] border-[#1e3a5f]'
                                             }`}
                                           >
                                             ↕-
@@ -1971,8 +1971,8 @@ export default function DocumentsModule({
                                           <button 
                                             type="button"
                                             onClick={() => setLineSpacing(prev => Math.min(3.0, prev + 0.2))}
-                                            className={`w-7 h-7 rounded-lg text-xs font-bold flex items-center justify-center transition-colors border ${
-                                              readerTheme === 'sepia' ? 'bg-[#dfd3bc] border-[#d8c9a8]' : readerTheme === 'dark' ? 'bg-[#334155] border-[#314155]' : 'bg-slate-100 border-slate-200'
+                                            className={`w-7 h-7 rounded-2xl text-xs font-bold flex items-center justify-center transition-colors border ${
+                                              readerTheme === 'sepia' ? 'bg-[#dfd3bc] border-[#d8c9a8]' : readerTheme === 'dark' ? 'bg-[#334155] border-[#314155]' : 'bg-[#0a1628] border-[#1e3a5f]'
                                             }`}
                                           >
                                             ↕+
@@ -1984,17 +1984,17 @@ export default function DocumentsModule({
                                     {/* Reader Themes */}
                                     <div className="flex items-center gap-2">
                                       <span className="text-[11px] font-black opacity-85">المظهر:</span>
-                                      <div className="flex bg-slate-200/50 p-0.5 rounded-lg border border-border/80 gap-1">
+                                      <div className="flex bg-[#0a1628]/50 p-0.5 rounded-2xl border border-border/80 gap-1">
                                         {[
                                           { id: 'sepia', label: '📜 دافئ', style: 'bg-[#fbf7f0] text-[#3c2f2f]' },
-                                          { id: 'light', label: '☀️ ناصع', style: 'bg-white text-slate-900' },
-                                          { id: 'dark', label: '🌙 ليلي', style: 'bg-slate-950 text-slate-100' },
+                                          { id: 'light', label: '☀️ ناصع', style: 'bg-[#0a1628] text-[#94a3b8]' },
+                                          { id: 'dark', label: '🌙 ليلي', style: 'bg-[#0a1628] text-[#94a3b8]' },
                                         ].map(theme => (
                                           <button
                                             key={theme.id}
                                             type="button"
                                             onClick={() => setReaderTheme(theme.id as any)}
-                                            className={`px-2 py-1 text-[10px] font-black rounded-md transition-all cursor-pointer ${
+                                            className={`px-2 py-1 text-[10px] font-black rounded-2xl transition-all cursor-pointer ${
                                               readerTheme === theme.id 
                                                 ? 'bg-emerald-600 text-white shadow-sm' 
                                                 : 'text-slate-650'
@@ -2009,8 +2009,8 @@ export default function DocumentsModule({
 
                                   {/* Elegant Content Body for long technical reading */}
                                   <div className="flex-1 overflow-y-auto px-6 py-6 sm:px-10 sm:py-8 space-y-5 custom-scrollbar bg-transparent">
-                                    <div className="border-b pb-4 mb-4 select-text border-slate-300/30">
-                                      <div className="flex items-center gap-2 text-[10px] font-bold opacity-75 mb-1.5 bg-emerald-500/10 text-emerald-700 px-2.5 py-0.5 rounded-md inline-flex">
+                                    <div className="border-b pb-4 mb-4 select-text border-[#1e3a5f]/30">
+                                      <div className="flex items-center gap-2 text-[10px] font-bold opacity-75 mb-1.5 bg-emerald-500/10 text-emerald-700 px-2.5 py-0.5 rounded-2xl inline-flex">
                                         <span>{selectedDocForOcr.category}</span>
                                         <span>•</span>
                                         <span>تاريخ الرفع: {selectedDocForOcr.uploadedAt}</span>
@@ -2018,7 +2018,7 @@ export default function DocumentsModule({
                                         <span>الحجم: {selectedDocForOcr.size}</span>
                                       </div>
                                       <h2 className={`font-black text-lg select-all leading-tight ${
-                                        readerTheme === 'sepia' ? 'text-[#1c1212]' : readerTheme === 'dark' ? 'text-white' : 'text-slate-950'
+                                        readerTheme === 'sepia' ? 'text-[#1c1212]' : readerTheme === 'dark' ? 'text-white' : 'text-[#94a3b8]'
                                       }`}>
                                         {selectedDocForOcr.name}
                                       </h2>
@@ -2043,8 +2043,8 @@ export default function DocumentsModule({
                                       
                                       <div className="space-y-4">
                                         {selectedDocForOcr.content_text ? (
-                                          <div className={`p-4 rounded-xl border border-dashed text-right font-medium leading-relaxed shadow-sm ${
-                                            readerTheme === 'sepia' ? 'bg-[#f4ebe1] border-[#dfd2be]' : readerTheme === 'dark' ? 'bg-[#0f141f] border-slate-800' : 'bg-slate-50 border-slate-200'
+                                          <div className={`p-4 rounded-2xl border border-dashed text-right font-medium leading-relaxed shadow-sm ${
+                                            readerTheme === 'sepia' ? 'bg-[#f4ebe1] border-[#dfd2be]' : readerTheme === 'dark' ? 'bg-[#0f141f] border-[#1e3a5f]' : 'bg-[#0a1628] border-[#1e3a5f]'
                                           }`}>
                                             {renderHighlightedText(selectedDocForOcr.content_text)}
                                           </div>
@@ -2059,13 +2059,13 @@ export default function DocumentsModule({
 
                                   {/* Bottom bar of reader layout */}
                                   <div className={`px-5 py-3 border-t text-xs shrink-0 flex items-center justify-between font-mono ${
-                                    readerTheme === 'sepia' ? 'border-[#e6d8be] bg-[#f5ebd6]/60 text-[#7c6a5e]' : readerTheme === 'dark' ? 'border-[#1e293b] bg-[#111622]/60 text-slate-100 font-bold' : 'border-[#e2e8f0] bg-slate-50/80 text-slate-700'
+                                    readerTheme === 'sepia' ? 'border-[#e6d8be] bg-[#f5ebd6]/60 text-[#7c6a5e]' : readerTheme === 'dark' ? 'border-[#1e293b] bg-[#111622]/60 text-[#94a3b8] font-bold' : 'border-[#e2e8f0] bg-[#0a1628]/80 text-[#94a3b8]'
                                   }`}>
                                     <span className="font-sans font-black">بوابة العدالة الرقمية • الأبحاث القانونية المبسطة</span>
                                     <button
                                       type="button"
                                       onClick={() => setIsReaderMode(false)}
-                                      className="px-3 py-1 font-bold rounded-lg bg-emerald-600 text-white font-sans transition-all flex items-center gap-1 active:scale-[0.98] cursor-pointer shadow-sm shadow-emerald-500/10"
+                                      className="px-3 py-1 font-bold rounded-2xl bg-emerald-600 text-white font-sans transition-all flex items-center gap-1 active:scale-[0.98] cursor-pointer shadow-sm shadow-emerald-500/10"
                                     >
                                       <span> العودة للمنظهر الطبيعي</span>
                                     </button>
@@ -2079,10 +2079,10 @@ export default function DocumentsModule({
                                   transformOrigin: 'top center',
                                   transition: 'transform 0.2s cubic-bezier(0.4, 0, 0.2, 1)'
                                 }}
-                                className={`border-[6px] border-double rounded-xl p-5 shadow-2xl mx-auto w-full ${isFocusedRead ? 'max-w-[850px]' : 'max-w-[95%]'} min-h-[480px] font-serif text-right select-none relative overflow-hidden transition-all duration-300 ${
+                                className={`border-[6px] border-double rounded-2xl p-5 shadow-2xl mx-auto w-full ${isFocusedRead ? 'max-w-[850px]' : 'max-w-[95%]'} min-h-[480px] font-serif text-right select-none relative overflow-hidden transition-all duration-300 ${
                                   isDocNightMode 
-                                    ? 'bg-slate-950 text-slate-100 border-yellow-500/50 shadow-yellow-500/5 shadow-2xl' 
-                                    : 'bg-amber-50 text-slate-900 border-primary/40'
+                                    ? 'bg-[#0a1628] text-[#94a3b8] border-yellow-500/50 shadow-yellow-500/5 shadow-2xl' 
+                                    : 'bg-amber-50 text-[#94a3b8] border-primary/40'
                                 }`}
                               >
                                 {/* Royal Saudi Legal Heading Watermark design background */}
@@ -2107,19 +2107,19 @@ export default function DocumentsModule({
                                 </div>
       
                                 {/* Body and Content text paragraph */}
-                                <div className={`leading-relaxed text-justify shrink-0 space-y-3 relative z-10 font-medium transition-all ${isFocusedRead ? 'h-[440px]' : 'h-[260px]'} overflow-y-auto pr-1 ${readMode ? 'text-base font-bold' : 'text-xs'} ${isDocNightMode ? 'text-white font-bold' : 'text-slate-800'}`} style={{ fontFamily: readingFont === 'amiri' ? '"Amiri", serif' : readingFont === 'playfair' ? '"Playfair Display", serif' : 'inherit' }}>
-                                  <p className={`indent-5 leading-loose font-bold border-r-2 border-primary/45 pr-2 ${isDocNightMode ? 'text-slate-100' : 'text-slate-900 font-bold'}`}>
-                                    أنه في هذا التاريخ وبناءً على البيانات المودعة في سجلاتنا العدلية وحاوية الأرشيف السحابي؛ تم تسجيل الوثيقة وصنف الملحق القانوني تحت مسمى <strong className={`${isDocNightMode ? 'text-slate-100' : 'text-slate-950 font-black'} text-xs`}>({renderHighlightedText(selectedDocForOcr.name)})</strong> التابع لتصنيف <span className={`${isDocNightMode ? 'bg-amber-900 text-white' : 'bg-amber-200/80 text-amber-950'} px-1.5 py-0.5 rounded font-black text-[10px]`}>{selectedDocForOcr.category}</span>.
+                                <div className={`leading-relaxed text-justify shrink-0 space-y-3 relative z-10 font-medium transition-all ${isFocusedRead ? 'h-[440px]' : 'h-[260px]'} overflow-y-auto pr-1 ${readMode ? 'text-base font-bold' : 'text-xs'} ${isDocNightMode ? 'text-white font-bold' : 'text-[#94a3b8]'}`} style={{ fontFamily: readingFont === 'amiri' ? '"Amiri", serif' : readingFont === 'playfair' ? '"Playfair Display", serif' : 'inherit' }}>
+                                  <p className={`indent-5 leading-loose font-bold border-r-2 border-primary/45 pr-2 ${isDocNightMode ? 'text-[#94a3b8]' : 'text-[#94a3b8] font-bold'}`}>
+                                    أنه في هذا التاريخ وبناءً على البيانات المودعة في سجلاتنا العدلية وحاوية الأرشيف السحابي؛ تم تسجيل الوثيقة وصنف الملحق القانوني تحت مسمى <strong className={`${isDocNightMode ? 'text-[#94a3b8]' : 'text-[#94a3b8] font-black'} text-xs`}>({renderHighlightedText(selectedDocForOcr.name)})</strong> التابع لتصنيف <span className={`${isDocNightMode ? 'bg-amber-900 text-white' : 'bg-amber-200/80 text-amber-950'} px-1.5 py-0.5 rounded font-black text-[10px]`}>{selectedDocForOcr.category}</span>.
                                   </p>
                                   
-                                  <div className={`p-3 border rounded-xl space-y-2 mt-2 ${isDocNightMode ? 'bg-[#050e21] border-yellow-500/30' : 'bg-amber-100/50 border-amber-900/40'}`}>
+                                  <div className={`p-3 border rounded-2xl space-y-2 mt-2 ${isDocNightMode ? 'bg-[#050e21] border-yellow-500/30' : 'bg-amber-100/50 border-amber-900/40'}`}>
                                     <span className={`text-primary font-black block ${readMode ? 'text-sm' : 'text-xs'}`}>🔎 المقتطف العدلي المستخرج للفحص السريع:</span>
-                                    <p className={`leading-relaxed font-bold italic ${readMode ? 'text-base line-clamp-none' : 'text-xs line-clamp-5'} ${isDocNightMode ? 'text-slate-100' : 'text-slate-800'}`}>
+                                    <p className={`leading-relaxed font-bold italic ${readMode ? 'text-base line-clamp-none' : 'text-xs line-clamp-5'} ${isDocNightMode ? 'text-[#94a3b8]' : 'text-[#94a3b8]'}`}>
                                       {selectedDocForOcr.content_text ? `"${renderHighlightedText(selectedDocForOcr.content_text)}"` : "لم يتم تشغيل القارئ الضوئي بعد؛ انقر فوق زر قراءة OCR لاستخراج المحتويات الخطية."}
                                     </p>
                                   </div>
       
-                                  <p className={`text-xs mt-2 font-bold select-all leading-normal ${isDocNightMode ? 'text-white font-bold' : 'text-slate-700'}`}>
+                                  <p className={`text-xs mt-2 font-bold select-all leading-normal ${isDocNightMode ? 'text-white font-bold' : 'text-[#94a3b8]'}`}>
                                     جميع الملاحق والسندات مدرجة ومحققة في شبكة خوادم سحابة العدالة، وممتثلة لتشفير AES-256 لضمان سرية المداولات بين العميل ومكتب المحاماة.
                                   </p>
                                 </div>
@@ -2137,19 +2137,19 @@ export default function DocumentsModule({
                               </div>
                             )
                             ) : previewMode === 'iframe' && (
-                              <div className="w-full h-full bg-slate-100 rounded-xl flex flex-col items-center justify-center space-y-4">
-                                <div className="w-24 h-24 bg-white rounded-full flex items-center justify-center border-4 border-indigo-500/20 text-indigo-600 shadow-xl">
+                              <div className="w-full h-full bg-[#0a1628] rounded-2xl flex flex-col items-center justify-center space-y-4">
+                                <div className="w-24 h-24 bg-[#0a1628] rounded-full flex items-center justify-center border-4 border-indigo-500/20 text-indigo-600 shadow-xl">
                                   <iframe src={selectedDocForOcr.fileUrl} className="w-full h-full rounded-full" title="File Preview" />
                                 </div>
                                 <div className="text-center">
-                                  <h4 className="text-slate-900 font-black">فتح عبر المعالج العام</h4>
-                                  <p className="text-slate-200 font-bold text-xs">جاري محاكاة عرض الملف عبر المتصفح الافتراضي</p>
+                                  <h4 className="text-[#94a3b8] font-black">فتح عبر المعالج العام</h4>
+                                  <p className="text-[#94a3b8] font-bold text-xs">جاري محاكاة عرض الملف عبر المتصفح الافتراضي</p>
                                 </div>
                                 <a 
                                   href={selectedDocForOcr.fileUrl} 
                                   target="_blank" 
                                   rel="noreferrer"
-                                  className="px-6 py-2 bg-indigo-600 text-white rounded-xl text-sm font-black hover:bg-indigo-700 transition-all shadow-lg"
+                                  className="px-6 py-2 bg-indigo-600 text-white rounded-2xl text-sm font-black hover:bg-indigo-700 transition-all shadow-lg"
                                 >
                                   فتح المستند في نافذة خارجية 🚀
                                 </a>
@@ -2162,7 +2162,7 @@ export default function DocumentsModule({
                                   selectedDocForOcr.fileUrl.match(/\.(pdf)$/i) ? (
                                     <iframe
                                       src={`${selectedDocForOcr.fileUrl}#toolbar=0`}
-                                      className="w-full h-full rounded-2xl border-4 border-white shadow-2xl bg-white"
+                                      className="w-full h-full rounded-2xl border-4 border-white shadow-2xl bg-[#0a1628]"
                                       title={selectedDocForOcr.name}
                                       style={{ transform: `rotate(${rotation}deg)`, transformOrigin: 'center center' }}
                                     />
@@ -2171,15 +2171,15 @@ export default function DocumentsModule({
                                       <img
                                         src={selectedDocForOcr.fileUrl}
                                         alt={selectedDocForOcr.name}
-                                        className="max-w-full max-h-full object-contain rounded-xl shadow-2xl border-4 border-white transition-all duration-300"
+                                        className="max-w-full max-h-full object-contain rounded-2xl shadow-2xl border-4 border-white transition-all duration-300"
                                         style={{ transform: `rotate(${rotation}deg) scale(${zoomLevel / 100})`, filter: isDocNightMode ? 'invert(0.9) hue-rotate(180deg)' : 'none' }}
                                       />
                                     </div>
                                   ) : (
-                                    <div className="flex flex-col items-center justify-center h-full w-full bg-white rounded-3xl border-2 border-dashed border-slate-200 p-12">
-                                      <FileText className="w-24 h-24 text-slate-200 mb-6" strokeWidth={1} />
-                                      <h3 className="text-xl font-bold text-slate-900 mb-2">لا يمكن عرض هذا الملف مباشرة</h3>
-                                      <p className="text-slate-200 font-bold mb-8 text-center max-w-md">نوع الملف المرفوع ({selectedDocForOcr.fileUrl.split('.').pop()?.toUpperCase()}) يتطلب تحميله أو فتحه في برنامج خارجي.</p>
+                                    <div className="flex flex-col items-center justify-center h-full w-full bg-[#0a1628] rounded-3xl border-2 border-dashed border-[#1e3a5f] p-12">
+                                      <FileText className="w-24 h-24 text-[#94a3b8] mb-6" strokeWidth={1} />
+                                      <h3 className="text-xl font-bold text-[#94a3b8] mb-2">لا يمكن عرض هذا الملف مباشرة</h3>
+                                      <p className="text-[#94a3b8] font-bold mb-8 text-center max-w-md">نوع الملف المرفوع ({selectedDocForOcr.fileUrl.split('.').pop()?.toUpperCase()}) يتطلب تحميله أو فتحه في برنامج خارجي.</p>
                                       <a href={selectedDocForOcr.fileUrl} target="_blank" rel="noopener noreferrer"
                                         className="px-8 py-3 bg-blue-600 text-white rounded-2xl font-black shadow-xl shadow-blue-500/30 hover:bg-blue-700 transition-all flex items-center gap-2">
                                         <ExternalLink className="w-4 h-4" />
@@ -2188,7 +2188,7 @@ export default function DocumentsModule({
                                     </div>
                                   )
                                 ) : (
-                                  <div className="flex flex-col items-center justify-center h-full w-full text-slate-200 font-bold p-12 text-center">
+                                  <div className="flex flex-col items-center justify-center h-full w-full text-[#94a3b8] font-bold p-12 text-center">
                                     <AlertCircle className="w-16 h-16 mb-4 opacity-20" />
                                     <p>لم يتم العثور على رابط صالح لعرض الملف المادي.</p>
                                   </div>
@@ -2198,12 +2198,12 @@ export default function DocumentsModule({
                           </div>
                         ) : (
                           <div className="flex flex-col items-center justify-center h-full text-center space-y-4 opacity-50">
-                            <div className="p-8 bg-white/50 rounded-full border border-slate-200 shadow-inner">
-                              <Search className="w-16 h-16 text-slate-200" strokeWidth={1} />
+                            <div className="p-8 bg-[#0a1628]/50 rounded-full border border-[#1e3a5f] shadow-inner">
+                              <Search className="w-16 h-16 text-[#94a3b8]" strokeWidth={1} />
                             </div>
                             <div>
-                               <h3 className="text-lg font-black text-slate-900">منطقة العرض والمراجعة العدلية ⚖️</h3>
-                               <p className="text-sm font-bold text-slate-200 font-bold">يرجى تحديد مستند من القائمة الجانبية لبدء الفحص والتحليل.</p>
+                               <h3 className="text-lg font-black text-[#94a3b8]">منطقة العرض والمراجعة العدلية ⚖️</h3>
+                               <p className="text-sm font-bold text-[#94a3b8] font-bold">يرجى تحديد مستند من القائمة الجانبية لبدء الفحص والتحليل.</p>
                             </div>
                           </div>
                         )}
@@ -2213,17 +2213,17 @@ export default function DocumentsModule({
                            <motion.div 
                              initial={{ opacity: 0, x: -20 }}
                              animate={{ opacity: 1, x: 0 }}
-                             className="absolute bottom-6 left-6 p-4 bg-white/95 backdrop-blur-xl border border-blue-500 shadow-2xl rounded-2xl z-50 max-w-[220px] text-right"
+                             className="absolute bottom-6 left-6 p-4 bg-[#0a1628]/95 backdrop-blur-xl border border-blue-500 shadow-2xl rounded-2xl z-50 max-w-[220px] text-right"
                              dir="rtl"
                            >
                               <div className="flex items-center gap-2 mb-2 text-blue-600">
                                  <Brain className="w-4 h-4" />
                                  <span className="text-[11px] font-black font-black uppercase">رؤية المحلل الذكي:</span>
                               </div>
-                              <p className="text-[10px] text-slate-800 font-bold leading-relaxed mb-3">
+                              <p className="text-[10px] text-[#94a3b8] font-bold leading-relaxed mb-3">
                                  تم رصد <span className="text-blue-600 font-black">7 كلمات مفتاحية</span> هامة تتعلق بالالتزامات والمهل النظامية.
                               </p>
-                              <button className="w-full py-2 bg-blue-600 text-white rounded-lg text-[10px] font-black hover:bg-blue-700 transition-all">
+                              <button className="w-full py-2 bg-blue-600 text-white rounded-2xl text-[10px] font-black hover:bg-blue-700 transition-all">
                                  تصدير ملخص التحليل
                               </button>
                            </motion.div>
@@ -2233,13 +2233,13 @@ export default function DocumentsModule({
                 {/* Reader actions buttons footer (When focused) */}
                 {isFocusedRead && (
                   <div className="flex justify-center gap-4 shrink-0 animate-fade-in pt-2">
-                    <button className="flex items-center gap-2 px-6 py-3 bg-white border border-slate-200 rounded-2xl text-[11px] font-black text-slate-800 shadow-sm hover:bg-slate-50 transition-all active:scale-95">
+                    <button className="flex items-center gap-2 px-6 py-3 bg-[#0a1628] border border-[#1e3a5f] rounded-2xl text-[11px] font-black text-[#94a3b8] shadow-sm hover:bg-[#0a1628] transition-all active:scale-95">
                       📥 تحميل المستند بصيغة PDF
                     </button>
-                    <button className="flex items-center gap-2 px-6 py-3 bg-white border border-slate-200 rounded-2xl text-[11px] font-black text-slate-800 shadow-sm hover:bg-slate-50 transition-all active:scale-95">
+                    <button className="flex items-center gap-2 px-6 py-3 bg-[#0a1628] border border-[#1e3a5f] rounded-2xl text-[11px] font-black text-[#94a3b8] shadow-sm hover:bg-[#0a1628] transition-all active:scale-95">
                       🖨️ طباعة فورية للمراجعة
                     </button>
-                    <button onClick={() => setReadMode(false)} className="flex items-center gap-2 px-6 py-3 bg-slate-900 border border-slate-800 rounded-2xl text-[11px] font-black text-white shadow-xl hover:bg-slate-850 transition-all active:scale-95">
+                    <button onClick={() => setReadMode(false)} className="flex items-center gap-2 px-6 py-3 bg-[#0a1628] border border-[#1e3a5f] rounded-2xl text-[11px] font-black text-white shadow-xl hover:bg-slate-850 transition-all active:scale-95">
                       ❌ إغلاق وضع التركيز
                     </button>
                   </div>
@@ -2263,12 +2263,12 @@ export default function DocumentsModule({
                   )}
                 </div>
 
-                <div className="flex-1 bg-slate-900 border border-slate-800 rounded-[2rem] p-6 overflow-auto custom-scrollbar shadow-inner relative group/ocr-box">
+                <div className="flex-1 bg-[#0a1628] border border-[#1e3a5f] rounded-[2rem] p-6 overflow-auto custom-scrollbar shadow-inner relative group/ocr-box">
                   {ocrResult ? (
                     <div className="space-y-4 text-right">
                        <div className="flex items-center justify-between mb-2">
                           <button 
-                            className="text-[10px] bg-slate-800 border border-slate-700 text-white px-3 py-1 rounded-lg hover:bg-slate-700 transition-all flex items-center gap-1.5 font-bold"
+                            className="text-[10px] bg-[#0a1628] border border-[#1e3a5f] text-white px-3 py-1 rounded-2xl hover:bg-[#0a1628] transition-all flex items-center gap-1.5 font-bold"
                             onClick={() => {
                                navigator.clipboard.writeText(ocrResult);
                                alert('تم نسخ النص المستخرج لـ الحافظة بنجاح!');
@@ -2277,43 +2277,43 @@ export default function DocumentsModule({
                              <span>📋</span>
                              <span>نسخ النص كاملاً</span>
                           </button>
-                          <div className="text-[10px] font-mono text-slate-100 font-bold opacity-60">
+                          <div className="text-[10px] font-mono text-[#94a3b8] font-bold opacity-60">
                              دقة التحليل المتوقعة: 98.4%
                           </div>
                        </div>
-                       <div className="text-sm font-bold text-slate-100 leading-loose selection:bg-amber-500 selection:text-slate-950 whitespace-pre-wrap font-sans">
+                       <div className="text-sm font-bold text-[#94a3b8] leading-loose selection:bg-gradient-to-r from-[#c9a84c] to-[#a67c30] selection:text-[#94a3b8] whitespace-pre-wrap font-sans">
                          {renderHighlightedText(ocrResult)}
                        </div>
                     </div>
                   ) : (
                     <div className="flex flex-col items-center justify-center h-full space-y-4 opacity-40">
                       <div className="relative">
-                        <Cpu className="w-16 h-16 text-slate-700" strokeWidth={1} />
+                        <Cpu className="w-16 h-16 text-[#94a3b8]" strokeWidth={1} />
                         <div className="absolute top-0 right-0 w-20 h-20 bg-blue-500/10 blur-xl rounded-full"></div>
                       </div>
-                      <p className="text-sm font-bold text-slate-700 font-bold text-center max-w-xs">انقر على زر "تحليل OCR" في كارت المستند للبدء باستخراج النصوص باستخدام محرك AI Adalah.</p>
+                      <p className="text-sm font-bold text-[#94a3b8] font-bold text-center max-w-xs">انقر على زر "تحليل OCR" في كارت المستند للبدء باستخراج النصوص باستخدام محرك AI Adalah.</p>
                     </div>
                   )}
                 </div>
 
                 {/* Analysis meta indicators */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 shrink-0">
-                  <div className="bg-slate-100/50 p-4 rounded-2xl border border-slate-200 space-y-1">
+                  <div className="bg-[#0a1628]/50 p-4 rounded-2xl border border-[#1e3a5f] space-y-1">
                     <span className="text-[10px] font-black text-slate-755 uppercase tracking-wider block">التصنيف الإحصائي AI:</span>
-                    <div className="p-2 bg-white rounded-xl border border-slate-200 shadow-sm">
+                    <div className="p-2 bg-[#0a1628] rounded-2xl border border-[#1e3a5f] shadow-sm">
                       <div className="flex justify-between items-center text-[11px] font-black text-main">
                         <span>مستند عقد قانوني</span>
                         <span className="text-blue-600 font-mono">92%</span>
                       </div>
-                      <div className="w-full h-1.5 bg-slate-100 rounded-full mt-2 overflow-hidden">
+                      <div className="w-full h-1.5 bg-[#0a1628] rounded-full mt-2 overflow-hidden">
                         <div className="h-full bg-blue-500 rounded-full" style={{ width: '92%' }}></div>
                       </div>
                     </div>
                   </div>
-                  <div className="bg-slate-100/50 p-4 rounded-2xl border border-slate-200 space-y-1">
+                  <div className="bg-[#0a1628]/50 p-4 rounded-2xl border border-[#1e3a5f] space-y-1">
                     <span className="text-[10px] font-black text-slate-755 uppercase tracking-wider block">الامتثال والتحقق:</span>
-                    <div className="p-2 bg-white rounded-xl border border-slate-200 shadow-sm flex items-center gap-3">
-                      <div className="bg-emerald-50 text-emerald-600 p-2 rounded-lg">
+                    <div className="p-2 bg-[#0a1628] rounded-2xl border border-[#1e3a5f] shadow-sm flex items-center gap-3">
+                      <div className="bg-emerald-50 text-emerald-600 p-2 rounded-2xl">
                         <CheckCircle className="w-4 h-4" />
                       </div>
                       <div className="text-[10px] font-black text-emerald-800 leading-tight">
@@ -2334,7 +2334,7 @@ export default function DocumentsModule({
                       <Sparkles className="w-4 h-4 text-amber-400 animate-pulse" />
                       منشئ مذكرات الدفاع والمذكرات القانونية الذكي (Gemini Legal Drafter)
                     </h3>
-                    <p className="text-[10px] text-slate-500 font-bold leading-normal">
+                    <p className="text-[10px] text-[#94a3b8]0 font-bold leading-normal">
                       صياغة لوائح ومذكرات قانونية أولية متوافقة مع الأنظمة السعودية والمصطلحات القضائية في دقائق.
                     </p>
                   </div>
@@ -2343,7 +2343,7 @@ export default function DocumentsModule({
                 {!draftedMemoResult ? (
                   <form onSubmit={handleGenerateLegalMemo} className="flex-1 overflow-y-auto max-h-[500px] space-y-3.5 pr-1 text-right">
                     <div className="space-y-1">
-                      <label className="text-[11px] text-slate-800 font-black block text-right">ربط المذكرة بقضية نشطة:</label>
+                      <label className="text-[11px] text-[#94a3b8] font-black block text-right">ربط المذكرة بقضية نشطة:</label>
                       <select
                         value={memoSelectedCaseId}
                         onChange={(e) => {
@@ -2356,7 +2356,7 @@ export default function DocumentsModule({
                             setMemoDemands(`1. رد الدعوى لعدم التأسيس الشرعي.\n2. تحميل المدعي الأتعاب والمصاريف.`);
                           }
                         }}
-                        className="w-full bg-slate-50 border border-slate-300 p-2 rounded-lg text-[11px] font-bold text-slate-800 focus:border-amber-500 outline-none"
+                        className="w-full bg-[#0a1628] border border-[#1e3a5f] p-2 rounded-2xl text-[11px] font-bold text-[#94a3b8] focus:border-amber-500 outline-none"
                       >
                         <option value="">-- اختر من قائمة قضايا المكتب النشطة --</option>
                         {cases.map(c => (
@@ -2369,11 +2369,11 @@ export default function DocumentsModule({
 
                     <div className="grid grid-cols-2 gap-3">
                       <div className="space-y-1 text-right">
-                        <label className="text-[11px] text-slate-800 font-black block">نوع المذكرة القانونية:</label>
+                        <label className="text-[11px] text-[#94a3b8] font-black block">نوع المذكرة القانونية:</label>
                         <select
                           value={memoType}
                           onChange={(e) => setMemoType(e.target.value)}
-                          className="w-full bg-slate-50 border border-slate-300 p-2 rounded-lg text-[11px] font-bold text-slate-800 focus:border-amber-500 outline-none"
+                          className="w-full bg-[#0a1628] border border-[#1e3a5f] p-2 rounded-2xl text-[11px] font-bold text-[#94a3b8] focus:border-amber-500 outline-none"
                         >
                           <option value="defense">مذكرة دفاع جوابية أولية</option>
                           <option value="response">مذكرة تعقيب وجواب للدعوى</option>
@@ -2383,41 +2383,41 @@ export default function DocumentsModule({
                       </div>
 
                       <div className="space-y-1 text-right">
-                        <label className="text-[11px] text-slate-800 font-black block">اسم المحكمة أو الدائرة:</label>
+                        <label className="text-[11px] text-[#94a3b8] font-black block">اسم المحكمة أو الدائرة:</label>
                         <input
                           type="text"
                           value={memoCourtName}
                           onChange={(e) => setMemoCourtName(e.target.value)}
                           placeholder="مثال: المحكمة التجارية الأولى بالدمام"
-                          className="w-full bg-slate-50 border border-slate-300 p-2 rounded-lg text-[11px] font-bold text-slate-800 focus:border-amber-500 outline-none"
+                          className="w-full bg-[#0a1628] border border-[#1e3a5f] p-2 rounded-2xl text-[11px] font-bold text-[#94a3b8] focus:border-amber-500 outline-none"
                         />
                       </div>
                     </div>
 
                     <div className="space-y-1 text-right">
-                      <label className="text-[11px] text-slate-800 font-black block">الخلفية الواقعية وسرد الأحداث (الأهم):</label>
+                      <label className="text-[11px] text-[#94a3b8] font-black block">الخلفية الواقعية وسرد الأحداث (الأهم):</label>
                       <textarea
                         value={memoFacts}
                         onChange={(e) => setMemoFacts(e.target.value)}
                         rows={4}
                         placeholder="اكتب هنا وقائع الدعوى باختصار، مثل تفاصيل الاتفاق أو طبيعة الخلاف المالي أو القضائي الحاصل..."
-                        className="w-full bg-slate-50 border border-slate-300 p-2.5 rounded-lg text-[11px] font-bold leading-relaxed focus:border-amber-500 outline-none text-right"
+                        className="w-full bg-[#0a1628] border border-[#1e3a5f] p-2.5 rounded-2xl text-[11px] font-bold leading-relaxed focus:border-amber-500 outline-none text-right"
                       />
                     </div>
 
                     <div className="space-y-1 text-right">
-                      <label className="text-[11px] text-slate-800 font-black block">الطلبات والدفوع المقترحة لموكلنا:</label>
+                      <label className="text-[11px] text-[#94a3b8] font-black block">الطلبات والدفوع المقترحة لموكلنا:</label>
                       <textarea
                         value={memoDemands}
                         onChange={(e) => setMemoDemands(e.target.value)}
                         rows={3}
                         placeholder="مثل: عدم الاختصاص، سقوط المطالبة بالتقادم، رد المدعي وتكبيده المصاريف القضائية..."
-                        className="w-full bg-slate-50 border border-slate-300 p-2.5 rounded-lg text-[11px] font-bold leading-relaxed focus:border-amber-500 outline-none text-right"
+                        className="w-full bg-[#0a1628] border border-[#1e3a5f] p-2.5 rounded-2xl text-[11px] font-bold leading-relaxed focus:border-amber-500 outline-none text-right"
                       />
                     </div>
 
                     {memoDraftError && (
-                      <div className="p-3 bg-rose-50 border border-rose-200 text-rose-700 text-xs font-bold rounded-xl text-right">
+                      <div className="p-3 bg-rose-50 border border-rose-200 text-rose-700 text-xs font-bold rounded-2xl text-right">
                         ⚠️ فشل الإنشاء: {memoDraftError}
                       </div>
                     )}
@@ -2425,7 +2425,7 @@ export default function DocumentsModule({
                     <button
                       type="submit"
                       disabled={isDraftingMemo}
-                      className="w-full bg-amber-600 hover:bg-amber-700 disabled:opacity-50 text-white font-black text-xs py-3 rounded-xl transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer"
+                      className="w-full bg-gradient-to-r from-[#c9a84c] to-[#a67c30] hover:bg-gradient-to-r from-[#c9a84c] to-[#a67c30] disabled:opacity-50 text-white font-black text-xs py-3 rounded-2xl transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer"
                     >
                       {isDraftingMemo ? (
                         <>
@@ -2453,7 +2453,7 @@ export default function DocumentsModule({
                       </button>
                     </div>
 
-                    <div className="flex-1 bg-slate-900 border border-slate-800 rounded-2xl p-5 overflow-auto custom-scrollbar shadow-inner text-right">
+                    <div className="flex-1 bg-[#0a1628] border border-[#1e3a5f] rounded-2xl p-5 overflow-auto custom-scrollbar shadow-inner text-right">
                       <pre className="text-xs text-amber-100 font-mono font-medium whitespace-pre-wrap leading-loose">
                         {draftedMemoResult}
                       </pre>
@@ -2466,7 +2466,7 @@ export default function DocumentsModule({
                           navigator.clipboard.writeText(draftedMemoResult);
                           alert('تم نسخ المذكرة القانونية للحافظة بنجاح! 📋');
                         }}
-                        className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs py-2.5 rounded-xl transition-all shadow-md flex items-center justify-center gap-1.5 cursor-pointer"
+                        className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs py-2.5 rounded-2xl transition-all shadow-md flex items-center justify-center gap-1.5 cursor-pointer"
                       >
                         📋 نسخ المذكرة للحافظة
                       </button>
@@ -2483,7 +2483,7 @@ export default function DocumentsModule({
                           document.body.removeChild(link);
                           URL.revokeObjectURL(url);
                         }}
-                        className="flex-1 bg-slate-800 hover:bg-slate-950 text-white font-bold text-xs py-2.5 rounded-xl transition-all shadow-md flex items-center justify-center gap-1.5 cursor-pointer"
+                        className="flex-1 bg-[#0a1628] hover:bg-[#0a1628] text-white font-bold text-xs py-2.5 rounded-2xl transition-all shadow-md flex items-center justify-center gap-1.5 cursor-pointer"
                       >
                         💾 تنزيل كملف نصي
                       </button>
@@ -2502,7 +2502,7 @@ export default function DocumentsModule({
                       <Camera className="w-4 h-4 text-emerald-500 animate-pulse" />
                       المسح المباشر بالكاميرا (Camera Scanner)
                     </h3>
-                    <p className="text-[10px] text-slate-500 font-bold leading-normal">
+                    <p className="text-[10px] text-[#94a3b8]0 font-bold leading-normal">
                       توجيه الكاميرا إلى المستندات الورقية واستخراج رقم القضية وتاريخها والبيانات المهمة تلقائياً بالذكاء الاصطناعي.
                     </p>
                   </div>
@@ -2514,7 +2514,7 @@ export default function DocumentsModule({
                       <Camera className="w-10 h-10 text-emerald-600" />
                     </div>
                     <button 
-                      className="bg-emerald-600 hover:bg-emerald-700 text-white font-black px-6 py-3 rounded-xl shadow-md transition-all active:scale-95"
+                      className="bg-emerald-600 hover:bg-emerald-700 text-white font-black px-6 py-3 rounded-2xl shadow-md transition-all active:scale-95"
                       onClick={() => setIsCameraActive(true)}
                     >
                       فتح الكاميرا للمسح الضوئي 📷
@@ -2522,9 +2522,9 @@ export default function DocumentsModule({
                   </div>
                 ) : isCameraActive && !cameraScanResult ? (
                   <div className="flex-1 flex flex-col space-y-4">
-                    <div className="relative w-full h-[300px] bg-slate-900 rounded-xl overflow-hidden shadow-inner flex items-center justify-center border-2 border-slate-800">
+                    <div className="relative w-full h-[300px] bg-[#0a1628] rounded-2xl overflow-hidden shadow-inner flex items-center justify-center border-2 border-[#1e3a5f]">
                       <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10"></div>
-                      <div className="absolute w-[80%] h-[80%] border-2 border-emerald-500/50 rounded-lg">
+                      <div className="absolute w-[80%] h-[80%] border-2 border-emerald-500/50 rounded-2xl">
                         <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-emerald-500"></div>
                         <div className="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-emerald-500"></div>
                         <div className="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-emerald-500"></div>
@@ -2537,18 +2537,18 @@ export default function DocumentsModule({
                           <span className="text-white text-xs font-black">جاري تحليل الشبكة وفك ترميز النصوص...</span>
                         </div>
                       ) : (
-                        <span className="text-slate-500 text-xs font-black z-10">معاينة الكاميرا (محاكاة)</span>
+                        <span className="text-[#94a3b8]0 text-xs font-black z-10">معاينة الكاميرا (محاكاة)</span>
                       )}
                     </div>
                     <div className="flex gap-2">
                        <button 
-                         className="flex-1 bg-slate-800 text-white py-2.5 rounded-lg text-xs font-bold"
+                         className="flex-1 bg-[#0a1628] text-white py-2.5 rounded-2xl text-xs font-bold"
                          onClick={() => setIsCameraActive(false)}
                        >
                          إلغاء ❌
                        </button>
                        <button 
-                         className="flex-[2] bg-emerald-600 hover:bg-emerald-500 text-white py-2.5 rounded-lg text-xs font-black flex items-center justify-center gap-2"
+                         className="flex-[2] bg-emerald-600 hover:bg-emerald-500 text-white py-2.5 rounded-2xl text-xs font-black flex items-center justify-center gap-2"
                          disabled={isCameraProcessing}
                          onClick={() => {
                            setIsCameraProcessing(true);
@@ -2570,28 +2570,28 @@ export default function DocumentsModule({
                   </div>
                 ) : cameraScanResult ? (
                   <div className="flex-1 flex flex-col space-y-4">
-                     <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4 flex justify-between items-center">
+                     <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-4 flex justify-between items-center">
                        <span className="text-emerald-800 font-bold text-xs">تم التقاط المستند وتحليله بنجاح ✅</span>
                        <button onClick={() => setCameraScanResult(null)} className="text-emerald-600 hover:underline text-[10px] font-bold">إعادة المسح</button>
                      </div>
-                     <div className="bg-slate-100 p-4 rounded-xl border border-slate-200 space-y-3">
+                     <div className="bg-[#0a1628] p-4 rounded-2xl border border-[#1e3a5f] space-y-3">
                        <div className="grid grid-cols-2 gap-3">
-                         <div className="bg-white p-2 rounded-lg border border-slate-200 shadow-sm flex flex-col">
-                           <span className="text-slate-500 text-[10px] font-bold">رقم القضية المستخرج</span>
-                           <span className="text-slate-900 font-black text-sm">{cameraScanResult.caseNumber}</span>
+                         <div className="bg-[#0a1628] p-2 rounded-2xl border border-[#1e3a5f] shadow-sm flex flex-col">
+                           <span className="text-[#94a3b8]0 text-[10px] font-bold">رقم القضية المستخرج</span>
+                           <span className="text-[#94a3b8] font-black text-sm">{cameraScanResult.caseNumber}</span>
                          </div>
-                         <div className="bg-white p-2 rounded-lg border border-slate-200 shadow-sm flex flex-col">
-                           <span className="text-slate-500 text-[10px] font-bold">تاريخ الجلسة/القضية</span>
-                           <span className="text-slate-900 font-black text-sm">{cameraScanResult.caseDate}</span>
+                         <div className="bg-[#0a1628] p-2 rounded-2xl border border-[#1e3a5f] shadow-sm flex flex-col">
+                           <span className="text-[#94a3b8]0 text-[10px] font-bold">تاريخ الجلسة/القضية</span>
+                           <span className="text-[#94a3b8] font-black text-sm">{cameraScanResult.caseDate}</span>
                          </div>
                        </div>
-                       <div className="bg-white p-3 rounded-lg border border-slate-200 shadow-sm flex items-center justify-between">
-                         <span className="text-[10px] font-black text-slate-700">دقة استخراج البيانات AI (Confidence)</span>
+                       <div className="bg-[#0a1628] p-3 rounded-2xl border border-[#1e3a5f] shadow-sm flex items-center justify-between">
+                         <span className="text-[10px] font-black text-[#94a3b8]">دقة استخراج البيانات AI (Confidence)</span>
                          <span className="text-emerald-600 font-mono font-bold text-xs bg-emerald-100 px-2 py-0.5 rounded-full">{cameraScanResult.confidence}%</span>
                        </div>
                      </div>
-                     <div className="flex-1 bg-slate-900 rounded-xl p-4 overflow-auto custom-scrollbar border border-slate-800 text-right">
-                       <span className="text-[#fbbf24] text-[10px] block mb-2 font-black border-b border-slate-700 pb-1">نص المستند المقروء:</span>
+                     <div className="flex-1 bg-[#0a1628] rounded-2xl p-4 overflow-auto custom-scrollbar border border-[#1e3a5f] text-right">
+                       <span className="text-[#fbbf24] text-[10px] block mb-2 font-black border-b border-[#1e3a5f] pb-1">نص المستند المقروء:</span>
                        <div className="text-white text-xs leading-loose font-mono whitespace-pre-wrap">{cameraScanResult.text}</div>
                      </div>
                   </div>
@@ -2667,7 +2667,7 @@ export default function DocumentsModule({
           <div className={`p-6 rounded-[2.5rem] border transition-all duration-700 space-y-6 shadow-md relative overflow-hidden backdrop-blur-md ${
             isDeepSearch 
               ? 'bg-blue-50/50 border-blue-200 shadow-[0_0_50px_rgba(59,130,246,0.1)] ring-1 ring-blue-300' 
-              : 'bg-white border-slate-200 shadow-slate-200/50'
+              : 'bg-[#0a1628] border-[#1e3a5f] shadow-slate-200/50'
           }`}>
             {isDeepSearch && (
               <div className="absolute top-0 right-0 w-64 h-64 bg-blue-400/10 blur-[80px] rounded-full pointer-events-none animate-pulse"></div>
@@ -2681,14 +2681,14 @@ export default function DocumentsModule({
       </div>
       <div className="text-right">
         <h3 className="font-black text-lg group-hover:text-[#FACC15] transition-colors">مسح ضوئي ذكي</h3>
-        <p className="text-xs text-slate-300 font-bold">استخراج البيانات بالذكاء الاصطناعي</p>
+        <p className="text-xs text-[#94a3b8] font-bold">استخراج البيانات بالذكاء الاصطناعي</p>
       </div>
     </button>
   </div>
   
       <div className="flex flex-col lg:flex-row gap-5 relative z-10">
               <div className="relative flex-1 group">
-                <div className={`absolute right-4 top-1/2 -translate-y-1/2 p-2 rounded-xl transition-all duration-300 ${isDeepSearch ? 'bg-blue-600 text-white shadow-md shadow-blue-500/30' : 'bg-slate-100 text-slate-700 group-focus-within:bg-blue-600 group-focus-within:text-white'}`}>
+                <div className={`absolute right-4 top-1/2 -translate-y-1/2 p-2 rounded-2xl transition-all duration-300 ${isDeepSearch ? 'bg-blue-600 text-white shadow-md shadow-blue-500/30' : 'bg-[#0a1628] text-[#94a3b8] group-focus-within:bg-blue-600 group-focus-within:text-white'}`}>
                   <Search className={`w-4 h-4 ${isDeepSearch ? 'animate-pulse' : ''}`} />
                 </div>
                 <input 
@@ -2696,10 +2696,10 @@ export default function DocumentsModule({
                   placeholder={isDeepSearch ? "جاري محاكاة البحث العميق في نصوص المستندات (NLP)..." : "ابحث باسم المرفق، الرقم القضائي، أو الكلمات المفتاحية..."}
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className={`w-full bg-slate-50 text-sm py-4 pr-14 pl-4 rounded-2xl transition-all duration-500 focus:outline-none font-bold placeholder-slate-400 ${
+                  className={`w-full bg-[#0a1628] text-sm py-4 pr-14 pl-4 rounded-2xl transition-all duration-500 focus:outline-none font-bold placeholder-slate-400 ${
                     isDeepSearch 
                       ? 'border border-blue-300/50 text-blue-900 focus:border-blue-400 focus:shadow-[0_0_20px_rgba(59,130,246,0.1)] ring-2 ring-blue-400/10' 
-                      : 'border border-slate-200 text-slate-800 focus:border-blue-500 focus:ring-2 focus:ring-blue-100'
+                      : 'border border-[#1e3a5f] text-[#94a3b8] focus:border-blue-500 focus:ring-2 focus:ring-blue-100'
                   }`}
                 />
                 {isDeepSearch && (
@@ -2719,10 +2719,10 @@ export default function DocumentsModule({
                   className={`flex items-center gap-3 px-8 py-5 rounded-2xl text-[12px] font-black transition-all duration-500 active:scale-95 whitespace-nowrap overflow-hidden relative group/deep shadow-md ${
                     isDeepSearch 
                       ? 'bg-blue-600 text-white shadow-blue-500/30' 
-                      : 'bg-white border border-slate-200 text-slate-800 hover:bg-slate-50'
+                      : 'bg-[#0a1628] border border-[#1e3a5f] text-[#94a3b8] hover:bg-[#0a1628]'
                   }`}
                 >
-                  <div className={`p-2 rounded-xl transition-all ${isDeepSearch ? 'bg-white/20' : 'bg-blue-50 text-blue-700 ring-1 ring-blue-100'}`}>
+                  <div className={`p-2 rounded-2xl transition-all ${isDeepSearch ? 'bg-[#0a1628]/20' : 'bg-blue-50 text-blue-700 ring-1 ring-blue-100'}`}>
                     <Sparkles className="w-4 h-4" />
                   </div>
                   <span className="tracking-tight">{isDeepSearch ? 'تم تفعيل المسح العميق ✨' : 'تفعيل البحث بالذكاء الاصطناعي'}</span>
@@ -2733,60 +2733,60 @@ export default function DocumentsModule({
             
             <div className="flex flex-wrap gap-4 items-center justify-between relative z-10 pt-2">
               <div className="flex flex-wrap gap-3">
-                <div className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-xl border border-slate-200 shadow-sm focus-within:ring-2 focus-within:ring-blue-100 transition-all">
-                  <span className="text-[10px] font-black text-slate-200 font-bold uppercase tracking-widest whitespace-nowrap">تاريخ الرفع:</span>
+                <div className="flex items-center gap-2 bg-[#0a1628] px-3 py-1.5 rounded-2xl border border-[#1e3a5f] shadow-sm focus-within:ring-2 focus-within:ring-blue-100 transition-all">
+                  <span className="text-[10px] font-black text-[#94a3b8] font-bold uppercase tracking-widest whitespace-nowrap">تاريخ الرفع:</span>
                   <div className="relative group flex items-center">
-                    <Calendar className="w-3 h-3 text-slate-200 font-bold ml-1" />
+                    <Calendar className="w-3 h-3 text-[#94a3b8] font-bold ml-1" />
                     <input 
                       type="date"
                       value={dateFilter}
                       onChange={e => setDateFilter(e.target.value)}
-                      className="bg-transparent border-none py-1 pr-1 pl-4 text-[10px] font-bold text-slate-800 outline-none cursor-pointer min-w-[100px] focus:ring-0"
+                      className="bg-transparent border-none py-1 pr-1 pl-4 text-[10px] font-bold text-[#94a3b8] outline-none cursor-pointer min-w-[100px] focus:ring-0"
                     />
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-xl border border-slate-200 shadow-sm focus-within:ring-2 focus-within:ring-blue-100 transition-all">
-                  <span className="text-[10px] font-black text-slate-200 font-bold uppercase tracking-widest whitespace-nowrap">العميل:</span>
+                <div className="flex items-center gap-2 bg-[#0a1628] px-3 py-1.5 rounded-2xl border border-[#1e3a5f] shadow-sm focus-within:ring-2 focus-within:ring-blue-100 transition-all">
+                  <span className="text-[10px] font-black text-[#94a3b8] font-bold uppercase tracking-widest whitespace-nowrap">العميل:</span>
                   <select 
                     value={clientFilter}
                     onChange={e => setClientFilter(e.target.value)}
-                    className="bg-transparent border-none p-1 text-[10px] font-bold text-slate-800 outline-none cursor-pointer focus:ring-0 appearance-none pr-8 relative"
+                    className="bg-transparent border-none p-1 text-[10px] font-bold text-[#94a3b8] outline-none cursor-pointer focus:ring-0 appearance-none pr-8 relative"
                   >
                     <option value="">كافة العملاء</option>
                     {clients.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
                   </select>
                 </div>
 
-                <div className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-xl border border-slate-200 shadow-sm focus-within:ring-2 focus-within:ring-blue-100 transition-all">
-                  <span className="text-[10px] font-black text-slate-200 font-bold uppercase tracking-widest whitespace-nowrap">القضية:</span>
+                <div className="flex items-center gap-2 bg-[#0a1628] px-3 py-1.5 rounded-2xl border border-[#1e3a5f] shadow-sm focus-within:ring-2 focus-within:ring-blue-100 transition-all">
+                  <span className="text-[10px] font-black text-[#94a3b8] font-bold uppercase tracking-widest whitespace-nowrap">القضية:</span>
                   <select 
                     value={caseFilter}
                     onChange={e => setCaseFilter(e.target.value)}
-                    className="bg-transparent border-none p-1 text-[10px] font-bold text-slate-800 outline-none cursor-pointer focus:ring-0 appearance-none pr-8 relative"
+                    className="bg-transparent border-none p-1 text-[10px] font-bold text-[#94a3b8] outline-none cursor-pointer focus:ring-0 appearance-none pr-8 relative"
                   >
                     <option value="">كافة القضايا</option>
                     {cases.map(c => <option key={c.id} value={c.caseName}>{c.caseName}</option>)}
                   </select>
                 </div>
 
-                <div className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-xl border border-slate-200 shadow-sm focus-within:ring-2 focus-within:ring-blue-100 transition-all">
-                  <span className="text-[10px] font-black text-slate-200 font-bold uppercase tracking-widest whitespace-nowrap">التصنيف:</span>
+                <div className="flex items-center gap-2 bg-[#0a1628] px-3 py-1.5 rounded-2xl border border-[#1e3a5f] shadow-sm focus-within:ring-2 focus-within:ring-blue-100 transition-all">
+                  <span className="text-[10px] font-black text-[#94a3b8] font-bold uppercase tracking-widest whitespace-nowrap">التصنيف:</span>
                   <select 
                     value={typeFilter}
                     onChange={e => setTypeFilter(e.target.value)}
-                    className="bg-transparent border-none p-1 text-[10px] font-bold text-slate-800 outline-none cursor-pointer focus:ring-0 appearance-none pr-8 relative"
+                    className="bg-transparent border-none p-1 text-[10px] font-bold text-[#94a3b8] outline-none cursor-pointer focus:ring-0 appearance-none pr-8 relative"
                   >
                     {folders.slice(1).map(f => <option key={f.id} value={f.id}>{f.name}</option>)}
                   </select>
                 </div>
 
-                <div className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-xl border border-slate-200 shadow-sm focus-within:ring-2 focus-within:ring-blue-100 transition-all">
-                  <span className="text-[10px] font-black text-slate-200 font-bold uppercase tracking-widest whitespace-nowrap">الوسوم الذكية:</span>
+                <div className="flex items-center gap-2 bg-[#0a1628] px-3 py-1.5 rounded-2xl border border-[#1e3a5f] shadow-sm focus-within:ring-2 focus-within:ring-blue-100 transition-all">
+                  <span className="text-[10px] font-black text-[#94a3b8] font-bold uppercase tracking-widest whitespace-nowrap">الوسوم الذكية:</span>
                   <select 
                     value={selectedTagFilter || ''}
                     onChange={e => setSelectedTagFilter(e.target.value || null)}
-                    className="bg-transparent border-none p-1 text-[10px] font-bold text-slate-800 outline-none cursor-pointer focus:ring-0 appearance-none pr-8 relative"
+                    className="bg-transparent border-none p-1 text-[10px] font-bold text-[#94a3b8] outline-none cursor-pointer focus:ring-0 appearance-none pr-8 relative"
                   >
                     <option value="">كافة الوسوم</option>
                     {allAvailableTags.map(tag => <option key={tag} value={tag}>{tag}</option>)}
@@ -2795,7 +2795,7 @@ export default function DocumentsModule({
               </div>
 
               <div className="flex items-center gap-3 mt-4 lg:mt-0 w-full lg:w-auto overflow-hidden">
-                <div className="text-[10px] text-slate-700 font-bold px-3 py-1 border-r border-slate-200">
+                <div className="text-[10px] text-[#94a3b8] font-bold px-3 py-1 border-r border-[#1e3a5f]">
                   تمت أرشفة <span className="text-blue-600 font-mono font-black">{documents.length}</span> وثيقة قانونية بإجمالي <span className="text-emerald-600 font-mono font-black">1.2GB</span>
                 </div>
                 <button 
@@ -2808,7 +2808,7 @@ export default function DocumentsModule({
                      setActiveFolderFilter('all');
                      setIsDeepSearch(false);
                   }}
-                  className="mr-auto lg:mr-0 px-4 py-2 bg-red-50 text-red-600 hover:bg-red-100 border border-red-100 rounded-xl text-[10px] font-black transition-all active:scale-95 whitespace-nowrap"
+                  className="mr-auto lg:mr-0 px-4 py-2 bg-red-50 text-red-600 hover:bg-red-100 border border-red-100 rounded-2xl text-[10px] font-black transition-all active:scale-95 whitespace-nowrap"
                 >
                   تصفير الفلاتر ⟲
                 </button>
@@ -2832,7 +2832,7 @@ export default function DocumentsModule({
                   className={`relative bg-gradient-to-br from-[#0c1830] to-[#040d1f] border-2 border-yellow-500/30 rounded-3xl p-6 transition-all duration-500 flex flex-col justify-between shadow-[0_10px_30px_rgba(234,179,8,0.05)] overflow-hidden h-full cursor-grab active:cursor-grabbing`}
                 >
                   {/* Subtle animated background layer on hover */}
-                  <div className="absolute inset-0 bg-yellow-500/5 opacity-0 transition-opacity duration-700 pointer-events-none"></div>
+                  <div className="absolute inset-0 bg-[#c9a84c]/5 opacity-0 transition-opacity duration-700 pointer-events-none"></div>
 
                   <div className="space-y-4 relative z-10">
                     <div className="flex items-center justify-between border-b border-yellow-500/20 pb-3">
@@ -2862,7 +2862,7 @@ export default function DocumentsModule({
                     {/* Tags list */}
                     <div className="flex flex-wrap gap-2 pt-2">
                       {doc.tags.map((t, idx) => (
-                        <span key={idx} className="text-[10px] bg-[#0c1830] text-yellow-100 px-2.5 py-1 rounded-lg border border-yellow-500/30 font-black drop-shadow-[0_0_3px_rgba(253,224,71,0.5)] shadow-inner">
+                        <span key={idx} className="text-[10px] bg-[#0c1830] text-yellow-100 px-2.5 py-1 rounded-2xl border border-yellow-500/30 font-black drop-shadow-[0_0_3px_rgba(253,224,71,0.5)] shadow-inner">
                           {t}
                         </span>
                       ))}
@@ -2877,7 +2877,7 @@ export default function DocumentsModule({
                            e.stopPropagation();
                            setSelectedQRCodeDoc(doc);
                          }}
-                         className="p-2.5 bg-yellow-400 text-blue-950 border border-yellow-500 rounded-xl transition-all shadow-[0_5px_15px_rgba(250,204,21,0.3)] active:scale-95"
+                         className="p-2.5 bg-[#c9a84c] text-blue-950 border border-yellow-500 rounded-2xl transition-all shadow-[0_5px_15px_rgba(250,204,21,0.3)] active:scale-95"
                          title="توليد رمز QR للوصول السريع"
                       >
                          <QrCode className="w-4 h-4 stroke-[2.5px]" />
@@ -2886,7 +2886,7 @@ export default function DocumentsModule({
 
                       <button 
                         onClick={() => handleAiClassify(doc)}
-                        className={`text-white bg-slate-800 border border-slate-700 px-3 py-2 rounded-xl text-xs font-black flex items-center gap-1.5 cursor-pointer transition-all shadow-md  ${isClassifyingDocId === doc.id ? 'animate-pulse' : ''}`}
+                        className={`text-white bg-[#0a1628] border border-[#1e3a5f] px-3 py-2 rounded-2xl text-xs font-black flex items-center gap-1.5 cursor-pointer transition-all shadow-md  ${isClassifyingDocId === doc.id ? 'animate-pulse' : ''}`}
                         disabled={isClassifyingDocId === doc.id}
                       >
                         {isClassifyingDocId === doc.id ? <RefreshCw className="w-3 h-3 animate-spin" /> : <Cpu className="w-3 h-3" />}
@@ -2897,7 +2897,7 @@ export default function DocumentsModule({
                           setSelectedDocForOcr(doc);
                           setRightPanelTab('preview');
                         }}
-                        className="text-white bg-[#0c1830] border border-slate-700 px-3 py-2 rounded-xl text-xs font-black flex items-center gap-1.5 cursor-pointer transition-all shadow-md "
+                        className="text-white bg-[#0c1830] border border-[#1e3a5f] px-3 py-2 rounded-2xl text-xs font-black flex items-center gap-1.5 cursor-pointer transition-all shadow-md "
                         title="معاينة سريعة للمستند"
                       >
                         <span>🔍</span>
@@ -2908,7 +2908,7 @@ export default function DocumentsModule({
                           handleTriggerOcr(doc);
                           setRightPanelTab('ocr');
                         }}
-                        className="text-slate-950 bg-yellow-400 shadow-[0_0_15px_rgba(250,204,21,0.6)] px-3 py-2 rounded-xl text-xs font-black flex items-center gap-1.5 cursor-pointer transition-all "
+                        className="text-[#94a3b8] bg-[#c9a84c] shadow-[0_0_15px_rgba(250,204,21,0.6)] px-3 py-2 rounded-2xl text-xs font-black flex items-center gap-1.5 cursor-pointer transition-all "
                       >
                         <Cpu className="w-3.5 h-3.5" />
                         <span>قراءة OCR</span>
@@ -2918,7 +2918,7 @@ export default function DocumentsModule({
                           setSelectedDocForOcr(doc);
                           setRightPanelTab('versions');
                         }}
-                        className="text-amber-100 bg-amber-900/50 border border-amber-700 px-2.5 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1 cursor-pointer transition-colors shadow-sm"
+                        className="text-amber-100 bg-amber-900/50 border border-amber-700 px-2.5 py-1.5 rounded-2xl text-xs font-bold flex items-center gap-1 cursor-pointer transition-colors shadow-sm"
                         title="سجل وتأريخ الإصدارات"
                       >
                         <span>⏱️ الإصدارات</span>
@@ -2960,7 +2960,7 @@ export default function DocumentsModule({
                 value={contractClient}
                 onChange={(e) => setContractClient(e.target.value)}
                 required
-                className="w-full bg-[#030a1c] border border-slate-800 text-xs font-bold text-white py-3 px-3 rounded-xl outline-none focus:border-primary"
+                className="w-full bg-[#030a1c] border border-[#1e3a5f] text-xs font-bold text-white py-3 px-3 rounded-2xl outline-none focus:border-primary"
               >
                 <option value="">اختار موكل من قاعدة البيانات...</option>
                 {clients.map(cl => (
@@ -2978,7 +2978,7 @@ export default function DocumentsModule({
                 value={contractTitle}
                 onChange={(e) => setContractTitle(e.target.value)}
                 required
-                className="w-full bg-[#030a1c] border border-slate-800 text-xs font-bold text-white py-3 px-3.5 rounded-xl outline-none focus:border-primary"
+                className="w-full bg-[#030a1c] border border-[#1e3a5f] text-xs font-bold text-white py-3 px-3.5 rounded-2xl outline-none focus:border-primary"
               />
             </div>
 
@@ -2990,7 +2990,7 @@ export default function DocumentsModule({
                 value={contractPhone}
                 onChange={(e) => setContractPhone(e.target.value)}
                 required
-                className="w-full bg-[#030a1c] border border-slate-800 text-xs font-bold text-white py-3 px-3.5 rounded-xl outline-none focus:border-primary tracking-wider text-left"
+                className="w-full bg-[#030a1c] border border-[#1e3a5f] text-xs font-bold text-white py-3 px-3.5 rounded-2xl outline-none focus:border-primary tracking-wider text-left"
               />
             </div>
 
@@ -3006,14 +3006,14 @@ export default function DocumentsModule({
                 value={contractContent}
                 onChange={(e) => setContractContent(e.target.value)}
                 required
-                className="w-full h-[180px] bg-[#030a1c] border border-slate-800 text-xs font-bold text-white py-3 px-3.5 rounded-xl outline-none focus:border-primary custom-scrollbar shadow-inner resize-none font-sans font-black"
+                className="w-full h-[180px] bg-[#030a1c] border border-[#1e3a5f] text-xs font-bold text-white py-3 px-3.5 rounded-2xl outline-none focus:border-primary custom-scrollbar shadow-inner resize-none font-sans font-black"
               />
             </div>
 
             <button
               type="submit"
               disabled={isContractSubmitting}
-              className="w-full bg-primary text-white font-black py-4 rounded-xl text-xs shadow-lg shadow-primary/20 active:scale-[0.98] transition-all cursor-pointer"
+              className="w-full bg-primary text-white font-black py-4 rounded-2xl text-xs shadow-lg shadow-primary/20 active:scale-[0.98] transition-all cursor-pointer"
             >
               {isContractSubmitting ? 'جاري التحضير وتصدير مسودة التوقيع للعميل...' : 'إصدار العقد وإرساله لبوابة العميل الفورية للتوثيق بـ OTP 🚀'}
             </button>

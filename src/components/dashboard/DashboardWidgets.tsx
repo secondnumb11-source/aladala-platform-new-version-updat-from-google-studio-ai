@@ -80,7 +80,7 @@ export const AgenciesAlertWidget = ({ agencies }: { agencies: any[] }) => {
           const isUrgent = daysLeft <= 15;
 
           return (
-            <div key={agency.id} className={`p-4 rounded-2xl border transition-all hover:bg-white hover:shadow-lg group ${isUrgent ? 'bg-rose-50 border-rose-100 ring-1 ring-rose-200' : 'bg-slate-50 border-slate-100'}`}>
+            <div key={agency.id} className={`p-4 rounded-2xl border transition-all hover:bg-[#0a1628] hover:shadow-lg group ${isUrgent ? 'bg-rose-50 border-rose-100 ring-1 ring-rose-200' : 'bg-slate-50 border-slate-100'}`}>
               <div className="flex justify-between items-start mb-2">
                 <span className="text-xs font-black text-slate-800 line-clamp-1 group-hover:text-[#c0a060] transition-colors">{agency.client}</span>
                 <span className={`text-[11px] font-black px-2 py-1 rounded-lg ${isUrgent ? 'bg-rose-500 text-white shadow-sm' : 'bg-slate-200 text-slate-700'}`}>
@@ -241,7 +241,7 @@ export const DeadlinesWidget = ({ cases }: { cases: any[] }) => {
                 <span className={`text-[11px] font-black px-2 py-0.5 rounded-lg shadow-sm tracking-widest uppercase ${c.isCritical ? 'bg-rose-500 text-white animate-pulse' : 'bg-amber-400 text-slate-900'}`}>
                   {c.isCritical ? 'حرج جداً' : 'نشط'}
                 </span>
-                <span className="text-[10px] font-mono text-amber-200 font-bold bg-white/5 px-2 py-1 rounded">قضية #{c.case_number}</span>
+                <span className="text-[10px] font-mono text-amber-200 font-bold bg-[#0a1628]/5 px-2 py-1 rounded">قضية #{c.case_number}</span>
               </div>
               <h4 className="text-sm font-black text-white line-clamp-1 mb-2 drop-shadow-md">{c.document_name || c.judgment_type}</h4>
               
@@ -293,7 +293,7 @@ export const UpcomingHearingsList = ({ hearings, cases }: { hearings: any[], cas
         {upcoming.length > 0 ? (
           upcoming.map((h, i) => (
             <div key={i} className="p-2.5 bg-slate-50 border border-slate-100 rounded-xl flex items-center gap-3 hover:bg-indigo-50 transition-colors cursor-pointer group">
-              <div className="w-10 h-10 bg-white text-indigo-600 rounded-xl flex flex-col items-center justify-center shrink-0 shadow-sm group-hover:text-white group-hover:bg-indigo-500 transition-all">
+              <div className="w-10 h-10 bg-[#0a1628] text-indigo-600 rounded-xl flex flex-col items-center justify-center shrink-0 shadow-sm group-hover:text-white group-hover:bg-indigo-500 transition-all">
                 <span className="text-[10.5px] font-black leading-none">{new Date(h.date).getDate()}</span>
                 <span className="text-[9.5px] font-bold mt-0.5 leading-none">{new Date(h.date).toLocaleDateString('ar-SA', { month: 'short' })}</span>
               </div>

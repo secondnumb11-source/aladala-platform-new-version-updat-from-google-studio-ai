@@ -94,7 +94,7 @@ export default function AIAnalysisTool() {
             <p className="text-slate-200 font-bold text-xs mt-2 font-bold">تحليل عميق للدعاوى والعقود والأحكام باستخدام أقوى نماذج الذكاء الاصطناعي.</p>
           </div>
 
-          <div className="bg-white border border-slate-200 p-6 rounded-3xl shadow-lg space-y-6">
+          <div className="bg-[#0a1628] border border-[#1e3a5f] p-6 rounded-3xl shadow-lg space-y-6">
             <div className="mb-4">
               <CaseClientSelector
                 selectedCaseId={selectedCase?.id}
@@ -134,7 +134,7 @@ export default function AIAnalysisTool() {
                 analysisType === 'contract' ? "الصق نص العقد هنا لفحصه..." :
                 "أدخل نص الحكم القضائي لاستخراج الزبدة..."
               }
-              className="w-full bg-white border-2 border-slate-300 rounded-2xl py-4 px-5 text-sm font-bold text-slate-950 placeholder:text-slate-500 outline-none focus:border-amber-500 transition-all font-sans"
+              className="w-full bg-[#0a1628] border-2 border-[#1e3a5f] rounded-2xl py-4 px-5 text-sm font-bold text-slate-950 placeholder:text-slate-500 outline-none focus:border-amber-500 transition-all font-sans"
             />
 
             <button 
@@ -159,8 +159,8 @@ export default function AIAnalysisTool() {
 
         {/* Results Panel */}
         <div className="lg:col-span-7">
-          <div className="bg-white border border-slate-200 rounded-3xl shadow-2xl overflow-hidden min-h-[600px] flex flex-col">
-            <div className="p-6 bg-slate-50 border-b border-slate-200 flex justify-between items-center">
+          <div className="bg-[#0a1628] border border-[#1e3a5f] rounded-3xl shadow-2xl overflow-hidden min-h-[600px] flex flex-col">
+            <div className="p-6 bg-slate-50 border-b border-[#1e3a5f] flex justify-between items-center">
               <h4 className="text-sm font-black text-slate-900 flex items-center gap-2">
                 <BarChart3 className="w-5 h-5 text-indigo-500" />
                 نتائج التقرير التحليلي
@@ -171,7 +171,7 @@ export default function AIAnalysisTool() {
               {result ? (
                 <div className="space-y-6">
                   {/* We could parse the AI output here to show in a more structured way, but for now markdown-style text is fine */}
-                  <div className="text-slate-950 text-sm font-bold leading-loose whitespace-pre-line text-justify font-sans bg-white p-6 rounded-2xl border border-slate-300 shadow-sm">
+                  <div className="text-slate-950 text-sm font-bold leading-loose whitespace-pre-line text-justify font-sans bg-[#0a1628] p-6 rounded-2xl border border-[#1e3a5f] shadow-sm">
                     {result}
                   </div>
 

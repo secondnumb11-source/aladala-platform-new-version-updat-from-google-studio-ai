@@ -140,7 +140,7 @@ export default function AIModule({ onUpdateState, cases = [], invoices = [], ini
     <div className="space-y-8 animate-fade-in high-contrast-card-wrapper" dir="rtl">
       
       {/* Top Banner and Navigation */}
-      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 bg-white border border-slate-200 p-8 rounded-[2.5rem] shadow-xl">
+      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 bg-[#0a1628] border border-[#1e3a5f] p-8 rounded-[2.5rem] shadow-xl">
         <div className="flex items-center gap-5">
           <div className="p-4 bg-slate-900 text-amber-500 rounded-3xl shadow-2xl">
             <Bot className="w-8 h-8" />
@@ -188,7 +188,7 @@ export default function AIModule({ onUpdateState, cases = [], invoices = [], ini
       {/* Main Content Area */}
       <div className="min-h-[700px]">
         <React.Suspense fallback={
-          <div className="flex flex-col items-center justify-center p-20 bg-slate-50/50 rounded-[3rem] border-2 border-dashed border-slate-200">
+          <div className="flex flex-col items-center justify-center p-20 bg-slate-50/50 rounded-[3rem] border-2 border-dashed border-[#1e3a5f]">
              <div className="w-12 h-12 border-4 border-slate-900/10 border-t-slate-900 rounded-full animate-spin mb-4"></div>
              <p className="text-slate-500 font-black text-sm">جاري تهيئة منظومة الذكاء الاصطناعي...</p>
           </div>
@@ -196,8 +196,8 @@ export default function AIModule({ onUpdateState, cases = [], invoices = [], ini
           {activeTab === 'advisor' && (
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
               {/* Chat Room */}
-              <div className="lg:col-span-8 bg-white border border-slate-200 rounded-[2.5rem] shadow-2xl flex flex-col h-[700px] overflow-hidden">
-              <div className="p-6 bg-slate-50 border-b border-slate-200 flex justify-between items-center">
+              <div className="lg:col-span-8 bg-[#0a1628] border border-[#1e3a5f] rounded-[2.5rem] shadow-2xl flex flex-col h-[700px] overflow-hidden">
+              <div className="p-6 bg-slate-50 border-b border-[#1e3a5f] flex justify-between items-center">
                 <div className="flex items-center gap-3">
                   <div className="w-3 h-3 bg-emerald-500 rounded-full animate-pulse"></div>
                   <h4 className="text-sm font-black text-white">غرفة المشورة القانونية المباشرة</h4>
@@ -214,7 +214,7 @@ export default function AIModule({ onUpdateState, cases = [], invoices = [], ini
                     <div className={`px-6 py-4 rounded-3xl text-sm font-bold leading-relaxed shadow-sm ${
                       msg.sender === 'user' 
                         ? 'bg-slate-900 text-white rounded-tr-none' 
-                        : 'bg-white border border-slate-100 text-slate-200 rounded-tl-none'
+                        : 'bg-[#0a1628] border border-slate-100 text-slate-200 rounded-tl-none'
                     } `}>
                       {msg.text}
                     </div>
@@ -223,7 +223,7 @@ export default function AIModule({ onUpdateState, cases = [], invoices = [], ini
                 ))}
                 {isAiLoading && (
                   <div className="flex flex-col gap-2 opacity-70 animate-pulse">
-                    <div className="px-6 py-4 bg-white border border-slate-100 rounded-3xl rounded-tl-none text-sm font-bold text-slate-200 font-bold flex items-center gap-3">
+                    <div className="px-6 py-4 bg-[#0a1628] border border-slate-100 rounded-3xl rounded-tl-none text-sm font-bold text-slate-200 font-bold flex items-center gap-3">
                       <div className="flex gap-1">
                         <div className="w-1.5 h-1.5 bg-amber-500 rounded-full animate-bounce"></div>
                         <div className="w-1.5 h-1.5 bg-amber-500 rounded-full animate-bounce delay-150"></div>
@@ -235,7 +235,7 @@ export default function AIModule({ onUpdateState, cases = [], invoices = [], ini
                 )}
               </div>
 
-              <div className="p-6 bg-white border-t border-slate-100">
+              <div className="p-6 bg-[#0a1628] border-t border-slate-100">
                 <form onSubmit={handleAdvisorChatSubmit} className="relative">
                   <input 
                     type="text"
@@ -267,7 +267,7 @@ export default function AIModule({ onUpdateState, cases = [], invoices = [], ini
                 <button className="w-full bg-amber-500 text-slate-950 py-3 rounded-2xl text-xs font-black shadow-lg transition-all relative z-10">تفعيل الفهرسة المتجهة 📂</button>
               </div>
 
-              <div className="bg-white border border-slate-200 p-8 rounded-[2.5rem] shadow-xl">
+              <div className="bg-[#0a1628] border border-[#1e3a5f] p-8 rounded-[2.5rem] shadow-xl">
                 <h4 className="text-slate-900 font-black text-sm mb-6 flex items-center gap-2">
                   <Sparkles className="w-4 h-4 text-amber-500" />
                   قوالب الذكاء السريع
@@ -306,7 +306,7 @@ export default function AIModule({ onUpdateState, cases = [], invoices = [], ini
         {activeTab === 'gateway' && <AiGatewayTool />}
 
         {activeTab === 'classification' && (
-          <div className="bg-white border border-slate-200 rounded-[2.5rem] shadow-2xl p-8 max-w-4xl mx-auto space-y-6 animate-fade-in">
+          <div className="bg-[#0a1628] border border-[#1e3a5f] rounded-[2.5rem] shadow-2xl p-8 max-w-4xl mx-auto space-y-6 animate-fade-in">
             <div className="flex items-center gap-4 border-b border-slate-100 pb-4">
               <div className="p-3 bg-amber-500/10 text-amber-500 rounded-2xl">
                 <Bot className="w-6 h-6" />
@@ -325,7 +325,7 @@ export default function AIModule({ onUpdateState, cases = [], invoices = [], ini
                   onChange={(e) => setClassificationInput(e.target.value)}
                   rows={6}
                   placeholder="اكتب هنا وقائع وملخص القضية بالتفصيل لتمكين المساعد من تحليلها وتصنيفها بدقة..."
-                  className="w-full bg-slate-50 border-2 border-slate-200 rounded-2xl p-4 text-xs font-semibold text-[#0a0a0a] focus:outline-none focus:border-slate-900 transition-all font-sans leading-relaxed"
+                  className="w-full bg-slate-50 border-2 border-[#1e3a5f] rounded-2xl p-4 text-xs font-semibold text-[#0a0a0a] focus:outline-none focus:border-slate-900 transition-all font-sans leading-relaxed"
                 />
               </div>
 
@@ -390,7 +390,7 @@ export default function AIModule({ onUpdateState, cases = [], invoices = [], ini
 
                 <div className="p-5 bg-slate-50 rounded-3xl border border-slate-100 space-y-2">
                   <h5 className="text-xs font-black text-slate-950 font-black">التبرير والتحليل القانوني السعودي:</h5>
-                  <p className="text-xs font-semibold text-slate-700 leading-relaxed font-sans text-justify bg-white/80 p-4 rounded-xl border border-slate-100 whitespace-pre-line">{classificationResult.reasonAr}</p>
+                  <p className="text-xs font-semibold text-slate-700 leading-relaxed font-sans text-justify bg-[#0a1628]/80 p-4 rounded-xl border border-slate-100 whitespace-pre-line">{classificationResult.reasonAr}</p>
                 </div>
               </div>
             )}

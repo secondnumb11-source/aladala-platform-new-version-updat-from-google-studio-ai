@@ -73,8 +73,8 @@ export default function WebSocketEcho() {
   }, []);
 
   return (
-    <div className="w-full max-w-2xl mx-auto my-8 border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 rounded-xl shadow-sm overflow-hidden font-sans">
-      <div className="p-6 border-b border-slate-200 dark:border-slate-800">
+    <div className="w-full max-w-2xl mx-auto my-8 border border-[#1e3a5f] dark:border-slate-800 bg-[#0a1628] dark:bg-slate-950 rounded-xl shadow-sm overflow-hidden font-sans">
+      <div className="p-6 border-b border-[#1e3a5f] dark:border-slate-800">
         <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-50">WebSocket Echo Test</h3>
       </div>
       <div className="p-6">

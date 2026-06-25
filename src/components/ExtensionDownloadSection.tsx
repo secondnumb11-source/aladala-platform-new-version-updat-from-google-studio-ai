@@ -218,7 +218,7 @@ export default function ExtensionDownloadSection({
       
       {/* Title Header (Luminous & Prestigious) */}
       <div className="text-center space-y-6 relative z-10">
-        <div className="inline-flex items-center gap-4 bg-yellow-400 text-black px-8 py-2.5 rounded-full shadow-[0_10px_30px_rgba(250,204,21,0.3)] text-sm font-black mb-6 border-b-4 border-yellow-600">
+        <div className="inline-flex items-center gap-4 bg-yellow-400 text-white px-8 py-2.5 rounded-full shadow-[0_10px_30px_rgba(250,204,21,0.3)] text-sm font-black mb-6 border-b-4 border-yellow-600">
           <ShieldCheck className="w-5 h-5" />
           بروتوكول الربط المعتمد والآمن v4.0
         </div>
@@ -238,17 +238,17 @@ export default function ExtensionDownloadSection({
             <div className="w-2 h-8 bg-yellow-400 rounded-full" />
             <span className="text-sm text-yellow-400 font-black tracking-widest uppercase">مفتاح المزامنة المشفر والخاص بنظامك:</span>
           </div>
-          <div className="flex items-center gap-6 bg-white/5 p-6 rounded-[2rem] border border-white/10 shadow-inner">
-            <div className="p-4 bg-yellow-400 text-black rounded-2xl shadow-[0_0_20px_rgba(250,204,21,0.4)]">
+          <div className="flex items-center gap-6 bg-[#0a1628]/5 p-6 rounded-[2rem] border border-white/10 shadow-inner">
+            <div className="p-4 bg-yellow-400 text-white rounded-2xl shadow-[0_0_20px_rgba(250,204,21,0.4)]">
               <Key className="w-8 h-8" />
             </div>
-            <span className="text-4xl md:text-5xl font-mono font-black text-yellow-300 selection:bg-yellow-400 selection:text-black tracking-[0.25em] drop-shadow-lg">{apiKey}</span>
+            <span className="text-4xl md:text-5xl font-mono font-black text-yellow-300 selection:bg-yellow-400 selection:text-white tracking-[0.25em] drop-shadow-lg">{apiKey}</span>
           </div>
           <p className="text-sm text-yellow-50 font-bold max-w-xl leading-relaxed">هذا الرمز هو بصمتك الرقمية الوحيدة للاتصال الآمن؛ لا تشاركه مع أي جهة لضمان حصانة مراسلاتك وبياناتك.</p>
         </div>
         <button
           onClick={handleCopyKey}
-          className="bg-yellow-400 hover:bg-yellow-500 text-black font-black text-2xl px-12 py-7 rounded-[2rem] flex items-center gap-4 transition-all cursor-pointer justify-center w-full lg:w-auto active:scale-95 shadow-[0_20px_50px_rgba(250,204,21,0.3)] border-b-8 border-yellow-600"
+          className="bg-yellow-400 hover:bg-yellow-500 text-white font-black text-2xl px-12 py-7 rounded-[2rem] flex items-center gap-4 transition-all cursor-pointer justify-center w-full lg:w-auto active:scale-95 shadow-[0_20px_50px_rgba(250,204,21,0.3)] border-b-8 border-yellow-600"
         >
           <ClipboardCheck className="w-7 h-7" />
           <span>{copied ? "تم النسخ بنجاح!" : "نسخ رمز الأمان الملكي"}</span>
@@ -263,7 +263,7 @@ export default function ExtensionDownloadSection({
           <div className="absolute -bottom-16 -left-16 w-48 h-48 bg-yellow-400/10 blur-3xl rounded-full pointer-events-none" />
           <div className="space-y-6 relative z-10">
             <div className="flex items-center gap-5 font-black text-2xl">
-              <div className="w-14 h-14 rounded-2xl bg-yellow-400 text-black flex items-center justify-center font-black text-3xl shadow-xl shadow-yellow-400/20">1</div>
+              <div className="w-14 h-14 rounded-2xl bg-yellow-400 text-white flex items-center justify-center font-black text-3xl shadow-xl shadow-yellow-400/20">1</div>
               <span className="high-contrast-text-yellow">التحميل المباشر المتكامل</span>
             </div>
             <h4 className="text-3xl font-black leading-tight high-contrast-text-white">حزمة الربط الذهبية <span className="high-contrast-text-yellow">(.ZIP)</span></h4>
@@ -276,7 +276,7 @@ export default function ExtensionDownloadSection({
             <button
               onClick={handleDownloadZip}
               disabled={downloading}
-              className="w-full bg-white hover:bg-slate-100 text-[#060b13] font-black text-2xl py-8 px-6 rounded-[2rem] active:scale-95 flex items-center justify-center gap-5 transition-all cursor-pointer disabled:opacity-50 shadow-2xl border-b-8 border-slate-300"
+              className="w-full bg-[#0a1628] hover:bg-slate-100 text-[#060b13] font-black text-2xl py-8 px-6 rounded-[2rem] active:scale-95 flex items-center justify-center gap-5 transition-all cursor-pointer disabled:opacity-50 shadow-2xl border-b-8 border-[#1e3a5f]"
             >
               {downloading ? (
                 <Loader2 className="w-8 h-8 animate-spin shrink-0" />
@@ -288,7 +288,7 @@ export default function ExtensionDownloadSection({
 
             {/* Checksum & Status Info Box */}
             {validationState !== "idle" && (
-              <div className="p-6 rounded-2xl bg-white/5 border border-yellow-400/20 text-right space-y-4">
+              <div className="p-6 rounded-2xl bg-[#0a1628]/5 border border-yellow-400/20 text-right space-y-4">
                 <div className="flex items-center justify-between border-b border-white/5 pb-4">
                   <span className="text-yellow-400 font-black text-[12px] uppercase tracking-wider">بروتوكول السلامة (Checksum):</span>
                   {validationState === "verifying" && (

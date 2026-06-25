@@ -49,7 +49,7 @@ export default function Dashboard({
           </div>
           <button 
             onClick={() => onNavigate && onNavigate('cases')}
-            className="bg-[#c9a84c] hover:bg-[#a67c30] text-[#1a2744] text-xs font-black px-5 py-2.5 rounded-lg flex items-center gap-2 transition-all shadow-md"
+            className="bg-[#c9a84c] hover:bg-[#a67c30] text-[#1a2744] text-xs font-black px-5 py-2.5 rounded-2xl flex items-center gap-2 transition-all shadow-md"
           >
             <Plus className="w-4 h-4" />
             إضافة قضية جديدة
@@ -59,46 +59,46 @@ export default function Dashboard({
 
       {/* بطاقات الإحصائيات العلوية */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <div className="bg-[#ffffff] rounded-xl p-4 border border-[#e5e7eb] shadow-sm flex flex-col justify-between">
+        <div className="bg-[#ffffff] rounded-2xl p-4 border border-[#e5e7eb] shadow-sm flex flex-col justify-between">
           <div className="flex justify-between items-start mb-2">
-            <div className="w-10 h-10 bg-[#f3f4f6] rounded-xl flex items-center justify-center">
+            <div className="w-10 h-10 bg-[#f3f4f6] rounded-2xl flex items-center justify-center">
               <Briefcase className="w-5 h-5 text-[#c9a84c]" />
             </div>
             <span className="text-[#10b981] bg-[#d1fae5] px-2 py-0.5 rounded-full text-[10px] font-bold">+12%</span>
           </div>
-          <h3 className="text-gray-500 text-xs font-bold mb-1">إجمالي القضايا النشطة</h3>
-          <p className="text-[#1a2744] text-2xl font-black">{activeCasesCount} <span className="text-sm font-bold text-gray-400">قضية</span></p>
+          <h3 className="text-[#94a3b8]0 text-xs font-bold mb-1">إجمالي القضايا النشطة</h3>
+          <p className="text-[#1a2744] text-2xl font-black">{activeCasesCount} <span className="text-sm font-bold text-[#94a3b8]">قضية</span></p>
         </div>
 
-        <div className="bg-[#ffffff] rounded-xl p-4 border border-[#e5e7eb] shadow-sm flex flex-col justify-between">
+        <div className="bg-[#ffffff] rounded-2xl p-4 border border-[#e5e7eb] shadow-sm flex flex-col justify-between">
           <div className="flex justify-between items-start mb-2">
-            <div className="w-10 h-10 bg-[#f3f4f6] rounded-xl flex items-center justify-center">
+            <div className="w-10 h-10 bg-[#f3f4f6] rounded-2xl flex items-center justify-center">
               <Scale className="w-5 h-5 text-[#c9a84c]" />
             </div>
             <span className="text-[#10b981] bg-[#d1fae5] px-2 py-0.5 rounded-full text-[10px] font-bold">+5%</span>
           </div>
-          <h3 className="text-gray-500 text-xs font-bold mb-1">الجلسات المجدولة هذا الأسبوع</h3>
-          <p className="text-[#1a2744] text-2xl font-black">{hearingsCount} <span className="text-sm font-bold text-gray-400">جلسة</span></p>
+          <h3 className="text-[#94a3b8]0 text-xs font-bold mb-1">الجلسات المجدولة هذا الأسبوع</h3>
+          <p className="text-[#1a2744] text-2xl font-black">{hearingsCount} <span className="text-sm font-bold text-[#94a3b8]">جلسة</span></p>
         </div>
 
-        <div className="bg-[#ffffff] rounded-xl p-4 border border-[#e5e7eb] shadow-sm flex flex-col justify-between">
+        <div className="bg-[#ffffff] rounded-2xl p-4 border border-[#e5e7eb] shadow-sm flex flex-col justify-between">
           <div className="flex justify-between items-start mb-2">
-            <div className="w-10 h-10 bg-[#f3f4f6] rounded-xl flex items-center justify-center">
+            <div className="w-10 h-10 bg-[#f3f4f6] rounded-2xl flex items-center justify-center">
               <Users className="w-5 h-5 text-[#c9a84c]" />
             </div>
           </div>
-          <h3 className="text-gray-500 text-xs font-bold mb-1">العملاء النشطون</h3>
-          <p className="text-[#1a2744] text-2xl font-black">{activeClientsCount} <span className="text-sm font-bold text-gray-400">عميل</span></p>
+          <h3 className="text-[#94a3b8]0 text-xs font-bold mb-1">العملاء النشطون</h3>
+          <p className="text-[#1a2744] text-2xl font-black">{activeClientsCount} <span className="text-sm font-bold text-[#94a3b8]">عميل</span></p>
         </div>
 
-        <div className="bg-[#ffffff] rounded-xl p-4 border border-[#e5e7eb] shadow-sm flex flex-col justify-between">
+        <div className="bg-[#ffffff] rounded-2xl p-4 border border-[#e5e7eb] shadow-sm flex flex-col justify-between">
           <div className="flex justify-between items-start mb-2">
-            <div className="w-10 h-10 bg-[#f3f4f6] rounded-xl flex items-center justify-center">
+            <div className="w-10 h-10 bg-[#f3f4f6] rounded-2xl flex items-center justify-center">
               <Wallet className="w-5 h-5 text-[#c9a84c]" />
             </div>
           </div>
-          <h3 className="text-gray-500 text-xs font-bold mb-1">الفواتير المستحقة</h3>
-          <p className="text-[#1a2744] text-2xl font-black">{invoices.filter(i => i.status === 'unpaid').length} <span className="text-sm font-bold text-gray-400">فاتورة</span></p>
+          <h3 className="text-[#94a3b8]0 text-xs font-bold mb-1">الفواتير المستحقة</h3>
+          <p className="text-[#1a2744] text-2xl font-black">{invoices.filter(i => i.status === 'unpaid').length} <span className="text-sm font-bold text-[#94a3b8]">فاتورة</span></p>
         </div>
       </div>
 
@@ -106,7 +106,7 @@ export default function Dashboard({
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         
         {/* المهام العاجلة */}
-        <div className="bg-[#ffffff] border border-[#e5e7eb] rounded-xl shadow-sm overflow-hidden flex flex-col">
+        <div className="bg-[#ffffff] border border-[#e5e7eb] rounded-2xl shadow-sm overflow-hidden flex flex-col">
           <div className="px-5 py-4 border-b border-[#e5e7eb] flex justify-between items-center bg-[#f9fafb]">
             <h3 className="text-[#1a2744] text-sm font-black flex items-center gap-2">
               <AlertCircle className="w-4 h-4 text-red-500" />
@@ -118,14 +118,14 @@ export default function Dashboard({
           </div>
           <div className="p-2 space-y-1 flex-1 overflow-y-auto max-h-[300px]">
             {tasks.slice(0, 5).map(task => (
-              <div key={task.id} className="flex items-center justify-between p-3 hover:bg-[#f3f4f6] rounded-lg transition-colors border border-transparent hover:border-[#e5e7eb]">
+              <div key={task.id} className="flex items-center justify-between p-3 hover:bg-[#f3f4f6] rounded-2xl transition-colors border border-transparent hover:border-[#e5e7eb]">
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-red-50 flex items-center justify-center shrink-0">
+                  <div className="w-8 h-8 rounded-2xl bg-red-50 flex items-center justify-center shrink-0">
                     <FileText className="w-4 h-4 text-red-500" />
                   </div>
                   <div>
                     <h4 className="text-sm font-bold text-[#1a2744] mb-0.5">{task.title}</h4>
-                    <p className="text-[10px] text-gray-500 font-medium">مربوطة بقضية رقم: {task.caseId?.substring(0, 8)}</p>
+                    <p className="text-[10px] text-[#94a3b8]0 font-medium">مربوطة بقضية رقم: {task.caseId?.substring(0, 8)}</p>
                   </div>
                 </div>
                 <div className="text-left">
@@ -136,13 +136,13 @@ export default function Dashboard({
               </div>
             ))}
             {tasks.length === 0 && (
-              <div className="text-center py-8 text-gray-500 text-sm">لا توجد مهام عاجلة حالياً</div>
+              <div className="text-center py-8 text-[#94a3b8]0 text-sm">لا توجد مهام عاجلة حالياً</div>
             )}
           </div>
         </div>
 
         {/* الجلسات القادمة */}
-        <div className="bg-[#ffffff] border border-[#e5e7eb] rounded-xl shadow-sm overflow-hidden flex flex-col">
+        <div className="bg-[#ffffff] border border-[#e5e7eb] rounded-2xl shadow-sm overflow-hidden flex flex-col">
           <div className="px-5 py-4 border-b border-[#e5e7eb] flex justify-between items-center bg-[#f9fafb]">
             <h3 className="text-[#1a2744] text-sm font-black flex items-center gap-2">
               <Clock className="w-4 h-4 text-[#c9a84c]" />
@@ -154,9 +154,9 @@ export default function Dashboard({
           </div>
           <div className="p-2 space-y-1 flex-1 overflow-y-auto max-h-[300px]">
             {hearings.slice(0, 5).map(hearing => (
-              <div key={hearing.id} className="flex items-center justify-between p-3 hover:bg-[#f3f4f6] rounded-lg transition-colors border border-transparent hover:border-[#e5e7eb]">
+              <div key={hearing.id} className="flex items-center justify-between p-3 hover:bg-[#f3f4f6] rounded-2xl transition-colors border border-transparent hover:border-[#e5e7eb]">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-blue-50 border border-blue-100 flex flex-col items-center justify-center shrink-0">
+                  <div className="w-10 h-10 rounded-2xl bg-blue-50 border border-blue-100 flex flex-col items-center justify-center shrink-0">
                     <span className="text-blue-600 text-[10px] font-black uppercase">
                       {moment(hearing.date).format('MMM')}
                     </span>
@@ -166,18 +166,18 @@ export default function Dashboard({
                   </div>
                   <div>
                     <h4 className="text-sm font-bold text-[#1a2744] mb-0.5 line-clamp-1">{hearing.title || 'جلسة مرافعة'}</h4>
-                    <p className="text-[10px] text-gray-500 font-medium">المحكمة: {hearing.court || 'غير محدد'}</p>
+                    <p className="text-[10px] text-[#94a3b8]0 font-medium">المحكمة: {hearing.court || 'غير محدد'}</p>
                   </div>
                 </div>
                 <div className="text-left shrink-0">
-                  <span className="text-[11px] font-bold text-gray-700 bg-gray-100 px-2 py-1 rounded-md">
+                  <span className="text-[11px] font-bold text-[#94a3b8] bg-[#0a1628] px-2 py-1 rounded-2xl">
                     {hearing.time || '09:00 ص'}
                   </span>
                 </div>
               </div>
             ))}
             {hearings.length === 0 && (
-              <div className="text-center py-8 text-gray-500 text-sm">لا توجد جلسات قادمة</div>
+              <div className="text-center py-8 text-[#94a3b8]0 text-sm">لا توجد جلسات قادمة</div>
             )}
           </div>
         </div>

@@ -1087,14 +1087,14 @@ export default function Settings({
             <MessageSquare className="w-6 h-6" />
           </div>
           <div>
-            <h2 className="text-sm font-black text-slate-900 flex items-center gap-1.5">
+            <h2 className="text-sm font-black text-[#94a3b8] flex items-center gap-1.5">
               <span>للتواصل الفوري مع الدعم الفني</span>
               <span className="flex h-2 w-2 relative">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
               </span>
             </h2>
-            <p className="text-xs text-slate-700 mt-1 font-bold">
+            <p className="text-xs text-[#94a3b8] mt-1 font-bold">
               هل تواجه أي صعوبة أو لديك استفسار؟ اضغط هنا للتحدث المباشر مع مستشاري الدعم الفني لحل وتلبية طلباتك فوراً.
             </p>
           </div>
@@ -1113,15 +1113,15 @@ export default function Settings({
       </div>
 
       {/* Settings Header Banner */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-slate-100 border border-slate-800 p-6 rounded-3xl">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-[#0a1628] border border-[#1e3a5f] p-6 rounded-3xl">
         <div className="flex items-start gap-4">
           <div className="p-3.5 bg-primary/10 text-primary border border-primary/20 rounded-2xl">
             <SettingsIcon className="w-6 h-6" />
           </div>
           <div>
             <span className="text-xs text-primary font-bold">⚙️ لوحة التفضيلات وإدارة الربط</span>
-            <h1 className="text-xl md:text-2xl font-black text-slate-900 mt-1">تخصيص تفضيلات العدالة (System Configs)</h1>
-            <p className="text-xs text-slate-900 mt-1 leading-relaxed">
+            <h1 className="text-xl md:text-2xl font-black text-[#94a3b8] mt-1">تخصيص تفضيلات العدالة (System Configs)</h1>
+            <p className="text-xs text-[#94a3b8] mt-1 leading-relaxed">
               تحكم ببيانات الربط مع إضافة جوجل كروم لسحب قضايا ناجز، مع تهيئة خوادم الإشعارات والبريد التلقائي للموكلين بنظام السجل الموحد.
             </p>
           </div>
@@ -1129,12 +1129,12 @@ export default function Settings({
         
         {profile?.trialExpiresAt && (
           <div className="flex items-center gap-3 bg-emerald-50 border border-emerald-200 p-4 rounded-2xl">
-            <div className="p-2 bg-emerald-100 rounded-xl">
+            <div className="p-2 bg-emerald-100 rounded-2xl">
               <Clock className="w-5 h-5 text-emerald-600 animate-pulse" />
             </div>
             <div>
               <div className="text-xs text-emerald-700 font-black uppercase tracking-wider">الحساب التجريبي (Trial Account)</div>
-              <div className="text-sm font-bold text-slate-900 mt-0.5">ينتهي الصلاحية في:</div>
+              <div className="text-sm font-bold text-[#94a3b8] mt-0.5">ينتهي الصلاحية في:</div>
               <div className="text-xs font-mono text-emerald-800 font-bold">
                 {new Date(profile.trialExpiresAt).toLocaleString('ar-SA', { 
                   year: 'numeric', month: 'long', day: 'numeric',
@@ -1147,14 +1147,14 @@ export default function Settings({
       </div>
 
       {/* Settings Navigation Tabs */}
-      <div className="flex border-b border-slate-200 mt-6" dir="rtl">
+      <div className="flex border-b border-[#1e3a5f] mt-6" dir="rtl">
         <button
           type="button"
           onClick={() => setActiveSettingsTab('general')}
           className={`px-6 py-3 text-xs font-black transition-all border-b-2 ${
             activeSettingsTab === 'general' 
               ? 'border-primary text-primary font-extrabold' 
-              : 'border-transparent text-slate-500 hover:text-slate-800'
+              : 'border-transparent text-[#94a3b8]0 hover:text-[#94a3b8]'
           }`}
         >
           ⚙️ الإعدادات العامة والنظام
@@ -1166,7 +1166,7 @@ export default function Settings({
           className={`px-6 py-3 text-xs font-black transition-all border-b-2 flex items-center gap-2 ${
             activeSettingsTab === 'db-issues' 
               ? 'border-indigo-600 text-indigo-500 font-extrabold' 
-              : 'border-transparent text-slate-500 hover:text-slate-800'
+              : 'border-transparent text-[#94a3b8]0 hover:text-[#94a3b8]'
           }`}
         >
           <span>🚨 قاعة مشاكل ومرتجعات قاعدة البيانات</span>
@@ -1182,7 +1182,7 @@ export default function Settings({
           className={`px-6 py-3 text-xs font-black transition-all border-b-2 flex items-center gap-2 ${
             activeSettingsTab === 'whatsapp' 
               ? 'border-emerald-600 text-emerald-600 font-extrabold' 
-              : 'border-transparent text-slate-500 hover:text-slate-800'
+              : 'border-transparent text-[#94a3b8]0 hover:text-[#94a3b8]'
           }`}
         >
           <MessageSquare className="w-4 h-4" />
@@ -1194,30 +1194,30 @@ export default function Settings({
         
         {activeSettingsTab === 'whatsapp' && (
           <div className="lg:col-span-12 space-y-6 overflow-hidden mt-6">
-             <div className="bg-white border border-slate-200 rounded-[2.5rem] p-6 md:p-10 shadow-sm">
-                <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 pb-6 border-b border-slate-100 gap-4">
+             <div className="bg-[#0a1628] border border-[#1e3a5f] rounded-[2.5rem] p-6 md:p-10 shadow-sm">
+                <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 pb-6 border-b border-[#1e3a5f] gap-4">
                    <div>
-                      <h2 className={`text-2xl font-black ${getDynamicTextColor('bg-white')}`}>سجلات إرسال الواتساب (WhatsApp API Audit)</h2>
-                      <p className={`text-sm ${getDynamicTextColor('bg-white')} font-bold mt-1 opacity-70`}>تتبع حي لآخر 10 عمليات إرسال عبر المنصة مع حالة الإرسال والتوقيت.</p>
+                      <h2 className={`text-2xl font-black ${getDynamicTextColor('bg-[#0a1628]')}`}>سجلات إرسال الواتساب (WhatsApp API Audit)</h2>
+                      <p className={`text-sm ${getDynamicTextColor('bg-[#0a1628]')} font-bold mt-1 opacity-70`}>تتبع حي لآخر 10 عمليات إرسال عبر المنصة مع حالة الإرسال والتوقيت.</p>
                    </div>
                    <button 
                      onClick={fetchWhatsappLogs}
-                     className="flex items-center justify-center gap-2 px-5 py-3 bg-slate-950 hover:bg-slate-800 text-white rounded-xl transition-all shadow-md font-black text-xs"
+                     className="flex items-center justify-center gap-2 px-5 py-3 bg-[#0a1628] hover:bg-[#0a1628] text-white rounded-2xl transition-all shadow-md font-black text-xs"
                    >
                      <RefreshCw className={`w-4 h-4 ${loadingWhatsappLogs ? 'animate-spin' : ''}`} />
                      <span>تحديث السجل فَوْراً</span>
                    </button>
                 </div>
 
-                <div className="overflow-x-auto rounded-2xl border border-slate-100">
+                <div className="overflow-x-auto rounded-2xl border border-[#1e3a5f]">
                    <table className="w-full text-right border-collapse">
                       <thead>
-                         <tr className="bg-slate-50 border-b border-slate-200">
-                            <th className={`p-4 text-xs font-black ${getDynamicTextColor('bg-slate-50')} uppercase tracking-wider`}>الموكل / المعرف</th>
-                            <th className={`p-4 text-xs font-black ${getDynamicTextColor('bg-slate-50')} uppercase tracking-wider border-r border-slate-200/50`}>الحالة التشغيلية</th>
-                            <th className={`p-4 text-xs font-black ${getDynamicTextColor('bg-slate-50')} uppercase tracking-wider border-r border-slate-200/50`}>توقيت البث</th>
-                            <th className={`p-4 text-xs font-black ${getDynamicTextColor('bg-slate-50')} uppercase tracking-wider border-r border-slate-200/50`}>رقم التواصل</th>
-                            <th className={`p-4 text-xs font-black ${getDynamicTextColor('bg-slate-50')} uppercase tracking-wider border-r border-slate-200/50`}>محتوى المراسلة</th>
+                         <tr className="bg-[#0a1628] border-b border-[#1e3a5f]">
+                            <th className={`p-4 text-xs font-black ${getDynamicTextColor('bg-[#0a1628]')} uppercase tracking-wider`}>الموكل / المعرف</th>
+                            <th className={`p-4 text-xs font-black ${getDynamicTextColor('bg-[#0a1628]')} uppercase tracking-wider border-r border-[#1e3a5f]/50`}>الحالة التشغيلية</th>
+                            <th className={`p-4 text-xs font-black ${getDynamicTextColor('bg-[#0a1628]')} uppercase tracking-wider border-r border-[#1e3a5f]/50`}>توقيت البث</th>
+                            <th className={`p-4 text-xs font-black ${getDynamicTextColor('bg-[#0a1628]')} uppercase tracking-wider border-r border-[#1e3a5f]/50`}>رقم التواصل</th>
+                            <th className={`p-4 text-xs font-black ${getDynamicTextColor('bg-[#0a1628]')} uppercase tracking-wider border-r border-[#1e3a5f]/50`}>محتوى المراسلة</th>
                          </tr>
                       </thead>
                       <tbody className="divide-y divide-slate-100 italic">
@@ -1225,18 +1225,18 @@ export default function Settings({
                             <tr>
                                <td colSpan={5} className="p-20 text-center">
                                   <RefreshCw className="w-12 h-12 animate-spin text-emerald-500 mx-auto" />
-                                  <p className="mt-4 text-xs font-black text-slate-400">جاري استرجاع البيانات من سجلات API...</p>
+                                  <p className="mt-4 text-xs font-black text-[#94a3b8]">جاري استرجاع البيانات من سجلات API...</p>
                                </td>
                             </tr>
                          ) : whatsappLogs.length === 0 ? (
                             <tr>
-                               <td colSpan={5} className="p-20 text-center text-slate-500 font-bold">لا تتوفر سجلات إرسال في قاعدة البيانات حالياً.</td>
+                               <td colSpan={5} className="p-20 text-center text-[#94a3b8]0 font-bold">لا تتوفر سجلات إرسال في قاعدة البيانات حالياً.</td>
                             </tr>
                          ) : (
                             whatsappLogs.slice(0, 10).map((log: any) => (
-                               <tr key={log.id} className="hover:bg-slate-50/50 transition-colors group">
-                                  <td className={`p-4 text-sm font-black ${getDynamicTextColor('bg-white')} truncate max-w-[150px]`}>{log.client_id || 'هوية مجهولة'}</td>
-                                  <td className="p-4 border-r border-slate-200/50">
+                               <tr key={log.id} className="hover:bg-[#0a1628]/50 transition-colors group">
+                                  <td className={`p-4 text-sm font-black ${getDynamicTextColor('bg-[#0a1628]')} truncate max-w-[150px]`}>{log.client_id || 'هوية مجهولة'}</td>
+                                  <td className="p-4 border-r border-[#1e3a5f]/50">
                                      <span className={`px-4 py-1.5 rounded-full text-[10px] font-black border flex items-center gap-1.5 w-fit ${
                                        log.status === 'success' 
                                           ? 'bg-emerald-50 text-emerald-700 border-emerald-200' 
@@ -1246,11 +1246,11 @@ export default function Settings({
                                         {log.status === 'success' ? 'تم الإرسال والوصول بنجاح' : 'فشل الإرسال (خطأ تقني)'}
                                      </span>
                                   </td>
-                                  <td className={`p-4 text-xs font-mono font-black ${getDynamicTextColor('bg-white')} border-r border-slate-200/50`}>
+                                  <td className={`p-4 text-xs font-mono font-black ${getDynamicTextColor('bg-[#0a1628]')} border-r border-[#1e3a5f]/50`}>
                                      {new Date(log.created_at).toLocaleString('ar-SA', { hour: '2-digit', minute: '2-digit', second: '2-digit', day: '2-digit', month: '2-digit' })}
                                   </td>
-                                  <td className={`p-4 text-xs font-mono font-black ${getDynamicTextColor('bg-white')} border-r border-slate-200/50`}>{log.phone_number}</td>
-                                  <td className={`p-4 text-xs ${getDynamicTextColor('bg-white')} font-bold opacity-80 truncate max-w-[280px] border-r border-slate-200/50`}>
+                                  <td className={`p-4 text-xs font-mono font-black ${getDynamicTextColor('bg-[#0a1628]')} border-r border-[#1e3a5f]/50`}>{log.phone_number}</td>
+                                  <td className={`p-4 text-xs ${getDynamicTextColor('bg-[#0a1628]')} font-bold opacity-80 truncate max-w-[280px] border-r border-[#1e3a5f]/50`}>
                                      {log.message}
                                   </td>
                                </tr>
@@ -1261,17 +1261,17 @@ export default function Settings({
                 </div>
                 
                 {/* Embedded General AuditLogs underneath */}
-                <div className="mt-20 pt-12 border-t-8 border-slate-900 border-double">
+                <div className="mt-20 pt-12 border-t-8 border-[#1e3a5f] border-double">
                    <div className="flex items-center gap-4 mb-10">
-                      <div className="w-12 h-12 bg-slate-950 text-white rounded-2xl flex items-center justify-center shadow-lg">
+                      <div className="w-12 h-12 bg-[#0a1628] text-white rounded-2xl flex items-center justify-center shadow-lg">
                         <ShieldAlert className="w-6 h-6" />
                       </div>
                       <div>
                         <h3 className="text-2xl font-black text-white leading-none">حوكمة تشغيل النظام (System Governance & Audit)</h3>
-                        <p className="text-sm font-bold text-slate-500 mt-2">رؤية تقنية شاملة لكافة الحركات والوصول الإداري لقاعدة البيانات والواجهات البرمجية.</p>
+                        <p className="text-sm font-bold text-[#94a3b8]0 mt-2">رؤية تقنية شاملة لكافة الحركات والوصول الإداري لقاعدة البيانات والواجهات البرمجية.</p>
                       </div>
                    </div>
-                   <div className="scale-100 border-[12px] border-slate-50 rounded-[3.5rem] overflow-hidden shadow-[0_30px_60px_-12px_rgba(0,0,0,0.12)] bg-slate-50">
+                   <div className="scale-100 border-[12px] border-[#1e3a5f] rounded-[3.5rem] overflow-hidden shadow-[0_30px_60px_-12px_rgba(0,0,0,0.12)] bg-[#0a1628]">
                     <AuditLogs />
                    </div>
                 </div>
@@ -1281,15 +1281,15 @@ export default function Settings({
 
         {activeSettingsTab === 'db-issues' ? (
           <div className="lg:col-span-12 space-y-6 text-right" dir="rtl">
-            <div className="bg-white border border-slate-800 rounded-3xl p-6 shadow-sm space-y-6 settings-card high-contrast-card-wrapper text-high-contrast-light-bg">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-4">
+            <div className="bg-[#0a1628] border border-[#1e3a5f] rounded-3xl p-6 shadow-sm space-y-6 settings-card high-contrast-card-wrapper text-high-contrast-light-bg">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#1e3a5f] pb-4">
                 <div className="flex items-center gap-3">
-                  <div className="p-2.5 bg-red-500/10 text-red-600 border border-red-500/20 rounded-xl">
+                  <div className="p-2.5 bg-red-500/10 text-red-600 border border-red-500/20 rounded-2xl">
                     <Lock className="w-5 h-5" />
                   </div>
                   <div>
                     <h2 className="text-base font-black text-white">سجل فواتير ومعاملات الحفظ المعلقة (Database Persistence Failures)</h2>
-                    <p className="text-xs text-slate-300 mt-1">تتبع وعالج المعاملات التي فشلت السحابة في استقبالها لأسباب تتعلق بالـ RLS أو انقطاع الشبكة.</p>
+                    <p className="text-xs text-[#94a3b8] mt-1">تتبع وعالج المعاملات التي فشلت السحابة في استقبالها لأسباب تتعلق بالـ RLS أو انقطاع الشبكة.</p>
                   </div>
                 </div>
                 
@@ -1303,7 +1303,7 @@ export default function Settings({
                         window.dispatchEvent(new Event('storage'));
                       }
                     }}
-                    className="bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 font-bold text-xs py-2 px-4 rounded-xl transition-all self-start sm:self-center"
+                    className="bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 font-bold text-xs py-2 px-4 rounded-2xl transition-all self-start sm:self-center"
                   >
                     مسح السجلات بالكامل 🗑️
                   </button>
@@ -1311,14 +1311,14 @@ export default function Settings({
               </div>
 
               {failedLogs.length === 0 ? (
-                <div className="text-center py-12 bg-slate-50 border border-slate-100 rounded-2xl min-h-[250px] flex flex-col justify-center items-center gap-3">
+                <div className="text-center py-12 bg-[#0a1628] border border-[#1e3a5f] rounded-2xl min-h-[250px] flex flex-col justify-center items-center gap-3">
                   <span className="text-3xl text-amber-500">✨</span>
-                  <h3 className="text-sm font-black text-slate-950">قاعة البيانات خالية من العثرات وسجلات الفشل!</h3>
-                  <p className="text-xs text-slate-300 max-w-sm leading-relaxed text-center">كافة البيانات المتزامنة تم نقلها ومطابقتها بنجاح مع خوادم السجل الموحد (Supabase).</p>
+                  <h3 className="text-sm font-black text-[#94a3b8]">قاعة البيانات خالية من العثرات وسجلات الفشل!</h3>
+                  <p className="text-xs text-[#94a3b8] max-w-sm leading-relaxed text-center">كافة البيانات المتزامنة تم نقلها ومطابقتها بنجاح مع خوادم السجل الموحد (Supabase).</p>
                 </div>
               ) : (
                 <div className="space-y-4">
-                  <div className="bg-amber-500/5 border border-amber-500/20 p-4 rounded-xl text-xs text-amber-800 leading-relaxed font-bold">
+                  <div className="bg-gradient-to-r from-[#c9a84c] to-[#a67c30]/5 border border-amber-500/20 p-4 rounded-2xl text-xs text-amber-800 leading-relaxed font-bold">
                     💡 كيف تحل العوائق؟ عاين تفاصيل الكيان والمسار المتأثر، وتأكد من ملائمة جدول السكيما لخيارات النشر، ثم انقر على <strong>"إعادة إرسال المعاملة"</strong>. في حال تلافي السبب (مثلاً RLS 42501), سيتم إيداع المعاملة تلقائياً في السجل الموحد وحذفها من هنا.
                   </div>
 
@@ -1375,50 +1375,50 @@ export default function Settings({
                       };
 
                       return (
-                        <div key={logId} className="bg-[#0c1427] border border-white/10 rounded-2xl p-5 shadow-sm space-y-4 text-slate-200">
+                        <div key={logId} className="bg-[#0c1427] border border-white/10 rounded-2xl p-5 shadow-sm space-y-4 text-[#94a3b8]">
                           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/5 pb-3">
                             <div className="flex items-center gap-2.5">
                               <span className="text-xs font-black font-semibold uppercase tracking-wider bg-red-500/20 text-red-400 border border-red-500/30 px-3 py-1 rounded-full">
                                 {isUpdate ? 'تحديث كائن (UPDATE)' : 'إنشاء كائن جديد (CREATE)'}
                               </span>
-                              <span className="text-xs font-mono font-bold bg-white/5 text-slate-300 px-3 py-1 rounded-full">
+                              <span className="text-xs font-mono font-bold bg-[#0a1628]/5 text-[#94a3b8] px-3 py-1 rounded-full">
                                 الجدول: {log.type}
                               </span>
                             </div>
 
-                            <div className="text-xs font-mono text-slate-400">
+                            <div className="text-xs font-mono text-[#94a3b8]">
                               {new Date(log.timestamp).toLocaleString('ar-SA')}
                             </div>
                           </div>
 
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div className="space-y-2 bg-red-950/20 border border-red-500/20 p-4 rounded-xl">
+                            <div className="space-y-2 bg-red-950/20 border border-red-500/20 p-4 rounded-2xl">
                               <div className="text-xs text-red-400 font-black flex items-center gap-1.5 leading-none">
                                 <span>⚠️ تفاصيل الخطأ المسترجع:</span>
                               </div>
-                              <div className="space-y-1.5 text-xs text-slate-300 font-medium">
-                                <p><span className="text-slate-400 font-bold">رمز الخطأ:</span> <code className="bg-black/45 px-1.5 py-0.5 rounded text-amber-300 font-black font-mono text-[10px]">{log.error?.code || 'DATABASE_ERROR'}</code></p>
-                                <p className="break-words leading-relaxed"><span className="text-slate-400 font-bold">الرسالة:</span> {log.error?.message || 'Unknown persistence error.'}</p>
+                              <div className="space-y-1.5 text-xs text-[#94a3b8] font-medium">
+                                <p><span className="text-[#94a3b8] font-bold">رمز الخطأ:</span> <code className="bg-black/45 px-1.5 py-0.5 rounded text-amber-300 font-black font-mono text-[10px]">{log.error?.code || 'DATABASE_ERROR'}</code></p>
+                                <p className="break-words leading-relaxed"><span className="text-[#94a3b8] font-bold">الرسالة:</span> {log.error?.message || 'Unknown persistence error.'}</p>
                                 {log.error?.details && (
-                                  <div className="mt-2 text-[10px] text-slate-400 bg-black/25 p-2 rounded max-h-[80px] overflow-y-auto font-mono whitespace-pre-wrap break-all">
+                                  <div className="mt-2 text-[10px] text-[#94a3b8] bg-black/25 p-2 rounded max-h-[80px] overflow-y-auto font-mono whitespace-pre-wrap break-all">
                                     {log.error.details}
                                   </div>
                                 )}
                               </div>
                             </div>
 
-                            <div className="space-y-2 bg-slate-900 border border-white/5 p-4 rounded-xl">
+                            <div className="space-y-2 bg-[#0a1628] border border-white/5 p-4 rounded-2xl">
                               <div className="text-xs text-sky-400 font-black leading-none">
                                 <span>📦 حزمة البيانات (Payload Data):</span>
                               </div>
-                              <div className="text-[10px] font-mono text-slate-300 bg-black/35 p-3 rounded-lg max-h-[145px] overflow-y-auto whitespace-pre-wrap break-all leading-normal">
+                              <div className="text-[10px] font-mono text-[#94a3b8] bg-black/35 p-3 rounded-2xl max-h-[145px] overflow-y-auto whitespace-pre-wrap break-all leading-normal">
                                 {JSON.stringify(log.data, null, 2)}
                               </div>
                             </div>
                           </div>
 
                           {status && (
-                            <div className={`p-3 rounded-xl text-xs font-bold font-sans flex items-center gap-2 ${
+                            <div className={`p-3 rounded-2xl text-xs font-bold font-sans flex items-center gap-2 ${
                               status.success 
                                 ? 'bg-emerald-500/10 border border-emerald-500/20 text-emerald-400' 
                                 : 'bg-red-500/10 border border-red-500/20 text-red-400'
@@ -1433,7 +1433,7 @@ export default function Settings({
                               type="button"
                               onClick={handleLocalResubmit}
                               disabled={isSubmitting}
-                              className="bg-[#eab308] hover:bg-[#ca8a04] text-slate-950 text-xs font-black py-2.5 px-6 rounded-xl transition-all shadow-md shadow-amber-500/10 flex items-center gap-2 disabled:opacity-50"
+                              className="bg-[#eab308] hover:bg-[#ca8a04] text-[#94a3b8] text-xs font-black py-2.5 px-6 rounded-2xl transition-all shadow-md shadow-amber-500/10 flex items-center gap-2 disabled:opacity-50"
                             >
                               {isSubmitting ? (
                                 <>
@@ -1461,33 +1461,33 @@ export default function Settings({
             <div className="lg:col-span-8 space-y-6">
 
           {/* Office Identity & Logo Management Section - New Interface */}
-          <div className="bg-white border border-slate-800 rounded-2xl p-6 space-y-6 shadow-sm" id="office-identity-settings">
-            <div className="flex items-center gap-3 border-b border-slate-800 pb-4">
-              <div className="p-2.5 bg-amber-500/10 border border-amber-500/30 text-amber-400 font-bold font-black border border-amber-500/20 rounded-xl">
+          <div className="bg-[#0a1628] border border-[#1e3a5f] rounded-2xl p-6 space-y-6 shadow-sm" id="office-identity-settings">
+            <div className="flex items-center gap-3 border-b border-[#1e3a5f] pb-4">
+              <div className="p-2.5 bg-gradient-to-r from-[#c9a84c] to-[#a67c30]/10 border border-amber-500/30 text-amber-400 font-bold font-black border border-amber-500/20 rounded-2xl">
                 <Building2 className="w-5 h-5" />
               </div>
               <div>
-                <h2 className="text-sm font-bold text-slate-900" id="visual-identity-title">إعدادات الهوية البصرية</h2>
-                <p className="text-[11px] text-slate-700 mt-0.5">تخصيص شعار المكتب وبنية الهوية المرئية لجميع الفواتير والمطبوعات والتقارير والسندات في النظام.</p>
+                <h2 className="text-sm font-bold text-[#94a3b8]" id="visual-identity-title">إعدادات الهوية البصرية</h2>
+                <p className="text-[11px] text-[#94a3b8] mt-0.5">تخصيص شعار المكتب وبنية الهوية المرئية لجميع الفواتير والمطبوعات والتقارير والسندات في النظام.</p>
               </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
               <div className="space-y-4">
-                <label className="block text-xs font-black text-slate-900 uppercase tracking-widest">تحميل شعار المكتب (Logo Uploader)</label>
-                <div className="flex flex-col items-center gap-4 p-8 border-2 border-dashed border-slate-200 rounded-3xl bg-slate-50 transition-all hover:bg-slate-100/50 group relative overflow-hidden h-64 justify-center">
+                <label className="block text-xs font-black text-[#94a3b8] uppercase tracking-widest">تحميل شعار المكتب (Logo Uploader)</label>
+                <div className="flex flex-col items-center gap-4 p-8 border-2 border-dashed border-[#1e3a5f] rounded-3xl bg-[#0a1628] transition-all hover:bg-[#0a1628]/50 group relative overflow-hidden h-64 justify-center">
                   {officeLogo ? (
                     <div className="relative group/logo flex flex-col items-center justify-center p-2">
-                      <img src={officeLogo} alt="شعار المكتب الحالي" className="max-h-36 object-contain rounded-lg shadow-md max-w-full" />
-                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/logo:opacity-100 transition-opacity flex items-center justify-center rounded-lg">
-                        <span className="text-white text-xs font-bold bg-slate-800/80 px-2.5 py-1 rounded-md">الشعار النشط ⚖️</span>
+                      <img src={officeLogo} alt="شعار المكتب الحالي" className="max-h-36 object-contain rounded-2xl shadow-md max-w-full" />
+                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/logo:opacity-100 transition-opacity flex items-center justify-center rounded-2xl">
+                        <span className="text-white text-xs font-bold bg-[#0a1628]/80 px-2.5 py-1 rounded-2xl">الشعار النشط ⚖️</span>
                       </div>
                     </div>
                   ) : (
-                    <div className="flex flex-col items-center text-slate-400 font-bold text-center">
-                      <Image className="w-12 h-12 mb-3 text-slate-400 group-hover:scale-110 transition-transform" />
-                      <span className="text-xs font-bold text-slate-600">اسحب الشعار هنا أو انقر للإصدار</span>
-                      <span className="text-[10px] text-slate-400 font-normal mt-1">يدعم PNG, SVG, JPG أو GIF</span>
+                    <div className="flex flex-col items-center text-[#94a3b8] font-bold text-center">
+                      <Image className="w-12 h-12 mb-3 text-[#94a3b8] group-hover:scale-110 transition-transform" />
+                      <span className="text-xs font-bold text-[#94a3b8]">اسحب الشعار هنا أو انقر للإصدار</span>
+                      <span className="text-[10px] text-[#94a3b8] font-normal mt-1">يدعم PNG, SVG, JPG أو GIF</span>
                     </div>
                   )}
                   <input 
@@ -1520,13 +1520,13 @@ export default function Settings({
                       window.dispatchEvent(new Event('storage'));
                       alert('🔄 تم حذف الشعار المخصص واستعادة الرمز والرمز الافتراضي لمنصة العدالة.');
                     }}
-                    className="flex items-center gap-2 px-4 py-2 bg-rose-50 text-rose-600 rounded-xl hover:bg-rose-100 transition-colors text-xs font-bold w-full justify-center border border-rose-200"
+                    className="flex items-center gap-2 px-4 py-2 bg-rose-50 text-rose-600 rounded-2xl hover:bg-rose-100 transition-colors text-xs font-bold w-full justify-center border border-rose-200"
                   >
                     <Trash2 className="w-4 h-4" />
                     حذف الشعار الحالي وإعادة التعيين للشعار الافتراضي
                   </button>
                 ) : (
-                  <p className="text-[10px] text-slate-500 font-medium text-center">
+                  <p className="text-[10px] text-[#94a3b8]0 font-medium text-center">
                     ملاحظة: عند حذف الشعار، سيعود النظام تلقائياً لعرض الأيقونة الافتراضية لمنصة العدالة.
                   </p>
                 )}
@@ -1534,35 +1534,35 @@ export default function Settings({
 
               <form onSubmit={handleSaveOfficeProfile} className="space-y-4">
                 <div className="space-y-1.5">
-                  <label className="text-xs font-black text-slate-900">اسم المكتب (الترويسة الرسمية):</label>
+                  <label className="text-xs font-black text-[#94a3b8]">اسم المكتب (الترويسة الرسمية):</label>
                   <input 
                     type="text" 
                     value={officeName}
                     onChange={e => setOfficeName(e.target.value)}
-                    className="w-full bg-white border border-slate-200 p-3 rounded-xl text-xs font-bold focus:border-amber-500 outline-none"
+                    className="w-full bg-[#0a1628] border border-[#1e3a5f] p-3 rounded-2xl text-xs font-bold focus:border-amber-500 outline-none"
                     placeholder="اسم المكتب للتحميل في المطبوعات..."
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-xs font-black text-slate-900">الرقم الضريبي (VAT No):</label>
+                  <label className="text-xs font-black text-[#94a3b8]">الرقم الضريبي (VAT No):</label>
                   <input 
                     type="text" 
                     value={vatNo}
                     onChange={e => setVatNo(e.target.value)}
-                    className="w-full bg-white border border-slate-200 p-3 rounded-xl text-xs font-bold font-mono focus:border-amber-500 outline-none"
+                    className="w-full bg-[#0a1628] border border-[#1e3a5f] p-3 rounded-2xl text-xs font-bold font-mono focus:border-amber-500 outline-none"
                     placeholder="3xxxxxxxxxxxxxx"
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-xs font-black text-slate-900">نص التذليل / الترخيص:</label>
+                  <label className="text-xs font-black text-[#94a3b8]">نص التذليل / الترخيص:</label>
                   <textarea 
                     value={officeLicense}
                     onChange={e => setOfficeLicense(e.target.value)}
-                    className="w-full bg-white border border-slate-200 p-3 rounded-xl text-xs font-bold focus:border-amber-500 outline-none h-20 resize-none"
+                    className="w-full bg-[#0a1628] border border-[#1e3a5f] p-3 rounded-2xl text-xs font-bold focus:border-amber-500 outline-none h-20 resize-none"
                     placeholder="بيانات الترخيص والمقر..."
                   />
                 </div>
-                <button type="submit" className="w-full py-3 bg-slate-900 text-white rounded-xl text-xs font-black transition-all shadow-lg flex items-center justify-center gap-2">
+                <button type="submit" className="w-full py-3 bg-[#0a1628] text-white rounded-2xl text-xs font-black transition-all shadow-lg flex items-center justify-center gap-2">
                   <Save className="w-4 h-4" />
                   حفظ الملف المهني للمكتب
                 </button>
@@ -1572,7 +1572,7 @@ export default function Settings({
 
 
           {/* API Keys management section */}
-          <div className="bg-[#0a1628] border border-slate-700 rounded-2xl p-6 settings-card high-contrast-card-wrapper text-high-contrast-light-bg shadow-[0_0_15px_rgba(0,0,0,0.5)]" dir="rtl">
+          <div className="bg-[#0a1628] border border-[#1e3a5f] rounded-2xl p-6 settings-card high-contrast-card-wrapper text-high-contrast-light-bg shadow-[0_0_15px_rgba(0,0,0,0.5)]" dir="rtl">
             <div className="flex items-center gap-3 mb-6">
               <Key className="w-6 h-6 text-yellow-400 drop-shadow-md" style={{ color: '#facc15' }} />
               <div>
@@ -1590,8 +1590,8 @@ export default function Settings({
                 value={newKeyName}
                 onChange={e => setNewKeyName(e.target.value)}
                 placeholder="اسم المفتاح (مثال: أداة ناجز)"
-                className="flex-1 bg-[#050e21] border border-slate-600
-                  text-white font-bold rounded-xl px-4 py-2.5 text-sm
+                className="flex-1 bg-[#050e21] border border-[#1e3a5f]
+                  text-white font-bold rounded-2xl px-4 py-2.5 text-sm
                   focus:outline-none focus:border-yellow-400 focus:ring-1 focus:ring-yellow-400
                   placeholder-slate-400"
               />
@@ -1599,8 +1599,8 @@ export default function Settings({
                 onClick={handleGenerateKey}
                 disabled={isGenerating}
                 className="flex items-center gap-2 px-5 py-2.5
-                  bg-amber-600 hover:bg-amber-500 disabled:opacity-50 shadow-md
-                  text-white font-black rounded-xl transition-colors drop-shadow-md"
+                  bg-gradient-to-r from-[#c9a84c] to-[#a67c30] hover:bg-gradient-to-r from-[#c9a84c] to-[#a67c30] disabled:opacity-50 shadow-md
+                  text-white font-black rounded-2xl transition-colors drop-shadow-md"
               >
                 {isGenerating ? '...' : '+ توليد مفتاح'}
               </button>
@@ -1609,13 +1609,13 @@ export default function Settings({
             {/* Generated key display */}
             {generatedKey && (
               <div className="mb-6 p-4 bg-emerald-500/10 border border-emerald-500/30
-                rounded-xl shadow-sm">
+                rounded-2xl shadow-sm">
                 <p className="text-emerald-300 font-black text-sm mb-2 drop-shadow-sm">
                   ✅ تم توليد المفتاح — انسخه الآن (لن يظهر مرة أخرى)
                 </p>
                 <div className="flex items-center gap-2">
                   <code className="flex-1 bg-[#050e21] text-yellow-300 text-xs
-                    p-3 rounded-lg font-mono font-bold break-all border border-slate-700 shadow-inner">
+                    p-3 rounded-2xl font-mono font-bold break-all border border-[#1e3a5f] shadow-inner">
                     {generatedKey}
                   </code>
                   <button
@@ -1624,13 +1624,13 @@ export default function Settings({
                       setCopySuccess(true);
                       setTimeout(() => setCopySuccess(false), 2000);
                     }}
-                    className="px-4 py-2 bg-slate-700 hover:bg-slate-600
-                      text-white font-black text-xs rounded-lg transition-colors shrink-0 shadow-sm"
+                    className="px-4 py-2 bg-[#0a1628] hover:bg-[#0a1628]
+                      text-white font-black text-xs rounded-2xl transition-colors shrink-0 shadow-sm"
                   >
                     {copySuccess ? '✅ تم' : 'نسخ'}
                   </button>
                 </div>
-                <div className="mt-3 p-3 bg-[#050e21] rounded-lg border border-slate-700 shadow-inner">
+                <div className="mt-3 p-3 bg-[#050e21] rounded-2xl border border-[#1e3a5f] shadow-inner">
                   <p className="text-white text-xs font-black mb-1 drop-shadow-md">
                     🔗 طريقة الاستخدام مع أي أداة سحب:
                   </p>
@@ -1656,7 +1656,7 @@ export default function Settings({
               ) : apiKeys.map(key => (
                 <div key={key.id}
                   className="flex items-center justify-between p-4
-                    bg-[#050e21] border border-slate-700 rounded-xl shadow-sm">
+                    bg-[#050e21] border border-[#1e3a5f] rounded-2xl shadow-sm">
                   <div>
                     <p className="font-black text-base pb-0.5" style={{ color: '#facc15', textShadow: '0 2px 5px rgba(0,0,0,0.8)' }}>{key.key_name}</p>
                     <code className="font-bold text-sm pb-1 block" style={{ color: '#ffffff', textShadow: '0 2px 5px rgba(0,0,0,0.8)' }}>
@@ -1669,7 +1669,7 @@ export default function Settings({
                     </p>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className={`text-[11px] px-3 py-1 rounded-lg font-black shadow-sm
+                    <span className={`text-[11px] px-3 py-1 rounded-2xl font-black shadow-sm
                       ${key.is_active
                         ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40'
                         : 'bg-red-500/20 text-red-400 border border-red-500/40'}`}
@@ -1679,7 +1679,7 @@ export default function Settings({
                     <button
                       onClick={() => handleDeleteKey(key.id)}
                       className="p-2 bg-red-500/20 hover:bg-red-500/40 text-red-100
-                        border border-red-500/30 rounded-lg transition-colors cursor-pointer shadow-sm"
+                        border border-red-500/30 rounded-2xl transition-colors cursor-pointer shadow-sm"
                       title="حذف المفتاح"
                     >
                       <Trash2 className="w-4 h-4 text-red-500" style={{ color: '#ef4444' }} />
@@ -1691,97 +1691,97 @@ export default function Settings({
           </div>
 
           {/* Digital Systems Library URL Config - Dedicated Card */}
-          <div className="bg-white border border-slate-200 rounded-3xl p-6 md:p-8 space-y-6 shadow-sm settings-card high-contrast-card-wrapper text-high-contrast-light-bg" id="legal-library-links-settings">
-            <div className="flex items-center gap-3 border-b border-slate-100 pb-5">
+          <div className="bg-[#0a1628] border border-[#1e3a5f] rounded-3xl p-6 md:p-8 space-y-6 shadow-sm settings-card high-contrast-card-wrapper text-high-contrast-light-bg" id="legal-library-links-settings">
+            <div className="flex items-center gap-3 border-b border-[#1e3a5f] pb-5">
               <div className="p-3 bg-emerald-50 border border-emerald-100 text-emerald-600 rounded-2xl shadow-sm">
                 <BookOpen className="w-6 h-6" />
               </div>
               <div>
-                <h2 className="text-lg font-black text-slate-950">إعدادات روابط الأنظمة القانونية</h2>
-                <p className="text-xs font-bold text-slate-700 mt-1">تخصيص الروابط الخارجية التي يتم فتحها عند النقر على كروت الأنظمة واللوائح في المكتبة القانونية.</p>
+                <h2 className="text-lg font-black text-[#94a3b8]">إعدادات روابط الأنظمة القانونية</h2>
+                <p className="text-xs font-bold text-[#94a3b8] mt-1">تخصيص الروابط الخارجية التي يتم فتحها عند النقر على كروت الأنظمة واللوائح في المكتبة القانونية.</p>
               </div>
             </div>
 
             <form onSubmit={handleSaveLawLinks} className="space-y-4">
               <div className="space-y-1.5">
-                <label className="text-xs font-black text-slate-900 flex items-center gap-1.5">
+                <label className="text-xs font-black text-[#94a3b8] flex items-center gap-1.5">
                   📁 رابط كارت (نظام المعاملات المدنية):
                 </label>
                 <input 
                   type="url" 
                   value={lawLinkCivilTransactions}
                   onChange={e => setLawLinkCivilTransactions(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl text-xs font-bold focus:border-amber-500 outline-none font-sans"
+                  className="w-full bg-[#0a1628] border border-[#1e3a5f] p-3 rounded-2xl text-xs font-bold focus:border-amber-500 outline-none font-sans"
                   placeholder="https://example.com/civil-transactions-law-link..."
                 />
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs font-black text-slate-900 flex items-center gap-1.5">
+                <label className="text-xs font-black text-[#94a3b8] flex items-center gap-1.5">
                   📁 رابط كارت (نظام الشركات الجديد):
                 </label>
                 <input 
                   type="url" 
                   value={lawLinkCompaniesNew}
                   onChange={e => setLawLinkCompaniesNew(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl text-xs font-bold focus:border-amber-500 outline-none font-sans"
+                  className="w-full bg-[#0a1628] border border-[#1e3a5f] p-3 rounded-2xl text-xs font-bold focus:border-amber-500 outline-none font-sans"
                   placeholder="https://example.com/companies-law-link..."
                 />
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs font-black text-slate-900 flex items-center gap-1.5">
+                <label className="text-xs font-black text-[#94a3b8] flex items-center gap-1.5">
                   📁 رابط كارت (نظام العمل السعودي):
                 </label>
                 <input 
                   type="url" 
                   value={lawLinkLaborLaw}
                   onChange={e => setLawLinkLaborLaw(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl text-xs font-bold focus:border-amber-500 outline-none font-sans"
+                  className="w-full bg-[#0a1628] border border-[#1e3a5f] p-3 rounded-2xl text-xs font-bold focus:border-amber-500 outline-none font-sans"
                   placeholder="https://example.com/labor-law-link..."
                 />
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs font-black text-slate-900 flex items-center gap-1.5">
+                <label className="text-xs font-black text-[#94a3b8] flex items-center gap-1.5">
                   📁 رابط كارت (نظام الإثبات القضائي):
                 </label>
                 <input 
                   type="url" 
                   value={lawLinkEvidenceLaw}
                   onChange={e => setLawLinkEvidenceLaw(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl text-xs font-bold focus:border-amber-500 outline-none font-sans"
+                  className="w-full bg-[#0a1628] border border-[#1e3a5f] p-3 rounded-2xl text-xs font-bold focus:border-amber-500 outline-none font-sans"
                   placeholder="https://example.com/evidence-law-link..."
                 />
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs font-black text-slate-900 flex items-center gap-1.5">
+                <label className="text-xs font-black text-[#94a3b8] flex items-center gap-1.5">
                   📁 رابط كارت (نظام التنفيذ):
                 </label>
                 <input 
                   type="url" 
                   value={lawLinkEnforcementLaw}
                   onChange={e => setLawLinkEnforcementLaw(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl text-xs font-bold focus:border-amber-500 outline-none font-sans"
+                  className="w-full bg-[#0a1628] border border-[#1e3a5f] p-3 rounded-2xl text-xs font-bold focus:border-amber-500 outline-none font-sans"
                   placeholder="https://example.com/enforcement-law-link..."
                 />
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs font-black text-slate-900 flex items-center gap-1.5">
+                <label className="text-xs font-black text-[#94a3b8] flex items-center gap-1.5">
                   📁 رابط كارت (نظام الإفلاس):
                 </label>
                 <input 
                   type="url" 
                   value={lawLinkBankruptcyLaw}
                   onChange={e => setLawLinkBankruptcyLaw(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl text-xs font-bold focus:border-amber-500 outline-none font-sans"
+                  className="w-full bg-[#0a1628] border border-[#1e3a5f] p-3 rounded-2xl text-xs font-bold focus:border-amber-500 outline-none font-sans"
                   placeholder="https://example.com/bankruptcy-law-link..."
                 />
               </div>
 
-              <button type="submit" className="w-full py-4 bg-slate-950 hover:bg-slate-800 text-white rounded-2xl text-xs font-black transition-all shadow-xl flex items-center justify-center gap-2.5 active:scale-[0.98]">
+              <button type="submit" className="w-full py-4 bg-[#0a1628] hover:bg-[#0a1628] text-white rounded-2xl text-xs font-black transition-all shadow-xl flex items-center justify-center gap-2.5 active:scale-[0.98]">
                 <Save className="w-5 h-5 text-emerald-400" />
                 <span>حفظ المسارات والروابط المخصصة للأنظمة 🌿</span>
               </button>
@@ -1789,22 +1789,22 @@ export default function Settings({
           </div>
 
           {/* Law Links Management (Supabase) */}
-          <div className="bg-white border border-slate-800 rounded-3xl p-6 shadow-sm space-y-6 settings-card high-contrast-card-wrapper text-high-contrast-light-bg">
-            <div className="flex items-center gap-3 border-b border-slate-800 pb-4">
-              <div className="p-2.5 bg-blue-50 text-blue-900 border border-blue-200 rounded-xl">
+          <div className="bg-[#0a1628] border border-[#1e3a5f] rounded-3xl p-6 shadow-sm space-y-6 settings-card high-contrast-card-wrapper text-high-contrast-light-bg">
+            <div className="flex items-center gap-3 border-b border-[#1e3a5f] pb-4">
+              <div className="p-2.5 bg-blue-50 text-blue-900 border border-blue-200 rounded-2xl">
                 <FileSpreadsheet className="w-5 h-5" />
               </div>
               <div>
-                <h2 className="text-base font-black text-slate-900">إدارة روابط الأنظمة واللوائح (Cloud)</h2>
-                <p className="text-xs text-slate-700 mt-1">تخصيص الروابط السريعة التي تظهر في قسم الوكالات للوصول لآخر تحديثات الأنظمة السعودية.</p>
+                <h2 className="text-base font-black text-[#94a3b8]">إدارة روابط الأنظمة واللوائح (Cloud)</h2>
+                <p className="text-xs text-[#94a3b8] mt-1">تخصيص الروابط السريعة التي تظهر في قسم الوكالات للوصول لآخر تحديثات الأنظمة السعودية.</p>
               </div>
             </div>
 
             <div className="space-y-4">
               {lawLinks.map((law, idx) => (
-                <div key={law.id || idx} className="grid grid-cols-1 md:grid-cols-2 gap-4 border-b border-slate-100 pb-4">
+                <div key={law.id || idx} className="grid grid-cols-1 md:grid-cols-2 gap-4 border-b border-[#1e3a5f] pb-4">
                   <div className="space-y-1.5 text-right">
-                    <label className="text-[10px] text-slate-500 font-black">{law.name}</label>
+                    <label className="text-[10px] text-[#94a3b8]0 font-black">{law.name}</label>
                     <input 
                       type="text" 
                       value={law.url} 
@@ -1813,7 +1813,7 @@ export default function Settings({
                         newList[idx].url = e.target.value;
                         setLawLinks(newList);
                       }}
-                      className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-black text-slate-900 focus:outline-none focus:border-blue-500"
+                      className="w-full px-4 py-2.5 bg-[#0a1628] border border-[#1e3a5f] rounded-2xl text-xs font-black text-[#94a3b8] focus:outline-none focus:border-blue-500"
                       placeholder="رابط النظام (URL)"
                     />
                   </div>
@@ -1822,7 +1822,7 @@ export default function Settings({
                       type="button"
                       onClick={() => handleUpdateLawLink(law)}
                       disabled={isSavingLaws}
-                      className="px-4 py-2.5 bg-blue-950 text-white rounded-xl text-[10px] font-black hover:bg-blue-900 transition-all disabled:opacity-50"
+                      className="px-4 py-2.5 bg-blue-950 text-white rounded-2xl text-[10px] font-black hover:bg-blue-900 transition-all disabled:opacity-50"
                     >
                       {isSavingLaws ? <RefreshCw className="w-4 h-4 animate-spin" /> : 'تحديث الرابط في السحابة'}
                     </button>
@@ -1833,20 +1833,20 @@ export default function Settings({
           </div>
           
           {/* Custom Theme Color & Gradient Config for Dark Cards & Backgrounds with Live Preview */}
-          <div className="bg-white border border-slate-800 rounded-2xl p-6 space-y-4 shadow-sm" id="dark-gradient-picker-card">
-            <div className="flex items-center gap-2.5 border-b border-slate-800 pb-3">
-              <span className="p-1.5 bg-yellow-500/10 text-yellow-400 font-black border border-yellow-500/20 rounded-lg text-sm">🎨</span>
+          <div className="bg-[#0a1628] border border-[#1e3a5f] rounded-2xl p-6 space-y-4 shadow-sm" id="dark-gradient-picker-card">
+            <div className="flex items-center gap-2.5 border-b border-[#1e3a5f] pb-3">
+              <span className="p-1.5 bg-[#c9a84c]/10 text-yellow-400 font-black border border-yellow-500/20 rounded-2xl text-sm">🎨</span>
               <div>
-                <h2 className="text-sm font-bold text-slate-900">مظاهر المربعات والخلفيات الداعمة لراحة العين</h2>
-                <p className="text-[11px] text-slate-900 mt-0.5">اختر تدرج الألوان المفضل للمربعات الداكنة والخلفيات لعرضها بمزيج مريح للرؤية والمعاينة الحية.</p>
+                <h2 className="text-sm font-bold text-[#94a3b8]">مظاهر المربعات والخلفيات الداعمة لراحة العين</h2>
+                <p className="text-[11px] text-[#94a3b8] mt-0.5">اختر تدرج الألوان المفضل للمربعات الداكنة والخلفيات لعرضها بمزيج مريح للرؤية والمعاينة الحية.</p>
               </div>
             </div>
 
             {/* Live Preview interactive preview board */}
-            <div className="bg-slate-55 border border-slate-800 rounded-xl p-4 space-y-3">
-              <span className="text-[11px] font-black text-slate-950 uppercase tracking-widest block">👁️ لوحة المعاينة الحية السريعة (Instant Live Preview):</span>
+            <div className="bg-slate-55 border border-[#1e3a5f] rounded-2xl p-4 space-y-3">
+              <span className="text-[11px] font-black text-[#94a3b8] uppercase tracking-widest block">👁️ لوحة المعاينة الحية السريعة (Instant Live Preview):</span>
               <div 
-                className="p-5 rounded-xl border border-slate-800 relative overflow-hidden transition-all duration-300 animate-gradient-slow"
+                className="p-5 rounded-2xl border border-[#1e3a5f] relative overflow-hidden transition-all duration-300 animate-gradient-slow"
                 style={{
                   background: `linear-gradient(135deg, ${
                     [...STATIC_GRADIENT_THEMES, ...customThemes].find(t => t.id === darkGradientTheme)?.from || '#0b1329'
@@ -1861,7 +1861,7 @@ export default function Settings({
                 </div>
                 <h4 className="text-sm font-black text-white">إحصائيات الملفات القضائية والجلسات المستوردة</h4>
                 <p className="text-xs text-white opacity-90 mt-1.5 leading-relaxed">
-                  هذا النص مصمم لمحاكاة وضوح القراءه. تضمن فئة <code className="bg-white/10 px-1 py-0.5 rounded font-mono text-[10px] text-yellow-355 font-bold">.text-high-contrast-light-bg</code> تحويل أي نصوص داكنة إلى اللون الأبيض أو الأصفر الفاقع تلقائياً لتفادي الإرهاق البصري.
+                  هذا النص مصمم لمحاكاة وضوح القراءه. تضمن فئة <code className="bg-[#0a1628]/10 px-1 py-0.5 rounded font-mono text-[10px] text-yellow-355 font-bold">.text-high-contrast-light-bg</code> تحويل أي نصوص داكنة إلى اللون الأبيض أو الأصفر الفاقع تلقائياً لتفادي الإرهاق البصري.
                 </p>
                 <div className="flex gap-4 mt-3 pt-3 border-t border-white/10 text-xs text-white">
                   <div>
@@ -1883,22 +1883,22 @@ export default function Settings({
                   key={theme.id}
                   type="button"
                   onClick={() => onDarkGradientThemeChange && onDarkGradientThemeChange(theme.id)}
-                  className={`flex flex-col text-right p-3.5 rounded-xl border text-xs transition-all pointer-events-auto ${
+                  className={`flex flex-col text-right p-3.5 rounded-2xl border text-xs transition-all pointer-events-auto ${
                     darkGradientTheme === theme.id 
-                      ? 'border-primary ring-2 ring-primary/10 bg-amber-500/5' 
-                      : 'border-slate-800 bg-white'
+                      ? 'border-primary ring-2 ring-primary/10 bg-gradient-to-r from-[#c9a84c] to-[#a67c30]/5' 
+                      : 'border-[#1e3a5f] bg-[#0a1628]'
                   }`}
                 >
                   <div className="flex items-center justify-between w-full">
-                    <span className="font-bold text-slate-900">{theme.name}</span>
+                    <span className="font-bold text-[#94a3b8]">{theme.name}</span>
                     <div className="flex gap-1.5 shrink-0 ml-2">
                       <div className="w-4 h-4 rounded" style={{ backgroundColor: theme.from }}></div>
                       <div className="w-4 h-4 rounded" style={{ backgroundColor: theme.to }}></div>
                     </div>
                   </div>
-                  <span className="text-[10px] text-slate-900 mt-1 font-bold leading-normal">{theme.desc}</span>
+                  <span className="text-[10px] text-[#94a3b8] mt-1 font-bold leading-normal">{theme.desc}</span>
                   {darkGradientTheme === theme.id && (
-                    <span className="text-[10px] text-primary font-black mt-2 self-start bg-primary/10 px-2 py-0.5 rounded-lg border border-primary/20">
+                    <span className="text-[10px] text-primary font-black mt-2 self-start bg-primary/10 px-2 py-0.5 rounded-2xl border border-primary/20">
                       نشط حالياً (Active Preview)
                     </span>
                   )}
@@ -1908,26 +1908,26 @@ export default function Settings({
           </div>
 
           {/* High Contrast Mode Config */}
-          <div className="bg-white border border-slate-800 rounded-2xl p-6 space-y-4 shadow-sm">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+          <div className="bg-[#0a1628] border border-[#1e3a5f] rounded-2xl p-6 space-y-4 shadow-sm">
+            <div className="flex items-center justify-between border-b border-[#1e3a5f] pb-3">
               <div className="flex items-center gap-2">
-                <span className="p-1.5 bg-indigo-500/10 text-indigo-600 border border-indigo-500/20 rounded-lg text-sm">👁️‍🗨️</span>
+                <span className="p-1.5 bg-indigo-500/10 text-indigo-600 border border-indigo-500/20 rounded-2xl text-sm">👁️‍🗨️</span>
                 <div>
-                  <h2 className="text-sm font-bold text-slate-900">نمط التباين العالي (High Contrast Mode)</h2>
-                  <p className="text-[11px] text-slate-900 mt-0.5">تطبيق كلاسات CSS تضمن وضوح النصوص بشكل أكبر عبر تحويل أي خطوط رمادية إلى بيضاء أو صفراء ناصعة.</p>
+                  <h2 className="text-sm font-bold text-[#94a3b8]">نمط التباين العالي (High Contrast Mode)</h2>
+                  <p className="text-[11px] text-[#94a3b8] mt-0.5">تطبيق كلاسات CSS تضمن وضوح النصوص بشكل أكبر عبر تحويل أي خطوط رمادية إلى بيضاء أو صفراء ناصعة.</p>
                 </div>
               </div>
               <button
                 type="button"
                 onClick={() => onHighContrastModeChange && onHighContrastModeChange(!highContrastMode)}
-                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${highContrastMode ? 'bg-primary' : 'bg-slate-300'}`}
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${highContrastMode ? 'bg-primary' : 'bg-[#0a1628]'}`}
               >
-                <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${highContrastMode ? 'translate-x-1' : '-translate-x-5'}`} />
+                <span className={`inline-block h-4 w-4 transform rounded-full bg-[#0a1628] transition-transform ${highContrastMode ? 'translate-x-1' : '-translate-x-5'}`} />
               </button>
             </div>
             
             {highContrastMode && (
-              <div className="bg-indigo-50 border border-indigo-200 p-3 rounded-lg flex items-start gap-2">
+              <div className="bg-indigo-50 border border-indigo-200 p-3 rounded-2xl flex items-start gap-2">
                 <div className="text-indigo-600 mt-0.5">ℹ️</div>
                 <div className="text-[11px] text-indigo-900 leading-relaxed font-bold">
                   تم تفعيل نمط التباين العالي. يمكنك ملاحظة التغيير الفوري في ألوان النصوص الرمادية الداكنة أو الفاتحة لتصبح أكثر سطوعاً (أبيض أو أصفر ناصع) في كافة شاشات وأدوات المنصة.
@@ -1937,10 +1937,10 @@ export default function Settings({
           </div>
 
           {/* Full Dark Mode Config */}
-          <div className="bg-white border border-slate-800 rounded-2xl p-6 space-y-4 shadow-sm">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+          <div className="bg-[#0a1628] border border-[#1e3a5f] rounded-2xl p-6 space-y-4 shadow-sm">
+            <div className="flex items-center justify-between border-b border-[#1e3a5f] pb-3">
               <div className="flex items-center gap-2">
-                <span className="p-1.5 bg-slate-900 text-white border border-slate-700 rounded-lg text-sm">🌙</span>
+                <span className="p-1.5 bg-[#0a1628] text-white border border-[#1e3a5f] rounded-2xl text-sm">🌙</span>
                 <div>
                   <h2 className="text-sm font-bold text-white">الوضع الليلي الكامل (Dark Mode)</h2>
                   <p className="text-[11px] text-white mt-0.5">تفعيل الوضع الليلي لإعادة توزيع الألوان للنظام بالكامل لتوفير تجربة مريحة للمحامين خلال ساعات العمل الطويلة.</p>
@@ -1949,49 +1949,49 @@ export default function Settings({
               <button
                 type="button"
                 onClick={() => onDarkModeChange && onDarkModeChange(!isDarkMode)}
-                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${isDarkMode ? 'bg-primary' : 'bg-slate-300'}`}
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${isDarkMode ? 'bg-primary' : 'bg-[#0a1628]'}`}
               >
-                <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${isDarkMode ? 'translate-x-1' : '-translate-x-5'}`} />
+                <span className={`inline-block h-4 w-4 transform rounded-full bg-[#0a1628] transition-transform ${isDarkMode ? 'translate-x-1' : '-translate-x-5'}`} />
               </button>
             </div>
           </div>
 
           {/* Elegant Gold Mode Config */}
-          <div className="bg-white border border-slate-800 rounded-2xl p-6 space-y-4 shadow-sm" dir="rtl">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+          <div className="bg-[#0a1628] border border-[#1e3a5f] rounded-2xl p-6 space-y-4 shadow-sm" dir="rtl">
+            <div className="flex items-center justify-between border-b border-[#1e3a5f] pb-3">
               <div className="flex items-center gap-2">
-                <span className="p-1.5 bg-amber-500/10 border border-amber-500/30 text-amber-400 font-bold font-black border border-amber-500/20 rounded-lg text-sm font-sans font-black">👑</span>
+                <span className="p-1.5 bg-gradient-to-r from-[#c9a84c] to-[#a67c30]/10 border border-amber-500/30 text-amber-400 font-bold font-black border border-amber-500/20 rounded-2xl text-sm font-sans font-black">👑</span>
                 <div>
-                  <h2 className="text-sm font-bold text-slate-900">الوضع الذهبي الأنيق (Elegant Gold Mode)</h2>
-                  <p className="text-[11px] text-slate-700 mt-0.5">تخصيص جمالي يحول جميع أطراف الإطارات والظلال واللمسات التفاعلية بالمنصة لتدرجات ذهبية ناعمة ورائعة للمظهر الفخم.</p>
+                  <h2 className="text-sm font-bold text-[#94a3b8]">الوضع الذهبي الأنيق (Elegant Gold Mode)</h2>
+                  <p className="text-[11px] text-[#94a3b8] mt-0.5">تخصيص جمالي يحول جميع أطراف الإطارات والظلال واللمسات التفاعلية بالمنصة لتدرجات ذهبية ناعمة ورائعة للمظهر الفخم.</p>
                 </div>
               </div>
               <button
                 type="button"
                 onClick={() => setElegantGoldMode(!elegantGoldMode)}
-                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${elegantGoldMode ? 'bg-amber-600' : 'bg-slate-300'}`}
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${elegantGoldMode ? 'bg-gradient-to-r from-[#c9a84c] to-[#a67c30]' : 'bg-[#0a1628]'}`}
               >
-                <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${elegantGoldMode ? 'translate-x-1' : '-translate-x-5'}`} />
+                <span className={`inline-block h-4 w-4 transform rounded-full bg-[#0a1628] transition-transform ${elegantGoldMode ? 'translate-x-1' : '-translate-x-5'}`} />
               </button>
             </div>
           </div>
 
           {/* Advanced Visual Coefficient Customizer Card with Sliders */}
-          <div className="bg-white border border-slate-800 rounded-2xl p-6 space-y-4 shadow-sm text-right" dir="rtl">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+          <div className="bg-[#0a1628] border border-[#1e3a5f] rounded-2xl p-6 space-y-4 shadow-sm text-right" dir="rtl">
+            <div className="flex items-center justify-between border-b border-[#1e3a5f] pb-3">
               <div className="flex items-center gap-2">
-                <span className="p-1.5 bg-amber-500/10 border border-amber-500/30 text-amber-400 font-bold font-black border border-amber-500/20 rounded-lg text-sm font-sans font-black">🎛️</span>
+                <span className="p-1.5 bg-gradient-to-r from-[#c9a84c] to-[#a67c30]/10 border border-amber-500/30 text-amber-400 font-bold font-black border border-amber-500/20 rounded-2xl text-sm font-sans font-black">🎛️</span>
                 <div>
-                  <h2 className="text-sm font-bold text-slate-900">التحكم في الأبعاد والظلال المتقدمة (Advanced Customization)</h2>
-                  <p className="text-[11px] text-slate-700 mt-0.5">تعديل انحناء الحواف، شدة الظلال وعتمة الخلفيات لجميع الكروت ديناميكياً.</p>
+                  <h2 className="text-sm font-bold text-[#94a3b8]">التحكم في الأبعاد والظلال المتقدمة (Advanced Customization)</h2>
+                  <p className="text-[11px] text-[#94a3b8] mt-0.5">تعديل انحناء الحواف، شدة الظلال وعتمة الخلفيات لجميع الكروت ديناميكياً.</p>
                 </div>
               </div>
               <button
                 type="button"
                 onClick={() => setAdvancedConfigEnabled(!advancedConfigEnabled)}
-                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${advancedConfigEnabled ? 'bg-primary' : 'bg-slate-300'}`}
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${advancedConfigEnabled ? 'bg-primary' : 'bg-[#0a1628]'}`}
               >
-                <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${advancedConfigEnabled ? 'translate-x-1' : '-translate-x-5'}`} />
+                <span className={`inline-block h-4 w-4 transform rounded-full bg-[#0a1628] transition-transform ${advancedConfigEnabled ? 'translate-x-1' : '-translate-x-5'}`} />
               </button>
             </div>
 
@@ -1999,7 +1999,7 @@ export default function Settings({
               <div className="space-y-4 pt-2">
                 <div className="space-y-1.5">
                   <div className="flex justify-between text-xs">
-                    <span className="text-slate-900 font-bold font-sans">زاوية انحناء أطراف الكروت:</span>
+                    <span className="text-[#94a3b8] font-bold font-sans">زاوية انحناء أطراف الكروت:</span>
                     <span className="font-mono text-primary font-black">{cardRadius}</span>
                   </div>
                   <input
@@ -2009,9 +2009,9 @@ export default function Settings({
                     step="1"
                     value={parseInt(cardRadius)}
                     onChange={(e) => setCardRadius(`${e.target.value}px`)}
-                    className="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-primary"
+                    className="w-full h-1.5 bg-[#0a1628] rounded-2xl appearance-none cursor-pointer accent-primary"
                   />
-                  <div className="flex justify-between text-[10px] text-slate-700 font-sans">
+                  <div className="flex justify-between text-[10px] text-[#94a3b8] font-sans">
                     <span>حواف حادة (0px)</span>
                     <span>انحناء مائل مريح (20px)</span>
                     <span>انحناء دائري عريض (40px)</span>
@@ -2020,7 +2020,7 @@ export default function Settings({
 
                 <div className="space-y-1.5 font-sans">
                   <div className="flex justify-between text-xs">
-                    <span className="text-slate-900 font-bold font-sans">مؤشر عمق وارتفاع الظلال ثلاثية الأبعاد:</span>
+                    <span className="text-[#94a3b8] font-bold font-sans">مؤشر عمق وارتفاع الظلال ثلاثية الأبعاد:</span>
                     <span className="font-mono text-primary font-black">×{cardShadowIntensity}</span>
                   </div>
                   <input
@@ -2030,9 +2030,9 @@ export default function Settings({
                     step="0.1"
                     value={parseFloat(cardShadowIntensity)}
                     onChange={(e) => setCardShadowIntensity(e.target.value)}
-                    className="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-primary"
+                    className="w-full h-1.5 bg-[#0a1628] rounded-2xl appearance-none cursor-pointer accent-primary"
                   />
-                  <div className="flex justify-between text-[10px] text-slate-700 font-sans">
+                  <div className="flex justify-between text-[10px] text-[#94a3b8] font-sans">
                     <span>مسطح بالكامل (0.0)</span>
                     <span>ظلال دافئة طبيعية (1.0)</span>
                     <span>تأثير عمق بؤري عارم (2.5)</span>
@@ -2041,7 +2041,7 @@ export default function Settings({
 
                 <div className="space-y-1.5 font-sans">
                   <div className="flex justify-between text-xs">
-                    <span className="text-slate-900 font-bold">معدل تعتيم وشفافية خلفيات الكروت:</span>
+                    <span className="text-[#94a3b8] font-bold">معدل تعتيم وشفافية خلفيات الكروت:</span>
                     <span className="font-mono text-primary font-black">{Math.round(parseFloat(cardBgOpacity) * 100)}%</span>
                   </div>
                   <input
@@ -2051,9 +2051,9 @@ export default function Settings({
                     step="0.05"
                     value={parseFloat(cardBgOpacity)}
                     onChange={(e) => setCardBgOpacity(e.target.value)}
-                    className="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-primary"
+                    className="w-full h-1.5 bg-[#0a1628] rounded-2xl appearance-none cursor-pointer accent-primary"
                   />
-                  <div className="flex justify-between text-[10px] text-slate-700 font-sans">
+                  <div className="flex justify-between text-[10px] text-[#94a3b8] font-sans">
                     <span>زجاجي شفاف (10%)</span>
                     <span>خلفية صلبة داكنة (100%)</span>
                   </div>
@@ -2061,7 +2061,7 @@ export default function Settings({
 
                 <div className="space-y-1.5 font-sans">
                   <div className="flex justify-between text-xs">
-                    <span className="text-slate-900 font-bold">سرعة تفاعل وحركة كروت القضايا (Transition Speed):</span>
+                    <span className="text-[#94a3b8] font-bold">سرعة تفاعل وحركة كروت القضايا (Transition Speed):</span>
                     <span className="font-mono text-primary font-black">{cardTransitionSpeed} ثانية</span>
                   </div>
                   <input
@@ -2071,9 +2071,9 @@ export default function Settings({
                     step="0.05"
                     value={parseFloat(cardTransitionSpeed)}
                     onChange={(e) => setCardTransitionSpeed(e.target.value)}
-                    className="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-primary"
+                    className="w-full h-1.5 bg-[#0a1628] rounded-2xl appearance-none cursor-pointer accent-primary"
                   />
-                  <div className="flex justify-between text-[10px] text-slate-700 font-sans">
+                  <div className="flex justify-between text-[10px] text-[#94a3b8] font-sans">
                     <span>فوري شديد السرعة (0.1s)</span>
                     <span>انتقال ناعم متزن (0.4s)</span>
                     <span>سينمائي هادئ وعريض (1.5s)</span>
@@ -2082,7 +2082,7 @@ export default function Settings({
 
                 <div className="space-y-1.5 font-sans">
                   <div className="flex justify-between text-xs">
-                    <span className="text-slate-900 font-bold font-sans">لون بطاقات النظام (اختياري/مخصص):</span>
+                    <span className="text-[#94a3b8] font-bold font-sans">لون بطاقات النظام (اختياري/مخصص):</span>
                     <span className="font-mono text-primary font-black">{cardCustomBgColor || 'السياق الافتراضي'}</span>
                   </div>
                   <div className="flex items-center gap-4">
@@ -2094,7 +2094,7 @@ export default function Settings({
                      />
                      <button 
                        onClick={() => setCardCustomBgColor('')} 
-                       className="text-[10px] bg-slate-200 text-slate-700 px-3 py-1 rounded-xl font-bold transition-colors"
+                       className="text-[10px] bg-[#0a1628] text-[#94a3b8] px-3 py-1 rounded-2xl font-bold transition-colors"
                      >
                         مسح وإلغاء اللون
                      </button>
@@ -2102,11 +2102,11 @@ export default function Settings({
                 </div>
 
                 {/* Dynamically controlled card preview inside Settings */}
-                <div className="mt-6 p-5 border border-slate-200 rounded-xl bg-slate-50 relative overflow-hidden" dir="rtl">
+                <div className="mt-6 p-5 border border-[#1e3a5f] rounded-2xl bg-[#0a1628] relative overflow-hidden" dir="rtl">
                   <span className="text-[11px] font-black text-amber-400 font-black block mb-3">👁️ لوحة معاينة الحواف والظلال اللحظية (Card Geometry Live Preview):</span>
                   
                   <div 
-                    className="p-5 border transition-all duration-300 relative bg-white"
+                    className="p-5 border transition-all duration-300 relative bg-[#0a1628]"
                     style={{
                       backgroundColor: cardCustomBgColor || '#ffffff',
                       borderRadius: cardRadius,
@@ -2117,14 +2117,14 @@ export default function Settings({
                     }}
                   >
                     <div className="flex justify-between items-center mb-2">
-                      <span className="text-[10px] font-mono text-amber-400 font-black font-bold bg-amber-500/10 px-2 py-0.5 rounded">بطاقة المعاينة القضائية</span>
+                      <span className="text-[10px] font-mono text-amber-400 font-black font-bold bg-gradient-to-r from-[#c9a84c] to-[#a67c30]/10 px-2 py-0.5 rounded">بطاقة المعاينة القضائية</span>
                       <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
                     </div>
-                    <h5 className="text-sm font-black text-slate-900">محاكاة حية لتأثير الأبعاد والسمك</h5>
-                    <p className="text-xs text-slate-700 leading-relaxed mt-1">
+                    <h5 className="text-sm font-black text-[#94a3b8]">محاكاة حية لتأثير الأبعاد والسمك</h5>
+                    <p className="text-xs text-[#94a3b8] leading-relaxed mt-1">
                       هذه البطاقة تعكس الإحساس العام لكافة كروت النظام عند تطبيق الزوايا والظلال الحالية.
                     </p>
-                    <div className="flex gap-4 mt-3 pt-3 border-t border-slate-100 text-[10px] text-slate-200 font-bold font-bold font-mono">
+                    <div className="flex gap-4 mt-3 pt-3 border-t border-[#1e3a5f] text-[10px] text-[#94a3b8] font-bold font-bold font-mono">
                       <span>انحناء: {cardRadius}</span>
                       <span>ظلال: {cardShadowIntensity}x</span>
                       <span>شفافية: {Math.round(parseFloat(cardBgOpacity) * 100)}%</span>
@@ -2136,18 +2136,18 @@ export default function Settings({
           </div>
 
           {/* High-Contrast Presets section with Advanced Slider Calibration */}
-          <div className="bg-white border border-slate-800 rounded-2xl p-6 space-y-5 shadow-sm text-right font-sans" dir="rtl">
-            <div className="flex items-center gap-2 border-b border-slate-800 pb-3">
-              <span className="p-1.5 bg-sky-500/10 text-sky-600 border border-sky-500/20 rounded-lg text-sm font-sans font-black">🕶️</span>
+          <div className="bg-[#0a1628] border border-[#1e3a5f] rounded-2xl p-6 space-y-5 shadow-sm text-right font-sans" dir="rtl">
+            <div className="flex items-center gap-2 border-b border-[#1e3a5f] pb-3">
+              <span className="p-1.5 bg-sky-500/10 text-sky-600 border border-sky-500/20 rounded-2xl text-sm font-sans font-black">🕶️</span>
               <div>
-                <h2 className="text-sm font-bold text-slate-950 underline decoration-primary/30">إعدادات الرؤية المريحة والمعايرة العينية (Ocular Comfort Tuning)</h2>
-                <p className="text-[11px] text-slate-800 mt-0.5 font-black">اختر من بين المعايرات التقنية الجاهزة أو قم بتخصيص الفلاتر بنفسك لحماية النظر في الأوضاع المظلمة وتحسين سهولة القراءة.</p>
+                <h2 className="text-sm font-bold text-[#94a3b8] underline decoration-primary/30">إعدادات الرؤية المريحة والمعايرة العينية (Ocular Comfort Tuning)</h2>
+                <p className="text-[11px] text-[#94a3b8] mt-0.5 font-black">اختر من بين المعايرات التقنية الجاهزة أو قم بتخصيص الفلاتر بنفسك لحماية النظر في الأوضاع المظلمة وتحسين سهولة القراءة.</p>
               </div>
             </div>
 
             {/* Presets Grid */}
             <div>
-              <span className="text-xs font-bold text-slate-900 block mb-2.5">💡 المعايرات البصرية المجهزة مسبقاً لحماية الأعين:</span>
+              <span className="text-xs font-bold text-[#94a3b8] block mb-2.5">💡 المعايرات البصرية المجهزة مسبقاً لحماية الأعين:</span>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 {[
                   { id: 'default', name: 'الوضع الطبيعي', sat: 1.0, bright: 1.0, cont: 1.0, icon: '🌟' },
@@ -2170,10 +2170,10 @@ export default function Settings({
                       setVisionBright(preset.bright);
                       setVisionCont(preset.cont);
                     }}
-                    className={`p-3 rounded-xl border transition-all flex flex-col items-center gap-1 cursor-pointer text-center ${
+                    className={`p-3 rounded-2xl border transition-all flex flex-col items-center gap-1 cursor-pointer text-center ${
                       visionPreset === preset.id 
-                        ? 'border-primary bg-primary/10 ring-1 ring-primary/30 text-slate-950 font-bold' 
-                        : 'border-slate-800 bg-white text-slate-900'
+                        ? 'border-primary bg-primary/10 ring-1 ring-primary/30 text-[#94a3b8] font-bold' 
+                        : 'border-[#1e3a5f] bg-[#0a1628] text-[#94a3b8]'
                     }`}
                   >
                     <span className="text-base">{preset.icon}</span>
@@ -2185,11 +2185,11 @@ export default function Settings({
             </div>
 
             {/* Slider Controls for Manual High-Contrast Calibration */}
-            <div className="bg-slate-50 border border-slate-800 rounded-xl p-4 space-y-4">
-              <div className="flex justify-between items-center text-xs font-bold text-slate-950 border-b border-slate-800 pb-2">
+            <div className="bg-[#0a1628] border border-[#1e3a5f] rounded-2xl p-4 space-y-4">
+              <div className="flex justify-between items-center text-xs font-bold text-[#94a3b8] border-b border-[#1e3a5f] pb-2">
                 <span>🎛️ لوحة المعايرة الحرة (Manual Calibration)</span>
                 {visionPreset === 'custom' ? (
-                  <span className="text-[10px] bg-amber-500/10 border border-amber-500/30 text-amber-400 font-bold font-black border border-amber-500/20 px-2 py-0.5 rounded-lg">تعديل مخصص نشط (Custom Tuning Active)</span>
+                  <span className="text-[10px] bg-gradient-to-r from-[#c9a84c] to-[#a67c30]/10 border border-amber-500/30 text-amber-400 font-bold font-black border border-amber-500/20 px-2 py-0.5 rounded-2xl">تعديل مخصص نشط (Custom Tuning Active)</span>
                 ) : (
                   <button
                     type="button"
@@ -2204,7 +2204,7 @@ export default function Settings({
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {/* Saturation Slider */}
                 <div className="space-y-1.5">
-                  <div className="flex justify-between items-center text-[11px] font-bold text-slate-900">
+                  <div className="flex justify-between items-center text-[11px] font-bold text-[#94a3b8]">
                     <span>تشبع الألوان (Saturation):</span>
                     <span className="font-mono text-primary font-black">{visionSat.toFixed(2)}x</span>
                   </div>
@@ -2218,9 +2218,9 @@ export default function Settings({
                       setVisionPreset('custom');
                       setVisionSat(parseFloat(e.target.value));
                     }}
-                    className="w-full accent-primary h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer"
+                    className="w-full accent-primary h-1.5 bg-[#0a1628] rounded-2xl appearance-none cursor-pointer"
                   />
-                  <div className="flex justify-between text-[10px] text-slate-900 font-bold">
+                  <div className="flex justify-between text-[10px] text-[#94a3b8] font-bold">
                     <span>خافت (الأشعة الزرقاء)</span>
                     <span>ممتلئ / ساطع</span>
                   </div>
@@ -2228,7 +2228,7 @@ export default function Settings({
 
                 {/* Brightness Slider */}
                 <div className="space-y-1.5">
-                  <div className="flex justify-between items-center text-[11px] font-bold text-slate-900">
+                  <div className="flex justify-between items-center text-[11px] font-bold text-[#94a3b8]">
                     <span>شدة الإضاءة (Brightness):</span>
                     <span className="font-mono text-primary font-black">{visionBright.toFixed(2)}x</span>
                   </div>
@@ -2242,9 +2242,9 @@ export default function Settings({
                       setVisionPreset('custom');
                       setVisionBright(parseFloat(e.target.value));
                     }}
-                    className="w-full accent-primary h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer"
+                    className="w-full accent-primary h-1.5 bg-[#0a1628] rounded-2xl appearance-none cursor-pointer"
                   />
-                  <div className="flex justify-between text-[10px] text-slate-900 font-bold">
+                  <div className="flex justify-between text-[10px] text-[#94a3b8] font-bold">
                     <span>مريح للغرف المعتمة</span>
                     <span>ساطع وقوي</span>
                   </div>
@@ -2252,7 +2252,7 @@ export default function Settings({
 
                 {/* Contrast Slider */}
                 <div className="space-y-1.5">
-                  <div className="flex justify-between items-center text-[11px] font-bold text-slate-900">
+                  <div className="flex justify-between items-center text-[11px] font-bold text-[#94a3b8]">
                     <span>نسبة التباين (Contrast):</span>
                     <span className="font-mono text-primary font-black">{visionCont.toFixed(2)}x</span>
                   </div>
@@ -2266,9 +2266,9 @@ export default function Settings({
                       setVisionPreset('custom');
                       setVisionCont(parseFloat(e.target.value));
                     }}
-                    className="w-full accent-primary h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer"
+                    className="w-full accent-primary h-1.5 bg-[#0a1628] rounded-2xl appearance-none cursor-pointer"
                   />
-                  <div className="flex justify-between text-[10px] text-slate-900 font-bold">
+                  <div className="flex justify-between text-[10px] text-[#94a3b8] font-bold">
                     <span>ناعم ودافئ</span>
                     <span>محدد وحاد</span>
                   </div>
@@ -2277,86 +2277,86 @@ export default function Settings({
             </div>
           </div>
 
-            <div className="bg-white border border-slate-800 rounded-2xl p-6 space-y-4 shadow-sm text-right" dir="rtl">
-              <div className="flex items-center gap-2 border-b border-slate-800 pb-3">
-                <span className="p-1.5 bg-indigo-500/10 text-indigo-600 border border-indigo-500/20 rounded-lg text-sm">🎨</span>
+            <div className="bg-[#0a1628] border border-[#1e3a5f] rounded-2xl p-6 space-y-4 shadow-sm text-right" dir="rtl">
+              <div className="flex items-center gap-2 border-b border-[#1e3a5f] pb-3">
+                <span className="p-1.5 bg-indigo-500/10 text-indigo-600 border border-indigo-500/20 rounded-2xl text-sm">🎨</span>
                 <div>
-                  <h2 className="text-sm font-bold text-slate-900">مصمم الثيمات والتدرجات اللونية الخاص (Dynamic Gradient Stop)</h2>
-                  <p className="text-[11px] text-slate-700 mt-0.5">حدد تدرجاً مخصصاً وخلفية متباينة لإنشاء نمط تفاعلي يناسب علامتك القانونية.</p>
+                  <h2 className="text-sm font-bold text-[#94a3b8]">مصمم الثيمات والتدرجات اللونية الخاص (Dynamic Gradient Stop)</h2>
+                  <p className="text-[11px] text-[#94a3b8] mt-0.5">حدد تدرجاً مخصصاً وخلفية متباينة لإنشاء نمط تفاعلي يناسب علامتك القانونية.</p>
                 </div>
               </div>
 
             <form onSubmit={handleCreateCustomTheme} className="space-y-4">
               <div className="space-y-1.5">
-                <label className="text-xs text-slate-900 font-bold block">اسم الثيم الفني الجديد:</label>
+                <label className="text-xs text-[#94a3b8] font-bold block">اسم الثيم الفني الجديد:</label>
                 <input
                   type="text"
                   value={themeName}
                   onChange={(e) => setThemeName(e.target.value)}
                   placeholder="مثال: الغسق المتوهج (Glowing Twilight)"
                   required
-                  className="w-full bg-slate-50 border border-slate-800 text-xs text-slate-900 py-2.5 px-3 rounded-xl outline-none focus:border-primary transition-all font-sans font-bold"
+                  className="w-full bg-[#0a1628] border border-[#1e3a5f] text-xs text-[#94a3b8] py-2.5 px-3 rounded-2xl outline-none focus:border-primary transition-all font-sans font-bold"
                 />
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="space-y-1.5">
-                  <label className="text-xs text-slate-900 font-bold block">لون البدء (From):</label>
+                  <label className="text-xs text-[#94a3b8] font-bold block">لون البدء (From):</label>
                   <div className="flex gap-2">
                     <input
                       type="color"
                       value={gradientFrom}
                       onChange={(e) => setGradientFrom(e.target.value)}
-                      className="w-10 h-10 border border-slate-300 rounded-lg cursor-pointer shrink-0"
+                      className="w-10 h-10 border border-[#1e3a5f] rounded-2xl cursor-pointer shrink-0"
                     />
                     <input
                       type="text"
                       value={gradientFrom}
                       onChange={(e) => setGradientFrom(e.target.value)}
-                      className="w-full bg-slate-50 border border-slate-800 text-xs text-slate-900 py-2.5 px-3 rounded-xl font-mono uppercase font-bold"
+                      className="w-full bg-[#0a1628] border border-[#1e3a5f] text-xs text-[#94a3b8] py-2.5 px-3 rounded-2xl font-mono uppercase font-bold"
                     />
                   </div>
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-xs text-slate-900 font-bold block">لون الانتهاء (To):</label>
+                  <label className="text-xs text-[#94a3b8] font-bold block">لون الانتهاء (To):</label>
                   <div className="flex gap-2">
                     <input
                       type="color"
                       value={gradientTo}
                       onChange={(e) => setGradientTo(e.target.value)}
-                      className="w-10 h-10 border border-slate-300 rounded-lg cursor-pointer shrink-0"
+                      className="w-10 h-10 border border-[#1e3a5f] rounded-2xl cursor-pointer shrink-0"
                     />
                     <input
                       type="text"
                       value={gradientTo}
                       onChange={(e) => setGradientTo(e.target.value)}
-                      className="w-full bg-slate-50 border border-slate-800 text-xs text-slate-900 py-2.5 px-3 rounded-xl font-mono uppercase font-bold"
+                      className="w-full bg-[#0a1628] border border-[#1e3a5f] text-xs text-[#94a3b8] py-2.5 px-3 rounded-2xl font-mono uppercase font-bold"
                     />
                   </div>
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-xs text-slate-900 font-bold block">لون إضاءة الإطار (Border):</label>
+                  <label className="text-xs text-[#94a3b8] font-bold block">لون إضاءة الإطار (Border):</label>
                   <div className="flex gap-2">
                     <input
                       type="color"
                       value={borderAccent}
                       onChange={(e) => setBorderAccent(e.target.value)}
-                      className="w-10 h-10 border border-slate-300 rounded-lg cursor-pointer shrink-0"
+                      className="w-10 h-10 border border-[#1e3a5f] rounded-2xl cursor-pointer shrink-0"
                     />
                     <input
                       type="text"
                       value={borderAccent}
                       onChange={(e) => setBorderAccent(e.target.value)}
-                      className="w-full bg-slate-50 border border-slate-800 text-xs text-slate-900 py-2.5 px-3 rounded-xl font-mono uppercase font-bold"
+                      className="w-full bg-[#0a1628] border border-[#1e3a5f] text-xs text-[#94a3b8] py-2.5 px-3 rounded-2xl font-mono uppercase font-bold"
                     />
                   </div>
                 </div>
               </div>
 
               {/* Real-time preview of the dynamic color stops */}
-              <div className="p-4 rounded-2xl border border-slate-100 flex items-center justify-between text-xs" style={{ background: `linear-gradient(135deg, ${gradientFrom}, ${gradientTo})`, borderColor: borderAccent }}>
+              <div className="p-4 rounded-2xl border border-[#1e3a5f] flex items-center justify-between text-xs" style={{ background: `linear-gradient(135deg, ${gradientFrom}, ${gradientTo})`, borderColor: borderAccent }}>
                 <span className="text-white font-black drop-shadow-md">معاينة التدرج المخصص الفورية</span>
                 <span className="text-white font-mono tracking-widest font-black" style={{ color: borderAccent }}>PREVIEW LOCK</span>
               </div>
@@ -2364,7 +2364,7 @@ export default function Settings({
               <button
                 type="submit"
                 disabled={!themeName.trim()}
-                className={`w-full font-black py-3 rounded-xl text-xs flex items-center justify-center gap-2 shadow-md transition-all active:scale-[0.98] ${themeName.trim() ? 'bg-[#1e40af] text-white cursor-pointer' : 'bg-slate-200 text-slate-200 font-bold cursor-not-allowed'}`}
+                className={`w-full font-black py-3 rounded-2xl text-xs flex items-center justify-center gap-2 shadow-md transition-all active:scale-[0.98] ${themeName.trim() ? 'bg-[#1e40af] text-white cursor-pointer' : 'bg-[#0a1628] text-[#94a3b8] font-bold cursor-not-allowed'}`}
               >
                 <span>توليد وحفظ الثيم المخصص 🎨</span>
               </button>
@@ -2372,66 +2372,66 @@ export default function Settings({
           </div>
 
           {/* Editable Roles Config */}
-          <div className="bg-white border border-slate-800 rounded-2xl p-6 space-y-4 shadow-sm">
-            <div className="flex items-center gap-2 border-b border-slate-800 pb-3">
+          <div className="bg-[#0a1628] border border-[#1e3a5f] rounded-2xl p-6 space-y-4 shadow-sm">
+            <div className="flex items-center gap-2 border-b border-[#1e3a5f] pb-3">
               <Users className="w-5 h-5 text-primary" />
-              <h2 className="text-sm font-bold text-slate-900">تخصيص مسميات الموظفين والعملاء (Roles Customization)</h2>
+              <h2 className="text-sm font-bold text-[#94a3b8]">تخصيص مسميات الموظفين والعملاء (Roles Customization)</h2>
             </div>
-            <p className="text-xs text-slate-900">
+            <p className="text-xs text-[#94a3b8]">
               يمكنك هنا تخصيص أسماء الأدوار، مثلاً تغيير "شريك أول" إلى "مدير مالك"، أو "موكل" إلى "مشترك".
             </p>
             <form onSubmit={handleSaveRoles} className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
-                  <label className="text-xs text-slate-900 font-bold block">مسمى مدير النظام:</label>
+                  <label className="text-xs text-[#94a3b8] font-bold block">مسمى مدير النظام:</label>
                   <input
                     type="text"
                     value={editableRoles.admin}
                     onChange={(e) => setEditableRoles({ ...editableRoles, admin: e.target.value })}
-                    className="w-full bg-slate-50 border border-slate-800 text-xs text-slate-900 py-2.5 px-3 rounded-xl outline-none focus:border-primary transition-all"
+                    className="w-full bg-[#0a1628] border border-[#1e3a5f] text-xs text-[#94a3b8] py-2.5 px-3 rounded-2xl outline-none focus:border-primary transition-all"
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-xs text-slate-900 font-bold block">مسمى حساب المحامي:</label>
+                  <label className="text-xs text-[#94a3b8] font-bold block">مسمى حساب المحامي:</label>
                   <input
                     type="text"
                     value={editableRoles.lawyer}
                     onChange={(e) => setEditableRoles({ ...editableRoles, lawyer: e.target.value })}
-                    className="w-full bg-slate-50 border border-slate-800 text-xs text-slate-900 py-2.5 px-3 rounded-xl outline-none focus:border-primary transition-all"
+                    className="w-full bg-[#0a1628] border border-[#1e3a5f] text-xs text-[#94a3b8] py-2.5 px-3 rounded-2xl outline-none focus:border-primary transition-all"
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-xs text-slate-900 font-bold block">مسمى سكرتير النظام:</label>
+                  <label className="text-xs text-[#94a3b8] font-bold block">مسمى سكرتير النظام:</label>
                   <input
                     type="text"
                     value={editableRoles.secretary}
                     onChange={(e) => setEditableRoles({ ...editableRoles, secretary: e.target.value })}
-                    className="w-full bg-slate-50 border border-slate-800 text-xs text-slate-900 py-2.5 px-3 rounded-xl outline-none focus:border-primary transition-all"
+                    className="w-full bg-[#0a1628] border border-[#1e3a5f] text-xs text-[#94a3b8] py-2.5 px-3 rounded-2xl outline-none focus:border-primary transition-all"
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-xs text-slate-900 font-bold block">مسمى حساب المستشار:</label>
+                  <label className="text-xs text-[#94a3b8] font-bold block">مسمى حساب المستشار:</label>
                   <input
                     type="text"
                     value={editableRoles.researcher}
                     onChange={(e) => setEditableRoles({ ...editableRoles, researcher: e.target.value })}
-                    className="w-full bg-slate-50 border border-slate-800 text-xs text-slate-900 py-2.5 px-3 rounded-xl outline-none focus:border-primary transition-all"
+                    className="w-full bg-[#0a1628] border border-[#1e3a5f] text-xs text-[#94a3b8] py-2.5 px-3 rounded-2xl outline-none focus:border-primary transition-all"
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-xs text-slate-900 font-bold block">مسمى العملاء/المشتركين:</label>
+                  <label className="text-xs text-[#94a3b8] font-bold block">مسمى العملاء/المشتركين:</label>
                   <input
                     type="text"
                     value={editableRoles.subscriber}
                     onChange={(e) => setEditableRoles({ ...editableRoles, subscriber: e.target.value })}
-                    className="w-full bg-slate-50 border border-slate-800 text-xs text-slate-900 py-2.5 px-3 rounded-xl outline-none focus:border-primary transition-all"
+                    className="w-full bg-[#0a1628] border border-[#1e3a5f] text-xs text-[#94a3b8] py-2.5 px-3 rounded-2xl outline-none focus:border-primary transition-all"
                   />
                 </div>
               </div>
               <div className="flex justify-start mt-4">
                 <button
                   type="submit"
-                  className="bg-primary text-white font-bold py-2 px-6 rounded-xl text-xs transition-all flex items-center justify-center gap-2 shadow-lg shadow-primary/20"
+                  className="bg-primary text-white font-bold py-2 px-6 rounded-2xl text-xs transition-all flex items-center justify-center gap-2 shadow-lg shadow-primary/20"
                 >
                   <Save className="w-4 h-4" />
                   حفظ المسميات المهنية
@@ -2441,15 +2441,15 @@ export default function Settings({
           </div>
 
           {/* Role-based Tab Permissions Config (رؤية مخصصة) */}
-          <div className="bg-white border border-slate-800 rounded-2xl p-6 space-y-4 shadow-sm relative overflow-hidden" dir="rtl">
+          <div className="bg-[#0a1628] border border-[#1e3a5f] rounded-2xl p-6 space-y-4 shadow-sm relative overflow-hidden" dir="rtl">
             <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 blur-3xl rounded-full"></div>
-            <div className="flex items-center gap-3 border-b border-slate-800 pb-4 relative z-10">
-              <div className="p-2 bg-primary/10 text-primary border border-primary/20 rounded-xl">
+            <div className="flex items-center gap-3 border-b border-[#1e3a5f] pb-4 relative z-10">
+              <div className="p-2 bg-primary/10 text-primary border border-primary/20 rounded-2xl">
                 <ShieldAlert className="w-4 h-4" />
               </div>
               <div>
-                <h2 className="text-sm font-bold text-slate-900">نظام الصلاحيات والرؤية المخصصة (Role-Based View)</h2>
-                <p className="text-[11px] text-slate-700 mt-1 leading-relaxed">
+                <h2 className="text-sm font-bold text-[#94a3b8]">نظام الصلاحيات والرؤية المخصصة (Role-Based View)</h2>
+                <p className="text-[11px] text-[#94a3b8] mt-1 leading-relaxed">
                   التحكم في التبويبات المتاحة لكل مستشار أو دور وظيفي. التبويبات غير المحددة سيتم إخفاؤها برمجياً لضمان التركيز وحماية البيانات.
                 </p>
               </div>
@@ -2462,8 +2462,8 @@ export default function Settings({
                  { roleId: 'accountant', label: 'صلاحيات المحاسب المالي', defaultTabs: ['finance', 'tasks'] },
                  { roleId: 'secretary', label: 'صلاحيات السكرتارية', defaultTabs: ['cases', 'clients', 'calendar', 'documents'] }
               ].map(role => (
-                <div key={role.roleId} className="border border-slate-100 rounded-xl p-4 bg-slate-50">
-                  <h3 className="font-black text-slate-900 mb-3">{role.label}</h3>
+                <div key={role.roleId} className="border border-[#1e3a5f] rounded-2xl p-4 bg-[#0a1628]">
+                  <h3 className="font-black text-[#94a3b8] mb-3">{role.label}</h3>
                   <div className="flex flex-wrap gap-2">
                     {['dashboard', 'cases', 'tasks', 'calendar', 'finance', 'documents', 'ai-tools', 'clients'].map(tab => {
                        const savedStr = localStorage.getItem(`role-tabs-${role.roleId}`);
@@ -2476,7 +2476,7 @@ export default function Settings({
                        };
 
                        return (
-                         <label key={tab} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border cursor-pointer transition-all ${isChecked ? 'bg-primary/10 border-primary text-primary font-black' : 'bg-white border-slate-200 text-slate-700'}`}>
+                         <label key={tab} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-2xl border cursor-pointer transition-all ${isChecked ? 'bg-primary/10 border-primary text-primary font-black' : 'bg-[#0a1628] border-[#1e3a5f] text-[#94a3b8]'}`}>
                            <input 
                              type="checkbox" 
                              className="hidden" 
@@ -2498,80 +2498,80 @@ export default function Settings({
                 </div>
               ))}
             </div>
-            <div className="text-[10px] font-bold text-slate-200 font-bold mt-2 text-left w-full relative z-10">* مدير المكتب له كافة الصلاحيات افتراضياً ولا تقيد بهذه التبويبات.</div>
+            <div className="text-[10px] font-bold text-[#94a3b8] font-bold mt-2 text-left w-full relative z-10">* مدير المكتب له كافة الصلاحيات افتراضياً ولا تقيد بهذه التبويبات.</div>
           </div>
 
           {/* Custom Law Links Section */}
-          <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm space-y-6">
-            <div className="flex items-center gap-3 border-b border-slate-100 pb-4">
-              <div className="p-2.5 bg-indigo-50 text-indigo-700 border border-indigo-200 rounded-xl">
+          <div className="bg-[#0a1628] border border-[#1e3a5f] rounded-3xl p-6 shadow-sm space-y-6">
+            <div className="flex items-center gap-3 border-b border-[#1e3a5f] pb-4">
+              <div className="p-2.5 bg-indigo-50 text-indigo-700 border border-indigo-200 rounded-2xl">
                 <BookOpen className="w-5 h-5 text-indigo-600" />
               </div>
               <div>
-                <h2 className="text-base font-black text-slate-950">إعدادات روابط الأنظمة القانونية (Library Custom Links)</h2>
-                <p className="text-xs text-slate-700 mt-1 font-bold">قم بتخصيص الروابط الخارجية التي يتم فتحها عند الضغط على كروت الأنظمة في (مكتبة الأنظمة والبحث الذكي).</p>
+                <h2 className="text-base font-black text-[#94a3b8]">إعدادات روابط الأنظمة القانونية (Library Custom Links)</h2>
+                <p className="text-xs text-[#94a3b8] mt-1 font-bold">قم بتخصيص الروابط الخارجية التي يتم فتحها عند الضغط على كروت الأنظمة في (مكتبة الأنظمة والبحث الذكي).</p>
               </div>
             </div>
 
             <form onSubmit={handleSaveLawLinks} className="grid grid-cols-1 md:grid-cols-2 gap-5">
               <div className="space-y-2 text-right" dir="rtl">
-                <label className="text-[11px] font-black text-slate-800 uppercase tracking-wider block">رابط مخصص لكارت (نظام المعاملات المدنية):</label>
+                <label className="text-[11px] font-black text-[#94a3b8] uppercase tracking-wider block">رابط مخصص لكارت (نظام المعاملات المدنية):</label>
                 <input
                   type="url"
                   placeholder="https://laws.boe.gov.sa/..."
                   value={lawLinkCivilTransactions}
                   onChange={(e) => setLawLinkCivilTransactions(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 p-3.5 rounded-xl text-slate-950 font-bold text-xs outline-none focus:border-indigo-600 shadow-inner"
+                  className="w-full bg-[#0a1628] border border-[#1e3a5f] p-3.5 rounded-2xl text-[#94a3b8] font-bold text-xs outline-none focus:border-indigo-600 shadow-inner"
                 />
               </div>
               <div className="space-y-2 text-right" dir="rtl">
-                <label className="text-[11px] font-black text-slate-800 uppercase tracking-wider block">رابط مخصص لكارت (نظام الشركات الجديد):</label>
+                <label className="text-[11px] font-black text-[#94a3b8] uppercase tracking-wider block">رابط مخصص لكارت (نظام الشركات الجديد):</label>
                 <input
                   type="url"
                   placeholder="https://..."
                   value={lawLinkCompaniesNew}
                   onChange={(e) => setLawLinkCompaniesNew(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 p-3.5 rounded-xl text-slate-950 font-bold text-xs outline-none focus:border-indigo-600 shadow-inner"
+                  className="w-full bg-[#0a1628] border border-[#1e3a5f] p-3.5 rounded-2xl text-[#94a3b8] font-bold text-xs outline-none focus:border-indigo-600 shadow-inner"
                 />
               </div>
               <div className="space-y-2 text-right" dir="rtl">
-                <label className="text-[11px] font-black text-slate-800 uppercase tracking-wider block">رابط مخصص لكارت (نظام العمل السعودي):</label>
+                <label className="text-[11px] font-black text-[#94a3b8] uppercase tracking-wider block">رابط مخصص لكارت (نظام العمل السعودي):</label>
                 <input
                   type="url"
                   placeholder="https://..."
                   value={lawLinkLaborLaw}
                   onChange={(e) => setLawLinkLaborLaw(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 p-3.5 rounded-xl text-slate-950 font-bold text-xs outline-none focus:border-indigo-600 shadow-inner"
+                  className="w-full bg-[#0a1628] border border-[#1e3a5f] p-3.5 rounded-2xl text-[#94a3b8] font-bold text-xs outline-none focus:border-indigo-600 shadow-inner"
                 />
               </div>
               <div className="space-y-2 text-right" dir="rtl">
-                <label className="text-[11px] font-black text-slate-800 uppercase tracking-wider block">رابط مخصص لكارت (نظام الإثبات القضائي):</label>
+                <label className="text-[11px] font-black text-[#94a3b8] uppercase tracking-wider block">رابط مخصص لكارت (نظام الإثبات القضائي):</label>
                 <input
                   type="url"
                   placeholder="https://..."
                   value={lawLinkEvidenceLaw}
                   onChange={(e) => setLawLinkEvidenceLaw(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 p-3.5 rounded-xl text-slate-950 font-bold text-xs outline-none focus:border-indigo-600 shadow-inner"
+                  className="w-full bg-[#0a1628] border border-[#1e3a5f] p-3.5 rounded-2xl text-[#94a3b8] font-bold text-xs outline-none focus:border-indigo-600 shadow-inner"
                 />
               </div>
               <div className="space-y-2 text-right" dir="rtl">
-                <label className="text-[11px] font-black text-slate-800 uppercase tracking-wider block">رابط مخصص لكارت (نظام التنفيذ):</label>
+                <label className="text-[11px] font-black text-[#94a3b8] uppercase tracking-wider block">رابط مخصص لكارت (نظام التنفيذ):</label>
                 <input
                   type="url"
                   placeholder="https://..."
                   value={lawLinkEnforcementLaw}
                   onChange={(e) => setLawLinkEnforcementLaw(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 p-3.5 rounded-xl text-slate-950 font-bold text-xs outline-none focus:border-indigo-600 shadow-inner"
+                  className="w-full bg-[#0a1628] border border-[#1e3a5f] p-3.5 rounded-2xl text-[#94a3b8] font-bold text-xs outline-none focus:border-indigo-600 shadow-inner"
                 />
               </div>
               <div className="space-y-2 text-right" dir="rtl">
-                <label className="text-[11px] font-black text-slate-800 uppercase tracking-wider block">رابط مخصص لكارت (نظام الإفلاس):</label>
+                <label className="text-[11px] font-black text-[#94a3b8] uppercase tracking-wider block">رابط مخصص لكارت (نظام الإفلاس):</label>
                 <input
                   type="url"
                   placeholder="https://..."
                   value={lawLinkBankruptcyLaw}
                   onChange={(e) => setLawLinkBankruptcyLaw(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 p-3.5 rounded-xl text-slate-950 font-bold text-xs outline-none focus:border-indigo-600 shadow-inner"
+                  className="w-full bg-[#0a1628] border border-[#1e3a5f] p-3.5 rounded-2xl text-[#94a3b8] font-bold text-xs outline-none focus:border-indigo-600 shadow-inner"
                 />
               </div>
               <div className="col-span-full pt-2">
@@ -2587,43 +2587,43 @@ export default function Settings({
           </div>
 
           {/* Form 1: Office Profile Details */}
-          <div className="bg-white border border-slate-800 rounded-2xl p-6 space-y-4 shadow-sm">
-            <div className="flex items-center gap-2 border-b border-slate-800 pb-3">
+          <div className="bg-[#0a1628] border border-[#1e3a5f] rounded-2xl p-6 space-y-4 shadow-sm">
+            <div className="flex items-center gap-2 border-b border-[#1e3a5f] pb-3">
               <User className="w-5 h-5 text-primary" />
-              <h2 className="text-sm font-bold text-slate-900">الملف التجاري والمهني لمكتب المحاماة</h2>
+              <h2 className="text-sm font-bold text-[#94a3b8]">الملف التجاري والمهني لمكتب المحاماة</h2>
             </div>
             
             <form onSubmit={handleSaveOfficeProfile} className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
-                  <label className="text-xs text-slate-900 font-bold block">الاسم المهني للمكتب:</label>
+                  <label className="text-xs text-[#94a3b8] font-bold block">الاسم المهني للمكتب:</label>
                   <input
                     type="text"
                     value={officeName}
                     onChange={(e) => setOfficeName(e.target.value)}
-                    className="w-full bg-slate-50 text-slate-900 text-xs p-3 rounded-xl border border-slate-800 focus:outline-none focus:border-primary font-medium"
+                    className="w-full bg-[#0a1628] text-[#94a3b8] text-xs p-3 rounded-2xl border border-[#1e3a5f] focus:outline-none focus:border-primary font-medium"
                     required
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-xs text-slate-900 font-bold block">رقم السجل الضريبي (VAT No - هيئة الزكاة):</label>
+                  <label className="text-xs text-[#94a3b8] font-bold block">رقم السجل الضريبي (VAT No - هيئة الزكاة):</label>
                   <input
                     type="text"
                     value={vatNo}
                     onChange={(e) => setVatNo(e.target.value)}
-                    className="w-full bg-slate-50 text-slate-900 text-xs p-3 rounded-xl border border-slate-800 focus:outline-none focus:border-primary font-medium"
+                    className="w-full bg-[#0a1628] text-[#94a3b8] text-xs p-3 rounded-2xl border border-[#1e3a5f] focus:outline-none focus:border-primary font-medium"
                     required
                   />
                 </div>
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs text-slate-900 font-bold block">تفاصيل تراخيص وزارة العدل وهيئة العملاء والمحاميين والمستشاريين القانونيين:</label>
+                <label className="text-xs text-[#94a3b8] font-bold block">تفاصيل تراخيص وزارة العدل وهيئة العملاء والمحاميين والمستشاريين القانونيين:</label>
                 <textarea
                   value={officeLicense}
                   onChange={(e) => setOfficeLicense(e.target.value)}
                   rows={2}
-                  className="w-full bg-slate-50 text-slate-900 text-xs p-3 rounded-xl border border-slate-800 focus:outline-none focus:border-primary font-medium leading-relaxed"
+                  className="w-full bg-[#0a1628] text-[#94a3b8] text-xs p-3 rounded-2xl border border-[#1e3a5f] focus:outline-none focus:border-primary font-medium leading-relaxed"
                   required
                 />
               </div>
@@ -2631,7 +2631,7 @@ export default function Settings({
               <div className="flex justify-end pt-2">
                 <button
                   type="submit"
-                  className="bg-primary text-white font-bold text-xs py-2.5 px-6 rounded-xl transition-all shadow-lg shadow-primary/20"
+                  className="bg-primary text-white font-bold text-xs py-2.5 px-6 rounded-2xl transition-all shadow-lg shadow-primary/20"
                 >
                   حفظ التفاصيل المهنية للمكتب
                 </button>
@@ -2642,41 +2642,41 @@ export default function Settings({
           
 
           {/* Form: Najiz API Link */}
-          <div className="bg-white border border-slate-800 rounded-2xl p-6 space-y-4 shadow-sm">
-            <div className="flex justify-between items-start border-b border-slate-800 pb-3">
+          <div className="bg-[#0a1628] border border-[#1e3a5f] rounded-2xl p-6 space-y-4 shadow-sm">
+            <div className="flex justify-between items-start border-b border-[#1e3a5f] pb-3">
               <div className="flex items-center gap-2">
-                <span className="p-1.5 bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 rounded-lg text-sm">💬</span>
+                <span className="p-1.5 bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 rounded-2xl text-sm">💬</span>
                 <div>
-                  <h2 className="text-sm font-bold text-slate-900">إشعارات تذكير العملاء (WhatsApp & SMS)</h2>
-                  <p className="text-[11px] text-slate-900 mt-0.5">خصص قالب رسائل التذكير التلقائية المجدولة قبل ٢٤ ساعة من موعد الجلسة القضائية.</p>
+                  <h2 className="text-sm font-bold text-[#94a3b8]">إشعارات تذكير العملاء (WhatsApp & SMS)</h2>
+                  <p className="text-[11px] text-[#94a3b8] mt-0.5">خصص قالب رسائل التذكير التلقائية المجدولة قبل ٢٤ ساعة من موعد الجلسة القضائية.</p>
                 </div>
               </div>
             </div>
             <div className="space-y-4">
               <div className="space-y-1.5">
-                <label className="text-xs text-slate-900 font-bold block">مفتاح الربط (WhatsApp API Key / Twilio):</label>
+                <label className="text-xs text-[#94a3b8] font-bold block">مفتاح الربط (WhatsApp API Key / Twilio):</label>
                 <input
                   type="password"
                   placeholder="tw_live_xxxxxxxxxxxxxxxxxxxxx"
                   value={whatsappApiKey}
                   onChange={(e) => setWhatsappApiKey(e.target.value)}
-                  className="w-full bg-slate-50 text-slate-900 text-xs py-3 px-4 rounded-xl border border-slate-800 focus:outline-none focus:border-primary"
+                  className="w-full bg-[#0a1628] text-[#94a3b8] text-xs py-3 px-4 rounded-2xl border border-[#1e3a5f] focus:outline-none focus:border-primary"
                 />
               </div>
               <div className="space-y-1.5">
-                <label className="text-xs text-slate-900 font-bold block">قالب الرسالة التذكيرية (WhatsApp Template):</label>
+                <label className="text-xs text-[#94a3b8] font-bold block">قالب الرسالة التذكيرية (WhatsApp Template):</label>
                 <textarea
                   rows={4}
                   value={whatsappTemplate}
                   onChange={(e) => setWhatsappTemplate(e.target.value)}
-                  className="w-full bg-slate-50 text-slate-900 text-xs py-3 px-4 rounded-xl border border-slate-800 focus:outline-none focus:border-primary resize-none"
+                  className="w-full bg-[#0a1628] text-[#94a3b8] text-xs py-3 px-4 rounded-2xl border border-[#1e3a5f] focus:outline-none focus:border-primary resize-none"
                 ></textarea>
-                <p className="text-[11px] text-slate-700 italic">يتم استبدال المتغيرات {`{DATE}`} و {`{TIME}`} آلياً عند إرسال الإشعار.</p>
+                <p className="text-[11px] text-[#94a3b8] italic">يتم استبدال المتغيرات {`{DATE}`} و {`{TIME}`} آلياً عند إرسال الإشعار.</p>
               </div>
-              <div className="flex flex-col sm:flex-row justify-between items-center gap-4 pt-4 border-t border-slate-200">
+              <div className="flex flex-col sm:flex-row justify-between items-center gap-4 pt-4 border-t border-[#1e3a5f]">
                 <div className="flex-1 w-full">
                   {whatsappDiagResult && (
-                    <div className={`text-xs font-bold p-3 rounded-xl border ${whatsappDiagResult.success ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-rose-50 text-rose-700 border-rose-200'}`}>
+                    <div className={`text-xs font-bold p-3 rounded-2xl border ${whatsappDiagResult.success ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-rose-50 text-rose-700 border-rose-200'}`}>
                       {whatsappDiagResult.success ? '✅' : '❌'} {whatsappDiagResult.message}
                     </div>
                   )}
@@ -2686,7 +2686,7 @@ export default function Settings({
                     type="button"
                     onClick={handleCheckWhatsappConnection}
                     disabled={isCheckingWhatsapp}
-                    className="flex-1 sm:flex-none border border-slate-300 hover:bg-slate-50 text-slate-700 font-bold text-xs py-2.5 px-6 rounded-xl transition-all shadow-sm flex items-center justify-center gap-2"
+                    className="flex-1 sm:flex-none border border-[#1e3a5f] hover:bg-[#0a1628] text-[#94a3b8] font-bold text-xs py-2.5 px-6 rounded-2xl transition-all shadow-sm flex items-center justify-center gap-2"
                   >
                     {isCheckingWhatsapp ? (
                       <>
@@ -2704,7 +2704,7 @@ export default function Settings({
                   <button
                     type="button"
                     onClick={handleSaveWhatsappMsg}
-                    className="flex-1 sm:flex-none bg-emerald-600 text-white font-bold text-xs py-2.5 px-6 rounded-xl transition-all shadow-lg shadow-emerald-500/20"
+                    className="flex-1 sm:flex-none bg-emerald-600 text-white font-bold text-xs py-2.5 px-6 rounded-2xl transition-all shadow-lg shadow-emerald-500/20"
                   >
                     حفظ إعدادات التذكير
                   </button>
@@ -2713,11 +2713,11 @@ export default function Settings({
             </div>
           </div>
 
-          <div className="bg-white border border-slate-800 rounded-2xl p-6 space-y-4 shadow-sm">
-             <div className="flex justify-between items-start border-b border-slate-800 pb-3">
+          <div className="bg-[#0a1628] border border-[#1e3a5f] rounded-2xl p-6 space-y-4 shadow-sm">
+             <div className="flex justify-between items-start border-b border-[#1e3a5f] pb-3">
                <div className="flex items-center gap-2">
                  <Database className="w-5 h-5 text-primary" />
-                 <h2 className="text-sm font-bold text-slate-900">الربط المباشر مع بوابة التقاضي (ناجز Najiz)</h2>
+                 <h2 className="text-sm font-bold text-[#94a3b8]">الربط المباشر مع بوابة التقاضي (ناجز Najiz)</h2>
                </div>
                {isNajizConnected ? (
                   <span className="flex items-center gap-1.5 text-xs uppercase tracking-wider font-bold bg-emerald-50 text-emerald-600 border border-emerald-200 px-3 py-1 rounded-full">
@@ -2725,7 +2725,7 @@ export default function Settings({
                      متصل - Connected
                   </span>
                ) : (
-                  <span className="flex items-center gap-1.5 text-xs uppercase tracking-wider font-bold bg-slate-100 text-slate-900 border border-slate-800 px-3 py-1 rounded-full">
+                  <span className="flex items-center gap-1.5 text-xs uppercase tracking-wider font-bold bg-[#0a1628] text-[#94a3b8] border border-[#1e3a5f] px-3 py-1 rounded-full">
                      <AlertCircle className="w-3 h-3" />
                      غير متصل - Disconnected
                   </span>
@@ -2734,10 +2734,10 @@ export default function Settings({
 
              <form onSubmit={handleConnectNajiz} className="space-y-4">
                 <div className="space-y-1.5">
-                   <label className="text-xs text-slate-900 font-bold block">مفتاح الربط البرمجي (Najiz API Key):</label>
+                   <label className="text-xs text-[#94a3b8] font-bold block">مفتاح الربط البرمجي (Najiz API Key):</label>
                    <div className="relative">
                       <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                         <Key className="w-4 h-4 text-slate-900" />
+                         <Key className="w-4 h-4 text-[#94a3b8]" />
                       </div>
                       <input
                         type="password"
@@ -2745,11 +2745,11 @@ export default function Settings({
                         onChange={(e) => setNajizApiKey(e.target.value)}
                         placeholder="njz_api_xxxxxxxxxxxxxxxxxxxxx"
                         disabled={isNajizConnected || isNajizConnecting}
-                        className="w-full bg-slate-50 text-slate-900 text-xs py-3 pl-3 pr-10 rounded-xl border border-slate-800 focus:outline-none focus:border-primary disabled:opacity-50"
+                        className="w-full bg-[#0a1628] text-[#94a3b8] text-xs py-3 pl-3 pr-10 rounded-2xl border border-[#1e3a5f] focus:outline-none focus:border-primary disabled:opacity-50"
                         required
                       />
                    </div>
-                   <p className="text-xs text-slate-900 mt-1">يُرجى إدخال رموز الـ API الخاصة للمكتب المستخرجة من بوابة المطورين بوزارة العدل.</p>
+                   <p className="text-xs text-[#94a3b8] mt-1">يُرجى إدخال رموز الـ API الخاصة للمكتب المستخرجة من بوابة المطورين بوزارة العدل.</p>
                 </div>
 
                 <div className="flex justify-end pt-2">
@@ -2757,7 +2757,7 @@ export default function Settings({
                       <button
                         type="button"
                         onClick={handleDisconnectNajiz}
-                        className="flex items-center gap-2 bg-rose-50 text-rose-600 border border-rose-200 font-bold text-xs py-2.5 px-6 rounded-xl transition-all"
+                        className="flex items-center gap-2 bg-rose-50 text-rose-600 border border-rose-200 font-bold text-xs py-2.5 px-6 rounded-2xl transition-all"
                       >
                          <ShieldAlert className="w-4 h-4" />
                          إلغاء الربط (Disconnect)
@@ -2766,7 +2766,7 @@ export default function Settings({
                       <button
                         type="submit"
                         disabled={isNajizConnecting || !najizApiKey}
-                        className="flex items-center gap-2 bg-emerald-600 text-white font-bold text-xs py-2.5 px-6 rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-emerald-500/20"
+                        className="flex items-center gap-2 bg-emerald-600 text-white font-bold text-xs py-2.5 px-6 rounded-2xl transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-emerald-500/20"
                       >
                          <RefreshCw className={`w-4 h-4 ${isNajizConnecting ? 'animate-spin' : ''}`} />
                          {isNajizConnecting ? 'جاري الاتصال والتحقق...' : 'تأكيد الربط والتفعيل (Connect)'}
@@ -2777,44 +2777,44 @@ export default function Settings({
           </div>
 
           {/* Form 2: SMTP server configuration */}
-          <div className="bg-white border border-slate-800 rounded-2xl p-6 space-y-4 shadow-sm">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+          <div className="bg-[#0a1628] border border-[#1e3a5f] rounded-2xl p-6 space-y-4 shadow-sm">
+            <div className="flex items-center justify-between border-b border-[#1e3a5f] pb-3">
               <div className="flex items-center gap-2">
                 <Mail className="w-5 h-5 text-primary" />
-                <h2 className="text-sm font-bold text-slate-900">إعدادات خادم البريد الوارد والتنبيهات (SMTP Server Config)</h2>
+                <h2 className="text-sm font-bold text-[#94a3b8]">إعدادات خادم البريد الوارد والتنبيهات (SMTP Server Config)</h2>
               </div>
-              <span className="text-xs bg-slate-100 text-slate-900 px-2 py-0.5 rounded font-bold font-mono">Nodemailer Engine</span>
+              <span className="text-xs bg-[#0a1628] text-[#94a3b8] px-2 py-0.5 rounded font-bold font-mono">Nodemailer Engine</span>
             </div>
 
             <form onSubmit={handleSaveSMTP} className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="space-y-1.5">
-                  <label className="text-xs text-slate-900 font-bold block font-sans">SMTP Host Server:</label>
+                  <label className="text-xs text-[#94a3b8] font-bold block font-sans">SMTP Host Server:</label>
                   <input
                     type="text"
                     value={smtpHost}
                     onChange={(e) => setSmtpHost(e.target.value)}
-                    className="w-full bg-slate-50 text-slate-900 text-xs p-3 rounded-xl border border-slate-800 focus:outline-none focus:border-primary font-medium"
+                    className="w-full bg-[#0a1628] text-[#94a3b8] text-xs p-3 rounded-2xl border border-[#1e3a5f] focus:outline-none focus:border-primary font-medium"
                     placeholder="e.g. smtp.gmail.com"
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-xs text-slate-900 font-bold block font-sans">SMTP Port:</label>
+                  <label className="text-xs text-[#94a3b8] font-bold block font-sans">SMTP Port:</label>
                   <input
                     type="text"
                     value={smtpPort}
                     onChange={(e) => setSmtpPort(e.target.value)}
-                    className="w-full bg-slate-50 text-slate-900 text-xs p-3 rounded-xl border border-slate-800 focus:outline-none focus:border-primary font-medium"
+                    className="w-full bg-[#0a1628] text-[#94a3b8] text-xs p-3 rounded-2xl border border-[#1e3a5f] focus:outline-none focus:border-primary font-medium"
                     placeholder="e.g. 587 or 465"
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-xs text-slate-900 font-bold block font-sans">Sender Email (From):</label>
+                  <label className="text-xs text-[#94a3b8] font-bold block font-sans">Sender Email (From):</label>
                   <input
                     type="email"
                     value={smtpFrom}
                     onChange={(e) => setSmtpFrom(e.target.value)}
-                    className="w-full bg-slate-50 text-slate-900 text-xs p-3 rounded-xl border border-slate-800 focus:outline-none focus:border-primary font-medium"
+                    className="w-full bg-[#0a1628] text-[#94a3b8] text-xs p-3 rounded-2xl border border-[#1e3a5f] focus:outline-none focus:border-primary font-medium"
                     placeholder="notifications@office.sa"
                   />
                 </div>
@@ -2822,26 +2822,26 @@ export default function Settings({
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
-                  <label className="text-xs text-slate-900 font-bold block font-sans">SMTP Auth Username:</label>
+                  <label className="text-xs text-[#94a3b8] font-bold block font-sans">SMTP Auth Username:</label>
                   <input
                     type="text"
                     value={smtpUser}
                     onChange={(e) => setSmtpUser(e.target.value)}
-                    className="w-full bg-slate-50 text-slate-900 text-xs p-3 rounded-xl border border-slate-800 focus:outline-none focus:border-primary font-medium"
+                    className="w-full bg-[#0a1628] text-[#94a3b8] text-xs p-3 rounded-2xl border border-[#1e3a5f] focus:outline-none focus:border-primary font-medium"
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-xs text-slate-900 font-bold block font-sans">SMTP Secret Password:</label>
+                  <label className="text-xs text-[#94a3b8] font-bold block font-sans">SMTP Secret Password:</label>
                   <input
                     type="password"
                     value={smtpPass}
                     onChange={(e) => setSmtpPass(e.target.value)}
-                    className="w-full bg-slate-50 text-slate-900 text-xs p-3 rounded-xl border border-slate-800 focus:outline-none focus:border-primary font-medium"
+                    className="w-full bg-[#0a1628] text-[#94a3b8] text-xs p-3 rounded-2xl border border-[#1e3a5f] focus:outline-none focus:border-primary font-medium"
                   />
                 </div>
               </div>
 
-              <div className="bg-slate-50 border border-slate-800 p-3 rounded-xl text-sm text-slate-900 leading-relaxed text-right">
+              <div className="bg-[#0a1628] border border-[#1e3a5f] p-3 rounded-2xl text-sm text-[#94a3b8] leading-relaxed text-right">
                 💡 في حال بقاء الخادم الحقيقي غير مهيأ، ستقوم العدالة تلقائياً بعمل مضاهاة كاملة (Simulation Matcher) لبث رسائل البريد الإلكتروني الافتراضية بنجاح وتسجيل كود المحاكاة في الأرشيف المرجعي.
               </div>
 
@@ -2856,7 +2856,7 @@ export default function Settings({
                 <button
                   type="submit"
                   disabled={smtpSaving}
-                  className="bg-sky-50 text-white font-bold text-xs py-2.5 px-6 rounded-xl transition-all"
+                  className="bg-sky-50 text-white font-bold text-xs py-2.5 px-6 rounded-2xl transition-all"
                 >
                   {smtpSaving ? 'جاري الفحص...' : 'حفظ واختبار صحة الاتصال'}
                 </button>
@@ -2865,21 +2865,21 @@ export default function Settings({
           </div>
 
           {/* Form 3: Webhook sync keys for browser expansion */}
-          <div className="bg-white border border-slate-800 rounded-2xl p-6 space-y-4 shadow-sm">
-            <div className="flex items-center gap-2 border-b border-slate-800 pb-3">
+          <div className="bg-[#0a1628] border border-[#1e3a5f] rounded-2xl p-6 space-y-4 shadow-sm">
+            <div className="flex items-center gap-2 border-b border-[#1e3a5f] pb-3">
               <Key className="w-5 h-5 text-primary" />
-              <h2 className="text-sm font-bold text-slate-900">مفاتيح ربط واستيراد بوابة ناجز (Najiz Synchronization Secrets)</h2>
+              <h2 className="text-sm font-bold text-[#94a3b8]">مفاتيح ربط واستيراد بوابة ناجز (Najiz Synchronization Secrets)</h2>
             </div>
 
             <form onSubmit={handleSaveConfig} className="space-y-4">
               <div className="space-y-1.5">
-                <label className="text-xs text-slate-900 font-bold block uppercase font-sans">Platform API Token Key:</label>
+                <label className="text-xs text-[#94a3b8] font-bold block uppercase font-sans">Platform API Token Key:</label>
                 <div className="relative">
                   <input
                     type="text"
                     value={apiKey}
                     onChange={(e) => setApiKey(e.target.value)}
-                    className="w-full bg-slate-50 text-slate-900 text-xs p-3 rounded-xl border border-slate-800 focus:outline-none focus:border-primary font-mono tracking-wider"
+                    className="w-full bg-[#0a1628] text-[#94a3b8] text-xs p-3 rounded-2xl border border-[#1e3a5f] focus:outline-none focus:border-primary font-mono tracking-wider"
                     required
                   />
                   <span className="text-xs bg-primary/10 text-primary font-extrabold px-1.5 py-0.5 rounded absolute left-3 top-3.5 border border-primary/20">
@@ -2889,12 +2889,12 @@ export default function Settings({
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs text-slate-900 font-bold block uppercase font-sans">Najiz Endpoint Webhook URL:</label>
+                <label className="text-xs text-[#94a3b8] font-bold block uppercase font-sans">Najiz Endpoint Webhook URL:</label>
                 <input
                   type="text"
                   value={webhookUrl}
                   onChange={(e) => setWebhookUrl(e.target.value)}
-                  className="w-full bg-slate-50 text-slate-900 text-xs p-3 rounded-xl border border-slate-800 focus:outline-none focus:border-primary font-mono"
+                  className="w-full bg-[#0a1628] text-[#94a3b8] text-xs p-3 rounded-2xl border border-[#1e3a5f] focus:outline-none focus:border-primary font-mono"
                   required
                 />
               </div>
@@ -2911,7 +2911,7 @@ export default function Settings({
                 <button
                   type="submit"
                   disabled={configSaving}
-                  className="bg-primary text-white font-bold text-xs py-2.5 px-6 rounded-xl transition-all shadow-lg shadow-primary/20"
+                  className="bg-primary text-white font-bold text-xs py-2.5 px-6 rounded-2xl transition-all shadow-lg shadow-primary/20"
                 >
                   {configSaving ? 'جاري الرصد...' : 'حفظ مفتاح الربط وتوليد Webhook'}
                 </button>
@@ -2920,40 +2920,40 @@ export default function Settings({
           </div>
 
           {/* Form 4: Cloud Database Backup & Automated Cron config */}
-          <div className="bg-white border border-slate-800 rounded-2xl p-6 space-y-4 shadow-sm">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+          <div className="bg-[#0a1628] border border-[#1e3a5f] rounded-2xl p-6 space-y-4 shadow-sm">
+            <div className="flex items-center justify-between border-b border-[#1e3a5f] pb-3">
               <div className="flex items-center gap-2">
                 <Database className="w-5 h-5 text-primary" />
-                <h2 className="text-sm font-bold text-slate-900">النسخ الاحتياطي ومزامنة السحاب اليومي (Daily Cloud Backup)</h2>
+                <h2 className="text-sm font-bold text-[#94a3b8]">النسخ الاحتياطي ومزامنة السحاب اليومي (Daily Cloud Backup)</h2>
               </div>
-              <span className="text-xs bg-slate-100 text-slate-900 px-2 py-0.5 rounded font-black font-mono">SUPABASE AUTOMATION</span>
+              <span className="text-xs bg-[#0a1628] text-[#94a3b8] px-2 py-0.5 rounded font-black font-mono">SUPABASE AUTOMATION</span>
             </div>
 
-            <p className="text-xs text-slate-900 leading-relaxed text-right">
+            <p className="text-xs text-[#94a3b8] leading-relaxed text-right">
               يوفر هذا النظام جدولاً موقوتاً (Cron Job) لتصدير كامل ملفات القضايا والعملاء والمعاملات المالية وحفظها كملفات مشفرة على وحدة خادم التخزين السحابي الآمن يومياً عند الساعة <strong className="text-primary">03:00 صباحاً</strong> مبرمجة تلقائياً.
             </p>
 
-            <div className="bg-slate-50 border border-slate-800 rounded-xl p-4 text-xs space-y-2 text-right">
-              <div className="flex justify-between text-slate-900">
+            <div className="bg-[#0a1628] border border-[#1e3a5f] rounded-2xl p-4 text-xs space-y-2 text-right">
+              <div className="flex justify-between text-[#94a3b8]">
                 <span>دور الرصد والجلب الموقوت:</span>
                 <span className="text-primary font-bold">نشط بقواعد البيانات (Cron Active)</span>
               </div>
-              <div className="flex justify-between text-slate-900 text-xs">
+              <div className="flex justify-between text-[#94a3b8] text-xs">
                 <span>موعد النسخ القادم:</span>
                 <span className="font-mono">يومياً الساعة 03:00 ص بتوقيت مكة</span>
               </div>
-              <div className="flex justify-between text-slate-900 text-xs border-t border-slate-800 pt-2">
+              <div className="flex justify-between text-[#94a3b8] text-xs border-t border-[#1e3a5f] pt-2">
                 <span>إجمالي الجداول المشمولة:</span>
-                <span className="text-slate-900">Cases, Clients, Financials, Messages, Settings</span>
+                <span className="text-[#94a3b8]">Cases, Clients, Financials, Messages, Settings</span>
               </div>
             </div>
 
             {backupHistoryList.length > 0 && (
               <div className="space-y-2">
-                <span className="text-xs text-slate-900 font-bold block">سجل آخر المزامنات والنسخ الممتدة:</span>
-                <div className="space-y-1.5 max-h-[110px] overflow-y-auto font-mono text-xs text-slate-900 pr-1">
+                <span className="text-xs text-[#94a3b8] font-bold block">سجل آخر المزامنات والنسخ الممتدة:</span>
+                <div className="space-y-1.5 max-h-[110px] overflow-y-auto font-mono text-xs text-[#94a3b8] pr-1">
                   {backupHistoryList.map((bh, idx) => (
-                    <div key={idx} className="bg-slate-50 p-2 border border-slate-800 rounded-lg flex justify-between items-center text-right">
+                    <div key={idx} className="bg-[#0a1628] p-2 border border-[#1e3a5f] rounded-2xl flex justify-between items-center text-right">
                       <span>{bh.reason}</span>
                       <span className="text-emerald-600 font-bold">{bh.timestamp} - {bh.size}</span>
                     </div>
@@ -2962,7 +2962,7 @@ export default function Settings({
               </div>
             )}
 
-            <div className="flex flex-col sm:flex-row justify-between items-center gap-4 pt-2 border-t border-slate-100 mt-2">
+            <div className="flex flex-col sm:flex-row justify-between items-center gap-4 pt-2 border-t border-[#1e3a5f] mt-2">
               <div className="flex flex-col gap-1 text-right">
                 {backupSuccess && (
                   <span className="text-emerald-600 text-xs font-bold animate-pulse">
@@ -2979,7 +2979,7 @@ export default function Settings({
                 <button
                   type="button"
                   onClick={() => setIsBackupConfOpen(true)}
-                  className="bg-primary hover:bg-primary/95 text-white font-bold text-xs py-2.5 px-6 rounded-xl transition-all shadow-md"
+                  className="bg-primary hover:bg-primary/95 text-white font-bold text-xs py-2.5 px-6 rounded-2xl transition-all shadow-md"
                 >
                   تشغيل النسخ الاحتياطي الفوري السحابي ☁️
                 </button>
@@ -2988,39 +2988,39 @@ export default function Settings({
           </div>
 
           {/* Form 4.5: Local Secured Encrypted Backup & Restore Module (JSON Secured Backup) */}
-          <div className="bg-white border border-slate-800 rounded-2xl p-6 space-y-4 shadow-sm" id="local-secured-encrypted-backups-card" dir="rtl">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+          <div className="bg-[#0a1628] border border-[#1e3a5f] rounded-2xl p-6 space-y-4 shadow-sm" id="local-secured-encrypted-backups-card" dir="rtl">
+            <div className="flex items-center justify-between border-b border-[#1e3a5f] pb-3">
               <div className="flex items-center gap-2">
                 <Lock className="w-5 h-5 text-emerald-600 animate-pulse" />
-                <h2 className="text-sm font-bold text-slate-900">النسخ الاحتياطي المحلي المشفر (Local Secured Encrypted Backups)</h2>
+                <h2 className="text-sm font-bold text-[#94a3b8]">النسخ الاحتياطي المحلي المشفر (Local Secured Encrypted Backups)</h2>
               </div>
               <span className="text-xs bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded font-black font-mono">XOR AES-256 SECURED</span>
             </div>
 
-            <p className="text-xs text-slate-900 leading-relaxed text-right">
+            <p className="text-xs text-[#94a3b8] leading-relaxed text-right">
               تتيح لك هذه الميزة الأمنية الاحتفاظ بنسخة مادية محلية مستقرة من كامل بيانات مكتبك (القضايا، الموكلين، المهام، الجلسات، الفواتير، السجلات) كملف <strong className="text-emerald-700">JSON مشفر ومحمي</strong> برقم سري لا يمكن تصفحه أو فكه خارج خادم المنصة.
             </p>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* Export Panel */}
-              <div className="bg-slate-50 border border-slate-800 p-4 rounded-xl flex flex-col justify-between gap-4 text-right">
+              <div className="bg-[#0a1628] border border-[#1e3a5f] p-4 rounded-2xl flex flex-col justify-between gap-4 text-right">
                 <div className="space-y-2">
-                  <span className="text-xs font-black text-slate-900 block flex items-center gap-1">
+                  <span className="text-xs font-black text-[#94a3b8] block flex items-center gap-1">
                     <Download className="w-4 h-4 text-primary" />
                     تصدير وتشفير البيانات الحية
                   </span>
-                  <p className="text-[11px] text-slate-600 leading-normal font-bold">
+                  <p className="text-[11px] text-[#94a3b8] leading-normal font-bold">
                     سيتم تجميع كافة قاعات الجداول النشطة وتمريرها على خوارزمية التشفير المتماثل وتنزيل ملف (.enc) آمن لجهازك.
                   </p>
                   
                   <div className="space-y-1">
-                    <label className="text-[11px] text-slate-950 font-bold block">مفتاح/كلمة مرور تشفير الملف:</label>
+                    <label className="text-[11px] text-[#94a3b8] font-bold block">مفتاح/كلمة مرور تشفير الملف:</label>
                     <input 
                       type="password"
                       value={localBackupPassword}
                       onChange={(e) => setLocalBackupPassword(e.target.value)}
                       placeholder="أدخل كلمة مرور قوية لقفل الملف"
-                      className="w-full bg-white border border-slate-300 p-2 rounded-lg text-xs font-bold font-mono text-left focus:border-emerald-600 outline-none"
+                      className="w-full bg-[#0a1628] border border-[#1e3a5f] p-2 rounded-2xl text-xs font-bold font-mono text-left focus:border-emerald-600 outline-none"
                     />
                   </div>
                 </div>
@@ -3029,7 +3029,7 @@ export default function Settings({
                   type="button"
                   onClick={handleExportEncryptedBackup}
                   disabled={isLocalExporting}
-                  className="w-full bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white font-bold text-xs py-2.5 px-4 rounded-xl transition-all shadow-md flex items-center justify-center gap-1.5"
+                  className="w-full bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white font-bold text-xs py-2.5 px-4 rounded-2xl transition-all shadow-md flex items-center justify-center gap-1.5"
                 >
                   <Lock className="w-3.5 h-3.5" />
                   <span>{isLocalExporting ? 'جاري التجميع والتشفير...' : 'تصدير كامل بيانات المكتب كملف خارجي مشفر 🔐'}</span>
@@ -3037,31 +3037,31 @@ export default function Settings({
               </div>
 
               {/* Import Panel */}
-              <div className="bg-slate-50 border border-slate-800 p-4 rounded-xl flex flex-col justify-between gap-4 text-right">
+              <div className="bg-[#0a1628] border border-[#1e3a5f] p-4 rounded-2xl flex flex-col justify-between gap-4 text-right">
                 <form onSubmit={handleImportEncryptedBackup} className="space-y-3 flex-1 flex flex-col justify-between">
                   <div className="space-y-2">
-                    <span className="text-xs font-black text-slate-900 block flex items-center gap-1">
+                    <span className="text-xs font-black text-[#94a3b8] block flex items-center gap-1">
                       <Upload className="w-4 h-4 text-sky-600" />
                       استيراد وفك تشفير النسخة الاحتياطية
                     </span>
-                    <p className="text-[11px] text-slate-600 leading-normal font-bold">
+                    <p className="text-[11px] text-[#94a3b8] leading-normal font-bold">
                       قم برفع ملف الـ .enc واكتب نفس الرقم السري المستخدم أثناء التصدير لاستعادة كامل جدول البيانات في المنصة فوراُ.
                     </p>
 
                     <div className="space-y-1">
-                      <label className="text-[11px] text-slate-950 font-bold block">الملف المشفر (.enc):</label>
+                      <label className="text-[11px] text-[#94a3b8] font-bold block">الملف المشفر (.enc):</label>
                       <input 
                         type="file"
                         accept=".enc"
                         onChange={(e) => setLocalImportFile(e.target.files?.[0] || null)}
-                        className="w-full bg-white border border-slate-300 p-1 rounded-lg text-[10px] font-bold outline-none cursor-pointer"
+                        className="w-full bg-[#0a1628] border border-[#1e3a5f] p-1 rounded-2xl text-[10px] font-bold outline-none cursor-pointer"
                       />
                     </div>
                   </div>
 
                   <div className="space-y-2">
                     {localImportStatus && (
-                      <div className={`p-2 border rounded-lg text-[11px] font-bold text-right ${localImportStatus.success ? 'bg-emerald-50 border-emerald-200 text-emerald-700' : 'bg-rose-50 border-rose-200 text-rose-700'}`}>
+                      <div className={`p-2 border rounded-2xl text-[11px] font-bold text-right ${localImportStatus.success ? 'bg-emerald-50 border-emerald-200 text-emerald-700' : 'bg-rose-50 border-rose-200 text-rose-700'}`}>
                         {localImportStatus.message}
                       </div>
                     )}
@@ -3069,7 +3069,7 @@ export default function Settings({
                     <button
                       type="submit"
                       disabled={isLocalImporting || !localImportFile}
-                      className="w-full bg-slate-900 hover:bg-black disabled:opacity-50 text-white font-bold text-xs py-2.5 px-4 rounded-xl transition-all shadow-md flex items-center justify-center gap-1.5"
+                      className="w-full bg-[#0a1628] hover:bg-black disabled:opacity-50 text-white font-bold text-xs py-2.5 px-4 rounded-2xl transition-all shadow-md flex items-center justify-center gap-1.5"
                     >
                       <RotateCcw className="w-3.5 h-3.5" />
                       <span>{isLocalImporting ? 'جاري القراءة والترحيل...' : 'شحن واستعادة الملف المشفر بالمنصة ⚙️'}</span>
@@ -3081,8 +3081,8 @@ export default function Settings({
           </div>
 
           {/* Form 4.8: Auto-Archive Configuration & Recently Archived Cases */}
-          <div className="bg-white border border-slate-800 rounded-2xl p-6 space-y-4 shadow-sm" id="auto-archive-configuration-card" dir="rtl">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+          <div className="bg-[#0a1628] border border-[#1e3a5f] rounded-2xl p-6 space-y-4 shadow-sm" id="auto-archive-configuration-card" dir="rtl">
+            <div className="flex items-center justify-between border-b border-[#1e3a5f] pb-3">
               <div className="flex items-center gap-2">
                 <FolderArchive className="w-5 h-5 text-amber-600" />
                 <h2 className="text-sm font-bold text-white font-sans">الأرشفة التلقائية وإدارة خمول القضايا والملفات (Flexible Auto-Archive)</h2>
@@ -3095,7 +3095,7 @@ export default function Settings({
               <div className="space-y-4 md:col-span-1">
                 <div className="space-y-2">
                   <label className="text-xs font-black text-white block">تحديد مدة الخمول المسموحة للقضية مغلقة:</label>
-                  <p className="text-[11px] text-slate-200 leading-normal font-bold">
+                  <p className="text-[11px] text-[#94a3b8] leading-normal font-bold">
                     سيقوم النظام بنقل قضايا المكتب المغلقة المكتملة التي لم تشهد أي نشاط طوال الفترة المحددة إلى الأرشيف السحابي تلقائياً.
                   </p>
                 </div>
@@ -3110,7 +3110,7 @@ export default function Settings({
                       alert(`تم تحديث معيار خمول القضايا المغلقة إلى المغلق منذ (${val}) يوم خمول فما فوق بنجاح! ⚙️`);
                       window.dispatchEvent(new Event('storage'));
                     }}
-                    className="w-full bg-slate-50 border border-slate-800 p-3 rounded-xl text-xs font-bold focus:border-amber-500 outline-none"
+                    className="w-full bg-[#0a1628] border border-[#1e3a5f] p-3 rounded-2xl text-xs font-bold focus:border-amber-500 outline-none"
                   >
                     <option value="7">7 أيام (أسبوع واحد)</option>
                     <option value="14">14 يوماً (أسبوعان)</option>
@@ -3124,12 +3124,12 @@ export default function Settings({
               </div>
 
               {/* Right History and Restore Panel */}
-              <div className="md:col-span-2 bg-slate-50 border border-slate-800 p-4 rounded-2xl flex flex-col gap-3 min-w-0">
+              <div className="md:col-span-2 bg-[#0a1628] border border-[#1e3a5f] p-4 rounded-2xl flex flex-col gap-3 min-w-0">
                 <div className="flex items-center justify-between border-b border-rose-100 pb-2">
                   <span className="text-xs font-black text-white block flex items-center gap-1.5">
                     📑 سجل الملفات والقضايا المودعة مؤخراً في الأرشيف
                   </span>
-                  <span className="text-[10px] bg-slate-200 text-white px-2 py-0.5 rounded-full font-bold">
+                  <span className="text-[10px] bg-[#0a1628] text-white px-2 py-0.5 rounded-full font-bold">
                     {(cases || []).filter(c => c.archived === true).length} ملف مؤرشف
                   </span>
                 </div>
@@ -3139,8 +3139,8 @@ export default function Settings({
                   const archivedCases = (cases || []).filter(c => c.archived === true);
                   if (archivedCases.length === 0) {
                     return (
-                      <div className="flex-1 flex flex-col items-center justify-center py-8 text-center text-slate-500 text-xs font-bold gap-2">
-                        <FolderArchive className="w-8 h-8 text-slate-300" />
+                      <div className="flex-1 flex flex-col items-center justify-center py-8 text-center text-[#94a3b8]0 text-xs font-bold gap-2">
+                        <FolderArchive className="w-8 h-8 text-[#94a3b8]" />
                         <span>لا توجد أي قضايا مؤرشفة حالياً بالمنصة.</span>
                       </div>
                     );
@@ -3148,10 +3148,10 @@ export default function Settings({
                   return (
                     <div className="space-y-2 max-h-[180px] overflow-y-auto pr-1">
                       {archivedCases.map((c) => (
-                        <div key={c.id || c.caseNumber} className="flex items-center justify-between gap-4 p-3 bg-white border border-slate-200 rounded-xl transition-all hover:bg-slate-50">
+                        <div key={c.id || c.caseNumber} className="flex items-center justify-between gap-4 p-3 bg-[#0a1628] border border-[#1e3a5f] rounded-2xl transition-all hover:bg-[#0a1628]">
                           <div className="text-right min-w-0">
                             <span className="text-xs font-black text-white block truncate">{c.caseName}</span>
-                            <span className="text-[10px] text-slate-500 font-bold block mt-0.5">رقم القضية: {c.caseNumber} | المحكمة: {c.courtName || 'ناجز العدلية'}</span>
+                            <span className="text-[10px] text-[#94a3b8]0 font-bold block mt-0.5">رقم القضية: {c.caseNumber} | المحكمة: {c.courtName || 'ناجز العدلية'}</span>
                           </div>
                           <button
                             type="button"
@@ -3161,7 +3161,7 @@ export default function Settings({
                                 alert(`تم استعادة القضية "${c.caseName}" بنجاح وإعادتها للائحة القضايا المفتوحة والنشطة بالمكتب! ♻️`);
                               }
                             }}
-                            className="flex items-center gap-1 text-[10px] font-black bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 px-2.5 py-1.5 rounded-lg transition-all shrink-0"
+                            className="flex items-center gap-1 text-[10px] font-black bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 px-2.5 py-1.5 rounded-2xl transition-all shrink-0"
                           >
                             <RotateCcw className="w-3 h-3" />
                             <span>استعادة بنقرة واحدة</span>
@@ -3176,8 +3176,8 @@ export default function Settings({
           </div>
 
           {/* WhatsApp Activity Log Card */}
-          <div className="bg-white border border-slate-800 rounded-2xl p-6 space-y-4 shadow-sm" id="whatsapp-activity-log-card" dir="rtl">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+          <div className="bg-[#0a1628] border border-[#1e3a5f] rounded-2xl p-6 space-y-4 shadow-sm" id="whatsapp-activity-log-card" dir="rtl">
+            <div className="flex items-center justify-between border-b border-[#1e3a5f] pb-3">
               <div className="flex items-center gap-2">
                 <Activity className={`w-5 h-5 ${TEXT_COLORS.onLight}`} />
                 <h2 className={`text-sm font-bold ${TEXT_COLORS.onLight} font-sans`}>سجل العمليات (WhatsApp Activity Log)</h2>
@@ -3185,7 +3185,7 @@ export default function Settings({
               <button 
                 onClick={fetchWhatsappLogs}
                 disabled={loadingWhatsappLogs}
-                className="text-xs bg-slate-100 hover:bg-slate-200 text-slate-900 px-3 py-1.5 rounded-lg font-bold flex items-center gap-1.5 transition-colors"
+                className="text-xs bg-[#0a1628] hover:bg-[#0a1628] text-[#94a3b8] px-3 py-1.5 rounded-2xl font-bold flex items-center gap-1.5 transition-colors"
               >
                 <RefreshCw className={`w-3.5 h-3.5 ${loadingWhatsappLogs ? 'animate-spin' : ''}`} />
                 تحديث السجل
@@ -3196,9 +3196,9 @@ export default function Settings({
               يعرض هذا السجل آخر 10 عمليات تمت بنجاح أو فشل عبر API الواتساب، مع توضيح حالة كل عملية لتتبع الإشعارات المرسلة للموكلين.
             </p>
 
-            <div className="overflow-hidden border border-slate-800 rounded-xl">
+            <div className="overflow-hidden border border-[#1e3a5f] rounded-2xl">
               <table className="w-full text-right text-xs">
-                <thead className="bg-slate-900 text-white">
+                <thead className="bg-[#0a1628] text-white">
                   <tr>
                     <th className="p-3">رقم المستلم</th>
                     <th className="p-3">الرسالة</th>
@@ -3206,9 +3206,9 @@ export default function Settings({
                     <th className="p-3">التوقيت</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-800 bg-white">
+                <tbody className="divide-y divide-slate-800 bg-[#0a1628]">
                   {whatsappLogs.length > 0 ? whatsappLogs.map((log) => (
-                    <tr key={log.id} className="hover:bg-slate-50 transition-colors">
+                    <tr key={log.id} className="hover:bg-[#0a1628] transition-colors">
                       <td className="p-3 font-mono font-bold text-white">{log.recipient_phone}</td>
                       <td className="p-3 max-w-[200px] truncate text-white" title={log.message}>{log.message}</td>
                       <td className="p-3">
@@ -3225,13 +3225,13 @@ export default function Settings({
                           </div>
                         )}
                       </td>
-                      <td className="p-3 text-slate-900 font-bold">
+                      <td className="p-3 text-[#94a3b8] font-bold">
                         {new Date(log.created_at).toLocaleString('ar-SA')}
                       </td>
                     </tr>
                   )) : (
                     <tr>
-                      <td colSpan={4} className="p-10 text-center text-slate-500 font-bold">
+                      <td colSpan={4} className="p-10 text-center text-[#94a3b8]0 font-bold">
                         لا توجد سجلات عمليات واتساب حالياً.
                       </td>
                     </tr>
@@ -3242,8 +3242,8 @@ export default function Settings({
           </div>
 
           {/* Cloud Calendar Sync Integration Card */}
-          <div className="bg-white border border-slate-800 rounded-2xl p-6 space-y-4 shadow-sm">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+          <div className="bg-[#0a1628] border border-[#1e3a5f] rounded-2xl p-6 space-y-4 shadow-sm">
+            <div className="flex items-center justify-between border-b border-[#1e3a5f] pb-3">
               <div className="flex items-center gap-2">
                 <CalendarIcon className="w-5 h-5 text-amber-900" />
                 <h2 className={`text-sm font-bold ${TEXT_COLORS.onLight} font-sans`}>تكامل التقويمات السحابية (Google & Outlook Calendar Sync)</h2>
@@ -3257,18 +3257,18 @@ export default function Settings({
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {/* Google Calendar Card */}
-              <div className="bg-slate-50 border border-slate-800 p-4 rounded-xl flex flex-col justify-between gap-3 text-right">
+              <div className="bg-[#0a1628] border border-[#1e3a5f] p-4 rounded-2xl flex flex-col justify-between gap-3 text-right">
                 <div className="space-y-1.5">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-slate-900">Google Calendar</span>
-                    <span className={`text-xs px-1.5 py-0.5 rounded font-bold ${isCalendarConnected ? "bg-emerald-50 text-emerald-600 border border-emerald-200" : "bg-slate-200 text-slate-900"} `}>
+                    <span className="text-xs font-bold text-[#94a3b8]">Google Calendar</span>
+                    <span className={`text-xs px-1.5 py-0.5 rounded font-bold ${isCalendarConnected ? "bg-emerald-50 text-emerald-600 border border-emerald-200" : "bg-[#0a1628] text-[#94a3b8]"} `}>
                       {isCalendarConnected ? "● متصل ونشط" : "غير متصل"}
                     </span>
                   </div>
-                  <p className="text-xs text-slate-900 leading-relaxed">يسحب البيانات ويدمج الجلسات بجدول المحامي في Gmail.</p>
+                  <p className="text-xs text-[#94a3b8] leading-relaxed">يسحب البيانات ويدمج الجلسات بجدول المحامي في Gmail.</p>
                 </div>
                 
-                <div className="pt-2 border-t border-slate-800 flex justify-between items-center">
+                <div className="pt-2 border-t border-[#1e3a5f] flex justify-between items-center">
                   {isCalendarConnected ? (
                     <>
                       <button 
@@ -3278,14 +3278,14 @@ export default function Settings({
                       >
                         إلغاء الربط 💔
                       </button>
-                      <span className="text-xs text-slate-900  font-mono">lawyer.adalah@gmail.com</span>
+                      <span className="text-xs text-[#94a3b8]  font-mono">lawyer.adalah@gmail.com</span>
                     </>
                   ) : (
                     <button 
                       type="button"
                       onClick={() => handleConnectCalendar('gcal')}
                       disabled={isCalSyncing}
-                      className="bg-primary text-white text-xs font-black py-1.5 px-3 rounded-lg flex items-center gap-1 cursor-pointer"
+                      className="bg-primary text-white text-xs font-black py-1.5 px-3 rounded-2xl flex items-center gap-1 cursor-pointer"
                     >
                       <span>🔗</span>
                       <span>ربط ومزامنة تقويم Google</span>
@@ -3295,18 +3295,18 @@ export default function Settings({
               </div>
 
               {/* Outlook Calendar Card */}
-              <div className="bg-slate-50 border border-slate-800 p-4 rounded-xl flex flex-col justify-between gap-3 text-right">
+              <div className="bg-[#0a1628] border border-[#1e3a5f] p-4 rounded-2xl flex flex-col justify-between gap-3 text-right">
                 <div className="space-y-1.5">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-slate-900">Outlook Calendar</span>
-                    <span className={`text-xs px-1.5 py-0.5 rounded font-bold ${isOutlookConnected ? "bg-emerald-50 text-emerald-600 border border-emerald-200" : "bg-slate-200 text-slate-900"} `}>
+                    <span className="text-xs font-bold text-[#94a3b8]">Outlook Calendar</span>
+                    <span className={`text-xs px-1.5 py-0.5 rounded font-bold ${isOutlookConnected ? "bg-emerald-50 text-emerald-600 border border-emerald-200" : "bg-[#0a1628] text-[#94a3b8]"} `}>
                       {isOutlookConnected ? "● متصل ونشط" : "غير متصل"}
                     </span>
                   </div>
-                  <p className="text-xs text-slate-900 leading-relaxed">يتيح للمحامي المزامنة السريعة مع برامج شركة مايكروسوفت.</p>
+                  <p className="text-xs text-[#94a3b8] leading-relaxed">يتيح للمحامي المزامنة السريعة مع برامج شركة مايكروسوفت.</p>
                 </div>
 
-                <div className="pt-2 border-t border-slate-800 flex justify-between items-center">
+                <div className="pt-2 border-t border-[#1e3a5f] flex justify-between items-center">
                   {isOutlookConnected ? (
                     <>
                       <button 
@@ -3316,14 +3316,14 @@ export default function Settings({
                       >
                         إلغاء الربط 💔
                       </button>
-                      <span className="text-xs text-slate-900  font-mono">adalah.lawyer@outlook.com</span>
+                      <span className="text-xs text-[#94a3b8]  font-mono">adalah.lawyer@outlook.com</span>
                     </>
                   ) : (
                     <button 
                       type="button"
                       onClick={() => handleConnectCalendar('outlook')}
                       disabled={isCalSyncing}
-                      className="bg-primary text-white text-xs font-black py-1.5 px-3 rounded-lg flex items-center gap-1 cursor-pointer"
+                      className="bg-primary text-white text-xs font-black py-1.5 px-3 rounded-2xl flex items-center gap-1 cursor-pointer"
                     >
                       <span>🔗</span>
                       <span>ربط ومزامنة تقويم Outlook</span>
@@ -3335,8 +3335,8 @@ export default function Settings({
 
             {/* Selection Options (If GCAL is connected) */}
             {isCalendarConnected && (
-              <div className="bg-slate-50 border border-slate-800 p-3 rounded-xl space-y-2 text-right">
-                <label className="text-xs font-bold text-slate-900 block">حدد تفضيل إدراج المعايير للجلسات:</label>
+              <div className="bg-[#0a1628] border border-[#1e3a5f] p-3 rounded-2xl space-y-2 text-right">
+                <label className="text-xs font-bold text-[#94a3b8] block">حدد تفضيل إدراج المعايير للجلسات:</label>
                 <div className="grid grid-cols-2 gap-2 text-xs">
                   <label className="flex items-center gap-2 cursor-pointer">
                     <input 
@@ -3350,7 +3350,7 @@ export default function Settings({
                       }}
                       className="text-primary"
                     />
-                    <span className="text-slate-900">التقويم الرئيسي (Default)</span>
+                    <span className="text-[#94a3b8]">التقويم الرئيسي (Default)</span>
                   </label>
                   <label className="flex items-center gap-2 cursor-pointer">
                     <input 
@@ -3364,7 +3364,7 @@ export default function Settings({
                       }}
                       className="text-primary"
                     />
-                    <span className="text-slate-900">إنشاء تقويم "جلسات Adalah"</span>
+                    <span className="text-[#94a3b8]">إنشاء تقويم "جلسات Adalah"</span>
                   </label>
                 </div>
               </div>
@@ -3372,8 +3372,8 @@ export default function Settings({
 
             {/* Calendar Event Log screen */}
             {calLogs.length > 0 && (
-              <div className="bg-slate-100 border border-slate-800 p-2.5 rounded-xl text-xs font-mono text-slate-900 space-y-1">
-                <span className="block border-b border-slate-800 pb-1 text-xs font-bold text-slate-900">تفاصيل سجلات التقويم السحابي المعاصر:</span>
+              <div className="bg-[#0a1628] border border-[#1e3a5f] p-2.5 rounded-2xl text-xs font-mono text-[#94a3b8] space-y-1">
+                <span className="block border-b border-[#1e3a5f] pb-1 text-xs font-bold text-[#94a3b8]">تفاصيل سجلات التقويم السحابي المعاصر:</span>
                 {calLogs.slice(0, 3).map((l, idx) => (
                   <div key={idx} className="truncate">{l}</div>
                 ))}
@@ -3384,24 +3384,24 @@ export default function Settings({
           {/* Interactive Absolute Confirmation dialog overlay */}
           {isBackupConfOpen && (
             <div className="fixed inset-0 bg-sky-100 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-              <div className="bg-white border border-slate-800 p-6 rounded-3xl max-w-sm w-full space-y-4 text-center text-right shadow-2xl">
+              <div className="bg-[#0a1628] border border-[#1e3a5f] p-6 rounded-3xl max-w-sm w-full space-y-4 text-center text-right shadow-2xl">
                 <span className="text-3xl mx-auto block w-fit">⚠️</span>
-                <h3 className="text-sm font-bold text-slate-900">تأكيد إطلاق المزامنة للموارد السحابية</h3>
-                <p className="text-xs text-slate-900 leading-relaxed font-sans">
+                <h3 className="text-sm font-bold text-[#94a3b8]">تأكيد إطلاق المزامنة للموارد السحابية</h3>
+                <p className="text-xs text-[#94a3b8] leading-relaxed font-sans">
                   هل أنت متأكد من رغبتك في إطلاق عملية تشفير وسحب كامل البيانات (Supabase Master Backup) الآن؟ قد تستغرق هذه العملية دقائق معدودة ريثما تستقر الحزم.
                 </p>
                 <div className="flex gap-2 justify-center pt-2">
                   <button
                     type="button"
                     onClick={handleTriggerBackup}
-                    className="bg-primary text-white font-bold px-4 py-2 rounded-xl text-xs shadow-lg shadow-primary/20"
+                    className="bg-primary text-white font-bold px-4 py-2 rounded-2xl text-xs shadow-lg shadow-primary/20"
                   >
                     نعم، بدء التحميل السحابي ☁️
                   </button>
                   <button
                     type="button"
                     onClick={() => setIsBackupConfOpen(false)}
-                    className="bg-slate-100 text-slate-900 font-bold px-4 py-2 rounded-xl text-xs border border-slate-800"
+                    className="bg-[#0a1628] text-[#94a3b8] font-bold px-4 py-2 rounded-2xl text-xs border border-[#1e3a5f]"
                   >
                     إلغاء الأمر
                   </button>
@@ -3411,23 +3411,23 @@ export default function Settings({
           )}
 
           {/* Dashboard Modules Config (Live Preview & Visual Clutter Reduction) */}
-          <div className="bg-white border border-slate-800 rounded-2xl p-6 space-y-6 shadow-sm">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+          <div className="bg-[#0a1628] border border-[#1e3a5f] rounded-2xl p-6 space-y-6 shadow-sm">
+            <div className="flex items-center justify-between border-b border-[#1e3a5f] pb-3">
               <div className="flex items-center gap-2">
                 <Sliders className="w-5 h-5 text-primary" />
-                <h2 className="text-sm font-bold text-slate-900">تخصيص لوحة التحكم والحد من الازدحام البصري (Dashboard Modules)</h2>
+                <h2 className="text-sm font-bold text-[#94a3b8]">تخصيص لوحة التحكم والحد من الازدحام البصري (Dashboard Modules)</h2>
               </div>
-              <span className="text-xs bg-slate-100 text-slate-900 px-2 py-0.5 rounded font-black font-mono">VISUAL CLUTTER ENGINE</span>
+              <span className="text-xs bg-[#0a1628] text-[#94a3b8] px-2 py-0.5 rounded font-black font-mono">VISUAL CLUTTER ENGINE</span>
             </div>
 
-            <p className="text-xs text-slate-900 leading-relaxed text-right">
+            <p className="text-xs text-[#94a3b8] leading-relaxed text-right">
               تحكم بمرونة كاملة في طريقة وبنية الوحدات المعروضة في لوحة معلومات المنصة. يمكنك إما إظهار/إخفاء الوحدات برمتها أو تفعيل بروتوكول التصفية الذكية الذي يخفي الصناديق التي تخلو من مهام أو التزامات نشطة تلقائياً.
             </p>
 
-            <div className="bg-slate-50 border border-slate-200 p-4 rounded-xl flex items-center justify-between gap-4 text-right">
+            <div className="bg-[#0a1628] border border-[#1e3a5f] p-4 rounded-2xl flex items-center justify-between gap-4 text-right">
               <div className="space-y-1">
-                <span className="text-xs font-bold text-slate-950 block">ميزة الفرز والإخفاء التلقائي الخفيف المبتكر:</span>
-                <span className="text-[11px] text-slate-200 font-bold leading-relaxed block">
+                <span className="text-xs font-bold text-[#94a3b8] block">ميزة الفرز والإخفاء التلقائي الخفيف المبتكر:</span>
+                <span className="text-[11px] text-[#94a3b8] font-bold leading-relaxed block">
                   عند تفعيل هذا التفضيل، ستقوم لوحة التحكم بفلترة وإخفاء الوحدات الفارغة تلقائياً (مثل إخفاء تنبيهات المهل أو سجل العمليات في حال عدم وجود سجلات) بدلاً من عرض الصناديق الفارغة.
                 </span>
                 <span className="text-[10px] text-amber-400 font-black block font-bold">💡 يحافظ على راحة العين ويمنع التشتيت البصري بالمنصة.</span>
@@ -3439,30 +3439,30 @@ export default function Settings({
                   onChange={(e) => setDashboardHideUnusedAuto(e.target.checked)}
                   className="sr-only peer"
                 />
-                <div className="w-11 h-6 bg-slate-200 rounded-full peer peer-focus:ring-2 peer-focus:ring-primary/20 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:start-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                <div className="w-11 h-6 bg-[#0a1628] rounded-full peer peer-focus:ring-2 peer-focus:ring-primary/20 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:start-[2px] after:bg-[#0a1628] after:border-[#1e3a5f] after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
               </label>
             </div>
  
             {/* واجهة مخصص القاعات (Layout Manager) */}
-            <div className="border border-amber-500/30 bg-amber-500/5 p-5 rounded-xl space-y-4 text-right">
+            <div className="border border-amber-500/30 bg-gradient-to-r from-[#c9a84c] to-[#a67c30]/5 p-5 rounded-2xl space-y-4 text-right">
               <div className="flex items-center gap-2 border-b border-amber-500/20 pb-2">
                 <span className="text-xl">🎛️</span>
                 <div className="flex flex-col">
                   <span className="text-xs font-black text-amber-500">مخصص القاعات الذكي (Layout Manager)</span>
-                  <span className="text-[10px] text-slate-700">تحديد عدد الكروت الظاهرة وتخصيص مستويات خصوصية القاعات</span>
+                  <span className="text-[10px] text-[#94a3b8]">تحديد عدد الكروت الظاهرة وتخصيص مستويات خصوصية القاعات</span>
                 </div>
               </div>
               
               <div className="space-y-3.5">
                 {/* 1. قاعة القضايا */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-3 rounded-lg border border-slate-100 shadow-sm">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-[#0a1628] p-3 rounded-2xl border border-[#1e3a5f] shadow-sm">
                   <div className="space-y-0.5">
-                    <span className="text-xs font-bold text-slate-900 block font-display">قاعة إدارة القضايا (Cases Hall)</span>
-                    <span className="text-[10px] text-slate-700 block">مرشحات عرض عدد الكروت النشطة</span>
+                    <span className="text-xs font-bold text-[#94a3b8] block font-display">قاعة إدارة القضايا (Cases Hall)</span>
+                    <span className="text-[10px] text-[#94a3b8] block">مرشحات عرض عدد الكروت النشطة</span>
                   </div>
                   <div className="flex items-center gap-4">
                     <div className="flex items-center gap-2">
-                      <span className="text-[10px] font-bold text-slate-200 font-bold">الكروت:</span>
+                      <span className="text-[10px] font-bold text-[#94a3b8] font-bold">الكروت:</span>
                       <input 
                         type="range" 
                         min="1" 
@@ -3471,7 +3471,7 @@ export default function Settings({
                         onChange={(e) => setVisibleCasesCount(parseInt(e.target.value, 10))}
                         className="w-24 accent-primary"
                       />
-                      <span className="text-xs font-black text-slate-900 bg-slate-100 px-2 py-0.5 rounded font-mono">{visibleCasesCount}</span>
+                      <span className="text-xs font-black text-[#94a3b8] bg-[#0a1628] px-2 py-0.5 rounded font-mono">{visibleCasesCount}</span>
                     </div>
                     <label className="relative inline-flex items-center cursor-pointer shrink-0">
                       <input 
@@ -3480,21 +3480,21 @@ export default function Settings({
                         onChange={(e) => setShowCasesModule(e.target.checked)}
                         className="sr-only peer"
                       />
-                      <div className="w-10 h-5 bg-slate-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:start-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary"></div>
-                      <span className="text-[10px] sm:text-xs font-bold text-slate-900 mr-2">{showCasesModule ? 'نشط (ظاهر)' : 'مخفي (خاص)'}</span>
+                      <div className="w-10 h-5 bg-[#0a1628] rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:start-[2px] after:bg-[#0a1628] after:border-[#1e3a5f] after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary"></div>
+                      <span className="text-[10px] sm:text-xs font-bold text-[#94a3b8] mr-2">{showCasesModule ? 'نشط (ظاهر)' : 'مخفي (خاص)'}</span>
                     </label>
                   </div>
                 </div>
 
                 {/* 2. قاعة الشؤون المالية */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-3 rounded-lg border border-slate-100 shadow-sm">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-[#0a1628] p-3 rounded-2xl border border-[#1e3a5f] shadow-sm">
                   <div className="space-y-0.5">
-                    <span className="text-xs font-bold text-slate-900 block font-display">قاعة الحركة المالية (Finance Hall)</span>
-                    <span className="text-[10px] text-slate-700 block">الحد الأقصى لعرض سجل الفواتير والمستحقات</span>
+                    <span className="text-xs font-bold text-[#94a3b8] block font-display">قاعة الحركة المالية (Finance Hall)</span>
+                    <span className="text-[10px] text-[#94a3b8] block">الحد الأقصى لعرض سجل الفواتير والمستحقات</span>
                   </div>
                   <div className="flex items-center gap-4">
                     <div className="flex items-center gap-2">
-                      <span className="text-[10px] font-bold text-slate-200 font-bold">السجلات:</span>
+                      <span className="text-[10px] font-bold text-[#94a3b8] font-bold">السجلات:</span>
                       <input 
                         type="range" 
                         min="1" 
@@ -3503,7 +3503,7 @@ export default function Settings({
                         onChange={(e) => setVisibleFinancesCount(parseInt(e.target.value, 10))}
                         className="w-24 accent-primary"
                       />
-                      <span className="text-xs font-black text-slate-900 bg-slate-100 px-2 py-0.5 rounded font-mono">{visibleFinancesCount}</span>
+                      <span className="text-xs font-black text-[#94a3b8] bg-[#0a1628] px-2 py-0.5 rounded font-mono">{visibleFinancesCount}</span>
                     </div>
                     <label className="relative inline-flex items-center cursor-pointer shrink-0">
                       <input 
@@ -3512,21 +3512,21 @@ export default function Settings({
                         onChange={(e) => setShowFinanceModule(e.target.checked)}
                         className="sr-only peer"
                       />
-                      <div className="w-10 h-5 bg-slate-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:start-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary"></div>
-                      <span className="text-[10px] sm:text-xs font-bold text-slate-900 mr-2">{showFinanceModule ? 'نشط (ظاهر)' : 'مخفي (خاص)'}</span>
+                      <div className="w-10 h-5 bg-[#0a1628] rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:start-[2px] after:bg-[#0a1628] after:border-[#1e3a5f] after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary"></div>
+                      <span className="text-[10px] sm:text-xs font-bold text-[#94a3b8] mr-2">{showFinanceModule ? 'نشط (ظاهر)' : 'مخفي (خاص)'}</span>
                     </label>
                   </div>
                 </div>
 
                 {/* 3. قاعة الجلسات والمواعيد */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-3 rounded-lg border border-slate-100 shadow-sm">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-[#0a1628] p-3 rounded-2xl border border-[#1e3a5f] shadow-sm">
                   <div className="space-y-0.5">
-                    <span className="text-xs font-bold text-slate-900 block font-display">قاعة الأجندة والمواعيد (Appointments Hall)</span>
-                    <span className="text-[10px] text-slate-700 block">المواعيد المعروضة بجدول الأجندة في لوحة التحكم</span>
+                    <span className="text-xs font-bold text-[#94a3b8] block font-display">قاعة الأجندة والمواعيد (Appointments Hall)</span>
+                    <span className="text-[10px] text-[#94a3b8] block">المواعيد المعروضة بجدول الأجندة في لوحة التحكم</span>
                   </div>
                   <div className="flex items-center gap-4">
                     <div className="flex items-center gap-2">
-                      <span className="text-[10px] font-bold text-slate-200 font-bold">المواعيد:</span>
+                      <span className="text-[10px] font-bold text-[#94a3b8] font-bold">المواعيد:</span>
                       <input 
                         type="range" 
                         min="1" 
@@ -3535,7 +3535,7 @@ export default function Settings({
                         onChange={(e) => setVisibleAppointmentsCount(parseInt(e.target.value, 10))}
                         className="w-24 accent-primary"
                       />
-                      <span className="text-xs font-black text-slate-900 bg-slate-100 px-2 py-0.5 rounded font-mono">{visibleAppointmentsCount}</span>
+                      <span className="text-xs font-black text-[#94a3b8] bg-[#0a1628] px-2 py-0.5 rounded font-mono">{visibleAppointmentsCount}</span>
                     </div>
                     <label className="relative inline-flex items-center cursor-pointer shrink-0">
                       <input 
@@ -3544,8 +3544,8 @@ export default function Settings({
                         onChange={(e) => setShowAppointmentsModule(e.target.checked)}
                         className="sr-only peer"
                       />
-                      <div className="w-10 h-5 bg-slate-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:start-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary"></div>
-                      <span className="text-[10px] sm:text-xs font-bold text-slate-900 mr-2">{showAppointmentsModule ? 'نشط (ظاهر)' : 'مخفي (خاص)'}</span>
+                      <div className="w-10 h-5 bg-[#0a1628] rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:start-[2px] after:bg-[#0a1628] after:border-[#1e3a5f] after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary"></div>
+                      <span className="text-[10px] sm:text-xs font-bold text-[#94a3b8] mr-2">{showAppointmentsModule ? 'نشط (ظاهر)' : 'مخفي (خاص)'}</span>
                     </label>
                   </div>
                 </div>
@@ -3554,27 +3554,27 @@ export default function Settings({
             </div>
 
             <div className="space-y-4">
-              <span className="text-xs font-black text-slate-950 block border-b border-dashed border-slate-200 pb-2">إعادة ترتيب وتخصيص كروت الويب في لوحة التحكم (مزامنة السحب والإفلات):</span>
-              <p className="text-[10px] text-slate-700 font-bold leading-relaxed">
+              <span className="text-xs font-black text-[#94a3b8] block border-b border-dashed border-[#1e3a5f] pb-2">إعادة ترتيب وتخصيص كروت الويب في لوحة التحكم (مزامنة السحب والإفلات):</span>
+              <p className="text-[10px] text-[#94a3b8] font-bold leading-relaxed">
                 رتب أولويات ترافعك وأدائك بسحب الكروت مباشرة من لوحة التحكم أو بالتحكم اليدوي هنا. استخدم في هذه القائمة المنظمة أزرار الصعود والهبوط لتنظيم التخطيط والتحكم بالظهور.
               </p>
               
               <div className="space-y-2 max-h-[360px] overflow-y-auto pr-1">
                 {widgetsList.map((w, index) => (
-                  <div key={w.id} className="flex items-center justify-between gap-4 p-3 bg-slate-50 border border-slate-200 rounded-2xl transition-all">
+                  <div key={w.id} className="flex items-center justify-between gap-4 p-3 bg-[#0a1628] border border-[#1e3a5f] rounded-2xl transition-all">
                     <div className="flex items-start gap-3 min-w-0">
                       <input 
                         type="checkbox"
                         checked={w.visible !== false}
                         onChange={() => toggleWidgetVisibility(w.id)}
-                        className="mt-1 h-4 w-4 rounded border-slate-300 text-primary focus:ring-primary cursor-pointer shrink-0"
+                        className="mt-1 h-4 w-4 rounded border-[#1e3a5f] text-primary focus:ring-primary cursor-pointer shrink-0"
                       />
                       <div className="min-w-0">
-                        <span className="text-[11px] font-black text-slate-900 block flex items-center gap-1.5">
-                          <span className="inline-flex items-center justify-center w-5 h-5 bg-slate-200 rounded-md text-[10px] text-slate-200 font-bold font-mono">#{index + 1}</span>
+                        <span className="text-[11px] font-black text-[#94a3b8] block flex items-center gap-1.5">
+                          <span className="inline-flex items-center justify-center w-5 h-5 bg-[#0a1628] rounded-2xl text-[10px] text-[#94a3b8] font-bold font-mono">#{index + 1}</span>
                           {w.name}
                         </span>
-                        <span className="text-[11px] text-slate-700 leading-normal line-clamp-1 font-bold">{w.desc}</span>
+                        <span className="text-[11px] text-[#94a3b8] leading-normal line-clamp-1 font-bold">{w.desc}</span>
                       </div>
                     </div>
                     
@@ -3583,7 +3583,7 @@ export default function Settings({
                         type="button"
                         onClick={() => moveWidgetUp(index)}
                         disabled={index === 0}
-                        className="p-1.5 rounded-lg text-slate-700 disabled:opacity-30 transition-colors"
+                        className="p-1.5 rounded-2xl text-[#94a3b8] disabled:opacity-30 transition-colors"
                         title="تحريك لأعلى"
                       >
                         <ArrowUp className="w-3.5 h-3.5" />
@@ -3592,7 +3592,7 @@ export default function Settings({
                         type="button"
                         onClick={() => moveWidgetDown(index)}
                         disabled={index === widgetsList.length - 1}
-                        className="p-1.5 rounded-lg text-slate-700 disabled:opacity-30 transition-colors"
+                        className="p-1.5 rounded-2xl text-[#94a3b8] disabled:opacity-30 transition-colors"
                         title="تحريك لأسفل"
                       >
                         <ArrowDown className="w-3.5 h-3.5" />
@@ -3603,7 +3603,7 @@ export default function Settings({
               </div>
             </div>
 
-            <div className="flex justify-between items-center pt-2 border-t border-slate-100">
+            <div className="flex justify-between items-center pt-2 border-t border-[#1e3a5f]">
               {dashboardSaveWidgetsSuccess ? (
                 <span className="flex items-center gap-1 text-emerald-600 text-xs font-bold">
                   <CheckCircle className="w-4 h-4" />
@@ -3615,7 +3615,7 @@ export default function Settings({
               <button
                 type="button"
                 onClick={handleSaveDashboardWidgets}
-                className="bg-primary text-white font-bold text-xs py-2.5 px-6 rounded-xl transition-all shadow-lg shadow-primary/20"
+                className="bg-primary text-white font-bold text-xs py-2.5 px-6 rounded-2xl transition-all shadow-lg shadow-primary/20"
               >
                 حفظ تفضيلات لوحة التحكم
               </button>
@@ -3628,25 +3628,25 @@ export default function Settings({
         <div className="lg:col-span-4 space-y-6">
           
           {/* SMTP Test Console */}
-          <div className="bg-white border border-slate-800 rounded-2xl p-6 space-y-4 shadow-sm">
-            <div className="flex items-center gap-2 border-b border-slate-800 pb-3">
+          <div className="bg-[#0a1628] border border-[#1e3a5f] rounded-2xl p-6 space-y-4 shadow-sm">
+            <div className="flex items-center gap-2 border-b border-[#1e3a5f] pb-3">
               <Send className="w-5 h-5 text-primary" />
-              <h2 className="text-sm font-bold text-slate-900 font-sans">SMTP Test Console</h2>
+              <h2 className="text-sm font-bold text-[#94a3b8] font-sans">SMTP Test Console</h2>
             </div>
 
-            <p className="text-xs text-slate-900 leading-relaxed font-bold">
+            <p className="text-xs text-[#94a3b8] leading-relaxed font-bold">
               قم بتهيئة تجربة إرسال تنبيه فوري بالبريد الإلكتروني لتطبيق العدالة التجريبي ومحاكاة دورة تتبع التعديلات للتثبت من دقة الهيكلة والترويسة الشرعية.
             </p>
 
             <form onSubmit={handleSendTestEmail} className="space-y-3">
               <div className="space-y-1.5">
-                <label className="text-xs text-slate-900 font-bold block">بريد المستلم التجريبي:</label>
+                <label className="text-xs text-[#94a3b8] font-bold block">بريد المستلم التجريبي:</label>
                 <input
                   type="email"
                   placeholder="e.g. client@example.com"
                   value={testEmailRecipient}
                   onChange={(e) => setTestEmailRecipient(e.target.value)}
-                  className="w-full bg-slate-50 text-slate-900 text-xs p-3 rounded-xl border border-slate-800 focus:outline-none focus:border-primary font-medium font-sans"
+                  className="w-full bg-[#0a1628] text-[#94a3b8] text-xs p-3 rounded-2xl border border-[#1e3a5f] focus:outline-none focus:border-primary font-medium font-sans"
                   required
                 />
               </div>
@@ -3654,7 +3654,7 @@ export default function Settings({
               <button
                 type="submit"
                 disabled={emailSending}
-                className="w-full bg-primary text-white font-bold text-xs py-2.5 rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg shadow-primary/20"
+                className="w-full bg-primary text-white font-bold text-xs py-2.5 rounded-2xl transition-all flex items-center justify-center gap-2 shadow-lg shadow-primary/20"
               >
                 <Send className="w-4 h-4" />
                 {emailSending ? 'جاري الإرسال والمضاهاة...' : 'إرسال بريد تجريبي مروّس 🚀'}
@@ -3662,14 +3662,14 @@ export default function Settings({
             </form>
 
             {emailSentStatus === 'success' && (
-              <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-xs text-emerald-700 flex items-center gap-2 font-bold">
+              <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-2xl text-xs text-emerald-700 flex items-center gap-2 font-bold">
                 <CheckCircle className="w-4 h-4 flex-shrink-0" />
                 <span>تم الإرسال والمضاهاة بنجاح! راجع أرشيف الإشعارات أدناه لرصد تفاصيل الرسالة.</span>
               </div>
             )}
             
             {emailSentStatus === 'error' && (
-              <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-xs text-red-700 flex items-center gap-2 font-bold">
+              <div className="p-3 bg-red-50 border border-red-200 rounded-2xl text-xs text-red-700 flex items-center gap-2 font-bold">
                 <AlertCircle className="w-4 h-4 flex-shrink-0" />
                 <span>فشل إتمام عملية الإرسال بالخادم. تأكد من تفعيل الاتصالات بالشبكة.</span>
               </div>
@@ -3677,26 +3677,26 @@ export default function Settings({
           </div>
 
           {/* Dynamic historic sent emails tracker */}
-          <div className="bg-white border border-slate-800 rounded-2xl p-5 space-y-4 shadow-sm">
+          <div className="bg-[#0a1628] border border-[#1e3a5f] rounded-2xl p-5 space-y-4 shadow-sm">
             <div className="flex items-center gap-2">
               <Mail className="w-4 h-4 text-primary animate-pulse" />
-              <h2 className="text-xs font-black text-slate-900">أرشيف الإشعارات الصادرة الموحدة</h2>
+              <h2 className="text-xs font-black text-[#94a3b8]">أرشيف الإشعارات الصادرة الموحدة</h2>
             </div>
 
-            <p className="text-sm text-slate-900 leading-relaxed font-bold">
+            <p className="text-sm text-[#94a3b8] leading-relaxed font-bold">
               نسخ كاملة من تنبيهات البريد الإلكتروني الصادرة تلقائياً عند تغيير حالات القضايا.
             </p>
 
             {emailSentLogs.length === 0 ? (
-              <div className="text-center py-6 text-xs text-slate-900">
+              <div className="text-center py-6 text-xs text-[#94a3b8]">
                 لا توجد إشعارات بريدية مرسلة مؤخراً.
               </div>
             ) : (
               <div className="space-y-3 max-h-[300px] overflow-y-auto pr-1">
                 {emailSentLogs.map((log) => (
-                  <div key={log.id} className="bg-slate-50 border border-slate-800 p-3 rounded-xl space-y-2 text-right">
+                  <div key={log.id} className="bg-[#0a1628] border border-[#1e3a5f] p-3 rounded-2xl space-y-2 text-right">
                     <div className="flex items-center justify-between">
-                      <span className="text-xs text-slate-900 font-mono font-bold">
+                      <span className="text-xs text-[#94a3b8] font-mono font-bold">
                         {new Date(log.timestamp).toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' })}
                       </span>
                       <span className={`text-xs font-extrabold px-1.5 py-0.2 rounded ${
@@ -3708,16 +3708,16 @@ export default function Settings({
                       </span>
                     </div>
 
-                    <div className="text-xs font-bold text-slate-900 line-clamp-1">{log.subject}</div>
+                    <div className="text-xs font-bold text-[#94a3b8] line-clamp-1">{log.subject}</div>
                     
-                    <div className="text-xs text-slate-900 space-y-1 font-bold">
-                      <div>العميل: <span className="text-slate-900">{log.clientName}</span></div>
+                    <div className="text-xs text-[#94a3b8] space-y-1 font-bold">
+                      <div>العميل: <span className="text-[#94a3b8]">{log.clientName}</span></div>
                       <div>البريد: <span className="text-primary font-sans">{log.clientEmail}</span></div>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-1 text-xs pt-1.5 border-t border-slate-800">
-                      <div className="text-slate-900 font-bold">حالة سابقة: <span className="text-rose-600 line-through truncate block">{log.oldStatus}</span></div>
-                      <div className="text-slate-900 font-black">حالة جديدة: <span className="text-emerald-700 truncate block">{log.newStatus}</span></div>
+                    <div className="grid grid-cols-2 gap-1 text-xs pt-1.5 border-t border-[#1e3a5f]">
+                      <div className="text-[#94a3b8] font-bold">حالة سابقة: <span className="text-rose-600 line-through truncate block">{log.oldStatus}</span></div>
+                      <div className="text-[#94a3b8] font-black">حالة جديدة: <span className="text-emerald-700 truncate block">{log.newStatus}</span></div>
                     </div>
                   </div>
                 ))}

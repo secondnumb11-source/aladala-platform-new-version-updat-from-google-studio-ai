@@ -10,7 +10,7 @@ const COLORS = [
   { id: 'pink', bg: 'bg-pink-200', text: 'text-pink-950', border: 'border-pink-300' },
   { id: 'purple', bg: 'bg-purple-200', text: 'text-purple-950', border: 'border-purple-300' },
   { id: 'dark', bg: 'bg-slate-900', text: 'text-white', border: 'border-slate-700' },
-  { id: 'light', bg: 'bg-white', text: 'text-slate-800', border: 'border-slate-200' },
+  { id: 'light', bg: 'bg-[#0a1628]', text: 'text-slate-800', border: 'border-[#1e3a5f]' },
 ];
 
 interface Note {
@@ -163,7 +163,7 @@ export default function GlobalNotesWidget() {
                   </div>
                 ) : (
                   notes.map(note => (
-                    <div key={note.id} className="group relative flex flex-col bg-black/5 dark:bg-white/5 p-3 rounded-lg border border-black/5 dark:border-white/5 transition-all">
+                    <div key={note.id} className="group relative flex flex-col bg-black/5 dark:bg-[#0a1628]/5 p-3 rounded-lg border border-black/5 dark:border-white/5 transition-all">
                       <div 
                         className="cursor-pointer mb-2"
                         onClick={() => {
@@ -212,7 +212,7 @@ export default function GlobalNotesWidget() {
                   
                   <button
                     onClick={handleSave}
-                    className="flex items-center gap-1.5 px-4 py-2 bg-black/10 text-blue-800 dark:text-blue-200 dark:bg-white/10 dark:hover:bg-white/20 rounded-lg text-xs font-black transition-colors"
+                    className="flex items-center gap-1.5 px-4 py-2 bg-black/10 text-blue-800 dark:text-blue-200 dark:bg-[#0a1628]/10 dark:hover:bg-[#0a1628]/20 rounded-lg text-xs font-black transition-colors"
                   >
                     {isSaved ? <Check className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" /> : <Save className="w-3.5 h-3.5" />}
                     {isSaved ? 'تم الحفظ' : 'حفظ'}

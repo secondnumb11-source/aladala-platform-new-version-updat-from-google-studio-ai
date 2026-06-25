@@ -94,7 +94,7 @@ export default function AISwotTool() {
             </p>
           </div>
 
-          <div className="bg-white border border-slate-200 p-6 rounded-[2.5rem] shadow-xl space-y-5">
+          <div className="bg-[#0a1628] border border-[#1e3a5f] p-6 rounded-[2.5rem] shadow-xl space-y-5">
             <textarea 
               rows={12}
               value={content}
@@ -124,8 +124,8 @@ export default function AISwotTool() {
 
         {/* Results Panel */}
         <div className="lg:col-span-8">
-          <div className="bg-white border border-slate-200 rounded-[2.5rem] shadow-2xl overflow-hidden min-h-[600px] flex flex-col">
-            <div className="p-6 bg-slate-50 border-b border-slate-200 flex justify-between items-center">
+          <div className="bg-[#0a1628] border border-[#1e3a5f] rounded-[2.5rem] shadow-2xl overflow-hidden min-h-[600px] flex flex-col">
+            <div className="p-6 bg-slate-50 border-b border-[#1e3a5f] flex justify-between items-center">
               <h4 className="text-sm font-black text-slate-900 flex items-center gap-2">
                 <Cpu className="w-5 h-5 text-indigo-600" />
                 تقرير التهديدات والفرص النظامية
@@ -149,7 +149,7 @@ export default function AISwotTool() {
                       </div>
                       <ul className="space-y-2">
                         {swotResult.strengths?.map((s: string, i: number) => (
-                          <li key={i} className="text-[11px] font-bold text-slate-700 leading-relaxed bg-white/50 p-2 rounded-lg border border-emerald-50 flex items-start gap-2">
+                          <li key={i} className="text-[11px] font-bold text-slate-700 leading-relaxed bg-[#0a1628]/50 p-2 rounded-lg border border-emerald-50 flex items-start gap-2">
                             <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full mt-1.5 shrink-0" />
                             {s}
                           </li>
@@ -165,7 +165,7 @@ export default function AISwotTool() {
                       </div>
                       <ul className="space-y-2">
                         {swotResult.weaknesses?.map((w: string, i: number) => (
-                          <li key={i} className="text-[11px] font-bold text-slate-700 leading-relaxed bg-white/50 p-2 rounded-lg border border-rose-50 flex items-start gap-2">
+                          <li key={i} className="text-[11px] font-bold text-slate-700 leading-relaxed bg-[#0a1628]/50 p-2 rounded-lg border border-rose-50 flex items-start gap-2">
                             <span className="w-1.5 h-1.5 bg-rose-500 rounded-full mt-1.5 shrink-0" />
                             {w}
                           </li>
@@ -181,7 +181,7 @@ export default function AISwotTool() {
                       </div>
                       <ul className="space-y-2">
                         {swotResult.opportunities?.map((o: string, i: number) => (
-                          <li key={i} className="text-[11px] font-bold text-slate-700 leading-relaxed bg-white/50 p-2 rounded-lg border border-sky-50 flex items-start gap-2">
+                          <li key={i} className="text-[11px] font-bold text-slate-700 leading-relaxed bg-[#0a1628]/50 p-2 rounded-lg border border-sky-50 flex items-start gap-2">
                             <span className="w-1.5 h-1.5 bg-sky-500 rounded-full mt-1.5 shrink-0" />
                             {o}
                           </li>
@@ -197,7 +197,7 @@ export default function AISwotTool() {
                       </div>
                       <ul className="space-y-2">
                         {swotResult.threats?.map((t: string, i: number) => (
-                          <li key={i} className="text-[11px] font-bold text-slate-700 leading-relaxed bg-white/50 p-2 rounded-lg border border-amber-50 flex items-start gap-2">
+                          <li key={i} className="text-[11px] font-bold text-slate-700 leading-relaxed bg-[#0a1628]/50 p-2 rounded-lg border border-amber-50 flex items-start gap-2">
                             <span className="w-1.5 h-1.5 bg-amber-500 rounded-full mt-1.5 shrink-0" />
                             {t}
                           </li>
@@ -214,7 +214,7 @@ export default function AISwotTool() {
                         </div>
                         <div className="grid grid-cols-1 gap-3">
                           {swotResult.suggestedDefenses.map((d: string, i: number) => (
-                            <div key={i} className="text-[11px] font-black text-indigo-900 leading-relaxed bg-white p-4 rounded-2xl border border-indigo-200 flex items-start gap-3 shadow-ghost">
+                            <div key={i} className="text-[11px] font-black text-indigo-900 leading-relaxed bg-[#0a1628] p-4 rounded-2xl border border-indigo-200 flex items-start gap-3 shadow-ghost">
                               <span className="mt-1 flex items-center justify-center w-5 h-5 bg-indigo-600 text-white rounded-full text-[11px] shrink-0 font-mono">
                                 {i + 1}
                               </span>

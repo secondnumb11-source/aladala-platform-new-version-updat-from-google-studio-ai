@@ -273,7 +273,7 @@ export default function MainLandingPage({ onSignInSelect, onTrialSelect }: MainL
 
   return (
     <div 
-      className="min-h-screen bg-[#f8fafc] text-slate-900 transition-colors duration-300 selection:bg-amber-500 overflow-x-hidden" 
+      className="min-h-screen bg-[#f8fafc] text-white transition-colors duration-300 selection:bg-amber-500 overflow-x-hidden" 
       dir={isEn ? "ltr" : "rtl"}
     >
       
@@ -410,15 +410,15 @@ export default function MainLandingPage({ onSignInSelect, onTrialSelect }: MainL
                 <div className="grid grid-cols-3 gap-2.5 text-center font-sans">
                   <div className="p-3 bg-slate-50 rounded-xl border border-slate-800 shadow-sm">
                     <p className="text-xs text-amber-400 font-black font-bold">{isEn ? "ZATCA Compliance" : "فوترة الزكاة"}</p>
-                    <p className="text-sm font-black text-slate-900 mt-0.5">100%</p>
+                    <p className="text-sm font-black text-white mt-0.5">100%</p>
                   </div>
                   <div className="p-3 bg-slate-50 rounded-xl border border-slate-800 shadow-sm">
                     <p className="text-xs text-emerald-500 font-bold">{isEn ? "WhatsApp Rate" : "تسليم الواتساب"}</p>
                     <p className="text-sm font-black text-emerald-550 mt-0.5">99.9%</p>
                   </div>
                   <div className="p-3 bg-slate-50 rounded-xl border border-slate-800 shadow-sm">
-                    <p className="text-xs text-slate-900 font-bold">{isEn ? "AI Precision" : "دقة الصياغة"}</p>
-                    <p className="text-sm font-black text-slate-900 mt-0.5">98.4%</p>
+                    <p className="text-xs text-white font-bold">{isEn ? "AI Precision" : "دقة الصياغة"}</p>
+                    <p className="text-sm font-black text-white mt-0.5">98.4%</p>
                   </div>
                 </div>
 
@@ -440,7 +440,7 @@ export default function MainLandingPage({ onSignInSelect, onTrialSelect }: MainL
           <h2 className="text-3xl md:text-5xl font-black text-slate-950 tracking-tight animate-fade-in">
             {isEn ? "A Legal System in Saudi Arabia Built Natively for Unified Client Workflows" : "المنظومة القانونية الأقوى بالمملكة بمميزات تفاعلية ذكية وسهلة"}
           </h2>
-          <p className="text-sm md:text-lg max-w-4xl mx-auto text-slate-900  font-bold leading-relaxed">
+          <p className="text-sm md:text-lg max-w-4xl mx-auto text-white  font-bold leading-relaxed">
             {isEn 
               ? "Forget fractured legacy setups. Explore the complete modules of our ecosystem tailored to local MoJ regulations. Click other options below to examine the specific advantages Al-Adalah brings to your firm."
               : "لماذا تشتت أعمال مكتبك بين تطبيقات منفصلة؟ صُممت منصة العدالة بدقة لتشمل كافة الاحتياجات اليومية وتفاصيل القضايا تحت سقف واجهة واحدة فائقة البساطة والأناقة. انقر على التبويبات الفنية أدناه لاستكشاف المزايا والفرق الشاسع بيننا وبين الأنظمة التقليدية المتهالكة:"}
@@ -459,7 +459,7 @@ export default function MainLandingPage({ onSignInSelect, onTrialSelect }: MainL
                 className={`flex items-center gap-2 px-5 py-3 rounded-2xl text-xs font-black transition-all cursor-pointer ${
                   isTabActive
                     ? 'bg-[#0c2461] text-white   shadow-md scale-105'
-                    : 'bg-white  text-white   border border-slate-800 '
+                    : 'bg-[#0a1628]  text-white   border border-slate-800 '
                 }`}
               >
                 <IconComp className={`w-4 h-4 ${isTabActive ? 'animate-pulse' : ''}`} />
@@ -479,9 +479,9 @@ export default function MainLandingPage({ onSignInSelect, onTrialSelect }: MainL
             activeTab === 'ai-drafting' ? 'bg-[#0c2461]' :
             activeTab === 'whatsapp-alerts' ? 'bg-emerald-500' :
             activeTab === 'najiz-sync' ? 'bg-slate-950' :
-            activeTab === 'finance-zatca' ? 'bg-white' :
+            activeTab === 'finance-zatca' ? 'bg-[#0a1628]' :
             activeTab === 'vault-security' ? 'bg-slate-900' :
-            'bg-white';
+            'bg-[#0a1628]';
 
           return (
             <ContrastMotionDiv 
@@ -535,7 +535,7 @@ export default function MainLandingPage({ onSignInSelect, onTrialSelect }: MainL
                               ? 'darkblue-text-orange-glow'
                               : activeTab === 'ai-drafting' 
                                 ? 'text-[#0c2461]' 
-                                : 'text-slate-900'
+                                : 'text-white'
                         }`}>
                           {benefit}
                         </p>
@@ -570,7 +570,7 @@ export default function MainLandingPage({ onSignInSelect, onTrialSelect }: MainL
                             ? 'darkblue-text-orange-glow'
                             : activeTab === 'ai-drafting' 
                               ? 'text-rose-50' 
-                              : 'text-slate-900'
+                              : 'text-white'
                       }`}>
                         {isEn ? matchingF.workflowBeforeEn : matchingF.workflowBeforeAr}
                       </p>
@@ -595,7 +595,7 @@ export default function MainLandingPage({ onSignInSelect, onTrialSelect }: MainL
                             ? 'darkblue-text-orange-glow'
                             : activeTab === 'ai-drafting' 
                               ? 'text-emerald-50' 
-                              : 'text-slate-900'
+                              : 'text-white'
                       }`}>
                         {isEn ? matchingF.workflowAfterEn : matchingF.workflowAfterAr}
                       </p>
@@ -614,7 +614,7 @@ export default function MainLandingPage({ onSignInSelect, onTrialSelect }: MainL
                   }`}>
                     <div>
                       <span className={`text-[10px] font-black px-4 py-2 rounded-xl w-fit block mb-4 uppercase tracking-[0.1em] shadow-sm ${
-                        activeTab === 'ai-drafting' ? 'bg-amber-500 text-white' : 'bg-white text-emerald-700 border border-emerald-100'
+                        activeTab === 'ai-drafting' ? 'bg-amber-500 text-white' : 'bg-[#0a1628] text-emerald-700 border border-emerald-100'
                       }`}>
                         ⚖️ {isEn ? "Al-Adalah Advantage" : "منفعة منصة العدالة الحصرية"}
                       </span>
@@ -625,7 +625,7 @@ export default function MainLandingPage({ onSignInSelect, onTrialSelect }: MainL
                             ? 'darkblue-text-orange-glow'
                             : activeTab === 'ai-drafting' 
                               ? 'text-amber-50' 
-                              : 'text-slate-900'
+                              : 'text-white'
                       }`}>
                         {matchingF.advAdalah}
                       </p>
@@ -644,7 +644,7 @@ export default function MainLandingPage({ onSignInSelect, onTrialSelect }: MainL
                   }`}>
                     <div>
                       <span className={`text-[10px] font-black px-4 py-2 rounded-xl w-fit block mb-4 uppercase tracking-[0.1em] shadow-sm ${
-                        activeTab === 'ai-drafting' ? 'bg-rose-500 text-white' : 'bg-white text-rose-700 border border-rose-100'
+                        activeTab === 'ai-drafting' ? 'bg-rose-500 text-white' : 'bg-[#0a1628] text-rose-700 border border-rose-100'
                       }`}>
                         ✘ {isEn ? "Standard Competitor Systems" : "العيوب بالبرامج الأخرى"}
                       </span>
@@ -684,7 +684,7 @@ export default function MainLandingPage({ onSignInSelect, onTrialSelect }: MainL
                 activeTab === 'ai-drafting' ? 'bg-[#320a3d]' : 'bg-sky-100'
               }`}>
                 <div className="flex justify-between items-center border-b border-slate-800 pb-3">
-                  <div className="flex items-center gap-1.5 text-slate-900 ">
+                  <div className="flex items-center gap-1.5 text-white ">
                     <span className="w-2.5 h-2.5 rounded-full bg-rose-500"></span>
                     <span className="w-2.5 h-2.5 rounded-full bg-amber-400"></span>
                     <span className="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
@@ -718,7 +718,7 @@ export default function MainLandingPage({ onSignInSelect, onTrialSelect }: MainL
                 )}
 
                 {activeTab === 'whatsapp-alerts' && (
-                  <div className="space-y-3.5 text-right text-xs font-mono text-slate-900">
+                  <div className="space-y-3.5 text-right text-xs font-mono text-white">
                     <div className="bg-[#0b2414] border-2 border-emerald-400/30 p-3 rounded-xl space-y-1.5 shadow-md">
                       <div className="flex justify-between text-emerald-300 font-black">
                         <span>💬 {isEn ? "WhatsApp Message (Auto dispatched)" : "رسالة واتساب (مرسلة آلياً)"}</span>
@@ -729,7 +729,7 @@ export default function MainLandingPage({ onSignInSelect, onTrialSelect }: MainL
                       </p>
                     </div>
 
-                    <div className="p-2.5 bg-white border border-slate-200 rounded-xl flex justify-between items-center text-xs text-slate-900 font-bold shadow-sm">
+                    <div className="p-2.5 bg-[#0a1628] border border-[#1e3a5f] rounded-xl flex justify-between items-center text-xs text-white font-bold shadow-sm">
                       <span className={`text-slate-200 font-bold ${activeTab === 'whatsapp-alerts' ? 'golden-glow-text' : ''}`}>{isEn ? "Carrier: Official WhatsApp API" : "الناقل: Twilio Official WhatsApp"}</span>
                       <span className="text-emerald-700 font-black">✓ {isEn ? "Delivered" : "تم التوصيل (تحقق آلي)"}</span>
                     </div>
@@ -738,7 +738,7 @@ export default function MainLandingPage({ onSignInSelect, onTrialSelect }: MainL
 
                 {activeTab === 'najiz-sync' && (
                   <div className="space-y-3 text-right text-xs font-mono text-slate-950">
-                    <div className="p-3 bg-white border border-slate-205 rounded-xl space-y-2 shadow-sm">
+                    <div className="p-3 bg-[#0a1628] border border-slate-205 rounded-xl space-y-2 shadow-sm">
                       <div className="flex justify-between items-center text-xs text-amber-900 border-b border-slate-100 pb-1.5 font-black">
                         <span className="gold-text-blue-glow">{isEn ? "Najiz Portal - MoJ" : "بوابة ناجز - وزارة العدل"}</span>
                         <span className={`gold-text-blue-glow ${isNajizConnected ? "animate-pulse" : ""}`}>
@@ -775,7 +775,7 @@ export default function MainLandingPage({ onSignInSelect, onTrialSelect }: MainL
 
                 {activeTab === 'finance-zatca' && (
                   <div className="space-y-3 text-right text-xs font-mono text-slate-950 darkblue-text-orange-glow">
-                    <div className="p-3 bg-white border-r-3 border-amber-600 border-y border-l border-slate-205 rounded-xl space-y-2 shadow-sm">
+                    <div className="p-3 bg-[#0a1628] border-r-3 border-amber-600 border-y border-l border-slate-205 rounded-xl space-y-2 shadow-sm">
                       <div className="flex justify-between font-black">
                         <span className="darkblue-orange-glow text-[#0c2461]">{isEn ? "Tax Invoice (Simplified)" : "سند قبض ضريبي (فاتورة مبسطة)"}</span>
                         <span className="darkblue-orange-glow text-amber-800">#FT-1029</span>
@@ -786,15 +786,15 @@ export default function MainLandingPage({ onSignInSelect, onTrialSelect }: MainL
                         <span className="darkblue-orange-glow">42,000 {isEn ? "SAR" : "ر.س"}</span>
                       </div>
                     </div>
-                    <div className="flex justify-center p-2 bg-white rounded-xl w-20 h-20 mx-auto border border-slate-100 shadow-inner">
+                    <div className="flex justify-center p-2 bg-[#0a1628] rounded-xl w-20 h-20 mx-auto border border-slate-100 shadow-inner">
                       {/* Fake QR representation */}
                       <div className="grid grid-cols-5 gap-0.5 w-full h-full bg-slate-950 p-1 rounded">
-                        <div className="bg-white col-span-2 row-span-2"></div>
+                        <div className="bg-[#0a1628] col-span-2 row-span-2"></div>
                         <div className="bg-slate-950"></div>
-                        <div className="bg-white col-span-2"></div>
-                        <div className="bg-white"></div>
+                        <div className="bg-[#0a1628] col-span-2"></div>
+                        <div className="bg-[#0a1628]"></div>
                         <div className="bg-slate-950"></div>
-                        <div className="bg-white col-span-3"></div>
+                        <div className="bg-[#0a1628] col-span-3"></div>
                       </div>
                     </div>
                   </div>
@@ -802,7 +802,7 @@ export default function MainLandingPage({ onSignInSelect, onTrialSelect }: MainL
 
                 {activeTab === 'vault-security' && (
                   <div className="space-y-3 text-right text-[10.5px] font-mono text-slate-950">
-                    <div className="p-3 bg-white border border-slate-200 rounded-xl flex items-center justify-between shadow-sm">
+                    <div className="p-3 bg-[#0a1628] border border-[#1e3a5f] rounded-xl flex items-center justify-between shadow-sm">
                       <div className="space-y-1">
                         <span className="gold-text-blue-glow block font-bold">📄 {isEn ? "Confidential_Defense_Plea_v2.pdf" : "وثيقة_تعميل_سري_للغاية.pdf"}</span>
                         <span className="gold-text-blue-glow block font-black">{isEn ? "Size: 4.2 MB • AES-256 Encrypted" : "الحجم: 4.2 MB • تشفير AES-256"}</span>
@@ -847,7 +847,7 @@ export default function MainLandingPage({ onSignInSelect, onTrialSelect }: MainL
               </p>
 
               {/* SAVINGS CALCULATOR METRICS */}
-              <div className="p-6 bg-white  rounded-3xl border border-slate-800  shadow-lg space-y-5">
+              <div className="p-6 bg-[#0a1628]  rounded-3xl border border-slate-800  shadow-lg space-y-5">
                 <span className="text-sm font-black text-amber-400 font-black bg-amber-600/10 px-3 py-1 rounded-full uppercase">
                   📊 {isEn ? "Interactive ROI Savings Calculator" : "حاسبة تقدير الوفورات الشهرية والمالية مع منصة العدالة"}
                 </span>
@@ -855,7 +855,7 @@ export default function MainLandingPage({ onSignInSelect, onTrialSelect }: MainL
                 <div className="space-y-4 pt-2">
                   {/* Slider 1: Case volume */}
                   <div className="space-y-2">
-                    <div className="flex justify-between items-center text-xs font-bold text-slate-900 ">
+                    <div className="flex justify-between items-center text-xs font-bold text-white ">
                       <span>{isEn ? "Number of active lawsuits/cases:" : "عدد القضايا النشطة حالياً بالمكتب:"}</span>
                       <span className="font-sans font-black text-[#0c2461]">{casesCount}</span>
                     </div>
@@ -871,7 +871,7 @@ export default function MainLandingPage({ onSignInSelect, onTrialSelect }: MainL
 
                   {/* Slider 2: Lawyer count */}
                   <div className="space-y-2">
-                    <div className="flex justify-between items-center text-xs font-bold text-slate-900 ">
+                    <div className="flex justify-between items-center text-xs font-bold text-white ">
                       <span>{isEn ? "Number of practicing legal consultants:" : "عدد المستشارين والمرافعين بفريقك:"}</span>
                       <span className="font-sans font-black text-[#0c2461]">{lawyersCount}</span>
                     </div>
@@ -952,23 +952,23 @@ export default function MainLandingPage({ onSignInSelect, onTrialSelect }: MainL
             <h2 className="text-2xl md:text-5xl font-black text-[#0c2461] leading-tight">
               {isEn ? "Why Al-Adalah Easily Outclasses Traditional Legal Software" : "لماذا نتفوق على الأنظمة والخيارات التقليدية المطروحة بالسوق؟"}
             </h2>
-            <p className="text-sm md:text-lg max-w-3xl mx-auto text-slate-900  font-bold leading-normal">
+            <p className="text-sm md:text-lg max-w-3xl mx-auto text-white  font-bold leading-normal">
               {isEn 
                 ? "Outdated competitor databases restrict you with endless manual typing, zero intelligent AI models, and lack server-side WhatsApp capabilities. Al-Adalah was optimized to reflect modern KSA judicial decrees."
                 : "معظم مكاتب الاستشارات بالمملكة تشتكي من الأنظمة التقنية المستوردة أو البرمجيات القديمة التي تفتقر للمرونة والفهم العميق للأنظمة واللوائح القضائية السعودية. إليك ما يجعلنا الخيار الأول والاحترافي للنخبة:"}
             </p>
           </div>
 
-          <div className="overflow-x-auto rounded-3xl border border-slate-800 bg-white shadow-xl animate-fade-in" data-contrast-ignore="true">
+          <div className="overflow-x-auto rounded-3xl border border-slate-800 bg-[#0a1628] shadow-xl animate-fade-in" data-contrast-ignore="true">
             <table className="w-full text-right border-collapse text-xs md:text-sm landing-matrix-table" data-contrast-ignore="true">
               <thead>
                 <tr className="bg-slate-100 text-[#0c2461] border-b border-slate-800" data-contrast-ignore="true">
-                  <th className="p-5 font-black text-right text-xs md:text-sm text-slate-900 col-feature-title" data-contrast-ignore="true">{isEn ? "Core Technology Feature" : "الميزة والخدمة التقنية الحيوية"}</th>
+                  <th className="p-5 font-black text-right text-xs md:text-sm text-white col-feature-title" data-contrast-ignore="true">{isEn ? "Core Technology Feature" : "الميزة والخدمة التقنية الحيوية"}</th>
                   <th className="p-5 font-black text-center text-white text-xs md:text-sm col-header-adalah" data-contrast-ignore="true">{isEn ? "Al-Adalah Supreme" : "⚖️ منصة العدالة (المنظومة المحترفة)"}</th>
-                  <th className="p-5 font-black text-center text-slate-900 text-xs md:text-sm col-feature-title" data-contrast-ignore="true">{isEn ? "Standard Competitor Systems" : "الأنظمة المنافسة والتقليدية"}</th>
+                  <th className="p-5 font-black text-center text-white text-xs md:text-sm col-feature-title" data-contrast-ignore="true">{isEn ? "Standard Competitor Systems" : "الأنظمة المنافسة والتقليدية"}</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-150 text-slate-900 font-bold" data-contrast-ignore="true">
+              <tbody className="divide-y divide-slate-150 text-white font-bold" data-contrast-ignore="true">
                 
                 <tr className="hover:bg-slate-50" data-contrast-ignore="true">
                   <td className="p-5" data-contrast-ignore="true">
@@ -1063,14 +1063,14 @@ export default function MainLandingPage({ onSignInSelect, onTrialSelect }: MainL
               <h3 className="text-2xl md:text-4xl font-black text-[#0c2461] leading-tight">
                 {isEn ? "National Data Sovereignty & Secure KSA Hosted Cloud Backup" : "استضافات محلية في الرياض مطابقة لشروط الهيئة الوطنية للأمن السيبراني"}
               </h3>
-              <p className="text-sm text-slate-900  leading-relaxed font-black">
+              <p className="text-sm text-white  leading-relaxed font-black">
                 {isEn 
                   ? "We take absolute care of safety. All databases, financial records, client credentials, and court portfolios are safely hosted in Saudi Arabia clouds, conforming cleanly to MoJ and CyberSecurity rules. Safeguard your secrets and leverage advanced audit logs."
                   : "صممت منصة العدالة بأعلى معايير الأمان لحماية بيانات عملاء ومحامين المملكة. جميع ملفات وكالاتك وعملائك مشفرة ومحفوظة في خوادم سعودية معتمدة ومتوافقة مع وزارة العدل والأمن السيبراني لحماية خصوصية عملائك بشكل كامل."
                 }
               </p>
               
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-3 text-xs text-slate-900  font-bold">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-3 text-xs text-white  font-bold">
                 <p>✔ {isEn ? "Compliance with all MoJ regulations and guidelines" : "تزامن وإطار حماية يمنع فقدان أي مواقيت قضائية"}</p>
                 <p>✔ {isEn ? "AES-256 standard encryption keys for attachments" : "خوادم سحابية مطابقة وموثقة NCA بالشبكة"}</p>
                 <p>✔ {isEn ? "Comprehensive, immutable audit logs for lawyer actions" : "سجل تتبع تدبيغ غير قابل للتلاعب لعمليات الموظفين"}</p>
@@ -1079,21 +1079,21 @@ export default function MainLandingPage({ onSignInSelect, onTrialSelect }: MainL
             </div>
 
             <div className="lg:col-span-4 grid grid-cols-2 gap-4">
-              <div className="bg-white  border border-slate-800  p-6 rounded-2xl text-center shadow-md">
+              <div className="bg-[#0a1628]  border border-slate-800  p-6 rounded-2xl text-center shadow-md">
                 <p className="text-2xl sm:text-3xl font-black text-amber-400 font-black font-sans">100%</p>
-                <p className="text-xs text-slate-900  font-bold mt-1">{isEn ? "Saudi Sovereignty" : "سيادة رقمية وطنية"}</p>
+                <p className="text-xs text-white  font-bold mt-1">{isEn ? "Saudi Sovereignty" : "سيادة رقمية وطنية"}</p>
               </div>
-              <div className="bg-white  border border-slate-800  p-6 rounded-2xl text-center shadow-md">
+              <div className="bg-[#0a1628]  border border-slate-800  p-6 rounded-2xl text-center shadow-md">
                 <p className="text-2xl sm:text-3xl font-black text-amber-400 font-black font-sans">AES-256</p>
-                <p className="text-xs text-slate-900  font-bold mt-1">{isEn ? "Vault Encryption" : "تشفيرات بنكية متينة"}</p>
+                <p className="text-xs text-white  font-bold mt-1">{isEn ? "Vault Encryption" : "تشفيرات بنكية متينة"}</p>
               </div>
-              <div className="bg-white  border border-slate-800  p-6 rounded-2xl text-center shadow">
+              <div className="bg-[#0a1628]  border border-slate-800  p-6 rounded-2xl text-center shadow">
                 <p className="text-2xl sm:text-3xl font-black text-emerald-500 font-sans">0%</p>
-                <p className="text-xs text-slate-900  font-bold mt-1">{isEn ? "Data shared outside" : "أية ثغرات أو تسريبات"}</p>
+                <p className="text-xs text-white  font-bold mt-1">{isEn ? "Data shared outside" : "أية ثغرات أو تسريبات"}</p>
               </div>
-              <div className="bg-white  border border-slate-800  p-6 rounded-2xl text-center shadow">
+              <div className="bg-[#0a1628]  border border-slate-800  p-6 rounded-2xl text-center shadow">
                 <p className="text-2xl sm:text-3xl font-black text-emerald-555 font-sans">24/7</p>
-                <p className="text-xs text-slate-900  font-bold mt-1">{isEn ? "Constant Support" : "مراقبة مسار نشط"}</p>
+                <p className="text-xs text-white  font-bold mt-1">{isEn ? "Constant Support" : "مراقبة مسار نشط"}</p>
               </div>
             </div>
 
@@ -1130,7 +1130,7 @@ export default function MainLandingPage({ onSignInSelect, onTrialSelect }: MainL
             </button>
             <button 
               onClick={onSignInSelect}
-              className="px-8 py-5 bg-white text-slate-900 font-black rounded-2xl text-xs border border-slate-300 active:scale-95 transition-all text-center"
+              className="px-8 py-5 bg-[#0a1628] text-white font-black rounded-2xl text-xs border border-[#1e3a5f] active:scale-95 transition-all text-center"
               id="cta-login-direct"
             >
               {isEn ? "Member Area Login Area" : "تسجيل الدخول للمستشارين المعتمدين 🔐"}
@@ -1147,12 +1147,12 @@ export default function MainLandingPage({ onSignInSelect, onTrialSelect }: MainL
         
         <div className="text-center mb-16">
           <h3 className="text-2xl md:text-4xl font-black text-[#0c2461] font-display">{isEn ? "Elite Legal Transformation: FAQ" : "مكتبة المعرفة والربط: الأسئلة الشائعة"}</h3>
-          <p className="text-xs text-slate-900  mt-2 font-bold">{isEn ? "Find answers regarding Najiz safe credentials, security, and ZATCA compliance" : "كل ما ترغب بمعرفته حول طرق المزامنة وموثوقية منصة العدالة وإشعارات الواتساب"}</p>
+          <p className="text-xs text-white  mt-2 font-bold">{isEn ? "Find answers regarding Najiz safe credentials, security, and ZATCA compliance" : "كل ما ترغب بمعرفته حول طرق المزامنة وموثوقية منصة العدالة وإشعارات الواتساب"}</p>
         </div>
 
         <div className="space-y-4">
           
-          <div className="bg-white  border border-slate-800  rounded-2xl overflow-hidden transition-all duration-300 shadow-sm">
+          <div className="bg-[#0a1628]  border border-slate-800  rounded-2xl overflow-hidden transition-all duration-300 shadow-sm">
             <button 
               onClick={() => setFaqOpen(faqOpen === 0 ? null : 0)}
               className="w-full p-5 text-right flex items-center justify-between text-[#0c2461] outline-none cursor-pointer"
@@ -1161,7 +1161,7 @@ export default function MainLandingPage({ onSignInSelect, onTrialSelect }: MainL
               <HelpCircle className={`w-5 h-5 text-amber-500 shrink-0 transition-transform ${faqOpen === 0 ? 'rotate-180' : ''}`} />
             </button>
             {faqOpen === 0 && (
-              <div className="p-5 pt-0 border-t border-slate-150  text-xs sm:text-sm text-slate-900  font-bold leading-relaxed text-right">
+              <div className="p-5 pt-0 border-t border-slate-150  text-xs sm:text-sm text-white  font-bold leading-relaxed text-right">
                 {isEn 
                   ? "Absolutely. We utilize advanced localized chrome extension tokens and authorized API workflows. We never save raw credentials on our database servers. Everything runs with direct visual checkouts matching standard MoJ constraints perfectly."
                   : "تم التطوير وفق دراسات متقدمة تضمن تمام الأمان؛ حيث يتم إرسال واستلام البيانات عبر رموز تعريفية مؤمنة ومشفرة بالكامل. لا نقوم بحفظ تفاصيل كلمات المرور الخاصة بك في خوادمنا، وكل التحديثات والجدولة تتم تحت إشراف تصفحك الآمن وبمرونة عالية."}
@@ -1169,7 +1169,7 @@ export default function MainLandingPage({ onSignInSelect, onTrialSelect }: MainL
             )}
           </div>
 
-          <div className="bg-white  border border-slate-800  rounded-2xl overflow-hidden transition-all duration-300 shadow-sm">
+          <div className="bg-[#0a1628]  border border-slate-800  rounded-2xl overflow-hidden transition-all duration-300 shadow-sm">
             <button 
               onClick={() => setFaqOpen(faqOpen === 1 ? null : 1)}
               className="w-full p-5 text-right flex items-center justify-between text-[#0c2461] outline-none cursor-pointer"
@@ -1178,7 +1178,7 @@ export default function MainLandingPage({ onSignInSelect, onTrialSelect }: MainL
               <HelpCircle className={`w-5 h-5 text-amber-500 shrink-0 transition-transform ${faqOpen === 1 ? 'rotate-180' : ''}`} />
             </button>
             {faqOpen === 1 && (
-              <div className="p-5 pt-0 border-t border-slate-150  text-xs sm:text-sm text-slate-900  font-bold leading-relaxed text-right">
+              <div className="p-5 pt-0 border-t border-slate-150  text-xs sm:text-sm text-white  font-bold leading-relaxed text-right">
                 {isEn 
                   ? "Yes, the local financial accounting module generated is fully compliant with phase II guidelines of the ZATCA authorities, enabling dynamic QR codes and printing compliant vouchers."
                   : "نعم، النظام المالي للمنصة مهيأ ومتوافق بالكامل مع متطلبات المرحلة الثانية للفوترة الإلكترونية الصادرة عن هيئة الزكاة والضريبة والجمارك (ZATCA)، مع توليد تلقائي للرموز المشفرة (QR Code) على كافة الفواتير وبنود العقود المالية لتفادي المخالفات."}
@@ -1186,7 +1186,7 @@ export default function MainLandingPage({ onSignInSelect, onTrialSelect }: MainL
             )}
           </div>
 
-          <div className="bg-white  border border-slate-800  rounded-2xl overflow-hidden transition-all duration-300 shadow-sm">
+          <div className="bg-[#0a1628]  border border-slate-800  rounded-2xl overflow-hidden transition-all duration-300 shadow-sm">
             <button 
               onClick={() => setFaqOpen(faqOpen === 2 ? null : 2)}
               className="w-full p-5 text-right flex items-center justify-between text-[#0c2461] outline-none cursor-pointer"
@@ -1195,7 +1195,7 @@ export default function MainLandingPage({ onSignInSelect, onTrialSelect }: MainL
               <HelpCircle className={`w-5 h-5 text-amber-500 shrink-0 transition-transform ${faqOpen === 2 ? 'rotate-180' : ''}`} />
             </button>
             {faqOpen === 2 && (
-              <div className="p-5 pt-0 border-t border-slate-150  text-xs sm:text-sm text-slate-900  font-bold leading-relaxed text-right">
+              <div className="p-5 pt-0 border-t border-slate-150  text-xs sm:text-sm text-white  font-bold leading-relaxed text-right">
                 {isEn 
                   ? "When a new hearing is imported or client financial payment is recorded, our background server instantly routes a customized narrative notification via WhatsApp API, directly to the client's registered mobile."
                   : "بمجرد تعديل حالة دعوى ما إلى 'صادر فيها حكم لموكلك' أو 'مغلقة' أو عند اقتراب مواعيد الجلسات بـ 24 ساعة، يقوم السيرفر التلقائي بتنفيذ تذكير فوري باسم العميل بالواتساب عبر قنواتنا المدمجة دون فرض رسوم خارجية، مما يعزز العلاقات العامة لمكتبك."}

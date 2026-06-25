@@ -45,7 +45,7 @@ export default function AIDraftingTool({ onDraftGenerated }: AIDraftingToolProps
   // Dynamic contrast card state (customizable backgrounds to showcase brightness analysis live)
   const [cardBgs, setCardBgs] = useState<{ [key: string]: string }>({
     cardA: 'bg-slate-900',       // Dark (contrast: white text)
-    cardB: 'bg-white',            // Light (contrast: slate-900 text)
+    cardB: 'bg-[#0a1628]',            // Light (contrast: slate-900 text)
     cardC: 'bg-indigo-950'        // Deep Indigo (contrast: white text)
   });
 
@@ -58,12 +58,12 @@ export default function AIDraftingTool({ onDraftGenerated }: AIDraftingToolProps
       textClass: isDark ? 'text-white font-bold font-sans font-medium' : 'text-slate-900 font-bold font-sans font-medium', // High contrast
       metricClass: isDark ? 'text-amber-400 font-mono font-black' : 'text-amber-600 font-black font-mono font-black',
       badgeClass: isDark ? 'bg-amber-400/20 text-amber-200 font-black' : 'bg-slate-800 text-amber-300 font-black',
-      borderClass: isDark ? 'border-amber-500/30' : 'border-slate-300'
+      borderClass: isDark ? 'border-amber-500/30' : 'border-[#1e3a5f]'
     };
   };
 
   const cycleBg = (cardId: 'cardA' | 'cardB' | 'cardC') => {
-    const list = ['bg-white', 'bg-slate-900', 'bg-indigo-950', 'bg-amber-500/10'];
+    const list = ['bg-[#0a1628]', 'bg-slate-900', 'bg-indigo-950', 'bg-amber-500/10'];
     setCardBgs(prev => {
       const current = prev[cardId];
       const nextIndex = (list.indexOf(current) + 1) % list.length;
@@ -125,7 +125,7 @@ export default function AIDraftingTool({ onDraftGenerated }: AIDraftingToolProps
   return (
     <div className="space-y-8 text-right" dir="rtl">
       {/* Dynamic Brightness Readability Showcase Section */}
-      <div className="bg-slate-50 border border-slate-200/60 p-8 rounded-[2.5rem] space-y-6">
+      <div className="bg-slate-50 border border-[#1e3a5f]/60 p-8 rounded-[2.5rem] space-y-6">
         <div>
           <h3 className="text-base font-black text-slate-900">البطاقات الذكية لتبديل وتحليل المقروئية والسطوع (Readability Control)</h3>
           <p className="text-[11px] text-slate-700 font-bold mt-1">انقر على أي كارت بالأسفل لتبديل خلفيته مجهرياً بين السطوع والعتام. سيقوم الكود والذكاء الاصطناعي بتحليل لومينانس الخلفية الجديدة وتكييف ألوان النصوص ومؤامتها تلقائياً لضمان منتهى الوضوح البصري الملاءم.</p>
@@ -266,8 +266,8 @@ export default function AIDraftingTool({ onDraftGenerated }: AIDraftingToolProps
 
         {/* Output Side */}
         <div className="space-y-6">
-          <div className="bg-white border border-slate-200 rounded-3xl shadow-2xl overflow-hidden min-h-[500px] flex flex-col">
-            <div className="p-6 bg-slate-50 border-b border-slate-200 flex justify-between items-center">
+          <div className="bg-[#0a1628] border border-[#1e3a5f] rounded-3xl shadow-2xl overflow-hidden min-h-[500px] flex flex-col">
+            <div className="p-6 bg-slate-50 border-b border-[#1e3a5f] flex justify-between items-center">
               <h4 className="text-sm font-black text-slate-900 flex items-center gap-2">
                 <FileCheck className="w-5 h-5 text-emerald-500" />
                 المسودة القانونية المتولدة
@@ -276,7 +276,7 @@ export default function AIDraftingTool({ onDraftGenerated }: AIDraftingToolProps
                 <div className="flex gap-2">
                   <button 
                     onClick={handleCopy}
-                    className="flex items-center gap-2 bg-white border border-slate-200 text-slate-200 font-bold px-3 py-1.5 rounded-lg text-[10px] font-black transition-all"
+                    className="flex items-center gap-2 bg-[#0a1628] border border-[#1e3a5f] text-slate-200 font-bold px-3 py-1.5 rounded-lg text-[10px] font-black transition-all"
                   >
                     {copied ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />}
                     {copied ? 'تم النسخ' : 'نسخ النص'}

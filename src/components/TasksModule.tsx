@@ -101,8 +101,8 @@ function CountdownTimer({ dueDate }: { dueDate?: string }) {
   if (!dueDate) return null;
 
   return (
-    <div className={`flex items-center gap-1.5 px-2 py-1 rounded-md text-[10px] font-black border transition-all ${
-      isExpiringSoon ? 'bg-rose-500 text-white animate-pulse border-rose-400' : 'bg-slate-900/40 text-[#fbbf24] border-[#fbbf24]/20'
+    <div className={`flex items-center gap-1.5 px-2 py-1 rounded-2xl text-[10px] font-black border transition-all ${
+      isExpiringSoon ? 'bg-rose-500 text-white animate-pulse border-rose-400' : 'bg-[#0a1628]/40 text-[#fbbf24] border-[#fbbf24]/20'
     }`}>
       <Timer className="w-3 h-3" />
       <span>{timeLeft}</span>
@@ -834,7 +834,7 @@ export default function TasksModule({
 
   const columns = [
     { id: 'todo', name: 'المهام المعلقة / بانتظار قيد العمل', color: 'bg-blue-400' },
-    { id: 'in_progress', name: 'قيد المطالعة القانونية والتنفيذ', color: 'bg-amber-400' },
+    { id: 'in_progress', name: 'قيد المطالعة القانونية والتنفيذ', color: 'bg-gradient-to-r from-[#c9a84c] to-[#a67c30]' },
     { id: 'review', name: 'مراجعة دفاع كبار المستشارين', color: 'bg-purple-400' },
     { id: 'done', name: 'مكتملة ومرفوعة لناجز', color: 'bg-emerald-400' }
   ];
@@ -846,7 +846,7 @@ export default function TasksModule({
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h1 className="text-2xl font-black text-amber-500 drop-shadow-[0_0_10px_rgba(245,158,11,0.5)] tracking-tight">المهام وتوزيع الأعمال</h1>
-          <p className="text-xs text-slate-300 mt-1 font-bold">
+          <p className="text-xs text-[#94a3b8] mt-1 font-bold">
             متابعة إعداد مذكرات الرد، تجهيز الأسانيد، واجتماعات العملاء عبر منصة مسار التفاعلية للعملاء والمرافعين.
           </p>
         </div>
@@ -921,7 +921,7 @@ export default function TasksModule({
           <button 
             type="button"
             onClick={handleFetchAiPrioritization}
-            className="bg-slate-900 border border-slate-700 text-amber-400 font-black py-2.5 px-5 rounded-2xl text-xs flex items-center gap-2 shadow-lg transition-all cursor-pointer active:scale-95"
+            className="bg-[#0a1628] border border-[#1e3a5f] text-amber-400 font-black py-2.5 px-5 rounded-2xl text-xs flex items-center gap-2 shadow-lg transition-all cursor-pointer active:scale-95"
           >
             <Sparkles className="w-4 h-4 text-primary animate-pulse" />
             <span>تحليل الأولويات بالذكاء الاصطناعي 🧠⚖️</span>
@@ -937,7 +937,7 @@ export default function TasksModule({
 
           <button 
             onClick={requestNotificationPermission}
-            className="bg-slate-100 text-slate-300 font-black py-2.5 px-5 rounded-2xl text-xs flex items-center gap-2 shadow-sm border border-slate-200 transition-all cursor-pointer"
+            className="bg-[#0a1628] text-[#94a3b8] font-black py-2.5 px-5 rounded-2xl text-xs flex items-center gap-2 shadow-sm border border-[#1e3a5f] transition-all cursor-pointer"
             title="تفعيل إشعارات المتصفح"
           >
             <Bell className="w-4 h-4" />
@@ -956,18 +956,18 @@ export default function TasksModule({
           
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-3">
-              <div className="p-2.5 bg-primary/10 text-primary rounded-xl border border-primary/20">
+              <div className="p-2.5 bg-primary/10 text-primary rounded-2xl border border-primary/20">
                 <Sparkles className="w-5 h-5 animate-spin" />
               </div>
               <div className="text-right">
-                <h3 className="font-display font-black text-base text-slate-950">مقترح ترتيب وتصنيف خطورة المهام بالـ AI 🧠🤖</h3>
-                <p className="text-xs text-slate-300 mt-1">يقوم النظام بتحليل تواريخ المهل القضائية ومطابقة العائد الترافعي لتصنيف الأولويات بدقة نظامية.</p>
+                <h3 className="font-display font-black text-base text-[#94a3b8]">مقترح ترتيب وتصنيف خطورة المهام بالـ AI 🧠🤖</h3>
+                <p className="text-xs text-[#94a3b8] mt-1">يقوم النظام بتحليل تواريخ المهل القضائية ومطابقة العائد الترافعي لتصنيف الأولويات بدقة نظامية.</p>
               </div>
             </div>
             
             <button 
               onClick={() => setShowAiSuggestions(false)}
-              className="p-1 px-2 text-slate-200 font-bold border border-transparent rounded-lg transition-all text-xs font-bold"
+              className="p-1 px-2 text-[#94a3b8] font-bold border border-transparent rounded-2xl transition-all text-xs font-bold"
             >
               إلغاء المقترح ✕
             </button>
@@ -978,7 +978,7 @@ export default function TasksModule({
               <div className="w-10 h-10 border-4 border-primary/25 border-t-primary rounded-full animate-spin"></div>
               <div className="space-y-1">
                 <p className="text-sm font-black text-white">جاري الاستعلام ومطابقة المهل القضائية السعودية والمواعيد النافذة حالياً...</p>
-                <p className="text-xs text-slate-300">مراجعة نصوص مذكرات الرد والاعتراض وفلترة مواعيد التمحيص الإداري</p>
+                <p className="text-xs text-[#94a3b8]">مراجعة نصوص مذكرات الرد والاعتراض وفلترة مواعيد التمحيص الإداري</p>
               </div>
             </div>
           ) : aiAppliedSuccessfully ? (
@@ -990,10 +990,10 @@ export default function TasksModule({
             </div>
           ) : (
             <div className="space-y-4 text-right">
-              <div className="overflow-x-auto rounded-2xl border border-slate-200 bg-white">
+              <div className="overflow-x-auto rounded-2xl border border-[#1e3a5f] bg-[#0a1628]">
                 <table className="w-full text-right border-collapse">
                   <thead>
-                    <tr className="bg-slate-50 text-slate-300 text-[10px] font-black uppercase tracking-wider border-b border-slate-200">
+                    <tr className="bg-[#0a1628] text-[#94a3b8] text-[10px] font-black uppercase tracking-wider border-b border-[#1e3a5f]">
                       <th className="p-4">عنوان المهمة المجدولة</th>
                       <th className="p-4">الأولوية الأصلية</th>
                       <th className="p-4">الأولوية المقترحة بالـ AI</th>
@@ -1001,17 +1001,17 @@ export default function TasksModule({
                       <th className="p-4">التوصية ومسار التخفيف</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100 text-xs text-slate-200 font-bold">
+                  <tbody className="divide-y divide-slate-100 text-xs text-[#94a3b8] font-bold">
                     {aiSuggestions.map((s, idx) => (
-                      <tr key={idx} className="hover:bg-slate-50/50 transition-colors">
+                      <tr key={idx} className="hover:bg-[#0a1628]/50 transition-colors">
                         <td className="p-4 font-black">{s.title}</td>
                         <td className="p-4">
-                          <span className="px-2 py-0.5 rounded border border-slate-200 bg-slate-50 text-slate-200 font-bold">
+                          <span className="px-2 py-0.5 rounded border border-[#1e3a5f] bg-[#0a1628] text-[#94a3b8] font-bold">
                             {s.originalPriority === 'high' ? 'عالية' : s.originalPriority === 'medium' ? 'متوسطة' : 'منخفضة'}
                           </span>
                         </td>
                         <td className="p-4">
-                          <span className={`px-2.5 py-1 rounded-lg border font-black ${
+                          <span className={`px-2.5 py-1 rounded-2xl border font-black ${
                             s.suggestedPriority === 'high' || s.suggestedPriority === 'critical'
                             ? 'bg-rose-50 text-rose-600 border-rose-200'
                             : s.suggestedPriority === 'medium'
@@ -1021,7 +1021,7 @@ export default function TasksModule({
                             {s.suggestedPriority === 'high' || s.suggestedPriority === 'critical' ? 'عالية جداً 🔥' : s.suggestedPriority === 'medium' ? 'متوسطة 🛡️' : 'منخفضة 📋'}
                           </span>
                         </td>
-                        <td className="p-4 text-slate-200 font-bold leading-relaxed max-w-xs">{s.reason}</td>
+                        <td className="p-4 text-[#94a3b8] font-bold leading-relaxed max-w-xs">{s.reason}</td>
                         <td className="p-4 text-primary font-black leading-relaxed max-w-xs">{s.actionPlan}</td>
                       </tr>
                     ))}
@@ -1033,7 +1033,7 @@ export default function TasksModule({
                 <button
                   type="button"
                   onClick={() => setShowAiSuggestions(false)}
-                  className="px-5 py-3 rounded-2xl border border-slate-200 text-xs font-black transition-all cursor-pointer"
+                  className="px-5 py-3 rounded-2xl border border-[#1e3a5f] text-xs font-black transition-all cursor-pointer"
                 >
                   إلغاء وتجاهل
                 </button>
@@ -1059,7 +1059,7 @@ export default function TasksModule({
       <div className="mb-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4" dir="rtl">
         {[
           { title: 'المهام العاجلة والمتأخرة', status: 'urgent', color: 'bg-rose-50 border-rose-200 text-rose-900', icon: AlertCircle, filteredTasks: tasks.filter(t => t.priority === 'high' && t.status !== 'done') },
-          { title: 'المهام المؤجلة / المعلقة', status: 'todo', color: 'bg-slate-50 border-slate-200 text-slate-800', icon: Clock, filteredTasks: tasks.filter(t => t.status === 'todo') },
+          { title: 'المهام المؤجلة / المعلقة', status: 'todo', color: 'bg-[#0a1628] border-[#1e3a5f] text-[#94a3b8]', icon: Clock, filteredTasks: tasks.filter(t => t.status === 'todo') },
           { title: 'قيد العمل والدراسة', status: 'in_progress', color: 'bg-blue-50 border-blue-200 text-blue-900', icon: Layout, filteredTasks: tasks.filter(t => t.status === 'in_progress' || t.status === 'review') },
           { title: 'المهام المنتهية / المغلقة', status: 'done', color: 'bg-emerald-50 border-emerald-200 text-emerald-900', icon: CheckCircle2, filteredTasks: tasks.filter(t => t.status === 'done') }
         ].map(cat => (
@@ -1067,7 +1067,7 @@ export default function TasksModule({
             <div className="flex items-center gap-2 mb-3 border-b border-black/5 pb-2">
               <cat.icon className="w-5 h-5 opacity-80" />
               <h3 className="font-black text-sm">{cat.title}</h3>
-              <span className="mr-auto font-mono text-xs font-bold bg-white/50 px-2 py-0.5 rounded-full">{cat.filteredTasks.length}</span>
+              <span className="mr-auto font-mono text-xs font-bold bg-[#0a1628]/50 px-2 py-0.5 rounded-full">{cat.filteredTasks.length}</span>
             </div>
             
             <div className="flex-1 overflow-y-auto space-y-2 pr-1 custom-scrollbar">
@@ -1075,7 +1075,7 @@ export default function TasksModule({
                 <p className="text-xs text-center opacity-60 font-bold py-4">لا توجد مهام في هذا التصنيف</p>
               ) : (
                 cat.filteredTasks.map(t => (
-                  <div key={t.id} className="bg-white/60 p-2.5 rounded-xl border border-black/5 flex flex-col gap-1.5 hover:bg-white transition-colors text-right">
+                  <div key={t.id} className="bg-[#0a1628]/60 p-2.5 rounded-2xl border border-black/5 flex flex-col gap-1.5 hover:bg-[#0a1628] transition-colors text-right">
                     <p className="text-[11px] font-black leading-snug line-clamp-2" title={t.title}>{t.title}</p>
                     <div className="flex items-center justify-between text-[9px] font-bold opacity-80">
                       <span className="flex items-center gap-1">
@@ -1093,7 +1093,7 @@ export default function TasksModule({
       </div>
 
       {/* كارت توزيع المهام اليومي والعبء الوظيفي (Daily Task Distribution) */}
-      <div className="bg-slate-900 border border-slate-800 rounded-[2.5rem] p-8 shadow-2xl space-y-6 relative overflow-hidden text-right" dir="rtl">
+      <div className="bg-[#0a1628] border border-[#1e3a5f] rounded-[2.5rem] p-8 shadow-2xl space-y-6 relative overflow-hidden text-right" dir="rtl">
         <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-amber-500 via-primary to-emerald-500"></div>
         <div className="absolute -top-12 -left-12 w-48 h-48 bg-primary/5 rounded-full blur-3xl pointer-events-none"></div>
 
@@ -1104,13 +1104,13 @@ export default function TasksModule({
             </div>
             <div>
               <h3 className="font-black text-[#ffd700] text-xl font-display tracking-tight drop-shadow-[0_2px_4px_rgba(0,0,0,0.6)]">توزيع المهام اليومي والعبء الوظيفي (Daily Task Distribution)</h3>
-              <p className="text-xs text-slate-200 mt-1.5 font-bold leading-relaxed">
+              <p className="text-xs text-[#94a3b8] mt-1.5 font-bold leading-relaxed">
                 تخطيط مجهري ومتابعة لتوزيع ملفات القضايا والأعمال القضائية على الهيكل التكليفي بالمرصد. اسحب أي مهمة من "مخزن المهام" وأفلتها على بطاقة الموظف لإعادة التوزيع الفوري!
               </p>
             </div>
           </div>
           
-          <div className="flex items-center gap-2 bg-slate-950/80 px-4 py-2.5 rounded-xl text-xs text-[#ffd700] font-black border border-amber-500/30 shadow-lg shadow-amber-500/5 animate-pulse">
+          <div className="flex items-center gap-2 bg-[#0a1628]/80 px-4 py-2.5 rounded-2xl text-xs text-[#ffd700] font-black border border-amber-500/30 shadow-lg shadow-amber-500/5 animate-pulse">
             <span>● نظام الربط المتكامل مع الكادر التكليفي نشط</span>
           </div>
         </div>
@@ -1128,7 +1128,7 @@ export default function TasksModule({
             const percentage = Math.min(100, Math.round((count / m.maxTasks) * 100));
             
             const isOverloaded = count >= m.maxTasks;
-            const barColor = isOverloaded ? 'bg-rose-500' : percentage >= 70 ? 'bg-amber-500' : 'bg-emerald-500';
+            const barColor = isOverloaded ? 'bg-rose-500' : percentage >= 70 ? 'bg-gradient-to-r from-[#c9a84c] to-[#a67c30]' : 'bg-emerald-500';
             const statusText = isOverloaded ? 'ممتد للطاقة القصوى ⚠️' : percentage >= 70 ? 'عبء مرتفع 📈' : 'متزن ومتاح للمهام ✅';
             const statusColor = isOverloaded ? 'text-rose-200 bg-rose-950 border border-rose-800' : percentage >= 70 ? 'text-amber-200 bg-amber-950 border border-amber-800' : 'text-emerald-205 bg-emerald-950 border border-emerald-800';
 
@@ -1137,24 +1137,24 @@ export default function TasksModule({
                 key={m.id}
                 onDragOver={(e) => {
                   e.preventDefault();
-                  e.currentTarget.classList.add("border-amber-500", "bg-amber-500/5", "scale-[1.02]", "ring-2", "ring-amber-500/20");
+                  e.currentTarget.classList.add("border-amber-500", "bg-gradient-to-r from-[#c9a84c] to-[#a67c30]/5", "scale-[1.02]", "ring-2", "ring-amber-500/20");
                 }}
                 onDragLeave={(e) => {
-                  e.currentTarget.classList.remove("border-amber-500", "bg-amber-500/5", "scale-[1.02]", "ring-2", "ring-amber-500/20");
+                  e.currentTarget.classList.remove("border-amber-500", "bg-gradient-to-r from-[#c9a84c] to-[#a67c30]/5", "scale-[1.02]", "ring-2", "ring-amber-500/20");
                 }}
                 onDrop={(e) => {
                   e.preventDefault();
-                  e.currentTarget.classList.remove("border-amber-500", "bg-amber-500/5", "scale-[1.02]", "ring-2", "ring-amber-500/20");
+                  e.currentTarget.classList.remove("border-amber-500", "bg-gradient-to-r from-[#c9a84c] to-[#a67c30]/5", "scale-[1.02]", "ring-2", "ring-amber-500/20");
                   const taskId = e.dataTransfer.getData("taskId");
                   if (taskId) {
                     handleQuickReassign(taskId, m.name);
                   }
                 }}
-                className="bg-slate-950/80 border border-slate-800 rounded-3xl p-5 hover:border-[#D4AF37]/40 transition-all duration-300 flex flex-col justify-between space-y-4 shadow-xl"
+                className="bg-[#0a1628]/80 border border-[#1e3a5f] rounded-3xl p-5 hover:border-[#D4AF37]/40 transition-all duration-300 flex flex-col justify-between space-y-4 shadow-xl"
               >
                 {/* Employee Info Header */}
                 <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 rounded-2xl bg-slate-900/90 flex items-center justify-center text-2xl border border-slate-750 font-black shrink-0 shadow-inner">
+                  <div className="w-12 h-12 rounded-2xl bg-[#0a1628]/90 flex items-center justify-center text-2xl border border-slate-750 font-black shrink-0 shadow-inner">
                     {m.avatar}
                   </div>
                   <div className="flex-1 min-w-0 text-right">
@@ -1171,21 +1171,21 @@ export default function TasksModule({
                   </div>
                   
                   {/* Visual gauge chart */}
-                  <div className="h-2.5 bg-slate-900 border border-slate-800 rounded-full overflow-hidden shadow-inner flex">
+                  <div className="h-2.5 bg-[#0a1628] border border-[#1e3a5f] rounded-full overflow-hidden shadow-inner flex">
                     <div className={`h-full ${barColor} rounded-full transition-all duration-500 shadow-[0_0_8px_rgba(255,255,255,0.2)]`} style={{ width: `${percentage}%` }}></div>
                   </div>
                 </div>
 
                 {/* Status indicator */}
-                <div className="flex justify-between items-center pt-2.5 border-t border-slate-800/80 text-[11px] font-black">
-                  <span className={`px-2.5 py-1 rounded-lg ${statusColor}`}>
+                <div className="flex justify-between items-center pt-2.5 border-t border-[#1e3a5f]/80 text-[11px] font-black">
+                  <span className={`px-2.5 py-1 rounded-2xl ${statusColor}`}>
                     {statusText}
                   </span>
                   <span className="text-slate-205 font-bold">{memberTasks.length} مهام نشطة</span>
                 </div>
 
                 {/* Drop Zone Call to Action */}
-                <div className="border border-dashed border-amber-500/30 p-2.5 rounded-xl text-center text-[11px] text-slate-205 font-black bg-slate-900/50 hover:bg-amber-500/5 transition-all">
+                <div className="border border-dashed border-amber-500/30 p-2.5 rounded-2xl text-center text-[11px] text-slate-205 font-black bg-[#0a1628]/50 hover:bg-gradient-to-r from-[#c9a84c] to-[#a67c30]/5 transition-all">
                   📥 اسحب البطاقات هنا للتكليف
                 </div>
               </div>
@@ -1194,10 +1194,10 @@ export default function TasksModule({
         </div>
 
         {/* 2. Drag Pool / Task Bank */}
-        <div className="space-y-3 bg-slate-950/60 p-6 rounded-[2rem] border border-slate-800 text-right" dir="rtl">
+        <div className="space-y-3 bg-[#0a1628]/60 p-6 rounded-[2rem] border border-[#1e3a5f] text-right" dir="rtl">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
             <h4 className="text-sm text-[#ffd700] font-black flex items-center gap-1.5 font-display">
-              <span className="w-1.5 h-3 bg-amber-500 rounded-full"></span>
+              <span className="w-1.5 h-3 bg-gradient-to-r from-[#c9a84c] to-[#a67c30] rounded-full"></span>
               مخزن المهام الحالي المتاح للتمرير وإعادة التوزيع (Workspace Task Pool)
             </h4>
             <span className="text-xs bg-amber-550/10 text-[#ffd700] px-3.5 py-1.5 rounded-full font-black border border-amber-500/30 select-none shadow">
@@ -1221,7 +1221,7 @@ export default function TasksModule({
                 onDragEnd={(e) => {
                   e.currentTarget.classList.remove("opacity-50");
                 }}
-                className={`bg-slate-900 border rounded-2xl p-4 flex flex-col justify-between w-64 min-w-[16rem] transition-all relative shrink-0 hover:border-amber-500/50 ${
+                className={`bg-[#0a1628] border rounded-2xl p-4 flex flex-col justify-between w-64 min-w-[16rem] transition-all relative shrink-0 hover:border-amber-500/50 ${
                   t.priority === 'high' ? 'border-rose-800' : 
                   t.priority === 'medium' ? 'border-amber-800' : 'border-emerald-800'
                 }`}
@@ -1230,22 +1230,22 @@ export default function TasksModule({
                   <div className="flex justify-between items-center mb-2">
                     <span className={`text-[11px] font-black px-2 py-0.5 rounded border ${
                       t.priority === 'high' ? 'bg-rose-500/10 border-rose-500/30 text-rose-400' :
-                      t.priority === 'medium' ? 'bg-amber-500/10 border-amber-500/30 text-amber-400' : 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400'
+                      t.priority === 'medium' ? 'bg-gradient-to-r from-[#c9a84c] to-[#a67c30]/10 border-amber-500/30 text-amber-400' : 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400'
                     }`}>
                       {t.priority === 'high' ? 'عاجلة' : t.priority === 'medium' ? 'متوسطة' : 'عادية'}
                     </span>
-                    <span className="text-[11px] text-amber-300 font-extrabold bg-slate-950/80 px-2.5 py-0.5 rounded border border-slate-800">المكلف: {getEmployeeName(t) || 'غير محدد'}</span>
+                    <span className="text-[11px] text-amber-300 font-extrabold bg-[#0a1628]/80 px-2.5 py-0.5 rounded border border-[#1e3a5f]">المكلف: {getEmployeeName(t) || 'غير محدد'}</span>
                   </div>
                   
                   <h5 className="font-black text-white text-sm leading-relaxed mb-1 truncate">{t.title}</h5>
                   {t.description && (
-                    <p className="text-[11px] text-slate-300 font-bold truncate mt-1 leading-normal">{t.description}</p>
+                    <p className="text-[11px] text-[#94a3b8] font-bold truncate mt-1 leading-normal">{t.description}</p>
                   )}
                 </div>
 
-                <div className="flex justify-between items-center pt-3 border-t border-slate-800/80 mt-3 text-[11px]">
-                  <span className="text-slate-300 font-black">الأجل: {t.dueDate}</span>
-                  <span className="font-extrabold text-amber-400 animate-pulse bg-amber-500/5 px-2 py-1 rounded border border-amber-500/10">✊ اسحبني الآن</span>
+                <div className="flex justify-between items-center pt-3 border-t border-[#1e3a5f]/80 mt-3 text-[11px]">
+                  <span className="text-[#94a3b8] font-black">الأجل: {t.dueDate}</span>
+                  <span className="font-extrabold text-amber-400 animate-pulse bg-gradient-to-r from-[#c9a84c] to-[#a67c30]/5 px-2 py-1 rounded border border-amber-500/10">✊ اسحبني الآن</span>
                 </div>
               </div>
             ))}
@@ -1254,7 +1254,7 @@ export default function TasksModule({
       </div>
 
       {/* Advanced Filter Bar Panel */}
-      <div className="bg-slate-50  border border-slate-800  p-5 rounded-3xl grid grid-cols-1 md:grid-cols-3 gap-5 shadow-sm">
+      <div className="bg-[#0a1628]  border border-[#1e3a5f]  p-5 rounded-3xl grid grid-cols-1 md:grid-cols-3 gap-5 shadow-sm">
         
         {/* Filter by Priority */}
         <div className="space-y-1.5">
@@ -1262,7 +1262,7 @@ export default function TasksModule({
           <select
             value={filterPriority}
             onChange={(e) => setFilterPriority(e.target.value)}
-            className="w-full bg-white  border border-slate-800  text-xs font-bold text-slate-900  py-3 px-4 rounded-xl outline-none focus:border-primary  transition-all"
+            className="w-full bg-[#0a1628]  border border-[#1e3a5f]  text-xs font-bold text-[#94a3b8]  py-3 px-4 rounded-2xl outline-none focus:border-primary  transition-all"
           >
             <option value="all">كافة الأولويات والمهام</option>
             <option value="high">شديدة الأولوية والخطورة</option>
@@ -1277,7 +1277,7 @@ export default function TasksModule({
           <select
             value={filterAssignee}
             onChange={(e) => setFilterAssignee(e.target.value)}
-            className="w-full bg-white  border border-slate-800  text-xs font-bold text-slate-900  py-3 px-4 rounded-xl outline-none focus:border-primary  transition-all"
+            className="w-full bg-[#0a1628]  border border-[#1e3a5f]  text-xs font-bold text-[#94a3b8]  py-3 px-4 rounded-2xl outline-none focus:border-primary  transition-all"
           >
             <option value="all">كافة الزملاء والمستشارين</option>
             <option value="المحامي أحمد البقمي">المحامي أحمد البقمي</option>
@@ -1299,13 +1299,13 @@ export default function TasksModule({
               placeholder="اكتب رقم القضية للبحث والتدقيق..."
               value={filterCaseNumber}
               onChange={(e) => setFilterCaseNumber(e.target.value)}
-              className="w-full bg-white  border border-slate-800  text-xs font-bold text-slate-900  py-3 px-4 rounded-xl outline-none focus:border-primary  font-sans transition-all"
+              className="w-full bg-[#0a1628]  border border-[#1e3a5f]  text-xs font-bold text-[#94a3b8]  py-3 px-4 rounded-2xl outline-none focus:border-primary  font-sans transition-all"
             />
             {filterCaseNumber && (
               <button
                 type="button"
                 onClick={() => setFilterCaseNumber('')}
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-900   font-black text-sm"
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-[#94a3b8]   font-black text-sm"
               >
                 ×
               </button>
@@ -1323,31 +1323,31 @@ export default function TasksModule({
           className="bg-sky-50 border border-sky-100 rounded-2xl p-4 flex items-center justify-between gap-4"
         >
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-white border border-sky-200 flex items-center justify-center text-sky-600 shadow-sm font-black">
+            <div className="w-10 h-10 rounded-full bg-[#0a1628] border border-sky-200 flex items-center justify-center text-sky-600 shadow-sm font-black">
               {realEmployees.find(e => e.id === selectedEmployeeId)?.name.charAt(0) || '⚖️'}
             </div>
             <div>
-              <h4 className="text-sm font-black text-slate-900">تحليل كفاءة المسند إليه (BI Insight)</h4>
-              <p className="text-[10px] text-slate-600 font-bold">بناءً على المهام المنجزة المعتمدة في "مؤشر الأداء"</p>
+              <h4 className="text-sm font-black text-[#94a3b8]">تحليل كفاءة المسند إليه (BI Insight)</h4>
+              <p className="text-[10px] text-[#94a3b8] font-bold">بناءً على المهام المنجزة المعتمدة في "مؤشر الأداء"</p>
             </div>
           </div>
           
           <div className="flex items-center gap-6">
             <div className="text-center">
-              <span className="block text-[10px] text-slate-500 font-bold">معدل الإنجاز</span>
+              <span className="block text-[10px] text-[#94a3b8]0 font-bold">معدل الإنجاز</span>
               <span className="text-xs font-black text-emerald-600">88%</span>
             </div>
             <div className="text-center">
-              <span className="block text-[10px] text-slate-500 font-bold">مهام عاجلة</span>
+              <span className="block text-[10px] text-[#94a3b8]0 font-bold">مهام عاجلة</span>
               <span className="text-xs font-black text-rose-500">2</span>
             </div>
             <div className="text-center">
-              <span className="block text-[10px] text-slate-500 font-bold">تقييم الجودة</span>
+              <span className="block text-[10px] text-[#94a3b8]0 font-bold">تقييم الجودة</span>
               <span className="text-xs font-black text-amber-500">4.9/5</span>
             </div>
             <button 
               onClick={() => (window as any).dispatchEvent(new CustomEvent('adalah-switch-tab', { detail: 'performance' }))}
-              className="px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-[10px] font-black text-slate-700 hover:bg-slate-50 transition-all font-black uppercase"
+              className="px-3 py-1.5 bg-[#0a1628] border border-[#1e3a5f] rounded-2xl text-[10px] font-black text-[#94a3b8] hover:bg-[#0a1628] transition-all font-black uppercase"
             >
               عرض التقرير المفصل 📊
             </button>
@@ -1374,35 +1374,35 @@ export default function TasksModule({
                 onDragLeave={() => {
                   if (hoveredColumnId === col.id) setHoveredColumnId(null);
                 }}
-                className={`border rounded-3xl p-4 flex flex-col space-y-4 min-h-[500px] shadow-sm transition-all duration-300 ease-out bg-slate-50 relative ${
+                className={`border rounded-3xl p-4 flex flex-col space-y-4 min-h-[500px] shadow-sm transition-all duration-300 ease-out bg-[#0a1628] relative ${
                   isColumnHovered 
-                    ? 'border-slate-400 ring-4 ring-slate-100 scale-[1.02] shadow-xl' 
+                    ? 'border-[#1e3a5f] ring-4 ring-slate-100 scale-[1.02] shadow-xl' 
                     : isAnyTaskDragging 
-                      ? 'border-slate-300 bg-slate-100/50' 
-                      : 'border-slate-200'
+                      ? 'border-[#1e3a5f] bg-[#0a1628]/50' 
+                      : 'border-[#1e3a5f]'
                 }`}
               >
                 
                 {/* Column Header */}
-                <div className="flex items-center justify-between border-b border-slate-200 pb-2">
+                <div className="flex items-center justify-between border-b border-[#1e3a5f] pb-2">
                   <div className="flex items-center gap-2">
                     <span className={`w-2.5 h-2.5 rounded-full ${col.color}`}></span>
-                    <h3 className="font-black text-xs text-slate-900 pb-0.5">{col.name}</h3>
+                    <h3 className="font-black text-xs text-[#94a3b8] pb-0.5">{col.name}</h3>
                   </div>
-                  <span className="text-[10px] bg-slate-200 text-slate-200 font-bold px-2.5 min-w-5 h-5 flex items-center justify-center rounded-full font-black">
+                  <span className="text-[10px] bg-[#0a1628] text-[#94a3b8] font-bold px-2.5 min-w-5 h-5 flex items-center justify-center rounded-full font-black">
                     {colTasks.length}
                   </span>
                 </div>
 
                 {/* Drag and drop interactive helpful banner */}
                 {isAnyTaskDragging && !isColumnHovered && (
-                  <div className="border border-dashed border-primary/25 p-2 rounded-xl text-center text-[10px] text-slate-200 font-bold animate-pulse font-bold bg-primary/5">
+                  <div className="border border-dashed border-primary/25 p-2 rounded-2xl text-center text-[10px] text-[#94a3b8] font-bold animate-pulse font-bold bg-primary/5">
                     🎯 اسحب البطاقة إلى هنا
                   </div>
                 )}
 
                 {isColumnHovered && (
-                  <div className="border border-dashed border-primary/60 p-2.5 rounded-xl text-center text-xs text-primary animate-bounce font-black bg-primary/10">
+                  <div className="border border-dashed border-primary/60 p-2.5 rounded-2xl text-center text-xs text-primary animate-bounce font-black bg-primary/10">
                     ⚡ أفلت الآن للموافقة والنقل الفوري!
                   </div>
                 )}
@@ -1410,7 +1410,7 @@ export default function TasksModule({
                 {/* Column cards items list */}
                 <div className="flex-1 space-y-3 overflow-y-auto max-h-[520px] pr-1">
                   {colTasks.length === 0 ? (
-                    <p className="text-sm text-slate-700 text-center py-12 font-bold">لا توجد سجلات.</p>
+                    <p className="text-sm text-[#94a3b8] text-center py-12 font-bold">لا توجد سجلات.</p>
                   ) : (
                     <SortableContext items={colTasks.map(t => t.id)} strategy={verticalListSortingStrategy}>
                       {colTasks.map((t) => {
@@ -1426,7 +1426,7 @@ export default function TasksModule({
                               return (
                                 <motion.div
                                   layout
-                                  className={`w-full p-5 rounded-2xl flex flex-col justify-between shadow-sm relative min-h-[200px] transition-all bg-white border border-slate-200 hover:shadow-md hover:border-slate-300`}
+                                  className={`w-full p-5 rounded-2xl flex flex-col justify-between shadow-sm relative min-h-[200px] transition-all bg-[#0a1628] border border-[#1e3a5f] hover:shadow-md hover:border-[#1e3a5f]`}
                                 >
 
                                   <div className="space-y-3">
@@ -1435,7 +1435,7 @@ export default function TasksModule({
                                         <span className={`text-[10px] uppercase font-black px-2.5 py-1 rounded-full border ${
                                           t.priority === 'high' ? 'bg-rose-50 text-rose-600 border-rose-200' :
                                           t.priority === 'medium' ? 'bg-amber-50 text-amber-400 font-black border-amber-200' : 
-                                          'bg-slate-100 text-slate-200 font-bold border-slate-200'
+                                          'bg-[#0a1628] text-[#94a3b8] font-bold border-[#1e3a5f]'
                                         }`}>
                                           {t.priority === 'high' ? 'عالية الأهمية' : t.priority === 'medium' ? 'متوسطة' : 'عادية'}
                                         </span>
@@ -1453,7 +1453,7 @@ export default function TasksModule({
                                             notifySimulate(t);
                                           }}
                                           title="إرسال تنبيه فوري"
-                                          className={`p-1.5 rounded-lg transition-colors cursor-pointer ${simulatedAlertActive === t.id ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20' : 'bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700'}`}
+                                          className={`p-1.5 rounded-2xl transition-colors cursor-pointer ${simulatedAlertActive === t.id ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20' : 'bg-[#0a1628] hover:bg-[#0a1628] border border-[#1e3a5f] text-[#94a3b8]'}`}
                                         >
                                           {simulatedAlertActive === t.id ? <BellRing className="w-3.5 h-3.5" /> : <Bell className="w-3.5 h-3.5" />}
                                         </button>
@@ -1465,11 +1465,11 @@ export default function TasksModule({
                                             toggleTaskSize(t.id);
                                           }}
                                           title="تعديل حجم عرض البطاقة"
-                                          className="p-1 px-1.5 rounded-lg transition-colors cursor-pointer bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700"
+                                          className="p-1 px-1.5 rounded-2xl transition-colors cursor-pointer bg-[#0a1628] hover:bg-[#0a1628] border border-[#1e3a5f] text-[#94a3b8]"
                                         >
                                           <Maximize2 className="w-3.5 h-3.5" />
                                         </button>
-                                        <span className="p-1 cursor-grab text-slate-200 font-bold hover:text-slate-200 font-bold transition-colors ml-1">
+                                        <span className="p-1 cursor-grab text-[#94a3b8] font-bold hover:text-[#94a3b8] font-bold transition-colors ml-1">
                                           <GripVertical className="w-4 h-4 text-white font-bold" />
                                         </span>
                                       </div>
@@ -1477,17 +1477,17 @@ export default function TasksModule({
 
                                     <div className="flex items-start gap-3 mt-4">
                                       {(() => {
-                                        const typeIcon = t.title.includes('جلسة') ? <Gavel className="w-4 h-4 text-slate-200 font-bold" /> :
-                                                       t.title.includes('تدقيق') ? <FileCheck className="w-4 h-4 text-slate-200 font-bold" /> :
-                                                       t.title.includes('مستند') || t.title.includes('لائحة') ? <FileText className="w-4 h-4 text-slate-200 font-bold" /> :
-                                                       t.title.includes('استشارة') ? <MessageSquare className="w-4 h-4 text-slate-200 font-bold" /> :
-                                                       <CheckSquare className="w-4 h-4 text-slate-700" />;
+                                        const typeIcon = t.title.includes('جلسة') ? <Gavel className="w-4 h-4 text-[#94a3b8] font-bold" /> :
+                                                       t.title.includes('تدقيق') ? <FileCheck className="w-4 h-4 text-[#94a3b8] font-bold" /> :
+                                                       t.title.includes('مستند') || t.title.includes('لائحة') ? <FileText className="w-4 h-4 text-[#94a3b8] font-bold" /> :
+                                                       t.title.includes('استشارة') ? <MessageSquare className="w-4 h-4 text-[#94a3b8] font-bold" /> :
+                                                       <CheckSquare className="w-4 h-4 text-[#94a3b8]" />;
                                         
                                         const daysLeft = getDaysLeft(t.dueDate);
                                         const isGlowing = t.status !== 'done' && daysLeft <= 2;
                                         
                                         return (
-                                          <div className={`p-2 rounded-xl shrink-0 mt-0.5 border ${isGlowing ? 'bg-amber-50 border-amber-200 text-amber-400 font-black shadow-sm' : 'bg-slate-50 border-slate-200 text-slate-300'}`}>
+                                          <div className={`p-2 rounded-2xl shrink-0 mt-0.5 border ${isGlowing ? 'bg-amber-50 border-amber-200 text-amber-400 font-black shadow-sm' : 'bg-[#0a1628] border-[#1e3a5f] text-[#94a3b8]'}`}>
                                             {typeIcon}
                                           </div>
                                         );
@@ -1496,36 +1496,36 @@ export default function TasksModule({
                                     </div>
                                     
                                     {size !== 'small' && (
-                                      <p className="text-slate-300 font-medium text-xs leading-relaxed line-clamp-3 pl-11">
+                                      <p className="text-[#94a3b8] font-medium text-xs leading-relaxed line-clamp-3 pl-11">
                                         {t.description}
                                       </p>
                                     )}
 
                                     {size === 'full' && t.caseNumber && (
-                                      <div className="mt-3 text-[10px] bg-slate-50 border border-slate-200 text-slate-200 font-bold px-3 py-2 rounded-xl font-mono flex items-center justify-between shadow-sm pl-11">
+                                      <div className="mt-3 text-[10px] bg-[#0a1628] border border-[#1e3a5f] text-[#94a3b8] font-bold px-3 py-2 rounded-2xl font-mono flex items-center justify-between shadow-sm pl-11">
                                         <span className="font-bold">قضية قضائية موثقة</span>
-                                        <span className="bg-white px-2 py-0.5 rounded border border-slate-200 text-slate-300">#{t.caseNumber}</span>
+                                        <span className="bg-[#0a1628] px-2 py-0.5 rounded border border-[#1e3a5f] text-[#94a3b8]">#{t.caseNumber}</span>
                                       </div>
                                     )}
                                   </div>
 
-                                  <div className="border-t border-slate-100 mt-4 pt-3 flex items-center justify-between text-xs font-bold text-slate-300">
-                                    <span className="flex items-center gap-1.5 bg-slate-50 px-2.5 py-1 rounded-lg border border-slate-200">
-                                      <User className="w-3.5 h-3.5 text-slate-200 font-bold" />
+                                  <div className="border-t border-[#1e3a5f] mt-4 pt-3 flex items-center justify-between text-xs font-bold text-[#94a3b8]">
+                                    <span className="flex items-center gap-1.5 bg-[#0a1628] px-2.5 py-1 rounded-2xl border border-[#1e3a5f]">
+                                      <User className="w-3.5 h-3.5 text-[#94a3b8] font-bold" />
                                       <span className="truncate max-w-[90px]">{getEmployeeName(t)}</span>
                                     </span>
 
-                                    <span className="flex items-center gap-1.5 bg-slate-50 px-2.5 py-1 rounded-lg border border-slate-200 font-mono">
-                                      <Clock className="w-3.5 h-3.5 text-slate-200 font-bold" />
+                                    <span className="flex items-center gap-1.5 bg-[#0a1628] px-2.5 py-1 rounded-2xl border border-[#1e3a5f] font-mono">
+                                      <Clock className="w-3.5 h-3.5 text-[#94a3b8] font-bold" />
                                       <span>{t.dueDate}</span>
                                     </span>
                                   </div>
 
-                                  <div className="mt-4 pt-3 border-t border-dashed border-slate-200">
+                                  <div className="mt-4 pt-3 border-t border-dashed border-[#1e3a5f]">
                                     <select
                                       value={t.status}
                                       onChange={(e) => handleUpdateStatus(t, e.target.value as any)}
-                                      className="w-full bg-slate-50/80 border border-slate-200 text-slate-300 text-[11px] font-black py-2.5 px-3 rounded-xl outline-none cursor-pointer focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all shadow-sm appearance-none"
+                                      className="w-full bg-[#0a1628]/80 border border-[#1e3a5f] text-[#94a3b8] text-[11px] font-black py-2.5 px-3 rounded-2xl outline-none cursor-pointer focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all shadow-sm appearance-none"
                                     >
                                       <option value="todo">تعليق</option>
                                       <option value="in_progress">قيد العمل</option>
@@ -1554,9 +1554,9 @@ export default function TasksModule({
       {isAdding && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black backdrop-blur-sm" onClick={() => setIsAdding(false)} />
-          <div className="relative bg-slate-900 border border-[#fbbf24] rounded-3xl w-full max-w-md p-6 space-y-4 shadow-2xl animate-fade-in-up">
+          <div className="relative bg-[#0a1628] border border-[#fbbf24] rounded-3xl w-full max-w-md p-6 space-y-4 shadow-2xl animate-fade-in-up">
             
-            <div className="flex items-center justify-between border-b border-slate-700 pb-3">
+            <div className="flex items-center justify-between border-b border-[#1e3a5f] pb-3">
               <h2 className="font-black text-lg text-[#fbbf24] ">إسناد وتكليف مهمة جديدة</h2>
               <button 
                 onClick={() => setIsAdding(false)}
@@ -1575,7 +1575,7 @@ export default function TasksModule({
                   value={taskTitle}
                   onChange={(e) => setTaskTitle(e.target.value)}
                   required
-                  className="w-full bg-slate-800 border border-slate-700 rounded-xl py-2 px-3 text-xs text-white  font-bold focus:outline-none focus:border-[#fbbf24]"
+                  className="w-full bg-[#0a1628] border border-[#1e3a5f] rounded-2xl py-2 px-3 text-xs text-white  font-bold focus:outline-none focus:border-[#fbbf24]"
                 />
               </div>
 
@@ -1589,7 +1589,7 @@ export default function TasksModule({
                       setSelectedEmployeeId(e.target.value);
                       setSelectedEmployeeName(emp?.name || '');
                     }}
-                    className="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-4 py-2.5 text-sm font-bold cursor-pointer"
+                    className="w-full bg-[#0a1628] border border-[#1e3a5f] text-white rounded-2xl px-4 py-2.5 text-sm font-bold cursor-pointer"
                   >
                     <option value="">— اختر موظفاً —</option>
                     {realEmployees.map(emp => (
@@ -1611,7 +1611,7 @@ export default function TasksModule({
                       setSelectedCaseId(e.target.value);
                       setTaskCase(c?.case_number || '');
                     }}
-                    className="w-full bg-slate-800 border border-slate-700 rounded-xl py-2 px-2 text-xs text-white  font-bold"
+                    className="w-full bg-[#0a1628] border border-[#1e3a5f] rounded-2xl py-2 px-2 text-xs text-white  font-bold"
                   >
                     <option value="">غير مرتبطة بقضية عامة</option>
                     {realCases.map((c) => (
@@ -1630,13 +1630,13 @@ export default function TasksModule({
                       value={taskDueDate}
                       onChange={(e) => setTaskDueDate(e.target.value)}
                       required
-                      className="w-full bg-slate-800 border border-slate-700 rounded-xl py-2 px-3 text-xs text-white font-sans font-bold focus:outline-none"
+                      className="w-full bg-[#0a1628] border border-[#1e3a5f] rounded-2xl py-2 px-3 text-xs text-white font-sans font-bold focus:outline-none"
                     />
                     <input 
                       type="time"
                       value={taskDueTime}
                       onChange={(e) => setTaskDueTime(e.target.value)}
-                      className="w-full bg-slate-800 border border-slate-700 rounded-xl py-2 px-3 text-xs text-white font-sans font-bold focus:outline-none"
+                      className="w-full bg-[#0a1628] border border-[#1e3a5f] rounded-2xl py-2 px-3 text-xs text-white font-sans font-bold focus:outline-none"
                     />
                   </div>
                 </div>
@@ -1648,7 +1648,7 @@ export default function TasksModule({
                   <select 
                     value={taskPriority}
                     onChange={(e: any) => setTaskPriority(e.target.value)}
-                    className="w-full bg-slate-800 border border-slate-700 rounded-xl py-2 px-2 text-xs text-white  font-bold"
+                    className="w-full bg-[#0a1628] border border-[#1e3a5f] rounded-2xl py-2 px-2 text-xs text-white  font-bold"
                   >
                     <option value="high">شديدة الأولوية والخطورة</option>
                     <option value="medium">متوسطة</option>
@@ -1665,7 +1665,7 @@ export default function TasksModule({
                         setTaskReminderEnabled(!taskReminderEnabled);
                         if (!taskReminderEnabled) requestNotificationPermission();
                       }}
-                      className={`flex-1 text-[10px] font-black px-2 py-2 rounded-xl border flex items-center justify-center gap-1 transition-all ${taskReminderEnabled ? 'bg-amber-500 text-slate-950 border-amber-400' : 'bg-slate-800 text-slate-200 font-bold border-slate-700'}`}
+                      className={`flex-1 text-[10px] font-black px-2 py-2 rounded-2xl border flex items-center justify-center gap-1 transition-all ${taskReminderEnabled ? 'bg-gradient-to-r from-[#c9a84c] to-[#a67c30] text-[#94a3b8] border-amber-400' : 'bg-[#0a1628] text-[#94a3b8] font-bold border-[#1e3a5f]'}`}
                     >
                       <Bell className="w-3.5 h-3.5" />
                       {taskReminderEnabled ? 'تمكين التذكير الموقوت' : 'جدول إشعار استباقي'}
@@ -1675,7 +1675,7 @@ export default function TasksModule({
                         type="time" 
                         value={taskReminderTime}
                         onChange={e => setTaskReminderTime(e.target.value)}
-                        className="w-1/2 bg-slate-800 border border-slate-700 rounded-xl py-2 px-2 text-[10px] text-white font-sans font-bold focus:outline-none"
+                        className="w-1/2 bg-[#0a1628] border border-[#1e3a5f] rounded-2xl py-2 px-2 text-[10px] text-white font-sans font-bold focus:outline-none"
                         required
                       />
                     )}
@@ -1690,7 +1690,7 @@ export default function TasksModule({
                   placeholder="اكتب التوجيهات أو المذكرات لتعديل اللائحة هنا..."
                   value={taskDesc}
                   onChange={(e) => setTaskDesc(e.target.value)}
-                  className="w-full bg-slate-800 border border-slate-700 rounded-xl py-2 px-3 text-xs text-white  font-bold focus:outline-none focus:border-[#fbbf24] shadow-inner"
+                  className="w-full bg-[#0a1628] border border-[#1e3a5f] rounded-2xl py-2 px-3 text-xs text-white  font-bold focus:outline-none focus:border-[#fbbf24] shadow-inner"
                 />
               </div>
 
@@ -1698,13 +1698,13 @@ export default function TasksModule({
                 <button 
                   type="button"
                   onClick={() => setIsAdding(false)}
-                  className="bg-slate-800 text-white  font-bold py-2 px-4 rounded-xl text-xs border border-slate-700[#fbbf24] cursor-pointer"
+                  className="bg-[#0a1628] text-white  font-bold py-2 px-4 rounded-2xl text-xs border border-[#1e3a5f][#fbbf24] cursor-pointer"
                 >
                   إلغاء التراجع
                 </button>
                 <button 
                   type="submit"
-                  className="bg-[#fbbf24] text-slate-950 font-black py-2 px-6 rounded-xl text-xs shadow-lg shadow-accent/20 cursor-pointer active:scale-95"
+                  className="bg-[#fbbf24] text-[#94a3b8] font-black py-2 px-6 rounded-2xl text-xs shadow-lg shadow-accent/20 cursor-pointer active:scale-95"
                 >
                   إسناد وتثبيت المهمة +
                 </button>
@@ -1731,14 +1731,14 @@ export default function TasksModule({
         <AnimatePresence>
           {toasts.map((toast) => {
             let borderAccent = 'border-yellow-500/40';
-            let bgAccent = 'bg-slate-900/95';
+            let bgAccent = 'bg-[#0a1628]/95';
             let iconText = 'text-yellow-400';
             let badgeText = 'تنبيه زمني';
-            let badgeBg = 'bg-yellow-500/10 text-yellow-300 border-yellow-500/25';
+            let badgeBg = 'bg-[#c9a84c]/10 text-yellow-300 border-yellow-500/25';
 
             if (toast.type === 'critical') {
               borderAccent = 'border-rose-600/60 shadow-lg shadow-rose-600/10';
-              bgAccent = 'bg-slate-950/95';
+              bgAccent = 'bg-[#0a1628]/95';
               iconText = 'text-rose-500 animate-pulse';
               badgeText = 'عاجل وحساس ⚠️';
               badgeBg = 'bg-rose-500 text-white';
@@ -1747,10 +1747,10 @@ export default function TasksModule({
               bgAccent = 'bg-[#0A101C]/95';
               iconText = 'text-amber-400';
               badgeText = 'تنبيه قانوني';
-              badgeBg = 'bg-amber-500/15 text-amber-300 border-amber-500/20';
+              badgeBg = 'bg-gradient-to-r from-[#c9a84c] to-[#a67c30]/15 text-amber-300 border-amber-500/20';
             } else if (toast.type === 'info') {
               borderAccent = 'border-sky-500/30';
-              bgAccent = 'bg-slate-900/95';
+              bgAccent = 'bg-[#0a1628]/95';
               iconText = 'text-sky-400';
               badgeText = 'فحص النظام ✓';
               badgeBg = 'bg-sky-500/10 text-sky-300 border-sky-500/20';
@@ -1762,14 +1762,14 @@ export default function TasksModule({
                 initial={{ opacity: 0, y: 50, scale: 0.9, x: 20 }}
                 animate={{ opacity: 1, y: 0, scale: 1, x: 0 }}
                 exit={{ opacity: 0, scale: 0.85, x: 100, transition: { duration: 0.2 } }}
-                className={`${bgAccent} border-2 ${borderAccent} text-slate-900 p-5 rounded-2xl shadow-2xl backdrop-blur-md pointer-events-auto relative overflow-hidden flex flex-col gap-2.5 max-w-sm w-full text-right`}
+                className={`${bgAccent} border-2 ${borderAccent} text-[#94a3b8] p-5 rounded-2xl shadow-2xl backdrop-blur-md pointer-events-auto relative overflow-hidden flex flex-col gap-2.5 max-w-sm w-full text-right`}
               >
                 {/* Glowing bar indicator */}
                 <div className={`absolute top-0 right-0 left-0 h-1 bg-current ${iconText}`} />
 
                 <div className="flex items-start justify-between gap-4 mt-1">
                   <div className="flex items-center gap-2">
-                    <div className="p-1.5 bg-slate-950 rounded-lg">
+                    <div className="p-1.5 bg-[#0a1628] rounded-2xl">
                       <Bell className={`w-4 h-4 ${iconText}`} />
                     </div>
                     <span className={`text-[11px] font-black uppercase px-2 py-0.5 rounded border ${badgeBg}`}>
@@ -1791,14 +1791,14 @@ export default function TasksModule({
                 </div>
 
                 {toast.dueDate && (
-                  <div className="mt-1 flex items-center justify-between text-[10px] bg-slate-950/40 p-2.5 rounded-xl border border-white/5">
+                  <div className="mt-1 flex items-center justify-between text-[10px] bg-[#0a1628]/40 p-2.5 rounded-2xl border border-white/5">
                     <div className="flex items-center gap-1.5 font-bold text-white font-bold">
                       <Calendar className="w-3.5 h-3.5 text-yellow-400" />
                       <span>الأجل: {toast.dueDate}</span>
                     </div>
                     {toast.daysLeft !== undefined && (
                       <span className={`font-black uppercase px-1.5 py-0.5 rounded ${
-                        toast.daysLeft < 0 ? 'bg-rose-500/25 text-rose-300' : 'bg-yellow-400/25 text-yellow-300'
+                        toast.daysLeft < 0 ? 'bg-rose-500/25 text-rose-300' : 'bg-[#c9a84c]/25 text-yellow-300'
                       }`}>
                         {toast.daysLeft < 0 ? 'انقضت الفترة!' : `متبقي ${toast.daysLeft} أيام`}
                       </span>

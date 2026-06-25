@@ -100,7 +100,7 @@ function ClientCasesDropdown({
       
       <div 
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full bg-white border border-slate-300 rounded-xl px-4 py-3 text-xs font-bold text-slate-950 cursor-pointer hover:border-slate-400 transition-all flex items-center justify-between select-none shadow-sm"
+        className="w-full bg-[#0a1628] border border-[#1e3a5f] rounded-xl px-4 py-3 text-xs font-bold text-slate-950 cursor-pointer hover:border-slate-400 transition-all flex items-center justify-between select-none shadow-sm"
       >
         <div className="flex flex-wrap gap-1.5 max-w-[90%] overflow-hidden truncate">
           {selectedCases.length === 0 ? (
@@ -122,7 +122,7 @@ function ClientCasesDropdown({
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            className="absolute z-50 w-full mt-2 bg-white border border-slate-200 rounded-2xl shadow-xl overflow-hidden max-h-72 flex flex-col"
+            className="absolute z-50 w-full mt-2 bg-[#0a1628] border border-[#1e3a5f] rounded-2xl shadow-xl overflow-hidden max-h-72 flex flex-col"
           >
             <div className="p-3 bg-slate-50 border-b border-slate-100 flex items-center gap-2">
               <Search className="w-4 h-4 text-slate-205 font-bold shrink-0" />
@@ -155,7 +155,7 @@ function ClientCasesDropdown({
                         type="checkbox"
                         checked={isSelected}
                         readOnly
-                        className="w-4 h-4 text-primary rounded border-slate-300"
+                        className="w-4 h-4 text-primary rounded border-[#1e3a5f]"
                       />
                     </div>
                   );
@@ -759,7 +759,7 @@ export default function ClientPortal({
       
           {/* Dynamic Configuration and Simulation Selector Console (Visible only to legal staff) */}
           {!(currentUser?.role === 'client' || currentUser?.role === 'subscriber') && !isLoggedIn && (
-            <div className="bg-white border border-slate-305 rounded-3xl p-6 shadow-md space-y-6">
+            <div className="bg-[#0a1628] border border-slate-305 rounded-3xl p-6 shadow-md space-y-6">
               <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-slate-205 pb-4">
                 <div className="flex items-center gap-3">
                   <div className="p-2 bg-amber-500/10 border border-amber-500/30 text-amber-400 font-bold font-black rounded-xl">
@@ -772,7 +772,7 @@ export default function ClientPortal({
                 </div>
 
                 {/* Tabs selection options */}
-                <div className="flex bg-slate-100 p-1 rounded-xl border border-slate-200">
+                <div className="flex bg-slate-100 p-1 rounded-xl border border-[#1e3a5f]">
                   <button
                     onClick={() => {
                       // Switch to simulation
@@ -805,7 +805,7 @@ export default function ClientPortal({
 
               {/* VIEW A: SIMULATOR PICKER */}
               {!selectedConfigClientId && (
-                <div className="bg-slate-50 p-5 rounded-2xl flex flex-col md:flex-row items-center justify-between gap-4 border border-slate-200 animate-fade-in">
+                <div className="bg-slate-50 p-5 rounded-2xl flex flex-col md:flex-row items-center justify-between gap-4 border border-[#1e3a5f] animate-fade-in">
                   <div className="space-y-1">
                     <h3 className="text-sm font-bold text-slate-900">حدد العميل النشط لبدء محاكاة شاشة العرض الخاصة به:</h3>
                     <p className="text-xs text-slate-900 font-bold">اختيار العميل من قائمة المسجلين لعرض القضايا المصرح له بها وتحديثات جلساته فقط.</p>
@@ -817,7 +817,7 @@ export default function ClientPortal({
                         const chosen = clients.find(cl => cl.id === e.target.value);
                         if (chosen) setSelectedSimulatedClient(chosen);
                       }}
-                      className="bg-white border border-slate-300 text-sm font-bold px-4 py-3 rounded-xl text-slate-900 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none min-w-[240px] transition-all font-sans"
+                      className="bg-[#0a1628] border border-[#1e3a5f] text-sm font-bold px-4 py-3 rounded-xl text-slate-900 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none min-w-[240px] transition-all font-sans"
                     >
                       {clients.map(cl => (
                         <option key={cl.id} value={cl.id}>{cl.name} ({cl.nationalId || 'ببل رقم هوية'})</option>
@@ -901,7 +901,7 @@ export default function ClientPortal({
                     setSelectedSimulatedClient(updatedWithPerms as any);
                     setSelectedConfigClientId('');
                   }}
-                  className="bg-slate-50 border border-slate-300 p-6 rounded-2xl space-y-6 animate-fade-in"
+                  className="bg-slate-50 border border-[#1e3a5f] p-6 rounded-2xl space-y-6 animate-fade-in"
                 >
                   <div className="flex justify-between items-center border-b border-slate-205 pb-3">
                     <h3 className="font-display font-black text-slate-800 text-sm">إعداد وتخصيص صلاحيات دخول العميل للبوابة وحسابات النفاذ</h3>
@@ -921,7 +921,7 @@ export default function ClientPortal({
                       <select
                         value={selectedConfigClientId}
                         onChange={(e) => handleClientConfigSelect(e.target.value)}
-                        className="w-full bg-white border border-slate-305 px-4 py-3 rounded-xl text-xs font-bold text-slate-950 font-sans"
+                        className="w-full bg-[#0a1628] border border-slate-305 px-4 py-3 rounded-xl text-xs font-bold text-slate-950 font-sans"
                       >
                         <option value="">-- اختر عميلاً متاحاً بالـ CRM --</option>
                         {clients.map(c => (
@@ -937,7 +937,7 @@ export default function ClientPortal({
                         value={configUsername}
                         onChange={(e) => setConfigUsername(e.target.value)}
                         placeholder="أدخل اسم مستخدم مخصص..."
-                        className="w-full bg-white border border-slate-305 px-4 py-3 rounded-xl text-xs font-bold text-slate-950 font-mono text-center"
+                        className="w-full bg-[#0a1628] border border-slate-305 px-4 py-3 rounded-xl text-xs font-bold text-slate-950 font-mono text-center"
                         required
                       />
                     </div>
@@ -950,13 +950,13 @@ export default function ClientPortal({
                           value={configPassword}
                           onChange={(e) => setConfigPassword(e.target.value)}
                           placeholder="كلمة مرور الدخول للمحفظة..."
-                          className="w-full bg-white border border-slate-305 px-4 py-3 rounded-xl text-xs font-bold text-slate-950 font-mono text-center"
+                          className="w-full bg-[#0a1628] border border-slate-305 px-4 py-3 rounded-xl text-xs font-bold text-slate-950 font-mono text-center"
                           required
                         />
                         <button
                           type="button"
                           onClick={() => setConfigPassword(`Pass@${Math.floor(1000 + Math.random() * 9000)}`)}
-                          className="bg-slate-200 text-slate-900 text-[10px] px-3 py-1 rounded-xl shadow border border-slate-300 font-bold shrink-0"
+                          className="bg-slate-200 text-slate-900 text-[10px] px-3 py-1 rounded-xl shadow border border-[#1e3a5f] font-bold shrink-0"
                         >
                           توليد ⚡
                         </button>
@@ -978,7 +978,7 @@ export default function ClientPortal({
                           type="text"
                           readOnly
                           value={`${window.location.origin}/?role=client&user=${configUsername.trim()}&pass=${configPassword.trim()}&autologin=true`}
-                          className="bg-white border border-emerald-300 px-3 py-2.5 rounded-xl text-xs font-mono select-all text-slate-900 flex-1 text-left"
+                          className="bg-[#0a1628] border border-emerald-300 px-3 py-2.5 rounded-xl text-xs font-mono select-all text-slate-900 flex-1 text-left"
                           dir="ltr"
                         />
                         <button
@@ -1000,7 +1000,7 @@ export default function ClientPortal({
                   )}
 
                   {/* CHOOSE CASES CHECKLIST DROPDOWN AND PERMISSIONS CONFIG */}
-                  <div className="bg-white border border-slate-205 p-5 rounded-2xl space-y-4">
+                  <div className="bg-[#0a1628] border border-slate-205 p-5 rounded-2xl space-y-4">
                     <span className="text-xs font-black text-slate-900 block border-b pb-2">
                       2. اختيار ومطابقة القضايا التي يمكنه الاطلاع عليها أو التعديل (dropdown lists)
                     </span>
@@ -1041,7 +1041,7 @@ export default function ClientPortal({
                             if (!cs) return null;
                             const currentPerm = configPermissions[cs.id] || configPermissions[cs.caseNumber] || 'view';
                             return (
-                              <div key={cs.id} className="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-slate-50 p-3.5 rounded-xl border border-slate-200 gap-3">
+                              <div key={cs.id} className="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-slate-50 p-3.5 rounded-xl border border-[#1e3a5f] gap-3">
                                 <span className="text-xs font-bold text-slate-950 truncate">
                                   ⚖️ {cs.caseName} <span className="text-slate-500 font-mono font-bold text-[10px] mr-1 block sm:inline">({cs.caseNumber})</span>
                                 </span>
@@ -1056,7 +1056,7 @@ export default function ClientPortal({
                                         ...(cs.caseNumber ? { [cs.caseNumber]: e.target.value as any } : {})
                                       }));
                                     }}
-                                    className="bg-white border border-slate-300 text-[11px] font-bold px-2 py-1.5 rounded-lg text-slate-950 outline-none"
+                                    className="bg-[#0a1628] border border-[#1e3a5f] text-[11px] font-bold px-2 py-1.5 rounded-lg text-slate-950 outline-none"
                                   >
                                     <option value="view">الاطلاع فقط (لقراءة الدعاوى واستعراض المستندات)</option>
                                     <option value="edit">الاطلاع والتعديل (يتيح إرفاق لوائح وبث استفسارات)</option>
@@ -1081,8 +1081,8 @@ export default function ClientPortal({
 
               {/* VIEW C: CRM CLIENT ADD FORM (Fallback template trigger) */}
               {isAddingClient && !selectedConfigClientId && (
-                <form onSubmit={handleCreateClientAndLinkCase} className="bg-slate-50 border border-slate-300 p-8 rounded-3xl space-y-6 shadow-lg animate-fade-in">
-                  <div className="flex items-center gap-3 border-b border-slate-300 pb-4">
+                <form onSubmit={handleCreateClientAndLinkCase} className="bg-slate-50 border border-[#1e3a5f] p-8 rounded-3xl space-y-6 shadow-lg animate-fade-in">
+                  <div className="flex items-center gap-3 border-b border-[#1e3a5f] pb-4">
                     <div className="p-2 bg-emerald-50 text-emerald-600 rounded-lg">
                       <User className="w-5 h-5" />
                     </div>
@@ -1098,7 +1098,7 @@ export default function ClientPortal({
                         onChange={(e) => setNewClientName(e.target.value)}
                         placeholder="مثال: صالح بن محمد الودعاني"
                         required
-                        className="w-full bg-white border border-slate-300 px-4 py-3 rounded-xl text-xs font-semibold text-slate-900 outline-none focus:border-primary transition-all placeholder:text-slate-200 font-bold"
+                        className="w-full bg-[#0a1628] border border-[#1e3a5f] px-4 py-3 rounded-xl text-xs font-semibold text-slate-900 outline-none focus:border-primary transition-all placeholder:text-slate-200 font-bold"
                       />
                     </div>
 
@@ -1110,7 +1110,7 @@ export default function ClientPortal({
                         onChange={(e) => setNewClientNationalId(e.target.value)}
                         placeholder="مثال: 1029384756"
                         required
-                        className="w-full bg-white border border-slate-300 px-4 py-3 rounded-xl text-xs font-semibold text-slate-900 outline-none focus:border-primary transition-all placeholder:text-slate-200 font-bold"
+                        className="w-full bg-[#0a1628] border border-[#1e3a5f] px-4 py-3 rounded-xl text-xs font-semibold text-slate-900 outline-none focus:border-primary transition-all placeholder:text-slate-200 font-bold"
                       />
                     </div>
 
@@ -1122,7 +1122,7 @@ export default function ClientPortal({
                         onChange={(e) => setNewClientPhone(e.target.value)}
                         placeholder="+966500000000"
                         required
-                        className="w-full bg-white border border-slate-300 px-4 py-3 rounded-xl text-xs font-semibold text-slate-900 outline-none focus:border-primary transition-all placeholder:text-slate-200 font-bold font-sans"
+                        className="w-full bg-[#0a1628] border border-[#1e3a5f] px-4 py-3 rounded-xl text-xs font-semibold text-slate-900 outline-none focus:border-primary transition-all placeholder:text-slate-200 font-bold font-sans"
                       />
                     </div>
 
@@ -1133,7 +1133,7 @@ export default function ClientPortal({
                         value={newClientEmail}
                         onChange={(e) => setNewClientEmail(e.target.value)}
                         placeholder="client@mail.com"
-                        className="w-full bg-white border border-slate-300 px-4 py-3 rounded-xl text-xs font-semibold text-slate-900 outline-none focus:border-primary transition-all placeholder:text-slate-200 font-bold font-sans"
+                        className="w-full bg-[#0a1628] border border-[#1e3a5f] px-4 py-3 rounded-xl text-xs font-semibold text-slate-900 outline-none focus:border-primary transition-all placeholder:text-slate-200 font-bold font-sans"
                       />
                     </div>
                   </div>
@@ -1143,7 +1143,7 @@ export default function ClientPortal({
                     <select
                       value={selectedCaseToLink}
                       onChange={(e) => setSelectedCaseToLink(e.target.value)}
-                      className="w-full bg-white border border-slate-300 px-4 py-3 rounded-xl text-xs font-semibold text-slate-900 outline-none focus:border-primary transition-all"
+                      className="w-full bg-[#0a1628] border border-[#1e3a5f] px-4 py-3 rounded-xl text-xs font-semibold text-slate-900 outline-none focus:border-primary transition-all"
                     >
                       <option value="">-- اختر دعوى لربطها فوراً بهذا العميل --</option>
                       {cases.map(cs => (
@@ -1193,7 +1193,7 @@ export default function ClientPortal({
 
       {/* Dynamic Cases Filter Dropdown List for Client Portal View */}
       {clientCases.length > 0 && (
-        <div className="bg-white border border-slate-300 rounded-2xl p-6 shadow-md space-y-4 animate-fade-in" dir="rtl">
+        <div className="bg-[#0a1628] border border-[#1e3a5f] rounded-2xl p-6 shadow-md space-y-4 animate-fade-in" dir="rtl">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div className="space-y-1">
               <h3 className="text-sm font-black text-slate-900 flex items-center gap-2">
@@ -1209,7 +1209,7 @@ export default function ClientPortal({
                 id="client-case-filter"
                 value={selectedCaseFilterId}
                 onChange={(e) => setSelectedCaseFilterId(e.target.value)}
-                className="bg-white border-2 border-indigo-100 focus:border-indigo-600 rounded-xl px-4 py-3 text-xs font-black text-slate-900 outline-none focus:ring-4 focus:ring-indigo-100 transition-all font-sans min-w-[280px] shadow-sm"
+                className="bg-[#0a1628] border-2 border-indigo-100 focus:border-indigo-600 rounded-xl px-4 py-3 text-xs font-black text-slate-900 outline-none focus:ring-4 focus:ring-indigo-100 transition-all font-sans min-w-[280px] shadow-sm"
               >
                 <option value="all">📁 عرض كافة القضايا الموثقة ({clientCases.length})</option>
                 {clientCases.map((cs) => (
@@ -1231,7 +1231,7 @@ export default function ClientPortal({
           
           {/* Active Cases files tracking */}
           <div className="card-professional space-y-6">
-            <div className="flex items-center justify-between border-b border-slate-300 pb-5">
+            <div className="flex items-center justify-between border-b border-[#1e3a5f] pb-5">
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-primary/10 text-primary rounded-lg">
                   <Activity className="w-5 h-5" />
@@ -1250,17 +1250,17 @@ export default function ClientPortal({
               </div>
             ) : (
               filteredClientCases.map((cs, index) => (
-                <div key={index} className="bg-slate-50 border border-slate-300 rounded-3xl p-6 sm:p-8 space-y-6 transition-all shadow-md">
-                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-4 border-b border-slate-200">
+                <div key={index} className="bg-slate-50 border border-[#1e3a5f] rounded-3xl p-6 sm:p-8 space-y-6 transition-all shadow-md">
+                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-4 border-b border-[#1e3a5f]">
                     <div className="space-y-1.5">
-                      <span className={`text-xs bg-indigo-50 text-indigo-800 px-3 py-1 rounded-lg border border-indigo-200 font-mono font-bold ${getContrastText('bg-white')}`}>
+                      <span className={`text-xs bg-indigo-50 text-indigo-800 px-3 py-1 rounded-lg border border-indigo-200 font-mono font-bold ${getContrastText('bg-[#0a1628]')}`}>
                         ملف دعوى رقم: {cs.caseNumber}
                       </span>
                       <h3 className={`font-display font-black text-lg ${getContrastText('bg-slate-50')} mt-2`}>{cs.caseName}</h3>
                     </div>
 
                     <div className="flex flex-col items-end gap-2">
-                       <div className={`flex items-center gap-2 text-xs font-black ${getContrastText('bg-white')} bg-white px-4 py-2 rounded-xl border border-slate-300 shadow-sm`}>
+                       <div className={`flex items-center gap-2 text-xs font-black ${getContrastText('bg-[#0a1628]')} bg-[#0a1628] px-4 py-2 rounded-xl border border-[#1e3a5f] shadow-sm`}>
                         <MapPin className="w-4 h-4 text-indigo-600" />
                         {cs.courtName}
                        </div>
@@ -1274,13 +1274,13 @@ export default function ClientPortal({
                   {/* Summary/Short Description */}
                   <div className="space-y-2">
                     <span className="text-xs font-black text-slate-800 uppercase block">ملخص وموضوع الدعوى</span>
-                    <p className={`text-xs font-medium leading-relaxed bg-white/70 p-4 rounded-xl border border-slate-200 shadow-inner ${getContrastText('bg-slate-50')}`}>
+                    <p className={`text-xs font-medium leading-relaxed bg-[#0a1628]/70 p-4 rounded-xl border border-[#1e3a5f] shadow-inner ${getContrastText('bg-slate-50')}`}>
                       {cs.summary || 'تفاصيل الدعوى وموضوعها غير مدون.'}
                     </p>
                   </div>
 
                   {/* Complete Dynamic Database Details Grid */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6 bg-[#0a1628] p-6 rounded-2xl border border-[#1e3a5f] shadow-sm">
                     
                     {/* Column 1: Litigation & Opponents */}
                     <div className="space-y-4">
@@ -1304,7 +1304,7 @@ export default function ClientPortal({
                         {cs.powerOfAttorneyNumber && (
                           <div className="col-span-2">
                             <span className="text-slate-500 block text-[10px]">رقم الوكالة الشرعية:</span>
-                            <span className="font-mono bg-slate-50 px-2 py-0.5 rounded border border-slate-200 text-indigo-700 font-bold">{cs.powerOfAttorneyNumber}</span>
+                            <span className="font-mono bg-slate-50 px-2 py-0.5 rounded border border-[#1e3a5f] text-indigo-700 font-bold">{cs.powerOfAttorneyNumber}</span>
                           </div>
                         )}
                       </div>
@@ -1340,7 +1340,7 @@ export default function ClientPortal({
 
                     {/* Full width: Important dates & milestones */}
                     <div className="col-span-1 md:col-span-2 border-t border-slate-150 pt-4 grid grid-cols-1 sm:grid-cols-3 gap-4">
-                      <div className="bg-slate-50 p-3 rounded-xl border border-slate-200 text-xs">
+                      <div className="bg-slate-50 p-3 rounded-xl border border-[#1e3a5f] text-xs">
                         <span className="text-slate-500 block text-[9px] font-bold">تاريخ القيد الأولي:</span>
                         <div className="flex items-center gap-1.5 mt-1">
                           <Calendar className="w-3.5 h-3.5 text-slate-400" />
@@ -1348,7 +1348,7 @@ export default function ClientPortal({
                         </div>
                       </div>
 
-                      <div className="bg-slate-50 p-3 rounded-xl border border-slate-200 text-xs">
+                      <div className="bg-slate-50 p-3 rounded-xl border border-[#1e3a5f] text-xs">
                         <span className="text-slate-500 block text-[9px] font-bold">تاريخ الجلسة السابقة:</span>
                         <div className="flex items-center gap-1.5 mt-1">
                           <Eye className="w-3.5 h-3.5 text-slate-450" />
@@ -1393,7 +1393,7 @@ export default function ClientPortal({
                             </div>
                           )}
                           {cs.judgment_summary && (
-                            <div className="col-span-1 sm:col-span-2 md:col-span-3 bg-white p-3 rounded-lg border border-slate-200 mt-1">
+                            <div className="col-span-1 sm:col-span-2 md:col-span-3 bg-[#0a1628] p-3 rounded-lg border border-[#1e3a5f] mt-1">
                               <span className="text-slate-500 block text-[10px] font-bold mb-1">منطوق وخلاصة الحكم الصادر:</span>
                               <p className="text-[11px] text-slate-200 leading-normal font-sans">{cs.judgment_summary}</p>
                             </div>
@@ -1404,9 +1404,9 @@ export default function ClientPortal({
 
                     {/* Detailed Claims/Facts section */}
                     {cs.details && (
-                      <div className="col-span-1 md:col-span-2 bg-indigo-50/20 border border-slate-200 p-4 rounded-xl">
+                      <div className="col-span-1 md:col-span-2 bg-indigo-50/20 border border-[#1e3a5f] p-4 rounded-xl">
                         <span className="text-xs font-black text-indigo-900 block mb-2">📄 عريضة وجدول طلبات الدعوى التفصيلية</span>
-                        <div className="text-xs text-slate-200 leading-relaxed max-h-48 overflow-y-auto whitespace-pre-line bg-white/70 p-3 rounded-lg border border-slate-100 font-sans" style={{ scrollbarWidth: 'thin' }}>
+                        <div className="text-xs text-slate-200 leading-relaxed max-h-48 overflow-y-auto whitespace-pre-line bg-[#0a1628]/70 p-3 rounded-lg border border-slate-100 font-sans" style={{ scrollbarWidth: 'thin' }}>
                           {cs.details}
                         </div>
                       </div>
@@ -1415,7 +1415,7 @@ export default function ClientPortal({
                   </div>
 
                   {/* Visual tracker dots for client */}
-                  <div className="border-t border-slate-300 pt-5">
+                  <div className="border-t border-[#1e3a5f] pt-5">
                     <span className="text-xs text-white block mb-4 font-bold uppercase tracking-wider">الجدول الزمني للإجراءات الشرعية الحالية</span>
                     <div className="grid grid-cols-4 gap-3">
                       {[
@@ -1438,7 +1438,7 @@ export default function ClientPortal({
                                 true,
                                 cs.stage !== 'litigation',
                                 cs.stage === 'appeals' || cs.stage === 'execution'
-                              ][idx+1] ? 'bg-indigo-700 border-white' : 'bg-slate-200 border-slate-300'
+                              ][idx+1] ? 'bg-indigo-700 border-white' : 'bg-slate-200 border-[#1e3a5f]'
                             }`} />
                           )}
                         </div>
@@ -1452,7 +1452,7 @@ export default function ClientPortal({
 
           {/* Client Documents viewer */}
           <div className="card-professional space-y-6">
-            <div className="flex items-center justify-between border-b border-slate-300 pb-5">
+            <div className="flex items-center justify-between border-b border-[#1e3a5f] pb-5">
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-primary/10 text-primary rounded-lg">
                   <FileText className="w-5 h-5" />
@@ -1466,7 +1466,7 @@ export default function ClientPortal({
             ) : (
               <div className="space-y-3">
                 {clientDocuments.map((doc, idx) => (
-                  <div key={idx} className="flex items-center justify-between bg-white border border-slate-300 px-4 py-3 rounded-xl transition-colors shadow-sm">
+                  <div key={idx} className="flex items-center justify-between bg-[#0a1628] border border-[#1e3a5f] px-4 py-3 rounded-xl transition-colors shadow-sm">
                     <div className="flex items-center gap-3">
                       <FileText className="w-4 h-4 text-primary" />
                       <div>
@@ -1490,7 +1490,7 @@ export default function ClientPortal({
           
           {/* Client Financial files inside portal */}
           <div className="card-professional space-y-6">
-            <div className="flex items-center gap-3 border-b border-slate-300 pb-5">
+            <div className="flex items-center gap-3 border-b border-[#1e3a5f] pb-5">
               <div className="p-2 bg-indigo-50 text-indigo-700 rounded-lg">
                 <DollarSign className="w-5 h-5" />
               </div>
@@ -1502,7 +1502,7 @@ export default function ClientPortal({
                 <div className="text-center py-6 text-slate-900  font-medium italic text-xs">لا توجد مطالبات مالية مستحقة.</div>
               ) : (
                 clientInvoices.map((inv, idx) => (
-                  <div key={idx} className="bg-slate-50 border border-slate-300 rounded-2xl p-5 space-y-4 transition-shadow">
+                  <div key={idx} className="bg-slate-50 border border-[#1e3a5f] rounded-2xl p-5 space-y-4 transition-shadow">
                     <div className="flex justify-between items-start">
                       <div className="space-y-1">
                         <h4 className="font-bold text-xs text-slate-950  font-mono">Fatoora #{inv.id}</h4>
@@ -1517,7 +1517,7 @@ export default function ClientPortal({
 
                     <p className="text-sm text-slate-900  font-medium leading-normal">{inv.description}</p>
                     
-                    <div className="border-t border-slate-300 pt-4 flex justify-between items-center text-xs">
+                    <div className="border-t border-[#1e3a5f] pt-4 flex justify-between items-center text-xs">
                       <div>
                         <span className="text-xs text-slate-900  block font-bold mb-1">الرصيد الموحد (العدالة)</span>
                         <strong className="text-slate-950  font-mono text-base">{inv.totalAmount.toLocaleString()} ر.س</strong>
@@ -1539,13 +1539,13 @@ export default function ClientPortal({
           </div>
 
           {/* Chat room messages simulator with lawyer */}
-          <div className="card-professional space-y-5 bg-white border-slate-300 shadow-xl">
+          <div className="card-professional space-y-5 bg-[#0a1628] border-[#1e3a5f] shadow-xl">
                 <div>
                   <h3 className="font-display font-semibold text-slate-950">تراسل مع الفريق القضائي والعملاء</h3>
                   <p className="text-xs text-slate-900 mt-1 font-black">تشفير تام بين العميل وموكل (عميل ومرافع)</p>
                 </div>
             
-            <div className="space-y-4 h-[280px] overflow-y-auto bg-slate-50 p-4 rounded-2xl border border-slate-300 custom-scrollbar shadow-inner">
+            <div className="space-y-4 h-[280px] overflow-y-auto bg-slate-50 p-4 rounded-2xl border border-[#1e3a5f] custom-scrollbar shadow-inner">
               {clientMessages.map((msg, idx) => (
                 <div 
                   key={idx} 
@@ -1559,7 +1559,7 @@ export default function ClientPortal({
                   <div className={`p-3 rounded-2xl text-sm leading-relaxed font-bold ${
                     msg.sender === 'client' 
                       ? 'bg-primary text-white rounded-tr-none shadow-lg' 
-                      : 'bg-white text-slate-950 rounded-tl-none border border-slate-300 shadow-sm'
+                      : 'bg-[#0a1628] text-slate-950 rounded-tl-none border border-[#1e3a5f] shadow-sm'
                   }`}>
                     {msg.text}
                   </div>
@@ -1575,7 +1575,7 @@ export default function ClientPortal({
                   value={clientMessageInput}
                   onChange={(e) => setClientMessageInput(e.target.value)}
                   required
-                  className="w-full bg-white border border-slate-300 py-3.5 px-4 rounded-xl text-xs text-slate-900 outline-none focus:border-primary transition-all placeholder:text-slate-900 font-bold shadow-sm"
+                  className="w-full bg-[#0a1628] border border-[#1e3a5f] py-3.5 px-4 rounded-xl text-xs text-slate-900 outline-none focus:border-primary transition-all placeholder:text-slate-900 font-bold shadow-sm"
                 />
                 <button 
                   type="submit"

@@ -56,7 +56,7 @@ export const SupabaseTodos: React.FC = () => {
       </div>
 
       {todos.length === 0 ? (
-        <p className="text-slate-700 italic text-sm py-4 border-2 border-dashed border-slate-200 rounded-xl text-center">
+        <p className="text-slate-700 italic text-sm py-4 border-2 border-dashed border-[#1e3a5f] rounded-xl text-center">
           No todos found. Add some in your Supabase dashboard!
         </p>
       ) : (
@@ -66,7 +66,7 @@ export const SupabaseTodos: React.FC = () => {
               key={todo.id}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="p-3 bg-white border border-slate-200 rounded-lg shadow-sm flex items-center justify-between transition-colors"
+              className="p-3 bg-[#0a1628] border border-[#1e3a5f] rounded-lg shadow-sm flex items-center justify-between transition-colors"
             >
               <span className="text-slate-700 font-medium">{todo.name}</span>
               <span className="text-[10px] text-slate-200 font-bold font-mono">ID: {todo.id.slice(0, 8)}</span>
