@@ -90,7 +90,7 @@ export default function UnifiedAuthLanding({ initialTab = "lawyer", language = "
 
     const performAutoLogin = async (session: any) => {
       try {
-        const { data: profile } = await supabase.from('profiles').select('id, uid, role, name, permittedModules, sidebarConfig, avatarUrl, created_at').eq('uid', session.user.id).single();
+        const { data: profile } = await supabase.from('profiles').select('id, uid, role, name, permittedModules, sidebarConfig, avatarUrl, created_at').eq('uid', session.user.id).maybeSingle();
         if (profile) {
           onLoginSuccess({
             role: profile.role as any,

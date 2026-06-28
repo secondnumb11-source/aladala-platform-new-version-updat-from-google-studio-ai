@@ -273,39 +273,8 @@ function AppContent() {
     };
     window.addEventListener('storage', handleStorageChange);
 
-    // 2. تتبع وحماية المعرف محلياً في نفس الصفحة (Same-tab) لمنع أي محاولة تعديل يدوي أو برمجية
-    let lastOfficeId = localStorage.getItem('adala_office_id');
-    const interval = setInterval(() => {
-      const currentOfficeId = localStorage.getItem('adala_office_id');
-      if (lastOfficeId && currentOfficeId && currentOfficeId !== lastOfficeId) {
-        console.warn('⚠️ [Security] Unauthorized same-tab adala_office_id change detected! Clearing session immediately.');
-        clearAllAppData();
-        clearSession();
-        window.location.reload();
-      }
-      lastOfficeId = currentOfficeId;
-    }, 500);
-
-    // 3. اعتراض وحجب التغييرات عبر تداخل setItem المباشر
-    const originalSetItem = localStorage.setItem;
-    localStorage.setItem = function (key, value) {
-      if (key === 'adala_office_id') {
-        const oldValue = localStorage.getItem('adala_office_id');
-        if (oldValue && oldValue !== value) {
-          console.warn('⚠️ [Security] Blocked unauthorized same-tab modification of adala_office_id.');
-          clearAllAppData();
-          clearSession();
-          window.location.reload();
-          return;
-        }
-      }
-      originalSetItem.apply(this, arguments as any);
-    };
-
     return () => {
       window.removeEventListener('storage', handleStorageChange);
-      clearInterval(interval);
-      localStorage.setItem = originalSetItem;
     };
   }, [clearAllAppData]);
 
